@@ -14,7 +14,6 @@
 
     <cc:implementation>
 
-        <h:outputStylesheet library="css" name="fund_bill_five_five.css" ></h:outputStylesheet>
         <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note CSS')}">
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Header CSS')}" >
@@ -26,7 +25,7 @@
             </div>
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Title CSS')}">
-                <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Title CSS', 'Float Receive Note')}"/>
+                <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Title', 'Float Receive Note')}"/>
                 <h:outputLabel value=" - **Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
             </div>
 
@@ -35,14 +34,14 @@
             </div>
 
             <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Bill Detail CSS')}">
-                <table style="width: 99%!important;">
+                <table style="width: 100%!important;">
                     <tr>
                         <td>
                             <h:outputLabel value="From" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}" ></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
                         </td>
                         <td>
                             <h:outputLabel value="Transferred At" ></h:outputLabel>
@@ -83,7 +82,7 @@
                 <table width="100%">
                     <ui:repeat value="#{cc.attrs.bill.payments}" var="bip">
                         <tr>
-                            <td style="overflow: visible;">
+                            <td >
                                 <h:outputLabel value="#{bip.paymentMethod}" ></h:outputLabel>
                             </td>
                             <td>
@@ -122,7 +121,7 @@
                                 </h:panelGroup>
                             </td>
                             <td style="text-align: right;">
-                                <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.paidValue}">
+                                <h:outputLabel  value="#{bip.paidValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </td>
@@ -131,7 +130,7 @@
                 </table>
             </div>
 
-            <div class="billline">
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
                 <hr/>
             </div>
 
@@ -139,10 +138,10 @@
                 <table style="width: 100%;">
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                            <td  >
                                 <h:outputLabel value="Total"/>
                             </td>
-                            <td class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <td >
                                 <h:outputLabel value="#{cc.attrs.bill.total}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -152,7 +151,7 @@
                 </table>
             </div>
 
-                    <div class="billline">
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
                 <hr/>
             </div>
 

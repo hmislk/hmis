@@ -14,7 +14,6 @@
 
     <cc:implementation>
 
-        <h:outputStylesheet library="css" name="fund_bill_five_five.css" ></h:outputStylesheet>
         <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note CSS')}">
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Header CSS')}" >
@@ -139,10 +138,10 @@
                 <table style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Bill Table CSS')}">
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                            <td >
                                 <h:outputLabel value="Total"/>
                             </td>
-                            <td class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <td >
                                 <h:outputLabel value="#{cc.attrs.bill.absoluteNetTotalTransient}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
