@@ -4702,6 +4702,8 @@ public class FinancialTransactionController implements Serializable {
         denos.setTotal(cashHandover);
         denos.setNetTotal(cashHandover);
         billFacade.edit(denos);
+        
+        drawerController.updateDrawerForOuts(currentBill, PaymentMethod.Cash , cashHandover, sessionController.getLoggedUser());
 
         for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
             if (shiftBundle.isSelected()) {
@@ -4762,6 +4764,7 @@ public class FinancialTransactionController implements Serializable {
                     componantTotal += p.getPaidValue();
 
                     paymentController.save(p);
+                    drawerController.updateDrawer(p, p.getPaidValue(), sessionController.getLoggedUser());
                 }
                 shiftHandoverComponantBill.setTotal(componantTotal);
                 shiftHandoverComponantBill.setNetTotal(componantTotal);
