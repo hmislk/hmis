@@ -438,16 +438,12 @@
                                 </div>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_Header bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_Header>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
                                 <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{pharmacySaleBhtController.printBill}"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                <phi:saleBill_Header_Inward bill="#{pharmacySaleBhtController.printBill}" />
                             </h:panelGroup>
 
                         </h:panelGroup>

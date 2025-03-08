@@ -249,6 +249,12 @@ public class PaymentService {
                 payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
                 payment.setComments(paymentMethodData.getStaffCredit().getComment());
                 break;
+            case IOU:
+                payment.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
+                payment.setChequeDate(paymentMethodData.getIou().getDate());
+                payment.setToStaff(paymentMethodData.getIou().getToStaff());
+                payment.setComments(paymentMethodData.getIou().getComment());
+                break;
             default:
                 break;
         }

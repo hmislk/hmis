@@ -150,7 +150,7 @@
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Add Professional Fees" 
-                                    action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromInpatientProfile()}" 
+                                    action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromInpatientProfile(admissionController.current)}" 
                                     icon="fa fa-user-md"
                                     class="w-100">
                                     <f:setPropertyActionListener 
@@ -169,7 +169,7 @@
 
                                 <p:commandButton 
                                     value="Add Timed Services" 
-                                    action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromInpatientProfile()}" 
+                                    action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromInpatientProfile(admissionController.current)}" 
                                     icon="fa fa-clock"
                                     class="w-100">
                                     <f:setPropertyActionListener 
@@ -430,6 +430,19 @@
                                     value="Pharmacy Issue Summary" 
                                     action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}" 
                                     icon="fa fa-prescription-bottle-alt"
+                                    class="w-100">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                    <f:setPropertyActionListener 
+                                        value="#{null}" 
+                                        target="#{inwardReportControllerBht.department}" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Lab Bill Summary" 
+                                    action="#{inwardReportControllerBht.navigateToInpatientLabItemList}" 
+                                    icon="fa fa-flask"
+                                    rendered="false"
                                     class="w-100">
                                     <f:setPropertyActionListener 
                                         value="#{admissionController.current}" 

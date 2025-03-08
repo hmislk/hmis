@@ -20,6 +20,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.StockHistoryFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -393,6 +394,9 @@ public class PharmacyErrorChecking implements Serializable {
     }
 
     public Date getFromDate() {
+        if(fromDate==null){
+            fromDate = CommonFunctions.getStartOfMonth();
+        }
         return fromDate;
     }
 
@@ -401,6 +405,9 @@ public class PharmacyErrorChecking implements Serializable {
     }
 
     public Date getToDate() {
+        if(toDate==null){
+            toDate = CommonFunctions.getEndOfDay();
+        }
         return toDate;
     }
 

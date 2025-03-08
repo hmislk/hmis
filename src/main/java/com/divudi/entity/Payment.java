@@ -204,6 +204,10 @@ public class Payment implements Serializable, RetirableEntity  {
     private Institution fromInstitution;
     @ManyToOne
     private Institution toInstitution;
+    
+    private Staff toStaff;
+    
+    
 
     public Payment() {
         cashbookEntryStated = false;
@@ -954,6 +958,19 @@ public class Payment implements Serializable, RetirableEntity  {
 
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
+    }
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
+    }
+    
+    @Transient
+    public Double getAbsolutePaidValueTransient(){
+        return Math.abs(this.paidValue);
     }
 
 }

@@ -913,8 +913,39 @@ public class SupplierPaymentController implements Serializable {
             return true;
         }
 
+        if(!getCurrent().isCompleted()){
+            JsfUtil.addErrorMessage("Need to check before Approving");
+            return true;
+        }
+        
         if (getCurrent().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Select Cant settle without Dealor");
+            return true;
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    private boolean errorCheckForCheckingSupplierPayment() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Nothing to approve");
+            return true;
+        }
+
+        if (getCurrent().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return true;
+        }
+        if (getCurrent().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Cant settle without Dealor");
+            return true;
+        }
+         if (getCurrent().isCompleted()) {
+            JsfUtil.addErrorMessage("Already Checked, Cano not mark as checked again.");
             return true;
         }
 
@@ -2194,6 +2225,16 @@ public class SupplierPaymentController implements Serializable {
         current = billService.reloadBill(approvalBill);
         return "/dealerPayment/approve_supplier_payment?faces-redirect=true";
     }
+    
+    public String navigateToCheckSupplierPayment(Bill approvalBill) {
+        makeNull();
+        if (approvalBill == null) {
+            JsfUtil.addErrorMessage("No Bill Is Selected");
+            return null;
+        }
+        current = billService.reloadBill(approvalBill);
+        return "/dealerPayment/check_supplier_payment?faces-redirect=true";
+    }
 
     public String navigateToSettleSupplierPayment(Bill approvalBill) {
         makeNull();
@@ -2520,6 +2561,37 @@ public class SupplierPaymentController implements Serializable {
         printPreview = true;
 
     }
+    
+    public void settleCheckingSupplierPayment() {
+        if (errorCheckForCheckingSupplierPayment()) {
+            return;
+        }
+        getCurrent().setCompleted(true);
+        getCurrent().setCompletedAt(new Date());
+        getCurrent().setCompletedBy(sessionController.getLoggedUser());
+
+        if (getCurrent().getId() == null) {
+            getBillFacade().create(getCurrent());
+        } else {
+            getBillFacade().edit(getCurrent());
+        }
+//        updateReferanceBillAsPaymentApproved(getCurrent().getBillItems());
+
+        for (BillItem bi : getCurrent().getBillItems()) {
+            bi.setBill(current);
+            if (bi.getId() == null) {
+                bi.setCreatedAt(new Date());
+                bi.setCreater(sessionController.getLoggedUser());
+                billItemFacade.create(bi);
+            } else {
+                billItemFacade.edit(bi);
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Payment Checking Done");
+        printPreview = true;
+
+    }
 
     public void settleApproveSupplierPayment() {
         if (errorCheckForApprovingSupplierPayment()) {
@@ -2573,6 +2645,10 @@ public class SupplierPaymentController implements Serializable {
 
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
+        
+//        getCurrent().setPaymentGenerated(true);
+//        getCurrent().setPaymentGeneratedAt(new Date());
+//        getCurrent().setPaymentGeneratedBy(sessionController.getLoggedUser());
 
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());

@@ -71,18 +71,7 @@
                                 <p:outputLabel value="Inward Add Services" class="mx-2 mt-1"/>
                             </div>
                             <div class="d-flex justify-content-end align-items-center" >
-                                <h:panelGrid columns="7">
-                                    <p:commandButton 
-                                        class="w-100 ui-button-success" id="btnSettle" 
-                                        value="Settle" 
-                                        style="float: right"
-                                        icon="fa fa-check"
-                                        action="#{billBhtController.settleBill}" 
-                                        ajax="false" >
-                                    </p:commandButton>
-                                    <p:spacer width="5"/>
-                                    <p:defaultCommand target="btnSettle"/>
-
+                                <h:panelGrid columns="4">
                                     <p:commandButton 
                                         class="w-100 ui-button-warning" 
                                         action="#{billBhtController.resetBillData}" 
@@ -204,14 +193,26 @@
                                                             <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                                             <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
                                                         </div>
-                                                        <p:commandButton 
-                                                            ajax="false" 
-                                                            action="#{billBhtController.reloadItemLights()}" 
-                                                            title="Reload"
-                                                            value="Reload"
-                                                            styleClass="ui-button-warning mx-3" 
-                                                            icon="fa fa-refresh"> 
-                                                        </p:commandButton>
+                                                        <div class="d-flex ms-auto">
+                                                            <p:commandButton 
+                                                                ajax="false" 
+                                                                action="#{billBhtController.reloadItemLights()}" 
+                                                                title="Reload"
+                                                                value="Reload"
+                                                                styleClass="ui-button-warning mx-3" 
+                                                                icon="fa fa-refresh"> 
+                                                            </p:commandButton>
+                                                            <p:commandButton 
+                                                                id="btnSettle" 
+                                                                value="Settle" 
+                                                                styleClass="ui-button-success mx-2"
+                                                                style="width: 150px;"
+                                                                icon="fa fa-check"
+                                                                action="#{billBhtController.settleBill}" 
+                                                                ajax="false" >
+                                                            </p:commandButton>
+                                                            <p:defaultCommand target="btnSettle"/>
+                                                        </div>
                                                     </div>
                                                 </f:facet>
                                                 <div class="row">
@@ -378,15 +379,15 @@
                                                                     icon="fa fa-times"
                                                                     title="Remove"
                                                                     class="ui-button-danger"
-                                                                    action="#{billBhtController.removeBillItem}" >
+                                                                    action="#{billBhtController.removeBillItem(bi)}" >
                                                                     <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
-                                                                    <p:ajax  process="btnRemove" update="@form" />
+                                                                    <p:ajax  process="btnRemove @this" update="@form @all :#{p:resolveFirstComponentWithId('tabBillIx',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId} :#{p:resolveFirstComponentWithId('tabBillItems',view).clientId} :#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('testTable',view).clientId} :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}"/>
                                                                 </p:commandButton>
                                                             </p:column>
                                                         </p:dataTable>
                                                     </p:tab>
                                                     <p:tab id="tabBillIx" title="Tests" >
-                                                        <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillComponents}" var="bix" >
+                                                        <p:dataTable id="testTable" rowIndexVar="rowIndex" value="#{billBhtController.lstBillComponents}" var="bix" >
                                                             <p:column>
                                                                 <f:facet name="header">No</f:facet>
                                                                 <h:outputLabel value="#{rowIndex+1}"/>
@@ -516,46 +517,135 @@
                                     </p:commandButton>
                                 </div>
 
-                                <h:panelGroup >                      
-                                    <h:panelGroup id="gpBillPreview" >
+                                <div class="row">
+                                    <div class="col-8">
+                                        <h:panelGroup >                      
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <h:outputLabel value="Bills" />
+                                                </f:facet>
+                                                <h:panelGroup id="gpBillPreview" >
 
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}" >
-                                            <ui:repeat value="#{billBhtController.bills}" var="ffb">
-                                                <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>      
-                                                <br/>
-                                            </ui:repeat>
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
+                                                        <ui:repeat value="#{billBhtController.bills}" var="ffb">
+                                                            <div style="page-break-after: always;">
+                                                                <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>
+                                                            </div>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                                        <ui:repeat value="#{billBhtController.bills}" var="ffpp">
+                                                            <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
+                                                        <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                            <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
+                                                        <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                            <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
+                                                        <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                            <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+                                                    
+                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}" >
+                                                        <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                            <print:five_five_custom_3_inward bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+
+                                                </h:panelGroup>
+                                            </p:panel>
                                         </h:panelGroup>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Bill Details" />
+                                            </f:facet>
+                                            <p:dataTable 
+                                                value="#{billBhtController.bills}" 
+                                                var="b" 
+                                                resizeMode="expand"
+                                                reflow="true"
+                                                class="w-100 mt-3" 
+                                                rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                                <f:facet name="header" >
+                                                    <h:outputLabel value="Individual Bills" style="font-size: 18px; font-weight: 800;" ></h:outputLabel>
+                                                </f:facet>
+                                                <p:column headerText="Bill No" width="280px;" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                                    <h:outputText value="#{b.deptId}"  class="w-100 m-1" ></h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Gross Total" 
+                                                          styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                                          class="text-end">
+                                                    <h:outputText value="#{b.total}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Discount" 
+                                                          styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                                          class="text-end">
+                                                    <h:outputText value="#{b.discount}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Net Total" 
+                                                          styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                                          class="text-end">
+                                                    <h:outputText value="#{b.netTotal}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column  headerText="Actions" width="95px;" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                                    <!-- To Bill Details Button -->
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        rendered="false"
+                                                        title="View Bill"
+                                                        class="ui-button-success m-1"
+                                                        icon="fa fa-file-invoice"
+                                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        title="Manage Bill"
+                                                        class="ui-button-warning m-1"
+                                                        icon="fa fa-file-invoice"
+                                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                                    </p:commandButton>
 
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                            <ui:repeat value="#{billBhtController.bills}" var="ffpp">
-                                                <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
-                                                <br/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
+                                                    <p:commandButton 
+                                                        title="To Sample Management" 
+                                                        icon="fas fa-flask"
+                                                        class="ui-button-raised mx-1"
+                                                        action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(b)}"
+                                                        ajax="false">
+                                                    </p:commandButton>
 
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
-                                            <ui:repeat value="#{billBhtController.bills}" var="pp">
-                                                <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>
-                                                <br/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
-                                            <ui:repeat value="#{billBhtController.bills}" var="pp">
-                                                <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>
-                                                <br/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
-                                            <ui:repeat value="#{billBhtController.bills}" var="pp">
-                                                <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>
-                                                <br/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
-
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:panel>
+                                    </div>
+                                </div>
                             </h:panelGroup>
                         </h:panelGroup>
                     </div>

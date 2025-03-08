@@ -31,7 +31,12 @@
 
                             <p:commandButton 
                                 class="p-0 m-1 ui-button-success" 
-                                action="#{patientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
+                                action="#{patientEncounterController.issueItems()}"
+                                ajax="false"
+                                icon="fas fa-medkit" 
+                                title="Pharmacy">
+                            </p:commandButton>
+                            
                             <p:commandButton class="p-0 m-1 ui-button-secondary" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
                                 <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${patientEncounterController.current}" />

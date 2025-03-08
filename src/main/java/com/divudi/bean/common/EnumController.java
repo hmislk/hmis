@@ -819,6 +819,15 @@ public class EnumController implements Serializable {
             PaymentMethod.ewallet};
         return p;
     }
+    
+    public PaymentMethod[] getPaymentMethodsForSupplierPayments() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.IOU};
+        return p;
+    }
 
     public PaymentMethod[] getPaymentMethodsForIwardDeposit() {
         PaymentMethod[] p = {PaymentMethod.Cash,
@@ -826,7 +835,8 @@ public class EnumController implements Serializable {
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.ewallet,
-            PaymentMethod.PatientDeposit};
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.OnlineSettlement};
         return p;
     }
 

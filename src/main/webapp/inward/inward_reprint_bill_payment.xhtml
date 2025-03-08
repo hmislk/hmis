@@ -23,7 +23,7 @@
                                     <p:commandButton ajax="false" value="To Cancel"
                                                      class="ui-button-danger"
                                                      icon="fa fa-ban"
-                                                     action="inward_cancel_bill_payment" 
+                                                     action="#{inwardSearch.navigateToPaymentBillCancellation()}"
                                                      disabled="#{inwardSearch.bill.cancelled}"  >                           
                                     </p:commandButton>
 
@@ -107,6 +107,14 @@
 
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4Paper'}" >
                                         <bill:A4PaperPaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>                        
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFivePaper'}" >
+                                        <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true" />    
+                                    </h:panelGroup> 
+
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'PosPaper'}" style="align-items: center;">
+                                        <bill:posPaperPaymentBill bill="#{inwardSearch.bill}"/> 
                                     </h:panelGroup>
 
                                 </h:panelGroup>

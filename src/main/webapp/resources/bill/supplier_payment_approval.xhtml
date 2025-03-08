@@ -35,7 +35,7 @@
             </div>
 
             <div class="row" >
-                <div class="col-md-4 p-1" >
+                <div class="col-md-3 p-1" >
                     <h:panelGrid columns="2" columnClasses="text-start, text-end" >
                         <h:outputLabel value="Payee : " />
                         <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
@@ -57,13 +57,13 @@
                         </h:outputLabel>
                     </h:panelGrid>
                 </div>
-                <div class="col-md-4 p-1" >
+                <div class="col-md-3 p-1" >
                     <h:panelGrid columns="2" columnClasses="text-start, text-end" >
                         <h:outputLabel value="Prepaired By : " />
                         <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" >
                         </h:outputLabel>
                         <h:outputLabel value="Comments : " />
-                        <h:outputLabel value="#{cc.attrs.bill.comments}" >
+                        <h:outputLabel value="#{cc.attrs.bill.paymentGenerationComments}" >
                         </h:outputLabel>
                         <h:outputLabel value="Prepaired at :"  />
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}"  >
@@ -72,7 +72,22 @@
                     </h:panelGrid>
                 </div>
 
-                <div class="col-md-4 p-1" >
+                <div class="col-md-3 p-1" >
+                    <h:panelGrid columns="2" columnClasses="text-start, text-end" >
+                        <h:outputLabel value="Checked By : " />
+                        <h:outputLabel value="#{cc.attrs.bill.completedBy.webUserPerson.name}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="Comments : " />
+                        <h:outputLabel value="#{cc.attrs.bill.comments}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="Prepaired at :"  />
+                        <h:outputLabel value="#{cc.attrs.bill.completedAt}"  >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </div>
+
+                <div class="col-md-3 p-1" >
                     <h:panelGrid columns="2" columnClasses="text-start, text-end" >
                         <h:outputLabel value="Approved By : " />
                         <h:outputLabel value="#{cc.attrs.bill.paymentApprovedBy.webUserPerson.name}" >
@@ -122,7 +137,7 @@
                     </p:outputLabel>
                 </p:column>
                 <p:column headerText="GRN Return Amount" class="text-end">
-                    <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
+                    <p:outputLabel value="#{b.referenceBill.refundAmount}">
                         <f:convertNumber pattern="#,##0.00" />
                     </p:outputLabel>
                 </p:column>

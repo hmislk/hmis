@@ -154,11 +154,11 @@
 
 
                                 <p:column headerText="Inward Charge Type"
-                                          filterBy="#{bi.item.inwardChargeType.label}" filterMatchMode="contains">
+                                          filterBy="#{bi.item.inwardChargeType.name}" filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Inward Charge Type"/> 
                                     </f:facet>
-                                    <h:outputLabel value="#{bi.item.inwardChargeType.label}"/>                                    
+                                    <h:outputLabel value="#{bi.item.inwardChargeType.name}"/>                                    
                                 </p:column>
 
                                 <p:column  headerText="Gross Value" filterBy="#{bi.grossValue}" filterMatchMode="contains">
