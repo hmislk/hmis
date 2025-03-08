@@ -298,6 +298,26 @@
                                     </p:inputText>
                                 </td>
                             </tr>
+                            
+                              <!-- Patient Points Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-star payment-icon"></i>&nbsp;Patient Points</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.noneInHandValue}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.noneShortageOrExcess}" styleClass="#{drawerController.current.noneShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.noneBalance}" styleClass="#{drawerController.current.noneBalance >= 0 ? 'negative-value' : 'positive-value'}" disabled="#{!drawerController.editDrawerAccess}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
 
 

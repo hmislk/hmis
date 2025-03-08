@@ -14,36 +14,55 @@
 
     <cc:implementation>
 
-        <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note CSS')}">
+        <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note CSS')}">
 
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Header CSS')}" >
-                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Header Text')}" escape="false" ></h:outputText>
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Header CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Header Text')}" escape="false" ></h:outputText>
             </div>
 
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Title CSS')}">
-                <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Title CSS', 'Float Transfer Note')}"/>
-                <h:outputLabel value=" - **Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
-            </div>
-
-            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Horizontal Line CSS')}">
+            <div class="billline">
                 <hr/>
             </div>
 
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Bill Detail CSS')}">
-                <table style="width: 99%!important;">
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Title CSS')}">
+                <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Title', 'Float Receive Note')}"/>
+                <h:outputLabel value=" - **Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
+                <hr/>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Bill Detail CSS')}">
+                <table style="width: 100%!important;">
                     <tr>
-                        <td >
+                        <td>
                             <h:outputLabel value="From" ></h:outputLabel>
                         </td>
-                        <td ></td>
                         <td>:</td>
-                        <td ></td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.creater.name}" ></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
                         </td>
-                        <td ></td>
                         <td>
-                            <h:outputLabel value="Date / Time " ></h:outputLabel>
+                            <h:outputLabel value="Transferred At" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="To Staff" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="Received At" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td>
@@ -52,37 +71,18 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    <tr>
-                        <td >
-                            <h:outputLabel value="To Staff" ></h:outputLabel>
-                        </td>
-                        <td ></td>
-                        <td>:</td>
-                        <td ></td>
-                        <td>
-                            <h:outputLabel value="#{cc.attrs.bill.toWebUser.webUserPerson.nameWithTitle}" ></h:outputLabel>
-                        </td>
-                        <td ></td>
-                        <td>
-                            <h:outputLabel value="Comments" ></h:outputLabel>
-                        </td>
-                        <td>:</td>
-                        <td>
-                            <h:outputLabel value="#{cc.attrs.bill.comments}" ></h:outputLabel>
-                        </td>
-                    </tr>
                 </table>
             </div>
 
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Horizontal Line CSS')}">
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
                 <hr/>
             </div>
 
-            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Bill Detail CSS')}">
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Bill Detail CSS')}">
                 <table width="100%">
                     <ui:repeat value="#{cc.attrs.bill.payments}" var="bip">
                         <tr>
-                            <td style="overflow: visible;">
+                            <td >
                                 <h:outputLabel value="#{bip.paymentMethod}" ></h:outputLabel>
                             </td>
                             <td>
@@ -121,7 +121,7 @@
                                 </h:panelGroup>
                             </td>
                             <td style="text-align: right;">
-                                <h:outputLabel value="#{bip.absolutePaidValueTransient}">
+                                <h:outputLabel  value="#{bip.paidValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </td>
@@ -130,19 +130,19 @@
                 </table>
             </div>
 
-            <div   style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Horizontal Line CSS')}">
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
                 <hr/>
             </div>
 
             <div>
-                <table style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Bill Table CSS')}">
+                <table style="width: 100%;">
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>
-                            <td >
+                            <td  >
                                 <h:outputLabel value="Total"/>
                             </td>
                             <td >
-                                <h:outputLabel value="#{cc.attrs.bill.absoluteNetTotalTransient}">
+                                <h:outputLabel value="#{cc.attrs.bill.total}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </td>
@@ -151,14 +151,13 @@
                 </table>
             </div>
 
-            <div   style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Horizontal Line CSS')}">
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
                 <hr/>
             </div>
 
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Footer CSS')}" >
-                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Footer Text')}" escape="false" ></h:outputText>
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer Text')}" escape="false" ></h:outputText>
             </div>
-
 
         </div>
     </cc:implementation>
