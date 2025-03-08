@@ -26,11 +26,11 @@
                                 <p:outputLabel value="From Date" class="mx-2" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{pharmacyReportController.fromDate}" 
+                            <p:calendar value="#{pharmacyReportController.fromDate}" 
                                           inputStyleClass="w-100"
                                           class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}">
-                            </p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:calendar>
 
 
                             <p:spacer width="20"></p:spacer> 
@@ -39,11 +39,11 @@
                                 <p:outputLabel value="To Date" class="mx-2" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{pharmacyReportController.toDate}"
+                            <p:calendar value="#{pharmacyReportController.toDate}"
                                           inputStyleClass="w-100"
                                           class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}">
-                            </p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:calendar>
 
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>  
