@@ -443,7 +443,7 @@
                             </h:panelGroup>
                             
                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
-                                <phi:saleBill_Header bill="#{pharmacySaleBhtController.printBill}" ></phi:saleBill_Header>
+                                <phi:saleBill_Header_Inward bill="#{pharmacySaleBhtController.printBill}" />
                             </h:panelGroup>
 
                         </h:panelGroup>

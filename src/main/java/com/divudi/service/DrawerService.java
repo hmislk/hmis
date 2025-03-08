@@ -43,6 +43,8 @@ public class DrawerService {
     DrawerEntryFacade ejbFacade;
     @EJB
     DrawerFacade drawerFacade;
+    @EJB
+    ConfigurationService configurationService;
     DrawerEntry drawerEntry;
 
     // <editor-fold defaultstate="collapsed" desc="UP">
@@ -188,8 +190,12 @@ public class DrawerService {
         }
         System.out.println("Draver & Draver Entry Updated...");
     }
-
+    
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {
+        drawerEntryUpdate(payment, currentDrawer,payment.getCreater() );
+    }
+
+    public void drawerEntryUpdate(Payment payment, Drawer currentDrawer, WebUser user) {
         System.out.println("Drawer Entry Update");
         if (payment == null) {
             return;
@@ -200,7 +206,7 @@ public class DrawerService {
         drawerEntry.setPaymentMethod(payment.getPaymentMethod());
         drawerEntry.setBill(payment.getBill());
         drawerEntry.setDrawer(currentDrawer);
-        drawerEntry.setWebUser(payment.getCreater());
+        drawerEntry.setWebUser(user);
         Double beforeInHandValue = 0.0;
 
         if (payment.getPaymentMethod() != null) {
@@ -537,6 +543,9 @@ public class DrawerService {
                 break;
             default:
                 break;
+        }
+        if (!configurationService.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            canReturn = true;
         }
         return canReturn;
     }

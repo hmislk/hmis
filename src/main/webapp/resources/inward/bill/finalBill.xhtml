@@ -17,7 +17,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-                        <h:outputStylesheet library="css" name="printing.css"/>
+        <h:outputStylesheet library="css" name="printing.css"/>
 
 
         <h:panelGroup id="gpBillPreview" >
@@ -74,7 +74,7 @@
                         </tr>
                         <tr>
                             <td colspan="4">
-                                <h:outputLabel style="font-size: 17px;" value="Tax Invoice"/>
+                                <h:outputLabel style="font-size: 17px;" value="#{configOptionApplicationController.getLongTextValueByKey('Final Bill Title','Tax Invoice')}"/>
                             </td>
                         </tr>
 
@@ -118,29 +118,51 @@
                             </div>
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Address on Final Bill',true)}">
                                 <div class="col-6 W-100 ">
-                                <div class="col-6 d-flex justify-content-between">
-                                    <div class="col-5 w-100 d-flex justify-content-between">
-                                        <h:outputLabel value="Address" />
-                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                    </div>
-                                    <div class="col-7 d-flex w-100">
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}"/>
+                                    <div class="col-6 d-flex justify-content-between">
+                                        <div class="col-5 w-100 d-flex justify-content-between">
+                                            <h:outputLabel value="Address" />
+                                            <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
+                                        </div>
+                                        <div class="col-7 d-flex w-100">
+                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}"/>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient NIC on Final Bill')}">
-                                <div class="col-6 W-100 ">
-                                <div class="col-6 d-flex justify-content-between">
-                                    <div class="col-5 w-100 d-flex justify-content-between">
-                                        <h:outputLabel value="NIC No" />
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Gender/Age on Final Bill',false)}">
+                                <div class="row col-6 d-flex justify-content-between">
+                                    <div class="col-5 d-flex justify-content-between">
+                                        <h:outputLabel value="Patient Age/Sex" />  
                                         <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                     </div>
-                                    <div class="col-7 d-flex w-100">
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic}"/>
+                                    <div class="col-7" >
+                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.ageAsShortString} / #{cc.attrs.bill.patientEncounter.patient.person.sex}"/>
                                     </div>
                                 </div>
-                            </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient NIC on Final Bill',false)}">
+                                <div class="col-6 W-100 ">
+                                    <div class="col-6 d-flex justify-content-between">
+                                        <div class="col-5 w-100 d-flex justify-content-between">
+                                            <h:outputLabel value="NIC No" />
+                                            <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
+                                        </div>
+                                        <div class="col-7 d-flex w-100">
+                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Phone Number on Final Bill',false)}">
+                                <div class="row col-6 d-flex justify-content-between">
+                                    <div class="col-5 d-flex justify-content-between">
+                                        <h:outputLabel value="Phone No" />  
+                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
+                                    </div>
+                                    <div class="col-7" >
+                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.phone}"/>
+                                    </div>
+                                </div>
                             </h:panelGroup>
                         </div>
 
@@ -177,12 +199,12 @@
                             <div class="row col-6 d-flex justify-content-between">
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Guardian on Final Bill',true)}">
                                     <div class="col-5 d-flex justify-content-between">
-                                    <h:outputLabel value="Guardian" />
-                                    <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                </div>
-                                <div class="col-7" >
-                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" />
-                                </div>
+                                        <h:outputLabel value="Guardian" />
+                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
+                                    </div>
+                                    <div class="col-7" >
+                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" />
+                                    </div>
                                 </h:panelGroup>
                             </div>
                             <div class="col-6 W-100 ">
@@ -202,16 +224,16 @@
                             <div class="row col-6 d-flex justify-content-between">
                                 <h:panelGroup rendered="#{cc.attrs.bill.creditCompany ne null}">
                                     <div class="col-5 d-flex justify-content-between">
-                                    <h:outputLabel value="Credit Company " />
-                                    <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                </div>
-                                <div class="col-7" >
-                                    <div class="col-7 d-flex w-100">
-                                        <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
+                                        <h:outputLabel value="Credit Company " />
+                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                     </div>
-                                </div>
+                                    <div class="col-7" >
+                                        <div class="col-7 d-flex w-100">
+                                            <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
+                                        </div>
+                                    </div>
                                 </h:panelGroup>
-                                
+
                             </div>
                             <!--                            <div class="col-6 W-100 ">
                                                             <div class="col-6 d-flex justify-content-between">
@@ -241,7 +263,7 @@
                                     <h:outputLabel value="Charge (Rs.)" />
                                 </td>
                             </tr>
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
+                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Organized Final Bill Charge Types',false)}" >
                                 <h:panelGroup rendered="#{(bip.adjustedValue!=0 and  bip.inwardChargeType ne 'ProfessionalCharge' )
                                                           or
                                                           (bip.adjustedValue!=0 and cc.attrs.showProfessional eq true and bip.inwardChargeType eq 'ProfessionalCharge')}" 
@@ -282,7 +304,7 @@
                                                         </ui:repeat>   
                                                     </table>
                                                 </h:panelGroup>
-                                                <h:panelGroup >
+                                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Room Charges Details in Final Bill',false)}" >
                                                     <table>                                          	 
                                                         <ui:repeat value="#{bip.billFees}" var="fe">
                                                             <h:panelGroup >
@@ -330,6 +352,195 @@
                                     </tr>
                                 </h:panelGroup>
                             </ui:repeat>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Organized Final Bill Charge Types',false)}">
+                                <!-- Loop through RoomCharges first -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'RoomCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                                <h:panelGroup style="font-size: 10px;">
+                                                    <h:panelGroup rendered="#{!(bip.inwardChargeType eq 'ProfessionalCharge' and bip.inwardChargeType eq 'RoomCharges')}">
+                                                        &nbsp;
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'RoomCharges'}">
+                                                        <table>
+                                                            <ui:repeat value="#{bip.billFees}" var="fe" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Room Charges Details in Final Bill',false)}">
+                                                                <h:panelGroup>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <h:outputLabel value="#{fe.referencePatientRoom.name}" style="text-align: center; font-size: 9px!important;" />
+                                                                        </td>
+                                                                        <td>
+                                                                            <h:outputLabel value=" || " style="text-align: center; font-size: 9px!important; width: 10px; text-align: left;" />
+                                                                        </td>
+                                                                        <td>
+                                                                            <h:outputLabel value="#{fe.referencePatientRoom.printAdmittedAt}" style="text-align: center; font-size: 9px!important;">
+                                                                                <f:convertDateTime pattern="dd/MM/yyyy hh mm a" />
+                                                                            </h:outputLabel>
+                                                                        </td>
+                                                                        <td>
+                                                                            <h:outputLabel value=" || " style="text-align: center; font-size: 9px!important; width: 20px; text-align: center;" />
+                                                                        </td>
+                                                                        <td>
+                                                                            <h:outputLabel value="#{fe.referencePatientRoom.printDischargeAt}" style="text-align: center; font-size: 9px!important;">
+                                                                                <f:convertDateTime pattern="dd/MM/yyyy hh mm a" />
+                                                                            </h:outputLabel>
+                                                                        </td>
+                                                                    </tr>
+                                                                </h:panelGroup>
+                                                            </ui:repeat>
+                                                        </table>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
+                                <!-- Loop through all other items excluding RoomCharges and ProfessionalCharge -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType ne 'RoomCharges' and bip.inwardChargeType ne 'ProfessionalCharge'and bip.inwardChargeType ne 'DoctorAndNurses' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                                <h:panelGroup style="font-size: 10px;">
+                                                    <h:panelGroup rendered="#{!(bip.inwardChargeType eq 'ProfessionalCharge' and bip.inwardChargeType eq 'RoomCharges' and bip.inwardChargeType eq 'DoctorAndNurses')}">
+                                                        &nbsp;
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{bip.inwardChargeType ne 'RoomCharges' and bip.inwardChargeType ne 'ProfessionalCharge'}">
+                                                        <table>
+                                                            <ui:repeat value="#{bip.proFees}" var="fe">
+                                                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                                                    <tr>
+                                                                        <td style="text-align: left; font-size: 10px!important;">
+                                                                            <h:panelGroup>#{fe.staff.person.nameWithTitle}</h:panelGroup>
+                                                                        </td>
+                                                                        <td style="text-align: right; font-size: 10px!important;">
+                                                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                                                                <f:convertNumber pattern="#,##0.00" />
+                                                                            </h:outputLabel>
+                                                                        </td>
+                                                                    </tr>
+                                                                </h:panelGroup>
+                                                            </ui:repeat>
+                                                        </table>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
+                                <!-- Loop through Doctor and Nurse Charges first (Before ProfessionalCharge) -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'DoctorAndNurses' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                                <h:panelGroup style="font-size: 10px;">
+                                                    <h:panelGroup rendered="#{!(bip.inwardChargeType eq 'ProfessionalCharge' and bip.inwardChargeType eq 'RoomCharges')}">
+                                                        &nbsp;
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'DoctorAndNurses'}">
+                                                        <table>
+                                                            <ui:repeat value="#{bip.billFees}" var="fe" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Doctor and Nurse Charges Details in Final Bill', false)}">
+                                                                <h:panelGroup>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <h:outputLabel value="#{fe.referencePatientRoom.name}" style="text-align: center; font-size: 9px!important;" />
+                                                                        </td>
+                                                                        <td>
+                                                                            <h:outputLabel value=" || " style="text-align: center; font-size: 9px!important; width: 10px; text-align: left;" />
+                                                                        </td>
+                                                                        <td>
+                                                                            <h:outputLabel value="#{fe.referencePatientRoom.printAdmittedAt}" style="text-align: center; font-size: 9px!important;">
+                                                                                <f:convertDateTime pattern="dd/MM/yyyy hh mm a" />
+                                                                            </h:outputLabel>
+                                                                        </td>
+                                                                        <td>
+                                                                            <h:outputLabel value=" || " style="text-align: center; font-size: 9px!important; width: 20px; text-align: center;" />
+                                                                        </td>
+                                                                        <td>
+                                                                            <h:outputLabel value="#{fe.referencePatientRoom.printDischargeAt}" style="text-align: center; font-size: 9px!important;">
+                                                                                <f:convertDateTime pattern="dd/MM/yyyy hh mm a" />
+                                                                            </h:outputLabel>
+                                                                        </td>
+                                                                    </tr>
+                                                                </h:panelGroup>
+                                                            </ui:repeat>
+                                                        </table>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
+                                <!-- Loop through ProfessionalCharge last -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                                <h:panelGroup style="font-size: 10px;">
+                                                    <h:panelGroup rendered="#{!(bip.inwardChargeType eq 'ProfessionalCharge' and bip.inwardChargeType eq 'RoomCharges')}">
+                                                        &nbsp;
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
+                                                        <table>
+                                                            <ui:repeat value="#{bip.proFees}" var="fe">
+                                                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                                                    <tr>
+                                                                        <td style="text-align: left; font-size: 10px!important;">
+                                                                            <h:panelGroup>#{fe.staff.person.nameWithTitle}</h:panelGroup>
+                                                                        </td>
+                                                                        <td style="text-align: right; font-size: 10px!important;">
+                                                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                                                                <f:convertNumber pattern="#,##0.00" />
+                                                                            </h:outputLabel>
+                                                                        </td>
+                                                                    </tr>
+                                                                </h:panelGroup>
+                                                            </ui:repeat>
+                                                        </table>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
+                            </h:panelGroup>
 
 
                             <h:panelGroup>
@@ -410,7 +621,7 @@
 
                             <h:panelGroup rendered="#{cc.attrs.showProfessional}">
                                 <h:panelGroup
-                                        rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountByPatient !=0 }">
+                                    rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountByPatient !=0 }">
 
                                     <tr>
                                         <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
@@ -421,15 +632,16 @@
                                             <table>
                                                 <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
                                                     <h:panelGroup rendered="#{(b.netTotal ne 0 )
-                                                                               and                                                                   	 
-                                                                               ((b.cancelled eq false
-                                                                               and b.billClass eq 'class com.divudi.entity.BilledBill')
-                                                                               or
-                                                                               (b.cancelled eq false
-                                                                               and b.refundedBill eq null
-                                                                               and b.billClass eq 'class com.divudi.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                                              and                                                                   	 
+                                                                              ((b.cancelled eq false
+                                                                              and b.billClass eq 'class com.divudi.entity.BilledBill')
+                                                                              or
+                                                                              (b.cancelled eq false
+                                                                              and b.refundedBill eq null
+                                                                              and b.billClass eq 'class com.divudi.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
                                                             <h:outputLabel value="#{b.deptId}"/>
+                                                            <h:outputLabel value="#{b.paymentMethod}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Method on Payments on Final Bill On Final Bill Print',false)}"/>
                                                             <h:outputLabel value="#{b.netTotal}"
                                                                            style="width: 30px; text-align: right;">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -451,7 +663,7 @@
                                 </h:panelGroup>
 
                                 <h:panelGroup
-                                        rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountBySponsor !=0 }">
+                                    rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountBySponsor !=0 }">
                                     <tr>
                                         <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
                                             <h:outputLabel value="Paid By Company "
@@ -461,13 +673,13 @@
                                             <table>
                                                 <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
                                                     <h:panelGroup rendered="#{(b.netTotal ne 0 )
-                                                                               and
-                                                                               ((b.cancelled eq false
-                                                                               and b.billClass eq 'class com.divudi.entity.BilledBill')
-                                                                               or
-                                                                               (b.cancelled eq false
-                                                                               and b.refundedBill eq null
-                                                                               and b.billClass eq 'class com.divudi.entity.RefundBill')) and b.billTypeAtomic eq 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                                              and
+                                                                              ((b.cancelled eq false
+                                                                              and b.billClass eq 'class com.divudi.entity.BilledBill')
+                                                                              or
+                                                                              (b.cancelled eq false
+                                                                              and b.refundedBill eq null
+                                                                              and b.billClass eq 'class com.divudi.entity.RefundBill')) and b.billTypeAtomic eq 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
                                                             <h:outputLabel  value="#{b.deptId}"/>
                                                             <h:outputLabel value="#{b.netTotal}" style="width: 30px; text-align: right;">

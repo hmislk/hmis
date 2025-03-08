@@ -74,27 +74,18 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="padding: 2px;">Name :</td>
-                            <td style="padding: 2px;" colspan="4">
+                            <td style="padding: 2px;" >
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
                             </td>
+                            <td style="padding: 2px;" class="spacer"></td>
+                            <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
+                                <td  style="padding: 2px;">Age/Sex :</td>
+                                <td style="padding: 2px;" >
+                                    <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
+                                </td>
+                            </h:panelGroup>
                         </tr>
                     </h:panelGroup>
-
-                    <tr>
-                        <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
-                            <td  style="padding: 2px;">Age/Sex :</td>
-                            <td style="padding: 2px;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
-                            </td>
-                        </h:panelGroup>
-                        <td style="padding: 2px;" class="spacer"></td>
-                        <td style="padding: 2px;">Mobile :</td>
-                        <td style="padding: 2px;">
-                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" >
-                                <f:convertDateTime pattern="HH:mm a" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
 
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
@@ -111,34 +102,13 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
                     <tr>
                         <td style="padding: 2px;">Bill No:</td>
                         <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
                         <td style="padding: 2px;" class="spacer"></td>
-                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}" >
-                            <td style="padding: 2px;">Payment :</td>
-                            <td style="padding: 2px;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
-                            </td>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
-                            <td style="padding: 2px;">BHT No : </td>
-                            <td style="padding: 2px;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/>
-                            </td>
-                        </h:panelGroup>
+                        <td style="padding: 2px;" ><h:outputLabel value="BHT No : " rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
+                        <td style="padding: 2px;" ><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
                     </tr>
-
-                    <h:panelGroup rendered="#{cc.attrs.bill.referredBy ne null}" >
-                        <tr>
-                            <td style="padding: 2px;">Ref. Doctor :</td>
-                            <td style="padding: 2px;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}"/>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
-
                 </table>
 
                 <!-- Separator Line -->
@@ -160,7 +130,7 @@
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
                                 <td>#{item.item.name}</td>
                                 <td style="text-align: right">
-                                    <h:outputLabel value="#{item.grossValue}">
+                                    <h:outputLabel value="#{item.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -174,16 +144,15 @@
 
                 <!-- Totals Table -->
                 <table class="total-table">
-                    <tr>
-                        <td >Total:</td>
-                        <td  style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}" >
+                        <tr>
+                            <td >Total:</td>
+                            <td  style="text-align: right;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
                         <tr>
                             <td >Discount:</td>
                             <td  style="text-align: right;">
@@ -192,16 +161,17 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                        <tr>
-                            <td >Net Total:</td>
-                            <td style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
 
                     </h:panelGroup>
+
+                    <tr>
+                        <td >Net Total:</td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
                     <tr>
                         <td >No of Items:</td>
