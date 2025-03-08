@@ -19,19 +19,24 @@
                     <f:facet name="header">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <h:outputLabel value="Inward Final Bill"/>
+                                <h:outputText styleClass="fas fa-file-invoice-dollar" />
+                                <h:outputLabel value="Inward Final Bill" class="mx-2"/>
                             </div>
                             <div>
-                                <p:commandButton update="dList tot @all settle" value="Process"
+                                <p:commandButton update="dList tot @all settle" 
+                                                 value="Process"
                                                  actionListener="#{bhtSummeryController.updateTotal()}"
                                                  process="@this"
-                                                 class="ui-button-warning" icon="fas fa-cog"
+                                                 class="ui-button-warning mx-1" 
+                                                 icon="fas fa-cog"
                                                  style="width: 150px; padding: 1px; margin: auto;"/>
-                                <p:commandButton value="Settle" action="#{bhtSummeryController.settle}"
+                                <p:commandButton value="Settle" 
+                                                 action="#{bhtSummeryController.settle}"
                                                  id="settle"
                                                  ajax="false"
                                                  disabled="#{bhtSummeryController.changed}"
-                                                 class="ui-button-success"
+                                                 class="ui-button-success mx-1"
+                                                 icon="fa fa-check"
                                                  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
 
                                 </p:commandButton>
