@@ -59,21 +59,21 @@
                                     </f:facet>
                                     <h:panelGrid columns="3" class="w-100">
                                         <h:outputText value="Date and Time of Admission" />
-                                        <p:outputLabel value=" : " />
+                                        <p:outputLabel value=" : &nbsp; &nbsp;" />
                                     <p:outputLabel value="#{bhtSummeryController.patientEncounter.dateOfAdmission}" >
                                         <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
                                     </p:outputLabel>
 
                                     <!-- Date and time input for discharge -->
                                     <h:outputText value="Date and Time of Discharge" />
-                                    <p:outputLabel value=" : " />
+                                    <p:outputLabel value=" : &nbsp; &nbsp;" />
                                     <p:outputLabel value="#{bhtSummeryController.patientEncounter.dateOfDischarge}" >
                                         <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
                                     </p:outputLabel>
 
                                     <!-- Displaying the calculated duration automatically -->
                                     <p:outputLabel value="Duration" />
-                                    <p:outputLabel value=" : " />
+                                    <p:outputLabel value=" : &nbsp; &nbsp;" />
                                     <h:outputText value="#{bhtSummeryController.duration}" rendered="#{not empty bhtSummeryController.duration}" style="font-size: 1.2em; font-weight: 600" />
                                     </h:panelGrid>
                                 </p:panel>
@@ -84,15 +84,15 @@
                                         <h:outputLabel value="Edit Basic Details"/>
                                     </f:facet>
                                     <h:panelGrid columns="3" class="w-100">
-                                        <h:outputLabel value="Printing Admission Time"/>
-                                        <h:outputLabel value=" : "/>
+                                        <h:outputLabel value="Printing Admission Time" class="my-3"/>
+                                        <h:outputLabel value=" : &nbsp; &nbsp;"/>
                                         <p:calendar
                                             value="#{bhtSummeryController.patientEncounter.printingAdmissionTime}"
                                             id="printingAdmissionTimeStamp"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                                         </p:calendar>
-                                        <h:outputLabel value="Printing Discharge Time"/>
-                                        <h:outputLabel value=" : "/>
+                                        <h:outputLabel value="Printing Discharge Time" class="my-3"/>
+                                        <h:outputLabel value=" : &nbsp; &nbsp;"/>
                                         <p:calendar
                                             value="#{bhtSummeryController.patientEncounter.printingDischargeTime}"
                                             id="printingDischargeTimeStamp"
@@ -105,8 +105,8 @@
                                         <h:outputLabel value="Discount Details"/>
                                     </f:facet>
                                     <h:panelGrid columns="3" class="w-100">
-                                        <h:outputLabel value="Discount Ammount"/>
-                                        <h:outputLabel value=" : "/>
+                                        <h:outputLabel value="Discount Amount &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"/>
+                                        <h:outputLabel value=" :  &nbsp; &nbsp;"/>
                                         <p:inputText value="#{bhtSummeryController.discount}">
                                             <p:ajax process="@this" update="@all" event="change"
                                                     listener="#{bhtSummeryController.listnerDiscontAmmountChanged() }"/>
