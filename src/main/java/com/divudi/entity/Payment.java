@@ -967,5 +967,10 @@ public class Payment implements Serializable, RetirableEntity  {
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
     }
+    
+    @Transient
+    public Double getAbsolutePaidValueTransient(){
+        return Math.abs(this.paidValue);
+    }
 
 }

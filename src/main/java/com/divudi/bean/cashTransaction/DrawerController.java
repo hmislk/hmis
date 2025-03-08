@@ -109,7 +109,7 @@ public class DrawerController implements Serializable {
         }
 
         //update Drover History
-        drawerEntryUpdate(payment, drawer);
+        drawerEntryUpdate(payment, drawer, webUser);
 
         synchronized (drawer) {
             switch (payment.getPaymentMethod()) {
@@ -219,6 +219,10 @@ public class DrawerController implements Serializable {
 
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {
         drawerService.drawerEntryUpdate(payment, currentDrawer);
+    }
+
+    public void drawerEntryUpdate(Payment payment, Drawer currentDrawer, WebUser user) {
+        drawerService.drawerEntryUpdate(payment, currentDrawer, user);
     }
 
     public void updateDrawerForOuts(List<Payment> payments) {
