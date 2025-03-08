@@ -15,61 +15,59 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="fund_bill_five_five.css" ></h:outputStylesheet>
-        <div class="fiveinchbill">
+        <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note CSS')}">
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Header CSS')}" >
                 <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Header Text')}" escape="false" ></h:outputText>
-            </div>
-
-            <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Float Receive Note"/>
-                <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
             </div>
 
             <div class="billline">
                 <hr/>
             </div>
 
-            <div class="billDetailsFiveFive">
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Title CSS')}">
+                <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Title CSS', 'Float Receive Note')}"/>
+                <h:outputLabel value=" - **Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
+                <hr/>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Bill Detail CSS')}">
                 <table style="width: 99%!important;">
                     <tr>
-                        <td style="text-align: left;">
-                            <h:outputLabel value="From" class="billDetailsFiveFive"></h:outputLabel>
-                        </td>
-                        <td style="width: 10px;"></td>
-                        <td>:</td>
-                        <td style="width: 5px;"></td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}" class="billDetailsFiveFive"></h:outputLabel>
-                        </td>
-                        <td style="width: 50px;"></td>
-                        <td>
-                            <h:outputLabel value="Transferred At" class="billDetailsFiveFive"></h:outputLabel>
+                            <h:outputLabel value="From" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="Transferred At" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                             </h:outputLabel>
                         </td>
                     </tr>
                     <tr>
-                        <td style="text-align: left;">
-                            <h:outputLabel value="To Staff" class="billDetailsFiveFive"></h:outputLabel>
-                        </td>
-                        <td style="width: 10px;"></td>
-                        <td>:</td>
-                        <td style="width: 5px;"></td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" class="billDetailsFiveFive"></h:outputLabel>
-                        </td>
-                        <td style="width: 50px;"></td>
-                        <td>
-                            <h:outputLabel value="Received At" class="billDetailsFiveFive"></h:outputLabel>
+                            <h:outputLabel value="To Staff" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="Received At" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -77,16 +75,16 @@
                 </table>
             </div>
 
-            <div class="billline">
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
                 <hr/>
             </div>
 
-            <div class="itemHeadingsFiveFive">
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Bill Detail CSS')}">
                 <table width="100%">
                     <ui:repeat value="#{cc.attrs.bill.payments}" var="bip">
                         <tr>
                             <td style="overflow: visible;">
-                                <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.paymentMethod}" style="text-transform: capitalize!important;"></h:outputLabel>
+                                <h:outputLabel value="#{bip.paymentMethod}" ></h:outputLabel>
                             </td>
                             <td>
                                 <h:panelGroup rendered="#{bip.paymentMethod eq 'Cash'}">
@@ -123,11 +121,6 @@
                                     <h:outputText value=" #{bip.comments}" />
                                 </h:panelGroup>
                             </td>
-                            <td style="text-align: right;">
-                                <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.paidValue}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
                         </tr>
                     </ui:repeat>
                 </table>
@@ -153,15 +146,6 @@
                     </h:panelGroup>
                 </table>
             </div>
-
-            <div class="billline">
-                <hr/>
-            </div>
-
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer CSS')}" >
-                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer Text')}" escape="false" ></h:outputText>
-            </div>
-
 
         </div>
     </cc:implementation>
