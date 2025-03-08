@@ -190,8 +190,12 @@ public class DrawerService {
         }
         System.out.println("Draver & Draver Entry Updated...");
     }
-
+    
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {
+        drawerEntryUpdate(payment, currentDrawer,payment.getCreater() );
+    }
+
+    public void drawerEntryUpdate(Payment payment, Drawer currentDrawer, WebUser user) {
         System.out.println("Drawer Entry Update");
         if (payment == null) {
             return;
@@ -202,7 +206,7 @@ public class DrawerService {
         drawerEntry.setPaymentMethod(payment.getPaymentMethod());
         drawerEntry.setBill(payment.getBill());
         drawerEntry.setDrawer(currentDrawer);
-        drawerEntry.setWebUser(payment.getCreater());
+        drawerEntry.setWebUser(user);
         Double beforeInHandValue = 0.0;
 
         if (payment.getPaymentMethod() != null) {

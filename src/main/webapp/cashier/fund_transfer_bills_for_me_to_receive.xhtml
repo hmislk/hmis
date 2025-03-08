@@ -26,15 +26,8 @@
                         </h:panelGroup>
                     </div>
                     <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" >
-                        <p:panel header="Funds" >
-                            <p:commandButton 
-                                value="To Receive"
-                                action="#{financialTransactionController.navigateToReceiveNewFundTransferBill()}"
-                                ajax="false"
-                                class="my-2 ui-button-success"
-                                >
+                        <p:panel header="Floats for me to Received" >
 
-                            </p:commandButton>
 
 
                             <p:dataTable
@@ -53,32 +46,35 @@
                                     <h:outputText value="#{bp.createdAt}" />
                                 </p:column>
 
-                                <p:column headerText="Payment Method">
-                                    <h:outputText value="#{bp.paymentMethod}" />
+                                <p:column headerText="Payments">
+                                    <ui:repeat
+                                        id="subTblbill"
+                                        value="#{bp.payments}" 
+                                        var="payment" >
+                                        <h:outputText value="#{payment.paymentMethod}" />
+                                        <h:outputText value=" : " />
+                                        <h:outputText value="#{payment.absolutePaidValueTransient}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <h:outputText value=", " />
+                                    </ui:repeat>
                                 </p:column>
 
                                 <p:column headerText="Net Total">
                                     <h:outputText value="#{bp.netTotal}" />
                                 </p:column>
 
-                                <!-- Subtable Column -->
-                                <p:column headerText="Payments">
-                                    <p:dataTable
-                                        id="subTblbill"
-                                        value="#{bp.payments}" 
-                                        var="payment" 
-                                        rowKey="#{payment.id}">
-                                        <p:column headerText="Payment Method">
-                                            <h:outputText value="#{payment.paymentMethod}" />
-                                        </p:column>
-                                        <p:column headerText="Paid Value">
-                                            <h:outputText value="#{payment.paidValue}" />
-                                        </p:column>
-
-                                        <!-- Add more columns for payment details if needed -->
-
-                                    </p:dataTable>
+                                <p:column headerText="Actions" >
+                                    <p:commandButton 
+                                        value="To Receive"
+                                        action="#{financialTransactionController.navigateToReceiveFloatTransferForMe(bp)}"
+                                        ajax="false"
+                                        class="my-2 ui-button-success"
+                                        >
+                                    </p:commandButton>
                                 </p:column>
+
+
 
                             </p:dataTable>
 
