@@ -6,6 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.BankAccountType;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
@@ -55,6 +56,7 @@ import com.divudi.data.lab.Priority;
 import com.divudi.data.lab.SearchDateType;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
+import com.divudi.entity.hr.BankAccount;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -466,9 +468,9 @@ public class EnumController implements Serializable {
     public BillTypeAtomic[] getBillTypesAtomic() {
         return BillTypeAtomic.values();
     }
-    
+
     public List<BillTypeAtomic> getBillTypesAtomicForLabTests() {
-        List<BillTypeAtomic> btas= new ArrayList<>();
+        List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.CC_BILL);
         btas.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.CC_BILL_REFUND);
@@ -819,7 +821,7 @@ public class EnumController implements Serializable {
             PaymentMethod.ewallet};
         return p;
     }
-    
+
     public PaymentMethod[] getPaymentMethodsForSupplierPayments() {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Card,
@@ -908,6 +910,10 @@ public class EnumController implements Serializable {
 
     public PaymentMethod[] getAllPaymentMethods() {
         return PaymentMethod.values();
+    }
+
+    public List<BankAccountType> getBankAccountTypes() {
+        return BankAccountType.getAllValues();
     }
 
     public List<PaymentMethod> getActivePaymentMethods() {

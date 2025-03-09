@@ -10,17 +10,17 @@
         <ui:composition template="/cashier/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel class="mt-3">
+                    <p:panel class="m-1 w-100">
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <div class="d-flex gap-3">
-                                    <i class="pi pi-folder-open" style="font-size: 30px; color: #487bff; font-weight: 700;" />
-                                    <h:outputText style="font-size: 25px; font-weight: 700;" value="My Drawer History" />
+                                <div >
+                                    <i class="pi pi-folder-open"  />
+                                    <h:outputText  value="&nbsp;&nbsp; My Drawer History" />
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <p:outputLabel style="font-size: 25px; font-weight: 700;" value="#{sessionController.loggedUser.name}" />
-                                    <p:outputLabel style="font-size: 25px; font-weight: 700;" value="-" />
-                                    <p:outputLabel style="font-size: 25px; font-weight: 700;" value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}" />
+                                <div class="float-end">
+                                    <p:outputLabel  value="#{sessionController.loggedUser.name}" />
+                                    <p:outputLabel  value="-" />
+                                    <p:outputLabel  value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}" />
                                 </div>
                             </div>
                         </f:facet>
@@ -86,7 +86,7 @@
                             rowsPerPageTemplate="5,10,15,20,{ShowAll|'All'}">
 
 
-                            <p:column headerText="Bill" style=" padding: 6px;" width="15em;">
+                            <p:column headerText="Bill No." width="15em;">
                                 <p:commandLink 
                                     value="#{drawerentry.bill.deptId}" 
                                     ajax="false"
@@ -94,14 +94,18 @@
                                     <f:setPropertyActionListener value="#{drawerentry.bill}" target="#{billSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
+                            
+                            <p:column headerText="Bill Type" style=" padding: 6px;" width="15em;">
+                                <h:outputText value="#{drawerentry.bill.billTypeAtomic.label}"></h:outputText>
+                            </p:column>
 
-                            <p:column headerText="Date/Time" style=" padding: 6px;">
+                            <p:column headerText="Date/Time"  width="6em" >
                                 <h:outputText value="#{drawerentry.bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Payment Method" style=" padding: 6px; text-align: center;">
+                            <p:column headerText="Payment Method"  width="6em" >
                                 <div class="d-flex justify-content-center">
                                     <p:badge rendered="#{drawerentry.paymentMethod eq 'Cash'}"  value="#{drawerentry.paymentMethod}" severity="success" styleClass="mr-2"></p:badge>
                                     <p:badge rendered="#{drawerentry.paymentMethod eq 'Card'}"  value="#{drawerentry.paymentMethod}" severity="warning" styleClass="mr-2"></p:badge>     
@@ -109,20 +113,20 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Before in Hand" style="background-color: c4fcff; text-align: right; padding: 6px;">
+                            <p:column headerText="Before in Hand"  class="text-end" width="6em" >
                                 <p:outputLabel value="#{drawerentry.beforeInHandValue}" class="d-flex justify-content-end">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Paid" style="text-align: right; padding: 6px;" >
+                            <p:column headerText="Paid"  class="text-end" width="6em" >
                                 <p:outputLabel 
-                                    value="#{drawerentry.payment.paidValue}" class="d-flex justify-content-end" >
+                                    value="#{drawerentry.transactionValue}" class="d-flex justify-content-end" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="After in Hand" style="background-color: c4fcff; text-align: right; padding: 6px;" >
+                            <p:column headerText="After in Hand" class="text-end" width="6em" >
                                 <p:outputLabel 
                                     value="#{drawerentry.afterInHandValue}" class="d-flex justify-content-end">
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -131,7 +135,7 @@
 
 
 
-                            <p:column headerText="Before Balance" style="background-color: b8ffc7; text-align: right; padding: 6px;" >
+<!--                            <p:column headerText="Before Balance" style="background-color: b8ffc7; text-align: right; padding: 6px;" >
                                 <p:outputLabel 
                                     value="#{drawerentry.beforeBalance}" class="d-flex justify-content-end" >
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -143,7 +147,7 @@
                                     value="#{drawerentry.afterBalance}" class="d-flex justify-content-end" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
-                            </p:column>
+                            </p:column>-->
 
                         </p:dataTable>
 

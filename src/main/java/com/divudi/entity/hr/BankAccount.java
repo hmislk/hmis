@@ -4,15 +4,20 @@
  */
 package com.divudi.entity.hr;
 
+import com.divudi.data.BankAccountType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
@@ -23,20 +28,36 @@ import javax.persistence.Temporal;
 @Entity
 
 public class BankAccount implements Serializable {
-//    @OneToOne(mappedBy = "bankAccount")
-    private Staff staff;
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;  
-    @ManyToOne
-    private Institution bankBranch;   
-    private String accountNo;
-    
-    @ManyToOne
-    private Institution bank;
+
     @ManyToOne
     private Institution institution;
+    @ManyToOne
+    private Department department;
+    @ManyToOne
+    private Institution bankBranch;   
+    @ManyToOne
+    private Institution bank;
+
+
+    
+    private String accountNo;
+    private String accountName;
+    @Lob
+    private String description;
+    
+    @ManyToOne
+    private Staff staff;
+    @ManyToOne
+    private WebUser webUser;
+    @Enumerated(EnumType.STRING)
+    private BankAccountType bankAccountType;
+    
+    
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -193,5 +214,48 @@ public class BankAccount implements Serializable {
     public void setEditedAt(Date editedAt) {
         this.editedAt = editedAt;
     }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
+    public BankAccountType getBankAccountType() {
+        return bankAccountType;
+    }
+
+    public void setBankAccountType(BankAccountType bankAccountType) {
+        this.bankAccountType = bankAccountType;
+    }
+    
+    
+    
     
 }
