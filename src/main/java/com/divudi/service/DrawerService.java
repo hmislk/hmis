@@ -314,6 +314,8 @@ public class DrawerService {
         drawerEntry = new DrawerEntry();
         drawerEntry.setPaymentMethod(paymentMethod);
         drawerEntry.setBill(bill);
+        drawerEntry.setTransactionValue(value);
+        double val = drawerEntry.getAfterBalance();
         drawerEntry.setDrawer(currentDrawer);
         drawerEntry.setWebUser(user);
         Double beforeInHandValue = 0.0;

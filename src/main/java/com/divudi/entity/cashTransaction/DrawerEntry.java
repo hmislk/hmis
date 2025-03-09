@@ -19,17 +19,16 @@ import javax.persistence.Temporal;
 /**
  *
  * @author M H Buddhika Ariyaratne
- * 
+ *
  */
 @Entity
-public class DrawerEntry implements Serializable, RetirableEntity  {
+public class DrawerEntry implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
-    
+
     @ManyToOne
     private Drawer drawer;
     @ManyToOne
@@ -38,6 +37,7 @@ public class DrawerEntry implements Serializable, RetirableEntity  {
     private PaymentMethod paymentMethod;
     private double beforeBalance;
     private double afterBalance;
+    private Double transactionValue;
     private double beforeInHandValue;
     private double afterInHandValue;
     private double beforeShortageExcess;
@@ -46,8 +46,7 @@ public class DrawerEntry implements Serializable, RetirableEntity  {
     private Bill bill;
     @ManyToOne
     private Payment payment;
-    
-    
+
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -194,41 +193,62 @@ public class DrawerEntry implements Serializable, RetirableEntity  {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+
     }
 
+    @Override
     public boolean isRetired() {
         return retired;
     }
 
+    @Override
     public void setRetired(boolean retired) {
         this.retired = retired;
     }
 
+    @Override
     public WebUser getRetirer() {
         return retirer;
     }
 
+    @Override
     public void setRetirer(WebUser retirer) {
         this.retirer = retirer;
     }
 
+    @Override
     public Date getRetiredAt() {
         return retiredAt;
     }
 
+    @Override
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
     }
 
+    @Override
     public String getRetireComments() {
         return retireComments;
     }
 
+    @Override
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
-    
-    
-    
+
+    public Double getTransactionValue() {
+        if (transactionValue == null) {
+            if (payment != null) {
+                transactionValue = payment.getPaidValue();
+            } else {
+                transactionValue = 0.0;
+            }
+        }
+        return transactionValue;
+    }
+
+    public void setTransactionValue(Double transactionValue) {
+        this.transactionValue = transactionValue;
+    }
+
 }
