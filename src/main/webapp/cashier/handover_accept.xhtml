@@ -96,8 +96,6 @@
                                                     <span class="font-weight-bold">Accept</span>
                                                 </div>
                                                 <div class="col-md-8 text-right">
-
-
                                                     <p:commandButton 
                                                         rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}" 
                                                         value="Accept Handover &amp; Write to Cashbook" 
@@ -107,7 +105,6 @@
                                                         onclick="return confirm('Are you sure you want to proceed with the handover?');" 
                                                         action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">
                                                     </p:commandButton>
-
                                                     <p:commandButton 
                                                         value="Reject"
                                                         action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
@@ -117,12 +114,8 @@
                                                         class="m-1 ui-button-danger"
                                                         icon="pi pi-times-circle">
                                                     </p:commandButton>
-
-
                                                 </div>
-
                                             </div>
-
                                         </f:facet>
 
                                         <table class="table table-bordered table-hover w-100">
