@@ -39,8 +39,17 @@
                         action="#{admissionController.navigateToSearchAdmissions()}" 
                         style="float: right;"
                         class="ui-button-secondary m-1"
-                        icon="fa fa-arrow-circle-left">
+                        icon="fa fa-arrow-circle-left" rendered="false">
                     </p:commandButton>
+                    
+                    <p:commandButton 
+                                    ajax="false"
+                                    value="Inpatient Dashboard" 
+                                    icon="fas fa-id-card"
+                                    class="ui-button-secondary  mx-1" 
+                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                    >
+                                </p:commandButton>
 
 
                 </f:facet>
@@ -70,7 +79,7 @@
 
                                 <p:outputLabel value="Issued Lab" style="font-weight: bold"></p:outputLabel>
 
-                                <p:selectOneMenu class="mx-4 w-50"  value="#{inwardReportControllerBht.department}" filter="true">
+                                <p:selectOneMenu class="mx-4 w-50"  value="#{inwardReportControllerBht.department}" filter="true" disabled="true">
                                     <f:selectItem itemLabel="All Lab" ></f:selectItem>
                                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(sessionController.loggedUser.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
                                 </p:selectOneMenu>
@@ -313,7 +322,7 @@
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounterNetTotal}">
+                                        <h:outputLabel value="#{inwardReportControllerBht.labBillItemsToPatientEncounterNetTotal}">
                                             <f:convertNumber pattern="#0.00" />
                                         </h:outputLabel>
                                     </f:facet>
