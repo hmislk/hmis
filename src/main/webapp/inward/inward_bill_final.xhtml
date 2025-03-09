@@ -48,6 +48,30 @@
                                     </f:facet>
                                     <in:bhtDetail admission="#{bhtSummeryController.patientEncounter}"/>
                                 </p:panel>
+                                <p:panel class="my-2">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Admission Duration Details" />
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputText value="Date and Time of Admission" />
+                                        <p:outputLabel value=" : " />
+                                    <p:outputLabel value="#{bhtSummeryController.patientEncounter.dateOfAdmission}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                    </p:outputLabel>
+
+                                    <!-- Date and time input for discharge -->
+                                    <h:outputText value="Date and Time of Discharge" />
+                                    <p:outputLabel value=" : " />
+                                    <p:outputLabel value="#{bhtSummeryController.patientEncounter.dateOfDischarge}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                    </p:outputLabel>
+
+                                    <!-- Displaying the calculated duration automatically -->
+                                    <p:outputLabel value="Duration" />
+                                    <p:outputLabel value=" : " />
+                                    <h:outputText value="#{bhtSummeryController.duration}" rendered="#{not empty bhtSummeryController.duration}" style="font-size: 1.2em; font-weight: 600" />
+                                    </h:panelGrid>
+                                </p:panel>
                             </h:panelGroup>
                             <h:panelGroup class="mx-1">
                                 <p:panel style="min-height: 100%" class="mx-1">
@@ -147,11 +171,11 @@
                     </div>
 
                     <p:dataTable id="dList" value="#{bhtSummeryController.chargeItemTotals}" var="c" scrollable="true"
-                                 scrollHeight="300">
-                        <p:column headerText="Inward Charge Type">
+                                 scrollHeight="300" >
+                        <p:column headerText="Inward Charge Type" filterBy="#{c.inwardChargeType.name}" filterMatchMode="contains">
                             <h:outputLabel value="#{c.inwardChargeType.name}"/>
                         </p:column>
-                        <p:column headerText="Total">
+                        <p:column headerText="Total" sortBy="#{c.total}">
                             <h:outputLabel value="#{c.total}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
@@ -588,11 +612,11 @@
                                                              class="mx-2">
                                         <p:ajax process="@this" update="@all"/>
                                     </p:selectBooleanCheckbox>
-                                    
+
                                     <p:commandButton value="Final Bill" ajax="false"
-                                                         class="ui-button-info mx-1" icon="fas fa-print">
-                                            <p:printer target="finalBillOnly"/>
-                                        </p:commandButton>
+                                                     class="ui-button-info mx-1" icon="fas fa-print">
+                                        <p:printer target="finalBillOnly"/>
+                                    </p:commandButton>
 
                                     <h:panelGroup
                                         rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
@@ -673,9 +697,9 @@
                                       rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
                             <div style="page-break-before: always;">
                                 <h:panelGroup id="finalBillOnly">
-                                     <bi:finalBill
-                                    bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
-                                    hosCopy="true"/>
+                                    <bi:finalBill
+                                        bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                        hosCopy="true"/>
                                 </h:panelGroup>
                             </div>
 

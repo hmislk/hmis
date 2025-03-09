@@ -354,7 +354,6 @@ public class Bill implements Serializable, RetirableEntity {
     @Lob
     private String paymentGenerationComments;
 
-    
     private boolean paymentApproved;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser paymentApprovedBy;
@@ -1059,6 +1058,21 @@ public class Bill implements Serializable, RetirableEntity {
 
     public double getNetTotal() {
         return netTotal;
+    }
+
+    @Transient
+    public Double getAbsoluteNetTotalTransient() {
+        return Math.abs(netTotal);
+    }
+
+    @Transient
+    public Double getAbsoluteGrossTotalTransient() {
+        return Math.abs(total);
+    }
+
+    @Transient
+    public Double getAbsoluteDiscountTransient() {
+        return Math.abs(discount);
     }
 
     public void setNetTotal(double netTotal) {
@@ -2534,7 +2548,7 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public PharmacyBill getPharmacyBill() {
-        if(pharmacyBill==null){
+        if (pharmacyBill == null) {
             pharmacyBill = new PharmacyBill();
             pharmacyBill.setBill(this);
         }
@@ -2668,8 +2682,4 @@ public class Bill implements Serializable, RetirableEntity {
         this.tmpComments = tmpComments;
     }
 
-    
-    
-    
-    
 }

@@ -23,7 +23,7 @@
                         ajax="false"
                         class="ui-button-primary m-1"
                         icon="fa fa-download">
-                        <p:dataExporter fileName="Inpatient Medicine Issue" target="tbl1" type="xlsx"></p:dataExporter>
+                        <p:dataExporter fileName="Inpatient Lab Investigation List" target="tbl1" type="xlsx"></p:dataExporter>
                     </p:commandButton>
 
                     <p:commandButton 
@@ -68,16 +68,16 @@
                         <p:panel>
                             <f:facet name="header">
 
-                                <p:outputLabel value="Medicine Issued Department" style="font-weight: bold"></p:outputLabel>
+                                <p:outputLabel value="Issued Lab" style="font-weight: bold"></p:outputLabel>
 
                                 <p:selectOneMenu class="mx-4 w-50"  value="#{inwardReportControllerBht.department}" filter="true">
-                                    <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                    <f:selectItem itemLabel="All Lab" ></f:selectItem>
                                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(sessionController.loggedUser.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
                                 </p:selectOneMenu>
 
                                 <p:commandButton 
                                     value="Process" 
-                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}" 
+                                    action="#{inwardReportControllerBht.navigateToInpatientLabItemList}" 
                                     icon="fa fa-prescription-bottle-alt"
                                     class="ui-button-success"
                                     >
@@ -226,7 +226,7 @@
                                 id="tbl1" 
                                 rowIndexVar="rowIndex" 
                                 
-                                value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounter}"  
+                                value="#{inwardReportControllerBht.labBillItemsToPatientEncounter}"  
                                 var="bip">
 
                                 <f:facet name="header">

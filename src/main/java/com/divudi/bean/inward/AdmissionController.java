@@ -252,6 +252,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void addCreditCompnay() {
+        if (encounterCreditCompany.getCreditLimit() <= 0) {
+            JsfUtil.addErrorMessage("Credit limit must be greater than zero");
+            return;
+        }
         // need to add encounterCreditCompany to list
         if (encounterCreditCompany.getInstitution() != null) {
             encounterCreditCompany.setPatientEncounter(current);
@@ -620,7 +624,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             j += "  and c.parentEncounter=:pent ";
             m.put("pent", parentAdmission);
         }
-        
+
         if (admissionTypeForSearch != null) {
             j += "  and c.admissionType=:at ";
             m.put("at", admissionTypeForSearch);
@@ -628,7 +632,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
-    
+
     public void searchAdmissionsWithoutRoom() {
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select date");
@@ -724,7 +728,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         bhtSummeryController.setPatientEncounter(current);
         return bhtSummeryController.navigateToInpatientProfile();
     }
-    
 
     public List<Admission> completeAdmission(String query) {
         List<Admission> suggestions;
@@ -1120,7 +1123,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
-        
+
         if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             if (getPatientRoom().getRoomFacilityCharge() == null) {
                 JsfUtil.addErrorMessage("Select Room ");
@@ -1170,6 +1173,56 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Guardian Details Required in Patient Admission")) {
+            if (getCurrent().getGuardian() == null) {
+                JsfUtil.addErrorMessage("Guardian is Required");
+                return true;
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Title is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getTitle() == null) {
+                    JsfUtil.addErrorMessage("Guardian Title is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Name is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getName() == null || getCurrent().getGuardian().getName().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Name is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian NIC is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getNic() == null || getCurrent().getGuardian().getNic().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian NIC is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Address is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getAddress() == null || getCurrent().getGuardian().getAddress().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Address is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Mobile Number is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getMobile() == null || getCurrent().getGuardian().getMobile().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Mobile Number is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Relationship is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardianRelationshipToPatient() == null) {
+                    JsfUtil.addErrorMessage("Guardian Relationship is Required");
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
@@ -1268,14 +1321,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void saveSelected() {
-        if(admittingProcessStarted){
+        if (admittingProcessStarted) {
             JsfUtil.addErrorMessage("Admittin process already started.");
             return;
         }
-        admittingProcessStarted=true;
-        
+        admittingProcessStarted = true;
+
         if (errorCheck()) {
-            admittingProcessStarted=false;
+            admittingProcessStarted = false;
             return;
         }
         savePatient();
@@ -1331,10 +1384,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
-        admittingProcessStarted=false;
+        admittingProcessStarted = false;
         printPreview = true;
     }
-    
+
     public void saveConvertSelected() {
         if (errorCheck()) {
             return;
@@ -1389,7 +1442,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         saveEncounterCreditCompanies(current);
-        
+
         getCurrentNonBht().setParentEncounter(current);
         getCurrentNonBht().setDischarged(true);
         getCurrentNonBht().setDateOfDischarge(new Date());
@@ -1940,7 +1993,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.currentNonBht = currentNonBht;
     }
 
-
     public boolean isAdmittingProcessStarted() {
         return admittingProcessStarted;
     }
@@ -1948,7 +2000,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void setAdmittingProcessStarted(boolean admittingProcessStarted) {
         this.admittingProcessStarted = admittingProcessStarted;
     }
-    
 
     public AdmissionType getAdmissionTypeForSearch() {
         return admissionTypeForSearch;
@@ -1957,7 +2008,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void setAdmissionTypeForSearch(AdmissionType admissionTypeForSearch) {
         this.admissionTypeForSearch = admissionTypeForSearch;
     }
-
 
     /**
      *

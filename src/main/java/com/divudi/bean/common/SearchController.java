@@ -66,6 +66,7 @@ import static com.divudi.data.BillClassType.RefundBill;
 
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
+
 import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT;
 import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
 import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
@@ -80,6 +81,7 @@ import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN;
+
 import com.divudi.data.PaymentCategory;
 import com.divudi.data.PaymentStatus;
 import com.divudi.data.PaymentType;
@@ -12083,7 +12085,7 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createInwardServiceTablebyLoggedDepartment() {
+    public void createInwardServiceTableForLab() {
         Date startTime = new Date();
 
         String sql;
@@ -12091,8 +12093,7 @@ public class SearchController implements Serializable {
         sql = "select (b.bill) from BillItem b where "
                 + " b.bill.billType = :billType "
                 + " and b.bill.createdAt between :fromDate and :toDate"
-                + " and b.bill.retired=false  "
-                + " and b.bill.department = :dep";
+                + " and b.bill.retired=false  ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.bill.patientEncounter.patient.person.name) like :patientName )";
@@ -12125,15 +12126,19 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.bill.deptId desc ";
-        temMap.put("dep", getSessionController().getDepartment());
         temMap.put("billType", BillType.InwardBill);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
+        List<Bill> billList = new ArrayList<>();
+        
+        billList = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        
+        Set<Bill> uniqueBills = new HashSet<>(billList);
+                 
+        bills = new ArrayList<>(uniqueBills);
     }
-
+    
     public void createInwardServiceTableDischarged() {
 
         String sql;
@@ -15208,7 +15213,7 @@ public class SearchController implements Serializable {
         // If paymentStatus is ALL, no additional condition is added
 
         // Add other conditions based on your filters
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        List<BillTypeAtomic> btas = visitType.equalsIgnoreCase("OP") ? BillTypeAtomic.findByServiceType(ServiceType.OPD) : BillTypeAtomic.findByServiceType(ServiceType.INWARD);
         bundle.setDescription("Bill Types Listed: " + btas);
         if (!btas.isEmpty()) {
             jpql += " and bi.bill.billTypeAtomic in :bts ";
@@ -17186,9 +17191,10 @@ public class SearchController implements Serializable {
         parameters.put("bfr", true);
         parameters.put("br", true);
 
-        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);;
+        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
+        ;
         if (bookingType != null) {
-            switch (bookingType) {                
+            switch (bookingType) {
                 case "System Bookings":
                     bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
                     break;
