@@ -97,7 +97,17 @@
 
                     </p:panel>
 
-                    <prints:float_transfer_five_five bill="#{financialTransactionController.currentBill}"/>  
+                    <p:commandButton 
+                        value="Print" 
+                        ajax="false" >
+                        <p:printer target="panelPrint"    ></p:printer>
+                    </p:commandButton>
+
+                    <h:panelGroup id="panelPrint" >
+                        <prints:float_transfer_five_five bill="#{financialTransactionController.currentBill}"/>  
+                    </h:panelGroup>
+
+
 
                 </h:form>
             </ui:define>
