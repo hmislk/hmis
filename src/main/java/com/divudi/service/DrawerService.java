@@ -19,6 +19,7 @@ import static com.divudi.data.PaymentMethod.Staff_Welfare;
 import static com.divudi.data.PaymentMethod.Voucher;
 import static com.divudi.data.PaymentMethod.YouOweMe;
 import static com.divudi.data.PaymentMethod.ewallet;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.Drawer;
@@ -302,6 +303,113 @@ public class DrawerService {
 
         //System.out.println("Drawer Entry Created = " + drawerEntry);
     }
+    
+    
+    public void drawerEntryUpdate(Bill bill, Drawer currentDrawer, PaymentMethod paymentMethod, WebUser user, Double value) {
+        System.out.println("Drawer Entry Update");
+        if (bill == null) {
+            return;
+        }
+
+        drawerEntry = new DrawerEntry();
+        drawerEntry.setPaymentMethod(paymentMethod);
+        drawerEntry.setBill(bill);
+        drawerEntry.setDrawer(currentDrawer);
+        drawerEntry.setWebUser(user);
+        Double beforeInHandValue = 0.0;
+
+        if (paymentMethod != null) {
+            switch (paymentMethod) {
+                case Cash:
+                    beforeInHandValue = currentDrawer.getCashInHandValue() != null ? currentDrawer.getCashInHandValue() : 0.0;
+                    break;
+                case Card:
+                    beforeInHandValue = currentDrawer.getCardInHandValue() != null ? currentDrawer.getCardInHandValue() : 0.0;
+                    break;
+                case OnCall:
+                    beforeInHandValue = currentDrawer.getOnCallInHandValue() != null ? currentDrawer.getOnCallInHandValue() : 0.0;
+                    break;
+                case MultiplePaymentMethods:
+                    beforeInHandValue = currentDrawer.getMultiplePaymentMethodsInHandValue() != null ? currentDrawer.getMultiplePaymentMethodsInHandValue() : 0.0;
+                    break;
+                case Staff:
+                    beforeInHandValue = currentDrawer.getStaffInHandValue() != null ? currentDrawer.getStaffInHandValue() : 0.0;
+                    break;
+                case Credit:
+                    beforeInHandValue = currentDrawer.getCreditInHandValue() != null ? currentDrawer.getCreditInHandValue() : 0.0;
+                    break;
+                case Staff_Welfare:
+                    beforeInHandValue = currentDrawer.getStaffWelfareInHandValue() != null ? currentDrawer.getStaffWelfareInHandValue() : 0.0;
+                    break;
+                case Voucher:
+                    beforeInHandValue = currentDrawer.getVoucherInHandValue() != null ? currentDrawer.getVoucherInHandValue() : 0.0;
+                    break;
+                case IOU:
+                    beforeInHandValue = currentDrawer.getIouInHandValue() != null ? currentDrawer.getIouInHandValue() : 0.0;
+                    break;
+                case Agent:
+                    beforeInHandValue = currentDrawer.getAgentInHandValue() != null ? currentDrawer.getAgentInHandValue() : 0.0;
+                    break;
+                case Cheque:
+                    beforeInHandValue = currentDrawer.getChequeInHandValue() != null ? currentDrawer.getChequeInHandValue() : 0.0;
+                    break;
+                case Slip:
+                    beforeInHandValue = currentDrawer.getSlipInHandValue() != null ? currentDrawer.getSlipInHandValue() : 0.0;
+                    break;
+                case ewallet:
+                    beforeInHandValue = currentDrawer.getEwalletInHandValue() != null ? currentDrawer.getEwalletInHandValue() : 0.0;
+                    break;
+                case PatientDeposit:
+                    beforeInHandValue = currentDrawer.getPatientDepositInHandValue() != null ? currentDrawer.getPatientDepositInHandValue() : 0.0;
+                    break;
+                case PatientPoints:
+                    beforeInHandValue = currentDrawer.getPatientPointsInHandValue() != null ? currentDrawer.getPatientPointsInHandValue() : 0.0;
+                    break;
+                case OnlineSettlement:
+                    beforeInHandValue = currentDrawer.getOnlineSettlementInHandValue() != null ? currentDrawer.getOnlineSettlementInHandValue() : 0.0;
+                    break;
+                case None:
+                    beforeInHandValue = currentDrawer.getNoneInHandValue() != null ? currentDrawer.getNoneInHandValue() : 0.0;
+                    break;
+                case YouOweMe:
+                    beforeInHandValue = currentDrawer.getYouOweMeInHandValue() != null ? currentDrawer.getYouOweMeInHandValue() : 0.0;
+                    break;
+                default:
+
+                    break;
+            }
+        }
+
+        drawerEntry.setBeforeInHandValue(beforeInHandValue);
+        drawerEntry.setAfterInHandValue(beforeInHandValue + value);
+        System.out.println("drawerEntry.getAfterInHandValue() = " + drawerEntry.getAfterInHandValue());
+        double totalBalance;
+        if (currentDrawer.getCashInHandValue() == null) {
+            totalBalance = 0.0;
+        } else {
+            totalBalance = currentDrawer.getTotalBalance();
+        }
+        //System.out.println("totalBalance = " + totalBalance);
+
+        drawerEntry.setBeforeBalance(totalBalance);
+        drawerEntry.setAfterBalance(totalBalance + value);
+
+        double totalShortageOrExcess;
+        if (currentDrawer.getCashInHandValue() == null) {
+            totalShortageOrExcess = 0.0;
+        } else {
+            totalShortageOrExcess = currentDrawer.getTotalShortageOrExcess();
+        }
+        //System.out.println("totalShortageOrExcess = " + totalShortageOrExcess);
+
+        drawerEntry.setBeforeShortageExcess(totalShortageOrExcess);
+        drawerEntry.setAfterShortageExcess(totalShortageOrExcess);
+
+        save(drawerEntry);
+
+        //System.out.println("Drawer Entry Created = " + drawerEntry);
+    }
+    
 
     public void updateDrawerForOuts(List<Payment> payments) {
         for (Payment payment : payments) {
