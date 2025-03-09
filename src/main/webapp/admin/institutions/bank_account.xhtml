@@ -31,21 +31,91 @@
                                              update="lstSelect gpDetail msg" icon="fas fa-trash">
                             </p:commandButton>
                             <p:selectOneListbox  id="lstSelect"   value="#{bankAccountController.current}" class="w-100" filter="true">
-                                <f:selectItems  value="#{bankAccountController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.accountNo} - #{myItem.bank.name}" ></f:selectItems>
+                                <f:selectItems 
+                                    value="#{bankAccountController.items}" 
+                                    var="myItem"
+                                    itemValue="#{myItem}" 
+                                    itemLabel="#{myItem.accountName}" ></f:selectItems>
                                 <p:ajax event="change"   update="gpDetail" process="lstSelect" >
                                 </p:ajax>
                             </p:selectOneListbox>
                         </div>
                         <div class="col-md-7">
                             <p:panel id="gpDetail" class="w-100" header="Details of the Branch" >
-                                <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                <p:panelGrid id="gpDetailText" columns="2" class="w-100" layout="tabular">
+                                    <h:outputText  value="Name" ></h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{bankAccountController.current.accountName}"  class="w-100"  ></p:inputText>
+                                    <h:outputText  value="Type" ></h:outputText>
+                                    <p:selectOneMenu value="#{bankAccountController.current.bankAccountType}" >
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                        <f:selectItems 
+                                            value="#{enumController.bankAccountTypes}"
+                                            var="bankAccountType"
+                                            itemLabel="#{bankAccountType.label}"
+                                            itemValue="#{bankAccountType}"></f:selectItems>
+                                    </p:selectOneMenu>
+
                                     <h:outputText  value="Account Number" ></h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{bankAccountController.current.accountNo}"  class="w-100 p-1"  ></p:inputText>
+                                    <p:inputText autocomplete="off"  value="#{bankAccountController.current.accountNo}"  class="w-100"  ></p:inputText>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="cmbIns"
+                                        styleClass="w-100 form-control" 
+                                        value="#{searchController.institution}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Institutions" />
+                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <p:ajax process="cmbIns" update="cmbDept" />
+                                    </p:selectOneMenu>
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Department"  class="mx-3"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="cmbDept">
+
+                                        <!-- Component 1: Without Institution and Site -->
+                                        <p:selectOneMenu
+                                            rendered="#{searchController.institution eq null}"
+                                            styleClass="w-100 form-control"
+                                            value="#{searchController.department}"
+                                            filterMatchMode="contains"
+                                            filter="true">
+                                            <f:selectItem itemLabel="All Departments" />
+                                            <f:selectItems 
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}" />
+                                        </p:selectOneMenu>
+
+                                        <!-- Component 3: With Institution Only -->
+                                        <p:selectOneMenu
+                                            rendered="#{searchController.institution ne null}"
+                                            styleClass="w-100 form-control"
+                                            value="#{searchController.department}"
+                                            filterMatchMode="contains"
+                                            filter="true">
+                                            <f:selectItem itemLabel="All Departments" />
+                                            <f:selectItems 
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}" />
+                                        </p:selectOneMenu>
+
+                                        
+
+                                    </h:panelGroup>
+
                                     <h:outputText value="Bank" ></h:outputText>
-                                    <p:selectOneMenu id="cmbIns" value="#{bankAccountController.current.bank}" class="w-100 p-1" >
+                                    <p:selectOneMenu id="cmbBank" value="#{bankAccountController.current.bank}" class="w-100" >
                                         <f:selectItem itemLabel="Select the Bank" />
                                         <f:selectItems value="#{institutionController.banks}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                        <p:ajax process="cmbIns" update="gpBranch" ></p:ajax>
+                                        <p:ajax process="cmbBank" update="gpBranch" ></p:ajax>
                                     </p:selectOneMenu>
                                     <h:outputText  value="Branch" ></h:outputText>
                                     <h:panelGroup id="gpBranch" >
@@ -53,13 +123,13 @@
                                             id="cmbbB"
                                             rendered="#{bankAccountController.current.bank ne null}"
                                             value="#{bankAccountController.current.bankBranch}" 
-                                            class="w-100 p-1" >
+                                            class="w-100" >
                                             <f:selectItem itemLabel="Select the Brnach" />
                                             <f:selectItems value="#{institutionController.getBranches(bankAccountController.current.bank)}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
                                         </p:selectOneMenu>
                                     </h:panelGroup>
 
-                                </h:panelGrid>
+                                </p:panelGrid>
                                 <p:commandButton id="btnSave" value="Save" 
                                                  icon="fas fa-save"
                                                  action="#{bankAccountController.saveSelected()}" process="btnSave gpDetail" 
