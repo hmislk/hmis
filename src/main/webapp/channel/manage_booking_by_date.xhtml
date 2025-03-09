@@ -98,6 +98,9 @@
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFIvePaperCustom2',true)}">
                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFIvePaperCustom3',true)}">
+                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                    </h:panelGroup>
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFivePrintedPaper',true)}">
                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
@@ -165,6 +168,9 @@
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFIvePaperCustom2',true)}">
                                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFIvePaperCustom3',true)}">
+                                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFivePrintedPaper',true)}">
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
@@ -237,6 +243,9 @@
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Duplicate Bill is FiveFIvePaperCustom2',true)}">
                                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true" />
                                                     </h:panelGroup>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Duplicate Bill is FiveFIvePaperCustom3',true)}">
+                                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true" />
+                                                    </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Duplicate Bill is FiveFivePrintedPaper',true)}">
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true" />
                                                     </h:panelGroup>
@@ -258,7 +267,7 @@
                                 <div class="row">
                                     <f:facet name="header">
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <h:outputLabel value="Reprint(Original)" />
+                                            <h:outputLabel value="Reprint Original" />
                                             <div>
                                                 <p:outputLabel value="Paper Type" class="m-1"></p:outputLabel>
                                                 <p:selectOneMenu
@@ -298,7 +307,6 @@
                                         <div class="d-flex justify-content-center">
                                             <h:panelGroup id="groupChannelBillReprintAsOriginal">
                                                 <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is PosPaper',true)}">
                                                         <ez:bmsChannelBill  bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                                     </h:panelGroup>
@@ -307,6 +315,9 @@
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFIvePaperCustom2',true)}">
                                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFIvePaperCustom3',true)}">
+                                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFivePrintedPaper',true)}">
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
@@ -494,22 +505,22 @@
                                                 <p:panel>
                                                     <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
                                                         <p:commandButton
-                                                                value="Mark Foreigner"
-                                                                class="mx-2 my-2"
-                                                                action="#{bookingControllerViewScope.markAsForeignerWithBillUpdate()}"
-                                                                rendered="#{!bookingControllerViewScope.foriegn}"
-                                                                process="@this"
-                                                                update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
-                                                        >
+                                                            value="Mark Foreigner"
+                                                            class="mx-2 my-2"
+                                                            action="#{bookingControllerViewScope.markAsForeignerWithBillUpdate()}"
+                                                            rendered="#{!bookingControllerViewScope.foriegn}"
+                                                            process="@this"
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                            >
                                                         </p:commandButton>
                                                         <p:commandButton
-                                                                value="Mark Local"
-                                                                class="mx-2"
-                                                                action="#{bookingControllerViewScope.markAsLocalWithBillUpdate()}"
-                                                                rendered="#{bookingControllerViewScope.foriegn}"
-                                                                process="@this"
-                                                                update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
-                                                        >
+                                                            value="Mark Local"
+                                                            class="mx-2"
+                                                            action="#{bookingControllerViewScope.markAsLocalWithBillUpdate()}"
+                                                            rendered="#{bookingControllerViewScope.foriegn}"
+                                                            process="@this"
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                            >
                                                         </p:commandButton>
 
                                                     </h:panelGroup>
@@ -1235,7 +1246,7 @@
                                                 <div class="row">
                                                     <f:facet name="header">
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <h:outputLabel value="Reprint(Original)" />
+                                                            <h:outputLabel value="Reprint Original" />
 
                                                             <div>
                                                                 <p:outputLabel value="Paper Type" class="m-1"></p:outputLabel>
@@ -1287,6 +1298,9 @@
                                                                     </h:panelGroup>
                                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFIvePaperCustom2',true)}">
                                                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFIvePaperCustom3',true)}">
+                                                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                                                     </h:panelGroup>
                                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFivePrintedPaper',true)}">
                                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
@@ -1378,6 +1392,9 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Cancel Bill is FiveFIvePaperCustom2',true)}">
                                                 <ez:fivefivePapaerCustom2  bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Cancel Bill is FiveFIvePaperCustom3',true)}">
+                                                <ez:fivefivePapaerCustom3  bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Cancel Bill is FiveFivePrintedPaper',true)}">
                                                 <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>

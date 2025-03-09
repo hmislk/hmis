@@ -163,63 +163,23 @@ public class InwardReportControllerBht implements Serializable {
 
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-        labBillItemsToPatientEncounter = fetchLabBillItems(patientEncounter, btas);
-
-        btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-        List<BillItem> removingBillItems = fetchLabBillItems(patientEncounter, btas);
-        System.out.println("removingBillItems = " + removingBillItems.size());
-
-        labBillItemsToPatientEncounter = labBillItemsToPatientEncounter.stream()
-                .filter(bi -> bi.getItem().getClass().equals(Investigation.class)) 
+        List<BillItem> labBillItems = new ArrayList<>();
+        labBillItems = fetchLabBillItems(patientEncounter, btas);
+        
+        labBillItems = labBillItems.stream()
+                .filter(bi -> bi.getItem().getClass().equals(Investigation.class))
                 .collect(Collectors.toList());
-
-        removingBillItems = removingBillItems.stream()
-                .filter(bi -> bi.getItem().getClass().equals(Investigation.class)) 
-                .collect(Collectors.toList());
-
-        Map<String, List<BillItem>> groupedItems = labBillItemsToPatientEncounter.stream()
-                .collect(Collectors.groupingBy(bi -> bi.getItem().getName()));
-
-        for (Map.Entry<String, List<BillItem>> entry : groupedItems.entrySet()) {
-            String itemName = entry.getKey();
-            List<BillItem> items = entry.getValue();
-
-            double totalQuantity = 0;
-            double totalNetValue = 0;
-
-            for (BillItem item : items) {
-                totalQuantity += item.getQty();
-                totalNetValue += item.getNetValue();
-            }
-
-            System.out.println("Item: " + itemName + ", Total Quantity: " + totalQuantity + ", Total Net Value: " + totalNetValue);
-        }
-
-        for (BillItem removingItem : removingBillItems) {
-            List<BillItem> groupItems = groupedItems.get(removingItem.getItem().getName());
-
-            if (groupItems != null) {
-                for (BillItem originalItem : groupItems) {
-                    if (originalItem.getId().equals(removingItem.getId())) {
-                        double newQty = originalItem.getQty() - removingItem.getQty();
-                        double newRate = originalItem.getRate(); 
-                        originalItem.setQty(newQty);
-                        originalItem.setNetValue(newQty * newRate);
-                        
-                        if (originalItem.getQty() <= 0) {
-                            groupItems.remove(originalItem);
-                        }
-                        break; 
-                    }
-                }
+        
+        labBillItemsToPatientEncounterNetTotal = 0.0;
+        labBillItemsToPatientEncounter = new ArrayList<>();
+        
+        for(BillItem bi : labBillItems){
+            if(!bi.getBill().isCancelled()){
+                labBillItemsToPatientEncounter.add(bi);
+                labBillItemsToPatientEncounterNetTotal += bi.getNetValue();
             }
         }
-        labBillItemsToPatientEncounter.clear();
-        for (List<BillItem> group : groupedItems.values()) {
-            labBillItemsToPatientEncounter.addAll(group);
-        }
-
+        
         return "/inward/reports/inpatient_lab_investigation_item_list?faces-redirect=true";
     }
 
@@ -229,16 +189,11 @@ public class InwardReportControllerBht implements Serializable {
                 + "where bi.bill.retired = :ret "
                 + "and bi.bill.billTypeAtomic in :billTypesAtomics "
                 + "and bi.bill.patientEncounter = :pe ";
-//                + "and (bi.bill.refundedBill = :reBill "
-//                + "or bi.bill.cancelledBill = :CanBill)";
 
         HashMap<String, Object> params = new HashMap<>();
-
         params.put("ret", false);
         params.put("pe", pt);
         params.put("billTypesAtomics", billTypesAtomics);
-//        params.put("reBill", null);
-//        params.put("CanBill", null);
 
         return billItemFacade.findByJpql(jpql, params);
     }
