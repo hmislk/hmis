@@ -45,7 +45,7 @@
                                                 action="#{searchController.navigateToBillTypeList()}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
 
                                             <p:commandButton 
                                                 ajax="false" 
@@ -173,6 +173,16 @@
                                             </p:commandButton>
                                         </div>
                                     </p:tab>
+                                    <p:tab title="Performance">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Daily Bill Type Counts" 
+                                                action="#{financialTransactionController.navigateToListShiftEndSummaries()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
                                     <p:tab title="OPD Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
@@ -180,7 +190,7 @@
                                                 value="OPD Bill List" 
                                                 action="#{searchController.navigateToOpdBillList()}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton
                                                 ajax="false" 
                                                 value="OPD Summary by Item"

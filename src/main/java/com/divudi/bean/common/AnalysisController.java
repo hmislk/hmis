@@ -45,40 +45,32 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 @SessionScoped
 public class AnalysisController implements Serializable {
 
-    /**
-     * EJBs
-     */
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private ItemFacade itemFacade;
-    /**
-     * Controllers
-     */
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private VmpController vmpController;
-
-    /**
-     * Class Variables
-     */
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String message;
     private Date fromDate;
     private Date toDate;
     private Item item;
     private List<Item> billedItems;
 
-    /**
-     * Constructors
-     */
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
     public AnalysisController() {
     }
 
-    /**
-     * Navigation Methods
-     */
-    /**
-     * Functional Methods
-     */
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Functions">
     public void clearPharmacyBillItemSale() {
         fromDate = null;
         toDate = null;
@@ -96,8 +88,7 @@ public class AnalysisController implements Serializable {
         m.put("ret", false);
         return getItemFacade().findByJpql(j, m);
     }
-    
-    
+
     public List<Item> completeBilledItems(String qry) {
         String j;
         Map m;
@@ -333,13 +324,8 @@ public class AnalysisController implements Serializable {
 
     }
 
-    /**
-     * Getters and Setters
-     */
-    /**
-     *
-     * @return
-     */
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
@@ -393,7 +379,7 @@ public class AnalysisController implements Serializable {
     }
 
     public List<Item> getBilledItems() {
-        if(billedItems==null){
+        if (billedItems == null) {
             billedItems = createBilledItems();
         }
         return billedItems;
@@ -402,7 +388,8 @@ public class AnalysisController implements Serializable {
     public void setBilledItems(List<Item> billedItems) {
         this.billedItems = billedItems;
     }
-    
-    
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
+    // </editor-fold>  
 
 }
