@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
@@ -73,6 +74,8 @@ public class InwardReportControllerBht implements Serializable {
     CommonController commonController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     PatientEncounter patientEncounter;
     Bill bill;
@@ -125,29 +128,63 @@ public class InwardReportControllerBht implements Serializable {
             JsfUtil.addErrorMessage("No encounter");
             return null;
         }
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-        pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
-        pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
-        if (pharmacyIssueBillItemsToPatientEncounter != null) {
-            for (BillItem bi : pharmacyIssueBillItemsToPatientEncounter) {
-                switch (bi.getBill().getBillTypeAtomic()) {
-                    case PHARMACY_DIRECT_ISSUE_CANCELLED:
-                    case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
-                    case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
-                        pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
-                        break;
-                    case PHARMACY_DIRECT_ISSUE:
-                    case DIRECT_ISSUE_INWARD_MEDICINE:
-                        pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
-                        break;
-                }
+        if (configOptionApplicationController.getBooleanValueByKey("Use Legacy Calculation Method for Pharmacy Summary in Inward Patient Profile", true)) {
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
+            pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
+            if (pharmacyIssueBillItemsToPatientEncounter != null) {
+                for (BillItem bi : pharmacyIssueBillItemsToPatientEncounter) {
+                    switch (bi.getBill().getBillTypeAtomic()) {
+                        case PHARMACY_DIRECT_ISSUE_CANCELLED:
+                        case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
+                        case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                            pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
+                            break;
+                        case PHARMACY_DIRECT_ISSUE:
+                        case DIRECT_ISSUE_INWARD_MEDICINE:
+                            pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
+                            break;
+                    }
 
+                }
             }
+        } else {
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            List<BillItem> pharmacyIssuedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
+
+            btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            List<BillItem> pharmacyIssuedReturnedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
+
+            List<BillItem> pharmacyIssuesWithoutCanceled = new ArrayList<>();
+
+            for (BillItem bi : pharmacyIssuedDrugs) {
+                if (!bi.getBill().isCancelled()) {
+                    pharmacyIssuesWithoutCanceled.add(bi);
+                }
+            }
+
+            pharmacyIssueBillItemsToPatientEncounter = new ArrayList<>();
+            pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
+
+            for (BillItem bic : pharmacyIssuesWithoutCanceled) {
+                for (BillItem bir : pharmacyIssuedReturnedDrugs) {
+                    if (bir.getReferanceBillItem() != null && bir.getReferanceBillItem().equals(bic)) {
+                        bic.setQty(bic.getQty() - Math.abs(bir.getQty()));
+                        bic.setNetValue(bic.getNetValue() - Math.abs(bir.getNetValue()));
+                    }
+                }
+                pharmacyIssueBillItemsToPatientEncounter.add(bic);
+                pharmacyIssueBillItemsToPatientEncounterNetTotal += bic.getNetValue();
+            }
+
         }
         //department = null;
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
@@ -163,61 +200,21 @@ public class InwardReportControllerBht implements Serializable {
 
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-        labBillItemsToPatientEncounter = fetchLabBillItems(patientEncounter, btas);
+        List<BillItem> labBillItems = new ArrayList<>();
+        labBillItems = fetchLabBillItems(patientEncounter, btas);
 
-        btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-        List<BillItem> removingBillItems = fetchLabBillItems(patientEncounter, btas);
-        System.out.println("removingBillItems = " + removingBillItems.size());
-
-        labBillItemsToPatientEncounter = labBillItemsToPatientEncounter.stream()
-                .filter(bi -> bi.getItem().getClass().equals(Investigation.class)) 
+        labBillItems = labBillItems.stream()
+                .filter(bi -> bi.getItem().getClass().equals(Investigation.class))
                 .collect(Collectors.toList());
 
-        removingBillItems = removingBillItems.stream()
-                .filter(bi -> bi.getItem().getClass().equals(Investigation.class)) 
-                .collect(Collectors.toList());
+        labBillItemsToPatientEncounterNetTotal = 0.0;
+        labBillItemsToPatientEncounter = new ArrayList<>();
 
-        Map<String, List<BillItem>> groupedItems = labBillItemsToPatientEncounter.stream()
-                .collect(Collectors.groupingBy(bi -> bi.getItem().getName()));
-
-        for (Map.Entry<String, List<BillItem>> entry : groupedItems.entrySet()) {
-            String itemName = entry.getKey();
-            List<BillItem> items = entry.getValue();
-
-            double totalQuantity = 0;
-            double totalNetValue = 0;
-
-            for (BillItem item : items) {
-                totalQuantity += item.getQty();
-                totalNetValue += item.getNetValue();
+        for (BillItem bi : labBillItems) {
+            if (!bi.getBill().isCancelled()) {
+                labBillItemsToPatientEncounter.add(bi);
+                labBillItemsToPatientEncounterNetTotal += bi.getNetValue();
             }
-
-            System.out.println("Item: " + itemName + ", Total Quantity: " + totalQuantity + ", Total Net Value: " + totalNetValue);
-        }
-
-        for (BillItem removingItem : removingBillItems) {
-            List<BillItem> groupItems = groupedItems.get(removingItem.getItem().getName());
-
-            if (groupItems != null) {
-                for (BillItem originalItem : groupItems) {
-                    if (originalItem.getId().equals(removingItem.getId())) {
-                        double newQty = originalItem.getQty() - removingItem.getQty();
-                        double newRate = originalItem.getRate(); 
-                        originalItem.setQty(newQty);
-                        originalItem.setNetValue(newQty * newRate);
-                        
-                        if (originalItem.getQty() <= 0) {
-                            groupItems.remove(originalItem);
-                        }
-                        break; 
-                    }
-                }
-            }
-        }
-        labBillItemsToPatientEncounter.clear();
-        for (List<BillItem> group : groupedItems.values()) {
-            labBillItemsToPatientEncounter.addAll(group);
         }
 
         return "/inward/reports/inpatient_lab_investigation_item_list?faces-redirect=true";
@@ -229,16 +226,11 @@ public class InwardReportControllerBht implements Serializable {
                 + "where bi.bill.retired = :ret "
                 + "and bi.bill.billTypeAtomic in :billTypesAtomics "
                 + "and bi.bill.patientEncounter = :pe ";
-//                + "and (bi.bill.refundedBill = :reBill "
-//                + "or bi.bill.cancelledBill = :CanBill)";
 
         HashMap<String, Object> params = new HashMap<>();
-
         params.put("ret", false);
         params.put("pe", pt);
         params.put("billTypesAtomics", billTypesAtomics);
-//        params.put("reBill", null);
-//        params.put("CanBill", null);
 
         return billItemFacade.findByJpql(jpql, params);
     }
