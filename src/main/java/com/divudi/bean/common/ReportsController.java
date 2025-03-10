@@ -4372,7 +4372,7 @@ public class ReportsController implements Serializable {
         for (ReportTemplateRow row : reportTemplateRows) {
             BillItem item = row.getBillItem();
 
-            if (item.getBill().equals(billItem.getBill())) {
+            if (item.getBill().equals(billItem.getBill()) && billItem.getNetValue() > 0.0) {
                 billItemCount++;
             }
         }
@@ -4574,6 +4574,10 @@ public class ReportsController implements Serializable {
             jpql += "AND bill.patientEncounter.dateOfDischarge BETWEEN :fd AND :td ";
         } else {
             jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        }
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            jpql += "AND billItem.netValue > 0 ";
         }
 
         parameters.put("fd", fromDate);
