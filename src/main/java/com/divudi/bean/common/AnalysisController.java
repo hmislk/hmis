@@ -8,12 +8,16 @@ package com.divudi.bean.common;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.data.BillType;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.inject.Named;
@@ -61,6 +65,11 @@ public class AnalysisController implements Serializable {
     private Date toDate;
     private Item item;
     private List<Item> billedItems;
+    private WebUser webUser;
+    private Institution institution;
+    private Department department;
+    private Institution site;
+    
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -69,6 +78,10 @@ public class AnalysisController implements Serializable {
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
+    public String navigateToDailyBillTypeCounts() {
+        return "/analytics/performance/dailyBillTypeCounts.xhtml";
+    }
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public void clearPharmacyBillItemSale() {
@@ -338,20 +351,26 @@ public class AnalysisController implements Serializable {
         this.message = message;
     }
 
-    public Date getFromDate() {
-        return fromDate;
-    }
-
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    public Date getToDate() {
+     public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
         return toDate;
     }
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
     }
 
     public VmpController getVmpController() {
@@ -385,11 +404,45 @@ public class AnalysisController implements Serializable {
         return billedItems;
     }
 
+    
+    
     public void setBilledItems(List<Item> billedItems) {
         this.billedItems = billedItems;
     }
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Inner Classes">
     // </editor-fold>  
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
 
 }
