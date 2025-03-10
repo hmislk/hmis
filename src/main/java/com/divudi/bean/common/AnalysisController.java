@@ -6,7 +6,11 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.pharmacy.VmpController;
+import com.divudi.data.BillCategory;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.analytics.DailyBillReportBundle;
+import com.divudi.data.analytics.DailyBillTypeSummary;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -15,6 +19,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.java.CommonFunctions;
@@ -23,6 +28,7 @@ import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +38,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -53,6 +60,8 @@ public class AnalysisController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
+    private BillFacade billFacade;
+    @EJB
     private ItemFacade itemFacade;
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -69,7 +78,7 @@ public class AnalysisController implements Serializable {
     private Institution institution;
     private Department department;
     private Institution site;
-    
+    private DailyBillReportBundle dailyBillReportBundle;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -84,6 +93,72 @@ public class AnalysisController implements Serializable {
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Functions">
+    
+    
+    public void processDailyBillTypeCount(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByCategory(BillCategory.BILL));
+        dailyBillReportBundle = generateDailyBillTypeCounts(btas, fromDate, toDate, institution, department, site);
+    }
+    
+    public DailyBillReportBundle generateDailyBillTypeCounts(
+            List<BillTypeAtomic> btas,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramSite) {
+
+        DailyBillReportBundle reportBundle = new DailyBillReportBundle();
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "select new com.yourpackage.DailyBillTypeSummary("
+                + " FUNCTION('DATE', bill.createdAt), bill.billTypeAtomic, count(bill), sum(bill.netTotal)) "
+                + " from Bill bill "
+                + " where bill.retired=false ";
+
+        if (btas != null && !btas.isEmpty()) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", btas);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " and bill.createdAt >= :fd ";
+            parameters.put("fd", paramFromDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and bill.createdAt <= :td ";
+            parameters.put("td", paramToDate);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and bill.department.institution = :ins ";
+            parameters.put("ins", paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and bill.department = :dep ";
+            parameters.put("dep", paramDepartment);
+        }
+
+        if (paramSite != null) {
+            jpql += " and bill.department.site = :site ";
+            parameters.put("site", paramSite);
+        }
+
+        jpql += " group by FUNCTION('DATE', bill.createdAt), bill.billTypeAtomic "
+                + " order by FUNCTION('DATE', bill.createdAt)";
+
+        List<DailyBillTypeSummary> results = (List<DailyBillTypeSummary>) billFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        if (results != null && !results.isEmpty()) {
+            reportBundle.setBillSummaries(results);
+        }
+
+        return reportBundle;
+    }
+
     public void clearPharmacyBillItemSale() {
         fromDate = null;
         toDate = null;
@@ -351,7 +426,7 @@ public class AnalysisController implements Serializable {
         this.message = message;
     }
 
-     public Date getToDate() {
+    public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
         }
@@ -404,8 +479,6 @@ public class AnalysisController implements Serializable {
         return billedItems;
     }
 
-    
-    
     public void setBilledItems(List<Item> billedItems) {
         this.billedItems = billedItems;
     }
@@ -445,4 +518,14 @@ public class AnalysisController implements Serializable {
         this.site = site;
     }
 
+    public DailyBillReportBundle getDailyBillReportBundle() {
+        return dailyBillReportBundle;
+    }
+
+    public void setDailyBillReportBundle(DailyBillReportBundle dailyBillReportBundle) {
+        this.dailyBillReportBundle = dailyBillReportBundle;
+    }
+
+    
+    
 }
