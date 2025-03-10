@@ -382,11 +382,6 @@
                                             </div>
                                         </div>
 
-
-
-
-
-
                                     </div>
                                     <div class="col-6">
                                         <!-- Cancelled Panel -->
@@ -433,10 +428,6 @@
                                                 class="ui-message-success">
                                             </h:outputText>
                                         </p:panel>
-
-
-
-
 
                                         <p:panel 
                                             class="m-1"
@@ -705,7 +696,7 @@
                                                     layout="block"
                                                     id="multiplePaymentMethods"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'MultiplePaymentMethods'}"
                                                     >
-                                                    <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100"/>
+                                                    <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" paymentMethods="#{enumController.paymentMethodsForChanneling}" class="w-100"/>
 
                                                 </h:panelGroup>
                                                 <!-- Agent Payment Method -->
