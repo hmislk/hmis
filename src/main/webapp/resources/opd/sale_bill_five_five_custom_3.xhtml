@@ -22,7 +22,7 @@
 
         <!-- Composite Component Implementation -->
         <cc:implementation>
-            <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+            <h:outputStylesheet library="css" name="opd_bill_five_five_custom_3.css" />
 
 
             <div class="receipt-container">
@@ -91,7 +91,7 @@
                         <tr>
                             <th>No</th>
                             <th>Item Name</th>
-                            <th>Rate</th>
+                            <!--<th>Rate</th>-->
                             <th>Qty</th>
                             <th style="text-align: right">Value</th>
                         </tr>
@@ -102,11 +102,11 @@
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
                                 <td>#{item.item.name}</td>
-                                <td>
-                                    <h:outputLabel value="#{item.rate}">
+<!--                                <td>
+                                    <h:outputLabel value="#{item.netRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </td>
+                                </td>-->
                                 <td>
                                     <h:outputLabel value="#{item.qty}">
                                         <f:convertNumber integerOnly="true" />
