@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -93,14 +94,12 @@ public class AnalysisController implements Serializable {
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Functions">
-    
-    
-    public void processDailyBillTypeCount(){
+    public void processDailyBillTypeCount() {
         List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.addAll(BillTypeAtomic.findByCategory(BillCategory.BILL));
+        btas.addAll(BillTypeAtomic.findAll());
         dailyBillReportBundle = generateDailyBillTypeCounts(btas, fromDate, toDate, institution, department, site);
     }
-    
+
     public DailyBillReportBundle generateDailyBillTypeCounts(
             List<BillTypeAtomic> btas,
             Date paramFromDate,
@@ -112,8 +111,9 @@ public class AnalysisController implements Serializable {
         DailyBillReportBundle reportBundle = new DailyBillReportBundle();
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "select new com.yourpackage.DailyBillTypeSummary("
-                + " FUNCTION('DATE', bill.createdAt), bill.billTypeAtomic, count(bill), sum(bill.netTotal)) "
+        // Use FUNCTION('DATE', bill.createdAt) to extract only the date
+        String jpql = "select new com.divudi.data.analytics.DailyBillTypeSummary("
+                + " FUNCTION('DATE', bill.createdAt), COALESCE(bill.billTypeAtomic, 'UNKNOWN'), count(bill), COALESCE(sum(bill.netTotal), 0.0)) "
                 + " from Bill bill "
                 + " where bill.retired=false ";
 
@@ -150,13 +150,38 @@ public class AnalysisController implements Serializable {
         jpql += " group by FUNCTION('DATE', bill.createdAt), bill.billTypeAtomic "
                 + " order by FUNCTION('DATE', bill.createdAt)";
 
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
         List<DailyBillTypeSummary> results = (List<DailyBillTypeSummary>) billFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
+        System.out.println("results = " + results);
         if (results != null && !results.isEmpty()) {
             reportBundle.setBillSummaries(results);
         }
 
         return reportBundle;
+    }
+
+    public List<String> getUniqueBillTypes() {
+        return getDailyBillReportBundle().getBillSummaries()
+                .stream()
+                .map(summary -> summary.getBillType().toString()) // Convert to String
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    public Long getTotalBillCount() {
+        return getDailyBillReportBundle().getBillSummaries()
+                .stream()
+                .mapToLong(DailyBillTypeSummary::getBillCount)
+                .sum();
+    }
+
+    public Double getTotalBillValue() {
+        return getDailyBillReportBundle().getBillSummaries()
+                .stream()
+                .mapToDouble(DailyBillTypeSummary::getTotalValue)
+                .sum();
     }
 
     public void clearPharmacyBillItemSale() {
@@ -519,6 +544,9 @@ public class AnalysisController implements Serializable {
     }
 
     public DailyBillReportBundle getDailyBillReportBundle() {
+        if (dailyBillReportBundle == null) {
+            dailyBillReportBundle = new DailyBillReportBundle();
+        }
         return dailyBillReportBundle;
     }
 
@@ -526,6 +554,4 @@ public class AnalysisController implements Serializable {
         this.dailyBillReportBundle = dailyBillReportBundle;
     }
 
-    
-    
 }

@@ -123,7 +123,7 @@
                                 ajax="false" 
                                 value="List" 
                                 action="#{analysisController.processDailyBillTypeCount}"/>
-                            
+
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
                                 <p:dataExporter fileName="Bill Types" type="xlsx" target="tbl" ></p:dataExporter>
                             </p:commandButton>
@@ -131,34 +131,67 @@
 
 
                         <div style="width: 100%; overflow-x: auto;">
+
+
                             <p:dataTable 
-                                rowIndexVar="i" 
                                 id="tbl" 
                                 value="#{analysisController.dailyBillReportBundle.billSummaries}" 
-                                scrollable="true"
                                 var="row"
+                                scrollable="true"
+                                scrollWidth="100%"
                                 rows="10"
                                 paginator="true"
                                 paginatorPosition="top"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15"
-                                >
+                                emptyMessage="No data found for the selected filters."
+                                style="min-width: 900px;">
 
-                                <p:column headerText="Bill Type" >                                
-                                   
+                                <!-- Date Column -->
+                                <p:column headerText="Date" style="width: 120px;">
+                                    <h:outputText value="#{row.date}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd" />
+                                    </h:outputText>
                                 </p:column>
 
-                                <p:column headerText="Value" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{row.grossTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
+                                <!-- Dynamic Bill Type Columns -->
+                                <p:columns 
+                                    value="#{analysisController.uniqueBillTypes}" 
+                                    var="billType" 
+                                    headerText="#{billType}" 
+                                    style="text-align: center; width: 100px;">
+                                    <h:outputText value="#{row.billType == billType ? row.billCount : 0}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </p:columns>
+
+                                <!-- Total Count Column -->
+                                <p:column headerText="Total Count" style="width: 100px; text-align: center;">
+                                    <h:outputText value="#{row.billCount}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{analysisController.bundle.grossTotal}">
+                                        <h:outputText value="#{analysisController.totalBillCount}">
+                                            <f:convertNumber pattern="#,##0"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                                <!-- Total Value Column -->
+                                <p:column headerText="Total Value" style="width: 150px; text-align: right;">
+                                    <h:outputText value="#{row.totalValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{analysisController.totalBillValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
+
                             </p:dataTable>
+
+
 
                         </div>
 

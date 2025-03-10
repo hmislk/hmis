@@ -16,6 +16,9 @@ public class DailyBillReportBundle {
     }
 
     public void setBillSummaries(List<DailyBillTypeSummary> billSummaries) {
+        if(billSummaries==null){
+            billSummaries = new ArrayList<>();
+        }
         this.billSummaries = billSummaries;
     }
 
