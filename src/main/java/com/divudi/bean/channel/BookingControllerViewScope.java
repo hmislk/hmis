@@ -1069,7 +1069,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double calculatRemainForMultiplePaymentTotal() {
 
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+        if (settlePaymentMethod == PaymentMethod.MultiplePaymentMethods || paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
