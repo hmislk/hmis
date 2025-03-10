@@ -438,6 +438,19 @@
                                         value="#{null}" 
                                         target="#{inwardReportControllerBht.department}" />
                                 </p:commandButton>
+                                <p:commandButton 
+                                    value="Lab Bill Summary" 
+                                    action="#{inwardReportControllerBht.navigateToInpatientLabItemList}" 
+                                    icon="fa fa-flask"
+                                   
+                                    class="w-100">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                    <f:setPropertyActionListener 
+                                        value="#{null}" 
+                                        target="#{inwardReportControllerBht.department}" />
+                                </p:commandButton>
                             </div>
                         </p:panel>
                     </div>

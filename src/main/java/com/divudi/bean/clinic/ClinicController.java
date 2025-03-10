@@ -2108,21 +2108,13 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     public void channelBookingCancel() {
-//        System.out.println("BillType = " + selectedBillSession.getBill().getBillType());
-//        System.out.println("Payment Method = " + cancelPaymentMethod);
-
-//        System.out.println("getPaymentMethod = " + getCancelPaymentMethod());
         switch (getCancelPaymentMethod()) {
             case Cash:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;
-            case Card:
-                if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                    if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                        return;
+                    }
                 }
                 break;
         }
@@ -7217,15 +7209,11 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
         switch (getRefundPaymentMethod()) {
             case Cash:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getRefundableTotal()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;
-            case Card:
-                if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < getRefundableTotal()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                    if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getRefundableTotal()) {
+                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                        return;
+                    }
                 }
                 break;
         }
