@@ -7657,6 +7657,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void channelBookingRefund() {
+        
+         if (refundPaymentMethod == null) {
+            JsfUtil.addErrorMessage("Please select payment method to refund");
+            return;
+        }
 
         switch (getRefundPaymentMethod()) {
             case Cash:
@@ -7713,12 +7718,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
-        
-         if (refundPaymentMethod == null) {
-            JsfUtil.addErrorMessage("Please select payment method to refund");
-            return;
-        }
-
+              
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
     }
@@ -7896,7 +7896,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             RefundBill rpb = (RefundBill) createCashRefundBill(bill.getPaidBill());
 
-            Payment p = createPaymentForCancellationsAndRefunds(rpb, bill.getPaidBill().getPaymentMethod());
+            Payment p = createPaymentForCancellationsAndRefunds(rpb, refundPaymentMethod);
             
             if (refundPaymentMethod != PaymentMethod.Agent) {
                 drawerController.updateDrawerForOuts(p);
