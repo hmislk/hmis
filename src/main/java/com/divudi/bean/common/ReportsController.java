@@ -3322,19 +3322,19 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-                + "FROM BillItem billItem "
-                + "JOIN billItem.bill bill "
-                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
-                + "WHERE bill.billTypeAtomic IN :bts ";
 //        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
-//                + "FROM PatientInvestigation pi "
-//                + "JOIN pi.billItem billItem "
+//                + "FROM BillItem billItem "
 //                + "JOIN billItem.bill bill "
-//                + "WHERE pi.retired=false "
-//                + " AND billItem.retired=false "
-//                + " AND bill.retired=false "
-//                + " AND bill.billTypeAtomic in :bts ";
+//                + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
+//                + "WHERE bill.billTypeAtomic IN :bts ";
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "FROM PatientInvestigation pi "
+                + "JOIN pi.billItem billItem "
+                + "JOIN billItem.bill bill "
+                + "WHERE pi.retired=false "
+                + " AND billItem.retired=false "
+                + " AND bill.retired=false "
+                + " AND bill.billTypeAtomic in :bts ";
 
         parameters.put("bts", bts);
 
