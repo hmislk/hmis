@@ -7868,7 +7868,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //                    updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, rBilItm, rSession, rSession.getBillItem().getAgentRefNo());
 //                }
 //            }
-
             bill.setRefunded(true);
             bill.setRefundedBill(rb);
             getBillFacade().edit(bill);
@@ -7880,8 +7879,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             RefundBill rb = (RefundBill) createRefundBill(bill);
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
-            Payment p = createPaymentForCancellationsAndRefunds(rb, bill.getPaidBill().getPaymentMethod());
-            drawerController.updateDrawerForOuts(p);
+
             BillSession rSession = refundBillSession(billSession, rb, rBilItm);
 
             billSession.setReferenceBillSession(rSession);
@@ -7891,7 +7889,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             bill.setRefundedBill(rb);
             getBillFacade().edit(bill);
 
-            RefundBill rpb = (RefundBill) createRefundBill1(bill.getPaidBill());
+            RefundBill rpb = (RefundBill) createCashRefundBill(bill.getPaidBill());
+
+            Payment p = createPaymentForCancellationsAndRefunds(rpb, bill.getPaidBill().getPaymentMethod());
+            
+            if (refundPaymentMethod != PaymentMethod.Agent) {
+                drawerController.updateDrawerForOuts(p);
+            }
+
             BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
             BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
 
@@ -8251,15 +8256,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         getBillFacade().create(rb);
 
-        if (bill.getPaymentMethod() == PaymentMethod.Agent) {
-            rb.setPaymentMethod(refundPaymentMethod);
-//            if (refundPaymentMethod == PaymentMethod.Agent) {
-//                updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, billSession.getBillItem(), billSession, billSession.getBill().getReferralNumber());
-//            }
-        } else {
-            rb.setPaymentMethod(bill.getPaymentMethod());
-        }
+        rb.setPaymentMethod(refundPaymentMethod);
 
+//        if (bill.getPaymentMethod() == PaymentMethod.Agent) {
+//            rb.setPaymentMethod(refundPaymentMethod);
+////            if (refundPaymentMethod == PaymentMethod.Agent) {
+////                updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, billSession.getBillItem(), billSession, billSession.getBill().getReferralNumber());
+////            }
+//        } else {
+//            rb.setPaymentMethod(bill.getPaymentMethod());
+//        }
         getBillFacade().edit(rb);
 
 //Need To Update Agent BAllance
@@ -8768,11 +8774,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public PaymentMethod getRefundPaymentMethod() {
-        if (selectedBillSession != null) {
-            if (selectedBillSession.getBillItem().getBill() != null) {
-                refundPaymentMethod = selectedBillSession.getBillItem().getBill().getPaymentMethod();
-            }
-        }
+//        if (selectedBillSession != null) {
+//            if (selectedBillSession.getBillItem().getBill() != null) {
+//                refundPaymentMethod = selectedBillSession.getBillItem().getBill().getPaymentMethod();
+//            }
+//        }
         return refundPaymentMethod;
     }
 
