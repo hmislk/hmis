@@ -74,18 +74,27 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="padding: 2px;">Name :</td>
-                            <td style="padding: 2px;" >
+                            <td style="padding: 2px;" colspan="4">
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
                             </td>
-                            <td style="padding: 2px;" class="spacer"></td>
-                            <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
-                                <td  style="padding: 2px;">Age/Sex :</td>
-                                <td style="padding: 2px;" >
-                                    <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
-                                </td>
-                            </h:panelGroup>
                         </tr>
                     </h:panelGroup>
+
+                    <tr>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
+                            <td  style="padding: 2px;">Age/Sex :</td>
+                            <td style="padding: 2px;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
+                            </td>
+                        </h:panelGroup>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;">Mobile :</td>
+                        <td style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" >
+                                <f:convertDateTime pattern="HH:mm a" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
@@ -102,13 +111,33 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    
                     <tr>
                         <td style="padding: 2px;">Bill No:</td>
                         <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
                         <td style="padding: 2px;" class="spacer"></td>
-                        <td style="padding: 2px;" ><h:outputLabel value="BHT No : " rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
-                        <td style="padding: 2px;" ><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}" >
+                            <td style="padding: 2px;">Payment :</td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
+                            </td>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
+                            <td style="padding: 2px;">BHT No : </td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/>
+                            </td>
+                        </h:panelGroup>
                     </tr>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.referredBy ne null}" >
+                        <tr>
+                            <td style="padding: 2px;">Ref. Doctor :</td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
                 </table>
 
                 <!-- Separator Line -->
