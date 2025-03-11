@@ -37,7 +37,8 @@
                                         id="btnSearch" 
                                         ajax="false" 
                                         value="Search" 
-                                        class="mt-2  w-100"
+                                        class="mt-2 mb-3 w-100 ui-button-warning"
+                                        icon="fa fa-search"
                                         action="#{searchController.createPharmacyBillItemTableBht()}"/>
                                 </h:panelGrid>
 
@@ -116,7 +117,7 @@
                                         </h:outputLabel>
                                     </p:column>   
 
-                                    <p:column headerText="Bill item Value">
+                                    <p:column headerText="Bill Item Value">
                                         <h:outputLabel value="#{pi.netValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>

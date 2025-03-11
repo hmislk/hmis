@@ -60,33 +60,24 @@
                                         </h:panelGroup>
 
                                         <!-- Shift End with Icon -->
-                                        <h:panelGroup>
+                                        <h:panelGroup rendered="#{financialTransactionController.bundle.endBill ne null}" >
                                             <i class="pi pi-clock" style="margin-right:5px; color: #dc3545;"></i>
                                             <p:outputLabel value="Shift End" />
                                         </h:panelGroup>
-                                        <h:panelGroup>
-                                            <p:badge 
-                                                value="Shift Not Yet Ended" 
-                                                rendered="#{financialTransactionController.bundle.endBill eq null}" 
-                                                styleClass="ui-badge-danger" 
-                                                icon="pi pi-times">
-                                            </p:badge>
-
-                                            <p:panelGrid columns="2" rendered="#{financialTransactionController.bundle.endBill ne null}">
-                                                <h:panelGroup>
-                                                    <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
-                                                    <p:outputLabel value="Shift End Bill ID" />
-                                                </h:panelGroup>
-                                                <p:outputLabel value="#{financialTransactionController.bundle.endBill.deptId}" />
-                                                <h:panelGroup>
-                                                    <i class="pi pi-calendar-minus" style="margin-right:5px; color: #ffc107;"></i>
-                                                    <p:outputLabel value="Shift Ended At" />
-                                                </h:panelGroup>
-                                                <p:outputLabel value="#{financialTransactionController.bundle.endBill.createdAt}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                </p:outputLabel>
-                                            </p:panelGrid>
-                                        </h:panelGroup>
+                                        <p:panelGrid columns="2" rendered="#{financialTransactionController.bundle.endBill ne null}">
+                                            <h:panelGroup>
+                                                <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
+                                                <p:outputLabel value="Shift End Bill ID" />
+                                            </h:panelGroup>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.endBill.deptId}" />
+                                            <h:panelGroup>
+                                                <i class="pi pi-calendar-minus" style="margin-right:5px; color: #ffc107;"></i>
+                                                <p:outputLabel value="Shift Ended At" />
+                                            </h:panelGroup>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.endBill.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </p:outputLabel>
+                                        </p:panelGrid>
 
                                         <!-- Total Handover Value with Icon -->
                                         <h:panelGroup>
@@ -105,8 +96,6 @@
                                                     <span class="font-weight-bold">Accept</span>
                                                 </div>
                                                 <div class="col-md-8 text-right">
-
-
                                                     <p:commandButton 
                                                         rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}" 
                                                         value="Accept Handover &amp; Write to Cashbook" 
@@ -116,7 +105,6 @@
                                                         onclick="return confirm('Are you sure you want to proceed with the handover?');" 
                                                         action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">
                                                     </p:commandButton>
-
                                                     <p:commandButton 
                                                         value="Reject"
                                                         action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
@@ -126,12 +114,8 @@
                                                         class="m-1 ui-button-danger"
                                                         icon="pi pi-times-circle">
                                                     </p:commandButton>
-
-
                                                 </div>
-
                                             </div>
-
                                         </f:facet>
 
                                         <table class="table table-bordered table-hover w-100">
@@ -543,7 +527,7 @@
                                         <h:outputText value="#{summary.department.institution.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Site" >
+                                    <p:column headerText="Site"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}" >
                                         <h:outputText value="#{summary.department.site.name}" />
                                     </p:column>
 

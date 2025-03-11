@@ -103,6 +103,7 @@ public enum Icon {
     pharmacy_item_search("Pharmacy - Item Search"),
     pharmacy_generate_report("Pharmacy - Generate Report"),
     pharmacy_summary_views("Pharmacy - Summary Views"),
+    pharmacy_analytics("Pharmacy - Analytics"),
     // icons for Optician Section
     Optician_EMR("Optician - EMR Management"),
     Optician_Patient_Management("Optician - Patient Management"),

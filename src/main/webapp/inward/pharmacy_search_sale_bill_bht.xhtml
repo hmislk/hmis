@@ -93,7 +93,7 @@
                                     <p:column headerText="Bill No" > 
                                         <h:commandLink
                                             value="#{bill.deptId}" 
-                                            action="pharmacy_reprint_bill_sale_bht?faces-redirect=true;"  >
+                                            action="#{pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill()}"  >
                                             <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                                         </h:commandLink>
                                     </p:column>
@@ -136,7 +136,7 @@
                                     </p:column>                      
 
                                     <p:column headerText="Net Value"  >
-                                        <h:outputLabel value="#{bill.total}" >
+                                        <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -176,7 +176,7 @@
                                                 </h:panelGroup> 
                                             </p:column>                                                     
                                             <p:column >
-                                                <h:outputLabel value="#{rb.total}">
+                                                <h:outputLabel value="#{rb.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>                                  
                                             </p:column>

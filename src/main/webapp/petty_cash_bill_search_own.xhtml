@@ -12,8 +12,18 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputLabel value="Petty Cash Bill Search"/>
-                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                            <h:panelGroup layout="block" style="line-height: 40px;">
+                                <h:outputText styleClass="fas fa-search" />
+                                <h:outputLabel value="Petty Cash Bill Search" styleClass="mx-4"/>
+                                <p:commandButton 
+                                    value="Back" 
+                                    icon="fas fa-arrow-left" 
+                                    class="ui-button-primary" 
+                                    style="float: right;" 
+                                    action="/payments/pay_index?faces-redirect=true" 
+                                    ajax="false"/>     
+                            </h:panelGroup>
+                            
                         </f:facet>
 
                         <div class="row">
@@ -69,7 +79,7 @@
                                     itemValue="#{ix}" 
                                     size="20"
                                     inputStyleClass="form-control"
-                                    style="width: 400px;">
+                                    class="w-100">
                                     <p:column style="width: 150px; padding: 3px;">
                                         #{ix.code}
                                     </p:column>

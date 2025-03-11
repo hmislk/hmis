@@ -475,6 +475,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
             hm.put("ss", getSelectedServiceSession());
         }
 
+        sql += " and b.bill.singleBillSession.completed=true";
+
 //        sql += " and b.bill.singleBillSession.absent=false "
 //                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
 //                + " b.bill.singleBillSession.serviceSession.sessionTime,"
@@ -1045,10 +1047,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
         if (paymentMethod == PaymentMethod.Cash) {
             double drawerBalance = financialTransactionController.getLoggedUserDrawer().getCashInHandValue();
             double paymentAmount = totalPaying;
-
-            if (drawerBalance < paymentAmount) {
-                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                return;
+            if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                if (drawerBalance < paymentAmount) {
+                    JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                    return;
+                }
             }
         }
         calculateTotalPay();

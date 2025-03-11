@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -16,9 +17,38 @@
                             <p:selectOneMenu   id="cmbPs" value="#{inwardSearch.paymentMethod}" required="true"  >
                                 <f:selectItem itemLabel="Select Payment Method" />
                                 <f:selectItems value="#{inwardPaymentController.paymentMethods}"  />
+                                <p:ajax process="cmbPs" update="paymentDetails @all" event="change"
+                                        listener="#{inwardSearch.listnerForPaymentMethodChange(inwardSearch.bill)}"/>
                             </p:selectOneMenu>
                             <h:commandButton value="Cancel" action="#{inwardSearch.cancelBillPayment()}" >
-                            </h:commandButton>                            
+                            </h:commandButton>
+                            <div class="row ">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-8">
+                                    <h:panelGroup id="paymentDetails">
+                                        <h:panelGroup id="creditCard"
+                                                      rendered="#{inwardSearch.paymentMethod eq 'Card'}">
+                                            <pa:creditCard paymentMethodData="#{inwardSearch.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="cheque" rendered="#{inwardSearch.paymentMethod eq 'Cheque'}">
+                                            <pa:cheque paymentMethodData="#{inwardSearch.paymentMethodData}"
+                                                       valueRequired="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="slip" rendered="#{inwardSearch.paymentMethod eq 'Slip'}">
+                                            <pa:slip paymentMethodData="#{inwardSearch.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"
+                                                id="patientDeposit"
+                                                rendered="#{inwardSearch.paymentMethod eq 'PatientDeposit'}">
+                                            <pa:patient_deposit paymentMethodData="#{inwardSearch.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Patient Detail">

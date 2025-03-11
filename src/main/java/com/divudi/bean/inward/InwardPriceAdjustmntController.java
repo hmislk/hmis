@@ -11,6 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Category;
@@ -42,8 +43,8 @@ import javax.persistence.Enumerated;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -54,6 +55,8 @@ public class InwardPriceAdjustmntController implements Serializable {
     SessionController sessionController;
     @Inject
     CommonController commonController;
+    @Inject
+    PharmaceuticalItemCategoryController pharmaceuticalItemCategoryController;
     @EJB
     private PriceMatrixFacade ejbFacade;
     @Enumerated(EnumType.STRING)
@@ -77,8 +80,8 @@ public class InwardPriceAdjustmntController implements Serializable {
         margin = 0;
         items = null;
     }
-    
-    public void preparedAdd(){
+
+    public void preparedAdd() {
         fromPrice = toPrice + 1;
         toPrice = 0.0;
         margin = 0;
@@ -153,6 +156,44 @@ public class InwardPriceAdjustmntController implements Serializable {
         if (a.getId() == null) {
             getFacade().create(a);
         }
+        JsfUtil.addSuccessMessage("Saved Successfully");
+        recreateModel();
+//        createItems();
+    }
+
+    public void addForAllCategory() {
+
+        if (fromPrice == toPrice) {
+            JsfUtil.addErrorMessage("Check prices");
+            return;
+        }
+        if (toPrice == 0) {
+            JsfUtil.addErrorMessage("Check prices");
+            return;
+        }
+
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        for (Category c : pharmaceuticalItemCategoryController.getItems()) {
+            PriceMatrix a = new InwardPriceAdjustment();
+
+            a.setCategory(c);
+            a.setDepartment(department);
+            a.setFromPrice(fromPrice);
+            a.setToPrice(toPrice);
+            a.setInstitution(department.getInstitution());
+            a.setPaymentMethod(paymentMethod);
+            a.setMargin(margin);
+            a.setCreatedAt(new Date());
+            a.setCreater(getSessionController().getLoggedUser());
+            if (a.getId() == null) {
+                getFacade().create(a);
+            }
+        }
+
         JsfUtil.addSuccessMessage("Saved Successfully");
         recreateModel();
 //        createItems();
@@ -310,7 +351,6 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("sub", ServiceSubCategory.class);
         items = getFacade().findByJpql(sql, hm);
 
-        
     }
 
     public void createCategroyServicePharmacy() {
@@ -351,7 +391,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
+
         filterItems = null;
         String sql;
         HashMap hm = new HashMap();
@@ -362,14 +402,14 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("cat", PharmaceuticalItemCategory.class);
 
         items = getFacade().findByJpql(sql, hm);
-        
+
     }
 
     public void createCategroyStore() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
+
         filterItems = null;
         String sql;
         HashMap hm = new HashMap();
@@ -380,7 +420,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("cat", ConsumableCategory.class);
 
         items = getFacade().findByJpql(sql, hm);
-        
+
     }
 
     public void onEdit(PriceMatrix tmp) {

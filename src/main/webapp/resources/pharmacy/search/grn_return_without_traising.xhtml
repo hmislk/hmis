@@ -91,7 +91,7 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               -->
-            <p:column headerText="Net Value" style="text-align: right;"  >
+            <p:column headerText="Net Return Value" style="text-align: right;"  >
                 <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>
@@ -101,9 +101,9 @@
                 </h:commandLink>
             </p:column>
             
-            <p:column headerText="Sale Value" style="text-align: right;"  >
+            <p:column headerText="Retail Sale Value" style="text-align: right;"  >
                 <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
-                    <h:outputLabel value="#{bill.saleValue}" >
+                    <h:outputLabel value="#{bill.pharmacyBill.saleValue}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>

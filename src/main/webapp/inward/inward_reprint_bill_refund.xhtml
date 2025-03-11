@@ -27,7 +27,7 @@
                                 <p:commandButton ajax="false" value="Cancel"
                                                  icon="fa fa-cancel"
                                                  class="ui-button-danger mx-1"
-                                                 action="inward_cancel_bill_refund" 
+                                                 action="#{inwardPaymentController.navigateToPatientRefund()}"
                                                  disabled="#{inwardSearch.bill.cancelled}"  >                           
                                 </p:commandButton>
                                 <p:commandButton ajax="false" value="Mark As Checked"

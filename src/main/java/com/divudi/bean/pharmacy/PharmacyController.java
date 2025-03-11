@@ -21,13 +21,7 @@ import com.divudi.data.dataStructure.ItemQuantityAndValues;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.data.dataStructure.StockAverage;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
+import com.divudi.entity.*;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Atm;
@@ -970,6 +964,22 @@ public class PharmacyController implements Serializable {
             JsfUtil.addErrorMessage(e, " Something Went Worng!");
         }
         calculateTotals(bills);
+    }
+
+    public static String formatDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+
+        UserPreference userPreference = new UserPreference();
+        String pattern = userPreference.getLongDateTimeFormat();
+
+        if (!pattern.contains("a")) {
+            pattern = pattern.replace("HH", "hh") + " a";
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        return sdf.format(date);
     }
 
     public void createConsumptionReportTable() {

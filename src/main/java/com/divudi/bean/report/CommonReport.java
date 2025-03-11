@@ -37,6 +37,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.GrnController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
@@ -146,6 +147,7 @@ public class CommonReport implements Serializable {
     ////////////////
     private Institution collectingIns;
     Institution institution;
+    private Institution supplier;
     Institution ins;
     private Date fromDate;
     private Date toDate;
@@ -1986,6 +1988,15 @@ public class CommonReport implements Serializable {
             temMap.put("ins", getReferenceInstitution());
         }
 
+        if (getSupplier()!= null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
+                sql += " AND b.toInstitution = :supplier";
+            } else {
+                sql += " AND b.fromInstitution = :supplier";
+            }
+            temMap.put("supplier", getSupplier());
+        }
+
         sql += " order by b.id  ";
 
         temMap.put("fromDate", getFromDate());
@@ -1993,7 +2004,7 @@ public class CommonReport implements Serializable {
         temMap.put("bill", billClass.getClass());
         temMap.put("btp", billType);
         temMap.put("d", dep);
-
+       
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -2947,6 +2958,25 @@ public class CommonReport implements Serializable {
         if (institution != null) {
             sql += " and b.fromInstitution=:fIns ";
             temMap.put("fIns", institution);
+        }
+        
+        if (getSupplier()!= null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
+                sql += " AND b.toInstitution = :supplier";
+            } else {
+                sql += " AND b.fromInstitution = :supplier";
+            }
+            temMap.put("supplier", getSupplier());
+
+        }
+        
+        if (getSupplier()!= null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
+                sql += " AND b.toInstitution = :supplier";
+            } else {
+                sql += " AND b.fromInstitution = :supplier";
+            }
+            temMap.put("supplier", getSupplier());
         }
 
         temMap.put("fromDate", getFromDate());
@@ -6714,25 +6744,86 @@ public class CommonReport implements Serializable {
         list.add(getGrnReturn());
         list.add(getGrnReturnCancel());
 
+        if (getGrnBilled() == null) {
+            dataTableData = new ArrayList<>();
+            String1Value1 tmp5 = new String1Value1();
+            tmp5.setString("");
+            return dataTableData;
+        }
+
         dataTableData = new ArrayList<>();
         String1Value1 tmp1 = new String1Value1();
-        tmp1.setString("Final Credit Total");
-        tmp1.setValue(getFinalCreditTotal(list));
-        tmp1.setValue2(getFinalSaleCreditTotal(list));
+        tmp1.setString("Billed Credit Total");
+        tmp1.setValue(getGrnBilled().getCredit());
+        tmp1.setValue2(getGrnBilled().getSaleCredit());
 
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp2 = new String1Value1();
+        tmp2.setString("Cancelled Credit Total");
+        tmp2.setValue(getGrnCancelled().getCredit());
+        tmp2.setValue2(getGrnCancelled().getSaleCredit());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp3 = new String1Value1();
+        tmp3.setString("Returned Credit Total");
+        tmp3.setValue(getGrnReturn().getCredit());
+        tmp3.setValue2(getGrnReturn().getSaleCredit());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp4 = new String1Value1();
+        tmp4.setString("Final Credit Total");
+        tmp4.setValue(getFinalCreditTotal(list));
+        tmp4.setValue2(getFinalSaleCreditTotal(list));
+
+        dataTableData = new ArrayList<>();
         String1Value1 tmp5 = new String1Value1();
-        tmp5.setString("Final Cash Total");
-        tmp5.setValue(getFinalCashTotal(list));
-        tmp5.setValue2(getFinalSaleCashTotal(list));
+        tmp5.setString("");
 
+        dataTableData = new ArrayList<>();
         String1Value1 tmp6 = new String1Value1();
-        tmp6.setString("Final Credit & Cash Total");
-        tmp6.setValue(getFinalCashTotal(list) + getFinalCreditTotal(list));
-        tmp6.setValue2(getFinalSaleCashTotal(list) + getFinalSaleCreditTotal(list));
+        tmp6.setString("Billed Cash Total");
+        tmp6.setValue(getGrnBilled().getCash());
+        tmp6.setValue2(getGrnBilled().getSaleCash());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp7 = new String1Value1();
+        tmp7.setString("Cancelled Cash Total");
+        tmp7.setValue(getGrnCancelled().getCash());
+        tmp7.setValue2(getGrnCancelled().getSaleCash());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp8 = new String1Value1();
+        tmp8.setString("Returned Cash Total");
+        tmp8.setValue(getGrnReturn().getCash());
+        tmp8.setValue2(getGrnReturn().getSaleCash());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp9 = new String1Value1();
+        tmp9.setString("Final Cash Total");
+        tmp9.setValue(getFinalCashTotal(list));
+        tmp9.setValue2(getFinalSaleCashTotal(list));
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp10 = new String1Value1();
+        tmp10.setString("");
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp11 = new String1Value1();
+        tmp11.setString("Final Credit & Cash Total");
+        tmp11.setValue(getFinalCashTotal(list) + getFinalCreditTotal(list));
+        tmp11.setValue2(getFinalSaleCashTotal(list) + getFinalSaleCreditTotal(list));
 
         dataTableData.add(tmp1);
+        dataTableData.add(tmp2);
+        dataTableData.add(tmp3);
+        dataTableData.add(tmp4);
         dataTableData.add(tmp5);
         dataTableData.add(tmp6);
+        dataTableData.add(tmp7);
+        dataTableData.add(tmp8);
+        dataTableData.add(tmp9);
+        dataTableData.add(tmp10);
+        dataTableData.add(tmp11);
 
         return dataTableData;
     }
@@ -7243,6 +7334,14 @@ public class CommonReport implements Serializable {
 
     public void setPreviewBill(Bill previewBill) {
         this.previewBill = previewBill;
+    }
+
+    public Institution getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Institution supplier) {
+        this.supplier = supplier;
     }
 
     public class CollectingCenteRow {

@@ -2260,19 +2260,21 @@ public class BillBeanController implements Serializable {
             if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null) {
                 bill.setForwardReferenceBill(patientEncounter.getFinalBill());
                 getBillFacade().edit(bill);
-                patientEncounter.getFinalBill().getBackwardReferenceBills().add(bill);
-                if(patientEncounter.getFinalBill().getBalance() <= 0){
-                     patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getNetTotal());
-                }
-                patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
-                patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
-                
-                if(bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT){   
-                    patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
-                }else if(bill.getBillTypeAtomic()== BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED){
-                    patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor()+ bill.getNetTotal());
-                }else if(bill.getBillTypeAtomic()== BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION){
-                    patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() - Math.abs(bill.getNetTotal()));
+                if (!patientEncounter.getFinalBill().getBackwardReferenceBills().contains(bill)) {
+                    patientEncounter.getFinalBill().getBackwardReferenceBills().add(bill);
+                    if (patientEncounter.getFinalBill().getBalance() <= 0) {
+                        patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getNetTotal());
+                    }
+                    patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
+                    patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
+
+                    if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
+                        patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
+                    } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
+                        patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() + bill.getNetTotal());
+                    } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION) {
+                        patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() - Math.abs(bill.getNetTotal()));
+                    }
                 }
                 getBillFacade().edit(patientEncounter.getFinalBill());
             }
@@ -2472,12 +2474,17 @@ public class BillBeanController implements Serializable {
 //        hm.put("nm", FeeType.Matrix);
 //        return getFeeFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
 //    }
-    public BillFee createBillFee(BillItem billItem, Fee i) {
+    public BillFee createBillFee(BillItem billItem, Fee i, PatientEncounter patientEncounter) {
         BillFee f;
         f = new BillFee();
         f.setFee(i);
-        f.setFeeValue(i.getFee());
-        f.setFeeGrossValue(i.getFee());
+        if(patientEncounter.isForiegner()){
+            f.setFeeValue(i.getFfee());
+            f.setFeeGrossValue(i.getFfee());
+        }else{
+            f.setFeeValue(i.getFee());
+            f.setFeeGrossValue(i.getFee());
+        }
         f.setDepartment(billItem.getItem().getDepartment());
         f.setBillItem(billItem);
 

@@ -131,12 +131,12 @@
                                         <p:inputText  class="w-100"  value="#{bhtEditController.current.bhtNo}" ></p:inputText>
                                         <p:outputLabel  value="Consultant"  />
                                         <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                        <!--<p:inputText  class="w-100"  value="#{bhtEditController.current.referringConsultant}"  ></p:inputText>-->
+<!--                                        <p:inputText  class="w-100"  value="#{bhtEditController.current.referringConsultant}"  ></p:inputText>-->
                                         <p:autoComplete forceSelection="true" 
                                                         value="#{bhtEditController.current.referringConsultant}" 
                                                         id="refCon"
-                                                        completeMethod="#{inwardStaffPaymentBillController.completeReferringDoctor}" 
-                                                        var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        completeMethod="#{consultantController.completeConsultant}" 
+                                                         var="mysp" itemLabel="#{mysp.person.name}" itemValue="#{mysp}"
                                                         styleClass="form-control w-100"
                                                         class="w-100" 
                                                         inputStyleClass="w-100"></p:autoComplete>
@@ -145,8 +145,8 @@
     <!--                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.opdDoctor}" ></p:inputText>-->
                                         <p:autoComplete forceSelection="true" id="scStaff" placeholder="OPD Doctor"
                                                         value="#{bhtEditController.current.opdDoctor}" 
-                                                        completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
-                                                        var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                        completeMethod="#{doctorController.completeDoctor}"
+                                                        var="mys" itemLabel="#{mys.person.name}" itemValue="#{mys}"
                                                         styleClass="form-control w-100"
                                                         class="w-100" 
                                                         inputStyleClass="w-100"
@@ -157,7 +157,7 @@
                                         <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
     <!--                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringDoctor}" ></p:inputText>-->
                                         <p:autoComplete forceSelection="true"
-                                                        value="#{bhtEditController.current.referringConsultant}"
+                                                        value="#{bhtEditController.current.referringDoctor}"
                                                         completeMethod="#{doctorController.completeDoctor}" var="ix"
                                                         itemLabel="#{ix.person.name}" itemValue="#{ix}" 
                                                         styleClass="form-control w-100"
@@ -192,7 +192,7 @@
                                                          class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"/>
                                         <p:outputLabel  value="Referral Number"  />
                                         <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                        <p:inputText  class="w-100"  value="#{bhtEditController.current.referanceNo}" ></p:inputText>
+                                        <p:inputText  class="w-100"  value="#{bhtEditController.current.referralId}" ></p:inputText>
                                         <p:outputLabel  value="Local/Foreigner"  />
                                         <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                         <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}" 
@@ -320,7 +320,10 @@
                                     <p:inputTextarea value="#{bhtEditController.comment}" id="com" class="w-100">
                                     </p:inputTextarea>
 
-                                    <p:commandButton class="my-1 ui-button-danger" icon="fas fa-ban" value="Cancel Admission" action="#{bhtEditController.cancelBht}" ajax="false" >                            
+                                    <p:commandButton class="my-1 ui-button-danger" icon="fas fa-ban"
+                                                     value="Cancel Admission" action="#{bhtEditController.cancelBht}"
+                                                     ajax="false"
+                                                     disabled="#{!webUserController.hasPrivilege('InwardAdmissionCancel')}">
                                     </p:commandButton>
                                 </p:panel>
                             </div>

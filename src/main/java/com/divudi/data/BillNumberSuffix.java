@@ -62,6 +62,7 @@ public enum BillNumberSuffix {
     //Inward
     INWPAY,//Payment Bill
     INWFINAL,//Inward Final
+    INWFINALORG,//Inward Original Final
     INWINTRIM,//Inward Interim
     INWFINALCCPAY,//Inward Final Credit Company Payement
     INWCCPAYCAN,//Inward Credit Company Payment Cancel
