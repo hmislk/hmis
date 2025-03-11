@@ -16,13 +16,13 @@ public class DailyBillReportBundle {
     }
 
     public void setBillSummaries(List<DailyBillTypeSummary> billSummaries) {
-        if(billSummaries==null){
-            billSummaries = new ArrayList<>();
-        }
         this.billSummaries = billSummaries;
     }
 
     public List<DailyBillTypeSummary> getBillSummaries() {
+        if (billSummaries == null) {
+            billSummaries = new ArrayList<>();
+        }
         return billSummaries;
     }
 

@@ -101,67 +101,68 @@ public class AnalysisController implements Serializable {
     }
 
     public DailyBillReportBundle generateDailyBillTypeCounts(
-        List<BillTypeAtomic> btas,
-        Date paramFromDate,
-        Date paramToDate,
-        Institution paramInstitution,
-        Department paramDepartment,
-        Institution paramSite) {
+            List<BillTypeAtomic> btas,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramSite) {
 
-    DailyBillReportBundle reportBundle = new DailyBillReportBundle();
-    Map<String, Object> parameters = new HashMap<>();
+        DailyBillReportBundle reportBundle = new DailyBillReportBundle();
+        Map<String, Object> parameters = new HashMap<>();
 
-    // Aggregating at the date level
-    String jpql = "SELECT new com.divudi.data.analytics.DailyBillTypeSummary("
-            + " CAST(bill.createdAt AS date), bill.billTypeAtomic, SUM(bill.count), SUM(bill.netTotal)) "
-            + " FROM Bill bill "
-            + " WHERE bill.retired = false ";
+        // Correct JPQL Query with COUNT(bill) instead of SUM(bill.count)
+        String jpql = "SELECT new com.divudi.data.analytics.DailyBillTypeSummary("
+                + " CAST(bill.createdAt AS date), bill.billTypeAtomic, COUNT(bill), SUM(bill.netTotal)) "
+                + " FROM Bill bill "
+                + " WHERE bill.retired = false ";
 
-    if (btas != null && !btas.isEmpty()) {
-        jpql += " AND bill.billTypeAtomic IN :btas ";
-        parameters.put("btas", btas);
+        if (btas != null && !btas.isEmpty()) {
+            jpql += " AND bill.billTypeAtomic IN :btas ";
+            parameters.put("btas", btas);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " AND bill.createdAt >= :fd ";
+            parameters.put("fd", paramFromDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " AND bill.createdAt <= :td ";
+            parameters.put("td", paramToDate);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " AND bill.department.institution = :ins ";
+            parameters.put("ins", paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " AND bill.department = :dep ";
+            parameters.put("dep", paramDepartment);
+        }
+
+        if (paramSite != null) {
+            jpql += " AND bill.department.site = :site ";
+            parameters.put("site", paramSite);
+        }
+
+        jpql += " GROUP BY CAST(bill.createdAt AS date), bill.billTypeAtomic "
+                + " ORDER BY CAST(bill.createdAt AS date)";
+
+        System.out.println("JPQL = " + jpql);
+        System.out.println("Parameters = " + parameters);
+
+        List<DailyBillTypeSummary> results = (List<DailyBillTypeSummary>) billFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        System.out.println("results.size() = " + results.size());
+        
+        if (results != null && !results.isEmpty()) {
+            reportBundle.setBillSummaries(results);
+        }
+
+        return reportBundle;
     }
-
-    if (paramFromDate != null) {
-        jpql += " AND bill.createdAt >= :fd ";
-        parameters.put("fd", paramFromDate);
-    }
-
-    if (paramToDate != null) {
-        jpql += " AND bill.createdAt <= :td ";
-        parameters.put("td", paramToDate);
-    }
-
-    if (paramInstitution != null) {
-        jpql += " AND bill.department.institution = :ins ";
-        parameters.put("ins", paramInstitution);
-    }
-
-    if (paramDepartment != null) {
-        jpql += " AND bill.department = :dep ";
-        parameters.put("dep", paramDepartment);
-    }
-
-    if (paramSite != null) {
-        jpql += " AND bill.department.site = :site ";
-        parameters.put("site", paramSite);
-    }
-
-    jpql += " GROUP BY CAST(bill.createdAt AS date), bill.billTypeAtomic "
-            + " ORDER BY CAST(bill.createdAt AS date)";
-
-    System.out.println("JPQL = " + jpql);
-    System.out.println("Parameters = " + parameters);
-    
-    List<DailyBillTypeSummary> results = (List<DailyBillTypeSummary>) billFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-    
-    if (results != null && !results.isEmpty()) {
-        reportBundle.setBillSummaries(results);
-    }
-
-    return reportBundle;
-}
-
 
     public List<DailyBillTypeSummary> getBillTypesByDate(Date date) {
         return getDailyBillReportBundle().getBillSummaries()

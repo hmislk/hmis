@@ -147,7 +147,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <ui:repeat value="#{analysisController.dailyBillReportBundle.billSummaries}" var="row">
+                                    <ui:repeat value="#{analysisController.dailyBillReportBundle.billSummaries}" var="row" varStatus="status">
                                         <tr>
                                             <td>
                                                 <h:outputText value="#{row.date}">
@@ -169,6 +169,7 @@
                                         </tr>
                                     </ui:repeat>
                                 </tbody>
+
                             </table>
                         </h:panelGroup>
 
