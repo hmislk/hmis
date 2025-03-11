@@ -1322,6 +1322,7 @@
                                         <p:outputLabel value="Re-payment Method" class="mt-2"/>
                                         <p:selectOneMenu  id="cmbCancellPs" value="#{bookingControllerViewScope.cancelPaymentMethod}">
                                             <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                            <f:selectItem itemLabel="Same As Billed Bill" itemValue="#{bookingControllerViewScope.billSession ne null ? bookingControllerViewScope.billSession.bill.paymentMethod : null}" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                                         </p:selectOneMenu>
                                     </div>
