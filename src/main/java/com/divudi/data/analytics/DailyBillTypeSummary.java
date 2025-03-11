@@ -2,41 +2,33 @@ package com.divudi.data.analytics;
 
 import com.divudi.data.BillTypeAtomic;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- *
- * @author Dr M H B Ariyaratne with ChatGpt
- *
- */
 public class DailyBillTypeSummary {
 
     private Date date;
-    private BillTypeAtomic billType;
     private Long billCount;
     private Double totalValue;
+    private Map<BillTypeAtomic, Long> billTypeCounts; // Stores count per bill type
 
-    public DailyBillTypeSummary(Date date, BillTypeAtomic billType, Long billCount, Double totalValue) {
+    public DailyBillTypeSummary(Date date, Long billCount, Double totalValue) {
         this.date = date;
-        this.billType = billType;
         this.billCount = billCount;
         this.totalValue = totalValue;
+        this.billTypeCounts = new HashMap<>();
     }
 
-    // Getters & Setters
+    public void addBillTypeCount(BillTypeAtomic type, Long count) {
+        billTypeCounts.put(type, count);
+    }
+
     public Date getDate() {
         return date;
     }
 
     public void setDate(Date date) {
         this.date = date;
-    }
-
-    public BillTypeAtomic getBillType() {
-        return billType;
-    }
-
-    public void setBillType(BillTypeAtomic billType) {
-        this.billType = billType;
     }
 
     public Long getBillCount() {
@@ -53,5 +45,13 @@ public class DailyBillTypeSummary {
 
     public void setTotalValue(Double totalValue) {
         this.totalValue = totalValue;
+    }
+
+    public Map<BillTypeAtomic, Long> getBillTypeCounts() {
+        return billTypeCounts;
+    }
+
+    public void setBillTypeCounts(Map<BillTypeAtomic, Long> billTypeCounts) {
+        this.billTypeCounts = billTypeCounts;
     }
 }
