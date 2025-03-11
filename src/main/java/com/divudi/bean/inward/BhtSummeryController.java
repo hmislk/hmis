@@ -71,6 +71,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.EncounterCreditCompany;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Staff;
 import com.divudi.facade.EncounterCreditCompanyFacade;
 import com.divudi.java.CommonFunctions;
 
@@ -88,6 +89,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import kotlin.collections.ArrayDeque;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -1784,6 +1786,11 @@ public class BhtSummeryController implements Serializable {
                 updateProBillFee(temBi);
                 temProfFee += cit.getTotal();
             } else {
+                if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
+                    if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
+                        updateProBillFeeForDocAndNeurses(temBi);;
+                    }
+                }
                 temHosFee += cit.getTotal();
             }
 
@@ -1846,6 +1853,17 @@ public class BhtSummeryController implements Serializable {
 
     private void updateProBillFee(BillItem bItem) {
         for (BillFee bf : getProfesionallFee()) {
+            bf.setReferenceBillItem(bItem);
+            getBillFeeFacade().edit(bf);
+
+            bItem.getProFees().add(bf);
+
+        }
+
+    }
+    
+    private void updateProBillFeeForDocAndNeurses(BillItem bItem) {
+        for (BillFee bf : getDoctorAndNurseFee()) {
             bf.setReferenceBillItem(bItem);
             getBillFeeFacade().edit(bf);
 
@@ -2027,6 +2045,54 @@ public class BhtSummeryController implements Serializable {
     public void clear() {
         patientEncounter = null;
         makeNull();
+    }
+
+    public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi) {
+        List<BillItem> newBillItems = new ArrayList<>();
+        Map<Staff, BillFee> staffFeeMap = new HashMap<>(); // Efficient tracking of fee per staff
+        double totalFee = 0.0;
+
+        for (BillItem i : bi) {
+            if ((i.getInwardChargeType() == InwardChargeType.ProfessionalCharge
+                    || i.getInwardChargeType() == InwardChargeType.DoctorAndNurses)
+                    && i.getAdjustedValue() != 0) {
+                
+                if(i.getProFees() == null){
+                    i.setProFees(i.getBillFees());
+                }
+
+                for (BillFee bf : i.getProFees()) {
+                    Staff staff = bf.getStaff();
+                    System.out.println("staff = " + staff.getPerson().getNameWithTitle());
+
+                    if (staffFeeMap.containsKey(staff)) {
+                        staffFeeMap.get(staff).setFeeAdjusted(staffFeeMap.get(staff).getFeeAdjusted() + bf.getFeeAdjusted());
+                    } else {
+                        // Create a new BillFee instance to avoid modifying the original objects
+                        BillFee newBillFee = new BillFee();
+                        newBillFee.setStaff(staff);
+                        newBillFee.setFeeAdjusted(bf.getFeeAdjusted());
+                        staffFeeMap.put(staff, newBillFee);
+                    }
+                }
+
+                totalFee += i.getAdjustedValue();
+            }
+        }
+
+        // Convert map values to a list
+        List<BillFee> proFees = new ArrayList<>(staffFeeMap.values());
+
+        // Only create a BillItem if there are valid professional fees
+        if (!proFees.isEmpty()) {
+            BillItem newBillItem = new BillItem();
+            newBillItem.setInwardChargeType(InwardChargeType.ProfessionalCharge);
+            newBillItem.setProFees(proFees);
+            newBillItem.setAdjustedValue(totalFee);
+            newBillItems.add(newBillItem);
+        }
+
+        return newBillItems;
     }
 
     public String navigateToIntrimBill() {
