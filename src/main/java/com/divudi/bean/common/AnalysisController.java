@@ -101,72 +101,72 @@ public class AnalysisController implements Serializable {
     }
 
     public DailyBillReportBundle generateDailyBillTypeCounts(
-            List<BillTypeAtomic> btas,
-            Date paramFromDate,
-            Date paramToDate,
-            Institution paramInstitution,
-            Department paramDepartment,
-            Institution paramSite) {
+        List<BillTypeAtomic> btas,
+        Date paramFromDate,
+        Date paramToDate,
+        Institution paramInstitution,
+        Department paramDepartment,
+        Institution paramSite) {
 
-        DailyBillReportBundle reportBundle = new DailyBillReportBundle();
-        Map<String, Object> parameters = new HashMap<>();
+    DailyBillReportBundle reportBundle = new DailyBillReportBundle();
+    Map<String, Object> parameters = new HashMap<>();
 
-        // Use FUNCTION('DATE', bill.createdAt) to extract only the date
-        String jpql = "select new com.divudi.data.analytics.DailyBillTypeSummary("
-                + " FUNCTION('DATE', bill.createdAt), COALESCE(bill.billTypeAtomic, 'UNKNOWN'), count(bill), COALESCE(sum(bill.netTotal), 0.0)) "
-                + " from Bill bill "
-                + " where bill.retired=false ";
+    // Aggregating at the date level
+    String jpql = "SELECT new com.divudi.data.analytics.DailyBillTypeSummary("
+            + " CAST(bill.createdAt AS date), bill.billTypeAtomic, SUM(bill.count), SUM(bill.netTotal)) "
+            + " FROM Bill bill "
+            + " WHERE bill.retired = false ";
 
-        if (btas != null && !btas.isEmpty()) {
-            jpql += " and bill.billTypeAtomic in :btas ";
-            parameters.put("btas", btas);
-        }
-
-        if (paramFromDate != null) {
-            jpql += " and bill.createdAt >= :fd ";
-            parameters.put("fd", paramFromDate);
-        }
-
-        if (paramToDate != null) {
-            jpql += " and bill.createdAt <= :td ";
-            parameters.put("td", paramToDate);
-        }
-
-        if (paramInstitution != null) {
-            jpql += " and bill.department.institution = :ins ";
-            parameters.put("ins", paramInstitution);
-        }
-
-        if (paramDepartment != null) {
-            jpql += " and bill.department = :dep ";
-            parameters.put("dep", paramDepartment);
-        }
-
-        if (paramSite != null) {
-            jpql += " and bill.department.site = :site ";
-            parameters.put("site", paramSite);
-        }
-
-        jpql += " group by FUNCTION('DATE', bill.createdAt), bill.billTypeAtomic "
-                + " order by FUNCTION('DATE', bill.createdAt)";
-
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
-        List<DailyBillTypeSummary> results = (List<DailyBillTypeSummary>) billFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-        System.out.println("results = " + results);
-        if (results != null && !results.isEmpty()) {
-            reportBundle.setBillSummaries(results);
-        }
-
-        return reportBundle;
+    if (btas != null && !btas.isEmpty()) {
+        jpql += " AND bill.billTypeAtomic IN :btas ";
+        parameters.put("btas", btas);
     }
 
-    public List<String> getUniqueBillTypes() {
+    if (paramFromDate != null) {
+        jpql += " AND bill.createdAt >= :fd ";
+        parameters.put("fd", paramFromDate);
+    }
+
+    if (paramToDate != null) {
+        jpql += " AND bill.createdAt <= :td ";
+        parameters.put("td", paramToDate);
+    }
+
+    if (paramInstitution != null) {
+        jpql += " AND bill.department.institution = :ins ";
+        parameters.put("ins", paramInstitution);
+    }
+
+    if (paramDepartment != null) {
+        jpql += " AND bill.department = :dep ";
+        parameters.put("dep", paramDepartment);
+    }
+
+    if (paramSite != null) {
+        jpql += " AND bill.department.site = :site ";
+        parameters.put("site", paramSite);
+    }
+
+    jpql += " GROUP BY CAST(bill.createdAt AS date), bill.billTypeAtomic "
+            + " ORDER BY CAST(bill.createdAt AS date)";
+
+    System.out.println("JPQL = " + jpql);
+    System.out.println("Parameters = " + parameters);
+    
+    List<DailyBillTypeSummary> results = (List<DailyBillTypeSummary>) billFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+    
+    if (results != null && !results.isEmpty()) {
+        reportBundle.setBillSummaries(results);
+    }
+
+    return reportBundle;
+}
+
+
+    public List<DailyBillTypeSummary> getBillTypesByDate(Date date) {
         return getDailyBillReportBundle().getBillSummaries()
                 .stream()
-                .map(summary -> summary.getBillType().toString()) // Convert to String
-                .distinct()
-                .sorted()
+                .filter(summary -> summary.getDate().equals(date))
                 .collect(Collectors.toList());
     }
 
@@ -182,6 +182,65 @@ public class AnalysisController implements Serializable {
                 .stream()
                 .mapToDouble(DailyBillTypeSummary::getTotalValue)
                 .sum();
+    }
+
+    public List<String> getUniqueBillTypes() {
+        return getDailyBillReportBundle().getBillSummaries()
+                .stream()
+                .map(summary -> summary.getBillType().toString()) // Convert to String
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    public Long getBillCountForType(Date date, String billType) {
+        return getDailyBillReportBundle().getBillSummaries()
+                .stream()
+                .filter(summary -> summary.getDate().equals(date) && summary.getBillType().toString().equals(billType))
+                .mapToLong(DailyBillTypeSummary::getBillCount)
+                .sum();
+    }
+
+    public void exportExcel() {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Bill Types Report");
+
+        // Create header row
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Date");
+
+        // Dynamically add bill type headers
+        List<String> billTypes = getUniqueBillTypes();
+        for (int i = 0; i < billTypes.size(); i++) {
+            headerRow.createCell(i + 1).setCellValue(billTypes.get(i));
+        }
+        headerRow.createCell(billTypes.size() + 1).setCellValue("Total Value");
+
+        // Fill data rows
+        int rowNum = 1;
+        for (DailyBillTypeSummary summary : dailyBillReportBundle.getBillSummaries()) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(summary.getDate().toString());
+
+            // Populate bill type counts dynamically
+            for (int i = 0; i < billTypes.size(); i++) {
+                row.createCell(i + 1).setCellValue(getBillCountForType(summary.getDate(), billTypes.get(i)));
+            }
+
+            row.createCell(billTypes.size() + 1).setCellValue(summary.getTotalValue());
+        }
+
+        try {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+            response.reset();
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=Bill_Types.xlsx");
+            workbook.write(response.getOutputStream());
+            fc.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void clearPharmacyBillItemSale() {

@@ -6,9 +6,10 @@ import java.util.Date;
 /**
  *
  * @author Dr M H B Ariyaratne with ChatGpt
- * 
+ *
  */
 public class DailyBillTypeSummary {
+
     private Date date;
     private BillTypeAtomic billType;
     private Long billCount;
@@ -21,9 +22,7 @@ public class DailyBillTypeSummary {
         this.totalValue = totalValue;
     }
 
-    public DailyBillTypeSummary() {
-    }
-
+    // Getters & Setters
     public Date getDate() {
         return date;
     }
@@ -55,6 +54,4 @@ public class DailyBillTypeSummary {
     public void setTotalValue(Double totalValue) {
         this.totalValue = totalValue;
     }
-    
-    
 }
