@@ -677,7 +677,7 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", true)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", false)) {
 
                 if (checkInvestigation()) {
                     JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");

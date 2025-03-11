@@ -48,47 +48,47 @@
 
                 <!-- Bill Heading -->
                 <tr>
-                    <td colspan="2" style="text-align: center; font-size: 10px; text-decoration: underline;">
-                        <h:outputLabel value="Transfer Receive Note" />
+                    <td colspan="2" style="text-align: center; font-size: 16px; text-decoration: underline;">
+                        <h:outputLabel value="Transfer Receive Note" style="font-weight: bold;" />
                         <h:outputLabel value="**Cancelled**" style="color: red;" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
                     </td>
                 </tr>
 
                 <!-- Bill Details -->
                 <tr>
-                    <td style="width: 50%; padding: 1px; font-size: 10px;">
+                    <td style="width: 50%; padding: 1px; font-size: 13.3333px;">
                         <h:outputLabel value="Location From: #{cc.attrs.bill.fromDepartment.name}" />
                     </td>
-                    <td style="width: 50%; padding: 1px; font-size: 10px;">
+                    <td style="width: 50%; padding: 1px; font-size: 13.3333px;">
                         <h:outputLabel value="Location To: #{cc.attrs.bill.department.name}" />
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 1px; font-size: 10px;">
+                    <td style="padding: 1px; font-size: 13.3333px;">
                         <h:outputLabel value="Received Person: #{cc.attrs.bill.creater.staff.code}" />
                     </td>
-                    <td style="padding: 1px; font-size: 10px;">
+                    <td style="padding: 1px; font-size: 13.3333px;">
                         <h:outputLabel value="Issued Person: #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" />
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 1px; font-size: 10px;">
+                    <td style="padding: 1px; font-size: 13.3333px;">
                         <h:outputLabel value="Receive No: #{cc.attrs.bill.deptId}" />
                     </td>
-                    <td style="padding: 1px; font-size: 10px;">
+                    <td style="padding: 1px; font-size: 13.3333px;">
                         <h:outputLabel value="Issue No: #{cc.attrs.bill.backwardReferenceBill.deptId}" />
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 1px; font-size: 10px;">
+                    <td style="padding: 1px; font-size: 13.3333px;">
                         <h:outputLabel value="Received Time: #{cc.attrs.bill.createdAt}" />
                     </td>
-                    <td style="padding: 1px; font-size: 10px;">
+                    <td style="padding: 1px; font-size: 13.3333px;">
                         <h:outputLabel value="Issue Time: #{cc.attrs.bill.backwardReferenceBill.createdAt}" />
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding: 1px; font-size: 10px;">
+                    <td style="padding: 1px; font-size: 13.3333px;">
                         <h:outputLabel value="Transporter: #{cc.attrs.bill.fromStaff.person.nameWithTitle}" />
                     </td>
                     <td></td>
