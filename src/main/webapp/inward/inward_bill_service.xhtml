@@ -266,6 +266,7 @@
                                                                 filter="true" 
                                                                 var="t" 
                                                                 id="itm" 
+                                                                filterMatchMode="contains"
                                                                 class="w-100" 
                                                                 converter="itemLightConverter">
                                                                 <f:selectItems value="#{billBhtController.inwardItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
@@ -565,7 +566,7 @@
                                                     
                                                     <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="pp">
-                                                            <print:five_five_custom_3 bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
+                                                            <print:five_five_custom_3_inward bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>

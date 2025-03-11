@@ -81,7 +81,14 @@ public class InwardSearch implements Serializable {
     private BillComponentFacade billCommponentFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-
+    @EJB
+    PersonFacade personFacade;
+    @EJB
+    private PaymentFacade paymentFacade;
+    @EJB
+    PaymentService paymentService;
+    @EJB
+    DrawerService drawerService;
     private CommonFunctions commonFunctions;
 
     /**
@@ -104,17 +111,10 @@ public class InwardSearch implements Serializable {
     @Inject
     PatientInvestigationController patientInvestigationController;
     @Inject
-    SearchController searchController;
-    @Inject
     PatientDepositController patientDepositController;
-    @EJB
-    PersonFacade personFacade;
-    @EJB
-    private PaymentFacade paymentFacade;
-    @EJB
-    PaymentService paymentService;
-    @EJB
-    DrawerService drawerService;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+
     /**
      * Properties
      */
@@ -149,7 +149,7 @@ public class InwardSearch implements Serializable {
 
     private boolean withProfessionalFee = false;
 
-    public String navigateToPaymentBillCancellation(){
+    public String navigateToPaymentBillCancellation() {
         switch (bill.getBillTypeAtomic()) {
             case INWARD_DEPOSIT:
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
@@ -213,7 +213,7 @@ public class InwardSearch implements Serializable {
     }
 
     public String fillDataForInpatientsFinalBillHeader(String template, Bill bill) {
-        
+
         if (isInvalidInput(template, bill)) {
             return "";
         }
@@ -375,8 +375,8 @@ public class InwardSearch implements Serializable {
 
         return true;
     }
-    
-    public String navigateToProfessionalFeeList(){
+
+    public String navigateToProfessionalFeeList() {
         return "/inward/inward_search_professional_estimate?faces-redirect=true";
     }
 
@@ -677,17 +677,20 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (checkInvestigation()) {
-                JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
-                return;
-            }
+            if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", false)) {
 
-            if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
-
-                ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
-                if (patientInvestigationController.sampledForAnyItemInTheBill(getBill())) {
-                    JsfUtil.addErrorMessage("Sample Already collected can't cancel");
+                if (checkInvestigation()) {
+                    JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
                     return;
+                }
+
+                if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
+
+                    ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+                    if (patientInvestigationController.sampledForAnyItemInTheBill(getBill())) {
+                        JsfUtil.addErrorMessage("Sample Already collected can't cancel");
+                        return;
+                    }
                 }
             }
 
@@ -1334,7 +1337,7 @@ public class InwardSearch implements Serializable {
 
         return false;
     }
-    
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> pays = new ArrayList<>();
         Payment p = new Payment();
@@ -1359,25 +1362,26 @@ public class InwardSearch implements Serializable {
         }
 
     }
-    
+
     public void cancelPaymentBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;
             }
             if (paymentMethod == PaymentMethod.Cash) {
-            Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
-            double drawerBalance = userDrawer.getCashInHandValue();
-            double paymentAmount = getBill().getNetTotal();
-
-            if (drawerBalance < paymentAmount) {
-                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                return;
+                Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
+                double drawerBalance = userDrawer.getCashInHandValue();
+                double paymentAmount = getBill().getNetTotal();
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                    if (drawerBalance < paymentAmount) {
+                        JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                        return;
+                    }
+                }
             }
-        }
             CancelledBill cb = createCancelBill();
             //Copy & paste
-            
+
             getBillFacade().create(cb);
             cancelBillItemsPayment(cb);
             cancelPaymentItems(bill);
@@ -1820,7 +1824,7 @@ public class InwardSearch implements Serializable {
     public void setWithProfessionalFee(boolean withProfessionalFee) {
         this.withProfessionalFee = withProfessionalFee;
     }
-    
+
     public boolean isShowOrginalBill() {
         return showOrginalBill;
     }
