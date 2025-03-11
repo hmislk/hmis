@@ -7713,6 +7713,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
+        
+         if (refundPaymentMethod == null) {
+            JsfUtil.addErrorMessage("Please select payment method to refund");
+            return;
+        }
 
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
