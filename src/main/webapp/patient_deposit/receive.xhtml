@@ -461,18 +461,18 @@
                                     <h:outputLabel value="Add New Patient Deposit" />
                                 </f:facet>
 
-                                <h:panelGrid columns="2" >
+                                <h:panelGrid columns="2" columnClasses="label-column, input-column" style="width:100%" >
                                     <p:outputLabel value="Payment Method" ></p:outputLabel>
-                                    <p:selectOneMenu id="cmbPs" value="#{patientDepositController.bill.paymentMethod}">
+                                    <p:selectOneMenu id="cmbPs" value="#{patientDepositController.bill.paymentMethod}" style="width:200px">
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                         <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" />
                                     </p:selectOneMenu>
 
                                     <p:outputLabel value="Value" ></p:outputLabel>
-                                    <p:inputText onfocus="this.select()" class="mx-1" value="#{patientDepositController.bill.netTotal}" id="txtNetTotal"/>
+                                    <p:inputText onfocus="this.select()" class="mx-1" value="#{patientDepositController.bill.netTotal}" id="txtNetTotal" style="width:200px"/>
 
                                     <p:outputLabel value="Comments" ></p:outputLabel>
-                                    <p:inputText value="#{patientDepositController.bill.comments}" placeholder="Enter a Comment" id="comment"/>
+                                    <p:inputText value="#{patientDepositController.bill.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
 
 
                                 </h:panelGrid>

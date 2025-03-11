@@ -19,37 +19,22 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <!--<h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>-->
+        <h:outputStylesheet library="css" name="channeling_five_five_custom_3.css" />
 
-        <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
-        <div style="page-break-after: always; width: 100%; height: 100%; margin : 10px;  margin-top: 12px; text-transform: capitalize!important;" >
-            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow channel billing without header')}">
-                <h:outputText value="#{bookingController.fillDataForChannelingBillHeader(sessionController.departmentPreference.channelingBillHeaderTemplate,cc.attrs.bill)}" escape="false" ></h:outputText>
-                <div class="institutionName" style="margin-top: 25px;">
-                    <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
-                </div>
-                <div class="institutionContact" style="margin-top: -1mm;">
-                    <div>
-                        <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
-                    </div>
-                    <div style="margin-top: -1mm;">
-                        <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                        <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
-                        <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
-                    </div>
-                    <div style="margin-top: -1mm;">
-                        <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
-                    </div>
-                </div>
-            </h:panelGroup>
+        <div class="receipt-container" >
 
-
-            <div style="font-size: 14px; text-align: center;font-weight: bold;">
+            <!-- Header Section -->
+            <div class="hospital-name">
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}"/>
-                <h:outputLabel value="**Refunded**"  rendered="#{cc.attrs.ref eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
-            <table style="margin-left: 6%;font-size: 12px; margin-top: -2mm" >
+            <!-- Separator Line -->
+            <div class="separator"></div>
+
+            <table class="info-table" >
                 <tr style="font-size: 12pt;">
                     <td>
                         <b>
@@ -313,6 +298,21 @@
                         <h:outputLabel value="#{cc.attrs.bill.deptId}"></h:outputLabel>
                     </td>
                 </tr>
+                
+                 <tr>
+                    <td>
+                        <h:outputLabel value="Payment" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod.label}"></h:outputLabel>
+                    </td>
+                </tr>
 
                 <tr>
                     <td>
@@ -364,98 +364,8 @@
 
             </table>
 
-            <div style="margin-left: 6%; margin-right: 8%;">
-                <div style="font-size: 8pt" class="d-flex justify-content-between">
-                    <div class="d-flex gap-2">
-                        <h:outputLabel value="Bill ID :" />
-                        <h:outputLabel value="#{cc.attrs.bill.id}" />
-                    </div>
-                    <h:panelGroup rendered="#{cc.attrs.bill.paidBill.id ne null}" >
-                        <div class="d-flex gap-2">
-                            <h:outputLabel value="Paid Bill ID :" />
-                            <h:outputLabel value="#{cc.attrs.bill.paidBill.id}" />
-                            <p:spacer height="1" width="15" ></p:spacer>
-                        </div>
-                    </h:panelGroup>
-                </div>
-            </div>
 
-            <h:panelGroup rendered="#{sessionController.departmentPreference.showBarCodeInChannelBookingBill}" >
-                <div class="d-flex justify-content-center">
-                    <p:graphicImage 
-                        cache="false" 
-                        value="#{barcodeController.createBarcodeCode128}" 
-                        style="max-width: 12cm; padding: 10px; margin: 10px;" >
-                        <f:param name="code" value="#{cc.attrs.bill.patient.phn}" />
-                    </p:graphicImage>
-                </div>
-            </h:panelGroup>
-
-            <div style="margin-left: 6%" class="mt-1">
-                <div style="font-size: 8pt" class="d-flex gap-2">
-                    <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" ></h:outputLabel>
-                    <h:panelGroup rendered="#{cc.attrs.bill.paidBill ne null and cc.attrs.bill.paymentMethod ne cc.attrs.bill.paidBill.paymentMethod}" >
-                        <div class="d-flex gap-2">
-                            <h:outputLabel value="-" />
-                            <h:outputLabel value="#{cc.attrs.bill.paidBill.paymentMethod}" />
-                        </div>
-                    </h:panelGroup>
-                </div>
-
-                <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card' }" >
-                    <h:outputText 
-                        style="font-size: 8pt"  
-                        value="Paid by : Credit Card :"/>
-                    <h:outputText
-                        class="mx-1"
-                        style="font-size: 8pt"  
-                        value="#{cc.attrs.bill.paidAmount}">
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </h:outputText>
-                    <h:outputText 
-                        style="font-size: 8pt"  
-                        value="(Card Last 4 Digits:#{cc.attrs.paymentMethodData.creditCard.no})"/>
-                </h:panelGroup>
-
-                <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Agent' }" >
-                    <h:outputText
-                        class="mx-1"
-                        style="font-size: 8pt"  
-                        value="#{cc.attrs.bill.creditCompany.name}">
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </h:outputText>
-                    <h:outputText 
-                        style="font-size: 8pt"  
-                        value="(Ref. No: #{cc.attrs.bill.agentRefNo})"/>
-                </h:panelGroup>
-
-                <h:panelGroup rendered="#{cc.attrs.bill.paidBill ne null and cc.attrs.bill.paidBill.paymentMethod eq 'Agent'}" >
-                    <h:outputText
-                        class="mx-1"
-                        style="font-size: 8pt"
-                        value="#{cc.attrs.bill.creditCompany.name}">
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </h:outputText>
-                    <h:outputText
-                        style="font-size: 8pt"
-                        value="(Ref. No: #{cc.attrs.bill.agentRefNo})"/>
-                </h:panelGroup>
-
-                <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 10px;font-size: 8pt">
-                    <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
-                    <ui:repeat value="#{cc.attrs.payments}" var="p">
-                        <div class="col-2">
-                            <div class="d-flex align-items-center m-1 justify-content-between">
-                                <div class="d-flex">
-                                    <div>#{p.paymentMethod}</div>
-                                    <p:outputLabel style="font-size: 8pt" class="mx-1" rendered="#{p.paymentMethod eq 'Card'}" value="RefNo:#{p.creditCardRefNo}" />
-                                </div>
-                                <div class="mx-2">#{p.paidValue}</div>
-                            </div>
-                        </div>
-                    </ui:repeat>
-                </h:panelGroup>
-            </div>
         </div>
+
     </cc:implementation>
 </html>
