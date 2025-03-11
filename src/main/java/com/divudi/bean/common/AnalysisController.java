@@ -29,8 +29,10 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -100,6 +102,37 @@ public class AnalysisController implements Serializable {
         dailyBillReportBundle = generateDailyBillTypeCounts(btas, fromDate, toDate, institution, department, site);
     }
 
+    private DailyBillReportBundle processQueryResults(List<Object[]> results) {
+        DailyBillReportBundle reportBundle = new DailyBillReportBundle();
+
+        Map<Date, DailyBillTypeSummary> summaryMap = new HashMap<>();
+
+        for (Object[] result : results) {
+            Date date = (Date) result[0];
+            BillTypeAtomic billType = (BillTypeAtomic) result[1];
+            Long billCount = (Long) result[2];
+            Double totalValue = (Double) result[3];
+
+            // Check if date already exists in map
+            if (!summaryMap.containsKey(date)) {
+                summaryMap.put(date, new DailyBillTypeSummary(date, 0L, 0.0));
+            }
+
+            // Get existing summary
+            DailyBillTypeSummary summary = summaryMap.get(date);
+
+            // Add values
+            summary.setBillCount(summary.getBillCount() + billCount);
+            summary.setTotalValue(summary.getTotalValue() + totalValue);
+            summary.addBillTypeCount(billType, billCount);
+        }
+
+        // Convert map values to list and set in the bundle
+        reportBundle.setBillSummaries(new ArrayList<>(summaryMap.values()));
+
+        return reportBundle;
+    }
+
     public DailyBillReportBundle generateDailyBillTypeCounts(
             List<BillTypeAtomic> btas,
             Date paramFromDate,
@@ -111,9 +144,8 @@ public class AnalysisController implements Serializable {
         DailyBillReportBundle reportBundle = new DailyBillReportBundle();
         Map<String, Object> parameters = new HashMap<>();
 
-        // Correct JPQL Query with COUNT(bill) instead of SUM(bill.count)
-        String jpql = "SELECT new com.divudi.data.analytics.DailyBillTypeSummary("
-                + " CAST(bill.createdAt AS date), bill.billTypeAtomic, COUNT(bill), SUM(bill.netTotal)) "
+        // Modified Query to return both Date & BillTypeAtomic
+        String jpql = "SELECT CAST(bill.createdAt AS date), bill.billTypeAtomic, COUNT(bill), SUM(bill.netTotal) "
                 + " FROM Bill bill "
                 + " WHERE bill.retired = false ";
 
@@ -150,16 +182,10 @@ public class AnalysisController implements Serializable {
         jpql += " GROUP BY CAST(bill.createdAt AS date), bill.billTypeAtomic "
                 + " ORDER BY CAST(bill.createdAt AS date)";
 
-        System.out.println("JPQL = " + jpql);
-        System.out.println("Parameters = " + parameters);
+        List<Object[]> results = billFacade.findRawResultsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        List<DailyBillTypeSummary> results = (List<DailyBillTypeSummary>) billFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-        System.out.println("results.size() = " + results.size());
-        
-        if (results != null && !results.isEmpty()) {
-            reportBundle.setBillSummaries(results);
-        }
+        // Convert the results into the structured report bundle
+        reportBundle = processQueryResults(results);
 
         return reportBundle;
     }
@@ -185,21 +211,13 @@ public class AnalysisController implements Serializable {
                 .sum();
     }
 
-    public List<String> getUniqueBillTypes() {
+    public List<BillTypeAtomic> getUniqueBillTypes() {
         return getDailyBillReportBundle().getBillSummaries()
                 .stream()
-                .map(summary -> summary.getBillType().toString()) // Convert to String
+                .flatMap(summary -> summary.getBillTypeCounts().keySet().stream()) // Get BillTypeAtomic keys
                 .distinct()
-                .sorted()
+                .sorted(Comparator.comparing(Enum::name)) // Ensure consistent ordering
                 .collect(Collectors.toList());
-    }
-
-    public Long getBillCountForType(Date date, String billType) {
-        return getDailyBillReportBundle().getBillSummaries()
-                .stream()
-                .filter(summary -> summary.getDate().equals(date) && summary.getBillType().toString().equals(billType))
-                .mapToLong(DailyBillTypeSummary::getBillCount)
-                .sum();
     }
 
     public void exportExcel() {
@@ -210,12 +228,14 @@ public class AnalysisController implements Serializable {
         Row headerRow = sheet.createRow(0);
         headerRow.createCell(0).setCellValue("Date");
 
-        // Dynamically add bill type headers
-        List<String> billTypes = getUniqueBillTypes();
+        // Get the list of unique bill types
+        List<BillTypeAtomic> billTypes = getUniqueBillTypes();
+
         for (int i = 0; i < billTypes.size(); i++) {
-            headerRow.createCell(i + 1).setCellValue(billTypes.get(i));
+            headerRow.createCell(i + 1).setCellValue(billTypes.get(i).toString()); // Convert Enum to String
         }
-        headerRow.createCell(billTypes.size() + 1).setCellValue("Total Value");
+        headerRow.createCell(billTypes.size() + 1).setCellValue("Total Count");
+        headerRow.createCell(billTypes.size() + 2).setCellValue("Total Value");
 
         // Fill data rows
         int rowNum = 1;
@@ -225,10 +245,13 @@ public class AnalysisController implements Serializable {
 
             // Populate bill type counts dynamically
             for (int i = 0; i < billTypes.size(); i++) {
-                row.createCell(i + 1).setCellValue(getBillCountForType(summary.getDate(), billTypes.get(i)));
+                BillTypeAtomic type = billTypes.get(i);
+                Long count = summary.getBillTypeCounts().getOrDefault(type, 0L);
+                row.createCell(i + 1).setCellValue(count);
             }
 
-            row.createCell(billTypes.size() + 1).setCellValue(summary.getTotalValue());
+            row.createCell(billTypes.size() + 1).setCellValue(summary.getBillCount());
+            row.createCell(billTypes.size() + 2).setCellValue(summary.getTotalValue());
         }
 
         try {

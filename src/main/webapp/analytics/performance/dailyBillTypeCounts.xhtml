@@ -136,41 +136,40 @@
 
 
                         <h:panelGroup layout="block" style="overflow-x:auto;">
-                            <table class="table table-bordered">
+                            <table class="ui-widget ui-widget-content" style="width:100%;">
                                 <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <ui:repeat value="#{analysisController.uniqueBillTypes}" var="bt">
-                                            <th>#{bt}</th>
+                                    <tr class="ui-widget-header">
+                                        <th  style="min-width: 10em;">Date</th>
+                                        <th class="text-end" style="min-width: 10em;">Total Count</th>
+                                        <th  class="text-end" style="min-width: 10em;">Total Value</th>
+                                        <ui:repeat value="#{analysisController.getUniqueBillTypes()}" var="billType">
+                                            <th>#{billType}</th>
                                         </ui:repeat>
-                                        <th>Total Value</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <ui:repeat value="#{analysisController.dailyBillReportBundle.billSummaries}" var="row" varStatus="status">
+                                    <ui:repeat value="#{analysisController.dailyBillReportBundle.billSummaries}" var="row">
                                         <tr>
-                                            <td>
-                                                <h:outputText value="#{row.date}">
-                                                    <f:convertDateTime pattern="yyyy-MM-dd" />
-                                                </h:outputText>
-                                            </td>
-                                            <ui:repeat value="#{analysisController.uniqueBillTypes}" var="bt">
-                                                <td>
-                                                    <h:outputText value="#{analysisController.getBillCountForType(row.date, bt)}">
-                                                        <f:convertNumber pattern="#,##0"/>
-                                                    </h:outputText>
-                                                </td>
-                                            </ui:repeat>
-                                            <td>
+                                            <td>#{row.date}</td>
+                                            <td class="text-end" >#{row.billCount}</td>
+                                            <td class="text-end" >
                                                 <h:outputText value="#{row.totalValue}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
+                                                </h:outputText></td>
+
+                                            <ui:repeat value="#{analysisController.getUniqueBillTypes()}" var="billType">
+                                                <td  class="text-end" >
+                                                    <h:outputText value="#{row.billTypeCounts[billType]}" 
+                                                                  rendered="#{row.billTypeCounts[billType] ne null}"/>
+                                                </td>
+                                            </ui:repeat>
                                         </tr>
                                     </ui:repeat>
                                 </tbody>
-
                             </table>
+
+
+
                         </h:panelGroup>
 
 
