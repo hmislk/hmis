@@ -5081,7 +5081,7 @@ public class FinancialTransactionController implements Serializable {
 
         //System.out.println("*******************************************");
         //System.out.println("Update Sender Drawer Start");//Sended Cashier Dravr Update
-        drawerController.updateDrawerForOuts(payments, sender);
+//        drawerController.updateDrawerForOuts(payments, sender);
         //System.out.println("Update Sender Drawer End");
     }
 
