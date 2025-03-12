@@ -84,7 +84,7 @@
                         <tr>
                             <td style="padding: 2px;">Address :</td>
                             <td style="padding: 2px;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.address}"/>
+                                <h:outputLabel value="#{empty cc.attrs.bill.patient.person.address ? 'N/A' : cc.attrs.bill.patient.person.address}"/>
                             </td>
                         </tr>
                     </h:panelGroup>
