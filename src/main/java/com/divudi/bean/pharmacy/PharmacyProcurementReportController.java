@@ -30,7 +30,6 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.IncomeBundle;
 import com.divudi.data.IncomeRow;
-import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.WebUser;
@@ -49,7 +48,7 @@ import javax.inject.Named;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
-// </editor-fold>  
+// </editor-fold>
 
 /**
  * @author Dr M H B Ariyaratne
@@ -81,7 +80,7 @@ public class PharmacyProcurementReportController implements Serializable {
     @EJB
     BillService billService;
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private BillBeanController billBean;
@@ -127,7 +126,7 @@ public class PharmacyProcurementReportController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -190,7 +189,7 @@ public class PharmacyProcurementReportController implements Serializable {
     }
 
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
     public void resetAllFiltersExceptDateRange() {
@@ -250,11 +249,11 @@ public class PharmacyProcurementReportController implements Serializable {
         bundle.generateProcurementDetailsForBillItems();
     }
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Constructors">
     public PharmacyProcurementReportController() {
     }
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
 
     /**
@@ -1174,5 +1173,5 @@ public class PharmacyProcurementReportController implements Serializable {
         this.maxResult = maxResult;
     }
 
-// </editor-fold>  
+// </editor-fold>
 }
