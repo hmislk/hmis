@@ -2485,24 +2485,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void channelBookingCancel() {
-//        System.out.println("BillType = " + selectedBillSession.getBill().getBillType());
-//        System.out.println("Payment Method = " + cancelPaymentMethod);
-
-//        System.out.println("getPaymentMethod = " + getCancelPaymentMethod());
         if (getCancelPaymentMethod() != null) {
-            switch (getCancelPaymentMethod()) {
-                case Cash:
-                    if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
-                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+            if (getCancelPaymentMethod() == Cash) {
+                double drawerBalance = financialTransactionController.getLoggedUserDrawer().getCashInHandValue();
+                double paymentAmount = selectedBillSession.getBill().getPaidAmount();
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                    if (drawerBalance < paymentAmount) {
+                        JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
                         return;
                     }
-                    break;
-                case Card:
-                    if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
-                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                        return;
-                    }
-                    break;
+                }
             }
         }
 
@@ -7657,8 +7649,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void channelBookingRefund() {
-        
-         if (refundPaymentMethod == null) {
+
+        if (refundPaymentMethod == null) {
             JsfUtil.addErrorMessage("Please select payment method to refund");
             return;
         }
@@ -7718,7 +7710,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
-              
+
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
     }
@@ -7897,7 +7889,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             RefundBill rpb = (RefundBill) createCashRefundBill(bill.getPaidBill());
 
             Payment p = createPaymentForCancellationsAndRefunds(rpb, refundPaymentMethod);
-            
+
             if (refundPaymentMethod != PaymentMethod.Agent) {
                 drawerController.updateDrawerForOuts(p);
             }
