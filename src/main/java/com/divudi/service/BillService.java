@@ -361,6 +361,27 @@ public class BillService {
         return billFacade.findFirstByJpql(jpql, parameters);
     }
 
+    public Bill fetchFirstBill() {
+        String jpql = "SELECT b "
+                + " FROM Bill b "
+                + " where b.retired=:Ret "
+                + " order by b.id";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        return billFacade.findFirstByJpql(jpql, parameters);
+    }
+    
+    public Bill fetchLastBill() {
+        String jpql = "SELECT b "
+                + " FROM Bill b "
+                + " where b.retired=:Ret "
+                + " order by b.id desc";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        return billFacade.findFirstByJpql(jpql, parameters);
+    }
+    
+    
     public void saveBill(Bill bill) {
         saveBill(bill, null);
     }
@@ -671,7 +692,7 @@ public class BillService {
             WebUser webUser,
             BillTypeAtomic billTypeAtomic) {
         return fetchBills(fromDate, toDate, institution, site, department, webUser,
-                billTypeAtomic != null ? List.of(billTypeAtomic) : null);
+                billTypeAtomic != null ? Collections.singletonList(billTypeAtomic) : null);
     }
 
     public List<Bill> fetchBills(Date fromDate,

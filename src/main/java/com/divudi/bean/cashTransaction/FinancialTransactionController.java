@@ -5211,22 +5211,61 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void addMissingBackwordReferancesForShiftStartBills() {
-        List<Bill> handoverStarts = billService.fetchBills(null, null, null, null, null, null, BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        Bill firstBill = billService.fetchFirstBill();
+        Bill lastBill = billService.fetchLastBill();
+        Date fd = CommonFunctions.getStartOfDay();
+        Date td = CommonFunctions.getEndOfDay();
+        if (firstBill != null) {
+            if (firstBill.getCreatedAt() != null) {
+                fd = CommonFunctions.getStartOfDay(firstBill.getCreatedAt());
+            }
+        }
+
+        if (lastBill != null) {
+            if (lastBill.getCreatedAt() != null) {
+                td = CommonFunctions.getEndOfDay(lastBill.getCreatedAt());
+            }
+        }
+
+        List<Bill> handoverStarts = billService.fetchBills(fd, td, null, null, null, null, BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+
         if (handoverStarts == null) {
             JsfUtil.addErrorMessage("No bills");
             return;
         }
+        
+        System.out.println("handoverStarts.size() = " + handoverStarts.size());
+        
         for (Bill handoverStartBill : handoverStarts) {
             if (handoverStartBill.getBillTypeAtomic() == null) {
                 System.out.println("No bill type atomic = " + handoverStartBill);
                 continue;
             }
-            if(handoverStartBill.getBillTypeAtomic()!=BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE){
+            if (handoverStartBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE) {
                 System.out.println("Wrong bill type atomic = " + handoverStartBill);
                 continue;
             }
+            if (handoverStartBill.getBackwardReferenceBill() != null) {
+                System.out.println("Backword Referance is already set = " + handoverStartBill);
+                continue;
+            }
             Bill handoverAcceptBill = billService.fetchBillReferredAsReferenceBill(selectedBill);
-            
+            if (handoverAcceptBill == null) {
+                System.out.println("No referance bill = " + handoverStartBill);
+                continue;
+            }
+            if (handoverAcceptBill.getBillTypeAtomic() == null) {
+                System.out.println("Referance bill  has no bill type atomic " + handoverStartBill);
+                continue;
+            }
+            if (handoverAcceptBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT) {
+                System.out.println("Referance bill type  is NOT BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE " + handoverStartBill);
+                continue;
+            }
+
+            handoverStartBill.setBackwardReferenceBill(handoverAcceptBill);
+            System.out.println("BackwordReferance Added to " + handoverStartBill);
+            billFacade.edit(handoverStartBill);
         }
 
     }
