@@ -50,6 +50,7 @@ import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentMethodValueFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.service.BillService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -94,6 +95,8 @@ public class FinancialTransactionController implements Serializable {
     BillNumberGenerator billNumberGenerator;
     @EJB
     DrawerFacade drawerFacade;
+    @EJB
+    BillService billService;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -5201,9 +5204,31 @@ public class FinancialTransactionController implements Serializable {
         selectedBill.setCompleted(true);
         selectedBill.setCompletedAt(new Date());
         selectedBill.setCompletedBy(sessionController.getLoggedUser());
+        selectedBill.setBackwardReferenceBill(currentBill);
         billController.save(selectedBill);
 
         return "/cashier/handover_accept_bill_print?faces-redirect=true";
+    }
+
+    public void addMissingBackwordReferancesForShiftStartBills() {
+        List<Bill> handoverStarts = billService.fetchBills(null, null, null, null, null, null, BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        if (handoverStarts == null) {
+            JsfUtil.addErrorMessage("No bills");
+            return;
+        }
+        for (Bill handoverStartBill : handoverStarts) {
+            if (handoverStartBill.getBillTypeAtomic() == null) {
+                System.out.println("No bill type atomic = " + handoverStartBill);
+                continue;
+            }
+            if(handoverStartBill.getBillTypeAtomic()!=BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE){
+                System.out.println("Wrong bill type atomic = " + handoverStartBill);
+                continue;
+            }
+            Bill handoverAcceptBill = billService.fetchBillReferredAsReferenceBill(selectedBill);
+            
+        }
+
     }
 
     private CashBookEntry findCashbookEntry(Payment p, List<CashBookEntry> cbEntries) {
