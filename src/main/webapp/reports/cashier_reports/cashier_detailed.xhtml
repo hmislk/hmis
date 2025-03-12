@@ -12,8 +12,22 @@
         <ui:composition template="./../index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Cashier Details" class="m-1">
-
+                    <p:panel class="m-1">
+                        
+                        <f:facet name="header">
+                            <div class="d-flex align-item-center justify-content-between" >
+                                <div>
+                                    <h:outputLabel value="Cashier Details" />
+                                </div>
+                                <div>
+                                    <p:commandButton class="ui-button-secondary"
+                                                     icon="fas fa-arrow-left"
+                                                     value="Back to All Cashier Summary"
+                                                     action="#{searchController.navigatBackToAllCashierSummary}"/>
+                                </div>
+                            </div>
+                        </f:facet>
+                        
                         <h:panelGrid columns="8" class="w-100">
                             <h:outputLabel value="From"/>
                             <p:calendar 
