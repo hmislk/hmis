@@ -5249,7 +5249,7 @@ public class FinancialTransactionController implements Serializable {
                 System.out.println("Backword Referance is already set = " + handoverStartBill);
                 continue;
             }
-            Bill handoverAcceptBill = billService.fetchBillReferredAsReferenceBill(selectedBill);
+            Bill handoverAcceptBill = billService.fetchBillReferredAsReferenceBill(handoverStartBill,BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
             if (handoverAcceptBill == null) {
                 System.out.println("No referance bill = " + handoverStartBill);
                 continue;

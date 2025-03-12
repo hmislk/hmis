@@ -322,66 +322,66 @@ public class BillService {
         return batchBill;
     }
 
-    public Bill fetchBillReferredAsReferenceBill(Bill referredBill) {
-        return fetchBillByReferenceType("referenceBill", referredBill);
+    public Bill fetchBillReferredAsReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("referenceBill", referredBill, billTypeAtomic);
     }
 
-    public Bill fetchBillReferredAsBackwardReferenceBill(Bill referredBill) {
-        return fetchBillByReferenceType("backwardReferenceBill", referredBill);
+    public Bill fetchBillReferredAsBackwardReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("backwardReferenceBill", referredBill, billTypeAtomic);
     }
 
-    public Bill fetchBillReferredAsForwardReferenceBill(Bill referredBill) {
-        return fetchBillByReferenceType("forwardReferenceBill", referredBill);
+    public Bill fetchBillReferredAsForwardReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("forwardReferenceBill", referredBill, billTypeAtomic);
     }
 
-    public Bill fetchBillReferredAsBilledBill(Bill referredBill) {
-        return fetchBillByReferenceType("billedBill", referredBill);
+    public Bill fetchBillReferredAsBilledBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("billedBill", referredBill, billTypeAtomic);
     }
 
-    public Bill fetchBillReferredAsCancelledBill(Bill referredBill) {
-        return fetchBillByReferenceType("cancelledBill", referredBill);
+    public Bill fetchBillReferredAsCancelledBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("cancelledBill", referredBill, billTypeAtomic);
     }
 
-    public Bill fetchBillReferredAsRefundedBill(Bill referredBill) {
-        return fetchBillByReferenceType("refundedBill", referredBill);
+    public Bill fetchBillReferredAsRefundedBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("refundedBill", referredBill, billTypeAtomic);
     }
 
-    public Bill fetchBillReferredAsReactivatedBill(Bill referredBill) {
-        return fetchBillByReferenceType("reactivatedBill", referredBill);
+    public Bill fetchBillReferredAsReactivatedBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("reactivatedBill", referredBill, billTypeAtomic);
     }
 
-    public Bill fetchBillReferredAsPaidBill(Bill referredBill) {
-        return fetchBillByReferenceType("paidBill", referredBill);
+    public Bill fetchBillReferredAsPaidBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("paidBill", referredBill, billTypeAtomic);
     }
 
-    private Bill fetchBillByReferenceType(String referenceField, Bill referredBill) {
-        String jpql = "SELECT b FROM Bill b WHERE b." + referenceField + " = :b";
+    private Bill fetchBillByReferenceType(String referenceField, Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        String jpql = "SELECT b FROM Bill b WHERE b." + referenceField + " = :b AND b.billTypeAtomic = :billType";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("b", referredBill);
+        parameters.put("billType", billTypeAtomic);
         return billFacade.findFirstByJpql(jpql, parameters);
     }
 
     public Bill fetchFirstBill() {
         String jpql = "SELECT b "
                 + " FROM Bill b "
-                + " where b.retired=:Ret "
+                + " where b.retired=:ret "
                 + " order by b.id";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
         return billFacade.findFirstByJpql(jpql, parameters);
     }
-    
+
     public Bill fetchLastBill() {
         String jpql = "SELECT b "
                 + " FROM Bill b "
-                + " where b.retired=:Ret "
+                + " where b.retired=:ret "
                 + " order by b.id desc";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
         return billFacade.findFirstByJpql(jpql, parameters);
     }
-    
-    
+
     public void saveBill(Bill bill) {
         saveBill(bill, null);
     }
