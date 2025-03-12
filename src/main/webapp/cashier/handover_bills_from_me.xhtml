@@ -54,50 +54,63 @@
                                 <h:outputText value="#{bp.id}" />
                             </p:column>
 
-                            <p:column headerText="Handover Time">
-                                <h:outputText value="#{bp.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
-                                </h:outputText>
-                            </p:column>
 
-                            <p:column headerText="Handover Receipt Number">
-                                <h:outputText value="#{bp.insId}" />
-                            </p:column>
-
-                            <p:column headerText="Shift Start Receipt ID">
+                            <p:column headerText="Shift Number">
                                 <h:outputText value="#{bp.referenceBill.deptId}" />
                             </p:column>
 
 
-                            <p:column headerText="Shift Start">
+                            <p:column 
+                                width="10em"
+                                class="text-center"
+                                headerText="Shift Start">
                                 <h:outputText value="#{bp.referenceBill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Shift End">
+                            <p:column 
+                                width="10em"
+                                class="text-center"
+                                headerText="Shift End">
                                 <h:outputText value="#{bp.referenceBill.referenceBill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
-
-                            <p:column headerText="Handover Accept At">
+                            <p:column headerText="Handover Number">
+                                <h:outputText value="#{bp.insId}" />
+                            </p:column>
+                            <p:column headerText="Handover Time">
+                                <h:outputText value="#{bp.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column 
+                                headerText="Accept Number">
                                 <h:outputText value="#{bp.backwardReferenceBill.deptId}" />
                             </p:column>
-
-                            <p:column headerText="Created At">
-                                <h:outputText value="#{bp.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                            <p:column 
+                                width="10em"
+                                class="text-center"
+                                headerText="Accept At">
+                                <h:outputText value="#{bp.backwardReferenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Value">
+                            <p:column 
+                                headerText="Value" 
+                                class="text-end"
+                                width="8em">
                                 <h:outputText value="#{bp.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Value">
+                            <p:column 
+                                headerText="Status" 
+                                width="10em"
+                                class="text-center">
                                 <p:badge value="&nbsp;&nbsp;Awaiting" severity="info" icon="pi pi-hourglass" 
                                          rendered="#{not bp.completed and not bp.cancelled}" ></p:badge>
                                 <p:badge value="&nbsp;&nbsp;Rejected" severity="danger" icon="pi pi-times" 
@@ -107,8 +120,9 @@
                             </p:column>
 
 
-                            <p:column headerText="Actions">
-
+                            <p:column 
+                                headerText="Actions"
+                                width="6em"      >
                                 <p:commandButton 
                                     rendered="#{not bp.completed and not bp.cancelled}"
                                     value="Recall"
