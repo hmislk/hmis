@@ -87,7 +87,7 @@
                     <f:facet name="header">
                         <h:outputText value="Payment Type" />
                     </f:facet>
-                    <h:outputText value="#{row.bill.comments}">
+                    <h:outputText value="#{empty row.bill.comments ? 'N/A' : row.bill.comments}">
                     </h:outputText>
                 </p:column>
 
