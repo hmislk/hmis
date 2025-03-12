@@ -103,7 +103,7 @@ public class TransferRequestController implements Serializable {
 
     private boolean checkItems(Item item) {
         for (BillItem b : getBillItems()) {
-            if (b.getItem().getId() == item.getId()) {
+            if (Objects.equals(b.getItem().getId(), item.getId())) {
                 return true;
             }
         }
@@ -116,7 +116,7 @@ public class TransferRequestController implements Serializable {
             return true;
         }
 
-        if (getToDepartment().getId() == getSessionController().getDepartment().getId()) {
+        if (Objects.equals(getToDepartment().getId(), getSessionController().getDepartment().getId())) {
             JsfUtil.addErrorMessage("U can't request same department");
             return true;
         }
@@ -218,7 +218,7 @@ public class TransferRequestController implements Serializable {
         }
 
     }
-    
+
     public void approveTransferRequestBill(){
         transerRequestBillPre.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         transerRequestBillPre.setApproveAt(new Date());
@@ -227,11 +227,11 @@ public class TransferRequestController implements Serializable {
         transerRequestBillPre.setApproveUser(sessionController.getLoggedUser());
         billFacade.edit(transerRequestBillPre);
         JsfUtil.addSuccessMessage("Approval done. Send the request to "+ transerRequestBillPre.getToDepartment());
-        
+
         bill = transerRequestBillPre;
         printPreview = true;
-       
-        
+
+
     }
 
     public void request() {
@@ -423,7 +423,7 @@ public class TransferRequestController implements Serializable {
         setToDepartment(getTranserRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
     }
-    
+
     @Inject
     private SearchController searchController;
 
@@ -488,7 +488,7 @@ public class TransferRequestController implements Serializable {
         getTranserRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTranserRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
-        
+
         searchController.fillSavedTranserRequestBills();
         return "/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true";
     }

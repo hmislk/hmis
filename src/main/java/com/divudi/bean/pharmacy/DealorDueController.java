@@ -187,12 +187,11 @@ public class DealorDueController implements Serializable {
     }
 
     private void fillIDealorDue(List<BillType> billTypeBilled, List<BillType> billTypeReturned) {
-        Set<Institution> setIns = new HashSet<>();
         List<Institution> list = getCreditBean().getDealorFromBills(getFromDate(), getToDate(), billTypeBilled);
 
         list.addAll(getCreditBean().getDealorFromReturnBills(getFromDate(), getToDate(), billTypeReturned));
 
-        setIns.addAll(list);
+        Set<Institution> setIns = new HashSet<>(list);
         items = new ArrayList<>();
         for (Institution ins : setIns) {
             //     System.err.println("Ins " + ins.getName());
@@ -266,12 +265,11 @@ public class DealorDueController implements Serializable {
 
     private void createAgeTable(List<BillType> billTypesBilled, List<BillType> billTypesReturned) {
         makeNull();
-        Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getDealorFromBills(billTypesBilled);
         list.addAll(getCreditBean().getDealorFromReturnBills(billTypesReturned));
 
-        setIns.addAll(list);
+        Set<Institution> setIns = new HashSet<>(list);
 
         dealorCreditAge = new ArrayList<>();
         for (Institution ins : setIns) {
