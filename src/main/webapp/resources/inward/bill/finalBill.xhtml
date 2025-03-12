@@ -685,9 +685,9 @@
                                     </ui:repeat>
                                 </h:panelGroup>
 
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and  Show Sum Value of a Doctor',false)}">
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
                                     <!-- Loop through ProfessionalCharge last -->
-                                    <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems)}" var="bip">
+                                    <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter)}" var="bip">
                                         <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                                 <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
@@ -828,6 +828,7 @@
                                                                               and b.refundedBill eq null
                                                                               and b.billClass eq 'class com.divudi.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
+                                                            <h:outputLabel value="#{b.comments}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comments of Payments on Final Bill On Final Bill Print',false)}"/>
                                                             <h:outputLabel value="#{b.deptId}"/>
                                                             <h:outputLabel value="#{b.paymentMethod}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Method on Payments on Final Bill On Final Bill Print',false)}"/>
                                                             <h:outputLabel value="#{b.netTotal}"
