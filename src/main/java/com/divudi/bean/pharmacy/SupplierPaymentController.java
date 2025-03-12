@@ -2633,13 +2633,11 @@ public class SupplierPaymentController implements Serializable {
         boolean supplierPaymentBillNumbersShouldIncludeThePaymentMethod = configOptionApplicationController.getBooleanValueByKey("Supplier Payment Bill Numbers Should Include The Payment Method", true);
         
         String deptId ;
-
         if(supplierPaymentBillNumbersShouldIncludeThePaymentMethod){
             deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION, getCurrent().getPaymentMethod());
         }else{
             deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION);
         }
-        
         getCurrent().setInsId(deptId);
         getCurrent().setDeptId(deptId);
 
