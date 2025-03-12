@@ -12,8 +12,6 @@ import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
@@ -84,7 +82,7 @@ public class PurchaseOrderRequestController implements Serializable {
     private List<BillItem> billItems;
     private boolean printPreview;
     private double totalBillItemsCount;
-    //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
+    //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     @Inject
     PharmacyCalculation pharmacyBillBean;
     private PaymentMethodData paymentMethodData;
@@ -338,7 +336,7 @@ public class PurchaseOrderRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            double qty = 0.0;
+            double qty;
             qty = b.getQty() + b.getPharmaceuticalBillItem().getFreeQty();
             if (qty <= 0.0) {
                 b.setRetired(true);

@@ -155,17 +155,23 @@
                             </p:column>
 
                             <p:column >
-                                <h:outputLabel value="#{b.total}">
+
+                                <h:outputLabel value="#{b.total}" >
+
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column >
-                                <h:outputLabel value="#{b.discount}">
+
+                                <h:outputLabel value="#{b.discount}" >
+
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column >
-                                <h:outputLabel value="#{b.netTotal}">
+
+                                <h:outputLabel value="#{b.netTotal}" >
+
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
@@ -215,7 +221,9 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
+
                                 <p:column footerText="#{pharmacySaleReportController.billedDetail.netTotal}" >
+
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacySaleReportController.billedDetail.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -355,7 +363,9 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{pharmacySaleReportController.cancelledDetail.netTotal}">
+
+                                <p:column footerText="#{pharmacySaleReportController.cancelledDetail.netTotal}" >
+
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacySaleReportController.cancelledDetail.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
