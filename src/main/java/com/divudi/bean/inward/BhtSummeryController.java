@@ -1294,6 +1294,10 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        originalBill.setDiscount(discount);
+        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
+        getBillFacade().edit(originalBill);
+
         saveBill();
         saveBillItem();
 
@@ -1301,10 +1305,6 @@ public class BhtSummeryController implements Serializable {
             getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
             createCreditBillForCreditCompany(getPatientEncounter(), getCurrent().getNetTotal());
         }
-
-        originalBill.setDiscount(discount);
-        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
-        getBillFacade().edit(originalBill);
 
         getPatientEncounter().setFinalBill(getCurrent());
         getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
@@ -1861,7 +1861,7 @@ public class BhtSummeryController implements Serializable {
         }
 
     }
-    
+
     private void updateProBillFeeForDocAndNeurses(BillItem bItem) {
         for (BillFee bf : getDoctorAndNurseFee()) {
             bf.setReferenceBillItem(bItem);
@@ -2046,32 +2046,49 @@ public class BhtSummeryController implements Serializable {
         patientEncounter = null;
         makeNull();
     }
-
-    public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi) {
+    
+    public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe) {
         List<BillItem> newBillItems = new ArrayList<>();
-        Map<Staff, BillFee> staffFeeMap = new HashMap<>(); // Efficient tracking of fee per staff
+        Map<Staff, BillFee> staffFeeMap = new HashMap<>();
         double totalFee = 0.0;
 
         for (BillItem i : bi) {
             if ((i.getInwardChargeType() == InwardChargeType.ProfessionalCharge
                     || i.getInwardChargeType() == InwardChargeType.DoctorAndNurses)
                     && i.getAdjustedValue() != 0) {
-                
-                if(i.getProFees() == null){
-                    i.setProFees(i.getBillFees());
+//                System.out.println("i = " + i);
+//                System.out.println("i.getInwardChargeType() = " + i.getInwardChargeType());
+
+                if (i.getProFees() == null) {
+                    List<BillFee> docAndNurseFee = new ArrayList<>();
+                    for (BillFee bf : getInwardBean().createDoctorAndNurseFee(pe)) {
+                        bf.setFeeAdjusted(bf.getFeeValue());
+                        docAndNurseFee.add(bf);
+                        i.setProFees(docAndNurseFee);
+                    }
                 }
 
                 for (BillFee bf : i.getProFees()) {
                     Staff staff = bf.getStaff();
-                    System.out.println("staff = " + staff.getPerson().getNameWithTitle());
+//                    System.out.println("staff = " + staff.getPerson().getNameWithTitle());
+//                    System.out.println("bf.fee = " + bf.getFeeAdjusted());
+//                    System.out.println("bf.feeV = " + bf.getFeeValue());
 
                     if (staffFeeMap.containsKey(staff)) {
-                        staffFeeMap.get(staff).setFeeAdjusted(staffFeeMap.get(staff).getFeeAdjusted() + bf.getFeeAdjusted());
+                        if (bf.getFeeAdjusted() > 0) {
+                            staffFeeMap.get(staff).setFeeAdjusted(staffFeeMap.get(staff).getFeeAdjusted() + bf.getFeeAdjusted());
+                        } else {
+                            staffFeeMap.get(staff).setFeeAdjusted(staffFeeMap.get(staff).getFeeAdjusted() + bf.getFeeValue());
+                        }
                     } else {
-                        // Create a new BillFee instance to avoid modifying the original objects
                         BillFee newBillFee = new BillFee();
                         newBillFee.setStaff(staff);
-                        newBillFee.setFeeAdjusted(bf.getFeeAdjusted());
+                        if (bf.getFeeAdjusted() > 0) {
+                            newBillFee.setFeeAdjusted(bf.getFeeAdjusted());
+                        } else {
+                            newBillFee.setFeeAdjusted(bf.getFeeValue());
+                        }
+
                         staffFeeMap.put(staff, newBillFee);
                     }
                 }
@@ -2080,10 +2097,8 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
-        // Convert map values to a list
         List<BillFee> proFees = new ArrayList<>(staffFeeMap.values());
 
-        // Only create a BillItem if there are valid professional fees
         if (!proFees.isEmpty()) {
             BillItem newBillItem = new BillItem();
             newBillItem.setInwardChargeType(InwardChargeType.ProfessionalCharge);
