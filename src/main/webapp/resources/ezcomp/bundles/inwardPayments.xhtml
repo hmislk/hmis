@@ -83,7 +83,13 @@
                     </h:outputText>
                 </p:column>
 
-
+                <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Type in Inward Payments on Cashier Reports',false)}">
+                    <f:facet name="header">
+                        <h:outputText value="Payment Type" />
+                    </f:facet>
+                    <h:outputText value="#{row.bill.comments}">
+                    </h:outputText>
+                </p:column>
 
                 <p:column class="text-end">
                     <f:facet name="header">
