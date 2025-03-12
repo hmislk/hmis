@@ -3430,7 +3430,7 @@ public class ReportsController implements Serializable {
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty)) "
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty), billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
@@ -3505,12 +3505,13 @@ public class ReportsController implements Serializable {
             parameters.put("code", investigationCode.getCode());
         }
 
-        jpql += "GROUP BY billItem.item.name";
+        jpql += "GROUP BY billItem";
 
         System.out.println("jpql = " + jpql);
         System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        createSummaryRows(rs);
         rs.removeIf(row -> row.getRowValue() == 0.0);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
@@ -3518,6 +3519,30 @@ public class ReportsController implements Serializable {
         b.createRowValuesFromBillItems();
         b.calculateTotalsWithCredit();
         return b;
+    }
+
+    private void createSummaryRows(final List<ReportTemplateRow> rs) {
+        Map<String, ReportTemplateRow> reportRowMap = new HashMap<>();
+
+        for (ReportTemplateRow row : rs) {
+            if (row.getRowValue() == 0.0) {
+                continue;
+            }
+
+            if (row.getBillItem().getNetValue() < 0 && row.getRowValue() > 0) {
+                row.setRowValue(-row.getRowValue());
+            }
+
+            String rowKey = row.getCategoryName();
+
+            reportRowMap.merge(rowKey, row, (existingRow, newRow) -> {
+                existingRow.setRowValue(existingRow.getRowValue() + newRow.getRowValue());
+                return existingRow;
+            });
+        }
+
+        rs.clear();
+        rs.addAll(reportRowMap.values());
     }
 
     public void generateOpdAndInwardDueReport() {
