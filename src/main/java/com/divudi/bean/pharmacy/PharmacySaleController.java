@@ -147,7 +147,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @Inject
     PatientDepositController patientDepositController;
     @Inject
-    CommonController commonController;
+    CommonController commonController; // TODO : Can be removed ?
 
     @Inject
     TokenController tokenController;
@@ -1247,7 +1247,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
-        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+        if (getStock().getItemBatch().getDateOfExpire().before(CommonController.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }
