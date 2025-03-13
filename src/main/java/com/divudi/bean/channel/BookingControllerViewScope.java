@@ -2499,14 +2499,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
+            System.out.println("line 1");
             cancelAgentPaidBill();
             return;
         }
         if (selectedBillSession.getBill().getBillType().getParent() == BillType.ChannelCashFlow && selectedBillSession.getBill().getBillType() != BillType.ChannelAgent) {
+            System.out.println("line 2");
             cancelCashFlowBill();
             return;
         }
         if ((selectedBillSession.getBill().getBillType() == BillType.ChannelOnCall || selectedBillSession.getBill().getBillType() == BillType.ChannelStaff) && selectedBillSession.getBill().getPaidBill() == null) {
+            System.out.println("line 3");
             cancelBookingBill();
             return;
         }
@@ -2514,6 +2517,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (selectedBillSession.getBill().getPaidAmount() == 0) {
                 JsfUtil.addErrorMessage("Can't Cancel. No Payments");
             } else {
+                System.out.println("line 4");
                 cancelCreditPaidBill();
                 return;
             }
@@ -2751,12 +2755,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (bill.getPaidBill() == null) {
             return;
         }
-
+        System.out.println("line 2758" + bill.getPaymentMethod().toString());
         if (cancelPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            System.out.println("line 2760");
             cancelPaymentMethod = null;
         }
 
         if (bill.getPaidBill().equals(bill)) {
+            System.out.println("line 763");
             CancelledBill cb = createCancelCashBill(bill);
             List<Payment> payments = channelService.createPaymentForChannelAppoinmentCancellation(cb, cancelPaymentMethod, getPaymentMethodData(), getSessionController());
             //Payment p = createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
@@ -2781,6 +2787,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billSessionFacade.edit(billSession);
 
         } else {
+            System.out.println("line 2787");
             CancelledBill cb = createCancelBill(bill);
 //            List<Payment> payments = channelService.createPaymentForChannelAppoinmentCancellation(cb, cancelPaymentMethod, getPaymentMethodData(), getSessionController());
 //            //Payment p = createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
@@ -2796,7 +2803,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (bill.getPaidBill() != null) {
                 CancelledBill cpb = createCancelBill(bill.getPaidBill());
                 cpb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-
+                System.out.println("line 2803" + cpb.getPaymentMethod().toString() + "other" + cb.getPaymentMethod().toString());
                 List<Payment> paymentsForPaidBill = channelService.createPaymentForChannelAppoinmentCancellation(cpb, cancelPaymentMethod, getPaymentMethodData(), getSessionController());
                 //Payment p = createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
                 drawerController.updateDrawerForOuts(paymentsForPaidBill);
@@ -3006,7 +3013,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
 //            }
         } else {
-            cb.setPaymentMethod(bill.getPaymentMethod());
+            if (cancelPaymentMethod != null) {
+                cb.setPaymentMethod(cancelPaymentMethod);
+            }else{
+                cb.setPaymentMethod(bill.getPaymentMethod());
+            }
+
         }
 
         getBillFacade().edit(cb);
