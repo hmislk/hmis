@@ -104,6 +104,8 @@ public enum Icon {
     pharmacy_generate_report("Pharmacy - Generate Report"),
     pharmacy_summary_views("Pharmacy - Summary Views"),
     pharmacy_analytics("Pharmacy - Analytics"),
+    Goods_Receipt_With_Approval("Goods Receipt With Approval"),
+    Pharmacy_Order_Cancellation("Pharmacy Order Cancellation"),
     // icons for Optician Section
     Optician_EMR("Optician - EMR Management"),
     Optician_Patient_Management("Optician - Patient Management"),
@@ -118,10 +120,8 @@ public enum Icon {
     Day_End_Summary("Day End Summary"),
     Admit("Admit Patient"),
     Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),
-    
     // icons for cashier
-    Cashier_Drawer("Logged User Drawer"),
-    ;
+    Cashier_Drawer("Logged User Drawer"),;
 
     private final String label;
 

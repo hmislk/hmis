@@ -134,6 +134,12 @@
                                         <bi:fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>                         
                                     </ui:repeat>
                                 </h:panelGroup>
+                                
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom3 paper')}" >
+                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                        <bi:cc_five_five_custom_3_patient bill="#{pp}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </h:panelGroup>
 
                             </h:panelGroup>
 

@@ -31,6 +31,8 @@ public class BillReportBean {
 
     @EJB
     BillFacade billFacade;
+    
+    
 
     public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm, Institution institution, Department department, BillType[] billTypes, Class bc) {
         String sql;

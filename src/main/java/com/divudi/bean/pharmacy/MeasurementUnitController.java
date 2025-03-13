@@ -64,7 +64,7 @@ public class MeasurementUnitController implements Serializable {
         current = new MeasurementUnit();
         return "/pharmacy/admin/unit";
     }
-    
+
     public String navigateToManageMeasurementUnit() {
         current = new MeasurementUnit();
         return "/pharmacy/admin/manage_unit";
@@ -267,7 +267,6 @@ public class MeasurementUnitController implements Serializable {
         }
         if (medicine instanceof Amp) {
 
-            List<MeasurementUnit> us = new ArrayList<>();
             Set<MeasurementUnit> uniqueUnits = new HashSet<>();
             Amp amp = (Amp) medicine;
             if (amp.getIssueUnit() != null) {
@@ -284,11 +283,9 @@ public class MeasurementUnitController implements Serializable {
                     uniqueUnits.add(amp.getVmp().getStrengthUnit());
                 }
             }
-            us.addAll(uniqueUnits);
-            return us;
+            return new ArrayList<>(uniqueUnits);
         } else if (medicine instanceof Vmp) {
 
-            List<MeasurementUnit> us = new ArrayList<>();
             Set<MeasurementUnit> uniqueUnits = new HashSet<>();
             Vmp vmp = (Vmp) medicine;
             if (vmp.getIssueUnit() != null) {
@@ -297,8 +294,7 @@ public class MeasurementUnitController implements Serializable {
             if (vmp.getStrengthUnit() != null) {
                 uniqueUnits.add(vmp.getStrengthUnit());
             }
-            us.addAll(uniqueUnits);
-            return us;
+            return new ArrayList<>(uniqueUnits);
         } else {
             return getDoseUnits();
         }
@@ -340,7 +336,7 @@ public class MeasurementUnitController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             MeasurementUnitController controller = (MeasurementUnitController) facesContext.getApplication().getELResolver().
@@ -349,15 +345,13 @@ public class MeasurementUnitController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

@@ -233,7 +233,7 @@ public class AmppController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             AmppController controller = (AmppController) facesContext.getApplication().getELResolver().
@@ -242,15 +242,13 @@ public class AmppController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

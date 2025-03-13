@@ -33,7 +33,6 @@ import com.divudi.entity.pharmacy.UserStock;
 import com.divudi.entity.pharmacy.UserStockContainer;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.IssueRateMarginsFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
@@ -120,7 +119,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -227,7 +226,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
     private void onEditCalculation(BillItem tmp) {
 
-        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
+        tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
         calculateBillItemForEditing(tmp);
 
         calTotal();
@@ -245,7 +244,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
         }
 
         bi.setQty(editingQty);
-        bi.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - editingQty));
+        bi.getPharmaceuticalBillItem().setQtyInUnit(0 - editingQty);
         calculateBillItemForEditing(bi);
 
         calTotal();
@@ -530,7 +529,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
             JsfUtil.addErrorMessage("Select a Supplier");
             return;
         }
-        if (getPreBill().getComments() == null || getPreBill().getComments().trim().equals("")) {
+        if (getPreBill().getComments() == null || getPreBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
@@ -640,7 +639,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
             return;
         }
 
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         calculateBillItem();
@@ -691,9 +690,9 @@ public class PharmacyReturnwithouttresing implements Serializable {
         netTot = netTot + getPreBill().getServiceCharge();
 
          getPreBill().setTotal(grossTot);
-         
+
         getPreBill().setNetTotal(netTot - Math.abs(getPreBill().getDiscount()));
-       
+
         //getPreBill().setMargin(margin);
 //        getPreBill().setDiscount(discount);
         getPreBill().getPharmacyBill().setSaleValue(retailValue);
@@ -745,7 +744,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        billItem.getPharmaceuticalBillItem().setQty((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQty(0 - qty);
 
         //Rates
         //Values

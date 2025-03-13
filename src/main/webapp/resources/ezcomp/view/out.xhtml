@@ -13,32 +13,23 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panelGrid columns="2" layout="tabular" class="w-100 m-1" rendered="#{cc.attrs.bill ne null}">
-            <f:facet name="header" >
-                <p:outputLabel value="Bill Details" ></p:outputLabel>
-            </f:facet>
-            <p:outputLabel value="Bill ID" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.id}" ></p:outputLabel>
+        <h:panelGrid columns="2" class="w-100" rendered="#{cc.attrs.bill ne null}">
+            <p:outputLabel value="Bill Type Atomic" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.billTypeAtomic}" ></p:outputLabel>
+
+            <p:outputLabel value="Bill Type" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.billType}" ></p:outputLabel>
+
 
             <p:outputLabel value="Bill Created at" ></p:outputLabel>
             <p:outputLabel value="#{cc.attrs.bill.createdAt}" >
                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
             </p:outputLabel>
 
-            <p:outputLabel value="Dept ID" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.deptId}" ></p:outputLabel>
 
-            <p:outputLabel value="Ins ID" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.insId}" ></p:outputLabel>
+            <p:outputLabel value="User" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></p:outputLabel>
 
-            <p:outputLabel value="Bill Type" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.billType}" ></p:outputLabel>
-
-            <p:outputLabel value="Bill Type Atomic" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.billTypeAtomic}" ></p:outputLabel>
-
-            <h:outputLabel value="Bill No" />
-            <h:outputLabel value="#{cc.attrs.bill.deptId}" ></h:outputLabel>
 
             <h:outputLabel value="Payment Type " ></h:outputLabel>
             <p:selectOneMenu   
@@ -50,6 +41,31 @@
                     itemLabel="#{pm.label}"
                     itemValue="#{pm}"/>
             </p:selectOneMenu>
+
+
+            <p:outputLabel value="Retired" ></p:outputLabel>
+            <p:selectBooleanCheckbox value="#{cc.attrs.bill.retired}" ></p:selectBooleanCheckbox>
+
+            <p:separator/>
+            <p:separator/>
+
+            <p:outputLabel  value="Bill ID" ></p:outputLabel>
+            <p:inputText  class="text-end text-white bg-danger" value="#{cc.attrs.bill.id}" ></p:inputText>
+
+            <p:outputLabel value="Dept ID (Bill Number)" ></p:outputLabel>
+            <p:inputText  class="text-end text-white bg-warning" value="#{cc.attrs.bill.deptId}" ></p:inputText>
+
+            <p:outputLabel value="Ins ID" ></p:outputLabel>
+            <p:inputText  class="text-end  text-white bg-warning" value="#{cc.attrs.bill.insId}" ></p:inputText>
+
+            <p:outputLabel value="Invoice Number" ></p:outputLabel>
+            <p:inputText  class="text-end  text-white bg-warning" value="#{cc.attrs.bill.invoiceNumber}" ></p:inputText>
+
+
+
+
+            <p:separator/>
+            <p:separator/>
 
 
             <p:outputLabel value="Institution" ></p:outputLabel>
@@ -182,30 +198,25 @@
             </h:panelGroup>
 
 
-            <p:outputLabel value="User" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></p:outputLabel>
-
-            <p:outputLabel value="Retired" ></p:outputLabel>
-            <p:selectBooleanCheckbox value="#{cc.attrs.bill.retired}" ></p:selectBooleanCheckbox>
 
 
             <p:separator/>
             <p:separator/>
 
             <h:outputLabel value="Total" ></h:outputLabel>
-            <h:inputText value="#{cc.attrs.bill.total}" ></h:inputText>
+            <p:inputText class="text-end  text-white bg-warning" value="#{cc.attrs.bill.total}" ></p:inputText>
 
             <h:outputLabel value="Discount" ></h:outputLabel>
-            <h:inputText value="#{cc.attrs.bill.discount}" ></h:inputText>
+            <p:inputText class="text-end  text-white bg-warning"  value="#{cc.attrs.bill.discount}" ></p:inputText>
 
             <h:outputLabel value="Service Charge" ></h:outputLabel>
-            <h:inputText value="#{cc.attrs.bill.margin}" ></h:inputText>
+            <p:inputText class="text-end  text-white bg-warning"  value="#{cc.attrs.bill.margin}" ></p:inputText>
 
             <h:outputLabel value="Tax" ></h:outputLabel>
-            <h:inputText value="#{cc.attrs.bill.tax}" ></h:inputText>
+            <p:inputText class="text-end  text-white bg-warning"  value="#{cc.attrs.bill.tax}" ></p:inputText>
 
             <h:outputLabel value="Net Total" ></h:outputLabel>
-            <h:inputText value="#{cc.attrs.bill.netTotal}" ></h:inputText>
+            <p:inputText class="text-end  text-white bg-warning"  value="#{cc.attrs.bill.netTotal}" ></p:inputText>
 
 
             <p:separator/>
@@ -221,10 +232,7 @@
             <h:outputLabel value="Referring Institution" ></h:outputLabel>
             <h:outputLabel value="#{cc.attrs.bill.referenceInstitution.name}" ></h:outputLabel>
 
-            <h:outputLabel value="ID" ></h:outputLabel>
-            <h:outputLabel value="#{cc.attrs.bill.id}" ></h:outputLabel>
-
-        </p:panelGrid>
+        </h:panelGrid>
 
     </cc:implementation>
 </html>

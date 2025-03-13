@@ -100,7 +100,7 @@ public class CommonController implements Serializable {
         return url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
     }
 
-    public Date getCurrentDateTime() {
+    public static Date getCurrentDateTime() {
         return new Date();
     }
 

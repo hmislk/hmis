@@ -322,6 +322,66 @@ public class BillService {
         return batchBill;
     }
 
+    public Bill fetchBillReferredAsReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("referenceBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsBackwardReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("backwardReferenceBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsForwardReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("forwardReferenceBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsBilledBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("billedBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsCancelledBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("cancelledBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsRefundedBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("refundedBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsReactivatedBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("reactivatedBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsPaidBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("paidBill", referredBill, billTypeAtomic);
+    }
+
+    private Bill fetchBillByReferenceType(String referenceField, Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        String jpql = "SELECT b FROM Bill b WHERE b." + referenceField + " = :b AND b.billTypeAtomic = :billType";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("b", referredBill);
+        parameters.put("billType", billTypeAtomic);
+        return billFacade.findFirstByJpql(jpql, parameters);
+    }
+
+    public Bill fetchFirstBill() {
+        String jpql = "SELECT b "
+                + " FROM Bill b "
+                + " where b.retired=:ret "
+                + " order by b.id";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        return billFacade.findFirstByJpql(jpql, parameters);
+    }
+
+    public Bill fetchLastBill() {
+        String jpql = "SELECT b "
+                + " FROM Bill b "
+                + " where b.retired=:ret "
+                + " order by b.id desc";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        return billFacade.findFirstByJpql(jpql, parameters);
+    }
+
     public void saveBill(Bill bill) {
         saveBill(bill, null);
     }
@@ -622,6 +682,17 @@ public class BillService {
             WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics) {
         return fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
+    }
+
+    public List<Bill> fetchBills(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            BillTypeAtomic billTypeAtomic) {
+        return fetchBills(fromDate, toDate, institution, site, department, webUser,
+                billTypeAtomic != null ? Collections.singletonList(billTypeAtomic) : null);
     }
 
     public List<Bill> fetchBills(Date fromDate,

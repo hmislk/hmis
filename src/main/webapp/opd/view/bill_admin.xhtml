@@ -36,12 +36,6 @@
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
-                                            <p:commandButton 
-                                                value="Add Payment" 
-                                                ajax="false" 
-                                                action="#{billSearch.addPaymentToViewingBillForAdminToCorrectErrors}" >
-
-                                            </p:commandButton>
                                             <view:out bill="#{billSearch.viewingBill}"/>
                                         </p:panel>
                                     </p:tab>
@@ -52,6 +46,12 @@
                                         <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
                                     </p:tab>
                                     <p:tab title="Bill Payments" >
+                                        <p:commandButton 
+                                            value="Add New Payment" 
+                                            ajax="false" 
+                                            action="#{billSearch.addPaymentToViewingBillForAdminToCorrectErrors}" >
+
+                                        </p:commandButton>
                                         <p:dataTable 
                                             value="#{billSearch.viewingBillPayments}" 
                                             var="p"
@@ -187,9 +187,9 @@
                                                 filterMatchMode="contains" >                                
                                                 <h:outputLabel value="#{bill.deptId}"/>
                                             </p:column>
-<!--                                            <p:column headerText="Bill Class" >                                
-                                                <h:outputLabel value="#{bill.billClass}"/>
-                                            </p:column>-->
+                                            <!--                                            <p:column headerText="Bill Class" >                                
+                                                                                            <h:outputLabel value="#{bill.billClass}"/>
+                                                                                        </p:column>-->
                                             <p:column headerText="Bill Type" >                                
                                                 <h:outputLabel value="#{bill.billTypeAtomic}"/>
                                             </p:column>

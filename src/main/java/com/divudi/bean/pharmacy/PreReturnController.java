@@ -157,7 +157,7 @@ public class PreReturnController implements Serializable {
 
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) i.getQty());
+            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
 
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
@@ -166,7 +166,7 @@ public class PreReturnController implements Serializable {
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty((double) i.getPharmaceuticalBillItem().getQty());
+            i.setQty(i.getPharmaceuticalBillItem().getQty());
 
             double value = i.getNetRate() * i.getQty();
             i.setGrossValue(0 - value);
@@ -207,7 +207,7 @@ public class PreReturnController implements Serializable {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
         }
-        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().equals("")) {
+        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
@@ -215,7 +215,7 @@ public class PreReturnController implements Serializable {
         saveReturnBill();
         saveComponent();
         getBill().getReturnPreBills().add(getReturnBill());
-
+        getReturnBill().setReferenceBill(getBill());
         getBillFacade().edit(getReturnBill());
 
 //        getBill().getReturnPreBills().add(getReturnBill());
@@ -237,7 +237,7 @@ public class PreReturnController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
-    
+
     public void fillReturningQty(){
         if(billItems == null || billItems.isEmpty()){
             JsfUtil.addErrorMessage("Please add bill items");
@@ -284,7 +284,7 @@ public class PreReturnController implements Serializable {
                 continue;
             }
 
-            tmp.setQtyInUnit((double) tmpQty);
+            tmp.setQtyInUnit(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 

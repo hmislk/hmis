@@ -7,8 +7,6 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
@@ -24,7 +22,6 @@ import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -97,7 +94,7 @@ public class SaleReturnController implements Serializable {
             JsfUtil.addErrorMessage("Cancelled Bills CAN NOT BE returned");
             return null;
         }
-        
+
         return "/pharmacy/pharmacy_bill_return_retail?faces-redirect=true";
     }
 
@@ -249,7 +246,7 @@ public class SaleReturnController implements Serializable {
 
     private void savePreComponent() {
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQty((double) (double) i.getQty());
+            i.getPharmaceuticalBillItem().setQty(i.getQty());
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
@@ -430,7 +427,7 @@ public class SaleReturnController implements Serializable {
             return;
         }
 
-        if (getReturnBillcomment() == null || getReturnBillcomment().trim().equals("")) {
+        if (getReturnBillcomment() == null || getReturnBillcomment().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
@@ -521,7 +518,7 @@ public class SaleReturnController implements Serializable {
             //System.err.println("Refund " + rFund);
 //                //System.err.println("Cancelled "+rCacnelled);
 //                //System.err.println("Net "+(rBilled-rCacnelled));
-            tmp.setQty((double) (Math.abs(i.getQty()) - Math.abs(rFund)));
+            tmp.setQty(Math.abs(i.getQty()) - Math.abs(rFund));
 
             bi.setPharmaceuticalBillItem(tmp);
 

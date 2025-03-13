@@ -162,8 +162,12 @@
             </div>
 
             <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
-                <h:outputLabel value="Authorized By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel value="Authorized By : #{cc.attrs.bill.referenceBill.checkedBy.webUserPerson.nameWithTitle}"/>
 
+            </div>
+
+            <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
+                <h:outputLabel value="Approved By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>       
             </div>
 
             <div>

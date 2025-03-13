@@ -94,10 +94,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
 
     @Inject
     SessionController sessionController;
-    
-    @Inject
-    CommonController commonController;
-    
+
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 ////////////////////////
@@ -163,7 +160,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -343,7 +340,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         }
 
         tmp.setGrossValue(tmp.getQty() * tmp.getRate());
-        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
+        tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
 
         calculateBillItemForEditing(tmp);
 
@@ -362,7 +359,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         }
 
         bi.setQty(editingQty);
-        bi.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - editingQty));
+        bi.getPharmaceuticalBillItem().setQtyInUnit(0 - editingQty);
         calculateBillItemForEditing(bi);
 
         calTotal();
@@ -382,7 +379,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
             return null;
         }
 
-        if (getPatient().getPerson().getName().trim().equals("")) {
+        if (getPatient().getPerson().getName().trim().isEmpty()) {
             return null;
         }
 
@@ -403,7 +400,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         return getPatient();
 
     }
-    
+
 //    private Patient savePatient() {
 //        switch (getPatientTabId()) {
 //            case "tabNewPt":
@@ -598,19 +595,17 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         if (qry.length() > 5 && items.size() == 1) {
             stock = items.get(0);
             handleSelectAction();
-        } else if (!qry.trim().equals("") && qry.length() > 4) {
+        } else if (!qry.trim().isEmpty() && qry.length() > 4) {
             itemsWithoutStocks = completeRetailSaleItemsWithoutStocks(qry);
         }
         return items;
     }
 
     public void handleSelectAction() {
-        if (stock == null) {
-            //////System.out.println("Stock NOT selected.");
-        }
-        if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
-            //////System.out.println("Internal Error at PharmacySaleController.java > handleSelectAction");
-        }
+        //////System.out.println("Stock NOT selected.");
+        if (getBillItem() != null) {
+            getBillItem().getPharmaceuticalBillItem();
+        } //////System.out.println("Internal Error at PharmacySaleController.java > handleSelectAction");
 
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
@@ -646,7 +641,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
 //        } else {
 //            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
 //        }
-//        
+//
 //        sql = "select i from Amp i "
 //                + "where i.retired=false and "
 //                + "(i.name) like :n and "
@@ -682,7 +677,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         String sql;
         Map m = new HashMap();
         double d = 0.0;
-        Amp amp = (Amp) ampIn;
+        Amp amp = ampIn;
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("s", d);
         m.put("vmp", amp.getVmp());
@@ -747,7 +742,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
         //Rates
         //Values
@@ -799,7 +794,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
             return;
         }
 
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         calculateBillItem();
@@ -995,7 +990,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         }
         return false;
     }
-    
+
     public boolean errorCheckOnPaymentMethod() {
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
@@ -1340,10 +1335,10 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
                 return;
             }
-            if (toStaff == null && toInstitution == null) {
-                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
-                return;
-            }
+//            if (toStaff == null && toInstitution == null) {
+//                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
+//                return;
+//            }
             if (toStaff != null) {
                 if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
                     JsfUtil.addErrorMessage("No enough walfare credit.");
@@ -1358,7 +1353,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         if (errorCheckForSaleBill()) {
             return;
         }
-        
+
         if (errorCheckOnPaymentMethod()) {
             return;
         }
@@ -1435,8 +1430,8 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
             JsfUtil.addErrorMessage("Please Select Stock");
             return;
         }
-        
-        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+
+        if (getStock().getItemBatch().getDateOfExpire().before(CommonController.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
@@ -1549,7 +1544,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         billItem.setQty(qty);
         //pharmaceutical Bill Item
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         //Values
         billItem.setGrossValue(getStock().getItemBatch().getWholesaleRate() * qty);
     }

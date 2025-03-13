@@ -768,8 +768,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //            JsfUtil.addErrorMessage("No patient selected");
 //            return "";
 //        }
-//        
-//        
+//
+//
 //        patientController.setCurrent(current);
 //        patientEncounterController.setPatient(current);
 //        patientEncounterController.fillCurrentPatientLists(current);
@@ -851,7 +851,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigatePatientAdmit() {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonController.getCurrentDateTime());
         }
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
@@ -860,11 +860,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/inward/inward_admission?faces-redirect=true;";
 
     }
-    
+
     public String navigateToConvertNonBhtToBht(Admission nonBhtAd) {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonController.getCurrentDateTime());
         }
         ad.setPatient(nonBhtAd.getPatient());
         admissionController.setCurrentNonBht(nonBhtAd);

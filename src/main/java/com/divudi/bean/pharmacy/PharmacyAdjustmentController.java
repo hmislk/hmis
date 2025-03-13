@@ -160,7 +160,7 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public List<BillItem> fetchBillItems(BillType bt) {
-        List<BillItem> billItems = new ArrayList<>();
+        List<BillItem> billItems;
 
         Map m = new HashMap();
         String sql;
@@ -543,7 +543,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
 
         tbi.setItem(getStock().getItemBatch().getItem());
-        tbi.setQty((double) qty);
+        tbi.setQty(qty);
 
         //pharmaceutical Bill Item
         getBillItem().getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
@@ -929,7 +929,7 @@ public class PharmacyAdjustmentController implements Serializable {
             fromBi.setPharmaceuticalBillItem(null);
             fromPbi.setStock(s);
             fromBi.setItem(s.getItemBatch().getItem());
-            fromBi.setQty(0 - ((double) s.getStock()));
+            fromBi.setQty(0 - s.getStock());
             //pharmaceutical Bill Item
             fromPbi.setDoe(s.getItemBatch().getDateOfExpire());
             fromPbi.setFreeQty(0.0);
@@ -968,7 +968,7 @@ public class PharmacyAdjustmentController implements Serializable {
             toBi.setPharmaceuticalBillItem(null);
             toPbi.setStock(s);
             toBi.setItem(s.getItemBatch().getItem());
-            toBi.setQty(0 - ((double) s.getStock()));
+            toBi.setQty(0 - s.getStock());
             //pharmaceutical Bill Item
             toPbi.setDoe(s.getItemBatch().getDateOfExpire());
             toPbi.setFreeQty(0.0);
@@ -1021,7 +1021,7 @@ public class PharmacyAdjustmentController implements Serializable {
         toBi.setPharmaceuticalBillItem(null);
         toPbi.setStock(s);
         toBi.setItem(s.getItemBatch().getItem());
-        toBi.setQty(0 - ((double) s.getStock()));
+        toBi.setQty(0 - s.getStock());
         //pharmaceutical Bill Item
         toPbi.setDoe(s.getItemBatch().getDateOfExpire());
         toPbi.setFreeQty(0.0);
@@ -1058,10 +1058,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustDepartmentStock() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1078,10 +1074,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustStockForDepartment() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1091,7 +1083,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1118,7 +1110,7 @@ public class PharmacyAdjustmentController implements Serializable {
             JsfUtil.addErrorMessage("Add Quantity..");
             return;
         }
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1186,10 +1178,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustPurchaseRate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1204,7 +1192,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1222,10 +1210,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustExDate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1235,7 +1219,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1254,10 +1238,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustRetailRate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1267,7 +1247,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1285,10 +1265,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustWholesaleRate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1298,7 +1274,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }

@@ -9,6 +9,7 @@ import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.PaymentMethod;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -44,6 +45,8 @@ public class BillNumber implements Serializable {
     private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     private BillClassType billClassType;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
     private Integer billYear;
     //Retairing properties
     boolean retired;
@@ -53,6 +56,8 @@ public class BillNumber implements Serializable {
     Date retiredAt;
     private String retireComments;
 
+    
+    
 
     public boolean isRetired() {
         return retired;
@@ -183,6 +188,14 @@ public class BillNumber implements Serializable {
 
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }

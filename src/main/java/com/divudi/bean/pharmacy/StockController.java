@@ -99,10 +99,7 @@ public class StockController implements Serializable {
     }
 
     public void listStocksOfSelectedItem(Item item) {
-        selectedItemStocks = null;
-        if (selectedItemStocks == null) {
-            selectedItemStocks = new ArrayList<>();
-        }
+        selectedItemStocks = new ArrayList<>();
         selectedItem = item;
         if (item == null) {
             return;
@@ -349,7 +346,7 @@ public class StockController implements Serializable {
     }
 
     public double findStock(Institution institution, List<Amp> amps) {
-        Double stock = null;
+        Double stock;
         String jpql;
         Map m = new HashMap();
 
@@ -372,7 +369,7 @@ public class StockController implements Serializable {
     }
 
     public double findStock(Department department, List<Amp> amps) {
-        Double stock = null;
+        Double stock;
         String jpql;
         Map m = new HashMap();
 
@@ -420,7 +417,7 @@ public class StockController implements Serializable {
         if (amps.isEmpty()) {
             return 0.0;
         }
-        Double stock = null;
+        double stock;
         String jpql;
         Map m = new HashMap();
         Amp tamp = amps.get(0);

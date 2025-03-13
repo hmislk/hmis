@@ -314,7 +314,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             billItem = new BillItem();
         }
         if (billItem.getPharmaceuticalBillItem() == null) {
-            PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+            PharmaceuticalBillItem pbi = new PharmaceuticalBillItem(); // TODO : Why ?
             pbi.setBillItem(billItem);
         }
         return billItem;
@@ -804,9 +804,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 financialTransactionController.navigateToFinancialTransactionIndex();
-            } 
+            }
         }
-        
+
         editingQty = null;
         if (getPreBill().getBillType() == BillType.PharmacyPre
                 && getPreBill().getBillClassType() != BillClassType.PreBill) {
@@ -849,8 +849,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         //    removeSettledToken();
         billPreview = true;
     }
-    
-    
+
+
 
     public void markToken() {
         Token t = tokenController.findPharmacyTokens(getPreBill());
@@ -1111,9 +1111,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
-            } 
-        } 
- 
+            }
+        }
+
         if (args.getBillType() == BillType.PharmacyPre && args.getBillClassType() == BillClassType.PreBill) {
             String sql = "Select b from BilledBill b"
                     + " where b.referenceBill=:bil"

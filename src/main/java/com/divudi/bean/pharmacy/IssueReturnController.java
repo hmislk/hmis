@@ -256,10 +256,10 @@ public class IssueReturnController implements Serializable {
         double retailValue = 0.0;
 
         for (BillItem i : getBillItems()) {
-            double itemPurchaseValue = 0.0;
-            double itemRetialValue = 0.0;
+            double itemPurchaseValue;
+            double itemRetialValue;
 
-            i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) i.getQty());
+            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
 
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
@@ -268,7 +268,7 @@ public class IssueReturnController implements Serializable {
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty(0 - (double) i.getPharmaceuticalBillItem().getQty());
+            i.setQty(0 - i.getPharmaceuticalBillItem().getQty());
 
             double value = i.getRate() * i.getQty();
             i.setGrossValue(0 - value);
@@ -314,7 +314,7 @@ public class IssueReturnController implements Serializable {
 
     private void saveComponentForSaveReturnBill() {
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) i.getQty());
+            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }

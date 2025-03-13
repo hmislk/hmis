@@ -81,7 +81,6 @@ public class GrnController implements Serializable {
     @EJB
     private AmpFacade ampFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
@@ -269,8 +268,8 @@ public class GrnController implements Serializable {
         double totalQuantityOfBillItemsRefernceToOriginalItem = 0.0;
         double totalFreeQuantityOfBillItemsRefernceToOriginalItem = 0.0;
 
-        double remainFreeQty = 0.0;
-        double remainQty = 0.0;
+        double remainFreeQty;
+        double remainQty;
         if (originalBillItemToDuplicate != null) {
             PharmaceuticalBillItem newPharmaceuticalBillItemCreatedByDuplication = new PharmaceuticalBillItem();
             newPharmaceuticalBillItemCreatedByDuplication.copy(originalBillItemToDuplicate.getPharmaceuticalBillItem());
@@ -342,7 +341,7 @@ public class GrnController implements Serializable {
             }
         }
 
-        if (pid.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+        if (pid.getPharmaceuticalBillItem().getStringValue().trim().isEmpty()) {
             Date date = pid.getPharmaceuticalBillItem().getDoe();
             DateFormat df = new SimpleDateFormat("ddMMyyyy");
             String reportDate = df.format(date);
@@ -354,14 +353,14 @@ public class GrnController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -949,9 +948,9 @@ public class GrnController implements Serializable {
 
 //    public void generateBillComponent() {
 //
-//        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {        
+//        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
 //            double remains = getPharmacyCalculation().calQtyInTwoSql(i);
-//            
+//
 //            if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
 //                BillItem bi = new BillItem();
 //                bi.setSearialNo(getBillItems().size());
@@ -1001,14 +1000,14 @@ public class GrnController implements Serializable {
                 double tmpQty = bi.getQty();
                 double tmpFreeQty = remainFreeQty;
 
-                bi.setPreviousRecieveQtyInUnit((double) tmpQty);
-                bi.setPreviousRecieveFreeQtyInUnit((double) tmpFreeQty);
+                bi.setPreviousRecieveQtyInUnit(tmpQty);
+                bi.setPreviousRecieveFreeQtyInUnit(tmpFreeQty);
 
                 ph.setQty(tmpQty);
-                ph.setQtyInUnit((double) tmpQty);
+                ph.setQtyInUnit(tmpQty);
 
-                ph.setFreeQtyInUnit((double) tmpFreeQty);
-                ph.setFreeQty((double) tmpFreeQty);
+                ph.setFreeQtyInUnit(tmpFreeQty);
+                ph.setFreeQty(tmpFreeQty);
 
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
@@ -1050,14 +1049,14 @@ public class GrnController implements Serializable {
                 double tmpQty = bi.getQty();
                 double tmpFreeQty = remainFreeQty;
 
-                bi.setPreviousRecieveQtyInUnit((double) tmpQty);
-                bi.setPreviousRecieveFreeQtyInUnit((double) tmpFreeQty);
+                bi.setPreviousRecieveQtyInUnit(tmpQty);
+                bi.setPreviousRecieveFreeQtyInUnit(tmpFreeQty);
 
                 ph.setQty(tmpQty);
-                ph.setQtyInUnit((double) tmpQty);
+                ph.setQtyInUnit(tmpQty);
 
-                ph.setFreeQtyInUnit((double) tmpFreeQty);
-                ph.setFreeQty((double) tmpFreeQty);
+                ph.setFreeQtyInUnit(tmpFreeQty);
+                ph.setFreeQty(tmpFreeQty);
 
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
@@ -1097,7 +1096,7 @@ public class GrnController implements Serializable {
             double tmpQty = bi.getQty();
 
             ph.setQty(tmpQty);
-            ph.setQtyInUnit((double) tmpQty);
+            ph.setQtyInUnit(tmpQty);
 
             ph.setFreeQty(i.getFreeQty());
             ph.setFreeQtyInUnit(i.getFreeQty());
@@ -1153,7 +1152,7 @@ public class GrnController implements Serializable {
         String sql = "select (p.retailRate) from PharmaceuticalBillItem p where p.billItem=:b";
         HashMap hm = new HashMap();
         hm.put("b", billItem.getReferanceBillItem());
-        return (double) getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public void onEdit(RowEditEvent event) {
@@ -1204,10 +1203,8 @@ public class GrnController implements Serializable {
     }
 
     public void onEditPurchaseRate(BillItem tmp) {
-
         double retail = tmp.getPharmaceuticalBillItem().getPurchaseRate() + (tmp.getPharmaceuticalBillItem().getPurchaseRate() * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
-        tmp.getPharmaceuticalBillItem().setRetailRate((double) retail);
-
+        tmp.getPharmaceuticalBillItem().setRetailRate(retail);
     }
 
     public void calGrossTotal() {
@@ -1361,7 +1358,7 @@ public class GrnController implements Serializable {
         double exp = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
-            p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
+            p.setQty(p.getPharmaceuticalBillItem().getQtyInUnit());
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             serialNo++;
             p.setSearialNo(serialNo);
@@ -1492,14 +1489,6 @@ public class GrnController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<Bill> getFilteredValue() {

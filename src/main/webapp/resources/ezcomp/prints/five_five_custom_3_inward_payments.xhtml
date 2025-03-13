@@ -29,17 +29,17 @@
 
         <!-- Composite Component Implementation -->
         <cc:implementation>
-            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
+            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable Inward Payment Custom 3 Bill Header')}" >
                 <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
             </h:panelGroup>
-            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Inward Payment Custom 3 Bill Header')}" >
                 <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3_without_header.css" />
             </h:panelGroup>
 
 
 
             <div class="receipt-container">
-                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}">
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Inward Payment Custom 3 Bill Header')}">
                     <div class="hospital-name" >
                         <h:outputLabel value="#{cc.attrs.bill.institution.name}" />
                     </div>
@@ -60,7 +60,7 @@
                 </h:panelGroup>
                 <!-- Header Section -->
                 <div class="hospital-name">
-                    <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                    <h:outputLabel value="Inward Deposit Recipt"/>
                     <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                     <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
@@ -79,6 +79,39 @@
                             </td>
                         </tr>
                     </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                        <tr>
+                            <td style="padding: 2px;">Address :</td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{empty cc.attrs.bill.patient.person.address ? 'N/A' : cc.attrs.bill.patient.person.address}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Type on Inward Deposit Bill',false)}" >
+                        <tr>
+                            <td style="padding: 2px;">Payment Type :</td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{empty cc.attrs.bill.comments ? 'N/A' : cc.attrs.bill.comments}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <tr>
+                        <h:panelGroup >
+                            <td  style="padding: 2px;">Admission Type :</td>
+                            <td style="padding: 2px;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.admissionType.name}"/>
+                            </td>
+                        </h:panelGroup>
+                        <td style="padding: px;" class="spacer"></td>
+                        <td style="padding: 2px;">Payment :</td>
+                        <td style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" >
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
                     <tr>
                         <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
@@ -111,7 +144,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td style="padding: 2px;">Bill No:</td>
                         <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
@@ -139,38 +172,10 @@
                         </tr>
                     </h:panelGroup>
                 </table>
+                <br/>
 
                 <!-- Separator Line -->
                 <div class="separator"></div>
-
-                <!-- Item Table -->
-                <table class="receipt-table">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Item Name</th>
-                            <th style="text-align: right">Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="s">
-                            <tr>
-                                <!-- Display the item number across all items -->
-                                <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
-                                <td style="text-align: right">
-                                    <h:outputLabel value="#{item.netValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </ui:repeat>
-                    </tbody>
-                </table>
-
-                <!-- Separator Line -->
-                <div class="separator"></div>
-
                 <!-- Totals Table -->
                 <table class="total-table">
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}" >
@@ -193,24 +198,19 @@
 
                     </h:panelGroup>
 
-                    <tr>
-                        <td >Net Total:</td>
+                    <tr style="font-weight: 600; font-size: 1.12em; margin: 2%">
+                        <td >Paying Amount</td>
                         <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
                     </tr>
-
-                    <tr>
-                        <td >No of Items:</td>
-                        <td style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.billItems.size()}">
-                                <f:convertNumber integerOnly="true" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+                    
                 </table>
+
+                <!-- Separator Line -->
+                <div class="separator"></div>
 
                 <table  style="font-size: 8pt;">
                     <tr>

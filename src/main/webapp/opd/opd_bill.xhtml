@@ -354,22 +354,22 @@
                                                                     class="w-100"/>
                                                             </div>
                                                         </div>
-
-                                                        <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="txtAddress" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="txtMobile" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="txtPhone" value="Home Phone Number"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="cmbSex" value="Sex"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="acNewPtArea" value="Area"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="txtEmail" value="Email"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="scbforigner" value="Mark Status"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="year" value="Age- Years Component"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="month" value="Age- Month Component"  showDelay="0" hideDelay="0"></p:tooltip>
-                                                        <p:tooltip for="day" value="Age- Days Component"  showDelay="0" hideDelay="0"></p:tooltip>
-
+                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Tooltip in OPD Patient Details',true)}">
+                                                            <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="txtAddress" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="txtMobile" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="txtPhone" value="Home Phone Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="cmbSex" value="Sex"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="acNewPtArea" value="Area"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="txtEmail" value="Email"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="scbforigner" value="Mark Status"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="year" value="Age- Years Component"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="month" value="Age- Month Component"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                            <p:tooltip for="day" value="Age- Days Component"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        </h:panelGroup>
 
                                                     </h:panelGroup>
                                                 </h:panelGroup>
@@ -438,11 +438,11 @@
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
                                                     <h:outputText value="#{opdBillController.patient.person.area.name}" />
-                                                   
+
                                                     <h:outputLabel value="Membership" class="mx-3" rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
                                                     <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
                                                     <h:outputText value="#{opdBillController.patient.person.membershipScheme.name}"  rendered="#{opdBillController.patient.person.membershipScheme ne null}"/>
-                                                    
+
                                                     <h:outputLabel value="Discount Scheme " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
                                                     <h:outputLabel value=" : " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
                                                     <h:outputText value="#{opdBillController.patient.person.membershipScheme.paymentScheme.name}"   rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>

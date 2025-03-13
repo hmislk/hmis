@@ -72,7 +72,7 @@ public class ReportsTransfer implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemFacade itemFacade;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private BillBeanController billBeanController;
@@ -84,7 +84,7 @@ public class ReportsTransfer implements Serializable {
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
     private SessionController sessionController;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Department fromDepartment;
     private Department toDepartment;
@@ -124,15 +124,15 @@ public class ReportsTransfer implements Serializable {
     private AdmissionType admissionType;
     private Bill previewBill;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructions">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    // </editor-fold>  
+    // </editor-fold>
     public String navigateToTransferIssueByBillItem() {
         transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
@@ -160,7 +160,7 @@ public class ReportsTransfer implements Serializable {
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
         return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill?faces-redirect=true";
     }
-    
+
     public String navigateToTransferIssueByBillSummary() {
         transferBills = null;
         pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
@@ -174,7 +174,6 @@ public class ReportsTransfer implements Serializable {
     }
 
     public String navigateToBillPreview(Bill b) {
-        previewBill = null;
         previewBill = b;
         return "/inward/pharmacy_reprint_bill_sale_bht_bill?faces-redirect=true";
     }
@@ -188,19 +187,13 @@ public class ReportsTransfer implements Serializable {
      * Methods
      */
     public void fillFastMoving() {
-        Date startTime = new Date();
-
         fillMoving(true);
         fillMovingQty(true);
-
     }
 
     public void fillSlowMoving() {
-        Date startTime = new Date();
-
         fillMoving(false);
         fillMovingQty(false);
-
     }
 
     public BillBeanController getBillBeanController() {
@@ -244,7 +237,7 @@ public class ReportsTransfer implements Serializable {
             r.setQty((Double) obj[1]);
             Days daysBetween = Days.daysBetween(LocalDate.fromDateFields(fromDate), LocalDate.fromDateFields(toDate));
             int ds = daysBetween.getDays();
-            r.setPurchaseValue((Double) (r.getQty() / ds));
+            r.setPurchaseValue(r.getQty() / ds);
 //            r.setRetailsaleValue((Double) obj[2]);
             r.setStockQty(getPharmacyBean().getStockQty(r.getItem(), institution));
             movementRecordsQty.add(r);
@@ -412,7 +405,7 @@ public class ReportsTransfer implements Serializable {
     }
 
     public List<BillItem> fetchBillItems(BillType bt) {
-        List<BillItem> billItems = new ArrayList<>();
+        List<BillItem> billItems;
 
         Map m = new HashMap();
         String sql;
@@ -477,7 +470,7 @@ public class ReportsTransfer implements Serializable {
                     + " between :fd and :td "
                     + " and b.retired=false "
                     + " b.billType=:bt order by b.id";
-        } else if (fromDepartment != null && toDepartment == null) {
+        } else if (fromDepartment != null) {
             params.put("fdept", fromDepartment);
             jpql = "select b from Bill b where "
                     + " b.department=:fdept and b.createdAt "

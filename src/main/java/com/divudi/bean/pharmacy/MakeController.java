@@ -165,7 +165,7 @@ public class MakeController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             MakeController controller = (MakeController) facesContext.getApplication().getELResolver().
@@ -174,19 +174,17 @@ public class MakeController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
+            long key;
             try {
-                key = Long.valueOf(value);
+                key = Long.parseLong(value);
             } catch (Exception e) {
-                key =0l;
+                key = 0L;
             }
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
