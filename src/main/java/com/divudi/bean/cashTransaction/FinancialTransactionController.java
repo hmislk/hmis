@@ -5133,7 +5133,7 @@ public class FinancialTransactionController implements Serializable {
 //
 //        System.out.println("payments = " + payments.size());
 //
-//        updateDraverForHandover(payments, reciver, sender);
+//        updateDraverForHandoverAccept(payments, reciver, sender);
 //
 //        billController.save(currentBill);
 //
@@ -5144,9 +5144,19 @@ public class FinancialTransactionController implements Serializable {
 //
 //        return "/cashier/handover_creation_bill_print?faces-redirect=true";
 //    }
-    public void updateDraverForHandover(List<Payment> payments, WebUser reciver, WebUser sender) {
+    public void updateDraverForHandoverAccept(List<Payment> payments, WebUser reciver, WebUser sender) {
+        
+        System.out.println("updateDraverForHandoverAccept");
+        System.out.println("sender = " + sender);
+        System.out.println("reciver = " + reciver);
+        for(Payment p:payments){
+            System.out.println("p = " + p);
+            System.out.println("p value = " + p.getPaidValue());
+            System.out.println("p bill type= " + p.getBill().getBillTypeAtomic());
+        }
+        
         //System.out.println("Update Resiver Drawer Start");//Accepted Cashier Dravr Update
-        drawerController.updateDrawerForIns(payments, reciver);
+        drawerController.updateDrawer(payments, reciver);
         //System.out.println("Update Resiver Drawer End");
 
         //System.out.println("*******************************************");
@@ -5262,7 +5272,7 @@ public class FinancialTransactionController implements Serializable {
 
         System.out.println("payments = " + payments.size());
 
-        updateDraverForHandover(payments, reciver, sender);
+        updateDraverForHandoverAccept(payments, reciver, sender);
 
         billController.save(currentBill);
 

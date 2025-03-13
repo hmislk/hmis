@@ -95,6 +95,15 @@ public class DrawerController implements Serializable {
         updateDrawer(payment, Math.abs(payment.getPaidValue()), webUser);
     }
 
+    public void updateDrawer(List<Payment> payments, WebUser webUser) {
+        if (payments == null || payments.isEmpty()) {
+            return;
+        }
+        for (Payment payment : payments) {
+            updateDrawer(payment, payment.getPaidValue(), webUser);
+        }
+    }
+
     public void updateDrawer(Payment payment, double paidValue, WebUser webUser) {
         System.out.println("paidValue = " + paidValue);
         System.out.println("payment = " + payment);
