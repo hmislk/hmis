@@ -10,6 +10,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UserNotificationController;
 
@@ -89,7 +90,11 @@ public class PharmacySaleBhtController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    CommonController commonController;
+    @Inject
     PharmacyCalculation pharmacyCalculation;
+    @Inject
+    SearchController searchController;
     @Inject
     UserNotificationController userNotificationController;
 ////////////////////////
@@ -784,6 +789,9 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void settlePharmacyBhtIssueRequest() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         if (errorCheck()) {
             return;
         }
@@ -1060,7 +1068,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a Quantity?");
             return;
         }
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonController.getCurrentDateTime())) {
+        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
             return;
         }
@@ -1211,7 +1219,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-        if (getTmpStock().getItemBatch().getDateOfExpire().before(CommonController.getCurrentDateTime())) {
+        if (getTmpStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
@@ -1877,6 +1885,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
     public Department getDepartment() {

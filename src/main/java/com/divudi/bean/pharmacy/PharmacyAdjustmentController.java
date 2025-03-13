@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.BillClassType;
@@ -63,7 +64,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
     @Inject
     SessionController sessionController;
-
+    @Inject
+    CommonController commonController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -1573,6 +1575,14 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
     public List<Stock> getStocks() {

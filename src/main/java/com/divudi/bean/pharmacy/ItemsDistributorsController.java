@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -54,6 +55,8 @@ public class ItemsDistributorsController implements Serializable {
     private PackageFeeFacade packageFeeFacade;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @Inject
     private DealerController dealerController;
     private ItemsDistributors current;
@@ -492,4 +495,13 @@ public class ItemsDistributorsController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

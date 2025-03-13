@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -101,6 +102,8 @@ public class SupplierPaymentController implements Serializable {
     private PaymentSchemeController paymentSchemeController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     // </editor-fold>
@@ -278,6 +281,7 @@ public class SupplierPaymentController implements Serializable {
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>
@@ -901,7 +905,7 @@ public class SupplierPaymentController implements Serializable {
             return true;
         }
 
-        if (!getCurrent().isCompleted()) {
+        if(!getCurrent().isCompleted()){
             JsfUtil.addErrorMessage("Need to check before Approving");
             return true;
         }
@@ -932,7 +936,7 @@ public class SupplierPaymentController implements Serializable {
             JsfUtil.addErrorMessage("Select Cant settle without Dealor");
             return true;
         }
-        if (getCurrent().isCompleted()) {
+         if (getCurrent().isCompleted()) {
             JsfUtil.addErrorMessage("Already Checked, Cano not mark as checked again.");
             return true;
         }
@@ -1023,6 +1027,7 @@ public class SupplierPaymentController implements Serializable {
                 + "AND (b.paymentGenerated = 0 OR b.paymentGenerated IS NULL)";
         // Logging
 
+
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         netTotal = 0.0;
@@ -1050,6 +1055,7 @@ public class SupplierPaymentController implements Serializable {
         params.put("bts", billTypesListBilled);
         // Logging
 
+
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         netTotal = 0.0;
@@ -1075,6 +1081,7 @@ public class SupplierPaymentController implements Serializable {
 
         jpql += " AND (b.billTypeAtomic IN :bts)";
         params.put("bts", billTypesListBilled);
+
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1104,6 +1111,7 @@ public class SupplierPaymentController implements Serializable {
 
         jpql += " AND (b.paymentApproved = true OR b.paymentApproved = 1 ) ";
         // Logging
+
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -3113,6 +3121,14 @@ public class SupplierPaymentController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
     public List<Bill> getBills() {
