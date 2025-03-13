@@ -4881,21 +4881,25 @@ public class FinancialTransactionController implements Serializable {
      * @return
      */
     public void fillFundTransferBillsForMeToReceive() {
-        String sql;
+        System.out.println("fillFundTransferBillsForMeToReceive");
+        String jpql;
         fundTransferBillsToReceive = null;
-        Map tempMap = new HashMap();
-        sql = "select s "
+        Map params = new HashMap();
+        jpql = "select s "
                 + "from Bill s "
                 + "where s.retired=:ret "
                 + "and s.billType=:btype "
                 + "and (s.toStaff=:logStaff or s.toWebUser=:logUsr) "
                 + "and s.referenceBill is null "
                 + "order by s.createdAt ";
-        tempMap.put("btype", BillType.FundTransferBill);
-        tempMap.put("ret", false);
-        tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
-        tempMap.put("logUsr", sessionController.getLoggedUser());
-        fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap, TemporalType.TIMESTAMP);
+        params.put("btype", BillType.FundTransferBill);
+        params.put("ret", false);
+        params.put("logStaff", sessionController.getLoggedUser().getStaff());
+        params.put("logUsr", sessionController.getLoggedUser());
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        fundTransferBillsToReceive = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("fundTransferBillsToReceive = " + fundTransferBillsToReceive);
         fundTransferBillsToReceiveCount = fundTransferBillsToReceive.size();
 
     }
