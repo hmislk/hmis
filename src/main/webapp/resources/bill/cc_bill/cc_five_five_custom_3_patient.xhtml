@@ -144,8 +144,7 @@
                         <tr>
                             <th>No</th>
                             <th>Item Name</th>
-                            <th style="text-align: right">Hos. Fee</th>
-                            <th style="text-align: right">CC Fee</th>
+                            <th style="text-align: right">Fee</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -154,13 +153,9 @@
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
                                 <td>#{item.item.name}</td>
+                                
                                 <td style="text-align: right">
-                                    <h:outputLabel value="#{item.hospitalFee}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                                <td style="text-align: right">
-                                    <h:outputLabel value="#{item.collectingCentreFee}">
+                                    <h:outputLabel value="#{item.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -175,34 +170,9 @@
                 <!-- Totals Table -->
                 <table class="total-table">
                     <tr>
-                        <td >Total Hospital Fee</td>
-                        <td  style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.totalHospitalFee}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td >Total CC Fee </td>
-                        <td  style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.totalCenterFee}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr>
                         <td >Net Total</td>
                         <td  style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-
-                    <tr style="font-weight: 600;">
-                        <td >Current CC Balance </td>
-                        <td  style="text-align: right;">
-                            <h:outputLabel value="#{collectingCentreBillController.findCCBalanceAfterBilling(cc.attrs.bill)}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>

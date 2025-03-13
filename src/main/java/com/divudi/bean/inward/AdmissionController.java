@@ -99,8 +99,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    private CommonController commonController;
+
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -487,7 +486,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         parentAdmission = current;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonController.getCurrentDateTime());
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
