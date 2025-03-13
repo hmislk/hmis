@@ -792,7 +792,7 @@ public class CommonFunctions {
         return returnDate;
     }
 
-    public Long getDayCountTillNow(Date date) {
+    public static Long getDayCountTillNow(Date date) {
         if (date == null) {
             return 0l;
         }

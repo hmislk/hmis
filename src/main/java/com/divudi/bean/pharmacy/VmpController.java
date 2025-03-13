@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -61,8 +60,7 @@ public class VmpController implements Serializable {
     AmpFacade ampFacade;
     @EJB
     private SpecialityFacade specialityFacade;
-    @Inject
-    private BillBeanController billBean;
+
     List<Vmp> selectedItems;
     private Vmp current;
     private List<Vmp> items = null;
@@ -72,16 +70,13 @@ public class VmpController implements Serializable {
     boolean reportedAs;
     VirtualProductIngredient addingVtmInVmp;
     VirtualProductIngredient removingVtmInVmp;
-    @Inject
-    VtmInVmpController vtmInVmpController;
+
     @EJB
     VirtualProductIngredientFacade vivFacade;
     List<VirtualProductIngredient> vivs;
 
     @EJB
     VmpFacade vmpFacade;
-
-    List<Vmp> vmpList;
 
     public String navigateToListAllVmps() {
         String jpql = "Select vmp "
@@ -511,14 +506,6 @@ public class VmpController implements Serializable {
 
     public void setReportedAs(boolean reportedAs) {
         this.reportedAs = reportedAs;
-    }
-
-    public BillBeanController getBillBean() {
-        return billBean;
-    }
-
-    public void setBillBean(BillBeanController billBean) {
-        this.billBean = billBean;
     }
 
     public String getBulkText() {
