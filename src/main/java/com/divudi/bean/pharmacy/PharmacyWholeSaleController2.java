@@ -96,9 +96,6 @@ public class PharmacyWholeSaleController2 implements Serializable, ControllerWit
     SessionController sessionController;
 
     @Inject
-    CommonController commonController;
-
-    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 ////////////////////////
     @EJB
@@ -1433,7 +1430,7 @@ public class PharmacyWholeSaleController2 implements Serializable, ControllerWit
             return;
         }
 
-        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+        if (getStock().getItemBatch().getDateOfExpire().before(CommonController.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }

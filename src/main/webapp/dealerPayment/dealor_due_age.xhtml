@@ -14,20 +14,20 @@
                         <div class="d-flex gap-2 mb-2">
                             <p:commandButton 
                                 value="Process Pharmacy Due Age" 
-                                action="#{supplierPaymentController.fillPharmacyDueAge()}" 
+                                action="#{dealorDueController.fillPharmacyDueAge()}" 
                                 ajax="false" 
                                 icon="fa fa-search" 
                                 class="ui-button-warning" />
                             <p:commandButton 
                                 value="Process Store Due Age" 
-                                action="#{supplierPaymentController.fillStoreDueAge()}" 
+                                action="#{dealorDueController.fillStoreDueAge()}" 
                                 ajax="false" 
                                 icon="fa fa-search" 
                                 class="ui-button-warning" />
                             <p:commandButton 
                                 value="Process All Due Age" 
                                 id="btnSearch" 
-                                action="#{supplierPaymentController.fillPharmacyStoreDueAge()}" 
+                                action="#{dealorDueController.fillPharmacyStoreDueAge()}" 
                                 ajax="false" 
                                 icon="fa fa-search" 
                                 class="ui-button-warning" />
@@ -36,9 +36,9 @@
 
                         <p:dataTable 
                             id="lst" 
-                            value="#{supplierPaymentController.dealorCreditAge}" 
+                            value="#{dealorDueController.dealorCreditAge}" 
                             var="i" 
-                            filteredValue="#{supplierPaymentController.filteredList}" 
+                            filteredValue="#{dealorDueController.filteredList}" 
                             rows="20" 
                             paginator="true" 
                             paginatorPosition="bottom">                       

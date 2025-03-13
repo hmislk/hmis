@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
@@ -90,8 +89,7 @@ public class ReportsStock implements Serializable {
     DealerController dealerController;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     /**
      * EJBs
      */
@@ -1273,14 +1271,6 @@ public class ReportsStock implements Serializable {
 
     public void setBillTypes(BillType[] billTypes) {
         this.billTypes = billTypes;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public ReportKeyWord getReportKeyWord() {

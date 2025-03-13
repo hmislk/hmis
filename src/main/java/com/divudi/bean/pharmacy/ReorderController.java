@@ -1,19 +1,12 @@
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentListMethod;
-import static com.divudi.data.DepartmentListMethod.ActiveDepartmentsOfAllInstitutions;
-import static com.divudi.data.DepartmentListMethod.ActiveDepartmentsOfLoggedInstitution;
-import static com.divudi.data.DepartmentListMethod.AllDepartmentsOfAllInstitutions;
 import static com.divudi.data.DepartmentListMethod.AllDepartmentsOfLoggedInstitution;
-import static com.divudi.data.DepartmentListMethod.AllPharmaciesOfAllInstitutions;
-import static com.divudi.data.DepartmentListMethod.AllPharmaciesOfLoggedInstitution;
-import static com.divudi.data.DepartmentListMethod.LoggedDepartmentOnly;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.ItemReorders;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
@@ -27,7 +20,6 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Person;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Reorder;
-import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.ReorderFacade;
 import com.divudi.bean.common.util.JsfUtil;
@@ -74,8 +66,6 @@ public class ReorderController implements Serializable {
     ItemController itemController;
     @Inject
     PurchaseOrderRequestController purchaseOrderRequestController;
-    @Inject
-    CommonController commonController;
 
 //    EJBs
     @EJB
@@ -1409,13 +1399,4 @@ public class ReorderController implements Serializable {
         }
 
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

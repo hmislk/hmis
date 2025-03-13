@@ -9,12 +9,10 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.util.JsfUtil;
-//import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemSupplierPrices;
 import com.divudi.data.ItemType;
@@ -67,8 +65,7 @@ public class AmpController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private AmpFacade ejbFacade;
     List<Amp> selectedItems;
@@ -1052,13 +1049,4 @@ public class AmpController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }
