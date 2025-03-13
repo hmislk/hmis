@@ -39,6 +39,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.PaymentHandoverItem;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashBook;
@@ -48,6 +49,7 @@ import com.divudi.entity.cashTransaction.DetailedFinancialBill;
 import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.DrawerFacade;
+import com.divudi.facade.PaymentHandoverItemFacade;
 import com.divudi.facade.PaymentMethodValueFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.service.BillService;
@@ -60,6 +62,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -97,6 +100,8 @@ public class FinancialTransactionController implements Serializable {
     DrawerFacade drawerFacade;
     @EJB
     BillService billService;
+    @EJB
+    PaymentHandoverItemFacade paymentHandoverItemFacade;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -112,6 +117,8 @@ public class FinancialTransactionController implements Serializable {
     private BillController billController;
     @Inject
     private PaymentController paymentController;
+    @Inject
+    PaymentHandoverItemController paymentHandoverItemController;
     @Inject
     private SearchController searchController;
     @Inject
@@ -1782,7 +1789,6 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_accept?faces-redirect=true";
     }
 
-    
     public String navigateToViewHandoverBill() {
         if (selectedBill == null) {
             JsfUtil.addErrorMessage("Please select a bill.");
@@ -1846,9 +1852,6 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_accept_view?faces-redirect=true";
     }
 
-    
-    
-    
     public String rejectToReceiveHandoverBill() {
         if (selectedBill == null) {
             JsfUtil.addErrorMessage("Please select a bill.");
@@ -1889,10 +1892,14 @@ public class FinancialTransactionController implements Serializable {
                     for (Payment p : payments) {
                         p.setHandingOverCompleted(false);
                         p.setHandingOverStarted(false);
-                        p.setHandoverCreatedBill(null);
-                        p.setHandoverShiftBill(null);
-                        p.setHandoverShiftComponantBill(null);
                         paymentController.save(p);
+
+                        PaymentHandoverItem phi = new PaymentHandoverItem(p);
+                        phi.setHandoverCreatedBill(null);
+                        phi.setHandoverShiftBill(null);
+                        phi.setHandoverShiftComponantBill(null);
+                        paymentHandoverItemController.save(phi);
+
                     }
                 }
             }
@@ -1940,9 +1947,9 @@ public class FinancialTransactionController implements Serializable {
                     for (Payment p : payments) {
                         p.setHandingOverCompleted(false);
                         p.setHandingOverStarted(false);
-                        p.setHandoverCreatedBill(null);
-                        p.setHandoverShiftBill(null);
-                        p.setHandoverShiftComponantBill(null);
+//                        p.setHandoverCreatedBill(null);
+//                        p.setHandoverShiftBill(null);
+//                        p.setHandoverShiftComponantBill(null);
                         paymentController.save(p);
                     }
                 }
@@ -4824,9 +4831,6 @@ public class FinancialTransactionController implements Serializable {
                     if (p.getPaymentMethod() == PaymentMethod.Cash && shiftBundle.getSelectAllCashToHandover() == false) {
                         continue;
                     }
-                    p.setHandoverCreatedBill(currentBill);
-                    p.setHandoverShiftComponantBill(shiftHandoverComponantBill);
-                    p.setHandoverShiftBill(shiftBundle.getStartBill());
 
                     p.setHandingOverStarted(true);
                     p.setHandingOverCompleted(false);
@@ -4835,6 +4839,13 @@ public class FinancialTransactionController implements Serializable {
                     if (p.getPaymentMethod() != PaymentMethod.Cash) {
                         drawerController.updateDrawer(currentBill, 0 - p.getPaidValue(), p.getPaymentMethod(), sessionController.getLoggedUser());
                     }
+
+                    PaymentHandoverItem phi = new PaymentHandoverItem(p);
+                    phi.setHandoverCreatedBill(currentBill);
+                    phi.setHandoverShiftComponantBill(shiftHandoverComponantBill);
+                    phi.setHandoverShiftBill(shiftBundle.getStartBill());
+                    paymentHandoverItemController.save(phi);
+
                 }
                 shiftHandoverComponantBill.setTotal(componantTotal);
                 shiftHandoverComponantBill.setNetTotal(componantTotal);
@@ -5145,16 +5156,16 @@ public class FinancialTransactionController implements Serializable {
 //        return "/cashier/handover_creation_bill_print?faces-redirect=true";
 //    }
     public void updateDraverForHandoverAccept(List<Payment> payments, WebUser reciver, WebUser sender) {
-        
+
         System.out.println("updateDraverForHandoverAccept");
         System.out.println("sender = " + sender);
         System.out.println("reciver = " + reciver);
-        for(Payment p:payments){
+        for (Payment p : payments) {
             System.out.println("p = " + p);
             System.out.println("p value = " + p.getPaidValue());
             System.out.println("p bill type= " + p.getBill().getBillTypeAtomic());
         }
-        
+
         //System.out.println("Update Resiver Drawer Start");//Accepted Cashier Dravr Update
         drawerController.updateDrawer(payments, reciver);
         //System.out.println("Update Resiver Drawer End");
@@ -5256,8 +5267,8 @@ public class FinancialTransactionController implements Serializable {
                 p.setCashbook(bundleCb);
                 p.setCashbookEntry(findCashbookEntry(p, cbEntries));
                 p.setCashbookEntryCompleted(true);
-                p.setHandoverAcceptBill(currentBill);
-                p.setHandoverAcceptComponantBill(shiftHandoverComponantAcceptBill);
+                
+                
                 p.setCurrentHolder(sessionController.getLoggedUser());
                 p.setHandingOverCompleted(true);
                 p.setHandingOverStarted(false);
@@ -5267,6 +5278,13 @@ public class FinancialTransactionController implements Serializable {
                 paymentController.save(p);
 
                 payments.add(p);
+                
+                PaymentHandoverItem phi = new PaymentHandoverItem(p);
+                phi.setHandoverAcceptBill(currentBill);
+                phi.setHandoverAcceptComponantBill(shiftHandoverComponantAcceptBill);
+                
+                paymentHandoverItemController.save(phi);
+                
             }
         }
 
@@ -5310,9 +5328,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No bills");
             return;
         }
-        
+
         System.out.println("handoverStarts.size() = " + handoverStarts.size());
-        
+
         for (Bill handoverStartBill : handoverStarts) {
             if (handoverStartBill.getBillTypeAtomic() == null) {
                 System.out.println("No bill type atomic = " + handoverStartBill);
@@ -5326,7 +5344,7 @@ public class FinancialTransactionController implements Serializable {
                 System.out.println("Backword Referance is already set = " + handoverStartBill);
                 continue;
             }
-            Bill handoverAcceptBill = billService.fetchBillReferredAsReferenceBill(handoverStartBill,BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
+            Bill handoverAcceptBill = billService.fetchBillReferredAsReferenceBill(handoverStartBill, BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
             if (handoverAcceptBill == null) {
                 System.out.println("No referance bill = " + handoverStartBill);
                 continue;
@@ -6715,14 +6733,29 @@ public class FinancialTransactionController implements Serializable {
     }
 
     private List<Payment> fetchPaymentsForSummaryHandoverCreation(Bill b) {
-        String jpql = "Select p "
-                + " from Payment p "
-                + " where p.retired=:ret "
-                + " and p.handoverShiftComponantBill=:b";
-        Map m = new HashMap();
+        if (b == null) {
+            return Collections.emptyList();
+        }
+
+        List<Payment> payments = new ArrayList<>();
+        String jpql = "SELECT p FROM PaymentHandoverItem p WHERE p.retired = :ret AND p.handoverShiftComponantBill = :b";
+
+        Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("b", b);
-        return paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        List<PaymentHandoverItem> phis = paymentHandoverItemFacade != null
+                ? paymentHandoverItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP) : Collections.emptyList();
+
+        if (phis != null) {
+            for (PaymentHandoverItem phi : phis) {
+                if (phi != null && phi.getPayment() != null) {
+                    payments.add(phi.getPayment());
+                }
+            }
+        }
+
+        return payments;
     }
 
     public Drawer getLoggedUserDrawer() {
