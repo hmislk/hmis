@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillType;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyErrorCheckingEjb;
@@ -19,7 +18,6 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.BillFacade;
-import com.divudi.facade.StockHistoryFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -39,10 +37,7 @@ public class PharmacyErrorChecking implements Serializable {
 
     @EJB
     PharmacyErrorCheckingEjb ejb;
-    @EJB
-    StockHistoryFacade stockHistoryFacade;
-    @Inject
-    CommonController commonController;
+
     @Inject
     StockHistoryController stockHistoryController;
 
@@ -80,7 +75,7 @@ public class PharmacyErrorChecking implements Serializable {
         billItems = getEjb().allBillItems(item, department);
         calculateTotals4();
 
-        
+
     }
 
     public void processBinCardItems() {
@@ -91,7 +86,7 @@ public class PharmacyErrorChecking implements Serializable {
         billItems = getEjb().allBillItems(item, department);
         calculateTotals4();
 
-        
+
     }
 
     public void processBinCard() {
@@ -107,7 +102,7 @@ public class PharmacyErrorChecking implements Serializable {
 
         billItems = getEjb().allBillItemsByDateOnlyStock(item, department, fromDate, toDate);
 
-        
+
     }
 
     public void listPharmacyMovementNew() {
@@ -454,8 +449,8 @@ public class PharmacyErrorChecking implements Serializable {
     public void setCalculatedSaleValue(double calculatedSaleValue) {
         this.calculatedSaleValue = calculatedSaleValue;
     }
-    
-    
+
+
 
     public double getCalculatedPurchaseValue() {
         return calculatedPurchaseValue;
@@ -503,14 +498,6 @@ public class PharmacyErrorChecking implements Serializable {
 
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<StockHistory> getStockHistories() {

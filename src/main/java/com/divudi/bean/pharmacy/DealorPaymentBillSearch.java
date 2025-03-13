@@ -7,7 +7,6 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -86,10 +85,6 @@ public class DealorPaymentBillSearch implements Serializable {
     private RefundBillFacade refundBillFacade;
     @Inject
     SessionController sessionController;
-    @Inject
-    private WebUserController webUserController;
-    @Inject
-    BillBeanController billBeanController;
 
     @EJB
     EjbApplication ejbApplication;
@@ -813,14 +808,6 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public void setRefundBillFacade(RefundBillFacade refundBillFacade) {
         this.refundBillFacade = refundBillFacade;
-    }
-
-    public WebUserController getWebUserController() {
-        return webUserController;
-    }
-
-    public void setWebUserController(WebUserController webUserController) {
-        this.webUserController = webUserController;
     }
 
     public Bill getBillForCancel() {

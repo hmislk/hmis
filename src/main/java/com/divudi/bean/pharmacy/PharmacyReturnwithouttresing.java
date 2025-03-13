@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -426,9 +425,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
         }
 
     }
-
-    @Inject
-    private BillBeanController billBean;
 
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
@@ -1067,14 +1063,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
     public void setUserStockContainer(UserStockContainer userStockContainer) {
         this.userStockContainer = userStockContainer;
-    }
-
-    public BillBeanController getBillBean() {
-        return billBean;
-    }
-
-    public void setBillBean(BillBeanController billBean) {
-        this.billBean = billBean;
     }
 
     public CashTransactionBean getCashTransactionBean() {

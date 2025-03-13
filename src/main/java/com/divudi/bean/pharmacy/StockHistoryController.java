@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.DepartmentType;
@@ -37,8 +36,6 @@ public class StockHistoryController implements Serializable {
 
     @EJB
     StockHistoryFacade facade;
-    @Inject
-    CommonController commonController;
 
     List<StockHistory> pharmacyStockHistories;
     List<Date> pharmacyStockHistoryDays;
@@ -75,7 +72,7 @@ public class StockHistoryController implements Serializable {
         for (Date d : pharmacyStockHistoryDays) {
         }
 
-        
+
     }
 
     public List<StockHistory> findStockHistories(Date fd, Date td, HistoryType ht, Department dep, Item i) {
@@ -152,7 +149,7 @@ public class StockHistoryController implements Serializable {
             totalStockSaleValue += psh.getStockSaleValue();
         }
 
-        
+
     }
 
     public void fillStockHistoriesWithZero() {
@@ -215,7 +212,7 @@ public class StockHistoryController implements Serializable {
             JsfUtil.addErrorMessage("Failed due to " + e.getMessage());
         }
 
-        
+
     }
 
     public List<Date> getPharmacyStockHistoryDays() {
@@ -268,14 +265,6 @@ public class StockHistoryController implements Serializable {
 
     public void setTotalStockPurchaseValue(double totalStockPurchaseValue) {
         this.totalStockPurchaseValue = totalStockPurchaseValue;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public DepartmentType getDepartmentType() {

@@ -5,8 +5,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SessionController;
 
@@ -87,8 +85,6 @@ public class PharmacyIssueController implements Serializable {
     @Inject
     StoreIssueController storeIssueController;
 
-    @Inject
-    CommonController commonController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -435,9 +431,6 @@ public class PharmacyIssueController implements Serializable {
         }
 
     }
-
-    @Inject
-    private BillBeanController billBean;
 
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
@@ -1140,14 +1133,6 @@ public class PharmacyIssueController implements Serializable {
         this.userStockContainer = userStockContainer;
     }
 
-    public BillBeanController getBillBean() {
-        return billBean;
-    }
-
-    public void setBillBean(BillBeanController billBean) {
-        this.billBean = billBean;
-    }
-
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
     }
@@ -1194,13 +1179,5 @@ public class PharmacyIssueController implements Serializable {
 
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 }

@@ -7,7 +7,6 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
@@ -78,8 +77,6 @@ public class ReportsTransfer implements Serializable {
     private BillBeanController billBeanController;
     @Inject
     private PharmacyController pharmacyController;
-    @Inject
-    private CommonController commonController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
@@ -2353,13 +2350,4 @@ public class ReportsTransfer implements Serializable {
     public void setTotalBHTIssueValue(double totalBHTIssueValue) {
         this.totalBHTIssueValue = totalBHTIssueValue;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }
