@@ -12,7 +12,6 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
@@ -104,7 +103,7 @@ public class DealorPaymentBillSearch implements Serializable {
     WebUser user;
 
     public void approve() {
-        if (getBill().getReferenceBill() != null  && getBill().isReactivated() == false) {
+        if (getBill().getReferenceBill() != null && !getBill().isReactivated()) {
             JsfUtil.addErrorMessage("Already Approved");
             return;
         }
@@ -314,7 +313,7 @@ public class DealorPaymentBillSearch implements Serializable {
             }
 
             RefundBill rb = createRefundBill();
-            if (rb == null || rb.getId() == null) {
+            if (rb.getId() == null) {
                 JsfUtil.addErrorMessage("Refund Bill creation failed.");
                 return;
             }
@@ -401,7 +400,7 @@ public class DealorPaymentBillSearch implements Serializable {
             return true;
         }
 
-        if (getComment() == null || getComment().trim().equals("")) {
+        if (getComment() == null || getComment().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
@@ -434,7 +433,7 @@ public class DealorPaymentBillSearch implements Serializable {
 //
 //        return tmp;
 //    }
-//      
+//
 //       private void saveBhtBillItem(Bill b) {
 //        BillItem temBi = new BillItem();
 //        temBi.setBill(b);
@@ -606,13 +605,13 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public List<Bill> getBills() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.OpdBill);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.OpdBill);
             }
             if (bills == null) {
-                bills = new ArrayList<Bill>();
+                bills = new ArrayList<>();
             }
         }
         return bills;
@@ -620,13 +619,13 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public List<Bill> getRequests() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
             }
             if (bills == null) {
-                bills = new ArrayList<Bill>();
+                bills = new ArrayList<>();
             }
         }
         return bills;
@@ -638,24 +637,21 @@ public class DealorPaymentBillSearch implements Serializable {
         if (bills == null) {
             String sql;
             Map temMap = new HashMap();
-            if (bills == null) {
-                if (txtSearch == null || txtSearch.trim().equals("")) {
-                    sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate order by b.id";
-                    temMap.put("toDate", getToDate());
-                    temMap.put("fromDate", getFromDate());
-                    temMap.put("type", BillType.PaymentBill);
-                    bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
-                } else {
-                    sql = "select b from BilledBill b where b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
-                    temMap.put("toDate", getToDate());
-                    temMap.put("fromDate", getFromDate());
-                    temMap.put("type", BillType.PaymentBill);
-                    bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
-                }
-                if (bills == null) {
-                    bills = new ArrayList<Bill>();
-                }
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
+                sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate order by b.id";
+            } else {
+                sql = "select b from BilledBill b where b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+            }
+
+            temMap.put("toDate", getToDate());
+            temMap.put("fromDate", getFromDate());
+            temMap.put("type", BillType.PaymentBill);
+
+            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
+
+            if (bills == null) {
+                bills = new ArrayList<>();
             }
         }
         return bills;
@@ -666,27 +662,27 @@ public class DealorPaymentBillSearch implements Serializable {
         List<Bill> userBills;
         //////// // System.out.println("getting user bills");
         if (getUser() == null) {
-            userBills = new ArrayList<Bill>();
+            userBills = new ArrayList<>();
             //////// // System.out.println("user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
             //////// // System.out.println("user ok");
         }
         if (userBills == null) {
-            userBills = new ArrayList<Bill>();
+            userBills = new ArrayList<>();
         }
         return userBills;
     }
 
     public List<Bill> getOpdBills() {
-        if (txtSearch == null || txtSearch.trim().equals("")) {
+        if (txtSearch == null || txtSearch.trim().isEmpty()) {
             bills = getBillBean().billsForTheDay(fromDate, toDate, BillType.OpdBill);
         } else {
             bills = getBillBean().billsFromSearch(txtSearch, fromDate, toDate, BillType.OpdBill);
         }
 
         if (bills == null) {
-            bills = new ArrayList<Bill>();
+            bills = new ArrayList<>();
         }
         return bills;
     }

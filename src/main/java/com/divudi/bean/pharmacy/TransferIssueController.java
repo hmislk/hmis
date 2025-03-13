@@ -21,7 +21,6 @@ import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
-import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.UserStock;
@@ -36,9 +35,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -303,9 +300,9 @@ public class TransferIssueController implements Serializable {
                 //     //System.err.println("List "+bItem.getTmpSuggession());
                 PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
                 phItem.setBillItem(bItem);
-                phItem.setQtyInUnit((double) sq.getQty());
-                phItem.setPurchaseRateInUnit((double) sq.getStock().getItemBatch().getPurcahseRate());
-                phItem.setRetailRateInUnit((double) sq.getStock().getItemBatch().getRetailsaleRate());
+                phItem.setQtyInUnit(sq.getQty());
+                phItem.setPurchaseRateInUnit(sq.getStock().getItemBatch().getPurcahseRate());
+                phItem.setRetailRateInUnit(sq.getStock().getItemBatch().getRetailsaleRate());
                 phItem.setStock(sq.getStock());
                 phItem.setDoe(sq.getStock().getItemBatch().getDateOfExpire());
                 phItem.setItemBatch(sq.getStock().getItemBatch());
@@ -531,7 +528,6 @@ public class TransferIssueController implements Serializable {
 //        getBillFacade().edit(getRequestedBill());
         Bill b = getBillFacade().find(getIssuedBill().getId());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
-        issuedBill = null;
         issuedBill = b;
 
         printPreview = true;
@@ -661,7 +657,6 @@ public class TransferIssueController implements Serializable {
         Bill b = getBillFacade().find(getIssuedBill().getId());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
-        issuedBill = null;
         issuedBill = b;
 
         printPreview = true;
@@ -727,7 +722,7 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(qty);
         billItem.getPharmaceuticalBillItem().setStock(getTmpStock());
         billItem.getPharmaceuticalBillItem().setItemBatch(getTmpStock().getItemBatch());
 
