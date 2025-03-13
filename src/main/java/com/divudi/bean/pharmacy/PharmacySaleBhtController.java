@@ -94,8 +94,6 @@ public class PharmacySaleBhtController implements Serializable {
     @Inject
     PharmacyCalculation pharmacyCalculation;
     @Inject
-    SearchController searchController;
-    @Inject
     UserNotificationController userNotificationController;
 ////////////////////////
     @EJB
@@ -789,9 +787,6 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void settlePharmacyBhtIssueRequest() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         if (errorCheck()) {
             return;
         }

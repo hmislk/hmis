@@ -82,8 +82,7 @@ public class PharmacyRequestForBhtController implements Serializable {
     CommonController commonController;
     @Inject
     PharmacyCalculation pharmacyCalculation;
-    @Inject
-    SearchController searchController;
+
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -140,10 +139,6 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void settleSurgeryBhtIssue() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getBatchBill() == null) {
             return;
         }
