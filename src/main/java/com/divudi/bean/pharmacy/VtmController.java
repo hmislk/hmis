@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
@@ -48,7 +49,8 @@ public class VtmController implements Serializable {
     private VtmFacade ejbFacade;
     @EJB
     private SpecialityFacade specialityFacade;
-
+    @Inject
+    private BillBeanController billBean;
     List<Vtm> selectedItems;
     private Vtm current;
     private List<Vtm> items = null;
@@ -207,6 +209,14 @@ public class VtmController implements Serializable {
 
     public void setReportedAs(boolean reportedAs) {
         this.reportedAs = reportedAs;
+    }
+
+    public BillBeanController getBillBean() {
+        return billBean;
+    }
+
+    public void setBillBean(BillBeanController billBean) {
+        this.billBean = billBean;
     }
 
     public String getBulkText() {
