@@ -93,6 +93,9 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
     PaymentSchemeController PaymentSchemeController;
 
     @Inject
+    CommonController commonController;
+
+    @Inject
     SessionController sessionController;
 
     @Inject
@@ -1430,7 +1433,7 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
             return;
         }
 
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonController.getCurrentDateTime())) {
+        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }

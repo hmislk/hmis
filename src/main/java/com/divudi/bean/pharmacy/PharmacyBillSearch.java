@@ -3323,6 +3323,14 @@ public class PharmacyBillSearch implements Serializable {
         this.refundAmount = refundAmount;
     }
 
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
+    }
+
     public boolean isPrintPreview() {
         return printPreview;
     }
