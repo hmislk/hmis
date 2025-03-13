@@ -122,7 +122,15 @@
 
                             <p:column 
                                 headerText="Actions"
-                                width="6em"      >
+                                width="12em"      >
+                                <p:commandButton 
+                                    value="View"
+                                    action="#{financialTransactionController.navigateToViewHandoverBill()}"
+                                    ajax="false"
+                                    class="m-1 ui-button-success"
+                                    icon="pi pi-times-circle">
+                                    <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}"></f:setPropertyActionListener>
+                                </p:commandButton>
                                 <p:commandButton 
                                     rendered="#{not bp.completed and not bp.cancelled}"
                                     value="Recall"
@@ -134,6 +142,7 @@
                                     icon="pi pi-times-circle">
                                     <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}"></f:setPropertyActionListener>
                                 </p:commandButton>
+
                             </p:column>
 
 
