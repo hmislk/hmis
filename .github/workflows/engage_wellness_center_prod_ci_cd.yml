@@ -82,43 +82,45 @@ jobs:
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo -u appuser -i mkdir -p $WAR_DIR
-            sudo -u appuser -i chown -R appuser:appuser $WAR_DIR
-            sudo -u appuser -i cd $WAR_DIR
+            sudo mkdir -p $WAR_DIR
+            sudo chown -R appuser:appuser /home/appuser/app/latest
+            sudo su - appuser
+            cd $WAR_DIR
 
             # Remove old backup if it exists
             if [ -f $WAR_NAME.old ]; then
-              sudo -u appuser -i rm $WAR_NAME.old
+              rm $WAR_NAME.old
             fi
 
             # If the current WAR file exists, back it up
             if [ -f $WAR_NAME ]; then
-              sudo -u appuser -i mv $WAR_NAME $WAR_NAME.old
+              mv $WAR_NAME $WAR_NAME.old
             fi
           "
 
           # Copy new WAR file to the server
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo -u appuser -i rsync -aL --progress ./ $WAR_DIR/$WAR_NAME
-          "
+          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
 
-          # Set the WAR file permission
+          # Move the file to /home/appuser/app/latest/ and set permissions
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo -u appuser -i chown appuser:appuser $WAR_DIR/$WAR_NAME
+            sudo mv /tmp/$WAR_NAME $WAR_DIR/
+            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
           "
 
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            sudo -u appuser -i /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            sudo -u appuser -i /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            sudo su - appuser
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.EWC_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            if sudo -u appuser -i /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
+            sudo su - appuser
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.EWC_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            if /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
               echo 'Application is running.'
             else
               echo 'Application failed to start.'
