@@ -100,7 +100,8 @@ public class CommonController implements Serializable {
         return url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
     }
 
-    public static Date getCurrentDateTime() {
+    public Date getCurrentDateTime() {
+        //Removes Static Partr as static is NOT accessible from JSF Pages
         return new Date();
     }
 

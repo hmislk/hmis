@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -114,6 +115,40 @@ public class ReportsStock implements Serializable {
      * Methods
      */
     public void fillDepartmentStocks() {
+        System.out.println("fillDepartmentStocks");
+        Date startedAt = new Date();
+        System.out.println("startedAt = " + startedAt);
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+        String sql = "select s from Stock s "
+                + " where s.department=:d "
+                + " and s.stock > 0 ";
+        m.put("d", department);
+        Date beforeJpql = new Date();
+        System.out.println("beforeJpql = " + beforeJpql);
+        stocks = getStockFacade().findByJpql(sql, m);
+
+        Date afterJpql = new Date();
+        System.out.println("afterJpql = " + afterJpql);
+        stocks.sort(Comparator.comparing(s -> s.getItemBatch().getItem().getName(), String.CASE_INSENSITIVE_ORDER));
+
+        Date beforeCal = new Date();
+        System.out.println("beforeCal = " + beforeCal);
+        stockPurchaseValue = stocks.stream()
+                .mapToDouble(s -> s.getItemBatch().getPurcahseRate() * s.getStock())
+                .sum();
+
+        stockSaleValue = stocks.stream()
+                .mapToDouble(s -> s.getItemBatch().getRetailsaleRate() * s.getStock())
+                .sum();
+        Date afterCal = new Date();
+        System.out.println("afterCal = " + afterCal);
+    }
+
+    public void fillDepartmentStocksOfMedicines() {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;

@@ -851,7 +851,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigatePatientAdmit() {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(CommonController.getCurrentDateTime());
+            ad.setDateOfAdmission(commonController.getCurrentDateTime());
         }
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
@@ -864,7 +864,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToConvertNonBhtToBht(Admission nonBhtAd) {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(CommonController.getCurrentDateTime());
+            ad.setDateOfAdmission(commonController.getCurrentDateTime());
         }
         ad.setPatient(nonBhtAd.getPatient());
         admissionController.setCurrentNonBht(nonBhtAd);
