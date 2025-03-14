@@ -45,10 +45,6 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.clinical.ClinicalFindingValueType;
-import static com.divudi.data.inward.AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
-import static com.divudi.data.inward.AdmissionStatus.ANY_STATUS;
-import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
-import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
@@ -99,7 +95,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-
+    @Inject
+    private CommonController commonController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -486,7 +483,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         parentAdmission = current;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(CommonController.getCurrentDateTime());
+            ad.setDateOfAdmission(commonController.getCurrentDateTime());
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
