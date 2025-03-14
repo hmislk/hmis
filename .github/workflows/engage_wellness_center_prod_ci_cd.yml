@@ -82,6 +82,7 @@ jobs:
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo -u appuser -i
             mkdir -p $WAR_DIR
             chown -R appuser:appuser $WAR_DIR
             cd $WAR_DIR
