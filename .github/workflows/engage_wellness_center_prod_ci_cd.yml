@@ -89,12 +89,12 @@ jobs:
 
             # Remove old backup if it exists
             if [ -f $WAR_NAME.old ]; then
-              rm $WAR_NAME.old
+              sudo rm $WAR_NAME.old
             fi
 
             # If the current WAR file exists, back it up
             if [ -f $WAR_NAME ]; then
-              mv $WAR_NAME $WAR_NAME.old
+              sudo mv $WAR_NAME $WAR_NAME.old
             fi
           "
 
