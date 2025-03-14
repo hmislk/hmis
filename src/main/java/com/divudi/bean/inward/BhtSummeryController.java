@@ -175,6 +175,7 @@ public class BhtSummeryController implements Serializable {
     private PatientEncounter patientEncounter;
     private Bill current;
     private Bill originalBill;
+    private Bill tempBill;
     private Date currentTime;
     private Date toTime;
     Date fromDate;
@@ -1288,6 +1289,12 @@ public class BhtSummeryController implements Serializable {
         JsfUtil.addSuccessMessage("Original Bill Saved");
 
     }
+    
+    public void createTempBill(){
+        tempBill = null;
+        saveTempBill();
+        saveTempBillItem();
+    }
 
     public void settle() {
         if (errorCheck()) {
@@ -1692,6 +1699,32 @@ public class BhtSummeryController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
     }
+    
+    private void saveTempBill() {
+
+        getTempBill().setGrantTotal(grantTotal);
+        getTempBill().setTotal(grantTotal);
+        getTempBill().setDiscount(discount);
+        getTempBill().setNetTotal(grantTotal - discount);
+        getTempBill().setPaidAmount(paid);
+        getTempBill().setClaimableTotal(adjustedTotal);
+        getTempBill().setSettledAmountBySponsor(paidByCompany);
+        getTempBill().setSettledAmountByPatient(paidByPatient);
+        getTempBill().setPaymentMethod(getPatientEncounter().getPaymentMethod());
+        getTempBill().setCreditCompany(getPatientEncounter().getCreditCompany());
+        getTempBill().setInstitution(getSessionController().getInstitution());
+        getTempBill().setDeptId("Temp/Final Bill");
+        getTempBill().setInsId("Temp/Final Bill");
+
+        getTempBill().setBillDate(new Date());
+        getTempBill().setBillTime(new Date());
+        getTempBill().setPatientEncounter(patientEncounter);
+        getTempBill().setPatient(patientEncounter.getPatient());
+//        getCurrent().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patientEncounter.getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
+        getTempBill().setCreatedAt(new Date());
+        getTempBill().setCreater(getSessionController().getLoggedUser());
+
+    }
 
     private void saveOriginalBill() {
 
@@ -1808,6 +1841,44 @@ public class BhtSummeryController implements Serializable {
 
         getBillFacade().edit(getCurrent());
     }
+    
+    private void saveTempBillItem() {
+        double temProfFee = 0;
+        double temHosFee = 0.0;
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            BillItem temBi = new BillItem();
+            temBi.setBill(getTempBill());
+            temBi.setInwardChargeType(cit.getInwardChargeType());
+            temBi.setGrossValue(cit.getTotal());
+            temBi.setDiscount(cit.getDiscount());
+            temBi.setNetValue(cit.getNetTotal());
+            temBi.setAdjustedValue(cit.getAdjustedTotal());
+            temBi.setCreatedAt(new Date());
+            temBi.setCreater(getSessionController().getLoggedUser());
+
+            if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                updateProTempBillFee(temBi);
+                temProfFee += cit.getTotal();
+            } else {
+                if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
+                    if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
+                        updateProTempBillFeeForDocAndNeurses(temBi);;
+                    }
+                }
+                temHosFee += cit.getTotal();
+            }
+
+            if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {
+                saveTempRoomBillFee(getPatientRooms(), temBi);
+            }
+
+
+            getTempBill().getBillItems().add(temBi);
+        }
+
+        getTempBill().setProfessionalFee(temProfFee);
+        getTempBill().setHospitalFee(temHosFee);
+    }
 
     private void saveOriginalBillItem() {
         double temProfFee = 0;
@@ -1861,11 +1932,31 @@ public class BhtSummeryController implements Serializable {
         }
 
     }
+    
+    private void updateProTempBillFee(BillItem bItem) {
+        for (BillFee bf : getProfesionallFee()) {
+            bf.setReferenceBillItem(bItem);
+
+            bItem.getProFees().add(bf);
+
+        }
+
+    }
 
     private void updateProBillFeeForDocAndNeurses(BillItem bItem) {
         for (BillFee bf : getDoctorAndNurseFee()) {
             bf.setReferenceBillItem(bItem);
             getBillFeeFacade().edit(bf);
+
+            bItem.getProFees().add(bf);
+
+        }
+
+    }
+    
+    private void updateProTempBillFeeForDocAndNeurses(BillItem bItem) {
+        for (BillFee bf : getDoctorAndNurseFee()) {
+            bf.setReferenceBillItem(bItem);
 
             bItem.getProFees().add(bf);
 
@@ -1898,6 +1989,22 @@ public class BhtSummeryController implements Serializable {
                 getBillFeeFacade().edit(tmp);
             }
 
+            list.add(tmp);
+
+        }
+
+        bItem.setBillFees(list);
+
+    }
+    
+    private void saveTempRoomBillFee(List<PatientRoom> patientRooms, BillItem bItem) {
+        List<BillFee> list = new ArrayList<>();
+        for (PatientRoom pt : patientRooms) {
+            BillFee tmp = new BillFee();
+            tmp.setBill(bItem.getBill());
+            tmp.setBillItem(bItem);
+
+            tmp.setReferencePatientRoom(pt);
             list.add(tmp);
 
         }
@@ -2699,6 +2806,17 @@ public class BhtSummeryController implements Serializable {
 
     public void setOriginalBill(Bill originalBill) {
         this.originalBill = originalBill;
+    }
+    
+    public Bill getTempBill() {
+        if (tempBill == null) {
+            tempBill = new BilledBill();
+        }
+        return tempBill;
+    }
+
+    public void setTempBill(Bill tempBill) {
+        this.tempBill = tempBill;
     }
 
     public void prepareNewBill() {
