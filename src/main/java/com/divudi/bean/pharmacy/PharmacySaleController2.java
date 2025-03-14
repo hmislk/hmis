@@ -1024,7 +1024,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonController.getCurrentDateTime())) {
+        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }
