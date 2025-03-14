@@ -267,7 +267,7 @@
 
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFiveCustom3')}" >
                                                         <ui:repeat value="#{billSearch.refuendedBills}" var="rfbill">
-                                                            <prints:five_five_custom_3 bill="#{rfbill}"/>
+                                                            <prints:five_five_custom_3_refund_bill bill="#{rfbill}" duplicate="true"/>
                                                             <p:spacer />
                                                             <p:spacer />
                                                         </ui:repeat>
