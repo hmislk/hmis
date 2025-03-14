@@ -2010,8 +2010,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             m.put("pp", searchedPhoneNumber);
             quickSearchPatientList = getFacade().findByJpql(j, m);
         } else {
-            quickSearchPatientList = findPatientUsingPhnNumber(quickSearchPhoneNumber);
-            usePHN = true;
+            if (!quickSearchPhoneNumber.trim().isEmpty()) {
+                quickSearchPatientList = findPatientUsingPhnNumber(quickSearchPhoneNumber);
+                usePHN = true;
+            }
+
         }
 //        controller.setPaymentMethod(null);
         if (quickSearchPatientList == null) {
