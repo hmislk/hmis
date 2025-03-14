@@ -701,7 +701,7 @@
                                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses'}">
                                                             <table>
                                                                 <ui:repeat value="#{bip.proFees}" var="fe">
-                                                                    <h:panelGroup >
+                                                                    <h:panelGroup  rendered="#{fe.feeAdjusted gt 0 or fe.feeValue gt 0}">
                                                                         <tr>
                                                                             <td style="text-align: left; font-size: 10px!important;">
                                                                                 <h:panelGroup>#{fe.staff.person.nameWithTitle}</h:panelGroup>
