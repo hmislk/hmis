@@ -7828,6 +7828,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void refund(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
+        if(configOptionApplicationController.getBooleanValueByKey("Channel Booking by date appoinment allow rufund doctor fee only", false)){
+            for(BillFee fee : selectedBillSession.getBill().getBillFees()){
+                if(fee.getFee().getFeeType() != FeeType.Staff){
+                    if(fee.getTmpChangedValue() == null){
+                        continue;
+                    }else if(fee.getTmpChangedValue() != 0){
+                        JsfUtil.addErrorMessage("Admins allow refund doctor payment only.");
+                        return;
+                    }
+                }
+            }
+        }
+        
         calRefundTotal();
 
         if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
