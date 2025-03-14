@@ -98,7 +98,9 @@ jobs:
           "
 
           # Copy new WAR file to the server
-          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo -u appuser -i rsync -aL --progress ./ $WAR_DIR/$WAR_NAME
+          "
 
           # Set the WAR file permission
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
