@@ -1431,7 +1431,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
             return;
         }
 
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonController.getCurrentDateTime())) {
+        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
