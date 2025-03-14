@@ -2751,7 +2751,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (bill.getPaidBill() == null) {
             return;
         }
-
+        
         if (cancelPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
             cancelPaymentMethod = null;
         }
@@ -2795,8 +2795,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             if (bill.getPaidBill() != null) {
                 CancelledBill cpb = createCancelBill(bill.getPaidBill());
-                cpb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-
+                cpb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);               
                 List<Payment> paymentsForPaidBill = channelService.createPaymentForChannelAppoinmentCancellation(cpb, cancelPaymentMethod, getPaymentMethodData(), getSessionController());
                 //Payment p = createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
                 drawerController.updateDrawerForOuts(paymentsForPaidBill);
@@ -3006,7 +3005,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
 //            }
         } else {
-            cb.setPaymentMethod(bill.getPaymentMethod());
+            if (cancelPaymentMethod != null) {
+                cb.setPaymentMethod(cancelPaymentMethod);
+            }else{
+                cb.setPaymentMethod(bill.getPaymentMethod());
+            }
+
         }
 
         getBillFacade().edit(cb);
