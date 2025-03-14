@@ -486,7 +486,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         parentAdmission = current;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(new Date());
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
