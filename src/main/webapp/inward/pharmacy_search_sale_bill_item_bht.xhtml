@@ -16,12 +16,13 @@
                             <h:outputLabel value="Search Pharmacy Bill Item" class="mx-4"/>
                         </f:facet>
                         <div class="row">
-                            <div class="col-md-2">
-                                <h:panelGrid class="col-1 mx-1">
-                                    <h:panelGrid columns="1" class="mt-1">
+                            <div class="col-md-2" >
+                                <h:panelGrid class="w-100">
+                                    <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel value="From Date"/>
                                         <p:datePicker 
-                                            styleClass="dateTimePicker" 
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100"
                                             id="fromDate" 
                                             value="#{searchController.fromDate}"
                                             showTime="true"                                            
@@ -31,6 +32,8 @@
                                         </p:datePicker>
                                         <h:outputLabel value="To Date"/> 
                                         <p:datePicker 
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100"
                                             id="toDate" 
                                             value="#{searchController.toDate}" 
                                             showTime="true"                                            
@@ -38,16 +41,45 @@
                                             timeInput="true" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                         </p:datePicker>
+                                        <h:outputLabel for="departmentList" value="Select Department"/> 
+                                        <p:selectOneMenu 
+                                            id="departmentList" 
+                                            class="w-100" 
+                                            value="#{searchController.searchKeyword.frmDepartment}"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            >
+                                            <f:selectItem itemLabel="All Departments"></f:selectItem>
+                                            <f:selectItems 
+                                                value="#{departmentController.institutionDepatrments}" 
+                                                var="dept" 
+                                                itemLabel="#{dept.name}" 
+                                                itemValue="#{dept}">
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
                                         <p:commandButton 
                                             id="btnSearch" 
                                             ajax="false"
-                                            class="w-100 ui-button-warning" 
+                                            class="w-100 my-2 ui-button-warning" 
                                             icon="fas fa-search"
                                             value="Search" 
                                             action="#{searchController.createPharmacyBillItemTableBht()}"  />
                                     </h:panelGrid>
 
-                                    <h:panelGrid columns="1" class="mt-2">
+                                    <h:panelGrid columns="1" class="w-100">
+                                        <h:panelGroup layout="block" styleClass="form-group">
+                                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                            <h:outputLabel value="Admission Type" for="cmbDept" class="mx-3"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu 
+                                            class="w-100"
+                                            autoWidth="false" 
+                                            value="#{searchController.searchKeyword.admissionType}">
+                                            <f:selectItem itemLabel="All Admission Type"/>
+                                            <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                                            itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                                        </p:selectOneMenu>
+
                                         <h:outputLabel value="Bill No"/>
                                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                         <h:outputLabel value="BHT No"/>
@@ -69,11 +101,12 @@
                                     id="tblBills" 
                                     value="#{searchController.billItems}" 
                                     var="pi" 
+                                    class="w-100"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,15"
-                                    size="10"
+                                    rowsPerPageTemplate="5,10,15,50"
+                                    rows="10"
                                     >
 
 

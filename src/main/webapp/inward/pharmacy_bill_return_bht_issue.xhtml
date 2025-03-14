@@ -15,17 +15,9 @@
                     <f:facet name="header" >      
                         <div class="d-flex justify-content-between">
                             <div class="d-flex gap-3 mt-2">
-                                <p:outputLabel  
-                                    value="Recievable Amount" 
-                                    rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
-                                <p:outputLabel  
-                                    value=":" style="text-align: center; width: 20px;"/>
-                                <p:outputLabel 
-                                    id="total"  
-                                    value="#{bhtIssueReturnController.returnBill.total}" 
-                                    rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:outputLabel> 
+
+
+
                             </div>
                             <div>
                                 <p:commandButton  
@@ -38,6 +30,43 @@
                             </div>
                         </div>
                     </f:facet>
+                    <h:panelGrid columns="3" id="total" >
+                        <p:outputLabel  
+                            value="Recievable Gross Amount" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
+                        <p:outputLabel  
+                            value=":" style="text-align: center; width: 20px;"/>
+                        <p:outputLabel 
+                            value="#{bhtIssueReturnController.returnBill.total}" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel> 
+
+
+                        <p:outputLabel  
+                            value="Recievable Margin Amount" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
+                        <p:outputLabel  
+                            value=":" style="text-align: center; width: 20px;"/>
+                        <p:outputLabel 
+                            id="marginTotal"  
+                            value="#{bhtIssueReturnController.returnBill.margin}" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel> 
+
+                        <p:outputLabel  
+                            value="Recievable Net Amount" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
+                        <p:outputLabel  
+                            value=":" style="text-align: center; width: 20px;"/>
+                        <p:outputLabel 
+                            id="netTotal"  
+                            value="#{bhtIssueReturnController.returnBill.netTotal}" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel> 
+                    </h:panelGrid>
                     <p:dataTable var="ph" 
                                  value="#{bhtIssueReturnController.billItems}"
                                  scrollable="true" 
@@ -57,7 +86,19 @@
                             </h:outputText>
                         </p:column>  
 
-                        <p:column headerText="Rate" style="width:25px!important;"> 
+                        <p:column headerText="Gross Rate" style="width:25px!important;"> 
+                            <h:outputText value="#{ph.rate}"  >
+                                <f:convertNumber pattern="#,##0.00" />                                
+                            </h:outputText>                      
+                        </p:column>   
+
+                        <p:column headerText="Margin Rate" style="width:25px!important;"> 
+                            <h:outputText value="#{ph.marginRate}"  >
+                                <f:convertNumber pattern="#,##0.00" />                                
+                            </h:outputText>                      
+                        </p:column>   
+
+                        <p:column headerText="Net Rate" style="width:25px!important;"> 
                             <h:outputText value="#{ph.netRate}"  >
                                 <f:convertNumber pattern="#,##0.00" />                                
                             </h:outputText>                      
@@ -132,8 +173,8 @@
                             </f:facet>
 
                             <h:panelGroup   id="gpBillPreview2">
-                                
-                                 <h:panelGroup id="gpBillPreviewFiveFiveCustom3Original" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+
+                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3Original" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
                                     <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{bhtIssueReturnController.bill}"/>
                                 </h:panelGroup>
 
@@ -207,6 +248,10 @@
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>
+                                
+                                 <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                     <phi:saleBill_Header_Return bill="#{bhtIssueReturnController.returnBill}" ></phi:saleBill_Header_Return>
+                            </h:panelGroup>
 
                             </h:panelGroup>
                         </p:panel>

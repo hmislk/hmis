@@ -471,7 +471,7 @@ public class PharmacyBean {
         addToStockHistory(pharmaceuticalBillItem, s, staff);
         return s;
     }
-
+    
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Department department) {
         String sql;
         HashMap hm = new HashMap();
@@ -729,7 +729,7 @@ public class PharmacyBean {
         return true;
     }
 
-    @Deprecated
+    
     public boolean deductFromStockWithoutHistory(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;
@@ -800,7 +800,7 @@ public class PharmacyBean {
             return;
         }
 
-        StockHistory sh= new StockHistory();
+        StockHistory sh = new StockHistory();
         sh.setFromDate(Calendar.getInstance().getTime());
         sh.setPbItem(phItem);
         sh.setHxDate(Calendar.getInstance().get(Calendar.DATE));
@@ -1372,7 +1372,7 @@ public class PharmacyBean {
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
         System.out.println("getVmp");
         System.out.println("strength = " + strength);
-        
+
         String sql;
         String vmpName = "";
 

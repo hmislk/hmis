@@ -16,6 +16,8 @@ public enum BillTypeAtomic {
     INWARD_SERVICE_BILL("Inward Service Bill", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_SERVICE_BILL_CANCELLATION("Inward Service Bill Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION("Inward Service Bill Cancellation with Batch Bill", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    INWARD_OUTSIDE_CHARGES_BILL("Inward Outside Bill", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION("Inward Outside Bill Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_PROFESSIONAL_FEE_BILL("Inward Professional Fee Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     INWARD_ESTIMATED_PROFESSIONAL_FEE_BILL("Inward Estimated Professional Fee Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     INWARD_THEATRE_PROFESSIONAL_FEE_BILL("Inward Theatre Professional Fee Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
@@ -27,7 +29,9 @@ public enum BillTypeAtomic {
     INWARD_DEPOSIT("Inward Deposit", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_DEPOSIT_CANCELLATION("Inward Deposit Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_DEPOSIT_REFUND("Inward Deposit Refund", BillCategory.REFUND, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    INWARD_DEPOSIT_REFUND_CANCELLATION("Inward Deposit Refund Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_FINAL_BILL("Inward Final Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    INWARD_ORIGINAL_FINAL_BILL("Inward Original Final Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY("Inward Final Bill Payments By Credit Company", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     INWARD_INTERIM_BILL("Inward Interim Refund", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     INWARD_ESTIMATE_BILL("Inward Estimate Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
@@ -78,9 +82,8 @@ public enum BillTypeAtomic {
     STORE_STAFF_STOCK_ADJUSTMENT("Store Staff Stock Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
     STORE_PURCHASE_RATE_ADJUSTMENT("Store Purchase Rate Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
     STORE_SALE_RATE_ADJUSTMENT("Store Sale Rate Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
-    STORE_EXPIRY_DATE_ADJUSTMENT("Store Expiry Date Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),  
-
-// Direct Issue of store items to inward patients
+    STORE_EXPIRY_DATE_ADJUSTMENT("Store Expiry Date Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
+    // Direct Issue of store items to inward patients
     DIRECT_ISSUE_STORE_INWARD("Direct Issue of Store Items to Inward Patients", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     DIRECT_ISSUE_STORE_INWARD_CANCELLATION("Direct Issue of Store Items to Inward Patients Cancellation", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     DIRECT_ISSUE_STORE_INWARD_RETURN("Direct Issue of Store Items to Inward Patients Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
@@ -127,7 +130,6 @@ public enum BillTypeAtomic {
             PaymentCategory.NON_CREDIT_COLLECTION),
     PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL("Pharmacy Retail Sale Return Items And Payments - Prebill", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY,
             PaymentCategory.NO_PAYMENT),
-    
     PHARMACY_SALE_WITHOUT_STOCK("Pharmacy Sale Without Stock", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY,
             PaymentCategory.NON_CREDIT_COLLECTION),
     PHARMACY_SALE_WITHOUT_STOCK_PRE("Pharmacy Sale Without Stock Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY,
@@ -209,6 +211,7 @@ public enum BillTypeAtomic {
     CHANNEL_REFUND_WITH_PAYMENT("Channel Refund with Payment", BillCategory.REFUND, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
     CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS("Channel Refund with Payment for Bills where Credit Payment was Settled", BillCategory.REFUND, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
     CHANNEL_CANCELLATION_WITHOUT_PAYMENT("Channel Cancellation without Payment", BillCategory.CANCELLATION, ServiceType.CHANNELLING, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.CHANNELLING, PaymentCategory.CREDIT_SPEND),
+    CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING("Channel Cancellation with online booking", BillCategory.CANCELLATION, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
     CHANNEL_REFUND("Channel Refund", BillCategory.REFUND, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
     // OPD_IN
     OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.NO_PAYMENT),
@@ -393,7 +396,7 @@ public enum BillTypeAtomic {
             case OtherBill:
                 return null;
             case PreBill:
-                 switch (billType) {
+                switch (billType) {
                     case PharmacyBhtPre:
                         return BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
                     case PharmacyWholeSale:
@@ -448,6 +451,11 @@ public enum BillTypeAtomic {
     public static List<BillTypeAtomic> findByCategory(BillCategory category) {
         return Arrays.stream(BillTypeAtomic.values())
                 .filter(e -> e.getBillCategory() == category)
+                .collect(Collectors.toList());
+    }
+
+    public static List<BillTypeAtomic> findAll() {
+        return Arrays.stream(BillTypeAtomic.values())
                 .collect(Collectors.toList());
     }
 

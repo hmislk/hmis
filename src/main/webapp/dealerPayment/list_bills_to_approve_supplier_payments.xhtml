@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" > 
+                            <h:outputText styleClass="fas fa-file-invoice"/>
+                            <h:outputLabel class="mx-4" value="Generate Supplier Payments"/>  
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar id="fromDate" value="#{supplierPaymentController.fromDate}" navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{supplierPaymentController.toDate}" navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+
+                                <p:commandButton 
+                                    value="List Pharmacy Payments to Approve" 
+                                    action="#{supplierPaymentController.fillSupplierPaymentsToApprove}" 
+                                    ajax="false"  
+                                    class="my-3 w-100 ui-button-primary"
+                                    icon="pi pi-list">
+                                </p:commandButton>
+
+
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable 
+                                    value="#{supplierPaymentController.bills}"
+                                    var="b"
+                                    rowKey="#{b.id}"
+                                    paginator="true" 
+                                    selectionRowMode="add"
+                                    selectionPageOnly="false"
+                                    rows="10"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15">
+
+                                    <p:column headerText="Payment No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.deptId}" />
+                                    </p:column>
+
+                                    <p:column headerText="Supplier" sortBy="#{b.toInstitution.name}" filterBy="#{b.toInstitution.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.toInstitution.name}" />
+                                    </p:column>
+
+                                    <p:column 
+                                        width="20em"
+                                        headerText="Created at"
+                                        sortBy="#{b.createdAt}"
+                                        filterBy="#{b.createdAt}">
+                                        <h:outputText value="#{b.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column 
+                                        headerText="Creted By" 
+                                        sortBy="#{b.creater.webUserPerson.name}"
+                                        filterBy="#{b.creater.webUserPerson.name}"
+                                        filterMatchMode="contains">
+                                        <h:outputText value="#{b.creater.webUserPerson.name}" />
+                                    </p:column>
+
+
+
+                                    <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column width="18em" class="text-center" headerText="Actions" >
+                                        <p:commandButton
+                                            value="To Check" 
+                                            disabled="#{b.completed}"
+                                            action="#{supplierPaymentController.navigateToCheckSupplierPayment(b)}" 
+                                            ajax="false"
+                                            class="ui-button-info mx-1"
+                                            icon="pi pi-search">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="To Approve" 
+                                            disabled="#{not b.completed}"
+                                            action="#{supplierPaymentController.navigateToApproveSupplierPayment(b)}" 
+                                            ajax="false"
+                                            class="ui-button-success mx-1"
+                                            icon="pi pi-check">
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </div>
+
+                        </div>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

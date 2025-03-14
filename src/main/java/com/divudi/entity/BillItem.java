@@ -8,6 +8,7 @@ import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
+import com.divudi.entity.clinical.Prescription;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -63,6 +64,8 @@ public class BillItem implements Serializable, RetirableEntity {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
+    @OneToOne
+    private Prescription prescription;
 
     double Rate;
     double discountRate;
@@ -264,6 +267,7 @@ public class BillItem implements Serializable, RetirableEntity {
         staffFee = billItem.getStaffFee();
         hospitalFee = billItem.getHospitalFee();
         Rate = billItem.getRate();
+        marginRate = billItem.getMarginRate();
         netRate = billItem.getNetRate();
         searialNo = billItem.getSearialNo();
         tmpQty = billItem.tmpQty;
@@ -290,7 +294,7 @@ public class BillItem implements Serializable, RetirableEntity {
         searialNo = billItem.getSearialNo();
         tmpQty = billItem.tmpQty;
         referenceBill = billItem.getReferenceBill();
-        marginValue = billItem.getMarginValue();
+//        marginValue = billItem.getMarginValue();
         priceMatrix = billItem.getPriceMatrix();
         agentRefNo = billItem.getAgentRefNo();
     }
@@ -305,6 +309,7 @@ public class BillItem implements Serializable, RetirableEntity {
         staffFee = 0.0;
         hospitalFee = 0.0;
         Rate = 0.0;
+        marginRate =0.0;
         netRate = 0.0;
         tmpQty = 0.0;
         marginValue = 0.0;
@@ -322,6 +327,7 @@ public class BillItem implements Serializable, RetirableEntity {
         Rate = 0 - billItem.getRate();
         discount = 0 - billItem.getDiscount();
         netRate = 0 - billItem.getNetRate();
+        marginRate = 0 - billItem.getMarginRate();
         grossValue = 0 - billItem.getGrossValue();
         marginValue = 0 - billItem.getMarginValue();
         netValue = 0 - billItem.getNetValue();
@@ -1082,6 +1088,17 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setInstructions(String instructions) {
         this.instructions = instructions;
+    }
+
+    public Prescription getPrescription() {
+        if(prescription == null){
+            prescription = new Prescription();
+        }
+        return prescription;
+    }
+
+    public void setPrescription(Prescription prescription) {
+        this.prescription = prescription;
     }
     
     

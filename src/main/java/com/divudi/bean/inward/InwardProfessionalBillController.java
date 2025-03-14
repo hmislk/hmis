@@ -26,6 +26,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Item;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.EncounterComponent;
@@ -758,7 +759,9 @@ public class InwardProfessionalBillController implements Serializable {
         return "/inward/inward_bill_professional?faces-redirect=true";
     }
 
-    public String navigateToAddProfessionalFeesFromInpatientProfile() {
+    public String navigateToAddProfessionalFeesFromInpatientProfile(PatientEncounter pe) {
+        makeNull();
+        getCurrent().setPatientEncounter(pe);
         return "/inward/inward_bill_professional?faces-redirect=true";
     }
 

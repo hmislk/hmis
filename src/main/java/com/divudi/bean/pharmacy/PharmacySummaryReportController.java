@@ -7,6 +7,7 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -37,13 +38,17 @@ import com.divudi.data.IncomeBundle;
 import com.divudi.data.IncomeRow;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
+import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.StockHistoryService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,7 +63,7 @@ import javax.persistence.TemporalType;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
-// </editor-fold>  
+// </editor-fold>
 
 /**
  * @author Dr M H B Ariyaratne
@@ -89,8 +94,10 @@ public class PharmacySummaryReportController implements Serializable {
     private DrawerFacade drawerFacade;
     @EJB
     private BillService billService;
+    @EJB
+    StockHistoryService stockHistoryService;
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private BillBeanController billBean;
@@ -136,7 +143,7 @@ public class PharmacySummaryReportController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -144,12 +151,17 @@ public class PharmacySummaryReportController implements Serializable {
     private String searchType;
     private String reportType;
 
+    Long rowsPerPageForScreen;
+    Long rowsPerPageForPrinting;
+    private String fontSizeForPrinting;
+    private String fontSizeForScreen;
+
     // Date range
     private Date fromDate;
     private Date toDate;
-    
+
     private List<Bill> bills;
-    
+
     private double total;
     private double discount;
     private double netTotal;
@@ -160,6 +172,8 @@ public class PharmacySummaryReportController implements Serializable {
     private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
     private PaymentMethod paymentMethod;
+    private AdmissionType admissionType;
+    private PaymentScheme paymentScheme;
 
     // Collections
     private List<PaymentMethod> paymentMethods;
@@ -193,12 +207,16 @@ public class PharmacySummaryReportController implements Serializable {
     private IncomeBundle bundle;
     private ReportTemplateRowBundle bundleReport;
 
+    private DailyStockBalanceReport dailyStockBalanceReport;
+
     private StreamedContent downloadingExcel;
     private UploadedFile file;
 
     // Numeric variables
     private int maxResult = 50;
 
+    //transferOuts;
+    //adjustments;
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
@@ -212,14 +230,32 @@ public class PharmacySummaryReportController implements Serializable {
     public String navigateToBillTypeIncome() {
         return "/pharmacy/reports/summary_reports/bill_type_income?faces-redirect=true";
     }
-    
+
     public String navigatToBillListByBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
         listBills();
         return "/pharmacy/reports/summary_reports/bills?faces-redirect=true";
     }
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Functions">
+
+    public void processDailyStockBalanceReport() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        if (fromDate == null) {
+            JsfUtil.addErrorMessage("Please select a date");
+            return;
+        }
+        dailyStockBalanceReport = new DailyStockBalanceReport();
+        dailyStockBalanceReport.setDate(fromDate);
+        dailyStockBalanceReport.setDepartment(department);
+
+        dailyStockBalanceReport.setOpeningStock(stockHistoryService.fetchOpeningStockQuantity(department, toDate));
+        dailyStockBalanceReport.setClosingStock(stockHistoryService.fetchClosingStockQuantity(department, toDate));
+
+    }
 
     public void listBillTypes() {
         bundleReport = new ReportTemplateRowBundle();
@@ -325,6 +361,7 @@ public class PharmacySummaryReportController implements Serializable {
             jpql.append(" and type(b)=:billClassType ");
             switch (billClassType) {
                 case Bill:
+                case OtherBill:
                     params.put("billClassType", com.divudi.entity.Bill.class);
                     break;
                 case BilledBill:
@@ -332,9 +369,6 @@ public class PharmacySummaryReportController implements Serializable {
                     break;
                 case CancelledBill:
                     params.put("billClassType", com.divudi.entity.CancelledBill.class);
-                    break;
-                case OtherBill:
-                    params.put("billClassType", com.divudi.entity.Bill.class);
                     break;
                 case PreBill:
                     params.put("billClassType", com.divudi.entity.PreBill.class);
@@ -373,7 +407,7 @@ public class PharmacySummaryReportController implements Serializable {
         }
 
     }
-    
+
     public void resetAllFiltersExceptDateRange() {
         setInstitution(null);
         setDepartment(null);
@@ -436,7 +470,7 @@ public class PharmacySummaryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
 
-        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics);
+        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new IncomeBundle(bills);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {
@@ -452,11 +486,11 @@ public class PharmacySummaryReportController implements Serializable {
         bundle.generatePaymentDetailsForBills();
     }
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Constructors">
     public PharmacySummaryReportController() {
     }
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
 
     /**
@@ -1376,7 +1410,7 @@ public class PharmacySummaryReportController implements Serializable {
         this.maxResult = maxResult;
     }
 
-// </editor-fold>  
+// </editor-fold>
     public BillService getBillService() {
         return billService;
     }
@@ -1424,6 +1458,73 @@ public class PharmacySummaryReportController implements Serializable {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
-    
-    
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public Long getRowsPerPageForScreen() {
+        rowsPerPageForScreen = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Printing", 20L);
+        return rowsPerPageForScreen;
+    }
+
+    public void setRowsPerPageForScreen(Long rowsPerPageForScreen) {
+        this.rowsPerPageForScreen = rowsPerPageForScreen;
+    }
+
+    public Long getRowsPerPageForPrinting() {
+        rowsPerPageForPrinting = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Screen", 20L);
+        return rowsPerPageForPrinting;
+    }
+
+    public void setRowsPerPageForPrinting(Long rowsPerPageForPrinting) {
+        this.rowsPerPageForPrinting = rowsPerPageForPrinting;
+    }
+
+    public String getFontSizeForPrinting() {
+        String value = configOptionApplicationController.getShortTextValueByKey("Pharmacy Analytics - Font Size for Printing", "10pt");
+        if (value.matches("^\\d+$")) {
+            value += "pt";
+        }
+        fontSizeForPrinting = value;
+        return fontSizeForPrinting;
+    }
+
+    public String getFontSizeForScreen() {
+        String value = configOptionApplicationController.getShortTextValueByKey("Pharmacy Analytics - Font Size for Screen", "1em");
+        if (value.matches("^\\d+$")) {
+            value += "em";
+        }
+        fontSizeForScreen = value;
+        return fontSizeForScreen;
+    }
+
+    public void setFontSizeForPrinting(String fontSizeForPrinting) {
+        this.fontSizeForPrinting = fontSizeForPrinting;
+    }
+
+    public void setFontSizeForScreen(String fontSizeForScreen) {
+        this.fontSizeForScreen = fontSizeForScreen;
+    }
+
+    public DailyStockBalanceReport getDailyStockBalanceReport() {
+        return dailyStockBalanceReport;
+    }
+
+    public void setDailyStockBalanceReport(DailyStockBalanceReport dailyStockBalanceReport) {
+        this.dailyStockBalanceReport = dailyStockBalanceReport;
+    }
+
 }

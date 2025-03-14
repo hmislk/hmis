@@ -750,7 +750,7 @@
                                                 <p:panelGrid columns="1" rendered="#{bookingControllerViewScope.paymentMethod eq 'MultiplePaymentMethods'}">
                                                     <p:row>
                                                         <p:column>
-                                                            <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100" />
+                                                            <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" paymentMethods="#{enumController.paymentMethodsForChannelSettling}" class="w-100" />
                                                         </p:column>
                                                     </p:row>
                                                 </p:panelGrid>
@@ -1008,9 +1008,7 @@
 
 
                 <h:panelGroup rendered="#{bookingControllerViewScope.printPreview}" >
-
                     <h:form>
-
                         <div class="row">
                             <div>
                                 <div class="row w-100">
@@ -1070,6 +1068,9 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Bill is FiveFIvePaperCustom2',true)}">
                                                 <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.printingBill}" paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" payments="#{bookingControllerViewScope.payments}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Bill is FiveFIvePaperCustom3',true)}">
+                                                <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.printingBill}" paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" payments="#{bookingControllerViewScope.payments}"/>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Bill is FiveFivePrintedPaper',true)}">
                                                 <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.printingBill}" paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" payments="#{bookingControllerViewScope.payments}"/>

@@ -99,8 +99,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    private CommonController commonController;
+
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -140,7 +139,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private List<Patient> patientList;
     private boolean printPreview;
     private List<Admission> currentAdmissions;
-    AdmissionType admissionTypeForSearch;
     ///////////////////////////
     String selectText = "";
     private String ageText = "";
@@ -162,6 +160,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Doctor referringDoctorForSearch;
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
+    private AdmissionType admissionTypeForSearch;
     private Admission perantAddmission;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
@@ -252,6 +251,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void addCreditCompnay() {
+        if (encounterCreditCompany.getCreditLimit() <= 0) {
+            JsfUtil.addErrorMessage("Credit limit must be greater than zero");
+            return;
+        }
         // need to add encounterCreditCompany to list
         if (encounterCreditCompany.getInstitution() != null) {
             encounterCreditCompany.setPatientEncounter(current);
@@ -483,7 +486,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         parentAdmission = current;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonController.getCurrentDateTime());
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
@@ -619,6 +622,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (parentAdmission != null) {
             j += "  and c.parentEncounter=:pent ";
             m.put("pent", parentAdmission);
+        }
+
+        if (admissionTypeForSearch != null) {
+            j += "  and c.admissionType=:at ";
+            m.put("at", admissionTypeForSearch);
         }
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
@@ -833,6 +841,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         referringDoctorForSearch = null;
         institutionForSearch = null;
         admissionStatusForSearch = null;
+        admissionTypeForSearch = null;
         parentAdmission = null;
     }
 
@@ -843,15 +852,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         clearSearchValues();
         return "/inward/inpatient_search?faces-redirect=true;";
-    }
-
-    public String navigateToListAdmissionsWithoutRoom() {
-        institutionForSearch = sessionController.getLoggedUser().getInstitution();
-        if (configOptionApplicationController.getBooleanValueByKey("Restirct Inward Admission Search to Logged Department of the User")) {
-            loggedDepartment = sessionController.getLoggedUser().getDepartment();
-        }
-        clearSearchValues();
-        return "/inward/inpatient_search_without_room?faces-redirect=true;";
     }
 
     public String navigateToListChildAdmissions() {
@@ -1172,6 +1172,56 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Guardian Details Required in Patient Admission")) {
+            if (getCurrent().getGuardian() == null) {
+                JsfUtil.addErrorMessage("Guardian is Required");
+                return true;
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Title is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getTitle() == null) {
+                    JsfUtil.addErrorMessage("Guardian Title is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Name is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getName() == null || getCurrent().getGuardian().getName().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Name is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian NIC is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getNic() == null || getCurrent().getGuardian().getNic().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian NIC is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Address is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getAddress() == null || getCurrent().getGuardian().getAddress().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Address is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Mobile Number is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getMobile() == null || getCurrent().getGuardian().getMobile().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Mobile Number is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Relationship is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardianRelationshipToPatient() == null) {
+                    JsfUtil.addErrorMessage("Guardian Relationship is Required");
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
@@ -1502,14 +1552,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public PersonFacade getPersonFacade() {
         return personFacade;
-    }
-
-    public AdmissionType getAdmissionTypeForSearch() {
-        return admissionTypeForSearch;
-    }
-
-    public void setAdmissionTypeForSearch(AdmissionType admissionTypeForSearch) {
-        this.admissionTypeForSearch = admissionTypeForSearch;
     }
 
     public void setPersonFacade(PersonFacade personFacade) {
@@ -1956,6 +1998,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAdmittingProcessStarted(boolean admittingProcessStarted) {
         this.admittingProcessStarted = admittingProcessStarted;
+    }
+
+    public AdmissionType getAdmissionTypeForSearch() {
+        return admissionTypeForSearch;
+    }
+
+    public void setAdmissionTypeForSearch(AdmissionType admissionTypeForSearch) {
+        this.admissionTypeForSearch = admissionTypeForSearch;
     }
 
     /**

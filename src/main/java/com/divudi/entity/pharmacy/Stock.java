@@ -57,32 +57,32 @@ public class Stock implements Serializable, RetirableEntity {
     private String retireComments;
     private String stockLocator;
 
-    @ManyToOne
-    Stock parentStock;
-
-    @OneToMany(mappedBy = "parentStock", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<Stock> childStocks;
+//    @ManyToOne
+//    Stock parentStock;
+//
+//    @OneToMany(mappedBy = "parentStock", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    List<Stock> childStocks;
 
     @Transient
     private Double transItemStockQty;
     
     
 
-    public List<Stock> getChildStocks() {
-        return childStocks;
-    }
-
-    public void setChildStocks(List<Stock> childStocks) {
-        this.childStocks = childStocks;
-    }
-
-    public Stock getParentStock() {
-        return parentStock;
-    }
-
-    public void setParentStock(Stock parentStock) {
-        this.parentStock = parentStock;
-    }
+//    public List<Stock> getChildStocks() {
+//        return childStocks;
+//    }
+//
+//    public void setChildStocks(List<Stock> childStocks) {
+//        this.childStocks = childStocks;
+//    }
+//
+//    public Stock getParentStock() {
+//        return parentStock;
+//    }
+//
+//    public void setParentStock(Stock parentStock) {
+//        this.parentStock = parentStock;
+//    }
 
     public String getCode() {
         return code;

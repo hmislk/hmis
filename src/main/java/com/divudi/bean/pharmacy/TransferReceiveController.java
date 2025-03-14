@@ -126,7 +126,7 @@ public class TransferReceiveController implements Serializable {
         generateBillComponent();
     }
 
-//   public String navigateBackToRecieveList(){    
+//   public String navigateBackToRecieveList(){
 //        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
 //    }
     public String navigateToRecieveIssue() {
@@ -140,11 +140,7 @@ public class TransferReceiveController implements Serializable {
             BillItem bItem = new BillItem();
             bItem.setReferanceBillItem(i.getBillItem());
             bItem.copy(i.getBillItem());
-            if (Math.abs(i.getQtyInUnit()) >= Math.abs(i.getStaffStock().getStock())) {
-                bItem.setTmpQty(Math.abs(i.getQtyInUnit()));
-            } else {
-                bItem.setTmpQty(Math.abs(i.getStaffStock().getStock()));
-            }
+            bItem.setTmpQty(Math.max(Math.abs(i.getQtyInUnit()), Math.abs(i.getStaffStock().getStock())));
 
             bItem.setSearialNo(getBillItems().size());
 
@@ -183,7 +179,7 @@ public class TransferReceiveController implements Serializable {
         if (bill.getForwardReferenceBills() == null || bill.getForwardReferenceBills().isEmpty()) {
             return false;
         }
-        return true; 
+        return true;
     }
 
     public void settle() {

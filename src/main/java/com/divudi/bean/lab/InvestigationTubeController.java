@@ -95,6 +95,15 @@ public class InvestigationTubeController implements Serializable {
         getItems();
     }
     
+    public InvestigationTube getTube(String name) {
+        for (InvestigationTube tube : getItems()) {
+            if (tube.getName().equalsIgnoreCase(name)) {
+                return tube;
+            }
+        }
+        return null; // or throw an exception if an unknown name is not acceptable
+    }
+    
     public InvestigationTube findAndCreateInvestigationTubeByName(String qry) {
         InvestigationTube i;
         String jpql;

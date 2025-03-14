@@ -26,6 +26,11 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
         </h:panelGrid>
+
+        <p:commandButton ajax="false" value="Download" icon="fa fa-download" class="mx-2 ui-button-primary" style="background-color: #007bff; color: white; border: none; margin-top: 5px; margin-bottom: 5px;">
+            <p:dataExporter target="tblBills" type="xlsx" fileName="bill_list" ></p:dataExporter>
+        </p:commandButton>
+
         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
                 <h:outputLabel value="GOOD RETURN NOTE"/>
@@ -37,7 +42,7 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>      
-            <p:column headerText="GRN NO" >
+            <p:column headerText="GRN No" >
                 <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return" value="#{bill.referenceBill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
@@ -49,10 +54,10 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
-            <p:column headerText="Billed at"  >
+            <p:column headerText="Billed At"  >
                 <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return" >
                     <h:outputLabel value="#{bill.createdAt}" >
-                        <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
@@ -70,7 +75,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>                 
-            <p:column headerText="Billed by" >
+            <p:column headerText="Billed By" >
                 <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
@@ -89,7 +94,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>          
-            <p:column headerText="Paymentmethod"  >
+            <p:column headerText="Paymentmethod">
                 <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>

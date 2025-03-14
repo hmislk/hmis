@@ -29,6 +29,7 @@ public enum BillType {
     OpdPreBill,
     InwardPaymentBill,
     InwardFinalBill,
+    InwardOriginalFinalBill,
     InwardFinalBillCCPayment,
     InwardAppointmentBill,
     InwardBill,
@@ -80,6 +81,7 @@ public enum BillType {
     PharmacyOrder,
     PharmacyOrderApprove,
     PharmacyGrnBill,//Cash out
+    PharmacyGrnBillImport,//Cash out
     PharmacyGrnReturn,
     PharmacyReturnWithoutTraising,
     GrnPayment,

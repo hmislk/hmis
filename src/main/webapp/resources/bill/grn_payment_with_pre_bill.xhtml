@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="billItems" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+        <div style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher CSS')}" >
+
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header Text')}" escape="false" ></h:outputText>
+            </div>
+
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+            </div>
+
+            <div >
+                <h4 style="color: #000000; text-align: center " >
+                    <h:outputLabel value="Payment Voucher" style="text-decoration: underline;"/>
+                </h4>
+            </div>
+
+            <div class="row" >
+                <div class="col-6" >
+                    <h:panelGrid columns="2" class="w-75" >
+                        <h:outputLabel value="Payee : " />
+                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
+                        <h:outputLabel value="Address : " />
+                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.address}"/>
+                        <h:outputLabel value="Phone : " />
+                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.phone}"/>
+                    </h:panelGrid>
+                </div>
+                <div class="col-6" >
+                    <h:panelGrid columns="2" class="w-75" >
+                        <h:outputLabel value="Voucher No : " />
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                    </h:panelGrid>
+
+                </div>
+            </div>
+
+            <div>
+
+                <!--
+                                <div>
+                                    <h:outputLabel value="Payee : " style="text-align: right!important;"/>
+                                    <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
+                                    <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
+                                    <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="position: relative; left: 70%;" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                
+                                </div>-->
+
+                <div>
+
+                    <p:dataTable value="#{cc.attrs.billItems}" var="bi" sortBy="#{bi.referenceBill.invoiceNumber}">
+
+                        <p:column headerText="PO Number">
+                            <p:outputLabel value="#{bi.referenceBill.referenceBill.deptId}" ></p:outputLabel>
+<!--                            <p:outputLabel value="#{bi.referenceBill.referenceBill.createdAt}" style="text-align: center;">
+                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>                                
+                            </p:outputLabel>-->
+                        </p:column>                   
+
+                        <p:column headerText="Invoice Number" >
+                            <p:outputLabel value="#{bi.referenceBill.invoiceNumber}" style="text-align: center;"/>
+                        </p:column>
+
+                        <p:column headerText="GRN Number" >
+                            <p:outputLabel value="#{bi.referenceBill.deptId}" style="text-align: center;"/>
+                        </p:column>
+
+
+                        <p:column headerText="GRN Date">
+                            <p:outputLabel value="#{bi.referenceBill.createdAt}" style="text-align: center;">
+                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>
+
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Bill Value" class="text-end">
+                            <p:outputLabel value="#{0-bi.referenceBill.netTotal}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Returned Value" class="text-end">
+                            <p:outputLabel value="#{0-bi.referenceBill.refundAmount}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Paying Value" class="text-end">
+                            <p:outputLabel value="#{0-bi.netValue}" style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+
+                    </p:dataTable>
+
+                </div>
+
+                <div class="row" >
+                    <div class="col-6" >
+
+                    </div>
+                    <div class="col-6 p-4" >
+                        <h:panelGrid columns="2" class="w-100" columnClasses="text-start, text-end" >
+                            <h:outputLabel value="Total : " />
+                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                            <h:outputLabel value="Discount : " />
+                            <h:outputLabel value="#{cc.attrs.bill.discount}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                            <h:outputLabel value="Net : " />
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                        </h:panelGrid>
+                    </div>
+                </div>
+
+                <div class="row" >
+                    <div class="col-4" >
+                        <h:outputLabel value="Prepared By :" /> <br/>
+                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}" />
+                    </div>
+                    
+                    <div class="col-4" >
+                        <h:outputLabel value="Checked By :" /> <br/>
+                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.completedBy.webUserPerson.nameWithTitle}" />
+                    </div>
+                    
+                     <div class="col-4" >
+                        <h:outputLabel value="Approved By :" /> <br/>
+                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.paymentApprovedBy.webUserPerson.nameWithTitle}" />
+                    </div>
+                    
+                </div>
+
+            </div>
+
+           
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text')}" escape="false" ></h:outputText>
+            </div>
+        </div>
+    </cc:implementation>
+</html>

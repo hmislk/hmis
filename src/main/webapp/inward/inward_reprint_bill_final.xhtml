@@ -24,6 +24,11 @@
                                         <h:outputLabel value="Final Bill" class="mx-4"></h:outputLabel>
                                     </div>
                                     <div class="d-flex gap-2">
+                                         <p:selectBooleanCheckbox value="#{inwardSearch.showOrginalBill}"
+                                                             label="Show Original Bill" itemLabel="Show Original Bill"
+                                                             class="mx-2">
+                                        <p:ajax process="@this" update="@all"/>
+                                    </p:selectBooleanCheckbox>
                                         <p:commandButton 
                                             icon=" fa fa-refresh"
                                             value="Process Bill" 
@@ -33,8 +38,8 @@
                                             ajax="false" 
                                             icon="fa fa-cancel"
                                             class="ui-button-danger"
-                                            value="To Cancel Bill"                                     
-                                            action="inward_cancel_bill_final" 
+                                            value="To Cancel Bill"
+                                            action="inward_cancel_bill_final?faces-redirect=true"
                                             disabled="#{inwardSearch.bill.cancelled}"  />
                                         <p:commandButton 
                                             ajax="false"
@@ -302,7 +307,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="finalOriginalBillPriview">
-                                                    <bi:finalBill bill="#{inwardSearch.bill}" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
+                                                    <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
                                                 </h:panelGroup>
 
                                             </p:panel>
@@ -331,7 +336,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="finalDuplicateBillPriview">
-                                                    <bi:finalBill bill="#{inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
+                                                    <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
                                             </p:panel>
@@ -366,7 +371,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="originalHospitalBillPriview">
-                                                    <bi:finalBill bill="#{inwardSearch.bill}" hosCopy="true" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
+                                                    <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" hosCopy="true" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
                                                 </h:panelGroup>  
 
                                             </p:panel>
@@ -395,7 +400,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="duplicateHospitalBillPriview">
-                                                    <bi:finalBill bill="#{inwardSearch.bill}" duplicate="true" hosCopy="true" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
+                                                    <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" hosCopy="true" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
                                                 </h:panelGroup> 
 
                                             </p:panel>
@@ -423,7 +428,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="originalProfessionalBillBillPriview">
-                                                    <bi:finalProfessionalBill bill="#{inwardSearch.bill}" /><!-- **Professional Bill**Original Bill**-->
+                                                    <bi:finalProfessionalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" /><!-- **Professional Bill**Original Bill**-->
                                                 </h:panelGroup>
 
                                             </p:panel>
@@ -445,7 +450,7 @@
                                                     </div>
                                                 </f:facet>
                                                 <h:panelGroup id="duplicateProfessionalBillBillPriview">
-                                                    <bi:finalProfessionalBill bill="#{inwardSearch.bill}" duplicate="true" /><!-- Final Bill - **Professional Bill**Duplicate Bill**-->
+                                                    <bi:finalProfessionalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" /><!-- Final Bill - **Professional Bill**Duplicate Bill**-->
                                                 </h:panelGroup>
                                             </p:panel>
                                         </div>
@@ -479,10 +484,10 @@
                                                 </f:facet>
                                                 <h:panelGroup id="OriginalFinalBillSummaryPriview">
                                                     <h:panelGroup id="OriginalFinalBillSummarywithoutProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq false}">
-                                                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" />
+                                                        <bi:finalBillGreenSheet  bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" />
                                                     </h:panelGroup>
                                                     <h:panelGroup id="originalFinalBillSummarywithProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq true}">
-                                                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="true"/>
+                                                        <bi:finalBillGreenSheet  bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" showProfessional="true"/>
                                                     </h:panelGroup>
                                                 </h:panelGroup>  
                                             </p:panel>
@@ -513,10 +518,10 @@
 
                                                 <h:panelGroup id="duplicateFinalBillSummaryPriview">
                                                     <h:panelGroup id="duplicateFinalBillSummarywithoutProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq false}">
-                                                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" duplicate="true"/>
+                                                        <bi:finalBillGreenSheet  bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup id="duplicateFinalBillSummarywithProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq true}">
-                                                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" duplicate="true" showProfessional="true"/>
+                                                        <bi:finalBillGreenSheet  bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="true"/>
                                                     </h:panelGroup>
                                                 </h:panelGroup>  
                                             </p:panel>

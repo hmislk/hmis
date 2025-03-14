@@ -160,8 +160,6 @@ public class VtmController implements Serializable {
                 if (!vtms.isEmpty()) {
                     nvtm = vtms.get(0);
                 }
-            } else {
-                nvtm = null;
             }
         }
         if (nvtm != null) {
@@ -177,7 +175,7 @@ public class VtmController implements Serializable {
         String jpql;
         Map m = new HashMap();
         Vtm nvtm;
-        if (name == null || name.trim().equals("")) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         } else {
             m.put("ret", false);
@@ -231,7 +229,7 @@ public class VtmController implements Serializable {
     }
 
     public List<Vtm> getSelectedItems() {
-        if (selectText == null || selectText.trim().equals("")) {
+        if (selectText == null || selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Vtm c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Vtm c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
@@ -250,7 +248,7 @@ public class VtmController implements Serializable {
     }
 
     public void bulkUpload() {
-        List<String> lstLines = Arrays.asList(getBulkText().split("\\r?\\n"));
+        String[] lstLines = getBulkText().split("\\r?\\n");
         for (String s : lstLines) {
             List<String> w = Arrays.asList(s.split(","));
             try {
@@ -260,14 +258,13 @@ public class VtmController implements Serializable {
                 String f = w.get(4);
                 //////// // System.out.println(code + " " + ix + " " + ic + " " + f);
 
-                Vtm tix = new Vtm();
+                Vtm tix = new Vtm(); // TODO : Why ?
                 tix.setCode(code);
                 tix.setName(ix);
                 tix.setDepartment(null);
 
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
-
         }
     }
 
@@ -285,12 +282,12 @@ public class VtmController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            if (billedAs == false) {
+            if (!billedAs) {
                 //////// // System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
 
             }
-            if (reportedAs == false) {
+            if (!reportedAs) {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
@@ -299,10 +296,10 @@ public class VtmController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            if (billedAs == false) {
+            if (!billedAs) {
                 getCurrent().setBilledAs(getCurrent());
             }
-            if (reportedAs == false) {
+            if (!reportedAs) {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
@@ -421,7 +418,7 @@ public class VtmController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             VtmController controller = (VtmController) facesContext.getApplication().getELResolver().
@@ -430,15 +427,13 @@ public class VtmController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

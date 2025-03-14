@@ -346,6 +346,14 @@ public class Bill implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date printedAt;
 
+    private boolean paymentGenerated;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser paymentGeneratedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date paymentGeneratedAt;
+    @Lob
+    private String paymentGenerationComments;
+
     private boolean paymentApproved;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser paymentApprovedBy;
@@ -397,6 +405,8 @@ public class Bill implements Serializable, RetirableEntity {
     private String ageAtBilledDate;
     @Transient
     private Bill tmpRefBill;
+    @Transient
+    private String tmpComments;
 
     private String agentRefNo;
     private boolean billClosed;
@@ -1048,6 +1058,21 @@ public class Bill implements Serializable, RetirableEntity {
 
     public double getNetTotal() {
         return netTotal;
+    }
+
+    @Transient
+    public Double getAbsoluteNetTotalTransient() {
+        return Math.abs(netTotal);
+    }
+
+    @Transient
+    public Double getAbsoluteGrossTotalTransient() {
+        return Math.abs(total);
+    }
+
+    @Transient
+    public Double getAbsoluteDiscountTransient() {
+        return Math.abs(discount);
     }
 
     public void setNetTotal(double netTotal) {
@@ -2523,6 +2548,10 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public PharmacyBill getPharmacyBill() {
+        if (pharmacyBill == null) {
+            pharmacyBill = new PharmacyBill();
+            pharmacyBill.setBill(this);
+        }
         return pharmacyBill;
     }
 
@@ -2613,6 +2642,44 @@ public class Bill implements Serializable, RetirableEntity {
         this.paymentCompletionComments = paymentCompletionComments;
     }
 
-    
-    
+    public boolean isPaymentGenerated() {
+        return paymentGenerated;
+    }
+
+    public void setPaymentGenerated(boolean paymentGenerated) {
+        this.paymentGenerated = paymentGenerated;
+    }
+
+    public WebUser getPaymentGeneratedBy() {
+        return paymentGeneratedBy;
+    }
+
+    public void setPaymentGeneratedBy(WebUser paymentGeneratedBy) {
+        this.paymentGeneratedBy = paymentGeneratedBy;
+    }
+
+    public Date getPaymentGeneratedAt() {
+        return paymentGeneratedAt;
+    }
+
+    public void setPaymentGeneratedAt(Date paymentGeneratedAt) {
+        this.paymentGeneratedAt = paymentGeneratedAt;
+    }
+
+    public String getPaymentGenerationComments() {
+        return paymentGenerationComments;
+    }
+
+    public void setPaymentGenerationComments(String paymentGenerationComments) {
+        this.paymentGenerationComments = paymentGenerationComments;
+    }
+
+    public String getTmpComments() {
+        return tmpComments;
+    }
+
+    public void setTmpComments(String tmpComments) {
+        this.tmpComments = tmpComments;
+    }
+
 }

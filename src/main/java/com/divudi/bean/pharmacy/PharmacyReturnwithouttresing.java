@@ -33,7 +33,6 @@ import com.divudi.entity.pharmacy.UserStock;
 import com.divudi.entity.pharmacy.UserStockContainer;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.IssueRateMarginsFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
@@ -120,7 +119,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -185,10 +184,9 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
     //Check when edititng Qty
     //
-    
-    @Inject 
+    @Inject
     UserStockController userStockController;
-    
+
     public boolean onEdit(BillItem tmp) {
         //Cheking Minus Value && Null
         if (tmp.getQty() <= 0 || tmp.getQty() == null) {
@@ -228,7 +226,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
     private void onEditCalculation(BillItem tmp) {
 
-        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
+        tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
         calculateBillItemForEditing(tmp);
 
         calTotal();
@@ -246,7 +244,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
         }
 
         bi.setQty(editingQty);
-        bi.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - editingQty));
+        bi.getPharmaceuticalBillItem().setQtyInUnit(0 - editingQty);
         calculateBillItemForEditing(bi);
 
         calTotal();
@@ -320,8 +318,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
     public void setToInstitution(Institution toInstitution) {
         this.toInstitution = toInstitution;
     }
-    
-    
 
     public String newSaleBillWithoutReduceStock() {
         clearBill();
@@ -412,7 +408,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        
 
         getPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getPreBill().setCreater(getSessionController().getLoggedUser());
@@ -534,7 +529,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
             JsfUtil.addErrorMessage("Select a Supplier");
             return;
         }
-        if (getPreBill().getComments() == null || getPreBill().getComments().trim().equals("")) {
+        if (getPreBill().getComments() == null || getPreBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
@@ -547,6 +542,8 @@ public class PharmacyReturnwithouttresing implements Serializable {
             //   ////System.out.println("Error for sale bill");
             return;
         }
+
+        calculateAllRates();
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
         //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
@@ -566,8 +563,20 @@ public class PharmacyReturnwithouttresing implements Serializable {
     }
 
     private boolean checkItemBatch() {
+        if (getPreBill() == null || getPreBill().getBillItems() == null || getBillItem() == null
+                || getBillItem().getPharmaceuticalBillItem() == null
+                || getBillItem().getPharmaceuticalBillItem().getStock() == null) {
+            return false;
+        }
+
+        Long targetStockId = getBillItem().getPharmaceuticalBillItem().getStock().getId();
+
         for (BillItem bItem : getPreBill().getBillItems()) {
-            if (Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(), getBillItem().getPharmaceuticalBillItem().getStock().getId())) {
+            if (bItem == null || bItem.getPharmaceuticalBillItem() == null
+                    || bItem.getPharmaceuticalBillItem().getStock() == null) {
+                continue;
+            }
+            if (Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(), targetStockId)) {
                 return true;
             }
         }
@@ -575,8 +584,8 @@ public class PharmacyReturnwithouttresing implements Serializable {
         return false;
     }
 
-    @EJB
-    IssueRateMarginsFacade issueRateMarginsFacade;
+//    @EJB
+//    IssueRateMarginsFacade issueRateMarginsFacade;
 
     public void addBillItem() {
         errorMessage = null;
@@ -596,12 +605,10 @@ public class PharmacyReturnwithouttresing implements Serializable {
         }
 
         //IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(sessionController.getDepartment(), getToDepartment());
-
 //        if (issueRateMargins == null) {
 //            JsfUtil.addErrorMessage("Set Issue Margin");
 //            return;
 //        }
-
         if (getStock() == null) {
             errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
             JsfUtil.addErrorMessage("Item?");
@@ -632,7 +639,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
             return;
         }
 
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         calculateBillItem();
@@ -661,8 +668,9 @@ public class PharmacyReturnwithouttresing implements Serializable {
     public void calTotal() {
         getPreBill().setTotal(0);
         double netTot = 0.0;
-        double discount = 0.0;
+//        double discount = 0.0;
         double grossTot = 0.0;
+        double retailValue = 0.0;
         //double margin = 0;
         int index = 0;
         for (BillItem b : getPreBill().getBillItems()) {
@@ -673,17 +681,22 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
             netTot = netTot + b.getNetValue();
             grossTot = grossTot + b.getGrossValue();
-            discount = discount + b.getDiscount();
+//            discount = discount + b.getDiscount();
+            retailValue = retailValue + b.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * b.getPharmaceuticalBillItem().getQty() ;
             //margin += b.getMarginValue();
 
         }
 
         netTot = netTot + getPreBill().getServiceCharge();
 
-        getPreBill().setNetTotal(netTot);
-        getPreBill().setTotal(grossTot);
+         getPreBill().setTotal(grossTot);
+
+        getPreBill().setNetTotal(netTot - Math.abs(getPreBill().getDiscount()));
+
         //getPreBill().setMargin(margin);
-        getPreBill().setDiscount(discount);
+//        getPreBill().setDiscount(discount);
+        getPreBill().getPharmacyBill().setSaleValue(retailValue);
+        getPreBill().getPharmacyBill().setPurchaseValue(netTot);
         setNetTotal(getPreBill().getNetTotal());
 
     }
@@ -731,7 +744,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQty(0 - qty);
 
         //Rates
         //Values
@@ -786,16 +799,14 @@ public class PharmacyReturnwithouttresing implements Serializable {
         }
 
         //IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(sessionController.getDepartment(), getToDepartment());
-
 //        if (issueRateMargins == null) {
 //            JsfUtil.addErrorMessage("Please select to department");
 //            return;
 //        }
-
         //if (issueRateMargins.isAtPurchaseRate()) {
-            bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate());
+        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate());
         //} else {
-            //bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        //bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
         //}
 
         //bi.setMarginRate(calculateBillItemAdditionToPurchaseRate(bi, issueRateMargins));

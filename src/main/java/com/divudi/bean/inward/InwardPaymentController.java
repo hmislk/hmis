@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -71,6 +72,8 @@ public class InwardPaymentController implements Serializable {
     private SessionController sessionController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     private boolean printPreview;
     private double due;
     String comment;
@@ -94,6 +97,11 @@ public class InwardPaymentController implements Serializable {
 
     public String navigateToInpationDashbord() {
         return "/inward/admission_profile?faces-redirect=true";
+    }
+
+    public String navigateToPatientRefund() {
+        paymentMethodData = new PaymentMethodData();
+        return "inward_cancel_bill_refund?faces-redirect=true";
     }
 
     private double getFinalBillDue() {
@@ -265,9 +273,18 @@ public class InwardPaymentController implements Serializable {
             return;
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Deposit Payment Bill Payment Type Required", false)
+                && configOptionApplicationController.getBooleanValueByKey("Get Payment Type Instead of Comment", false)) {
+
+            if (comment == null || comment.trim().isEmpty()) { // Trim to handle whitespace-only cases
+                JsfUtil.addErrorMessage("Please Select a Payment Type");
+                return;
+            }
+        }
+
         saveBill();
         saveBillItem();
-        
+
         List<Payment> payments = paymentService.createPayment(current, paymentMethodData);
         paymentService.updateBalances(payments);
 
@@ -307,7 +324,7 @@ public class InwardPaymentController implements Serializable {
 
         return curr;
     }
-    
+
     public void listnerForPaymentMethodChange() {
         if (getCurrent().getPaymentMethod() == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());

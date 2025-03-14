@@ -8,7 +8,8 @@
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:ezcommon="http://java.sun.com/jsf/composite/ezcomp/common"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
-      >
+
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml" >
 
@@ -25,8 +26,8 @@
                                     <h:panelGrid columns="2" >
                                         <p:outputLabel value="Report Format" class="mx-2"></p:outputLabel>
                                         <p:selectOneMenu  
-                                            disabled="#{patientReportController.currentPatientReport.approved}"
-                                            id="mnuCat" 
+                                            disabled="#{patientReportController.currentPatientReport.approved or not configOptionApplicationController.getBooleanValueByKey('Change Report Template in Patient Report')}"
+                                            id="mnuCat"
                                             value="#{patientReportController.currentPatientReport.reportFormat}"  
                                             style="width: 300px!important;">
                                             <f:selectItems  value="#{patientReportController.avalilableReportFormats}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
@@ -135,8 +136,8 @@
                         <div class="row">
 
                             <div class="col-5">
-                                
-<!--                            Enter Values                        -->
+
+                                <!--                            Enter Values                        -->
                                 <p:panel header="Enter Values"  
                                          rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology' and patientReportController.currentPatientReport.containValues eq true}" >
                                     <table >
@@ -173,8 +174,8 @@
                                         </ui:repeat>
                                     </table>
                                 </p:panel>
-                                
-<!--                            Calculations                        -->
+
+                                <!--                            Calculations                        -->
                                 <h:panelGroup rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                     <p:panel class="my-2" header="Calculations " id="tblCals">
                                         <table >               
@@ -206,7 +207,7 @@
 
                                 </h:panelGroup>
 
-<!--                            Flags                               -->
+                                <!--                            Flags                               -->
                                 <p:panel class="my-2" header="Flags" id="tblFlags"
                                          rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" 
                                          >
@@ -238,7 +239,7 @@
 
                                 </p:panel>
 
-<!--                            Dynamic Labels                      -->
+                                <!--                            Dynamic Labels                      -->
                                 <p:panel header="Dynamic Labels" rendered="#{patientReportController.currentPatientReport.containDynamicLabels eq true }"  >
                                     <table >
                                         <ui:repeat id="tblDls" 
@@ -271,7 +272,7 @@
                                     </table>
                                 </p:panel>
 
-<!--                            Microbiology                        -->
+                                <!--                            Microbiology                        -->
                                 <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                     <f:view contentType="text/html">
 
@@ -313,7 +314,7 @@
 
                                 </p:panel>
 
-<!--                            Pathology or Haematology Report     -->
+                                <!--                            Pathology or Haematology Report     -->
                                 <p:panel 
                                     class="mb-2"
                                     header="Pathology or Haematology Report"    
@@ -421,7 +422,7 @@
                                     </p:dialog>
                                 </p:panel>
 
-<!--                            Report Details                      -->
+                                <!--                            Report Details                      -->
                                 <p:panel header="Report Details" class="my-2" >
                                     <p:panelGrid columns="2" >
                                         <p:outputLabel for="sampleIDs" value="sampleIDs" ></p:outputLabel>
@@ -445,24 +446,73 @@
                                         </p:autoComplete>
 
                                         <p:outputLabel for="cmbDoc" value="Referring Doctor" ></p:outputLabel> 
-                                        <p:autoComplete 
-                                            forceSelection="true" 
-                                            id="cmbDoc" 
-                                            value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy}" 
-                                            completeMethod="#{doctorController.completeDoctor}" var="ix" 
-                                            itemLabel="#{ix.person.name}" 
-                                            itemValue="#{ix}" 
-                                            inputStyleClass="form-control"
-                                            maxResults="15"
-                                            class="w-100" 
-                                            scrollHeight="500">
-                                            <p:column headerText="Name" style="padding: 2px;  width: 400px;">
-                                                <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Code" style="padding: 2px;">
-                                                <h:outputText value="#{ix.code}" ></h:outputText>
-                                            </p:column>
-                                        </p:autoComplete>
+                                        <h:panelGroup class="d-flex justify-content-between gap-2">
+                                            <p:autoComplete 
+                                                forceSelection="true" 
+                                                id="cmbDoc" 
+                                                value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy}" 
+                                                completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                itemLabel="#{ix.person.nameWithTitle}" 
+                                                itemValue="#{ix}" 
+                                                inputStyleClass="form-control"
+                                                maxResults="15"
+                                                class="w-100" 
+                                                scrollHeight="500">
+                                                <p:column headerText="Name" style="padding: 2px;  width: 400px;">
+                                                    <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Code" style="padding: 2px;">
+                                                    <h:outputText value="#{ix.code}" ></h:outputText>
+                                                </p:column>
+                                            </p:autoComplete>
+                                            <p:commandButton 
+                                                id="btnAddNewDoc" 
+                                                rendered="#{webUserController.hasPrivilege('OpdAddNewRefferalDoctor')}"
+                                                value="Add" 
+                                                class="ui-button-warning"
+                                                icon="fa fa-user-md"
+                                                oncomplete="PF('dlg').show();" 
+                                                actionListener="#{doctorController.prepareAdd}" 
+                                                process="btnAddNewDoc" 
+                                                update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" > 
+                                            </p:commandButton>
+
+                                            <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="650">  
+                                                <h:panelGrid columns="2" > 
+                                                    <p:outputLabel id="lblTitleD" value="Title" style="width: 200px;"></p:outputLabel>
+                                                    <p:selectOneMenu 
+                                                        id="cmbTitle1"
+                                                        class="w-100"
+                                                        value="#{doctorController.current.person.title}">
+                                                        <f:selectItem itemLabel="Select Title" />
+                                                        <f:selectItems value="#{opdBillController.title}" var="i"
+                                                                       itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                    </p:selectOneMenu>
+                                                    <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
+                                                    <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}" class="w-100"></p:inputText>
+                                                    <p:outputLabel id="lblMobileD" value="Mobile" ></p:outputLabel>
+                                                    <p:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}" class="w-100" ></p:inputText>
+                                                    <p:outputLabel value="Speciality" ></p:outputLabel>
+                                                    <p:selectOneMenu id="cmbSpecialityD" value="#{doctorController.current.speciality}" class="w-100" >
+                                                        <f:selectItem itemLabel="Please select a speciality"/>
+                                                        <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                    </p:selectOneMenu>
+                                                    <p:outputLabel id="lblRegD" value="Registration" ></p:outputLabel>
+                                                    <p:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}" class="w-100"></p:inputText>                 
+
+                                                </h:panelGrid>  
+                                                <div class="mt-2 d-flex justify-content-end">
+                                                        <p:commandButton 
+                                                            id="btnDocSave" 
+                                                            value="Add New"
+                                                            ajax="false"
+                                                            process="btnDocSave panDoc" 
+                                                            update="msg panDoc cmbDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                                        </p:commandButton>
+                                                    </div>
+                                            </p:dialog>
+                                        </h:panelGroup>
+
 
                                         <p:outputLabel value="Ordered Time" ></p:outputLabel>
                                         <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
@@ -637,11 +687,10 @@
                                                 </ui:repeat>
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                     <h:panelGroup 
-
                                                         layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'Image'}" >
                                                         <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" ></img>
                                                         <p:graphicImage
-                                                            value="#{prv.lobValue}"
+                                                            value="#{prv.baImage}"
                                                             style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block; z-index: 800; " 
                                                             height="#{prv.investigationItem.htPix}"
 
@@ -649,6 +698,26 @@
                                                         </p:graphicImage>
                                                     </h:panelGroup>
                                                 </ui:repeat>
+                                                <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv">
+                                                    <h:panelGroup 
+                                                        layout="block"
+                                                        style="#{prv.investigationItem.cssStyle}; position:absolute;"
+                                                        rendered="#{prv.investigationItem.ixItemType eq 'ReportImage'}">
+                                                        <p:graphicImage 
+                                                            cache="false"
+                                                            value="#{byteArrayToStreamContentController.imageById}"
+                                                            style="width: #{prv.investigationItem.wtPix}; overflow: visible; display: block; z-index: 800;"
+                                                            height="#{prv.investigationItem.htPix}"
+                                                            width="#{prv.investigationItem.wtPix}">
+                                                            <f:param name="id" value="#{prv.id}" />
+                                                        </p:graphicImage>
+                                                    </h:panelGroup>
+                                                </ui:repeat>
+
+
+
+
+
 
                                             </div>
                                         </h:panelGroup>
@@ -807,7 +876,7 @@
 
                     </p:panel>
 
-                    <p:panel header="Debug" rendered="false">
+                    <p:panel header="Debug" rendered="#{webUserController.hasPrivilege('Developers')}">
 
                         <table class="table table-stripped">
 

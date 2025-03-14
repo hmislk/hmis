@@ -15,11 +15,11 @@
                 </style>
             </h:head>
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
+            <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving'))}" >
                 <na:not_authorize />
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
                 <div class="container-fluid" >
                     <h:form >
 
@@ -384,7 +384,7 @@
                                                 </div>
 
                                             </h:panelGroup>
-                                            
+
                                             <div class="d-flex justify-content-center mt-5">
                                                 <p:badge 
                                                     value="Bill Cancel" 
@@ -395,7 +395,7 @@
                                                     rendered="#{patientInvestigation.billItem.bill.cancelled}" >
                                                 </p:badge>
                                             </div>
-                                            
+
                                         </p:column>
                                     </p:dataTable>
 
@@ -506,11 +506,11 @@
                                                     </p:badge>
                                                 </div>
                                             </h:panelGroup>
-                                            
+
                                             <h:panelGroup rendered="#{!b.cancelled}">
                                                 <h:outputLabel value="#{b.status.label}" />
                                             </h:panelGroup>
-                                            
+
                                         </p:column>
 
                                         <p:column headerText="Actions" width="8em">
@@ -580,6 +580,15 @@
                                                     <p:selectBooleanButton id="cheindbar" onIcon="pi pi-check" offIcon="pi pi-times" value="#{patientInvestigationController.printIndividualBarcodes}">
                                                         <p:ajax process="cheindbar" update="test barcode" event="change"></p:ajax>
                                                     </p:selectBooleanButton>
+                                                    <div class="d-flex gap-3">
+                                                        <p:commandButton 
+                                                            icon="fa-solid fa-flask-vial"
+                                                            value="To Samples" 
+                                                            class="ui-button-warning"
+                                                            ajax="false"
+                                                            action="#{patientInvestigationController.navigateToSamplesFromSelectedBill(patientInvestigationController.currentBill)}" >
+                                                        </p:commandButton>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </f:facet>
@@ -659,6 +668,13 @@
                                                                             orientation="0"></p:barcode>
                                                                     </h:panelGroup>
                                                                 </div>
+                                                                <div class="patient-info">
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill No in Sample Stickers', true)}">
+                                                                        <span class="sample-id">
+                                                                            #{psc.patientSample.bill.deptId}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                </div>
                                                             </div>
                                                         </ui:repeat>
 
@@ -736,7 +752,14 @@
                                                                                 width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','280')}"
                                                                                 orientation="0"></p:barcode>
                                                                         </h:panelGroup>
-                                                                    </div>
+                                                                    </div> 
+                                                                </div>
+                                                                <div class="patient-info">
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill No in Sample Stickers', true)}">
+                                                                        <span class="sample-id">
+                                                                            #{psc.patientSample.bill.deptId}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
                                                                 </div>
                                                             </h:panelGroup>
 
@@ -868,11 +891,11 @@
                                                     </p:badge>
                                                 </div>
                                             </h:panelGroup>
-                                            
+
                                             <h:panelGroup rendered="#{!ps.bill.cancelled}">
                                                 <h:outputLabel value=" #{ps.status}" />
                                             </h:panelGroup>
-                                           
+
                                         </p:column>
 
                                         <!-- Status Details Column  -->
@@ -1031,11 +1054,11 @@
 
                                         <!-- Status Column -->
                                         <p:column headerText="Status" width="5em" style="vertical-align: top;">
-                                            
+
                                             <h:panelGroup rendered="#{!dpr.patientInvestigation.billItem.bill.cancelled}">
                                                 <h:outputLabel value="#{dpr.patientInvestigation.status}" />
                                             </h:panelGroup>
-                                            
+
                                             <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.cancelled}">
                                                 <div class="d-flex justify-content-center mt-4">
                                                     <p:badge 
@@ -1048,7 +1071,7 @@
                                                     </p:badge>
                                                 </div>
                                             </h:panelGroup>
-                                            
+
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column with Icons -->

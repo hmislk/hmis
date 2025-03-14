@@ -1,242 +1,252 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body class="w-100 border">
+<h:body class="w-100 border">
+    <ui:composition template="/reports/index.xhtml" class="w-100 border">
+        <ui:define name="subcontent">
+            <h:form class="w-100">
+                <p:panel header="OPD Professional Fees" class="w-100">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h:panelGrid columns="8" styleClass="w-100 form-grid"
+                                         columnClasses="label-icon-column, input-column">
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf073;"
+                                                  styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
+                                    <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:calendar
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="fromDate"
+                                        value="#{searchController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
 
-        <ui:composition template="/reports/index.xhtml" class="w-100 border">
-            <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="OPD Processional Fees" class="w-100">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
-                                        <h:outputLabel value="From" for="fromDate" class="mx-3"/>
-                                    </h:panelGroup>
-                                    <p:calendar 
-                                        styleClass="w-100" 
-                                        inputStyleClass="w-100 form-control" 
-                                        id="fromDate" 
-                                        value="#{searchController.fromDate}" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                        />
+                                <p:spacer width="50"/>
 
-                                    <p:spacer width="50" ></p:spacer>
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf073;"
+                                                  styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
+                                    <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:calendar
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="toDate"
+                                        value="#{searchController.toDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
 
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
-                                        <h:outputLabel value="To" for="toDate" class="mx-3"/>
-                                    </h:panelGroup>
-                                    <p:calendar 
-                                        styleClass="w-100" 
-                                        inputStyleClass="w-100 form-control" 
-                                        id="toDate" 
-                                        value="#{searchController.toDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                        />
+                                <p:spacer width="50"/>
+                                <p:spacer width="50"/>
+                                <p:spacer width="50"/>
 
-                                    <p:spacer width="50" ></p:spacer>
-
-                                    <p:spacer width="50" ></p:spacer>
-                                    <p:spacer width="50" ></p:spacer>
-
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
-                                    </h:panelGroup>
-                                    <p:selectOneMenu
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf19c;"
+                                                  styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                                    <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu
                                         id="cmbIns"
-                                        styleClass="w-100 form-control" 
-                                        value="#{searchController.institution}" 
+                                        styleClass="w-100 form-control"
+                                        value="#{searchController.institution}"
                                         filter="true">
-                                        <f:selectItem itemLabel="All Institutions" />
-                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                        <p:ajax process="cmbIns" update="cmbDept" />
-                                    </p:selectOneMenu>
+                                    <f:selectItem itemLabel="All Institutions"/>
+                                    <f:selectItems value="#{institutionController.companies}" var="ins"
+                                                   itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                    <p:ajax process="cmbIns" update="cmbDept"/>
+                                </p:selectOneMenu>
 
-                                    <p:spacer ></p:spacer>
+                                <p:spacer/>
 
-
-
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                                        <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
-                                    </h:panelGroup>
-                                    <p:selectOneMenu
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf3c5;"
+                                                  styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
+                                    <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu
                                         id="siteMenu"
-                                        styleClass="w-100 form-control"  
-                                        value="#{searchController.site}" 
+                                        styleClass="w-100 form-control"
+                                        value="#{searchController.site}"
                                         filter="true">
-                                        <f:selectItem itemLabel="All Sites" />
-                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                        <p:ajax process="siteMenu" update="cmbDept" />
-                                    </p:selectOneMenu>
+                                    <f:selectItem itemLabel="All Sites"/>
+                                    <f:selectItems value="#{institutionController.sites}" var="site"
+                                                   itemLabel="#{site.name}" itemValue="#{site}"/>
+                                    <p:ajax process="siteMenu" update="cmbDept"/>
+                                </p:selectOneMenu>
 
+                                <p:spacer/>
 
-                                    <p:spacer ></p:spacer>
-
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
-                                    </h:panelGroup>
-                                    <p:selectOneMenu
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf0e8;"
+                                                  styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                                    <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu
                                         id="cmbDept"
-                                        styleClass="w-100 form-control"  
-                                        value="#{searchController.department}" 
+                                        styleClass="w-100 form-control"
+                                        value="#{searchController.department}"
                                         filter="true">
-                                        <f:selectItem itemLabel="All Departments" />
-                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                    </p:selectOneMenu>
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                            var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
 
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText title="Category" value="&#xf02d;"
+                                                  styleClass="fa mr-2"/> <!-- FontAwesome book icon -->
+                                    <h:outputLabel value="Category" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:autoComplete value="#{searchController.category}"
+                                                completeMethod="#{categoryController.completeCategory}"
+                                                var="category"
+                                                class="w-100"
+                                                inputStyleClass="w-100"
+                                                itemLabel="#{category.name}"
+                                                itemValue="#{category}">
+                                </p:autoComplete>
 
+                                <p:spacer/>
 
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText title="Item" value="&#xf0f6;"
+                                                  styleClass="fa mr-2"/> <!-- FontAwesome box icon -->
+                                    <h:outputLabel value="Item" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:autoComplete value="#{searchController.item}"
+                                                class="w-100"
+                                                inputStyleClass="w-100"
+                                                completeMethod="#{itemController.completeAllServicesAndInvestigations}"
+                                                var="item"
+                                                itemLabel="#{item.name}"
+                                                itemValue="#{item}">
+                                </p:autoComplete>
 
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" /> <!-- FontAwesome book icon -->
-                                        <h:outputLabel value="Category"  class="mx-3"/>
-                                    </h:panelGroup>
-                                    <p:autoComplete value="#{searchController.category}"
-                                                    completeMethod="#{categoryController.completeCategory}" 
-                                                    var="category"
-                                                    class="w-100"
-                                                    inputStyleClass="w-100"
-                                                    itemLabel="#{category.name}"
-                                                    itemValue="#{category}">
-                                    </p:autoComplete>
+                                <p:spacer/>
 
-                                    <p:spacer ></p:spacer>
+                                <!-- New Doctor Field with Icon -->
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                    <h:outputLabel value="MRN" for="scMRN" class="mx-3"/>
+                                </h:panelGroup>
 
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText title="Item" value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome box icon -->
-                                        <h:outputLabel value="Item"  class="mx-3"/>
-                                    </h:panelGroup>
-                                    <p:autoComplete value="#{searchController.item}"
-                                                    class="w-100"
-                                                    inputStyleClass="w-100"
-                                                    completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
-                                                    var="item"
-                                                    itemLabel="#{item.name}"
-                                                    itemValue="#{item}">
-                                    </p:autoComplete>
-                                    
-                                     <p:spacer ></p:spacer>
-                                    
-                                    <!-- New Doctor Field with Icon -->
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                        <h:outputLabel value="MRN" for="scMRN" class="mx-3" />
-                                    </h:panelGroup>
-                                    
-                                    <p:inputText value="#{searchController.mrnNo}" class="w-100"/>
+                                <p:inputText value="#{searchController.mrnNo}" class="w-100"/>
 
+                                <!-- New Speciality Field with Icon -->
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf2b9;"
+                                                  styleClass="fa mr-2"/> <!-- FontAwesome user-md icon for Speciality -->
+                                    <h:outputLabel value="Speciality" for="acSpeciality" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:autoComplete id="acSpeciality"
+                                                value="#{searchController.speciality}"
+                                                completeMethod="#{specialityController.completeSpeciality}"
+                                                var="speciality"
+                                                itemLabel="#{speciality.name}"
+                                                itemValue="#{speciality}"
+                                                inputStyleClass="w-100"
+                                                styleClass="w-100">
+                                    <p:ajax event="itemSelect" update="scStaff"/>
+                                </p:autoComplete>
 
-                                    <!-- New Speciality Field with Icon -->
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf2b9;" styleClass="fa mr-2" /> <!-- FontAwesome user-md icon for Speciality -->
-                                        <h:outputLabel value="Speciality" for="acSpeciality" class="mx-3" />
-                                    </h:panelGroup>
-                                    <p:autoComplete id="acSpeciality" 
-                                                    value="#{searchController.speciality}" 
-                                                    completeMethod="#{specialityController.completeSpeciality}" 
-                                                    var="speciality" 
-                                                    itemLabel="#{speciality.name}" 
-                                                    itemValue="#{speciality}"
-                                                    inputStyleClass="w-100"
-                                                    styleClass="w-100">
-                                        <p:ajax event="itemSelect" update="scStaff" />
-                                    </p:autoComplete>
+                                <p:spacer/>
 
-                                    <p:spacer ></p:spacer>
+                                <!-- New Doctor Field with Icon -->
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                    <h:outputLabel value="Doctor" for="scStaff" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu id="scStaff"
+                                                 value="#{searchController.staff}"
+                                                 filter="true"
+                                                 rendered="#{searchController.speciality ne null}"
+                                                 filterMatchMode="contains"
+                                                 styleClass="w-100 form-control">
+                                    <f:selectItem itemLabel="Please Select" noSelectionOption="true"/>
+                                    <f:selectItems
+                                            value="#{staffController.getSpecialityStaff(searchController.speciality)}"
+                                            var="staff"
+                                            itemLabel="#{staff.person.nameWithTitle}"
+                                            itemValue="#{staff}"/>
+                                </p:selectOneMenu>
 
-                                    <!-- New Doctor Field with Icon -->
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                        <h:outputLabel value="Doctor" for="scStaff" class="mx-3" />
-                                    </h:panelGroup>
-                                    <p:selectOneMenu id="scStaff" 
-                                                     value="#{searchController.staff}" 
-                                                     filter="true" 
-                                                     rendered="#{searchController.speciality ne null}"
-                                                     filterMatchMode="contains" 
-                                                     styleClass="w-100 form-control">
-                                        <f:selectItem itemLabel="Please Select" noSelectionOption="true" />
-                                        <f:selectItems
-                                            value="#{staffController.getSpecialityStaff(searchController.speciality)}" 
-                                            var="staff" 
-                                            itemLabel="#{staff.person.nameWithTitle}" 
-                                            itemValue="#{staff}" />
-                                    </p:selectOneMenu>
-                                    
-                                    <p:spacer ></p:spacer>
+                                <p:spacer/>
+                                <p:spacer/>
 
-                                </h:panelGrid>
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf0f8;" styleClass="fa mr-2"/>
+                                    <h:outputLabel value="Inward / OPD" class="m-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
+                                    <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                    <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                </p:selectOneMenu>
 
-                                <p:commandButton 
-                                    id="btnListAll" 
+                            </h:panelGrid>
+
+                            <p:commandButton
+                                    id="btnListAll"
                                     class="m-1 ui-button-info"
                                     icon="fas fa-money-check-alt"
-                                    ajax="false" 
+                                    ajax="false"
                                     value="Professional Payments - All"
-                                    action="#{searchController.generateOpdProfessionalFees('ALL')}" />
+                                    action="#{searchController.generateOpdProfessionalFees('ALL')}"/>
 
-                                <p:commandButton 
-                                    id="btnListDone" 
+                            <p:commandButton
+                                    id="btnListDone"
                                     class="m-1 ui-button-success"
                                     icon="fas fa-check-circle"
-                                    ajax="false" 
+                                    ajax="false"
                                     value="Professional Payments - Done"
-                                    action="#{searchController.generateOpdProfessionalFees('DONE')}" />
+                                    action="#{searchController.generateOpdProfessionalFees('DONE')}"/>
 
-                                <p:commandButton 
-                                    id="btnListDue" 
+                            <p:commandButton
+                                    id="btnListDue"
                                     class="m-1 ui-button-warning"
                                     icon="fas fa-exclamation-circle"
-                                    ajax="false" 
+                                    ajax="false"
                                     value="Professional Payments - Due"
-                                    action="#{searchController.generateOpdProfessionalFees('DUE')}" />
+                                    action="#{searchController.generateOpdProfessionalFees('DUE')}"/>
 
-
-                                <p:commandButton 
-                                    id="btnPdf" 
+                            <p:commandButton
+                                    id="btnPdf"
                                     class="m-1 ui-button-info"
                                     ajax="false"
                                     rendered="false"
                                     icon="fas fa-file-pdf"
                                     value="Export as PDF">
-                                    <p:dataExporter type="pdf" target="tbl" fileName="processional_fees" />
-                                </p:commandButton>
+                                <p:dataExporter type="pdf" target="tbl" fileName="processional_fees"/>
+                            </p:commandButton>
 
-                                <p:commandButton 
-                                    id="btnPrint" 
+                            <p:commandButton
+                                    id="btnPrint"
                                     class="m-1 ui-button-primary"
                                     icon="fas fa-print"
                                     ajax="false"
                                     value="Print Table">
-                                    <p:printer target="tbl" />
-                                </p:commandButton>
+                                <p:printer target="tbl"/>
+                            </p:commandButton>
 
-                                <p:commandButton 
-                                    id="btnExcel" 
+                            <p:commandButton
+                                    id="btnExcel"
                                     class="m-1 ui-button-success"
                                     icon="fas fa-file-excel"
                                     ajax="false" value="Export to Excel">
-                                    <p:dataExporter type="xlsx" target="tbl" fileName="professional_fees" />
-                                </p:commandButton>
-
-
-
-                            </div>
-
+                                <p:dataExporter type="xlsx" target="tbl" fileName="professional_fees"/>
+                            </p:commandButton>
                         </div>
+                    </div>
 
-                        <p:dataTable 
+                    <p:dataTable
                             id="tbl"
                             resizeMode="expand"
                             value="#{searchController.bundle.reportTemplateRows}"
@@ -246,198 +256,229 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,20"
                             rowKey="#{row.id}">
-
+                        <f:facet name="header">
+                            <h:outputText value="#{searchController.bundle.name}"/>
+                        </f:facet>
+                        <p:column>
                             <f:facet name="header">
-                                <h:outputText value="#{searchController.bundle.name}" />
+                                <h:outputText value="Bill No"/>
                             </f:facet>
-
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Bill No" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.bill.deptId}" />
-                                <p:commandLink 
+                            <h:outputText value="#{row.billFee.bill.deptId}"/>
+                            <p:commandLink
                                     ajax="false"
                                     class="m-1"
                                     rendered="#{row.billFee ne null}"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                    <i class="pi pi-eye" style="font-size:14px;" title="View Bill"></i> 
-                                    <f:setPropertyActionListener 
-                                        value="#{row.billFee.bill}" 
-                                        target="#{billSearch.bill}" />
-                                </p:commandLink>
-                                <p:commandLink 
+                                <i class="pi pi-eye" style="font-size:14px;" title="View Bill"/>
+                                <f:setPropertyActionListener
+                                        value="#{row.billFee.bill}"
+                                        target="#{billSearch.bill}"/>
+                            </p:commandLink>
+                            <p:commandLink
                                     ajax="false"
                                     class="m-1"
                                     rendered="#{row.billFee ne null}"
                                     action="#{billSearch.navigateToManageBillByAtomicBillType()}">
-                                    <i class="pi pi-pencil" style="font-size:14px;" title="Manage Bill"></i> 
-                                    <f:setPropertyActionListener 
-                                        value="#{row.billFee.bill}" 
-                                        target="#{billSearch.bill}" />
-                                </p:commandLink>
+                                <i class="pi pi-pencil" style="font-size:14px;" title="Manage Bill"/>
+                                <f:setPropertyActionListener
+                                        value="#{row.billFee.bill}"
+                                        target="#{billSearch.bill}"/>
+                            </p:commandLink>
 
-                                <p:badge value="Cancelled" rendered="#{row.billFee.bill.cancelled}" styleClass="ui-badge-danger"></p:badge>
-                                <p:badge value="Refunded" rendered="#{row.billFee.billItem.refunded}" styleClass="ui-badge-secondary"></p:badge>
-                            </p:column>
+                            <p:badge value="Cancelled" rendered="#{row.billFee.bill.cancelled}"
+                                     styleClass="ui-badge-danger"/>
+                            <p:badge value="Refunded" rendered="#{row.billFee.billItem.refunded}"
+                                     styleClass="ui-badge-secondary"/>
+                        </p:column>
 
+                        <p:column width="15em">
+                            <f:facet name="header">
+                                <h:outputText value="Bill Type"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.bill.billTypeAtomic}"/><br/>
+                            <h:outputText value="#{row.billFee.createdAt}"/><br/>
+                            <h:outputText value="#{row.billFee.id}"/><br/>
+                        </p:column>
 
-                            <p:column width="15em">
-                                <f:facet name="header">
-                                    <h:outputText value="Bill Type" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.bill.billTypeAtomic}"></h:outputText><br/>
-                                <h:outputText value="#{row.billFee.createdAt}"></h:outputText><br/>
-                                <h:outputText value="#{row.billFee.id}"></h:outputText><br/>
-                            </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Speciality"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.speciality.name}"/>
+                        </p:column>
 
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Speciality" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.speciality.name}"></h:outputText>
-                            </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Staff member"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.staff.person.nameWithTitle}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
 
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Staff member" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.staff.person.nameWithTitle}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                        <p:column rendered="#{searchController.visitType eq 'OP'}">
+                            <f:facet name="header">
+                                <h:outputText value="Item"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.billItem.item.name}">
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column rendered="#{searchController.visitType eq 'OP'}">
+                            <f:facet name="header">
+                                <h:outputText value="Fee Name"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.fee.name}">
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column rendered="#{searchController.visitType eq 'IP'}">
+                            <f:facet name="header">
+                                <h:outputText value="BHT NO"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.bill.patientEncounter.bhtNo}">
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Patient"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.bill.patient.person.nameWithTitle}">
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column class="text-end">
+                            <f:facet name="header">
+                                <h:outputText value="Professional Payment Due"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.feeValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{searchController.bundle.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </p:column>
+                            </f:facet>
+                        </p:column>
 
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Item" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.billItem.item.name}">
+                        <p:column class="text-end" rendered="#{searchController.visitType eq 'IP'}">
+                            <f:facet name="header">
+                                <h:outputText value="Withholding Tax"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.referenceBillFee.bill.tax ne null ?
+                                                    row.billFee.referenceBillFee.bill.tax : 0.0}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column class="text-end" rendered="#{searchController.visitType eq 'OP'}">
+                            <f:facet name="header">
+                                <h:outputText value="Paid Value to Professional"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.paidValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{searchController.bundle.totalOut}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </p:column>
+                            </f:facet>
+                        </p:column>
 
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Fee Name" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.fee.name}">
+                        <p:column class="text-end" rendered="#{searchController.visitType eq 'IP'}">
+                            <f:facet name="header">
+                                <h:outputText value="Paid Value to Professional"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.referenceBillFee.bill.absoluteNetTotal ne null ?
+                                                    row.billFee.referenceBillFee.bill.absoluteNetTotal : 0.0}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{searchController.bundle.totalOut}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </p:column>
+                            </f:facet>
+                        </p:column>
 
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Patient" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.bill.patient.person.nameWithTitle}">
-                                </h:outputText>
-                            </p:column>
+                        <p:column class="text-end">
+                            <f:facet name="header">
+                                <h:outputText value="Payment Status"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.paidValue gt 1.0 ?'Paid':'Not Paid'}">
+                            </h:outputText>
+                        </p:column>
 
-                            <p:column class="text-end">
-                                <f:facet name="header">
-                                    <h:outputText value="Professional Payment Due" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.feeValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.total}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
+                        <p:column class="text-end">
+                            <f:facet name="header">
+                                <h:outputText value="Paid Bill"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.referenceBillFee.bill.insId}">
+                            </h:outputText>
 
-                            <p:column class="text-end">
-                                <f:facet name="header">
-                                    <h:outputText value="Paid Value to Professional" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.paidValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.totalOut}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
+                            <!--                                <p:commandLink
+                                                                ajax="false"
+                                                                class="m-1"
+                                                                rendered="#{row.billFee ne null}"
+                                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                                <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i>
+                                                                <f:setPropertyActionListener
+                                                                    value="#{row.billFee.referenceBillFee.bill}"
+                                                                    target="#{billSearch.bill}" />
+                                                            </p:commandLink>-->
 
+                            <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}">
+                                <p:badge severity="warning" value="Cancelled"/>
+                                <!--                                    <p:commandLink
+                                                                        ajax="false"
+                                                                        class="m-1 ui-button-danger"
+                                                                        rendered="#{row.billFee ne null}"
+                                                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                                        <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i>
+                                                                        <f:setPropertyActionListener
+                                                                            value="#{row.billFee.referenceBillFee.bill.cancelledBill}"
+                                                                            target="#{billSearch.bill}" />
+                                                                    </p:commandLink>-->
+                            </h:panelGroup>
+                        </p:column>
 
-                            <p:column class="text-end">
-                                <f:facet name="header">
-                                    <h:outputText value="Payment Status" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.paidValue gt 1.0 ?'Paid':'Not Paid'}">
-                                </h:outputText>
-                            </p:column>
+                        <p:column class="text-end">
+                            <f:facet name="header">
+                                <h:outputText value="Paid By"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.referenceBillFee.bill.creater.name}">
+                            </h:outputText>
+                        </p:column>
 
-                            <p:column class="text-end">
-                                <f:facet name="header">
-                                    <h:outputText value="Paid Bill" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.referenceBillFee.bill.insId}">
-                                </h:outputText>
+                        <p:column class="text-end">
+                            <f:facet name="header">
+                                <h:outputText value="Paid At"/>
+                            </f:facet>
+                            <h:outputText value="#{row.billFee.referenceBillFee.bill.createdAt}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputText>
+                        </p:column>
 
-
-<!--                                <p:commandLink 
-                                    ajax="false"
-                                    class="m-1"
-                                    rendered="#{row.billFee ne null}"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                    <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i> 
-                                    <f:setPropertyActionListener 
-                                        value="#{row.billFee.referenceBillFee.bill}" 
-                                        target="#{billSearch.bill}" />
-                                </p:commandLink>-->
-
-                                <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}" >
-                                    <p:badge severity="warning" value="Cancelled" ></p:badge>
-<!--                                    <p:commandLink 
-                                        ajax="false"
-                                        class="m-1 ui-button-danger"
-                                        rendered="#{row.billFee ne null}"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                        <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i> 
-                                        <f:setPropertyActionListener 
-                                            value="#{row.billFee.referenceBillFee.bill.cancelledBill}" 
-                                            target="#{billSearch.bill}" />
-                                    </p:commandLink>-->
-
-                                </h:panelGroup>
-
-                            </p:column>
-                            <p:column class="text-end">
-                                <f:facet name="header">
-                                    <h:outputText value="Paid By" />
-                                </f:facet>
-                                <h:outputText value="#{row.billFee.referenceBillFee.bill.creater.name}">
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column class="text-end">
-                                <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}" >
-                                    <p:badge severity="warning" value="Cancelled" ></p:badge>
-<!--                                    <p:commandLink 
-                                        ajax="false"
-                                        class="m-1 ui-button-danger"
-                                        rendered="#{row.billFee ne null}"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                        <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i>  Using PrimeIcons 
-                                        <f:setPropertyActionListener 
-                                            value="#{row.billFee.referenceBillFee.bill.cancelledBill}" 
-                                            target="#{billSearch.bill}" />
-                                    </p:commandLink>-->
-
-                                </h:panelGroup>
-
-                            </p:column>
-
-
-
-
-                        </p:dataTable>
-
-                    </p:panel>
-                </h:form>
-            </ui:define>
-        </ui:composition>
-
-    </h:body>
+                        <!--                        <p:column class="text-end">-->
+                        <!--                            <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}">-->
+                        <!--                                <p:badge severity="warning" value="Cancelled"/>-->
+                        <!--                                    <p:commandLink
+                                                                ajax="false"
+                                                                class="m-1 ui-button-danger"
+                                                                rendered="#{row.billFee ne null}"
+                                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                                <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i>  Using PrimeIcons
+                                                                <f:setPropertyActionListener
+                                                                    value="#{row.billFee.referenceBillFee.bill.cancelledBill}"
+                                                                    target="#{billSearch.bill}" />
+                                                            </p:commandLink>-->
+                        <!--                            </h:panelGroup>-->
+                        <!--                        </p:column>-->
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>

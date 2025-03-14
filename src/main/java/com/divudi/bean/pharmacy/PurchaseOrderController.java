@@ -7,7 +7,6 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -142,30 +141,24 @@ public class PurchaseOrderController implements Serializable {
             JsfUtil.addErrorMessage("Please add bill items");
             return "";
         }
-
         calTotal();
-
         saveBill();
-        
         totalBillItemsCount = 0;
         saveBillComponent();
         if (totalBillItemsCount == 0){
             JsfUtil.addErrorMessage("Please add item quantities for the bill");
             return "";
         }
-        
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
- 
         getAprovedBill().setDeptId(deptId);
         getAprovedBill().setInsId(deptId);
-        
         getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         billFacade.edit(getAprovedBill());
         notificationController.createNotification(getAprovedBill());
         //Update Requested Bill Reference
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
-        
+
 //      clearList();
         printPreview = true;
         return "";
@@ -220,9 +213,9 @@ public class PurchaseOrderController implements Serializable {
         getAprovedBill().setCreatedAt(Calendar.getInstance().getTime());
 
         getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
-        
-        
-        
+
+
+
         try {
             if (getAprovedBill().getId() == null) {
                 getBillFacade().create(getAprovedBill());
@@ -240,8 +233,8 @@ public class PurchaseOrderController implements Serializable {
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setNetValue(i.getPharmaceuticalBillItem().getQty() * i.getPharmaceuticalBillItem().getPurchaseRate());
-            
-            double qty = 0.0;
+
+            double qty;
             qty = i.getTmpQty() + i.getPharmaceuticalBillItem().getFreeQty();
             if (qty <= 0.0) {
                 i.setRetired(true);
