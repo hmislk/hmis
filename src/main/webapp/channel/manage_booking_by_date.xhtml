@@ -1420,10 +1420,10 @@
                                     </p:selectOneMenu>
 
                                 </h:panelGrid>
-                                <h:panelGrid columns="2">
+<!--                                <h:panelGrid columns="2">
                                     <h:outputLabel value="Refundable Total : "/>
                                     <h:outputLabel id="tot" value="#{bookingControllerViewScope.refundableTotal}"/>
-                                </h:panelGrid>
+                                </h:panelGrid>-->
                                 <p:dataTable value="#{bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
                                     <p:column headerText="Fee Name">
                                         <p:outputLabel value="#{bi.fee.name}"/>
