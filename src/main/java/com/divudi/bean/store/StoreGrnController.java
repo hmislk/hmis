@@ -333,8 +333,8 @@ public class StoreGrnController implements Serializable {
                     return;
                 }
 
-                i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
-                i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+//                i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
+//                i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
                 stockFacade.edit(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
                 stockFacade.edit(i.getPharmaceuticalBillItem().getStock());
             }

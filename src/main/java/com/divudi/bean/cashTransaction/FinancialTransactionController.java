@@ -2643,6 +2643,7 @@ public class FinancialTransactionController implements Serializable {
 //    }
 //
     public String navigateToHandoverCreateBillForCurrentShift() {
+        System.out.println("navigateToHandoverCreateBillForCurrentShift");
         resetClassVariables();
         Bill startBill = fetchNonClosedShiftStartFundBill();
 //        handoverValuesCreated = false;
@@ -3652,6 +3653,12 @@ public class FinancialTransactionController implements Serializable {
         m.put("br", false);
         m.put("can", false);
         m.put("sid", startBill.getId());
+        
+        jpqlBuilder
+                .append("AND p.cashbookEntryStated =:cbes ")
+                .append("AND p.handingOverStarted =:hos ");
+        m.put("cbes", false);
+        m.put("hos", false);
 
         if (endBill != null && endBill.getId() != null) {
             jpqlBuilder.append("AND p.id < :eid ");
