@@ -504,6 +504,12 @@ public class ReportTemplateRow implements Serializable {
         this.rowValue = rowValue;
     }
 
+    public ReportTemplateRow(String categoryName, Double rowValue, BillItem billItem) {
+        this.categoryName = categoryName;
+        this.rowValue = rowValue;
+        this.billItem = billItem;
+    }
+
     public ReportTemplateRow(BillTypeAtomic billTypeAtomic, String categoryName, String toDepartmentName, Double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.categoryName = categoryName;

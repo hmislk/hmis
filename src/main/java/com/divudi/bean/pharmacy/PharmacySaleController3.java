@@ -10,7 +10,6 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
@@ -113,8 +112,6 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     @Inject
     StockController stockController;
     @Inject
-    ConfigOptionController configOptionController;
-    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     DrawerController drawerController;
@@ -124,7 +121,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     SearchController searchController;
 
     @Inject
-    CommonController commonController;
+    CommonController commonController; // TODO : Can be removed ?
 
     @Inject
     TokenController tokenController;

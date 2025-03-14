@@ -14,7 +14,6 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.util.JsfUtil;
-//import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemSupplierPrices;
 import com.divudi.data.ItemType;

@@ -72,16 +72,13 @@ public class VmpController implements Serializable {
     boolean reportedAs;
     VirtualProductIngredient addingVtmInVmp;
     VirtualProductIngredient removingVtmInVmp;
-    @Inject
-    VtmInVmpController vtmInVmpController;
+
     @EJB
     VirtualProductIngredientFacade vivFacade;
     List<VirtualProductIngredient> vivs;
 
     @EJB
     VmpFacade vmpFacade;
-
-    List<Vmp> vmpList;
 
     public String navigateToListAllVmps() {
         String jpql = "Select vmp "
