@@ -2751,7 +2751,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (bill.getPaidBill() == null) {
             return;
         }
-
+        
         if (cancelPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
             cancelPaymentMethod = null;
         }
@@ -2795,8 +2795,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             if (bill.getPaidBill() != null) {
                 CancelledBill cpb = createCancelBill(bill.getPaidBill());
-                cpb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-
+                cpb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);               
                 List<Payment> paymentsForPaidBill = channelService.createPaymentForChannelAppoinmentCancellation(cpb, cancelPaymentMethod, getPaymentMethodData(), getSessionController());
                 //Payment p = createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
                 drawerController.updateDrawerForOuts(paymentsForPaidBill);
@@ -3006,7 +3005,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
 //            }
         } else {
-            cb.setPaymentMethod(bill.getPaymentMethod());
+            if (cancelPaymentMethod != null) {
+                cb.setPaymentMethod(cancelPaymentMethod);
+            }else{
+                cb.setPaymentMethod(bill.getPaymentMethod());
+            }
+
         }
 
         getBillFacade().edit(cb);
@@ -7828,6 +7832,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void refund(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
+        if(configOptionApplicationController.getBooleanValueByKey("Channel Booking by date appoinment allow rufund doctor fee only", false)){
+            for(BillFee fee : selectedBillSession.getBill().getBillFees()){
+                if(fee.getFee().getFeeType() != FeeType.Staff){
+                    if(fee.getTmpChangedValue() == null){
+                        continue;
+                    }else if(fee.getTmpChangedValue() != 0){
+                        JsfUtil.addErrorMessage("Admins allow refund doctor payment only.");
+                        return;
+                    }
+                }
+            }
+        }
+        
         calRefundTotal();
 
         if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
