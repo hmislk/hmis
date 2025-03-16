@@ -15,7 +15,7 @@
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
                             <div class="d-flex justify-content-between">
-                                <div class="d-flex gap-2 mt-2">
+                                <div class="d-flex align-items-center gap-2 mt-2">
                                     <i class="fa fa-print mx-2"></i>
                                     <h:outputLabel value="Reprint"/>
                                 </div>
@@ -39,7 +39,7 @@
                                             <f:facet name="header">
                                                 <h:outputText value=" " />
                                                 <i class="fa-solid fa-user mx-2"></i>
-                                                <h:outputText value="Patient Details" />
+                                                <h:outputText value="Patient Details" class="mx-2" />
                                             </f:facet>
                                             <p:panelGrid columns="2">
                                                 <h:outputLabel value="Company Name:" />
@@ -52,7 +52,7 @@
                                             <f:facet name="header">
                                                 <h:outputText value=" " />
                                                 <i class="fa-solid fa-receipt mx-2"></i>
-                                                <h:outputText value="Bill Details" />
+                                                <h:outputText value="Bill Details" class="mx-2"/>
                                             </f:facet>
                                             <p:panelGrid columns="2">
                                                 <h:outputLabel value="Bill No :" />
@@ -73,7 +73,7 @@
                                             <f:facet name="header">
                                                 <h:outputText value=" " />
                                                 <i class="fa-solid fa-cart-shopping mx-2"></i>
-                                                <h:outputText value="Bill Item Details" />
+                                                <h:outputText value="Bill Item Details" class="mx-2"/>
                                             </f:facet>
                                             <p:dataTable rowIndexVar="rowIndex" value="#{creditCompanyBillSearch.billItems}" var="b" >
                                                 <p:column width="5em">
@@ -108,7 +108,7 @@
                                 <p:panel>
                                     <f:facet name="header" >
                                         <div class="d-flex justify-content-between">
-                                            <div class="d-flex gap-2 mt-2">
+                                            <div class="d-flex align-items-center gap-2 mt-2">
                                                 <i class="fa-solid fa-magnifying-glass mx-2"></i>
                                                 <h:outputLabel value="Bill Preview" />
                                             </div>
