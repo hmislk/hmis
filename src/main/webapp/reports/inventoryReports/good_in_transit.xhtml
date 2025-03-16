@@ -27,9 +27,9 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar value="#{pharmacyReportController.fromDate}" 
-                                          inputStyleClass="w-100"
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                        inputStyleClass="w-100"
+                                        class="w-100"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                             </p:calendar>
 
 
@@ -40,9 +40,9 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:calendar value="#{pharmacyReportController.toDate}"
-                                          inputStyleClass="w-100"
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                        inputStyleClass="w-100"
+                                        class="w-100"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                             </p:calendar>
 
                             <p:spacer width="20"></p:spacer>  
@@ -337,7 +337,7 @@
                                 scrollHeight="450"
                                 itemLabel="#{user.person.name}" 
                                 itemValue="#{user}" >
-                                
+
                                 <p:column headerText="Name" >
                                     <h:outputText value="#{user.person.name}" ></h:outputText>
                                 </p:column>
@@ -369,30 +369,20 @@
                         </div>
 
                         <p:dataTable id="tbl"
-                                     value="#{pharmacyReportController.billItems}" var="bi"  
-                                     >
-                            <p:column headerText="Staff" 
-                                      sortBy="#{bi.bill.toStaff.person.name}"
-                                      filterBy="#{bi.bill.toStaff.person.name}"
-                                      filterMatchMode="contains">
+                                     value="#{pharmacyReportController.billItems}" var="bi">
+                            <p:column headerText="Staff">
                                 <f:facet name="header">
                                     <h:outputLabel value="Staff"/>
                                 </f:facet>
                                 <h:outputLabel value="#{bi.bill.toStaff.person.name}"/> 
                             </p:column>
-                            <p:column headerText="Item" 
-                                      sortBy="#{bi.item.name}"
-                                      filterBy="#{bi.item.name}"
-                                      filterMatchMode="contains">
+                            <p:column headerText="Item">
                                 <f:facet name="header">
                                     <h:outputLabel value="Item"/>
                                 </f:facet>
                                 <h:outputLabel value="#{bi.item.name}"/> 
                             </p:column>
-                            <p:column headerText="Code" 
-                                      sortBy="#{bi.item.code}"
-                                      filterBy="#{bi.item.code}"
-                                      filterMatchMode="contains">
+                            <p:column headerText="Code">
                                 <f:facet name="header">
                                     <h:outputLabel value="Code"/>
                                 </f:facet>
