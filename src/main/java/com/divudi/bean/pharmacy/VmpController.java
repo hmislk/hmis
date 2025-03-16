@@ -72,16 +72,13 @@ public class VmpController implements Serializable {
     boolean reportedAs;
     VirtualProductIngredient addingVtmInVmp;
     VirtualProductIngredient removingVtmInVmp;
-    @Inject
-    VtmInVmpController vtmInVmpController;
+
     @EJB
     VirtualProductIngredientFacade vivFacade;
     List<VirtualProductIngredient> vivs;
 
     @EJB
     VmpFacade vmpFacade;
-
-    List<Vmp> vmpList;
 
     public String navigateToListAllVmps() {
         String jpql = "Select vmp "
@@ -220,7 +217,7 @@ public class VmpController implements Serializable {
                 + " and a.vmp=:vmp "
                 + " order by a.name";
         m.put("ret", false);
-        m.put("vmp", (Vmp) vmp);
+        m.put("vmp", vmp);
         suggestions = ampFacade.findByJpql(jpql, m);
         return suggestions;
     }
@@ -441,7 +438,7 @@ public class VmpController implements Serializable {
     }
 
     private void saveVmp() {
-        if (current.getName() == null || current.getName().equals("")) {
+        if (current.getName() == null || current.getName().isEmpty()) {
             current.setName(createVmpName());
         }
 
@@ -531,7 +528,7 @@ public class VmpController implements Serializable {
     }
 
     public List<Vmp> getSelectedItems() {
-        if (selectText.trim().equals("")) {
+        if (selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Vmp c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
@@ -546,7 +543,7 @@ public class VmpController implements Serializable {
     }
 
     public void bulkUpload() {
-        List<String> lstLines = Arrays.asList(getBulkText().split("\\r?\\n"));
+        String[] lstLines = getBulkText().split("\\r?\\n");
         for (String s : lstLines) {
             List<String> w = Arrays.asList(s.split(","));
             try {
@@ -561,9 +558,8 @@ public class VmpController implements Serializable {
                 tix.setName(ix);
                 tix.setDepartment(null);
 
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
-
         }
     }
 
@@ -684,7 +680,7 @@ public class VmpController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             VmpController controller = (VmpController) facesContext.getApplication().getELResolver().
@@ -693,15 +689,13 @@ public class VmpController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

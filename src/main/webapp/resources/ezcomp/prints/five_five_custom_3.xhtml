@@ -154,7 +154,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="s">
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="s">
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
