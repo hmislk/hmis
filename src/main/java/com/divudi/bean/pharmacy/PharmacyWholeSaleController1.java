@@ -93,10 +93,10 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
     PaymentSchemeController PaymentSchemeController;
 
     @Inject
-    CommonController commonController;
+    SessionController sessionController;
 
     @Inject
-    SessionController sessionController;
+    CommonController commonController;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;

@@ -1330,7 +1330,7 @@ public class CashBookEntryController implements Serializable {
 //        }
     }
 
-    public void writeCashBookEntryAtHandover(Payment p, CashBook cb) {
+    public void writeCashBookEntryAtHandover(Payment p, CashBook cb, Bill handoverAcceptBill) {
         System.out.println("writeCashBookEntryAtHandover");
         System.out.println("p = " + p);
         System.out.println("cb = " + cb);
@@ -1351,7 +1351,7 @@ public class CashBookEntryController implements Serializable {
         newCbEntry.setPaymentMethod(p.getPaymentMethod());
         newCbEntry.setEntryValue(p.getPaidValue());
         newCbEntry.setPayment(p);
-        newCbEntry.setBill(p.getHandoverAcceptBill());
+        newCbEntry.setBill(handoverAcceptBill);
         newCbEntry.setCashBook(cb);
         updateBalances(p.getPaymentMethod(), p.getPaidValue(), newCbEntry);
 
