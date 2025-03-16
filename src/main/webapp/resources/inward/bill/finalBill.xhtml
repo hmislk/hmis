@@ -590,7 +590,7 @@
                                     </h:panelGroup>
                                 </ui:repeat>
 
-                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and  Show Sum Value of a Doctor',false)}">
+                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
                                     <!-- Loop through Doctor and Nurse Charges first (Before ProfessionalCharge) -->
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'DoctorAndNurses' and bip.adjustedValue != 0}" style="font-size: 12px;">
