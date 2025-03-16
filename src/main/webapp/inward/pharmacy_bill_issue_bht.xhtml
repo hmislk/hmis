@@ -13,7 +13,6 @@
     <ui:define name="content">
         <h:form id="bill" >
 
-
             <h:panelGroup rendered="#{pharmacySaleBhtController.patientEncounter eq null}" class="row">
                 <p:panel>                
                     <f:facet name="header">
@@ -21,27 +20,35 @@
                         <p:outputLabel value="Patient Details" class="m-2"/>
                     </f:facet>
                     <h:outputLabel value="Type Patient Name or BHT : " style="margin-right: 10px"/>
-                    <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-                                    required="true" requiredMessage="Please select a patient"
-                                    value="#{pharmacySaleBhtController.patientEncounter}" 
-                                    completeMethod="#{admissionController.completePatient}"
-                                    var="apt2" itemLabel="#{apt2.bhtNo}"
-                                    itemValue="#{apt2}" size="30"  class="mx-2">
-
-                        <p:column >
+                    <p:autoComplete 
+                        widgetVar="aPt2"  
+                        id="acPt2" 
+                        forceSelection="true" 
+                        required="true" 
+                        requiredMessage="Please select a patient"
+                        value="#{pharmacySaleBhtController.patientEncounter}" 
+                        completeMethod="#{admissionController.completePatient}"
+                        var="apt2" 
+                        itemLabel="#{apt2.bhtNo}"
+                        itemValue="#{apt2}" 
+                        size="30"  
+                        class="mx-2">
+                        <p:column style="padding: 6px;">
                             <h:outputLabel value="#{apt2.bhtNo}"/> 
                         </p:column>
-                        <p:column >
+                        <p:column style="padding: 6px;">
                             <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/> 
                         </p:column>
-                        <p:column>
+                        <p:column style="padding: 6px;">
                             <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                         </p:column>
                     </p:autoComplete>  
+
                     <p:commandButton 
                         id="btnSelect" 
                         value="Select"
-                        ajax="false"  />
+                        ajax="false"  >
+                    </p:commandButton>
 
                 </p:panel>
             </h:panelGroup>
@@ -127,7 +134,8 @@
                                             forceSelection="true"  
                                             id="acStock" 
                                             class="w-100 "
-                                            maxResults="10"
+                                            maxResults="15"
+                                            queryMode="contains"
                                             value="#{pharmacySaleBhtController.stock}" 
                                             completeMethod="#{stockController.completeAvailableStocks}" 
                                             var="i" 
@@ -137,20 +145,25 @@
 
                                             <p:column 
                                                 headerText="Item" 
-                                                style="padding: 6px;"
+                                                style="padding: 6px; width: 500px;"
                                                 styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ? 'ui-messages-fatal' : commonController.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire ? 'ui-messages-warn' : ''}">
 
-                                                <h:outputLabel value="#{i.itemBatch.item.name}" />
+                                                
+                                                    <h:outputLabel value="#{i.itemBatch.item.name}" />
 
-                                                <h:outputLabel 
-                                                    rendered="#{commonController.currentDateTime gt i.itemBatch.dateOfExpire}"
-                                                    value="Expired"
-                                                    styleClass="mx-5 ui-badge ui-badge-danger" />
+                                                    <h:outputLabel 
+                                                        rendered="#{commonController.currentDateTime gt i.itemBatch.dateOfExpire}"
+                                                        value="Expired"
+                                                        styleClass="mx-5 ui-badge ui-badge-danger" >
+                                                    </h:outputLabel>
 
-                                                <h:outputLabel 
-                                                    rendered="#{commonController.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire and commonController.currentDateTime lt i.itemBatch.dateOfExpire}"
-                                                    value="Expiring Soon"
-                                                    styleClass="mx-5 ui-badge ui-badge-warning" />
+                                                    <h:outputLabel 
+                                                        rendered="#{commonController.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire and commonController.currentDateTime lt i.itemBatch.dateOfExpire}"
+                                                        value="Expiring Soon"
+                                                        styleClass="mx-5 ui-badge ui-badge-warning" >
+                                                    </h:outputLabel>
+                                                
+
                                             </p:column>
 
 
@@ -441,7 +454,7 @@
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
                                 <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{pharmacySaleBhtController.printBill}"/>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
                                 <phi:saleBill_Header_Inward bill="#{pharmacySaleBhtController.printBill}" />
                             </h:panelGroup>
