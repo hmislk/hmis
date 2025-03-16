@@ -190,23 +190,6 @@ public class InwardReportControllerBht implements Serializable {
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
 
-    public boolean findPharmacyBillItemIsRefunded(BillItem bi) {
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-        List<BillItem> pharmacyIssuedReturnedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
-
-        if (pharmacyIssuedReturnedDrugs == null || pharmacyIssuedReturnedDrugs.isEmpty()) {
-            return false;
-        }
-
-        for (BillItem bir : pharmacyIssuedReturnedDrugs) {
-            if (bir.getReferanceBillItem() != null && bir.getReferanceBillItem().equals(bi)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public String navigateToInpatientLabItemList() {
         System.out.println("navigateToInpatientLabItemList");
 
