@@ -138,7 +138,6 @@
                             </td>
                         </tr>
                     </h:panelGroup>
-
                 </table>
 
                 <!-- Separator Line -->
@@ -154,13 +153,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="s">
+                            <ui:repeat value="#{cc.attrs.bill.singleBillItem}" var="item" varStatus="s">
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
+                                <td>#{item.inwardChargeType.name}</td>
                                 <td style="text-align: right">
-                                    <h:outputLabel value="#{item.grossValue}">
+                                    <h:outputLabel value="#{item.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -174,16 +173,15 @@
 
                 <!-- Totals Table -->
                 <table class="total-table">
-                    <tr>
-                        <td >Total:</td>
-                        <td  style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}" >
+                        <tr>
+                            <td >Total:</td>
+                            <td  style="text-align: right;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
                         <tr>
                             <td >Discount:</td>
                             <td  style="text-align: right;">
@@ -192,16 +190,17 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                        <tr>
-                            <td >Net Total:</td>
-                            <td style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
 
                     </h:panelGroup>
+
+                    <tr>
+                        <td >Net Total:</td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
                     <tr>
                         <td >No of Items:</td>

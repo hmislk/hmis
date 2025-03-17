@@ -90,11 +90,9 @@ public class PharmacySaleBhtController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController;
+    CommonController commonController; // TODO : Can be removed ?
     @Inject
     PharmacyCalculation pharmacyCalculation;
-    @Inject
-    SearchController searchController;
     @Inject
     UserNotificationController userNotificationController;
 ////////////////////////
@@ -789,9 +787,6 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void settlePharmacyBhtIssueRequest() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         if (errorCheck()) {
             return;
         }

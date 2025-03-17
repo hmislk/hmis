@@ -283,7 +283,7 @@
                                 <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.')}">
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
                                 <bi:staff_payment_five_five_paper_with_headings controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
                             </h:panelGroup>
                         </h:panelGroup>

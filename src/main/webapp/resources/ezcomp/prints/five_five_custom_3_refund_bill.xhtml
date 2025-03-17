@@ -60,7 +60,7 @@
                 </h:panelGroup>
                 <!-- Header Section -->
                 <div class="hospital-name">
-                    <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.name} Refuned Receipt"/>
                     <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                     <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
@@ -111,7 +111,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td style="padding: 2px;">Bill No:</td>
                         <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
@@ -259,6 +259,11 @@
                         </tr>
                     </table> 
                 </h:panelGroup>
+
+                <div class="d-flex gap-2" style="font-size: 9pt;">
+                    <h:outputLabel value="Remark :"/>
+                    <h:outputLabel value="#{cc.attrs.bill.comments}"/>
+                </div>
 
             </div>
 
