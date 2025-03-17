@@ -1935,6 +1935,7 @@ public class PharmacyReportController implements Serializable {
         sql.append("select bi from BillItem bi"
                 + " where bi.bill.billType = :bt"
                 + " and bi.retired = :ret"
+                + " and bi.bill.cancelled = false"
                 + " and bi.bill.createdAt between :fd and :td"
                 + " and bi.bill.toStaff is not null"
                 + " and bi.bill.fromDepartment is not null"

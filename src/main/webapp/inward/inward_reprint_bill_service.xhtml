@@ -45,7 +45,7 @@
                                     <p:commandButton ajax="false" 
                                                      value="Cancel" 
                                                      icon="fa fa-ban"
-                                                     action="inward_cancel_bill_service"
+                                                     action="inward_cancel_bill_service?faces-redirect=true"
                                                      disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"  
                                                      class="m-2 ui-button-danger">                           
                                     </p:commandButton>
@@ -53,7 +53,7 @@
                                                      value="Return" 
                                                      icon="fa fa-undo"
                                                      actionListener="#{billSearch.recreateModel()}"
-                                                     action="inward_bill_service_refund"
+                                                     action="inward_bill_service_refund?faces-redirect=true"
                                                      disabled="#{inwardSearch.bill.cancelled}"
                                                      class="m-2 "
                                                      >    
@@ -77,12 +77,12 @@
                                     <p:commandButton ajax="false" 
                                                      value="Back To View" 
                                                      icon="fa fa-backward"
-                                                     action="/inward/inward_edit_bill_item_view"  
+                                                     action="/inward/inward_edit_bill_item_view?faces-redirect=true"  
                                                      class="m-2 "/>
                                     <p:commandButton ajax="false" 
                                                      value="Back To Interim" 
                                                      icon="fa fa-arrow-circle-left"
-                                                     action="/inward/inward_bill_intrim" 
+                                                     action="/inward/inward_bill_intrim?faces-redirect=true" 
                                                      actionListener="#{bhtSummeryController.createTables()}"
                                                      class="m-2 ui-button-warning"/>
                                 </div>

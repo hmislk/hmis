@@ -19,6 +19,13 @@ jobs:
           grep -q '<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>' src/main/resources/META-INF/persistence.xml
           grep -q '<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>' src/main/resources/META-INF/persistence.xml
 
+      - name: Validate grantAllPrivilegesToAllUsersForTesting
+        run: |
+          if grep -q "grantAllPrivilegesToAllUsersForTesting = true" src/main/java/com/divudi/bean/common/WebUserController.java; then
+            echo "Error: grantAllPrivilegesToAllUsersForTesting is set to true. This is not allowed."
+            exit 1
+          fi
+
   validate-compilation:
       needs: validate-jdbc-data-sources
       runs-on: ubuntu-latest

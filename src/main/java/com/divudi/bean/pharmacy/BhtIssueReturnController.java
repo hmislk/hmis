@@ -204,7 +204,7 @@ public class BhtIssueReturnController implements Serializable {
 
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) i.getQty());
+            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
 
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
@@ -213,7 +213,7 @@ public class BhtIssueReturnController implements Serializable {
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty((double) i.getPharmaceuticalBillItem().getQty());
+            i.setQty(i.getPharmaceuticalBillItem().getQty());
 
 //            double value = i.getRate() * i.getQty();
 //            i.setGrossValue(0 - value);
@@ -298,7 +298,7 @@ public class BhtIssueReturnController implements Serializable {
             }
         }
 
-//        
+//
 //        System.out.println("returnBill.getTotal() = " + returnBill.getTotal());
 //        System.out.println("getReturnBill().getTotal() = " + getReturnBill().getTotal());
         if (returnBill.getTotal() == 0) {
@@ -363,11 +363,11 @@ public class BhtIssueReturnController implements Serializable {
             grossTotal += p.getRate() * p.getQty();
             marginTotal += p.getMarginRate() * p.getQty();
             netTotal += p.getNetRate() * p.getQty();
-            
+
             p.setNetValue(p.getNetRate() * p.getQty());
             p.setGrossValue(p.getRate() * p.getQty());
             p.setMarginValue(p.getMarginRate() * p.getQty());
-            
+
         }
 
         getReturnBill().setTotal(grossTotal);
@@ -398,7 +398,7 @@ public class BhtIssueReturnController implements Serializable {
                 continue;
             }
 
-            tmp.setQtyInUnit((double) tmpQty);
+            tmp.setQtyInUnit(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 
