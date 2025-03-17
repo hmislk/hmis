@@ -540,18 +540,23 @@
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
                                 <p:columnGroup type="header">
-                                    <p:row style="background: #e5e9ec">
+                                    <p:row style="background: #e5e9ec" rendered="#{status.first}">
                                         <p:column headerText="Department Unit"
                                                   style="font-weight: bold; background: #e5e9ec" colspan="4"/>
                                     </p:row>
-                                    <p:row>
-                                        <p:column headerText="#{map.key}" style="font-weight: bold;" colspan="3"/>
+                                    <p:row style="background: #70a4ca">
+                                        <p:column headerText="#{map.key}" style="font-weight: bold; background: #70a4ca" colspan="3"/>
                                         <p:column
                                                 headerText="#{pharmacyController.getDepartmentTotalForConsumptionReport(map.key)}"
-                                                style="font-weight: bold;"/>
+                                                style="font-weight: bold; background: #70a4ca"/>
                                     </p:row>
                                     <p:row>
                                         <p:column headerText="Category" style="font-weight: bold;"/>
+                                        <p:column headerText="Issues" style="font-weight: bold;"/>
+                                        <p:column headerText="" style="font-weight: bold;" colspan="2"/>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column headerText="" style="font-weight: bold;"/>
                                         <p:column headerText="Rate" style="font-weight: bold;"/>
                                         <p:column headerText="Qty" style="font-weight: bold;"/>
                                         <p:column headerText="Value" style="font-weight: bold;"/>
