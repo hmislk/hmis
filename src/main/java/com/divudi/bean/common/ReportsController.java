@@ -3329,7 +3329,8 @@ public class ReportsController implements Serializable {
                 + "JOIN billItem.bill bill "
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
-                + "AND billItem.item is not null ";
+                + "AND billItem.item is not null "
+                + "AND billItem.patientInvestigation is not null ";
 //        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
 //                + "FROM PatientInvestigation pi "
 //                + "JOIN pi.billItem billItem "
@@ -3429,7 +3430,8 @@ public class ReportsController implements Serializable {
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
                 + "AND bill.createdAt BETWEEN :fd AND :td "
-                + "AND billItem.item is not null ";
+                + "AND billItem.item is not null "
+                + "AND billItem.patientInvestigation is not null ";
 
         if (staff != null) {
             jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
