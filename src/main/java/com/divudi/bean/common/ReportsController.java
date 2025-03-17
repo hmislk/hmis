@@ -3286,6 +3286,7 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
         }
         if (visitType != null && visitType.equalsIgnoreCase("OP")) {
             opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
@@ -3327,7 +3328,9 @@ public class ReportsController implements Serializable {
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
-                + "WHERE bill.billTypeAtomic IN :bts ";
+                + "WHERE bill.billTypeAtomic IN :bts "
+                + "AND billItem.item is not null "
+                + "AND billItem.patientInvestigation is not null ";
 //        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
 //                + "FROM PatientInvestigation pi "
 //                + "JOIN pi.billItem billItem "
@@ -3338,16 +3341,6 @@ public class ReportsController implements Serializable {
 //                + " AND bill.billTypeAtomic in :bts ";
 
         parameters.put("bts", bts);
-
-        if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
-                jpql += "AND bill.ipOpOrCc = :type ";
-                parameters.put("type", visitType);
-            } else if (visitType.equalsIgnoreCase("OP")) {
-                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
-                parameters.put("type", visitType);
-            }
-        }
 
         if (staff != null) {
             jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
@@ -3436,17 +3429,9 @@ public class ReportsController implements Serializable {
                 + "JOIN billItem.bill bill "
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
-                + "AND bill.createdAt BETWEEN :fd AND :td ";
-
-        if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
-                jpql += "AND bill.ipOpOrCc = :type ";
-                parameters.put("type", visitType);
-            } else if (visitType.equalsIgnoreCase("OP")) {
-                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
-                parameters.put("type", visitType);
-            }
-        }
+                + "AND bill.createdAt BETWEEN :fd AND :td "
+                + "AND billItem.item is not null "
+                + "AND billItem.patientInvestigation is not null ";
 
         if (staff != null) {
             jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
