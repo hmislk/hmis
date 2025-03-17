@@ -526,7 +526,7 @@
                                 <h:outputText value="#{bi.bill.creditCompany.name}"/>
                             </p:column>
                             <p:column headerText="Invoice Date" width="5rem">
-                                <h:outputText>
+                                <h:outputText value="#{bi.bill.billItems[0].referenceBill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputText>
                             </p:column>
