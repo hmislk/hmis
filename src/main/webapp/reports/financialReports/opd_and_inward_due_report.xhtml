@@ -201,7 +201,7 @@
                                 value="#{reportsController.paymentMethod}"
                                 class="w-100">
                             <f:selectItem itemLabel="Select Payment Method"/>
-                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                            <f:selectItems value="#{enumController.paymentMethods}"/>
                         </p:selectOneMenu>
 
                         <h:panelGroup layout="block" styleClass="form-group">
@@ -581,16 +581,22 @@
                                     <h:outputText value="#{bill.patientEncounter.bhtNo}"/>
                                 </p:column>
                                 <p:column headerText="Invoice Date" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.createdAt}">
+                                    <h:outputText value="#{bill.patientEncounter.finalBill.createdAt}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
+                                        <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputText>
+                                    <h:outputText value="#{bill.createdAt}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
                                         <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Invoice No" width="10rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.deptId}"/>
+                                    <h:outputText value="#{bill.patientEncounter.finalBill.deptId}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}"/>
+                                    <h:outputText value="#{bill.deptId}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}"/>
                                 </p:column>
                                 <p:column headerText="Customer Reference No" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.referenceNumber}"/>
+                                    <h:outputText value="#{bill.patientEncounter.finalBill.referenceNumber}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}"/>
+                                    <h:outputText value="#{bill.referenceBill}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}"/>
                                 </p:column>
                                 <p:column headerText="MRNO" width="5rem">
                                     <h:outputText value="#{bill.patient.phn}"/>
@@ -599,33 +605,55 @@
                                     <h:outputText value="#{bill.patient.person.name}"/>
                                 </p:column>
                                 <p:column headerText="Gross Amt" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.grantTotal}">
+                                    <h:outputText value="#{bill.patientEncounter.finalBill.grantTotal}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <h:outputText value="#{bill.grantTotal}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Disc Amt" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.discount}">
+                                    <h:outputText value="#{bill.patientEncounter.finalBill.discount}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <h:outputText value="#{bill.discount}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Net Amt" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.netTotal}">
+                                    <h:outputText value="#{bill.patientEncounter.finalBill.netTotal}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <h:outputText value="#{bill.netTotal}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Patient Share" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.settledAmountByPatient}">
+                                    <h:outputText value="#{bill.patientEncounter.finalBill.settledAmountByPatient}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <h:outputText value="#{bill.settledAmountByPatient}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Sponsor Share" width="5rem">
-                                    <h:outputText value="#{bill.patientEncounter.finalBill.settledAmountBySponsor}">
+                                    <h:outputText value="#{bill.patientEncounter.finalBill.settledAmountBySponsor}" rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <h:outputText value="#{bill.settledAmountBySponsor}" rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Due Amt" width="5rem">
                                     <h:outputText
-                                            value="#{bill.patientEncounter.finalBill.balance}">
+                                            value="#{bill.patientEncounter.finalBill.netTotal -
+                                            bill.patientEncounter.finalBill.settledAmountBySponsor - bill.patientEncounter.finalBill.settledAmountByPatient}"
+                                            rendered="#{bill.patientEncounter ne null and bill.patientEncounter.finalBill ne null}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <h:outputText
+                                            value="#{bill.netTotal - bill.settledAmountBySponsor - bill.settledAmountByPatient}"
+                                            rendered="#{bill.patientEncounter eq null or bill.patientEncounter.finalBill eq null}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
