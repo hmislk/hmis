@@ -4,7 +4,7 @@
  */
 package com.divudi.entity.pharmacy;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
@@ -333,6 +333,6 @@ public class ItemBatch implements Serializable, RetirableEntity {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
-    
+
+
 }

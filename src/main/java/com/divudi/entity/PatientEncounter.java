@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.EncounterType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.SymanticType;
@@ -50,7 +49,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties   
+    //Main Properties
     Long id;
     String bhtNo;
     @Enumerated
@@ -705,7 +704,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 //    public void setPatientRooms(List<PatientRoom> patientRooms) {
 //        this.patientRooms = patientRooms;
 //    }
-//    
+//
 //    public PatientRoom getLastPateintRoom(){
 //        return getPatientRooms().get(getPatientRooms().size()-1);
 //    }
@@ -1038,7 +1037,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     public void setConvertedToAnotherEncounter(boolean convertedToAnotherEncounter) {
         this.convertedToAnotherEncounter = convertedToAnotherEncounter;
     }
-    
-    
+
+
 
 }

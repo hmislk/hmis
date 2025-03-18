@@ -4,7 +4,7 @@
  */
 package com.divudi.entity.lab;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillItem;
