@@ -287,14 +287,7 @@
 
                         </script>
 
-
-
-
                         <p:spacer height="30"/>
-
-
-
-
 
                         <p:dataTable id="cancelled"  value="#{commonReport.grnCancelled.bills}" var="b1"  
                                      rendered="#{commonReport.grnCancelled.bills.size()!=0}" >
@@ -428,16 +421,7 @@
 
                         </p:dataTable>
 
-
-
-
-
                         <p:spacer height="30"/>
-
-
-
-
-
 
                         <p:dataTable id="refunded"  value="#{commonReport.grnReturn.bills}" var="b" 
                                      rendered="#{commonReport.grnReturn.bills.size()!=0}" 
@@ -497,8 +481,6 @@
                                                             </f:facet> 
                                                             <h:outputLabel value="#{b.referenceBill.referenceInstitution.name}"/>
                                                         </p:column>-->
-
-
 
                             <p:column headerText="Purchase Value Cash" style=" text-align: right"  >
                                 <f:facet name="header">  
@@ -586,16 +568,7 @@
 
                         </p:dataTable>
 
-
-
-
-
                         <p:spacer height="30"/>
-
-
-
-
-
 
                         <p:dataTable id="returnCancelled"  value="#{commonReport.grnReturnCancel.bills}" var="b1"  
                                      rendered="#{commonReport.grnReturnCancel.bills.size()!=0}" >
@@ -748,10 +721,7 @@
                         </p:dataTable>
                     </p:panel>
 
-
-
                     <!--                    print-->
-
                     <p:panel id="reportPrint" class="printingOnly" >
                         <h:panelGrid columns="2" styleClass="printBlock" style="font-size: 11px;">
 
@@ -772,7 +742,6 @@
                         </h:panelGrid>
 
                         <p:spacer height="5"/>
-
 
                         <p:dataTable 
                             id="billed_print"  
@@ -871,9 +840,7 @@
                             </p:columnGroup>  
                         </p:dataTable>
 
-
                         <p:spacer height="30"/>
-
 
                         <p:dataTable 
                             id="cancelled_print"  
@@ -965,9 +932,7 @@
                             </p:columnGroup>  
                         </p:dataTable>
 
-
                         <p:spacer height="30"/>
-
 
                         <p:dataTable id="refunded_print"  value="#{commonReport.grnReturn.bills}" 
                                      var="b" 
@@ -1058,9 +1023,7 @@
                             </p:columnGroup>  
                         </p:dataTable>
 
-
                         <p:spacer height="30"/>
-
 
                         <p:dataTable id="returnCancelled_print"  value="#{commonReport.grnReturnCancel.bills}" 
                                      var="b1"  
@@ -1148,9 +1111,7 @@
                             </p:columnGroup>  
                         </p:dataTable>
 
-
                         <p:spacer height="30"/>
-
 
                         <p:dataTable 
                             id="sum2" 
@@ -1177,7 +1138,6 @@
 
                         </p:dataTable>
                     </p:panel>
-
 
                 </p:panel>
             </h:form>
