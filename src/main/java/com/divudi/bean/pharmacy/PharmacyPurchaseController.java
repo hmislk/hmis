@@ -877,6 +877,11 @@ public class PharmacyPurchaseController implements Serializable {
         }
         return bill;
     }
+    
+    public double findLastRetailRate(Amp amp){
+        return getPharmacyBean().getLastRetailRate(amp, getSessionController().getDepartment());
+    }
+            
 
     public void setBill(BilledBill bill) {
         this.bill = bill;
