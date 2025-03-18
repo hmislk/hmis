@@ -667,11 +667,11 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     }
 
     public String pharmacyRetailSale() {
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
     public String toPharmacyRetailSale() {
-        return "/pharmacy/pharmacy_bill_retail_sale";
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
