@@ -95,12 +95,12 @@
                                 value="#{staffPaymentBillController.dueBillFees}"
                                 selection="#{staffPaymentBillController.payingBillFees}"
                                 class="w-100 m-1"
-                                rows="10"
                                 paginator="true"
+                                rows="10"
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                rowsPerPageTemplate="{ShowAll|'All'}"
+                                rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
                                 var="bf" 
                                 rowKey="#{bf.id}" >
 
@@ -120,13 +120,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill ID"/>
                                     </f:facet>    
-                                    <h:outputLabel value="#{bf.bill.deptId}">
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Status"/>
-                                    </f:facet>   
+                                    <h:outputLabel value="#{bf.bill.deptId}"></h:outputLabel><br/>
                                     <p:badge value="Refunded" rendered="#{bf.billItem.refunded}" severity="warning"></p:badge>
                                 </p:column>
                                 <p:column headerText="Speciality" width="7em" rendered="#{staffPaymentBillController.speciality eq null}">

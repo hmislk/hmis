@@ -94,7 +94,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>          
-            <p:column headerText="Paymentmethod">
+            <p:column headerText="Payment Method">
                 <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
