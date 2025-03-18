@@ -41,12 +41,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -55,6 +57,13 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
+@Table(
+    indexes = {
+        @Index(name = "idx_item_name", columnList = "name"),
+        @Index(name = "idx_item_code", columnList = "code"),
+        @Index(name = "idx_item_barcode", columnList = "barcode")
+    }
+)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
