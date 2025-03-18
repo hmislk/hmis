@@ -106,7 +106,7 @@
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                rowsPerPageTemplate="{ShowAll|'All'}"
+                                rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
                                 var="bf" 
                                 rowKey="#{bf.id}" >
 
@@ -138,7 +138,7 @@
                                     <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
                                 </p:column>
 
-                                <p:column headerText="BHT No" >
+                                <p:column headerText="BHT No" filterBy="#{bf.bill.patientEncounter.bhtNo}" filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>                                        
