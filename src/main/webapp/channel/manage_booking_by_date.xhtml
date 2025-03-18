@@ -1460,7 +1460,7 @@
                                         filter="true" 
                                         placeholder="Select or enter a comment"
                                         filterMatchMode="contains"  
-                                        style="float: right; width: 100%" 
+                                        style="float: right; width: 75%" 
                                         class="p-2">
                                         <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems 
@@ -1469,12 +1469,12 @@
                                             itemLabel="#{option}" 
                                             itemValue="#{option}"/>
                                     </p:selectOneMenu>                                    
-                                    <p:selectOneMenu class="py-2 mx-2 w-50" id="RefundPs" value="#{bookingControllerViewScope.refundPaymentMethod}">
+                                    <p:selectOneMenu class="py-2 mx-2 w-10" id="RefundPs" value="#{bookingControllerViewScope.refundPaymentMethod}">
                                         <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
                                         <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                                     </p:selectOneMenu>
 
-                                    <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning" icon="fas fa-reply" ajax="false"
+                                    <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning py-2" icon="fas fa-reply" ajax="false"
                                                      disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
                                                                  or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
                                                      action="#{bookingControllerViewScope.channelBookingRefund()}">
@@ -1508,7 +1508,7 @@
                             rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
                             <p:panelGrid columns="2" class="w-100">
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Change Current Patient with a new Patient" ></p:outputLabel>
+                                    <p:outputLabel class="mx-2" value="Change Current Patient with a new Patient" ></p:outputLabel>
                                     <p:commandButton ajax="false" value="Change Patient" disabled ="#{bookingControllerViewScope.selectedBillSession.bill.creditCompany.institutionCode.equalsIgnoreCase('WEB_DOC990') and (bookingControllerViewScope.selectedBillSession.absent == true or bookingControllerViewScope.selectedBillSession.bill.cancelled == true)}" action="#{bookingControllerViewScope.changePatient()}" ></p:commandButton>
                                 </f:facet>
                                 <p:panel header="Current Patient for Booking" >
