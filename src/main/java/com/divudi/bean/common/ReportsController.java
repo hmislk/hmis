@@ -4156,13 +4156,13 @@ public class ReportsController implements Serializable {
     }
 
     public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
-        Double billTotal = 0.0;
+        Double total = 0.0;
 
         for (Bill bill : bills) {
-            billTotal += bill.getBillTotal();
+            total += bill.getTotal();
         }
 
-        return billTotal;
+        return total;
     }
 
     public Double calculatePatientShareSubTotalByBills(List<Bill> bills) {
