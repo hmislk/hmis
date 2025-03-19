@@ -5,7 +5,7 @@
 package com.divudi.entity.lab;
 
 //import ch.lambdaj.Lambda;
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ReportType;
 import com.divudi.data.lab.PatientInvestigationStatus;
@@ -160,12 +160,12 @@ public class PatientReport implements Serializable, RetirableEntity {
 
     @Enumerated(EnumType.ORDINAL)
     private PatientInvestigationStatus status;
-    
+
     private String sampleIDs;
 
     @ManyToOne
     private Upload uploadedReport;
-    
+
     @Enumerated(EnumType.STRING)
     private ReportType reportType;
 
@@ -176,8 +176,8 @@ public class PatientReport implements Serializable, RetirableEntity {
         printed = false;
         approved = false;
     }
-    
-    
+
+
 
     public PatientReportItemValue getTemplateItem() {
 
@@ -303,7 +303,7 @@ public class PatientReport implements Serializable, RetirableEntity {
 
 //    public List<PatientReportItemValue> getPatientReportItemOfValueType() {
 //        if (patientReportItemOfValueType == null) {
-//            patientReportItemOfValueType = Lambda.filter(Lambda.having(Lambda.on(PatientReportItemValue.class).getInvestigationItem().getIxItemType(), 
+//            patientReportItemOfValueType = Lambda.filter(Lambda.having(Lambda.on(PatientReportItemValue.class).getInvestigationItem().getIxItemType(),
 //                    Matchers.equalTo(InvestigationItemType.Value)), getPatientReportItemValues());
 //        }
 //        return patientReportItemOfValueType;

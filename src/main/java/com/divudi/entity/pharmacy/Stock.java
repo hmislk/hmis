@@ -4,23 +4,17 @@
  */
 package com.divudi.entity.pharmacy;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -29,12 +23,6 @@ import javax.persistence.Transient;
  * @author safrin
  */
 @Entity
-@Table(
-    indexes = {
-        @Index(name = "idx_stock_department", columnList = "department"),
-        @Index(name = "idx_stock_stock", columnList = "stock")
-    }
-)
 public class Stock implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
@@ -73,8 +61,8 @@ public class Stock implements Serializable, RetirableEntity {
 
     @Transient
     private Double transItemStockQty;
-    
-    
+
+
 
 //    public List<Stock> getChildStocks() {
 //        return childStocks;

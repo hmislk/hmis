@@ -7,7 +7,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.membership.MembershipScheme;

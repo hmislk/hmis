@@ -1,6 +1,6 @@
 package com.divudi.entity.cashTransaction;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
@@ -90,7 +90,7 @@ public class CashBookEntry implements Serializable, RetirableEntity  {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
 
-    //Retairing properties 
+    //Retairing properties
     private boolean retired;
     @ManyToOne
     private WebUser retirer;

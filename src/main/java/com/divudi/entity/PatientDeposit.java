@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -39,7 +38,7 @@ public class PatientDeposit implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
 
-    //Retairing properties 
+    //Retairing properties
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
