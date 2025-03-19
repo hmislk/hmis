@@ -523,10 +523,7 @@
                             <h:outputText value="#{bi.bill.deptId}"/>
                         </p:column>
                         <p:column headerText="Credit Company" width="12rem">
-                            <h:outputText value="#{bi.bill.creditCompany.name}"
-                                          rendered="#{bi.bill.creditCompany ne null}"/>
-                            <h:outputText value="#{bi.bill.billedBill.forwardReferenceBill.creditCompany.name}"
-                                          rendered="#{bi.bill.creditCompany eq null}"/>
+                            <h:outputText value="#{bi.bill.fromInstitution.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
                             <h:outputText value="#{bi.bill.billItems[0].referenceBill.createdAt}"
