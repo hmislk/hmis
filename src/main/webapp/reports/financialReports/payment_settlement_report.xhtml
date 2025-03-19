@@ -271,7 +271,7 @@
                         </p:column>
                         <p:column headerText="Credit Company" width="5rem">
                             <h:outputText
-                                    value="#{bi.billItem.bill.creditCompany.name}"/>
+                                    value="#{bi.billItem.bill.fromInstitution.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
                             <h:outputText value="#{bi.billItem.patientEncounter.dateOfDischarge}">
@@ -357,7 +357,7 @@
                         </p:column>
                         <p:column headerText="Credit Company" width="5rem">
                             <h:outputText
-                                    value="#{bi.bill.creditCompany.name}"/>
+                                    value="#{bi.bill.fromInstitution.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
                             <h:outputText value="#{bi.bill.billItems[0].patientEncounter.dateOfDischarge}">
