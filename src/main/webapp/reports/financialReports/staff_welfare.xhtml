@@ -280,7 +280,7 @@
                                 </f:facet>
                                 <h:outputText value="#{row.bill.patient.phn}"/>
                             </p:column>
-                            <p:column width="5rem">
+                            <p:column width="12rem">
                                 <f:facet name="header">
                                     <h:outputText value="Invoice No"/>
                                 </f:facet>
@@ -379,7 +379,7 @@
                                 </f:facet>
                                 <h:outputText value="#{row.billItem.bill.patient.phn}"/>
                             </p:column>
-                            <p:column width="5rem">
+                            <p:column width="12rem">
                                 <f:facet name="header">
                                     <h:outputText value="Invoice No"/>
                                 </f:facet>
@@ -441,7 +441,7 @@
                                 <f:facet name="header">
                                     <h:outputText value="Total Amount"/>
                                 </f:facet>
-                                <h:outputText value="#{row.billItem.bill.billTotal}">
+                                <h:outputText value="#{row.billItem.grossValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
@@ -449,7 +449,7 @@
                                 <f:facet name="header">
                                     <h:outputText value="Discount Amount"/>
                                 </f:facet>
-                                <h:outputText value="#{row.billItem.bill.discount}">
+                                <h:outputText value="#{row.billItem.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
@@ -457,7 +457,7 @@
                                 <f:facet name="header">
                                     <h:outputText value="Net Total"/>
                                 </f:facet>
-                                <h:outputText value="#{row.billItem.bill.netTotal}">
+                                <h:outputText value="#{row.billItem.netValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">

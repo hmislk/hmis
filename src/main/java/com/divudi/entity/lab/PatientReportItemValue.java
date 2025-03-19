@@ -4,7 +4,7 @@
  */
 package com.divudi.entity.lab;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.WebUser;
@@ -54,8 +54,8 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
     private String value;
     @Transient
     private String displayValue;
-    
-    //Retairing properties 
+
+    //Retairing properties
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
@@ -67,8 +67,8 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
         return strValue;
     }
 
-    
-    
+
+
     public void setStrValue(String strValue) {
         this.strValue = strValue;
     }

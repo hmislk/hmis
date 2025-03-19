@@ -5,7 +5,7 @@
  */
 package com.divudi.entity.pharmacy;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;

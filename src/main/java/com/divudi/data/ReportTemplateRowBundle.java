@@ -1231,7 +1231,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBillItem().getBill().getNetTotal());
+                Double amount = safeDouble(row.getBillItem().getNetValue());
                 total += amount;
             }
         }

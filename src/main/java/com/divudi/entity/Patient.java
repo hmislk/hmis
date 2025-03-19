@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;

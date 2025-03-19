@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.Denomination;
 import com.divudi.data.PaymentHandover;
 import com.divudi.data.PaymentMethod;

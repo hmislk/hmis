@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.HistoryType;
 import java.io.Serializable;
 import java.util.Date;
@@ -28,7 +27,7 @@ public class PatientDepositHistory implements Serializable, RetirableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     @ManyToOne
     private BillItem billItem;
     @ManyToOne
@@ -37,21 +36,21 @@ public class PatientDepositHistory implements Serializable, RetirableEntity {
     private BillSession billSession;
     @ManyToOne
     private PatientDeposit patientDeposit;
-    
+
     private double balanceBeforeTransaction;
     private double balanceAfterTransaction;
     private double transactionValue;
-    
+
     @ManyToOne
     private WebUser creater;
     @ManyToOne
     private Institution institution;
     @ManyToOne
     private Department department;
-    
+
     @Enumerated(EnumType.ORDINAL)
     private HistoryType historyType;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
     //Retairing properties
@@ -240,5 +239,5 @@ public class PatientDepositHistory implements Serializable, RetirableEntity {
     public void setHistoryType(HistoryType historyType) {
         this.historyType = historyType;
     }
-    
+
 }
