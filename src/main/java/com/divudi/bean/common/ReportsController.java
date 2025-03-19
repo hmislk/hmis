@@ -2905,7 +2905,7 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY bill";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
