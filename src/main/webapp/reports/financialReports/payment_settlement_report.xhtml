@@ -360,7 +360,16 @@
                                     value="#{bi.bill.fromInstitution.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.bill.billItems[0].patientEncounter.dateOfDischarge}">
+                            <h:outputText value="#{bi.bill.referenceBill.createdAt}"
+                                          rendered="#{bi.bill.billItems[0].patientEncounter.finalBill eq null}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputText>
+                            <h:outputText value="#{bi.bill.billedBill.forwardReferenceBill.createdAt}"
+                                          rendered="#{bi.bill.billItems[0].patientEncounter.finalBill eq null and bi.bill.referenceBill eq null}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputText>
+                            <h:outputText value="#{bi.bill.billItems[0].patientEncounter.finalBill.createdAt}"
+                                          rendered="#{bi.bill.billItems[0].patientEncounter.finalBill ne null}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -437,17 +446,21 @@
                             <h:outputText value="#{bi.billItem.bill.deptId}"/>
                         </p:column>
                         <p:column headerText="OPD Bill No" width="10rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.deptId}" rendered="#{bi.billItem.referenceBill ne null}"/>
-                            <h:outputText value="#{bi.billItem.bill.billedBill.forwardReferenceBill.deptId}" rendered="#{bi.billItem.referenceBill eq null}"/>
+                            <h:outputText value="#{bi.billItem.referenceBill.deptId}"
+                                          rendered="#{bi.billItem.referenceBill ne null}"/>
+                            <h:outputText value="#{bi.billItem.bill.billedBill.forwardReferenceBill.deptId}"
+                                          rendered="#{bi.billItem.referenceBill eq null}"/>
                         </p:column>
                         <p:column headerText="Credit Company" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.fromInstitution.name}"/>
                         </p:column>
                         <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}" rendered="#{bi.billItem.referenceBill ne null}">
+                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}"
+                                          rendered="#{bi.billItem.referenceBill ne null}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
-                            <h:outputText value="#{bi.billItem.bill.billedBill.forwardReferenceBill.createdAt}" rendered="#{bi.billItem.referenceBill eq null}">
+                            <h:outputText value="#{bi.billItem.bill.billedBill.forwardReferenceBill.createdAt}"
+                                          rendered="#{bi.billItem.referenceBill eq null}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputText>
                         </p:column>
@@ -457,8 +470,11 @@
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Settlement By" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.creater.webUserPerson.name}" rendered="#{bi.billItem.referenceBill ne null}"/>
-                            <h:outputText value="#{bi.billItem.bill.billedBill.forwardReferenceBill.creater.webUserPerson.name}" rendered="#{bi.billItem.referenceBill eq null}"/>
+                            <h:outputText value="#{bi.billItem.referenceBill.creater.webUserPerson.name}"
+                                          rendered="#{bi.billItem.referenceBill ne null}"/>
+                            <h:outputText
+                                    value="#{bi.billItem.bill.billedBill.forwardReferenceBill.creater.webUserPerson.name}"
+                                    rendered="#{bi.billItem.referenceBill eq null}"/>
                         </p:column>
                         <p:column headerText="Payment Method" width="5rem">
                             <h:outputText value="#{bi.billItem.bill.paymentMethod}"/>
