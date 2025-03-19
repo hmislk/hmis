@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemBarcodeGenerationStrategy;
@@ -129,7 +128,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    //Retairing properties 
+    //Retairing properties
     boolean retired;
     @ManyToOne
     WebUser retirer;
@@ -269,10 +268,10 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     private boolean alternativeReportAllowed;
 
     private boolean canUploadPatinrtReport;
-    
+
     @Lob
     private String forGender;
-    
+
     @Lob
     private String instructions;
 
@@ -1509,8 +1508,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
         this.instructions = instructions;
     }
 
-    
-    
+
+
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override
