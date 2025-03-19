@@ -4,7 +4,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.bean.cashTransaction.PaymentMethodValue;
+import com.divudi.data.PaymentMethodValue;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -26,5 +26,5 @@ public class PaymentMethodValueFacade extends AbstractFacade<PaymentMethodValue>
     public PaymentMethodValueFacade() {
         super(PaymentMethodValue.class);
     }
-    
+
 }

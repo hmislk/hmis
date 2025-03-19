@@ -1,4 +1,4 @@
-package com.divudi.bean.common;
+package com.divudi.data.hr;
 
 /**
  * Enumeration for Staff Welfare Periods.

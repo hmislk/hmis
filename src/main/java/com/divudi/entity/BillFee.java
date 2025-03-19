@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.FeeType;
 import com.divudi.entity.inward.PatientRoom;
 import java.io.Serializable;
@@ -777,6 +776,6 @@ public class BillFee implements Serializable, RetirableEntity {
         this.userChangedTheGrossValueTransient = userChangedTheGrossValueTransient;
     }
 
-    
-    
+
+
 }
