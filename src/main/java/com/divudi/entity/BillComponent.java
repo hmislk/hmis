@@ -4,8 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.cashTransaction.PaymentMethodValue;
-import com.divudi.bean.common.RetirableEntity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -61,10 +59,8 @@ public class BillComponent implements Serializable, RetirableEntity  {
     @ManyToOne
     Speciality speciality;
     private Double componentValue;
-    @ManyToOne
-    PaymentMethodValue paymentMethodValue;
-    
-    
+
+
 
     public Long getId() {
         return id;
@@ -257,13 +253,5 @@ public class BillComponent implements Serializable, RetirableEntity  {
 
     public void setComponentValue(Double componentValue) {
         this.componentValue = componentValue;
-    }
-
-    public PaymentMethodValue getPaymentMethodValue() {
-        return paymentMethodValue;
-    }
-
-    public void setPaymentMethodValue(PaymentMethodValue paymentMethodValue) {
-        this.paymentMethodValue = paymentMethodValue;
     }
 }

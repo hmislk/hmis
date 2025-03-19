@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
@@ -1100,7 +1099,7 @@ public class BillItem implements Serializable, RetirableEntity {
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
     }
-    
-    
+
+
 
 }
