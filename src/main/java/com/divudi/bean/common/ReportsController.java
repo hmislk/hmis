@@ -3324,6 +3324,25 @@ public class ReportsController implements Serializable {
         }
     }
 
+    private List<BillTypeAtomic> cancelAndRefundBillTypeAtomics() {
+        return Arrays.asList(
+                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN,
+                BillTypeAtomic.INWARD_SERVICE_BILL_REFUND,
+                BillTypeAtomic.OPD_BILL_CANCELLATION,
+                BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.OPD_BILL_REFUND,
+                BillTypeAtomic.PACKAGE_OPD_BILL_REFUND,
+                BillTypeAtomic.CC_BILL_CANCELLATION,
+                BillTypeAtomic.CC_BILL_REFUND
+        );
+    }
+
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
@@ -3332,7 +3351,8 @@ public class ReportsController implements Serializable {
                 + "JOIN billItem.bill bill "
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
-                + "AND billItem.item is not null ";
+                + "AND billItem.item is not null "
+                + "AND (pi IS NOT NULL OR bill.billTypeAtomic IN :cancellableTypes)";
 //        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
 //                + "FROM PatientInvestigation pi "
 //                + "JOIN pi.billItem billItem "
@@ -3342,6 +3362,7 @@ public class ReportsController implements Serializable {
 //                + " AND bill.retired=false "
 //                + " AND bill.billTypeAtomic in :bts ";
 
+        parameters.put("cancellableTypes", cancelAndRefundBillTypeAtomics());
         parameters.put("bts", bts);
 
         if (staff != null) {
@@ -3432,7 +3453,10 @@ public class ReportsController implements Serializable {
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
                 + "AND bill.createdAt BETWEEN :fd AND :td "
-                + "AND billItem.item is not null ";
+                + "AND billItem.item is not null "
+                + "AND (pi IS NOT NULL OR bill.billTypeAtomic IN :cancellableTypes)";
+
+        parameters.put("cancellableTypes", cancelAndRefundBillTypeAtomics());
 
         if (staff != null) {
             jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
