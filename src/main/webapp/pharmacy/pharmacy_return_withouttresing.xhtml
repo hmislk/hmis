@@ -343,11 +343,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                             
-
                                         </p:panelGrid>
-
-
-
 
                                     </p:panel>
                                 </div>
@@ -355,24 +351,13 @@
 
                         </p:panel>
 
-
-
-
-
-
-
                     </p:panel>
-
 
                 </h:form>
 
                 <h:form>
 
-
                     <p:panel  rendered="#{pharmacyReturnwithouttresing.billPreview}" >
-
-
-
 
                         <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
@@ -431,21 +416,21 @@
                                     </h:panelGroup>
                                 </div>
 
-                            </h:panelGroup>                            
+                            </h:panelGroup>  
+                            
+                             <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
 
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:pharmacyReturnWithoutTresingA4 bill="#{pharmacyReturnwithouttresing.printBill}"></phi:pharmacyReturnWithoutTresingA4>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>  
                         </h:panelGroup> 
-
-
-
                     </p:panel>
-
-
-
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>
