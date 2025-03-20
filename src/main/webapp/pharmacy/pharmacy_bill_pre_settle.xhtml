@@ -46,7 +46,7 @@
                                                     <f:selectItems value="#{enumController.PaymentMethodsForPharmacyRetailSale()}" />
                                                     <p:ajax 
                                                         process="cmbPs" 
-                                                        update="creditCard cheque slip multiplePaymentMethods" 
+                                                        update="creditCard cheque slip multiplePaymentMethods pBillDetails" 
                                                         event="change" />
                                                 </p:selectOneMenu>
 
@@ -119,9 +119,9 @@
                                             <h:outputLabel id="netTotal" value="#{pharmacyPreSettleController.preBill.netTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
-                                            <h:outputLabel value="Tendered" ></h:outputLabel>
-                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                            <p:inputText autocomplete="off"  id="paid" class="w-100" value="#{pharmacyPreSettleController.cashPaid}" onfocus="this.select()">
+                                            <h:outputLabel style="display: #{pharmacyPreSettleController.preBill.paymentMethod eq 'Cash' ? 'block' : 'none'}" value="Tendered" ></h:outputLabel>
+                                            <h:outputLabel style="display: #{pharmacyPreSettleController.preBill.paymentMethod eq 'Cash' ? 'block' : 'none'}; width: 40px; text-align: center"  value=":" ></h:outputLabel>
+                                            <p:inputText autocomplete="off"  id="paid" class="w-100" style="display: #{pharmacyPreSettleController.preBill.paymentMethod eq 'Cash' ? 'block' : 'none'}" value="#{pharmacyPreSettleController.cashPaid}" onfocus="this.select()">
                                                 <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
                                             </p:inputText>
                                             <h:outputLabel  value="Balance " ></h:outputLabel>
