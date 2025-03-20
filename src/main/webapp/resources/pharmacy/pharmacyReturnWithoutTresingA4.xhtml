@@ -92,13 +92,13 @@
                     text-align: left;
                     padding: 4px;
                 }
-              
+
             </style>
             <div class="row">
 
                 <hr></hr>
             </div>
-            
+
 
             <div style="width: 100%;" class="my-2">
 
@@ -144,7 +144,7 @@
                                                                 </td>-->
 
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
+                                    <h:outputText value="#{-bip.pharmaceuticalBillItem.qty}">
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </td>
@@ -169,7 +169,7 @@
                                                                     </h:outputText>
                                                                 </td>-->
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
+                                    <h:outputText value="#{-bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
@@ -207,7 +207,7 @@
                     <tr style="font-size: 15px">
                         <td colspan="4" style="text-align: left;">Total</td>
                         <td colspan="1" style="text-align: right;">
-                            <h:outputText value="#{0-cc.attrs.bill.total}">
+                            <h:outputText value="#{cc.attrs.bill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -231,19 +231,19 @@
                                             </td>
                                         </tr>-->
 
-                    <!--                    <tr style="font-size: 15px">
-                                            <td colspan="9" style="text-align: left; ">Discount</td>
-                                            <td colspan="2" style="text-align: right; ">
-                                                <h:outputText value="#{0-cc.attrs.bill.discount}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-                                            </td>
-                                        </tr>-->
+                    <tr style="font-size: 15px">
+                        <td colspan="4" style="text-align: left; ">Discount</td>
+                        <td colspan="1" style="text-align: right; ">
+                            <h:outputText value="#{0-cc.attrs.bill.discount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
 
                     <tr style="font-size: 15px">
                         <td colspan="4" style="text-align: left; font-weight: bold!important;">Net Total</td>
                         <td colspan="1" style="text-align: right; font-weight: bold!important;">
-                            <h:outputText value="#{0-cc.attrs.bill.netTotal}">
+                            <h:outputText value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
