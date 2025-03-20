@@ -1,4 +1,4 @@
-package com.divudi.bean.common.util;
+package com.divudi.java;
 
 import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HapiContext;
@@ -65,23 +65,23 @@ public class HL7Utils {
 //            if (message instanceof OUL_R22) {
 //                OUL_R22 oulR22Message = (OUL_R22) message;
 //                OUL_R22_ORDER oulR22Order = (OUL_R22_ORDER) message;
-//                
+//
 //                // Extract Sample Details
 //                List<OUL_R22_SPECIMEN> specimens = oulR22Message.getSPECIMENAll();
 //                for (OUL_R22_SPECIMEN sp : specimens) {
 //                    SPM spm = sp.getSPM();
 //                    String specimenId = spm.getSpecimenID().toString();
 //                }
-//                
+//
 //                List<OUL_R22_RESULT> rs=  oulR22Order.getRESULTAll();
-//                
+//
 //                for(OUL_R22_RESULT r:rs){
 //                    TCD tcd = r.getTCD();
-//                    
+//
 //                }
-//                
-//                
-//                
+//
+//
+//
 //
 //                // Extract Patient Details
 //                PID pid = oulR22Message.getPATIENT().getPID();
@@ -92,7 +92,7 @@ public class HL7Utils {
 //                List<String> resultDetailsList = new ArrayList<>();
 //
 //                // Extract Order and Result Details
-//                
+//
 //
 //                // You can now use extracted data (e.g., specimenId, patientId, patientName, orderDetailsList, resultDetailsList) as needed
 //            } else {
