@@ -6,6 +6,8 @@ package com.divudi.entity.pharmacy;
 
 import java.io.Serializable;
 import javax.persistence.Entity;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 
 /**
@@ -13,6 +15,11 @@ import javax.persistence.Entity;
  * @author buddhika
  */
 @Entity
+@Table(
+    indexes = {
+        @Index(name = "idx_vtm_name", columnList = "name")
+    }
+)
 public class Vtm extends PharmaceuticalItem implements Serializable {
  
 }

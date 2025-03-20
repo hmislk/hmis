@@ -14,7 +14,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -23,6 +25,12 @@ import javax.persistence.Transient;
  * @author safrin
  */
 @Entity
+@Table(
+    indexes = {
+        @Index(name = "idx_stock_department", columnList = "department"),
+        @Index(name = "idx_stock_stock", columnList = "stock")
+    }
+)
 public class Stock implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
