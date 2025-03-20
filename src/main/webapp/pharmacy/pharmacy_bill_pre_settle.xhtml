@@ -32,19 +32,31 @@
                             <div class="col-6">
                                 <p:panel header="Payment Details">
                                     <h:panelGrid columns="20"  >
-                                        <h:outputLabel value="Pharmacy Retail Bill" />
-                                        <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                                        <p:selectOneMenu   
-                                            id="cmbPs" 
-                                            class="w-100"
-                                            value="#{pharmacyPreSettleController.preBill.paymentMethod}"  
-                                            disabled="#{!sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
-                                            <f:selectItems value="#{enumController.PaymentMethodsForPharmacyRetailSale()}" />
-                                            <p:ajax 
-                                                process="cmbPs" 
-                                                update="creditCard cheque slip multiplePaymentMethods" 
-                                                event="change" />
-                                        </p:selectOneMenu>
+                                        <div class="row">
+                                            <h:outputLabel value="Pharmacy Retail Bill" />
+                                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
+                                            <p:selectOneMenu   
+                                                id="cmbPs" 
+                                                class="w-100"
+                                                value="#{pharmacyPreSettleController.preBill.paymentMethod}"  
+                                                disabled="#{!sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
+                                                <f:selectItems value="#{enumController.PaymentMethodsForPharmacyRetailSale()}" />
+                                                <p:ajax 
+                                                    process="cmbPs" 
+                                                    update="creditCard cheque slip multiplePaymentMethods" 
+                                                    event="change" />
+                                            </p:selectOneMenu>
+
+                                            <p:commandButton ajax= "false"
+                                                             value="Settle and Accept Payment"
+                                                             id="settle"
+                                                             class="ui-button-success"
+                                                             icon="fa-solid fa-check"
+                                                             action="#{pharmacyPreSettleController.settleBillWithPay2}" />
+
+                                            <p:defaultCommand target="settle"/>
+                                        </div>
+
 
                                         <div class="row">
                                             <h:panelGroup id="creditCard" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
@@ -74,17 +86,6 @@
                                         </div>
 
 
-
-
-
-                                        <p:commandButton ajax= "false"
-                                                         value="Settle and Accept Payment"
-                                                         id="settle"
-                                                         class="ui-button-success"
-                                                         icon="fa-solid fa-check"
-                                                         action="#{pharmacyPreSettleController.settleBillWithPay2}" />
-
-                                        <p:defaultCommand target="settle"/>
                                     </h:panelGrid>
                                 </p:panel>
                             </div>
