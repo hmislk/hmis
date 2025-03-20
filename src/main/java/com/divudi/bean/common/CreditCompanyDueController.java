@@ -82,6 +82,16 @@ public class CreditCompanyDueController implements Serializable {
     private Department department;
     private Institution site;
 
+    private List<Bill> bills = new ArrayList<>();
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
     }
@@ -1254,6 +1264,39 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             institutionEncounters.add(newIns);
+        }
+    }
+
+    public void createInwardPaymentBills() {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BilledBill b where"
+                + " b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  "
+                + " and (b.forwardReferenceBill.netTotal - b.forwardReferenceBill.paidAmount) < 0";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        if (institutionOfDepartment != null) {
+            temMap.put("ins", institutionOfDepartment);
+            sql += " and b.department.institution = :ins ";
+        }
+
+        sql += " order by b.deptId desc  ";
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+        finalPaidTotal = 0;
+        finalTotal = 0;
+        finalTransPaidTotal = 0;
+
+        for (Bill bill : bills) {
+            finalTransPaidTotal += bill.getForwardReferenceBill().getNetTotal();
+            finalPaidTotal += bill.getForwardReferenceBill().getPaidAmount();
+            finalTotal += bill.getForwardReferenceBill().getNetTotal() - bill.getForwardReferenceBill().getPaidAmount();
         }
     }
 
