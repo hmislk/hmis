@@ -248,8 +248,7 @@ public class ReportTemplateRowBundle implements Serializable {
         hasOnlineSettlementTransaction = false;
     }
 
-    
-    
+
     public void collectDepartments() {
         Set<Department> uniqueDepartments = new HashSet<>();
         if (bundles != null) {
@@ -682,6 +681,24 @@ public class ReportTemplateRowBundle implements Serializable {
                 this.total += row.getBillFee().getFeeValue();
                 this.totalIn += row.getBillFee().getSettleValue();
                 this.totalOut += row.getBillFee().getPaidValue();
+            }
+        }
+    }
+
+    public void calculateTotalsForProfessionalFeesForInward() {
+        System.out.println("calculateTotals = ");
+        this.total = 0.0;
+        this.totalIn = 0.0;
+        this.totalOut = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBillFee() == null) {
+                    continue;
+                }
+
+                this.total += row.getBillFee().getFeeValue();
+                this.totalIn += row.getBillFee().getSettleValue();
+                this.totalOut += row.getBillFee().getReferenceBillFee() != null ? row.getBillFee().getReferenceBillFee().getBill().getAbsoluteNetTotal() : row.getBillFee().getPaidValue();
             }
         }
     }
@@ -1215,7 +1232,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBillItem().getBill().getNetTotal());
+                Double amount = safeDouble(row.getBillItem().getNetValue());
                 total += amount;
             }
         }

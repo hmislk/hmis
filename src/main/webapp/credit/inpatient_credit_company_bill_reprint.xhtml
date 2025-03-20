@@ -15,7 +15,10 @@
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
                             <div class="d-flex justify-content-between">
-                                <h:outputLabel value="Reprint" class="mt-2" />
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                    <i class="fa fa-print mx-2"></i>
+                                    <h:outputLabel value="Reprint"/>
+                                </div>
                                 <p:commandButton 
                                     ajax="false" 
                                     value="To Cancel" 
@@ -31,16 +34,26 @@
                         <div class="row">
                             <div class="col-7">
                                 <div class="row">
-                                    <div class="col-8">
+                                    <div class="col-7">
                                         <p:panel header="Patient Details">
+                                            <f:facet name="header">
+                                                <h:outputText value=" " />
+                                                <i class="fa-solid fa-user mx-2"></i>
+                                                <h:outputText value="Patient Details" class="mx-2" />
+                                            </f:facet>
                                             <p:panelGrid columns="2">
                                                 <h:outputLabel value="Company Name:" />
                                                 <h:outputLabel value="#{creditCompanyBillSearch.bill.fromInstitution.name }" />
                                             </p:panelGrid>
                                         </p:panel>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-5">
                                         <p:panel header="Bill Details">
+                                            <f:facet name="header">
+                                                <h:outputText value=" " />
+                                                <i class="fa-solid fa-receipt mx-2"></i>
+                                                <h:outputText value="Bill Details" class="mx-2"/>
+                                            </f:facet>
                                             <p:panelGrid columns="2">
                                                 <h:outputLabel value="Bill No :" />
                                                 <h:outputLabel value="#{creditCompanyBillSearch.bill.deptId}" />
@@ -57,6 +70,11 @@
                                 <div class="row mt-3">
                                     <div class="col-12">
                                         <p:panel header="Bill Item Details">
+                                            <f:facet name="header">
+                                                <h:outputText value=" " />
+                                                <i class="fa-solid fa-cart-shopping mx-2"></i>
+                                                <h:outputText value="Bill Item Details" class="mx-2"/>
+                                            </f:facet>
                                             <p:dataTable rowIndexVar="rowIndex" value="#{creditCompanyBillSearch.billItems}" var="b" >
                                                 <p:column width="5em">
                                                     <f:facet name="header">
@@ -90,7 +108,10 @@
                                 <p:panel>
                                     <f:facet name="header" >
                                         <div class="d-flex justify-content-between">
-                                            <h:outputLabel value="Bill Priview" class="mt-2" />
+                                            <div class="d-flex align-items-center gap-2 mt-2">
+                                                <i class="fa-solid fa-magnifying-glass mx-2"></i>
+                                                <h:outputLabel value="Bill Preview" />
+                                            </div>
                                             <p:commandButton 
                                                 style="width: 100px" 
                                                 value="Print" 

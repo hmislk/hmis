@@ -11,7 +11,6 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PatientDepositController;
@@ -27,19 +26,6 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.TokenType;
@@ -135,8 +121,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @Inject
     StockController stockController;
     @Inject
-    ConfigOptionController configOptionController;
-    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     FinancialTransactionController financialTransactionController;
@@ -147,14 +131,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @Inject
     PatientDepositController patientDepositController;
     @Inject
-    CommonController commonController;
+    CommonController commonController; // TODO : Can be removed ?
 
     @Inject
     TokenController tokenController;
     @Inject
     DrawerController drawerController;
-    @Inject
-    PaymentSchemeController paymentSchemeController;
+
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -231,7 +214,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -529,8 +512,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     private Prescription prescription;
     private boolean enableLabelPrintFromSaleView = false;
-    
-    public void enableLabelPrint(Prescription p){
+
+    public void enableLabelPrint(Prescription p) {
         enableLabelPrintFromSaleView = true;
         this.prescription = p;
     }
@@ -547,7 +530,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 billItem.getPrescription().setComment(billItem.getInstructions());
             }
         }
-        
 
     }
 
@@ -557,7 +539,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         tmp.setGrossValue(tmp.getQty() * tmp.getRate());
-        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
+        tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
 
         calculateBillItemForEditing(tmp);
 
@@ -571,7 +553,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         tmp.setGrossValue(tmp.getQty() * tmp.getRate());
-        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
+        tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
 
         calculateBillItemForEditing(tmp);
 
@@ -590,7 +572,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         bi.setQty(editingQty);
-        bi.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - editingQty));
+        bi.getPharmaceuticalBillItem().setQtyInUnit(0 - editingQty);
         calculateBillItemForEditing(bi);
 
         calTotal();
@@ -598,7 +580,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     private Patient savePatient() {
-        if (!getPatient().getPerson().getName().trim().equals("")) {
+        if (!getPatient().getPerson().getName().trim().isEmpty()) {
             getPatient().setCreater(getSessionController().getLoggedUser());
             getPatient().setCreatedAt(new Date());
             getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
@@ -835,11 +817,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String pharmacyRetailSale() {
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
     public String toPharmacyRetailSale() {
-        return "/pharmacy/pharmacy_bill_retail_sale";
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
@@ -942,13 +924,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (qry.length() > 5 && items.size() == 1) {
             stock = items.get(0);
             handleSelectAction();
-        } else if (!qry.trim().equals("") && qry.length() > 4) {
+        } else if (!qry.trim().isEmpty() && qry.length() > 4) {
             itemsWithoutStocks = completeRetailSaleItemsWithoutStocks(qry);
         }
         return items;
     }
-
+@Deprecated
     public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
+        long startTime = System.nanoTime();
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
         }
@@ -973,13 +956,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", true)) {
                 sql += "OR i.itemBatch.item.barcode = :query ";
             }
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
-                sql += "OR i.itemBatch.item.vmp.vtm.name LIKE :query ";
-            }
-
-            sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-
         } else {
             sql = "SELECT i FROM Stock i "
                     + "WHERE i.stock > :stockMin "
@@ -993,14 +969,62 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", false)) {
                 sql += "OR i.itemBatch.item.barcode = :query ";
             }
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
-                sql += "OR i.itemBatch.item.vmp.vtm.name LIKE :query ";
-            }
-
-            sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
+            sql += "OR i.itemBatch.item.vmp.vtm.name LIKE :query ";
+        }
+
+        sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        long endTime = System.nanoTime();
+        long executionTime = endTime - startTime;
+        System.out.println("Execution Old time: " + executionTime + " nanoseconds");
         return getStockFacade().findByJpql(sql, parameters, 20);
+    }
+
+    public List<Stock> completeAvailableStockOptimized(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        StringBuilder sql = new StringBuilder("SELECT i FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :query ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        return getStockFacade().findByJpql(sql.toString(), parameters, 20);
     }
 
     public void handleSelectAction() {
@@ -1050,7 +1074,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        } else {
 //            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
 //        }
-//        
+//
 //        sql = "select i from Amp i "
 //                + "where i.retired=false and "
 //                + "(i.name) like :n and "
@@ -1100,7 +1124,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         String sql;
         Map m = new HashMap();
         double d = 0.0;
-        Amp amp = (Amp) ampIn;
+        Amp amp = ampIn;
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("s", d);
         m.put("vmp", amp.getVmp());
@@ -1165,7 +1189,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
         //Rates
         //Values
@@ -1306,7 +1330,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         addedQty = qty;
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         calculateBillItem();
@@ -1424,15 +1448,21 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             double thisTimeAddingQty = addBillItemSingleItem();
             addedQty += thisTimeAddingQty;
             remainingQty = remainingQty - thisTimeAddingQty;
+            
+            
             if (remainingQty <= 0) {
                 return;
             }
+        }
+        if(addedQty < requestedQty){
+            errorMessage = "Quantity is not Enough...!";
+            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) +" is Available form the Requested Quantity");
         }
 
     }
 
     private void addSingleStock() {
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         calculateBillItem();
@@ -1739,7 +1769,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setReferenceBill(getSaleBill());
         getBillFacade().edit(getPreBill());
     }
-    
+
     @EJB
     PrescriptionFacade prescriptionFacade;
 
@@ -1749,7 +1779,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //If any issue in Stock Bill Item will not save & not include for total
 //                continue;
             }
-            
+
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
 
@@ -1758,11 +1788,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
-            
-            if(tbi.getPrescription() != null){
-                if(tbi.getPrescription().getId() == null){
+
+            if (tbi.getPrescription() != null) {
+                if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
-                }else{
+                } else {
                     prescriptionFacade.edit(tbi.getPrescription());
                 }
             }
@@ -1832,14 +1862,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             if (newBil.getId() == null) {
                 getBillItemFacade().create(newBil);
             }
-            
-            if(tbi.getPrescription() != null){
-                if(tbi.getPrescription().getId() == null){
+
+            if (tbi.getPrescription() != null) {
+                if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
-                }else{
+                } else {
                     prescriptionFacade.edit(tbi.getPrescription());
                 }
-                
+
                 newBil.setPrescription(tbi.getPrescription());
                 System.out.println(patient);
                 tbi.getPrescription().setPatient(patient);
@@ -1947,7 +1977,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         } else if (getPatient().getPerson().getName() == null) {
             JsfUtil.addErrorMessage("Please select a patient");
             return;
-        } else if (getPatient().getPerson().getName().trim().equals("")) {
+        } else if (getPatient().getPerson().getName().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please select a patient");
             return;
         } else {
@@ -2009,10 +2039,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         calculateAllRates();
 
         Patient pt = savePatient();
-        List<BillItem> tmpBillItems = new ArrayList<>();
-        for (BillItem i : getPreBill().getBillItems()) {
-            tmpBillItems.add(i);
-        }
+        List<BillItem> tmpBillItems = new ArrayList<>(getPreBill().getBillItems());
         getPreBill().setBillItems(null);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
@@ -2596,7 +2623,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         billItem.setQty(qty);
         //pharmaceutical Bill Item
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         //Values
         billItem.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * qty);
     }
@@ -2904,7 +2931,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 case OnlineSettlement:
                 case Staff:
                 case YouOweMe:
-                case MultiplePaymentMethods:
             }
 
             p.setPaidValue(0 - Math.abs(p.getBill().getNetTotal()));
@@ -2945,7 +2971,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private void clearBill() {
         preBill = null;
         saleBill = null;
-        patient = null;
         patient = null;
         toInstitution = null;
         toStaff = null;
@@ -3454,7 +3479,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public Prescription getPrescription() {
         if (prescription == null) {
             prescription = new Prescription();
-}
+        }
         return prescription;
     }
 

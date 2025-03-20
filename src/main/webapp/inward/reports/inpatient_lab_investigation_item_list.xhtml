@@ -15,43 +15,46 @@
             <p:growl id="inpatientDashboardGrowl" ></p:growl>
             <p:panel >
                 <f:facet name="header" >
-                    <h:outputText styleClass="fa fa-id-card"></h:outputText>
-                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2" ></p:outputLabel>
+                    <div class="d-flex align-item-center justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa fa-id-card"></h:outputText>
+                            <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2" ></p:outputLabel>
+                        </div>
+                        <div>
+                            <p:commandButton 
+                                value="Download" 
+                                ajax="false"
+                                class="ui-button-primary m-1"
+                                icon="fa fa-download">
+                                <p:dataExporter fileName="Inpatient Lab Investigation List" target="tbl1" type="xlsx"></p:dataExporter>
+                            </p:commandButton>
 
-                    <p:commandButton 
-                        value="Download" 
-                        ajax="false"
-                        class="ui-button-primary m-1"
-                        icon="fa fa-download">
-                        <p:dataExporter fileName="Inpatient Lab Investigation List" target="tbl1" type="xlsx"></p:dataExporter>
-                    </p:commandButton>
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false"
+                                class="ui-button-primary m-1"
+                                icon="fa fa-print">
+                                <p:printer target="tbl1"></p:printer>
+                            </p:commandButton>
 
-                    <p:commandButton 
-                        value="Print" 
-                        ajax="false"
-                        class="ui-button-primary m-1"
-                        icon="fa fa-print">
-                        <p:printer target="tbl1"></p:printer>
-                    </p:commandButton>
+                            <p:commandButton 
+                                value="Back to Inpatient Profile" 
+                                action="#{admissionController.navigateToSearchAdmissions()}" 
+                                style="float: right;"
+                                class="ui-button-secondary m-1"
+                                icon="fa fa-arrow-circle-left" rendered="false">
+                            </p:commandButton>
 
-                    <p:commandButton 
-                        value="Back to Inpatient Profile" 
-                        action="#{admissionController.navigateToSearchAdmissions()}" 
-                        style="float: right;"
-                        class="ui-button-secondary m-1"
-                        icon="fa fa-arrow-circle-left" rendered="false">
-                    </p:commandButton>
-                    
-                    <p:commandButton 
-                                    ajax="false"
-                                    value="Inpatient Dashboard" 
-                                    icon="fas fa-id-card"
-                                    class="ui-button-secondary  mx-1" 
-                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
-                                    >
-                                </p:commandButton>
-
-
+                            <p:commandButton 
+                                ajax="false"
+                                value="Inpatient Dashboard" 
+                                icon="fas fa-id-card"
+                                class="ui-button-secondary  mx-1" 
+                                action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                >
+                            </p:commandButton>
+                        </div>
+                    </div>
                 </f:facet>
 
                 <style>
@@ -234,7 +237,7 @@
                             <p:dataTable 
                                 id="tbl1" 
                                 rowIndexVar="rowIndex" 
-                                
+
                                 value="#{inwardReportControllerBht.labBillItemsToPatientEncounter}"  
                                 var="bip">
 

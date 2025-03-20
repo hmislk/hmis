@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -57,8 +56,8 @@ public class BillEntry implements Serializable, RetirableEntity  {
     public Bill getBill() {
         return bill;
     }
-    
-    
+
+
 
     public void setBill(Bill bill) {
         this.bill = bill;
@@ -153,9 +152,9 @@ public class BillEntry implements Serializable, RetirableEntity  {
         this.totVat = totVat;
     }
 
-    
-    
-    
+
+
+
     public Double getTotCash() {
         return totCash;
     }

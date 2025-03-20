@@ -101,6 +101,7 @@ public class CommonController implements Serializable {
     }
 
     public Date getCurrentDateTime() {
+        //Removes Static Partr as static is NOT accessible from JSF Pages
         return new Date();
     }
 

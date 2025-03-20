@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
 import java.io.Serializable;
 import java.util.Date;
@@ -25,7 +24,7 @@ public class PatientFlag implements Serializable, RetirableEntity {
      static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties   
+    //Main Properties
      Long id;
     @ManyToOne
      Patient patient;
@@ -65,7 +64,7 @@ public class PatientFlag implements Serializable, RetirableEntity {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof PatientFlag)) {
             return false;
         }

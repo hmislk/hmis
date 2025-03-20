@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.Denomination;
 import com.divudi.data.PaymentHandover;
 import com.divudi.data.PaymentMethod;
@@ -28,7 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 @Entity
-public class Payment implements Serializable, RetirableEntity  {
+public class Payment implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
 
@@ -136,22 +135,7 @@ public class Payment implements Serializable, RetirableEntity  {
     private boolean handingOverStarted;
     private boolean handingOverCompleted;
 
-    @ManyToOne
-    private Bill handoverShiftBill;
-    @ManyToOne
-    private Bill handoverShiftComponantBill;
 
-    //Handover Creation
-    @ManyToOne
-    private Bill handoverCreatedBill;
-    @ManyToOne
-    private Bill handoverCreatedComponantBill;
-
-    //Handover Accept
-    @ManyToOne
-    private Bill handoverAcceptBill;
-    @ManyToOne
-    private Bill handoverAcceptComponantBill;
 
     //Payment Record Creation
     @ManyToOne
@@ -204,10 +188,8 @@ public class Payment implements Serializable, RetirableEntity  {
     private Institution fromInstitution;
     @ManyToOne
     private Institution toInstitution;
-    
+
     private Staff toStaff;
-    
-    
 
     public Payment() {
         cashbookEntryStated = false;
@@ -616,22 +598,6 @@ public class Payment implements Serializable, RetirableEntity  {
         this.cashbookEntryCompleted = cashbookEntryCompleted;
     }
 
-    public Bill getHandoverCreatedBill() {
-        return handoverCreatedBill;
-    }
-
-    public void setHandoverCreatedBill(Bill handoverCreatedBill) {
-        this.handoverCreatedBill = handoverCreatedBill;
-    }
-
-    public Bill getHandoverAcceptBill() {
-        return handoverAcceptBill;
-    }
-
-    public void setHandoverAcceptBill(Bill handoverAcceptBill) {
-        this.handoverAcceptBill = handoverAcceptBill;
-    }
-
     public CashBookEntry getCashbookEntry() {
         return cashbookEntry;
     }
@@ -688,22 +654,6 @@ public class Payment implements Serializable, RetirableEntity  {
         this.paymentRecordCompleted = paymentRecordCompleted;
     }
 
-    public Bill getHandoverShiftBill() {
-        return handoverShiftBill;
-    }
-
-    public void setHandoverShiftBill(Bill handoverShiftBill) {
-        this.handoverShiftBill = handoverShiftBill;
-    }
-
-    public Bill getHandoverShiftComponantBill() {
-        return handoverShiftComponantBill;
-    }
-
-    public void setHandoverShiftComponantBill(Bill handoverShiftComponantBill) {
-        this.handoverShiftComponantBill = handoverShiftComponantBill;
-    }
-
     public Payment getReferancePayment() {
         return referancePayment;
     }
@@ -723,22 +673,6 @@ public class Payment implements Serializable, RetirableEntity  {
 
     public void setPaymentDate(Date paymentDate) {
         this.paymentDate = paymentDate;
-    }
-
-    public Bill getHandoverCreatedComponantBill() {
-        return handoverCreatedComponantBill;
-    }
-
-    public void setHandoverCreatedComponantBill(Bill handoverCreatedComponantBill) {
-        this.handoverCreatedComponantBill = handoverCreatedComponantBill;
-    }
-
-    public Bill getHandoverAcceptComponantBill() {
-        return handoverAcceptComponantBill;
-    }
-
-    public void setHandoverAcceptComponantBill(Bill handoverAcceptComponantBill) {
-        this.handoverAcceptComponantBill = handoverAcceptComponantBill;
     }
 
     public Bill getPaymentRecordCreateComponantBill() {
@@ -967,9 +901,9 @@ public class Payment implements Serializable, RetirableEntity  {
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
     }
-    
+
     @Transient
-    public Double getAbsolutePaidValueTransient(){
+    public Double getAbsolutePaidValueTransient() {
         return Math.abs(this.paidValue);
     }
 

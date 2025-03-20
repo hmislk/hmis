@@ -12,18 +12,7 @@ import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.BillEjb;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillNumber;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Service;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Staff;
+import com.divudi.entity.*;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
@@ -53,20 +42,6 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.Family;
-import com.divudi.entity.FamilyMember;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.PatientDepositHistory;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PatientFlag;
-import com.divudi.entity.PatientItem;
-import com.divudi.entity.Payment;
-import com.divudi.entity.Person;
-import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.entity.cashTransaction.CashTransaction;
@@ -1104,7 +1079,7 @@ public class DataAdministrationController implements Serializable {
 //        m.put("bts", BillType.PharmacyTransferIssue);
 //        m.put("bts", BillType.PharmacyTransferReceive);
 //        m.put("bts", BillType.PharmacyTransferRequest);
-//        
+//
         bills = getBillFacade().findByJpql(j, m);
 
         for (Bill b : bills) {
