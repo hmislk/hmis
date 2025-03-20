@@ -4,11 +4,9 @@ import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.channel.BookingControllerViewScope;
 import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PaymentGatewayController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.SmsController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BillType;
@@ -27,7 +25,6 @@ import com.divudi.entity.Sms;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
@@ -68,17 +65,13 @@ public class PatientPortalController implements Serializable {
     PatientFacade patientFacade;
     @EJB
     SmsFacade smsFacade;
-    @EJB
-    BillFacade billFacade;
+
     @EJB
     BillSessionFacade billSessionFacade;
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    DoctorController doctorController;
-    @Inject
-    SmsController smsController;
+
     @Inject
     PatientController patientController;
     @Inject
@@ -144,16 +137,16 @@ public class PatientPortalController implements Serializable {
         String oldURLMethord = commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml";
         return "/channel/patient_portal.xhtml";
     }
-    
+
     public String navigateToPayBooking(){
         if (selectedSessionInstance != null) {
-        
+
         bookingController.setPatient(patient);
         bookingController.setPaymentMethod(PaymentMethod.OnlineSettlement);
         bookingController.setStaff(selectedConsultant);
         bookingController.setSelectedSessionInstance(selectedSessionInstance);
         bookingController.setSelectedServiceSession(selectedChannelSession);
-        
+
         double amount = selectedSessionInstance.getOriginatingSession().getTotal();
         paymentGatewayController.setOrderAmount(String.valueOf(amount));
         paymentGatewayController.setOrderId(String.valueOf(selectedSessionInstance.getId()));
@@ -163,14 +156,14 @@ public class PatientPortalController implements Serializable {
         return paymentGatewayController.createCheckoutSession();
         }
         return null;
-        
+
     }
 
     public void booking() {
         if (selectedSessionInstance != null) {
             channelBookingBillSession = bookingController.addChannelBookingForOnlinePayment();
             bookingCompleted = false;
-        }     
+        }
     }
 
     public List<BillSession> fillPastBookings() {
@@ -318,7 +311,7 @@ public class PatientPortalController implements Serializable {
         getSmsFacade().edit(e);
 
     }
-    
+
     public Date getSessionStartDateTime(SessionInstance session) {
         Calendar sessionDateTimeCal = Calendar.getInstance();
         sessionDateTimeCal.setTime(session.getSessionDate()); // Assuming session has a getSessionDate method
