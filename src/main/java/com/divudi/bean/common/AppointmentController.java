@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.inward.BhtEditController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillType;
 import com.divudi.data.Sex;
@@ -16,7 +15,6 @@ import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
-
 import com.divudi.entity.Appointment;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
@@ -58,8 +56,6 @@ public class AppointmentController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    BhtEditController bhtEditController;
 
     @Inject
     CommonController commonController;
@@ -264,17 +260,17 @@ public class AppointmentController implements Serializable {
     private boolean checkPatientAgeSex() {
 
 //        if (getPatientTabId().toString().equals("tabNewPt")) {
-        if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getAgeText() == null) {
+        if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().isEmpty() || getNewPatient().getPerson().getSex() == null || getAgeText() == null) {
             JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
 
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
+        if (!Person.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
             JsfUtil.addErrorMessage("Check Title,Age,Sex");
             return true;
         }
 
-        if (getNewPatient().getPerson().getPhone().length() < 1) {
+        if (getNewPatient().getPerson().getPhone().isEmpty()) {
             JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
             return true;
         }
@@ -322,7 +318,7 @@ public class AppointmentController implements Serializable {
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrentBill().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
-//       
+//
         return false;
     }
 

@@ -19,7 +19,6 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
@@ -309,7 +308,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
                     getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                    // getBillBean().calculateBillItem(myBill, e);                
+                    // getBillBean().calculateBillItem(myBill, e);
                     tmp.add(e);
                 }
             }
@@ -415,7 +414,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     private Bill saveBill(Department bt, BilledBill temp) {
 
-        //getCurrent().setCashBalance(cashBalance); 
+        //getCurrent().setCashBalance(cashBalance);
         //getCurrent().setCashPaid(cashPaid);
         //  temp.setBillType(bt);
         temp.setBillType(BillType.OpdBill);
@@ -468,19 +467,19 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     }
 
     private boolean errorCheck() {
-        if (getPatientTabId().toString().equals("tabNewPt")) {
+        if (getPatientTabId().equals("tabNewPt")) {
 
-            if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+            if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().isEmpty() || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
                 JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
 
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
+            if (!Person.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
                 JsfUtil.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
 
-            if (getPatient().getPerson().getPhone().length() < 1) {
+            if (getPatient().getPerson().getPhone().isEmpty()) {
                 JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
                 return true;
             }
@@ -732,7 +731,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         createBillItems(new MedicalPackage());
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -790,7 +789,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         createBillItems(new Packege());
 
-        
+
 
     }
 
@@ -825,7 +824,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         createBills(new Packege());
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);

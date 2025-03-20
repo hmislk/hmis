@@ -5,8 +5,6 @@
  */
 package com.divudi.java;
 
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
 import java.text.DateFormat;
@@ -301,7 +299,7 @@ public class CommonFunctions {
 
     public static long calculateAgeInDays(Date dob, Date toDate) {
         if (dob == null || toDate == null) {
-            return 0l;
+            return 0L;
         }
         long ageInDays;
         ageInDays = (toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24);
@@ -320,51 +318,6 @@ public class CommonFunctions {
         calendar.add(Calendar.MONTH, 1);
         calendar.add(Calendar.SECOND, -1);
         return calendar.getTime();
-    }
-
-    public static Boolean checkAgeSex(Date dob, Sex sex, Title title) {
-        Boolean result = true;
-        Date toDate = Calendar.getInstance().getTime();
-
-        long age;
-
-        if ((toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24) == 0) {
-            return false;
-        }
-
-        age = ((toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24)) / 365;
-
-        if (title == Title.Baby || title == Title.Baby_Of) {
-            if (age > 6) {
-                result = false;
-            }
-        } else if ((title == Title.Master)) {
-            if (age > 13) {
-                result = false;
-            }
-        }
-
-        if (title == Title.Mrs
-                || title == Title.Mrs
-                || title == Title.Ms
-                || title == Title.Miss
-                || title == Title.DrMrs
-                || title == Title.DrMiss) {
-
-            if (sex == Sex.Male) {
-                result = false;
-            }
-        }
-
-        if (title == Title.Mr
-                || title == Title.Master
-                || title == Title.Dr) {
-            if (sex == Sex.Female) {
-                result = false;
-            }
-        }
-
-        return result;
     }
 
     public static Date getStartOfDay() {

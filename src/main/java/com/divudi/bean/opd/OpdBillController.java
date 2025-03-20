@@ -26,7 +26,6 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
@@ -71,7 +70,6 @@ import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
-import static com.divudi.data.PaymentMethod.Credit;
 import com.divudi.entity.FeeValue;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Token;
@@ -1757,7 +1755,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             getBillFacade().edit(myBill);
             getBillBean().calculateBillItemsForOpdBill(myBill, tmp, getBillFeeBundleEntrys());
-//          Payments are Generated Only for OPD Batch Bill            
+//          Payments are Generated Only for OPD Batch Bill
 //          createPaymentsForBills(myBill, tmp);
             getBillBean().checkBillItemFeesInitiated(myBill);
             getBills().add(myBill);
@@ -2435,11 +2433,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean checkPatientAgeSex() {
-        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().isEmpty() || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
             JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
+        if (!Person.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
             JsfUtil.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
             return true;
         }
@@ -3117,7 +3115,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 if (needToAdd) {
 
                     System.out.println("bf.getFeeGrossValue() Before Matrix = " + bf.getFeeGrossValue());
-                    
+
                     Department department = null;
                     Item item = null;
                     PriceMatrix priceMatrix;
