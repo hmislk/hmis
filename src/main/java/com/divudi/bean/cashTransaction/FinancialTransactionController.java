@@ -7,29 +7,12 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
+import com.divudi.data.*;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.AtomicBillTypeTotals;
-import com.divudi.data.BillCategory;
-import com.divudi.data.BillFinanceType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.CountedServiceType;
-import com.divudi.data.Denomination;
-import com.divudi.data.FinancialReport;
-import com.divudi.data.PaymentHandover;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PaymentMethodValues;
-import com.divudi.data.PaymentSelectionMode;
-import static com.divudi.data.PaymentSelectionMode.SELECT_FOR_HANDOVER_RECEIPT;
-import static com.divudi.data.PaymentSelectionMode.SELECT_FOR_HANDOVER_RECORD;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -102,7 +85,7 @@ public class FinancialTransactionController implements Serializable {
     BillService billService;
     @EJB
     PaymentHandoverItemFacade paymentHandoverItemFacade;
-    // </editor-fold>  
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -131,7 +114,7 @@ public class FinancialTransactionController implements Serializable {
     private DenominationTransactionController denominationTransactionController;
     @Inject
     private DrawerController drawerController;
-    // </editor-fold>  
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill currentBill;
@@ -268,12 +251,12 @@ public class FinancialTransactionController implements Serializable {
 
     boolean floatTransferStarted = false;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public FinancialTransactionController() {
     }
 
-    // </editor-fold> 
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigational Methods">
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
@@ -1979,8 +1962,8 @@ public class FinancialTransactionController implements Serializable {
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
 
-//        
-//        
+//
+//
 //         fillPaymentsFromViewHandoverAcceptBill();
         currentBill = new Bill();
         currentBill.setBillType(BillType.CashHandoverAcceptBill);
@@ -2098,7 +2081,7 @@ public class FinancialTransactionController implements Serializable {
         }
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functional Methods">
     public void resetClassVariables() {
         paymentsSelected = null;
@@ -2491,9 +2474,9 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_withdrawal_bill_print?faces-redirect=true";
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Sample Code Block">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="ShiftEndFundBill">
     public void refreshCashNetTotalForMenu() {
         findNonClosedShiftStartFundBillIsAvailable();
@@ -2612,7 +2595,7 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_start?faces-redirect=true";
     }
 
-//    
+//
 //    public String navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift() {
 //        resetClassVariables();
 //        handoverValuesCreated = false;
@@ -3334,7 +3317,7 @@ public class FinancialTransactionController implements Serializable {
 
         refundBundle.setName("Refunded Bills");
         refundBundle.setBundleType("refundBillBundle");
-//        
+//
         chequeFromShiftSratToNow = paymentsFromShiftSratToNow.stream()
                 .filter(p -> p.getPaymentMethod() == PaymentMethod.Cheque)
                 .collect(Collectors.toList());
@@ -3653,7 +3636,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("br", false);
         m.put("can", false);
         m.put("sid", startBill.getId());
-        
+
         jpqlBuilder
                 .append("AND p.cashbookEntryStated =:cbes ")
                 .append("AND p.handingOverStarted =:hos ");
@@ -4866,7 +4849,7 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_creation_bill_print?faces-redirect=true";
     }
 
-// </editor-fold>  
+// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="BalanceTransferFundBill">
     /**
      *
@@ -4874,7 +4857,7 @@ public class FinancialTransactionController implements Serializable {
      * to transfer (toStaff) settle to print
      *
      */
-    // </editor-fold>   
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="BalanceTransferReceiveFundBill">
     /**
      *
@@ -5278,8 +5261,8 @@ public class FinancialTransactionController implements Serializable {
                 p.setCashbook(bundleCb);
                 p.setCashbookEntry(findCashbookEntry(p, cbEntries));
                 p.setCashbookEntryCompleted(true);
-                
-                
+
+
                 p.setCurrentHolder(sessionController.getLoggedUser());
                 p.setHandingOverCompleted(true);
                 p.setHandingOverStarted(false);
@@ -5289,13 +5272,13 @@ public class FinancialTransactionController implements Serializable {
                 paymentController.save(p);
 
                 payments.add(p);
-                
+
                 PaymentHandoverItem phi = new PaymentHandoverItem(p);
                 phi.setHandoverAcceptBill(currentBill);
                 phi.setHandoverAcceptComponantBill(shiftHandoverComponantAcceptBill);
-                
+
                 paymentHandoverItemController.save(phi);
-                
+
             }
         }
 
@@ -5468,7 +5451,7 @@ public class FinancialTransactionController implements Serializable {
 //
 //        return "/cashier/handover_receive_bill_print?faces-redirect=true";
 //    }
-    // </editor-fold>      
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="DepositFundBill">
     //Lawan
     public void addPaymentToFundDepositBill() {
@@ -5750,7 +5733,7 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/deposit_funds_print?faces-redirect=true";
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="WithdrawalFundBill">
     public String navigateToCreateNewFundWithdrawalBill() {
         prepareToAddNewWithdrawalProcessingBill();
@@ -5766,7 +5749,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     //Damith
-    // </editor-fold>  
+    // </editor-fold>
     public void calculateHandingOverValues() {
         // Map to store total amount for each payment method
         Map<PaymentMethod, Double> paymentMethodTotals = new HashMap<>();
@@ -5898,7 +5881,7 @@ public class FinancialTransactionController implements Serializable {
         this.selectedBill = selectedBill;
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     public List<Bill> getFundBillsForClosureBills() {
         return fundBillsForClosureBills;
     }

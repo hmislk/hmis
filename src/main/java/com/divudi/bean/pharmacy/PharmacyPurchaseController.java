@@ -562,6 +562,10 @@ public class PharmacyPurchaseController implements Serializable {
 
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
+            
+            double lastPurchaseRate = 0.0;
+            lastPurchaseRate = getPharmacyBean().getLastPurchaseRate(i.getItem());
+            
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
                 continue;
             }
@@ -591,7 +595,7 @@ public class PharmacyPurchaseController implements Serializable {
 
             tmpPh.setItemBatch(itemBatch);
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
-
+            tmpPh.setLastPurchaseRate(lastPurchaseRate);
             tmpPh.setStock(stock);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
 

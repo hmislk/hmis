@@ -5,7 +5,7 @@
  */
 package com.divudi.entity.pharmacy;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -56,8 +56,8 @@ public class UserStockContainer implements Serializable, RetirableEntity  {
 //    public void setBillType(BillType billType) {
 //        this.billType = billType;
 //    }
-    
-    
+
+
 
     public Long getId() {
         return id;
@@ -92,7 +92,7 @@ public class UserStockContainer implements Serializable, RetirableEntity  {
         return "com.divudi.entity.pharmacy.UserStockContainer[ id=" + id + " ]";
     }
 
- 
+
 
     public List<UserStock> getUserStocks() {
         return userStocks;
