@@ -5,7 +5,6 @@
  */
 package com.divudi.java;
 
-import com.divudi.bean.common.SessionController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
@@ -47,8 +46,6 @@ public class CommonFunctions {
         }
         return membershipNumber.replaceAll("[^\\d]", "");
     }
-
-    private SessionController sessionController;
 
     private static final String[] units = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"};
     private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
@@ -583,149 +580,19 @@ public class CommonFunctions {
         dateRange.setFromDate(from);
         dateRange.setToDate(to);
 
-        //System.err.println("From " + dateRange.getFromDate());
-        //System.err.println("To " + dateRange.getToDate());
         return dateRange;
     }
 
-    public static Map<String, String> getReplaceables(Bill b) {
-        Map<String, String> m = new HashMap<>();
-        if (b == null) {
-            return m;
-        }
-
-        if (b.getInsId() != null) {
-            m.put("{ins_id}", b.getInsId());
-        }
-
-        if (b.getDeptId() != null) {
-            m.put("{dept_id}", b.getDeptId());
-        }
-
-        if (b.getId() != null) {
-            m.put("{id}", b.getId() + "");
-        }
-
-        if (b.getDepartment() != null) {
-            m.put("{department}", b.getDepartment().getName());
-        }
-
-        if (b.getInstitution() != null) {
-            m.put("{institution}", b.getInstitution().getName());
-        }
-
-        if (b.getFromDepartment() != null) {
-            m.put("{from_department}", b.getFromDepartment().getName());
-        }
-
-        if (b.getFromInstitution() != null) {
-            m.put("{from_institution}", b.getFromInstitution().getName());
-        }
-
-        if (b.getToDepartment() != null) {
-            m.put("{to_department}", b.getToDepartment().getName());
-        }
-
-        if (b.getToInstitution() != null) {
-            m.put("{to_institution}", b.getToInstitution().getName());
-        }
-        DecimalFormat df = new DecimalFormat("0.00");
-
-        m.put("{grand_total}", df.format(b.getGrantTotal()));
-        m.put("{net_total}", df.format(b.getNetTotal()));
-        m.put("{discount}", df.format(b.getDiscount()));
-        m.put("{balance}", df.format(b.getBalance()));
-        m.put("{paid}", df.format(b.getPaidAmount()));
-
-        if (b.getBillDate() != null) {
-            m.put("{date}", formatDate(b.getBillDate(), "dd/MMMM/yyyy"));
-        }
-
-        if (b.getBillTime() != null) {
-            m.put("{time}", formatDate(b.getBillTime(), "hh:mm a"));
-        }
-
-        if (b.getCreater() != null) {
-            m.put("{user}", b.getCreater().getName());
-        }
-
-        if (b.getPatientEncounter() != null) {
-            Map<String, String> me = getReplaceables(b.getPatientEncounter());
-            me.forEach(m::putIfAbsent);
-        } else if (b.getPatient() != null) {
-            Map<String, String> mp = getReplaceables(b.getPatient());
-            mp.forEach(m::putIfAbsent);
-        }
-        return m;
-    }
-
-    public static List<String> extractPlaceholders(String input) {
+    public static List<String> extractPlaceholders(String htmlContent) {
         List<String> placeholders = new ArrayList<>();
-
-        // Check if the input is null or empty
-        if (input == null || input.isEmpty()) {
-            return placeholders; // Return an empty list if input is null or empty
+        if (htmlContent != null) {
+            Pattern pattern = Pattern.compile("\\{(.*?)\\}");
+            Matcher matcher = pattern.matcher(htmlContent);
+            while (matcher.find()) {
+                placeholders.add(matcher.group(1));
+            }
         }
-
-        // Adjusted pattern to include the double curly braces in the match
-        Pattern pattern = Pattern.compile("\\{\\{[^}]+\\}\\}");
-        Matcher matcher = pattern.matcher(input);
-
-        while (matcher.find()) {
-            placeholders.add(matcher.group()); // Add the entire placeholder including double braces
-        }
-
         return placeholders;
-    }
-
-    public static Map<String, String> getReplaceables(Patient p) {
-        Map<String, String> m = new HashMap<>();
-        if (p == null) {
-            return m;
-        }
-        m.put("{age}", p.getAge());
-        m.put("{phn}", p.getPhn());
-        if (p.getPerson() != null) {
-            m.put("{name}", p.getPerson().getName());
-            m.put("{sex}", p.getPerson().getSex().toString());
-            m.put("{phone}", p.getPerson().getPhone());
-            m.put("{address}", p.getPerson().getAddress());
-
-        }
-        return m;
-    }
-
-    public static Map<String, String> getReplaceables(PatientEncounter e) {
-        Map<String, String> m = new HashMap<>();
-        if (e == null) {
-            return m;
-        }
-        if (e.getBhtNo() != null) {
-            m.put("{bht}", e.getBhtNo());
-        }
-        if (e.getBhtNo() != null) {
-            m.put("{bht}", e.getBhtNo());
-        }
-        if (e.getDateOfAdmission() != null) {
-            m.put("{date_of_admission}", formatDate(e.getDateOfAdmission(), "dd/MMMM/yyyy"));
-        }
-        if (e.getDateOfDischarge() != null) {
-            m.put("{date_of_discharge}", formatDate(e.getDateOfDischarge(), "dd/MMMM/yyyy"));
-        }
-        if (e.getBhtNo() != null) {
-            m.put("{bht}", e.getBhtNo());
-        }
-        if (e.getOpdDoctor() != null) {
-            m.put("{opd_doctor}", e.getOpdDoctor().getPerson().getNameWithTitle());
-        }
-        if (e.getReferringDoctor() != null) {
-            m.put("{referring_doctor}", e.getReferringDoctor().getPerson().getNameWithTitle());
-        }
-        if (e.getPatient() != null) {
-            Map<String, String> p = getReplaceables(e.getPatient());
-            p.forEach(m::putIfAbsent);
-        }
-        return m;
     }
 
     public static String replaceText(Map<String, String> m, String template) {
@@ -744,7 +611,7 @@ public class CommonFunctions {
         if (date == null) {
             return dateString;
         }
-        if (pattern == null || pattern.trim().equals("")) {
+        if (pattern == null || pattern.trim().isEmpty()) {
             pattern = "dd-MM-yyyy";
         }
         try {
@@ -757,7 +624,7 @@ public class CommonFunctions {
     }
 
     public static Date parseDate(String dateInString, String format) {
-        if (format == null || format.trim().equals("")) {
+        if (format == null || format.trim().isEmpty()) {
             format = "dd MM yyyy";
         }
         SimpleDateFormat formatter = new SimpleDateFormat(format, Locale.ENGLISH);
@@ -1060,13 +927,4 @@ public class CommonFunctions {
         // Convert Double to String
         return String.valueOf(value);
     }
-
-    public SessionController getSessionController() {
-        return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
-    }
-
 }
