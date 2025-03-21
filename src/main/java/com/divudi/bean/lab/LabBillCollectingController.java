@@ -19,7 +19,6 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
-
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -430,7 +429,7 @@ public class LabBillCollectingController implements Serializable {
 
     private Bill saveBill(Department bt, BilledBill temp) {
 
-        //getCurrent().setCashBalance(cashBalance); 
+        //getCurrent().setCashBalance(cashBalance);
         //getCurrent().setCashPaid(cashPaid);
         //  temp.setBillType(bt);
         temp.setBillType(BillType.LabBill);
@@ -471,19 +470,19 @@ public class LabBillCollectingController implements Serializable {
     }
 
     private boolean errorCheck() {
-        if (getPatientTabId().toString().equals("tabNewPt")) {
+        if (getPatientTabId().equals("tabNewPt")) {
 
-            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
+            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().isEmpty() || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
                 JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
 
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
+            if (!Person.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
                 JsfUtil.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
 
-            if (getNewPatient().getPerson().getPhone().length() < 1) {
+            if (getNewPatient().getPerson().getPhone().isEmpty()) {
                 JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
                 return true;
             }

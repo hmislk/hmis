@@ -19,7 +19,6 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
 import com.divudi.service.StaffService;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
@@ -58,24 +57,10 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.FamilyMember;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.service.BillService;
@@ -677,7 +662,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 //        }
 //        return a;
 //    }
-//    
+//
     public List<Bill> completeOpdCreditPackageBatchBill(String qry) {
         System.out.println("completeOpdCreditPackageBatchBill");
         List<Bill> a = null;
@@ -747,7 +732,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
         return a;
     }
-    
+
     public List<Bill> completeInwardCreditCompanyPaymentBill(String qry) {
         System.out.println("completeInwardCreditCompanyPaymentBill");
         List<Bill> a = null;
@@ -2546,11 +2531,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     private boolean checkPatientAgeSex() {
         if (getPatientTabId().equals("tabNewPt")) {
-            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
+            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().isEmpty() || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
                 JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
+            if (!Person.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
                 JsfUtil.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
                 return true;
             }

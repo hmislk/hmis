@@ -513,7 +513,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private Prescription prescription;
     private boolean enableLabelPrintFromSaleView = false;
 
-    public void enableLabelPrint(Prescription p){
+    public void enableLabelPrint(Prescription p) {
         enableLabelPrintFromSaleView = true;
         this.prescription = p;
     }
@@ -530,7 +530,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 billItem.getPrescription().setComment(billItem.getInstructions());
             }
         }
-
 
     }
 
@@ -930,8 +929,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         return items;
     }
-
+@Deprecated
     public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
+        long startTime = System.nanoTime();
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
         }
@@ -976,7 +976,55 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        long endTime = System.nanoTime();
+        long executionTime = endTime - startTime;
+        System.out.println("Execution Old time: " + executionTime + " nanoseconds");
         return getStockFacade().findByJpql(sql, parameters, 20);
+    }
+
+    public List<Stock> completeAvailableStockOptimized(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        StringBuilder sql = new StringBuilder("SELECT i FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :query ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        return getStockFacade().findByJpql(sql.toString(), parameters, 20);
     }
 
     public void handleSelectAction() {
@@ -1741,10 +1789,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
 
-            if(tbi.getPrescription() != null){
-                if(tbi.getPrescription().getId() == null){
+            if (tbi.getPrescription() != null) {
+                if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
-                }else{
+                } else {
                     prescriptionFacade.edit(tbi.getPrescription());
                 }
             }
@@ -1815,10 +1863,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 getBillItemFacade().create(newBil);
             }
 
-            if(tbi.getPrescription() != null){
-                if(tbi.getPrescription().getId() == null){
+            if (tbi.getPrescription() != null) {
+                if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
-                }else{
+                } else {
                     prescriptionFacade.edit(tbi.getPrescription());
                 }
 
@@ -3431,7 +3479,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public Prescription getPrescription() {
         if (prescription == null) {
             prescription = new Prescription();
-}
+        }
         return prescription;
     }
 
