@@ -3,7 +3,7 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-package com.divudi.bean.common;
+package com.divudi.java;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
  * @author pdhs
  */
 public class TimeUtils {
-
     public static String millisToYearsAndDates(long duration) {
         String res;
         long days = TimeUnit.MILLISECONDS.toDays(duration);
@@ -32,5 +31,4 @@ public class TimeUtils {
         }
         return res;
     }
-
 }
