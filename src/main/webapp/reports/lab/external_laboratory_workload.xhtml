@@ -481,6 +481,11 @@
                                 <h:outputText value="#{row.rowValue}">
                                     <f:convertNumber pattern="#,##0.0"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportsController.bundle.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                         </p:dataTable>
                     </h:panelGroup>

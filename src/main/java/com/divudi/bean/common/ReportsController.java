@@ -3321,6 +3321,8 @@ public class ReportsController implements Serializable {
             bundle.calculateTotalByBillItemsNetTotal();
         } else {
             bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts);
+
+            bundle.calculateTotalByBillItemRowValues();
         }
     }
 
