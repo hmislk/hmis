@@ -3416,8 +3416,8 @@ public class ReportsController implements Serializable {
         }
 
         if (category != null) {
-            jpql += "AND billItem.item.department.id = :cat ";
-            parameters.put("cat", category.getId());
+            jpql += "AND billItem.item.category = :cat ";
+            parameters.put("cat", category);
         }
 
         if (investigation != null) {
@@ -3528,8 +3528,8 @@ public class ReportsController implements Serializable {
         }
 
         if (category != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
-            parameters.put("cat", category.getId());
+            jpql += "AND billItem.item.category = :cat ";
+            parameters.put("cat", category);
         }
 
         if (investigationCode != null) {
