@@ -167,6 +167,13 @@ public class InvestigationCategoryController implements Serializable {
         return items;
     }
 
+    public List<InvestigationCategory> getItemsWithServiceCategories() {
+        if (items == null) {
+            items = fillItemsWithServiceCategories();
+        }
+        return items;
+    }
+
     public List<InvestigationCategory> fillItems() {
         String jpql = "select c "
                 + " from InvestigationCategory c "
@@ -174,6 +181,14 @@ public class InvestigationCategoryController implements Serializable {
                 + " order by c.name";
         Map m = new HashMap();
         m.put("ret", false);
+        return getFacade().findByJpql(jpql, m);
+    }
+
+    public List<InvestigationCategory> fillItemsWithServiceCategories() {
+        String jpql = "SELECT c FROM Category c "
+                + "WHERE TYPE(c) IN (InvestigationCategory, ServiceCategory) "
+                + "ORDER BY c.name";
+        Map m = new HashMap();
         return getFacade().findByJpql(jpql, m);
     }
     

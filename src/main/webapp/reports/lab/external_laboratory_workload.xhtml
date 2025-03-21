@@ -14,8 +14,6 @@
             <h:form class="w-100">
                 <p:panel header="External Laboratory Workload Report" class="w-100">
                     <h:panelGrid columns="8" class="w-100 ">
-
-
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
                             <p:outputLabel value="From Date" class="m-3">
@@ -182,7 +180,7 @@
                                 value="#{reportsController.category}">
                             <f:selectItem itemLabel="Please select a Laboratory"/>
                             <f:selectItems
-                                    value="#{investigationCategoryController.items}"
+                                    value="#{investigationCategoryController.itemsWithServiceCategories}"
                                     var="cat"
                                     itemLabel="#{cat.name}"
                                     itemValue="#{cat}"/>
