@@ -10,6 +10,7 @@ import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
+import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
@@ -34,14 +35,18 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
+import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
+import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.Token;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
@@ -129,6 +134,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     BillItem editingBillItem;
     Double qty;
     Stock stock;
+    private Institution toInstitution;
 
     private Patient newPatient;
     private Patient searchedPatient;
@@ -142,7 +148,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     List<Item> itemsWithoutStocks;
     private List<Token> settledToken;
     /////////////////////////
-    //   PaymentScheme paymentScheme;
+    private PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
     double cashPaid;
     double netTotal;
@@ -193,6 +199,150 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
 
         }
+    }
+    
+    public void updateTotals(){
+        calculateAllRates();
+    }
+    
+    public void calculateAllRates() {
+        for (BillItem tbi : getPreBill().getBillItems()) {
+            calculateRates(tbi);
+//            calculateBillItemForEditing(tbi);
+        }
+        calculateTotals();
+    }
+    
+     public void calculateTotals() {
+        getPreBill().setTotal(0);
+        double netTotal = 0.0, grossTotal = 0.0, discountTotal = 0.0;
+        int index = 0;
+
+        for (BillItem b : getPreBill().getBillItems()) {
+            if (!b.isRetired()) {
+                b.setSearialNo(index++);
+                netTotal += b.getNetValue();
+                grossTotal += b.getGrossValue();
+                discountTotal += b.getDiscount();
+//                getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
+            }
+        }
+
+        getPreBill().setNetTotal(netTotal);
+        getPreBill().setTotal(grossTotal);
+        getPreBill().setGrantTotal(grossTotal);
+        getPreBill().setDiscount(discountTotal);
+        setNetTotal(getPreBill().getNetTotal());
+    }
+
+    public void calculateRates(BillItem bi) {
+        System.out.println("calculateRates = ");
+        PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
+        if (pharmBillItem != null && pharmBillItem.getStock() != null) {
+            ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
+            if (itemBatch != null) {
+                bi.setRate(itemBatch.getRetailsaleRate());
+            }
+            bi.setDiscountRate(calculateBillItemDiscountRate(bi));
+            bi.setNetRate(bi.getRate() - bi.getDiscountRate());
+
+            bi.setGrossValue(bi.getRate() * bi.getQty());
+            bi.setDiscount(bi.getDiscountRate() * bi.getQty());
+            bi.setNetValue(bi.getGrossValue() - bi.getDiscount());
+
+        }
+    }
+    
+    @Inject
+    private PriceMatrixController priceMatrixController;
+    
+    public double calculateBillItemDiscountRate(BillItem bi) {
+        System.out.println("calculateBillItemDiscountRate");
+        if (bi == null) {
+            return 0.0;
+        }
+        if (bi.getPharmaceuticalBillItem() == null) {
+            return 0.0;
+        }
+        if (bi.getPharmaceuticalBillItem().getStock() == null) {
+            return 0.0;
+        }
+        if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
+            return 0.0;
+        }
+        bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
+        double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
+        double discountRate = 0;
+        boolean discountAllowed = bi.getItem().isDiscountAllowed();
+        System.out.println("discountAllowed = " + discountAllowed);
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+        //MEMBERSHIPSCHEME DISCOUNT
+//        if (membershipScheme != null && discountAllowed) {
+//            PaymentMethod tpm = getPaymentMethod();
+//            if (tpm == null) {
+//                tpm = PaymentMethod.Cash;
+//            }
+//            PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
+//            if (priceMatrix == null) {
+//                return 0;
+//            } else {
+//                bi.setPriceMatrix(priceMatrix);
+//                return (retailRate * priceMatrix.getDiscountPercent()) / 100;
+//            }
+//        }
+//
+        //PAYMENTSCHEME DISCOUNT
+
+        System.out.println("getPaymentScheme() = " + getPaymentScheme());
+        if (getPaymentScheme() != null && discountAllowed) {
+            System.out.println("getPaymentMethod() = " + getPaymentMethod());
+            System.out.println("getPaymentScheme() = " + getPaymentScheme());
+            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment());
+            System.out.println("bi.getItem() = " + bi.getItem());
+            PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
+
+            System.err.println("priceMatrix = " + priceMatrix);
+            if (priceMatrix != null) {
+                bi.setPriceMatrix(priceMatrix);
+                discountRate = priceMatrix.getDiscountPercent();
+                System.out.println("discountRate = " + discountRate);
+            }
+
+            double dr;
+            dr = (retailRate * discountRate) / 100;
+            System.out.println("1 dr = " + dr);
+            return dr;
+
+        }
+
+        //PAYMENTMETHOD DISCOUNT
+        if (getPaymentMethod() != null && discountAllowed) {
+            PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getSessionController().getDepartment(), bi.getItem());
+
+            if (priceMatrix != null) {
+                bi.setPriceMatrix(priceMatrix);
+                discountRate = priceMatrix.getDiscountPercent();
+            }
+
+            double dr;
+            dr = (retailRate * discountRate) / 100;
+            System.out.println("2 dr = " + dr);
+            return dr;
+
+        }
+
+        //CREDIT COMPANY DISCOUNT
+        if (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
+            discountRate = toInstitution.getPharmacyDiscount();
+
+            double dr;
+            dr = (retailRate * discountRate) / 100;
+            System.out.println("3 dr = " + dr);
+            return dr;
+        }
+        System.out.println("no dr");
+        return 0;
+
     }
 
     public String toSettleReturn(Bill args) {
@@ -1340,6 +1490,30 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public PriceMatrixController getPriceMatrixController() {
+        return priceMatrixController;
+    }
+
+    public void setPriceMatrixController(PriceMatrixController priceMatrixController) {
+        this.priceMatrixController = priceMatrixController;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
     }
 
 }

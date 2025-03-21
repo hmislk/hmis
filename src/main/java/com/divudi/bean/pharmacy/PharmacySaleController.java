@@ -192,7 +192,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     Stock replacableStock;
     private List<ClinicalFindingValue> allergyListOfPatient;
 
-    PaymentScheme paymentScheme;
+    private PaymentScheme paymentScheme;
 
     int activeIndex;
 

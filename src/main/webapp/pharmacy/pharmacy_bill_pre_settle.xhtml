@@ -33,24 +33,32 @@
                                 <p:panel header="Pharmacy Retail Bill">
 
                                     <div class="row mb-4 d-flex align-items-center">
-                                        <div class="row"  style="overflow-x: auto; max-width: 100%">
-                                            <div class="col-3">
-                                                <h:outputLabel value="Select the Payment Method :" />
-                                            </div>
+                                        <div class="row"  style="overflow-x: auto; max-width: 100%">  
                                             <div class="col-3 d-flex">                                         
-                                                <p:selectOneMenu   
+                                                <p:selectOneMenu 
+                                                    
                                                     id="cmbPs"  
                                                     style="width: 100%"
                                                     value="#{pharmacyPreSettleController.preBill.paymentMethod}"  
-                                                    disabled="#{!sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
+                                                    disabled="#{!sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment}"> 
+                                                    <f:selectItem itemLabel="Select Payment"></f:selectItem>
                                                     <f:selectItems value="#{enumController.PaymentMethodsForPharmacyRetailSale()}" />
                                                     <p:ajax 
                                                         process="cmbPs" 
-                                                        update="creditCard cheque slip multiplePaymentMethods pBillDetails credit" 
+                                                        update="creditCard cheque slip multiplePaymentMethods pBillDetails credit discountScheme" 
                                                         event="change" />
                                                 </p:selectOneMenu>
 
                                             </div>
+                                            
+                                             <p:selectOneMenu style="width: 15em;" class="mx-2 my-1" id="discountScheme"  value="#{pharmacyPreSettleController.paymentScheme}">   
+                                                    <f:selectItem itemLabel="Discount Scheme"/>
+                                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                    <p:ajax process="@this pay " 
+                                                            update="creditCard cheque slip multiplePaymentMethods pBillDetails credit" 
+                                                            event="change"  
+                                                            listener="#{pharmacyPreSettleController.updateTotals()}"/>
+                                                </p:selectOneMenu>
 
                                             <div class="col-5 d-flex mx-1">
                                                 <p:commandButton ajax= "false"
@@ -85,7 +93,7 @@
                                                                 class="w-100 -mx-2"
                                                                 inputStyleClass="form-control"
                                                                 forceSelection="true"
-                                                                value="#{pharmacySaleController.toInstitution}"  
+                                                                value="#{pharmacyPreSettleController.toInstitution}"  
                                                                 completeMethod="#{institutionController.completeCreditCompany}" 
                                                                 var="ix"
                                                                 minQueryLength="2"
@@ -96,7 +104,7 @@
 
                                                                 <f:ajax  
                                                                     event="itemSelect" 
-                                                                    listener="#{pharmacySaleController.calTotal()}"
+                                                                    listener="#{pharmacyPreSettleController.updateTotals()}"
                                                                     execute="@this" 
                                                                     render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"/>
                                                             </p:autoComplete> 
