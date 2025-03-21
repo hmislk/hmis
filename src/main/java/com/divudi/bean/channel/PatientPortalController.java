@@ -1,8 +1,5 @@
-package com.divudi.data.channel;
+package com.divudi.bean.channel;
 
-import com.divudi.bean.channel.BookingController;
-import com.divudi.bean.channel.BookingControllerViewScope;
-import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PaymentGatewayController;

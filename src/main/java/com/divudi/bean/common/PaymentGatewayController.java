@@ -2,8 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.Patient;
 import com.divudi.entity.channel.SessionInstance;
-import com.divudi.bean.common.CommonController;
-import com.divudi.data.channel.PatientPortalController;
+import com.divudi.bean.channel.PatientPortalController;
 import com.divudi.entity.PaymentGatewayTransaction;
 import com.divudi.facade.PaymentGatewayTransactionFacade;
 import java.io.IOException;
@@ -201,27 +200,27 @@ public class PaymentGatewayController implements Serializable {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("session.id");
     }
-    
+
     private String extractTransactionId(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("transaction%5B1%5D.transaction.receipt");
     }
-    
+
     private String extractPaidAmount(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("totalCapturedAmount");
     }
-    
+
     private String extractPaidDate(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("lastUpdatedTime");
     }
-    
+
     private String extractCardNo(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("sourceOfFunds.provided.card.number");
     }
-    
+
     private String extractCardType(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("sourceOfFunds.provided.card.brand");
