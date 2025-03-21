@@ -665,7 +665,7 @@ public class ReportItem implements Serializable {
     }
 
     public String getCode() {
-        if (code == null || code.trim().equals("")) {
+        if (code == null || code.trim().isEmpty()) {
             code = CommonFunctions.nameToCode(name);
         }
         return code;

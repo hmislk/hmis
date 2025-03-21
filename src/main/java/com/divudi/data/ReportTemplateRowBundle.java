@@ -1,28 +1,9 @@
 package com.divudi.data;
 
-import com.divudi.bean.common.SessionController;
-
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.IOU;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.PatientPoints;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import static com.divudi.data.PaymentMethod.Voucher;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
-
 import com.divudi.entity.*;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
