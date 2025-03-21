@@ -1231,6 +1231,20 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalByBillItemRowValues() {
+        total = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getRowValue() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getRowValue());
+                total += amount;
+            }
+        }
+    }
+
     public void calculateTotalHospitalFeeByBillItems() {
         hospitalTotal = 0.0;
 

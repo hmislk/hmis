@@ -3321,6 +3321,8 @@ public class ReportsController implements Serializable {
             bundle.calculateTotalByBillItemsNetTotal();
         } else {
             bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts);
+
+            bundle.calculateTotalByBillItemRowValues();
         }
     }
 
@@ -3414,8 +3416,8 @@ public class ReportsController implements Serializable {
         }
 
         if (category != null) {
-            jpql += "AND billItem.item.department.id = :cat ";
-            parameters.put("cat", category.getId());
+            jpql += "AND billItem.item.category = :cat ";
+            parameters.put("cat", category);
         }
 
         if (investigation != null) {
@@ -3433,12 +3435,31 @@ public class ReportsController implements Serializable {
         System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
+        removeCancelledNonInvestigationBills(rs);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
         b.createRowValuesFromBillItems();
         b.calculateTotalsWithCredit();
         return b;
+    }
+
+    private void removeCancelledNonInvestigationBills(final List<ReportTemplateRow> rs) {
+        List<BillTypeAtomic> cancelAndRefundBillTypeAtomics = cancelAndRefundBillTypeAtomics();
+
+        Iterator<ReportTemplateRow> iterator = rs.iterator();
+
+        while (iterator.hasNext()) {
+            ReportTemplateRow row = iterator.next();
+            BillItem bi = row.getBillItem();
+            Bill b = bi.getBill();
+
+            if (cancelAndRefundBillTypeAtomics.contains(b.getBillTypeAtomic())) {
+                if (bi.getReferanceBillItem() == null || bi.getReferanceBillItem().getPatientInvestigation() == null) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadSummaryBillItems(List<BillTypeAtomic> bts) {
@@ -3507,8 +3528,8 @@ public class ReportsController implements Serializable {
         }
 
         if (category != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
-            parameters.put("cat", category.getId());
+            jpql += "AND billItem.item.category = :cat ";
+            parameters.put("cat", category);
         }
 
         if (investigationCode != null) {
@@ -3522,6 +3543,7 @@ public class ReportsController implements Serializable {
         System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        removeCancelledNonInvestigationBills(rs);
         createSummaryRows(rs);
         rs.removeIf(row -> row.getRowValue() == 0.0);
 
