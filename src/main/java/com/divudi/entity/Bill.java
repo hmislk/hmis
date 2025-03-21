@@ -20,11 +20,7 @@ import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,6 +38,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+
+import static com.divudi.java.CommonFunctions.formatDate;
 
 /**
  * @author buddhika
@@ -2681,4 +2679,74 @@ public class Bill implements Serializable, RetirableEntity {
         this.tmpComments = tmpComments;
     }
 
+    public static Map<String, String> toMap(Bill b) {
+        Map<String, String> m = new HashMap<>();
+        if (b == null) {
+            return m;
+        }
+
+        if (b.getInsId() != null) {
+            m.put("{ins_id}", b.getInsId());
+        }
+
+        if (b.getDeptId() != null) {
+            m.put("{dept_id}", b.getDeptId());
+        }
+
+        if (b.getId() != null) {
+            m.put("{id}", b.getId() + "");
+        }
+
+        if (b.getDepartment() != null) {
+            m.put("{department}", b.getDepartment().getName());
+        }
+
+        if (b.getInstitution() != null) {
+            m.put("{institution}", b.getInstitution().getName());
+        }
+
+        if (b.getFromDepartment() != null) {
+            m.put("{from_department}", b.getFromDepartment().getName());
+        }
+
+        if (b.getFromInstitution() != null) {
+            m.put("{from_institution}", b.getFromInstitution().getName());
+        }
+
+        if (b.getToDepartment() != null) {
+            m.put("{to_department}", b.getToDepartment().getName());
+        }
+
+        if (b.getToInstitution() != null) {
+            m.put("{to_institution}", b.getToInstitution().getName());
+        }
+        DecimalFormat df = new DecimalFormat("0.00");
+
+        m.put("{grand_total}", df.format(b.getGrantTotal()));
+        m.put("{net_total}", df.format(b.getNetTotal()));
+        m.put("{discount}", df.format(b.getDiscount()));
+        m.put("{balance}", df.format(b.getBalance()));
+        m.put("{paid}", df.format(b.getPaidAmount()));
+
+        if (b.getBillDate() != null) {
+            m.put("{date}", formatDate(b.getBillDate(), "dd/MMMM/yyyy"));
+        }
+
+        if (b.getBillTime() != null) {
+            m.put("{time}", formatDate(b.getBillTime(), "hh:mm a"));
+        }
+
+        if (b.getCreater() != null) {
+            m.put("{user}", b.getCreater().getName());
+        }
+
+        if (b.getPatientEncounter() != null) {
+            Map<String, String> me = PatientEncounter.toMap(b.getPatientEncounter());
+            me.forEach(m::putIfAbsent);
+        } else if (b.getPatient() != null) {
+            Map<String, String> mp = Patient.toMap(b.getPatient());
+            mp.forEach(m::putIfAbsent);
+        }
+        return m;
+    }
 }

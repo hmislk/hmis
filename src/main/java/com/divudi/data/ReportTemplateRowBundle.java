@@ -248,7 +248,6 @@ public class ReportTemplateRowBundle implements Serializable {
         hasOnlineSettlementTransaction = false;
     }
 
-
     public void collectDepartments() {
         Set<Department> uniqueDepartments = new HashSet<>();
         if (bundles != null) {
@@ -2575,40 +2574,46 @@ public class ReportTemplateRowBundle implements Serializable {
         Collections.sort(bundles, new Comparator<ReportTemplateRowBundle>() {
             @Override
             public int compare(ReportTemplateRowBundle b1, ReportTemplateRowBundle b2) {
+                if (b1 == null || b2 == null) {
+                    return 0;
+                }
+
                 // Compare by Date
+                if (b1.getDate() == null || b2.getDate() == null) {
+                    return 0;
+                }
                 int dateCompare = b1.getDate().compareTo(b2.getDate());
                 if (dateCompare != 0) {
                     return dateCompare;
                 }
 
                 // Compare by Institution Name
-                String institution1 = b1.getDepartment().getInstitution().getName();
-                String institution2 = b2.getDepartment().getInstitution().getName();
+                String institution1 = (b1.getDepartment() != null && b1.getDepartment().getInstitution() != null) ? b1.getDepartment().getInstitution().getName() : "";
+                String institution2 = (b2.getDepartment() != null && b2.getDepartment().getInstitution() != null) ? b2.getDepartment().getInstitution().getName() : "";
                 int institutionCompare = institution1.compareTo(institution2);
                 if (institutionCompare != 0) {
                     return institutionCompare;
                 }
 
                 // Compare by Site Name
-                String site1 = b1.getDepartment().getSite().getName();
-                String site2 = b2.getDepartment().getSite().getName();
+                String site1 = (b1.getDepartment() != null && b1.getDepartment().getSite() != null) ? b1.getDepartment().getSite().getName() : "";
+                String site2 = (b2.getDepartment() != null && b2.getDepartment().getSite() != null) ? b2.getDepartment().getSite().getName() : "";
                 int siteCompare = site1.compareTo(site2);
                 if (siteCompare != 0) {
                     return siteCompare;
                 }
 
                 // Compare by Department Name
-                String department1 = b1.getDepartment().getName();
-                String department2 = b2.getDepartment().getName();
+                String department1 = (b1.getDepartment() != null) ? b1.getDepartment().getName() : "";
+                String department2 = (b2.getDepartment() != null) ? b2.getDepartment().getName() : "";
                 int departmentCompare = department1.compareTo(department2);
                 if (departmentCompare != 0) {
                     return departmentCompare;
                 }
 
                 // Compare by Type (If applicable)
-                // Assuming there is a 'type' field to be compared as a String or Enum
-                String type1 = b1.getBundleType(); // Adjust this depending on how type is defined
-                String type2 = b2.getBundleType(); // Adjust this depending on how type is defined
+                String type1 = (b1.getBundleType() != null) ? b1.getBundleType() : "";
+                String type2 = (b2.getBundleType() != null) ? b2.getBundleType() : "";
                 return type1.compareTo(type2);
             }
         });

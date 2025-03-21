@@ -24,7 +24,6 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
@@ -2025,11 +2024,11 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
     }
 
     private boolean checkPatientAgeSex() {
-        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().isEmpty() || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
             JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
+        if (!Person.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
             JsfUtil.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
             return true;
         }
