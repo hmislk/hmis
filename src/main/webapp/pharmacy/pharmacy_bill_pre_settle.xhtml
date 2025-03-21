@@ -27,8 +27,6 @@
                         </f:facet>
 
                         <div class="row">
-
-
                             <div class="col-6">
                                 <p:panel header="Pharmacy Retail Bill">
 
@@ -36,7 +34,7 @@
                                         <div class="row"  style="overflow-x: auto; max-width: 100%">  
                                             <div class="col-3 d-flex">                                         
                                                 <p:selectOneMenu 
-                                                    
+
                                                     id="cmbPs"  
                                                     style="width: 100%"
                                                     value="#{pharmacyPreSettleController.preBill.paymentMethod}"  
@@ -50,22 +48,22 @@
                                                 </p:selectOneMenu>
 
                                             </div>
-                                            
-                                             <p:selectOneMenu style="width: 15em;" class="mx-2 my-1" id="discountScheme"  value="#{pharmacyPreSettleController.paymentScheme}">   
-                                                    <f:selectItem itemLabel="Discount Scheme"/>
-                                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                    <p:ajax process="@this pay " 
-                                                            update="creditCard cheque slip multiplePaymentMethods pBillDetails credit" 
-                                                            event="change"  
-                                                            listener="#{pharmacyPreSettleController.updateTotals()}"/>
-                                                </p:selectOneMenu>
+
+                                            <p:selectOneMenu style="width: 15em;" class="mx-2 my-1" id="discountScheme"  value="#{pharmacyPreSettleController.paymentScheme}">   
+                                                <f:selectItem itemLabel="Discount Scheme"/>
+                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                <p:ajax process="@this pay " 
+                                                        update="creditCard cheque slip multiplePaymentMethods pBillDetails credit" 
+                                                        event="change"  
+                                                        listener="#{pharmacyPreSettleController.updateTotals()}"/>
+                                            </p:selectOneMenu>
 
                                             <div class="col-5 d-flex mx-1">
                                                 <p:commandButton ajax= "false"
                                                                  value="Settle and Accept Payment"
                                                                  id="settle"
                                                                  style="width: 100%"
-                                                                 class="ui-button-success p-1"
+                                                                 class="ui-button-success"
                                                                  icon="fa-solid fa-check"
                                                                  action="#{pharmacyPreSettleController.settleBillWithPay2}" />
 
@@ -197,15 +195,25 @@
                                             <h:outputLabel value="Bill No " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.deptId}" ></h:outputLabel>
-                                            <h:outputLabel value="Total " ></h:outputLabel>
+                                            <h:outputLabel value="Bill Date " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.total}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                            <h:outputLabel value="Discount " ></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.createdAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Bill Time " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.discount}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                            <h:outputLabel value="Net Total " ></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.createdAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Billed By " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.netTotal}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.creater.name}" ></h:outputLabel>
+                                            <h:outputLabel value="Reffered By " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.referredBy}" ></h:outputLabel>
+                                            <h:outputLabel value="Comment " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.comments}" ></h:outputLabel>
                                             <div style="height: 155px">
 
                                             </div>
