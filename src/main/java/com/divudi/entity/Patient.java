@@ -7,6 +7,8 @@ package com.divudi.entity;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -640,4 +642,20 @@ public class Patient implements Serializable, RetirableEntity {
         this.patientMobileNumber = patientMobileNumber;
     }
 
+    public static Map<String, String> toMap(Patient p) {
+        Map<String, String> m = new HashMap<>();
+        if (p == null) {
+            return m;
+        }
+        m.put("{age}", p.getAge());
+        m.put("{phn}", p.getPhn());
+        if (p.getPerson() != null) {
+            m.put("{name}", p.getPerson().getName());
+            m.put("{sex}", p.getPerson().getSex().toString());
+            m.put("{phone}", p.getPerson().getPhone());
+            m.put("{address}", p.getPerson().getAddress());
+
+        }
+        return m;
+    }
 }
