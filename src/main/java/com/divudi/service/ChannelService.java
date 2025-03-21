@@ -5,28 +5,13 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.ApiKeyType;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -83,7 +68,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
-import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
@@ -405,7 +389,7 @@ public class ChannelService {
 //        fee.getFeeType();
 //        fee.getName();
     }
-    
+
      public Map getLocalFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss) {
 
         String sql = "Select fee From ItemFee fee "
@@ -434,7 +418,7 @@ public class ChannelService {
         fees.put("hosFee", hosFee);
 
         return fees;
-        
+
      }
 
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
@@ -501,7 +485,7 @@ public class ChannelService {
 //        } else if (savingBill.getBillType() == BillType.ChannelStaff) {
 //            savingBill.setBalance(0.0);
 //            savingBillSession.setPaidBillSession(savingBillSession);
-//        } 
+//        }
 //        if (referredBy != null) {
 //            savingBill.setReferredBy(referredBy);
 //        }
@@ -987,7 +971,7 @@ public class ChannelService {
         cb.setDeptId(deptId);
         getBillFacade().create(cb);
         cb.setPaymentMethod(bill.getPaymentMethod());
-        
+
         createPaymentForCancellations(cb, cb.getPaymentMethod());
 
 //        if (bill.getPaymentMethod() == PaymentMethod.Agent) {
@@ -1001,7 +985,7 @@ public class ChannelService {
         getBillFacade().edit(cb);
         return cb;
     }
-       
+
      public List<Payment> createPaymentForChannelAppoinmentCancellation(Bill cancellationBill, PaymentMethod cancelPaymentMethod,PaymentMethodData paymentMethodData, SessionController loggedSession) {
         List<Payment> ps = new ArrayList<>();
         if (cancelPaymentMethod == null) {
@@ -1255,7 +1239,7 @@ public class ChannelService {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", new Date());
         }
-//         
+//
 //        if(fromDate != null){
 //            jpql.append(" and i.sessionDate >= :fd");
 //            m.put("fd", fromDate);
@@ -1350,7 +1334,7 @@ public class ChannelService {
             m.put("sd", sessionDate);
             // System.out.println(sessionDate);
         }
-//         
+//
 //        if(fromDate != null){
 //            jpql.append(" and i.sessionDate >= :fd");
 //            m.put("fd", fromDate);
@@ -1402,7 +1386,7 @@ public class ChannelService {
         return paidBill;
         // drawerController.updateDrawerForIns(p);
     }
-    
+
     public Payment createPaymentForCancellations(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -1418,8 +1402,8 @@ public class ChannelService {
         }
         return p;
     }
-    
-   
+
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         Payment p = new Payment();

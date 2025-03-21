@@ -6,13 +6,11 @@
 package com.divudi.ws.finance;
 
 import com.divudi.bean.common.ApiKeyController;
-import com.divudi.bean.common.AuthenticateController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
-
 import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -69,12 +67,8 @@ public class Qb {
     @EJB
     private BillFeeFacade billFeeFacade;
 
-    private CommonFunctions commonFunctions;
-
     @Inject
     private CommonController commonController;
-    @Inject
-    AuthenticateController authenticateController;
     @Inject
     ApiKeyController apiKeyController;
 
@@ -3917,7 +3911,7 @@ public class Qb {
                 map.put("bill_patient_name", billObjects.get(0).getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", billObjects.get(0).getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", billObjects.get(0).getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", commonController.getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
+                map.put("bill_session_date", CommonController.getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
                 map.put("bill_session_start_time", commonController.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
                 map.put("bill_created_at", commonController.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
                 map.put("bill_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal()));
@@ -3950,8 +3944,8 @@ public class Qb {
         }
 
         m.put("id", agentId);
-        m.put("fd", commonFunctions.getStartOfDay(fromDate));
-        m.put("td", commonFunctions.getEndOfDay(toDate));
+        m.put("fd", CommonFunctions.getStartOfDay(fromDate));
+        m.put("td", CommonFunctions.getEndOfDay(toDate));
         billObjects = billSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         for (BillSession o : billObjects) {
