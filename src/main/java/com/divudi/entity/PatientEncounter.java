@@ -14,10 +14,7 @@ import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.inward.PatientRoom;
 import java.io.Serializable;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -32,6 +29,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+
+import static com.divudi.java.CommonFunctions.formatDate;
 
 /**
  *
@@ -1038,6 +1037,36 @@ public class PatientEncounter implements Serializable, RetirableEntity {
         this.convertedToAnotherEncounter = convertedToAnotherEncounter;
     }
 
-
-
+    public static Map<String, String> toMap(PatientEncounter e) {
+        Map<String, String> m = new HashMap<>();
+        if (e == null) {
+            return m;
+        }
+        if (e.getBhtNo() != null) {
+            m.put("{bht}", e.getBhtNo());
+        }
+        if (e.getBhtNo() != null) {
+            m.put("{bht}", e.getBhtNo());
+        }
+        if (e.getDateOfAdmission() != null) {
+            m.put("{date_of_admission}", formatDate(e.getDateOfAdmission(), "dd/MMMM/yyyy"));
+        }
+        if (e.getDateOfDischarge() != null) {
+            m.put("{date_of_discharge}", formatDate(e.getDateOfDischarge(), "dd/MMMM/yyyy"));
+        }
+        if (e.getBhtNo() != null) {
+            m.put("{bht}", e.getBhtNo());
+        }
+        if (e.getOpdDoctor() != null) {
+            m.put("{opd_doctor}", e.getOpdDoctor().getPerson().getNameWithTitle());
+        }
+        if (e.getReferringDoctor() != null) {
+            m.put("{referring_doctor}", e.getReferringDoctor().getPerson().getNameWithTitle());
+        }
+        if (e.getPatient() != null) {
+            Map<String, String> p = Patient.toMap(e.getPatient());
+            p.forEach(m::putIfAbsent);
+        }
+        return m;
+    }
 }
