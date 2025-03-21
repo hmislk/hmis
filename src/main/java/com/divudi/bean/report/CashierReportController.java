@@ -130,6 +130,14 @@ public class CashierReportController implements Serializable {
         recreteModal();
     }
 
+
+  
+    public void init() {
+        // Set the current cashier to the logged-in user
+        currentCashier = sessionController.getLoggedUser();
+        // ... rest of initialization code ...
+    }
+
     public String navigateToDepartmentAllCashierReport() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
