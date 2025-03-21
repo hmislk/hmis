@@ -426,7 +426,8 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Recieved By" width="5rem">
-                                <h:outputText value="#{row.billItem.patientInvestigation.creater.webUserPerson.name}"/>
+                                <h:outputText
+                                        value="#{row.billItem.patientInvestigation.sampleCollectedBy.webUserPerson.name}"/>
                             </p:column>
                             <p:column headerText="Remarks" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.comments}"/>
