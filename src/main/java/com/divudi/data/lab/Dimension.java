@@ -158,7 +158,6 @@ public class Dimension {
                     analyzerMessageSubtype = MessageSubtype.ConversationalPollBusy;
                 }
             }
-            return;
         } else if (analyzerMessageType == MessageType.RequestAcceptance) {
             if (requestAcceptanceStatus.equals("A")) {
                 analyzerMessageSubtype = MessageSubtype.RequestAcceptanceSuccess;
@@ -174,7 +173,6 @@ public class Dimension {
             createNoSampleRequestMessage();
         } else if (analyzerMessageSubtype == MessageSubtype.ConversationalPollBusy) {
             createNoSampleRequestMessage();
-            return;
         } else if (analyzerMessageSubtype == MessageSubtype.ConversationalPollReady) {
             if (limsHasSamplesToSend) {
 //                toDeleteSampleRequest = false;
@@ -182,7 +180,6 @@ public class Dimension {
             } else {
                 createNoSampleRequestMessage();
             }
-            return;
         }
     }
 
@@ -193,7 +190,6 @@ public class Dimension {
         } else {
             createNoSampleRequestMessage();
         }
-        return;
     }
 
     private void createNoSampleRequestMessage() {
@@ -381,17 +377,17 @@ public class Dimension {
 //                //System.out.println("b = " + b);
             }
         }
-        String temStr = "";
+        StringBuilder temStr = new StringBuilder();
         Integer i = 0;
         for (byte b : temBytes) {
             if (b == 28) {
-                requestFields.put(i, temStr);
+                requestFields.put(i, temStr.toString());
 //                //System.out.println("temStr = " + temStr);
                 i++;
-                temStr = new String();
+                temStr = new StringBuilder();
             } else {
                 char c = (char) b;
-                temStr += c;
+                temStr.append(c);
             }
         }
         fieldCount = i;

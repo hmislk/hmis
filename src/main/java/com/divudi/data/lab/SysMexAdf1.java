@@ -42,14 +42,10 @@ public class SysMexAdf1 {
     private long sampleId;
 
     public boolean isCorrectReport() {
-        boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
             return false;
         }
-        if (bytes.size() != 191) {
-            return false;
-        }
-       return true;
+        return bytes.size() == 191;
     }
 
     private void textToByteArraySeperatedByPlus() {
@@ -105,7 +101,7 @@ public class SysMexAdf1 {
     }
 
     private String round(double value, int places) {
-        String returnVal = "";
+        String returnVal;
         if (places == 0) {
             returnVal = ((long) value) + "";
         } else if (places < 0) {
@@ -122,11 +118,11 @@ public class SysMexAdf1 {
     }
 
     private Double findValue(int from, int to, int decimals) {
-        Double val = null;
+        Double val;
 //        //System.out.println("from = " + from);
 //        //System.out.println("to = " + to);
 
-        String display = "";
+        StringBuilder display = new StringBuilder();
         for (int i = from; i < to + 1; i++) {
 //            //System.out.println("i = " + i);
             int temN;
@@ -136,29 +132,21 @@ public class SysMexAdf1 {
                 temN = 0;
             }
 
-            display += (char) temN + "";
+            display.append((char) temN);
         }
 
-        if (decimals
-                > 0) {
+        if (decimals > 0) {
             String wn = display.substring(0, display.length() - decimals);
-            String fn = display.substring(display.length() - decimals, display.length());
-            display = wn + "." + fn;
+            String fn = display.substring(display.length() - decimals);
+            display = new StringBuilder(wn + "." + fn);
             try {
-                val = Double.parseDouble(display);
-            } catch (Exception e) {
-                val = null;
-            }
-        } else if (decimals
-                > 0) {
-            try {
-                val = Double.parseDouble(display);
+                val = Double.parseDouble(display.toString());
             } catch (Exception e) {
                 val = null;
             }
         } else {
             try {
-                val = Double.parseDouble(display);
+                val = Double.parseDouble(display.toString());
                 val = val * Math.pow(10, Math.abs(decimals));
             } catch (Exception e) {
                 val = null;
@@ -168,13 +156,13 @@ public class SysMexAdf1 {
     }
 
     private String findStringValue(int from, int to) {
-        String display = "";
+        StringBuilder display = new StringBuilder();
         for (int i = from; i < to + 1; i++) {
 //            //System.out.println("i = " + i);
             int temN = bytes.get(i);
-            display += (char) temN + "";
+            display.append((char) temN);
         }
-        return display;
+        return display.toString();
     }
 
     public int getLengthOfMessage() {
@@ -331,7 +319,7 @@ public class SysMexAdf1 {
         this.sampleId = sampleId;
     }
 
-    
+
     public String getInputStringBytesPlusSeperated() {
         return inputStringBytesPlusSeperated;
     }
@@ -349,5 +337,5 @@ public class SysMexAdf1 {
         this.inputStringCharactors = inputStringCharactors;
         textToByteArrayByCharactors();
     }
-   
+
 }
