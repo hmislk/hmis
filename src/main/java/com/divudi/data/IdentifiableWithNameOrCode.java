@@ -11,10 +11,10 @@ package com.divudi.data;
  */
 public interface IdentifiableWithNameOrCode {
 
-    public String getName();
+    String getName();
 
-    public String getCode();
-    
-    
-    
+    String getCode();
+
+
+
 }
