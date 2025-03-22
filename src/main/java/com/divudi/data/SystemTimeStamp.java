@@ -33,19 +33,11 @@ public class SystemTimeStamp {
     }
 
     public boolean checkDate() {
-        if (year == null || month == null || day == null) {
-            return true;
-        }
-
-        return false;
+        return year == null || month == null || day == null;
     }
 
     public boolean checkHour() {
-        if (hour == null) {
-            return true;
-        }
-
-        return false;
+        return hour == null;
     }
 
     private void processTime() {
