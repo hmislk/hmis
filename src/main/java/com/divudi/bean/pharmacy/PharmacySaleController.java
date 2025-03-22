@@ -25,6 +25,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.BooleanMessage;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -78,6 +79,7 @@ import com.divudi.facade.TokenFacade;
 import com.divudi.facade.UserStockContainerFacade;
 import com.divudi.facade.UserStockFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.DiscountSchemeValidationService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -141,6 +143,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 ////////////////////////
     @EJB
     private BillFacade billFacade;
+    @EJB
+    DiscountSchemeValidationService discountSchemeValidationService;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -944,7 +948,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         return items;
     }
-@Deprecated
+
+    @Deprecated
     public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
         long startTime = System.nanoTime();
         if (qry == null || qry.trim().isEmpty()) {
@@ -1463,15 +1468,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             double thisTimeAddingQty = addBillItemSingleItem();
             addedQty += thisTimeAddingQty;
             remainingQty = remainingQty - thisTimeAddingQty;
-            
-            
+
             if (remainingQty <= 0) {
                 return;
             }
         }
-        if(addedQty < requestedQty){
+        if (addedQty < requestedQty) {
             errorMessage = "Quantity is not Enough...!";
-            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) +" is Available form the Requested Quantity");
+            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) + " is Available form the Requested Quantity");
         }
 
     }
@@ -2282,20 +2286,35 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public void settleBillWithPay() {
         editingQty = null;
 
+        if (billSettlingStarted) {
+            return;
+        }
+
+        billSettlingStarted = true;
         if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
             if (getPaymentScheme() == null) {
+                billSettlingStarted = false;
                 JsfUtil.addErrorMessage("Please select Payment Scheme");
                 return;
             }
         }
 
         if (getPaymentMethod() == null) {
+            billSettlingStarted = false;
             JsfUtil.addErrorMessage("Please select Payment Method");
             return;
         }
 
         if (getPreBill().getBillItems().isEmpty()) {
+            billSettlingStarted = false;
             JsfUtil.addErrorMessage("Please add items to the bill.");
+            return;
+        }
+
+        BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme, getPaymentMethodData());
+        if (!discountSchemeValidation.isFlag()) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return;
         }
 
@@ -2310,19 +2329,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     || getPatient().getPerson().getName() == null
                     || getPatient().getPerson().getName().trim().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Select a Patient");
+                billSettlingStarted = false;
                 return;
             }
         }
 
-        
-
-        
         if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
             if (allergyListOfPatient == null) {
                 allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
             }
             if (!pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient).isEmpty()) {
                 JsfUtil.addErrorMessage(pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient));
+                billSettlingStarted = false;
                 return;
             }
         }
@@ -2333,6 +2351,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     setZeroToQty(bi);
 //                    onEditCalculation(bi);
                     JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+                    billSettlingStarted = false;
                     return;
                 }
                 ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
@@ -2340,6 +2359,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 if (bi.getQty() <= 0.0) {
                     ////System.out.println("bi.getQty() = " + bi.getQty());
                     JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
+                    billSettlingStarted = false;
                     return;
                 }
             }
@@ -2348,9 +2368,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         Patient pt = savePatient();
 
         if (errorCheckForSaleBill()) {
+            billSettlingStarted = false;
             return;
         }
         if (errorCheckOnPaymentMethod()) {
+            billSettlingStarted = false;
             return;
         }
 //        if (getPaymentMethod() == PaymentMethod.Credit) {
@@ -2477,7 +2499,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         resetAll();
-
+        billSettlingStarted = false;
         billPreview = true;
 
     }
@@ -3522,6 +3544,4 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.billSettlingStarted = billSettlingStarted;
     }
 
-    
-    
 }
