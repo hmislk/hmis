@@ -1,28 +1,9 @@
 package com.divudi.data;
 
-import com.divudi.bean.common.SessionController;
-
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.IOU;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.PatientPoints;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import static com.divudi.data.PaymentMethod.Voucher;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
-
 import com.divudi.entity.*;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -706,7 +686,7 @@ public class ReportTemplateRowBundle implements Serializable {
         total = 0.0;
         grossTotal = 0.0;
         discount = 0.0;
-        count = 0l;
+        count = 0L;
         for (ReportTemplateRow r : getReportTemplateRows()) {
             grossTotal += r.getGrossTotal();
             discount += r.getDiscount();
@@ -1084,7 +1064,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBill().getNetTotal());
+                double amount = row.getBill().getNetTotal();
                 total += amount;
             }
         }
@@ -1097,7 +1077,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(isOutpatient ? row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal());
+                double amount = isOutpatient ? row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal();
                 total += amount;
             }
         }
@@ -1110,8 +1090,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem() == null) {
                     continue;
                 }
-                Double amount = safeDouble(isOutpatient ? row.getBillItem().getNetValue()
-                        : row.getBillItem().getNetValue());
+                double amount = row.getBillItem().getNetValue();
                 total += amount;
             }
         }
@@ -1125,8 +1104,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
 
-                Double amount = safeDouble(isOutpatient ? row.getBill().getNetTotal()
-                        : row.getBill().getNetTotal());
+                double amount = row.getBill().getNetTotal();
                 total += amount;
             }
         }
@@ -1139,7 +1117,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient());
+                double amount = isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
                 settledAmountByPatientsTotal += amount;
             }
         }
@@ -1152,7 +1130,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
+                double amount = isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
                 settledAmountBySponsorsTotal += amount;
             }
         }
@@ -1165,7 +1143,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(isOutpatient ? row.getBill().getBalance() : row.getBill().getPatientEncounter().getFinalBill().getBalance());
+                double amount = isOutpatient ? row.getBill().getBalance() : row.getBill().getPatientEncounter().getFinalBill().getBalance();
                 totalBalance += amount;
             }
         }
@@ -1178,7 +1156,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBill().getTotalHospitalFee());
+                double amount = row.getBill().getTotalHospitalFee();
                 total += amount;
             }
         }
@@ -1191,7 +1169,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem().getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBillItem().getDiscount());
+                double amount = row.getBillItem().getDiscount();
                 discount += amount;
             }
         }
@@ -1204,7 +1182,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBill().getDiscount());
+                double amount = row.getBill().getDiscount();
                 discount += amount;
             }
         }
@@ -1217,7 +1195,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBill().getTotalCenterFee());
+                double amount = row.getBill().getTotalCenterFee();
                 ccTotal += amount;
             }
         }
@@ -1231,7 +1209,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBillItem().getNetValue());
+                double amount = row.getBillItem().getNetValue();
                 total += amount;
             }
         }
@@ -1245,7 +1223,21 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBillItem().getNetValue());
+                double amount = row.getBillItem().getNetValue();
+                total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalByBillItemRowValues() {
+        total = 0.0;
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getRowValue() == null) {
+                    continue;
+                }
+                double amount = safeDouble(row.getRowValue());
                 total += amount;
             }
         }
@@ -1259,7 +1251,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBillItem().getBill().getTotalHospitalFee());
+                double amount = row.getBillItem().getBill().getTotalHospitalFee();
                 hospitalTotal += amount;
             }
         }
@@ -1273,7 +1265,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getBillItem().getBill().getTotalStaffFee());
+                double amount = row.getBillItem().getBill().getTotalStaffFee();
                 staffTotal += amount;
             }
         }
@@ -1287,16 +1279,16 @@ public class ReportTemplateRowBundle implements Serializable {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
                 if (row != null) {
-                    Double iteratingTotal = safeDouble(row.getGrossTotal());
+                    double iteratingTotal = safeDouble(row.getGrossTotal());
                     grossTotal += iteratingTotal;
 
-                    Double iteratingDiscount = safeDouble(row.getDiscount());
+                    double iteratingDiscount = safeDouble(row.getDiscount());
                     discount += iteratingDiscount;
 
-                    Double iteratingTax = safeDouble(row.getTax());
+                    double iteratingTax = safeDouble(row.getTax());
                     tax += iteratingTax;
 
-                    Double iteratingNetTotal = safeDouble(row.getTotal()); // assuming you meant to use getTotal here as well for the net total calculation
+                    double iteratingNetTotal = safeDouble(row.getTotal()); // assuming you meant to use getTotal here as well for the net total calculation
                     total += iteratingNetTotal;
                 }
             }
@@ -1312,9 +1304,9 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                Double billTotal = safeDouble(row.getBill().getNetTotal());
-                Double billGrossTotal = safeDouble(row.getBill().getTotal());
-                Double billTax = safeDouble(row.getBill().getTax());
+                double billTotal = row.getBill().getNetTotal();
+                double billGrossTotal = row.getBill().getTotal();
+                double billTax = safeDouble(row.getBill().getTax());
                 total += billTotal;
                 grossTotal += billGrossTotal;
                 tax += billTax;
@@ -1329,7 +1321,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getPayment() == null) {
                     continue;
                 }
-                Double amount = safeDouble(row.getPayment().getPaidValue());
+                double amount = row.getPayment().getPaidValue();
                 total += amount;
             }
         }
@@ -1413,8 +1405,8 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
 
-                Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
-                Double amountHandingOver = 0.0;
+                double amount = row.getPayment().getPaidValue();  // Ensure amounts are not null
+                double amountHandingOver = 0.0;
 
                 PaymentMethod method = row.getPayment().getPaymentMethod();
 
@@ -1528,8 +1520,8 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
 
-                Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
-                Double amountHandingOver = 0.0;
+                double amount = row.getPayment().getPaidValue();  // Ensure amounts are not null
+                double amountHandingOver = 0.0;
 
                 PaymentMethod method = row.getPayment().getPaymentMethod();
 
@@ -1673,8 +1665,8 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
 
-                Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
-                Double amountHandingOver = 0.0;
+                double amount = row.getPayment().getPaidValue();  // Ensure amounts are not null
+                double amountHandingOver = 0.0;
 
                 PaymentMethod method = row.getPayment().getPaymentMethod();
                 if (method == Cash) {
@@ -2310,7 +2302,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public String getName() {
         if (name == null || name.isEmpty()) {
-            name = "BundleName" + UUID.randomUUID().toString();
+            name = "BundleName" + UUID.randomUUID();
         }
         return name;
     }
@@ -2874,10 +2866,10 @@ public class ReportTemplateRowBundle implements Serializable {
                 continue;
             }
             if (dt.getDenominationQty() == null) {
-                dt.setDenominationQty(0l);
+                dt.setDenominationQty(0L);
                 dt.setDenominationValue(null);
             } else {
-                Double dv = dt.getDenomination().getDenominationValue() * dt.getDenominationQty();
+                double dv = dt.getDenomination().getDenominationValue() * dt.getDenominationQty();
                 dt.setDenominationValue(dv);
                 denominatorValue += dv;
             }

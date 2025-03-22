@@ -73,7 +73,7 @@ public class ItemLight {
         this.code = code;
         this.total = total;
     }
-    
+
     public ItemLight(Long id, String departmentName, String name, String code, Double total, Long departmentId) {
         this.id = id;
         this.departmentName = departmentName;
@@ -83,8 +83,8 @@ public class ItemLight {
         this.departmentId = departmentId;
     }
 
-    
-    
+
+
     public ItemLight(Long id, Integer orderNo, Boolean isMasterItem, Boolean hasReportFormat,
             String categoryName, Long categoryId, String institutionName, Long institutionId,
             String departmentName, Long departmentId, String specialityName, Long specialityId,
@@ -123,7 +123,7 @@ public class ItemLight {
         this.code = code;
         this.total = total;
     }
-    
+
     public ItemLight(Long id, String name, String code, Double total, String feeName, Double feeValue, Double feeValueForeign) {
         this.id = id;
         this.name = name;
@@ -514,10 +514,7 @@ public class ItemLight {
             return false;
         }
         ItemLight other = (ItemLight) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override

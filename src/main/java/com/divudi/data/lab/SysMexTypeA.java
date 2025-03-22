@@ -8,31 +8,31 @@ public class SysMexTypeA {
     private int lengthOfMessage = 253;
     private int sampleIdStart = startNum + 30;
     private int sampleIdEnd = sampleIdStart + 15;
-    private int wbcStart = sampleIdEnd + 0;
+    private int wbcStart = sampleIdEnd;
     private int wbcEnd = wbcStart + 6;
-    private int rbcStart = wbcEnd + 0;
+    private int rbcStart = wbcEnd;
     private int rbcEnd = rbcStart + 5;
-    private int hgbStart = rbcEnd + 0;
+    private int hgbStart = rbcEnd;
     private int hgbEnd = hgbStart + 5;
-    private int hctStart = hgbEnd + 0;
+    private int hctStart = hgbEnd;
     private int hctEnd = hctStart + 5;
-    private int mcvStart = hctEnd + 0;
+    private int mcvStart = hctEnd;
     private int mcvEnd = mcvStart + 5;
-    private int mchStart = mcvEnd + 0;
+    private int mchStart = mcvEnd;
     private int mchEnd = mchStart + 5;
-    private int mchcStart = mchEnd + 0;
+    private int mchcStart = mchEnd;
     private int mchcEnd = mchcStart + 5;
-    private int pltStart = mchcEnd + 0;
+    private int pltStart = mchcEnd;
     private int pltEnd = pltStart + 5;
-    private int lymphPercentStart = pltEnd + 0;
+    private int lymphPercentStart = pltEnd;
     private int lymphPercentEnd = lymphPercentStart + 5;
-    private int monoPercentStart = lymphPercentEnd + 0;
+    private int monoPercentStart = lymphPercentEnd;
     private int monoPercentEnd = monoPercentStart + 5;
-    private int neutPercentStart = monoPercentEnd + 0;
+    private int neutPercentStart = monoPercentEnd;
     private int neutPercentEnd = neutPercentStart + 5;
-    private int eoPercentStart = neutPercentEnd + 0;
+    private int eoPercentStart = neutPercentEnd;
     private int eoPercentEnd = eoPercentStart + 5;
-    private int basoPercentStart = eoPercentEnd + 0;
+    private int basoPercentStart = eoPercentEnd;
     private int basoPercentEnd = basoPercentStart + 5;
 
     double wbcDiv = 1000;
@@ -69,8 +69,8 @@ public class SysMexTypeA {
         try {
             String sampleIdString = inputString.substring(sampleIdStart, sampleIdEnd).trim();
             sampleId = Long.parseLong(sampleIdString.replaceAll("\\s+", ""));
-            
-            
+
+
             String webStr = inputString.substring(wbcStart, wbcEnd);
             wbc = Double.parseDouble(webStr) / wbcDiv;
 

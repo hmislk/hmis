@@ -6,7 +6,7 @@
 
 package com.divudi.facade;
 
-import com.divudi.bean.common.FormItemValue;
+import com.divudi.entity.FormItemValue;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -22,11 +22,11 @@ public class FormItemValueFacade extends AbstractFacade<FormItemValue> {
 
     @Override
     protected EntityManager getEntityManager() {
-        if(em == null){}return em;
+        return em;
     }
 
     public FormItemValueFacade() {
         super(FormItemValue.class);
     }
-    
+
 }
