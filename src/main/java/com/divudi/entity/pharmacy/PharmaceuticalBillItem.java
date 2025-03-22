@@ -4,7 +4,6 @@
  */
 package com.divudi.entity.pharmacy;
 
-import com.divudi.bean.common.TimeUtils;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
@@ -59,7 +58,7 @@ public class PharmaceuticalBillItem implements Serializable {
 
     private double retailRate;
     private double retailRatePack;
-    
+
     private double purchaseValue;
     private double purchaseRatePackValue;
 
@@ -71,13 +70,13 @@ public class PharmaceuticalBillItem implements Serializable {
 
     private double lastPurchaseRate;
     private double lastPurchaseRatePack;
-    
+
     private double beforeAdjustmentValue;
     private double afterAdjustmentValue;
-    
+
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date beforeAdjustmentExpiry;
-    
+
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date afterAdjustmentExpiry;
 
@@ -136,10 +135,6 @@ public class PharmaceuticalBillItem implements Serializable {
 
     public long getWarrentyDuration() {
         return warrentyDuration;
-    }
-
-    public String getWarrentyDurationInYearsAndDays() {
-        return TimeUtils.millisToYearsAndDates(warrentyDuration);
     }
 
     public void setWarrentyDuration(long warrentyDuration) {
@@ -374,7 +369,7 @@ public class PharmaceuticalBillItem implements Serializable {
         return qty;
     }
 
-    
+
     public void setQty(double qty) {
 //        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
 //            this.qty = qty * getBillItem().getItem().getDblValue();
@@ -725,8 +720,8 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setAfterAdjustmentExpiry(Date afterAdjustmentExpiry) {
         this.afterAdjustmentExpiry = afterAdjustmentExpiry;
     }
-    
-    
-    
+
+
+
 
 }

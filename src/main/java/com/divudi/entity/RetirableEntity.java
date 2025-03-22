@@ -1,6 +1,5 @@
-package com.divudi.bean.common;
+package com.divudi.entity;
 
-import com.divudi.entity.WebUser;
 import java.util.Date;
 
 /**
@@ -8,7 +7,7 @@ import java.util.Date;
  * @author Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  * +94 71 58 123 99
- * 
+ *
  */
 public interface RetirableEntity {
     void setRetired(boolean retired);

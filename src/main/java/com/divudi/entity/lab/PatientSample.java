@@ -5,7 +5,7 @@
  */
 package com.divudi.entity.lab;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.Priority;
 import com.divudi.data.lab.SampleRequestType;
@@ -170,14 +170,14 @@ public class PatientSample implements Serializable, RetirableEntity {
     private Department cancellDepartment;
     @ManyToOne
     private Institution cancellInstitution;
-    
+
     private String sampleRejectionComment;
     private Boolean sampleRejected = false;
     @ManyToOne
     private WebUser sampleRejectedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleRejectedAt;
-    
+
     //Retairing properties
     private boolean retired;
     @ManyToOne
@@ -218,8 +218,8 @@ public class PatientSample implements Serializable, RetirableEntity {
         }
         return true;
     }
-    
-    
+
+
 
     @Override
     public String toString() {
@@ -787,6 +787,6 @@ public class PatientSample implements Serializable, RetirableEntity {
         this.sampleRejectionComment = sampleRejectionComment;
     }
 
-    
-    
+
+
 }

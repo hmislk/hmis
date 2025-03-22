@@ -4,7 +4,7 @@
  */
 package com.divudi.entity.pharmacy;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.data.HistoryType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -77,11 +77,11 @@ public class StockHistory implements Serializable, RetirableEntity {
     private Double itemStockValueAtSaleRate;
     private Double institutionItemStockValueAtSaleRate;
     private Double totalItemStockValueAtSaleRate;
-    
+
     private Double itemStockValueAtPurchaseRate;
     private Double institutionItemStockValueAtPurchaseRate;
     private Double totalItemStockValueAtPurchaseRate;
-    
+
 
     //Created Properties
     @ManyToOne
@@ -96,8 +96,8 @@ public class StockHistory implements Serializable, RetirableEntity {
     private Date retiredAt;
     private String retireComments;
 
-    
-    
+
+
     public Date getStockAt() {
         return stockAt;
     }
