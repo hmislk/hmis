@@ -13,7 +13,7 @@ public enum ReportType {
 
     private final String label;
 
-    private ReportType(String label) {
+    ReportType(String label) {
         this.label = label;
     }
 

@@ -60,15 +60,15 @@ public class SearchKeyword {
     private Investigation investigation;
     private List<BillType> billTypes;
     private Long id;
-    
-    
-    
+
+
+
     boolean activeAdvanceOption;
     boolean withRetiered;
     private String val1;
     private String val2;
     private String val3;
-    
+
 
     public String getServiceName() {
         return serviceName;
@@ -77,30 +77,27 @@ public class SearchKeyword {
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
     }
-    
-    
+
+
 
     public boolean checkKeyword() {
-        if (billNo != null && !billNo.trim().equals("")) {
+        if (billNo != null && !billNo.trim().isEmpty()) {
             return true;
         }
 
-        if (patientName != null && !patientName.trim().equals("")) {
+        if (patientName != null && !patientName.trim().isEmpty()) {
             return true;
         }
 
-        if (patientPhone != null && !patientPhone.trim().equals("")) {
+        if (patientPhone != null && !patientPhone.trim().isEmpty()) {
             return true;
         }
 
-        if (total != null && !total.trim().equals("")) {
+        if (total != null && !total.trim().isEmpty()) {
             return true;
         }
 
-        if (netTotal != null && !netTotal.trim().equals("")) {
-            return true;
-        }
-        return false;
+        return netTotal != null && !netTotal.trim().isEmpty();
 
     }
 
@@ -111,8 +108,8 @@ public class SearchKeyword {
     public void setRequestNo(String requestNo) {
         this.requestNo = requestNo;
     }
-    
-    
+
+
 
     public String getPatientName() {
         return patientName;
@@ -451,7 +448,7 @@ public class SearchKeyword {
         this.id = id;
     }
 
-    
+
 
 
 

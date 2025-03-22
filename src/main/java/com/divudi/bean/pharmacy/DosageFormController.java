@@ -11,6 +11,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.SessionController;
 
 
+import com.divudi.entity.DosageForm;
 import com.divudi.facade.DosageFormFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
