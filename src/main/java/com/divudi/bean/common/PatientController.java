@@ -794,6 +794,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         pharmacySaleController.setPatient(current);
+        pharmacySaleController.setBillSettlingStarted(false);
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);

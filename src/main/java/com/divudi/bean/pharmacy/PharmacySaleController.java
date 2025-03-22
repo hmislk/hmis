@@ -191,6 +191,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     Stock stock;
     Stock replacableStock;
     private List<ClinicalFindingValue> allergyListOfPatient;
+    private boolean billSettlingStarted;
 
     PaymentScheme paymentScheme;
 
@@ -248,18 +249,22 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetAll();
+                setBillSettlingStarted(false);
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
             } else {
+                setBillSettlingStarted(false);
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
             }
         } else {
             resetAll();
+            setBillSettlingStarted(false);
             return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
         }
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
+        setBillSettlingStarted(false);
         return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
     }
 
@@ -704,6 +709,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         clearBill();
         clearBillItem();
         billPreview = false;
+        setBillSettlingStarted(false);
         return "pharmacy_bill_retail_sale";
     }
 
@@ -711,6 +717,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         clearBill();
         clearBillItem();
         billPreview = false;
+        setBillSettlingStarted(false);
         return "pharmacy_bill_retail_sale_for_cashier";
     }
 
@@ -719,6 +726,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetAll();
+                setBillSettlingStarted(false);
                 return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
@@ -726,6 +734,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
         } else {
             resetAll();
+            setBillSettlingStarted(false);
+            setBillSettlingStarted(false);
             return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
         }
     }
@@ -748,6 +758,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         patient = pt;
         paymentScheme = ps;
         setPatient(getPatient());
+        setBillSettlingStarted(false);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
@@ -783,6 +794,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         patient = pt;
         paymentScheme = ps;
         setPatient(getPatient());
+        setBillSettlingStarted(false);
         return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
     }
 
@@ -801,6 +813,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void resetAll() {
+        setBillSettlingStarted(false);
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
@@ -817,10 +830,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String pharmacyRetailSale() {
+        setBillSettlingStarted(false);
         return "/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
     public String toPharmacyRetailSale() {
+        setBillSettlingStarted(false);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
@@ -2299,6 +2314,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
         }
 
+        
+
+        
         if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
             if (allergyListOfPatient == null) {
                 allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
@@ -2468,6 +2486,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         clearBill();
         clearBillItem();
         billPreview = false;
+        setBillSettlingStarted(false);
         return "pharmacy_bill_retail_sale";
     }
 
@@ -3495,4 +3514,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.enableLabelPrintFromSaleView = enableLabelPrintFromSaleView;
     }
 
+    public boolean isBillSettlingStarted() {
+        return billSettlingStarted;
+    }
+
+    public void setBillSettlingStarted(boolean billSettlingStarted) {
+        this.billSettlingStarted = billSettlingStarted;
+    }
+
+    
+    
 }
