@@ -587,8 +587,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
         
-        getSaleBill().setCashPaid(cashPaid);
-        getSaleBill().setBalance(cashPaid - getPreBill().getNetTotal());
+        updateBalanceInBill(preBill, getSaleBill(), preBill.getPaymentMethod(), paymentMethodData);
+        
+//        getSaleBill().setCashPaid(cashPaid);
+//        getSaleBill().setBalance(cashPaid - getPreBill().getNetTotal());
 
         if (getSaleBill().getId() == null) {
             getBillFacade().create(getSaleBill());
@@ -968,6 +970,25 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         }
         return false;
+    }
+    
+    public double checkAndUpdateBalance(Bill preBill){
+        switch (paymentMethod) {
+            case Cash:
+                balance = preBill.getNetTotal() - cashPaid;                
+            case Card:
+                balance = preBill.getNetTotal() - getPaymentMethodData().getCreditCard().getTotalValue();
+            case Cheque:
+                balance = preBill.getNetTotal() - getPaymentMethodData().getCheque().getTotalValue();
+            case Slip:
+                balance = preBill.getNetTotal() - getPaymentMethodData().getSlip().getTotalValue();
+            case ewallet:
+                balance = preBill.getNetTotal() - getPaymentMethodData().getEwallet().getTotalValue();
+            case MultiplePaymentMethods:
+                balance = preBill.getNetTotal() - calculateMultiplePaymentMethodTotal();
+            default:
+                return balance;
+        }
     }
 
     public void settleBillWithPay2() {
