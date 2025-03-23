@@ -21,6 +21,12 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
+import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.ComponentDetail;
@@ -159,9 +165,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     private PaymentMethod paymentMethod;
 
     public double calculatRemainForMultiplePaymentTotal() {
-      
+
         total = getPreBill().getNetTotal();
-        return total - calculateMultiplePaymentMethodTotal();    
+        return total - calculateMultiplePaymentMethodTotal();
     }
 
     public void recieveRemainAmountAutomatically() {
@@ -187,11 +193,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         }
     }
-    
-    public void updateTotals(){
+
+    public void updateTotals() {
         calculateAllRates();
     }
-    
+
     public void calculateAllRates() {
         for (BillItem tbi : getPreBill().getBillItems()) {
             calculateRates(tbi);
@@ -199,8 +205,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
         calculateTotals();
     }
-    
-     public void calculateTotals() {
+
+    public void calculateTotals() {
         getPreBill().setTotal(0);
         double netTotal = 0.0, grossTotal = 0.0, discountTotal = 0.0;
         int index = 0;
@@ -222,7 +228,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         setNetTotal(getPreBill().getNetTotal());
     }
 
-    public void calculateRates(BillItem bi) {        
+    public void calculateRates(BillItem bi) {
         PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
         if (pharmBillItem != null && pharmBillItem.getStock() != null) {
             ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
@@ -238,11 +244,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         }
     }
-    
+
     @Inject
     private PriceMatrixController priceMatrixController;
-    
-    public double calculateBillItemDiscountRate(BillItem bi) {        
+
+    public double calculateBillItemDiscountRate(BillItem bi) {
         if (bi == null) {
             return 0.0;
         }
@@ -258,7 +264,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
         double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         double discountRate = 0;
-        boolean discountAllowed = bi.getItem().isDiscountAllowed();       
+        boolean discountAllowed = bi.getItem().isDiscountAllowed();
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         //MEMBERSHIPSCHEME DISCOUNT
 //        if (membershipScheme != null && discountAllowed) {
@@ -492,12 +498,12 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 JsfUtil.addErrorMessage("No Details on multiple payment methods given");
                 return true;
             }
-            
-            if(calculatRemainForMultiplePaymentTotal() != 0){
+
+            if (calculatRemainForMultiplePaymentTotal() != 0) {
                 JsfUtil.addErrorMessage("MutiplePayment total is not equal to bill Total. Check the Balance");
                 return true;
             }
-            
+
 //            double multiplePaymentMethodTotalValue = 0.0;
 //            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
 //                //TODO - filter only relavant value
@@ -517,7 +523,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 //            if (cashPaid == 0.0) {
 //                setCashPaid(multiplePaymentMethodTotalValue);
 //            }
-
         }
 
         if (getPaymentSchemeController().checkPaymentMethodError(getPreBill().getPaymentMethod(), paymentMethodData));
@@ -526,7 +531,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             JsfUtil.addErrorMessage("Please select tendered amount correctly");
             return true;
         }
-        
+
 //        if (getPreBill().getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
 //                JsfUtil.addErrorMessage("Please select tendered amount correctly");
@@ -573,12 +578,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
-        
+
         updateBalanceInBill(preBill, getSaleBill(), preBill.getPaymentMethod(), paymentMethodData);
-        
+
 //        getSaleBill().setCashPaid(cashPaid);
 //        getSaleBill().setBalance(cashPaid - getPreBill().getNetTotal());
-
         if (getSaleBill().getId() == null) {
             getBillFacade().create(getSaleBill());
         }
@@ -586,22 +590,22 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         updatePreBill();
 
     }
-    
-    public void updateBalanceInBill(Bill preBill, Bill saleBill, PaymentMethod salePaymentMethod, PaymentMethodData paymentMethodDataForSaleBill){
-        if(salePaymentMethod == PaymentMethod.Cash){
+
+    public void updateBalanceInBill(Bill preBill, Bill saleBill, PaymentMethod salePaymentMethod, PaymentMethodData paymentMethodDataForSaleBill) {
+        if (salePaymentMethod == PaymentMethod.Cash) {
             saleBill.setCashPaid(cashPaid);
-            saleBill.setBalance(cashPaid - preBill.getNetTotal());          
-        }else if(salePaymentMethod == PaymentMethod.Card){
+            saleBill.setBalance(cashPaid - preBill.getNetTotal());
+        } else if (salePaymentMethod == PaymentMethod.Card) {
             saleBill.setBalance(paymentMethodDataForSaleBill.getCreditCard().getTotalValue() - preBill.getNetTotal());
-        }else if(salePaymentMethod == PaymentMethod.Cheque){
+        } else if (salePaymentMethod == PaymentMethod.Cheque) {
             saleBill.setBalance(paymentMethodData.getCheque().getTotalValue() - preBill.getNetTotal());
-        }else if(salePaymentMethod == PaymentMethod.MultiplePaymentMethods){
+        } else if (salePaymentMethod == PaymentMethod.MultiplePaymentMethods) {
             saleBill.setBalance(calculatRemainForMultiplePaymentTotal());
-        }else if(salePaymentMethod == PaymentMethod.Slip){
+        } else if (salePaymentMethod == PaymentMethod.Slip) {
             saleBill.setBalance(paymentMethodData.getSlip().getTotalValue() - preBill.getNetTotal());
-        }else if(salePaymentMethod == PaymentMethod.ewallet){
+        } else if (salePaymentMethod == PaymentMethod.ewallet) {
             saleBill.setBalance(paymentMethodData.getEwallet().getTotalValue() - preBill.getNetTotal());
-        }else {
+        } else {
             saleBill.setBalance(-preBill.getNetTotal());
         }
     }
@@ -958,45 +962,53 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
         return false;
     }
-    
+
     //ToDo : have to duplicate methods in the pharmacy sale. Will implement service class and need to centralize them.
-    
-    public double calculateMultiplePaymentMethodTotal(){
+    public double calculateMultiplePaymentMethodTotal() {
         double multiplePaymentMethodTotalValue = 0;
-        if(preBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods){
-                      
-            for(ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()){
+        if (preBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-            }                
+            }
         }
         return multiplePaymentMethodTotalValue;
     }
-    
-    public double checkAndUpdateBalance(){
-        switch (getPreBill().getPaymentMethod()) {
-            case Cash:
-                balance = getPreBill().getNetTotal() - cashPaid; break;               
-            case Card:
-                cashPaid = 0;
-                balance = getPreBill().getNetTotal() - getPaymentMethodData().getCreditCard().getTotalValue(); break; 
-            case Cheque:
-                cashPaid = 0;
-                balance = getPreBill().getNetTotal() - getPaymentMethodData().getCheque().getTotalValue(); break; 
-            case Slip:
-                cashPaid = 0;
-                balance = getPreBill().getNetTotal() - getPaymentMethodData().getSlip().getTotalValue(); break; 
-            case ewallet:
-                cashPaid = 0;
-                balance = getPreBill().getNetTotal() - getPaymentMethodData().getEwallet().getTotalValue(); break; 
-            case MultiplePaymentMethods:
-                cashPaid = 0;
-                balance = getPreBill().getNetTotal() - calculateMultiplePaymentMethodTotal(); break;            
+
+    public double checkAndUpdateBalance() {
+        if (getPreBill().getPaymentMethod() != null) {
+            switch (getPreBill().getPaymentMethod()) {
+                case Cash:
+                    balance = getPreBill().getNetTotal() - cashPaid;
+                    break;
+                case Card:
+                    cashPaid = 0;
+                    balance = getPreBill().getNetTotal() - getPaymentMethodData().getCreditCard().getTotalValue();
+                    break;
+                case Cheque:
+                    cashPaid = 0;
+                    balance = getPreBill().getNetTotal() - getPaymentMethodData().getCheque().getTotalValue();
+                    break;
+                case Slip:
+                    cashPaid = 0;
+                    balance = getPreBill().getNetTotal() - getPaymentMethodData().getSlip().getTotalValue();
+                    break;
+                case ewallet:
+                    cashPaid = 0;
+                    balance = getPreBill().getNetTotal() - getPaymentMethodData().getEwallet().getTotalValue();
+                    break;
+                case MultiplePaymentMethods:
+                    cashPaid = 0;
+                    balance = getPreBill().getNetTotal() - calculateMultiplePaymentMethodTotal();
+                    break;
+            }
         }
+
         return balance;
     }
 
@@ -1033,9 +1045,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (errorCheckOnPaymentMethod()) {
             return;
         }
-        
-        if(getPreBill().getPaymentMethod() != PaymentMethod.Credit){
-            if(checkAndUpdateBalance() != 0){
+
+        if (getPreBill().getPaymentMethod() != PaymentMethod.Credit) {
+            if (checkAndUpdateBalance() != 0) {
                 JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
                 return;
             }
@@ -1060,8 +1072,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         //    removeSettledToken();
         billPreview = true;
     }
-
-
 
     public void markToken() {
         Token t = tokenController.findPharmacyTokens(getPreBill());
