@@ -159,22 +159,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     private PaymentMethod paymentMethod;
 
     public double calculatRemainForMultiplePaymentTotal() {
-
+      
         total = getPreBill().getNetTotal();
-        netTotal = total;
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-            }
-            return total - multiplePaymentMethodTotalValue;
-        }
-        return total;
+        return total - calculateMultiplePaymentMethodTotal();    
     }
 
     public void recieveRemainAmountAutomatically() {
