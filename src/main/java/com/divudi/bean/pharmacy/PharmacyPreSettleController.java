@@ -580,6 +580,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
+        
         getSaleBill().setCashPaid(cashPaid);
         getSaleBill().setBalance(cashPaid - getPreBill().getNetTotal());
 
@@ -589,6 +590,25 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         updatePreBill();
 
+    }
+    
+    public void updateBalanceInBill(Bill preBill, Bill saleBill, PaymentMethod salePaymentMethod, PaymentMethodData paymentMethodDataForSaleBill){
+        if(salePaymentMethod == PaymentMethod.Cash){
+            saleBill.setCashPaid(cashPaid);
+            saleBill.setBalance(cashPaid - preBill.getNetTotal());          
+        }else if(salePaymentMethod == PaymentMethod.Card){
+            saleBill.setBalance(paymentMethodDataForSaleBill.getCreditCard().getTotalValue() - preBill.getNetTotal());
+        }else if(salePaymentMethod == PaymentMethod.Cheque){
+            saleBill.setBalance(paymentMethodData.getCheque().getTotalValue() - preBill.getNetTotal());
+        }else if(salePaymentMethod == PaymentMethod.MultiplePaymentMethods){
+            saleBill.setBalance(calculatRemainForMultiplePaymentTotal());
+        }else if(salePaymentMethod == PaymentMethod.Slip){
+            saleBill.setBalance(paymentMethodData.getSlip().getTotalValue() - preBill.getNetTotal());
+        }else if(salePaymentMethod == PaymentMethod.ewallet){
+            saleBill.setBalance(paymentMethodData.getEwallet().getTotalValue() - preBill.getNetTotal());
+        }else {
+            saleBill.setBalance(-preBill.getNetTotal());
+        }
     }
 
     private void saveSaleReturnBill() {
