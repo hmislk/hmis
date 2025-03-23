@@ -3654,14 +3654,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public double calBillPaidValue(Bill b) {
-        String sql;
-
-        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.billFee.bill.id=" + b.getId();
-
-        double d = getBillFeePaymentFacade().findDoubleByJpql(sql);
-
+        String jpql = "select sum(bfp.amount) "
+                + " from BillFeePayment bfp "
+                + " where bfp.retired = :ret "
+                + " and bfp.billFee.bill.id = :bid";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", b.getId());
+        double d = getBillFeePaymentFacade().findDoubleByJpql(jpql, params);
         return d;
     }
 
