@@ -137,7 +137,7 @@
                                                 <p:focus id="focusForAcIx" for="acStock" ></p:focus>
                                                 <p:outputLabel 
                                                     class="w-100" 
-                                                    for="acStock">Medicines/Devices</p:outputLabel>
+                                                    for="acStock">Medicines or Devices</p:outputLabel>
                                                 <h:panelGroup id="acStock" >
                                                     <p:autoComplete 
                                                         accesskey="i" 
@@ -216,6 +216,7 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <p:column headerText="Stocks" style="padding: 8px;" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                           AAA
                                                             <h:outputLabel value="#{i.stock}" >
                                                                 <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                             </h:outputLabel>
