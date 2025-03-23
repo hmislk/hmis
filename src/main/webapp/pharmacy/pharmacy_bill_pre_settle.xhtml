@@ -37,14 +37,16 @@
 
                                                     id="cmbPs"  
                                                     style="width: 100%"
-                                                    value="#{pharmacyPreSettleController.preBill.paymentMethod}"  
+                                                    value="#{pharmacyPreSettleController.preBill.paymentMethod}"                                     
                                                     disabled="#{!sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment}"> 
                                                     <f:selectItem itemLabel="Select Payment"></f:selectItem>
                                                     <f:selectItems value="#{enumController.PaymentMethodsForPharmacyRetailSale()}" />
                                                     <p:ajax 
                                                         process="cmbPs" 
+                                                        listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}"
                                                         update="creditCard cheque slip multiplePaymentMethods pBillDetails credit discountScheme" 
                                                         event="change" />
+                                                    
                                                 </p:selectOneMenu>
 
                                             </div>
@@ -121,6 +123,7 @@
 
                                             <h:panelGroup id="creditCard" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                                 <pa:creditCard paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                         
                                             </h:panelGroup>
 
                                             <h:panelGroup id="cheque" class="w-100" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >

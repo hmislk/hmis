@@ -972,6 +972,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return false;
     }
     
+    //ToDo : have to duplicate methods in the pharmacy sale. Will implement service class and need to centralize them.
+    
     public double calculateMultiplePaymentMethodTotal(){
         double multiplePaymentMethodTotalValue = 0;
         if(preBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods){
@@ -988,23 +990,27 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return multiplePaymentMethodTotalValue;
     }
     
-    public double checkAndUpdateBalance(Bill preBill){
-        switch (paymentMethod) {
+    public double checkAndUpdateBalance(){
+        switch (getPreBill().getPaymentMethod()) {
             case Cash:
-                balance = getPreBill().getNetTotal() - cashPaid;                
+                balance = getPreBill().getNetTotal() - cashPaid; break;               
             case Card:
-                balance = getPreBill().getNetTotal() - getPaymentMethodData().getCreditCard().getTotalValue();
+                cashPaid = 0;
+                balance = getPreBill().getNetTotal() - getPaymentMethodData().getCreditCard().getTotalValue(); break; 
             case Cheque:
-                balance = getPreBill().getNetTotal() - getPaymentMethodData().getCheque().getTotalValue();
+                cashPaid = 0;
+                balance = getPreBill().getNetTotal() - getPaymentMethodData().getCheque().getTotalValue(); break; 
             case Slip:
-                balance = getPreBill().getNetTotal() - getPaymentMethodData().getSlip().getTotalValue();
+                cashPaid = 0;
+                balance = getPreBill().getNetTotal() - getPaymentMethodData().getSlip().getTotalValue(); break; 
             case ewallet:
-                balance = getPreBill().getNetTotal() - getPaymentMethodData().getEwallet().getTotalValue();
+                cashPaid = 0;
+                balance = getPreBill().getNetTotal() - getPaymentMethodData().getEwallet().getTotalValue(); break; 
             case MultiplePaymentMethods:
-                balance = getPreBill().getNetTotal() - calculateMultiplePaymentMethodTotal();
-            default:
-                return balance;
+                cashPaid = 0;
+                balance = getPreBill().getNetTotal() - calculateMultiplePaymentMethodTotal(); break;            
         }
+        return balance;
     }
 
     public void settleBillWithPay2() {
@@ -1039,6 +1045,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         if (errorCheckOnPaymentMethod()) {
             return;
+        }
+        
+        if(getPreBill().getPaymentMethod() != PaymentMethod.Credit){
+            if(checkAndUpdateBalance() != 0){
+                JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
+                return;
+            }
         }
 
         saveSaleBill();
