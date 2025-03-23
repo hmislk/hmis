@@ -46,7 +46,7 @@
                                                         listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}"
                                                         update="creditCard cheque slip multiplePaymentMethods pBillDetails credit discountScheme" 
                                                         event="change" />
-                                                    
+
                                                 </p:selectOneMenu>
 
                                             </div>
@@ -60,13 +60,24 @@
                                                         listener="#{pharmacyPreSettleController.updateTotals()}"/>
                                             </p:selectOneMenu>
 
-                                            <div class="col-5 d-flex mx-1">
+                                            <div class="col-1 d-flex mx-1">
+                                                <p:commandButton ajax= "true"
+                                                                 id="refresh"
+                                                                 update="pBillDetails"
+                                                                 style="width: 100%;padding: 0"
+                                                                 class="ui-button-warning"
+                                                                 icon=" pi pi-refresh"                                                             
+                                                                 action="#{pharmacyPreSettleController.checkAndUpdateBalance()}" />
+
+                                            </div>
+
+                                            <div class="col-3 d-flex mx-1">
                                                 <p:commandButton ajax= "false"
                                                                  value="Settle and Accept Payment"
                                                                  id="settle"
-                                                                 style="width: 100%"
+                                                                 style="width: 100%;padding: 0"
                                                                  class="ui-button-success"
-                                                                 icon="fa-solid fa-check"
+                                                                 icon="fa-solid fa-check"                                                             
                                                                  action="#{pharmacyPreSettleController.settleBillWithPay2}" />
 
                                                 <p:defaultCommand target="settle"/>
@@ -123,7 +134,7 @@
 
                                             <h:panelGroup id="creditCard" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                                 <pa:creditCard paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                         
+                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                             </h:panelGroup>
 
                                             <h:panelGroup id="cheque" class="w-100" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
@@ -177,7 +188,7 @@
                                             </p:inputText>
                                             <h:outputLabel  value="Balance " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                            <h:outputLabel id="balance" value="#{pharmacyPreSettleController.checkAndUpdateBalance()}" >
+                                            <h:outputLabel id="balance" value="#{-pharmacyPreSettleController.checkAndUpdateBalance()}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </h:panelGrid>
