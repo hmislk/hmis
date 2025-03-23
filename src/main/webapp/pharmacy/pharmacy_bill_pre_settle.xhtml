@@ -139,14 +139,17 @@
 
                                             <h:panelGroup id="cheque" class="w-100" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
                                                 <pa:cheque paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                             </h:panelGroup>
 
                                             <h:panelGroup id="slip" class="w-100" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
                                                 <pa:slip paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                             </h:panelGroup>
 
                                             <h:panelGroup id="eWallet" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
                                                 <pa:ewallet paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                             </h:panelGroup>
 
                                             <h:panelGroup
@@ -155,6 +158,7 @@
                                                 id="multiplePaymentMethods"  style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;" 
                                                 >
                                                 <pa:multiple_payment_methods controller="#{pharmacyPreSettleController}" paymentMethods="#{enumController.PaymentMethodsForPharmacyRetailSale()}" class="w-100"/>
+                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                             </h:panelGroup>
                                         </div>
                                     </div>
