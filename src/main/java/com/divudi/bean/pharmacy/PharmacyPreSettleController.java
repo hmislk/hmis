@@ -972,6 +972,22 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return false;
     }
     
+    public double calculateMultiplePaymentMethodTotal(){
+        double multiplePaymentMethodTotalValue = 0;
+        if(preBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods){
+                      
+            for(ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()){
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+            }                
+        }
+        return multiplePaymentMethodTotalValue;
+    }
+    
     public double checkAndUpdateBalance(Bill preBill){
         switch (paymentMethod) {
             case Cash:
