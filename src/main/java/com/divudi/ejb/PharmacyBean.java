@@ -713,6 +713,7 @@ public class PharmacyBean {
     }
 
     public boolean deductFromStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
+        System.out.println("deductFromStock");
         if (stock == null) {
             return false;
         }
@@ -725,8 +726,11 @@ public class PharmacyBean {
             return false;
         }
         stock = getStockFacade().findWithoutCache(stock.getId());
+        System.out.println("Before Saving - stock.getStock() = " + stock.getStock());
+        System.out.println("qty = " + qty);
         stock.setStock(stock.getStock() - qty);
         getStockFacade().editAndCommit(stock);
+        System.out.println("After Saving - stock.getStock() = " + stock.getStock());
         addToStockHistory(pbi, stock, d);
         return true;
     }
@@ -751,6 +755,8 @@ public class PharmacyBean {
     }
 
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Department d) {
+        System.out.println("addToStockHistory");
+        System.out.println("d = " + d);
         if (phItem == null) {
             return;
         }
@@ -774,16 +780,19 @@ public class PharmacyBean {
         sh.setInstitution(d.getInstitution());
 
         Stock fetchedStock = getStockFacade().findWithoutCache(stock.getId());
+        System.out.println("fetchedStock.getStock() = " + fetchedStock.getStock());
         sh.setStockQty(fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
         sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
+        System.out.println("sh.getItemStock() = " + sh.getItemStock());
         sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
         sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
+        System.out.println("sh.getTotalItemStock() = " + sh.getTotalItemStock());
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
         } else {
-            getStockHistoryFacade().edit(sh);
+            getStockHistoryFacade().editAndCommit(sh);
         }
         phItem.setStockHistory(sh);
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);

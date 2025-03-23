@@ -2056,21 +2056,86 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStockForBatchReport() {
+        List<Long> ids;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
+                + " from StockHistory sh "
+                + " where sh.retired = :ret "
+                + " and (sh.itemBatch.item.departmentType is null "
+                + "      or sh.itemBatch.item.departmentType = :depty) ");
 
-    }
+        // Set query parameters
+        params.put("depty", DepartmentType.Pharmacy);
+        params.put("ret", false);
 
-    public void processClosingStockForItemReport() {
-        System.out.println("processClosingStockForItemReport");
+        if (institution != null) {
+            jpql.append("and sh.institution = :ins ");
+            params.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
+        }
+
         if (department != null) {
-            processClosingStockForItemReportByDepartment();
-        } else if (institution != null) {
-            processClosingStockForItemReportByInstitution();
-        } else {
-            processClosingStockForItemReportForAll();
+            jpql.append("and sh.department = :dep ");
+            params.put("dep", department);
+        }
+
+        if (category != null) {
+            jpql.append("and sh.itemBatch.item.category = :cat ");
+            params.put("cat", category);
+        }
+
+        if (amp != null) {
+            item = amp;
+            jpql.append("and sh.itemBatch.item = :itm ");
+            params.put("itm", item);
+        }
+
+        jpql.append("and sh.createdAt < :et ");
+        params.put("et", CommonFunctions.getEndOfDay(toDate));
+
+        // Group by itemBatch (and department if you want per-department breakdown)
+        jpql.append("group by sh.department, sh.itemBatch ");
+        jpql.append("order by sh.itemBatch.item.name");
+
+        // Fetch the IDs of the latest StockHistory rows per itemBatch
+        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        System.out.println("jpql = " + jpql.toString());
+        System.out.println("params = " + params);
+        System.out.println("ids = " + ids);
+
+        rows = new ArrayList<>();
+
+        // Build rows per ItemBatch
+        for (Long shid : ids) {
+            StockHistory shx = facade.find(shid);
+            if (shx == null || shx.getItemBatch() == null || shx.getItemBatch().getItem() == null) {
+                continue;
+            }
+
+            // Create a fresh row for each itemBatch
+            PharmacyRow row = new PharmacyRow();
+            row.setItem(shx.getItemBatch().getItem());
+            row.setItemBatch(shx.getItemBatch());
+
+            double batchQty = shx.getItemStock();
+            double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
+            double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
+
+            // Populate row values directly (no accumulation needed, as each batch is its own row)
+            row.setQuantity(batchQty);
+            row.setPurchaseValue(batchQty * batchPurchaseRate);
+            row.setSaleValue(batchQty * batchSaleRate);
+
+            rows.add(row);
         }
     }
 
-    public void processClosingStockForItemReportByDepartment() {
+    public void processClosingStockForItemReport() {
         List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
@@ -2119,9 +2184,9 @@ public class PharmacyReportController implements Serializable {
         System.out.println("jpql = " + jpql.toString());
         System.out.println("params = " + params);
         System.out.println("ids = " + ids);
-        
+
         rows = new ArrayList<>();
-        
+
         // Process each StockHistory to build rows per Item (not per batch)
         for (Long shid : ids) {
             StockHistory shx = facade.find(shid);
@@ -2162,17 +2227,10 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    
-    public void processClosingStockForItemReportByInstitution() {
-
-    }
-
-    public void processClosingStockForItemReportForAll() {
-
-    }
-
     public void processClosingStock() {
-        System.out.println("processClosingStock");
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockQty=0.0;
         if (reportType.equals("batchWise")) {
             processClosingStockForBatchReport();
         } else if (reportType.equals("itemWise")) {
@@ -2181,8 +2239,16 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage("Report Type " + reportType + " is NOT supported.");
             return;
         }
+        if (rows != null) {
+            for (PharmacyRow pr : rows) {
+                stockPurchaseValue += pr.getPurchaseValue();
+                stockSaleValue += pr.getSaleValue();
+                stockQty += pr.getQuantity();
+            }
+        }
     }
 
+    @Deprecated
     public void processClosingStockReport() {
         stockSaleValue = 0.0;
         stockQty = 0.0;
