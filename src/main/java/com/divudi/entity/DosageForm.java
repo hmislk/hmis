@@ -1,6 +1,5 @@
-package com.divudi.bean.pharmacy;
+package com.divudi.entity;
 
-import com.divudi.entity.Category;
 import java.io.Serializable;
 import javax.persistence.Entity;
 
@@ -17,6 +16,4 @@ import javax.persistence.Entity;
 @Entity
 public class DosageForm extends Category implements Serializable {
 
-    
-    
 }

@@ -159,7 +159,7 @@ public class SysMex {
         try {
             sampleIdLong = Long.valueOf(sampleId);
         } catch (Exception e) {
-            sampleIdLong = 0l;
+            sampleIdLong = 0L;
         }
         return sampleIdLong;
     }

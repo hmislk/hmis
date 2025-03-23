@@ -28,6 +28,9 @@ public class TestWiseCountReport {
     private boolean refunded;
     private boolean cancelled;
     private BillItem billItem;
+    private Double reagentFee;
+    private Double otherFee;
+
 
 
     public TestWiseCountReport(String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double total) {
@@ -58,6 +61,18 @@ public class TestWiseCountReport {
         this.discount = discount;
         this.total = total;
         this.billItem = bi;
+    }
+    
+    public TestWiseCountReport(String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double regFee, Double otherFee, Double discount, Double total) {
+        this.testName = testName;
+        this.count = count;
+        this.hosFee = hosFee;
+        this.ccFee = ccFee;
+        this.proFee = proFee;
+        this.reagentFee = regFee;
+        this.otherFee = otherFee;
+        this.discount = discount;
+        this.total = total;
     }
     
     public Integer getSerial() {
@@ -154,5 +169,21 @@ public class TestWiseCountReport {
 
     public void setBillItem(BillItem billItem) {
         this.billItem = billItem;
+    }
+
+    public Double getReagentFee() {
+        return reagentFee;
+    }
+
+    public void setReagentFee(Double reagentFee) {
+        this.reagentFee = reagentFee;
+    }
+
+    public Double getOtherFee() {
+        return otherFee;
+    }
+
+    public void setOtherFee(Double otherFee) {
+        this.otherFee = otherFee;
     }
 }

@@ -33,8 +33,6 @@ public enum ReportTemplateType {
     TO_DEPARTMENT_SUMMARY_BY_BILL("To Department Summary by Bill"),
     ANNUAL_AND_DAILY_SUMMARY_RECORD_LIST("Annual and Daily Summary Record List");
 
-    ;
-
     private final String label;
 
     ReportTemplateType(String label) {

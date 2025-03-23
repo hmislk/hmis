@@ -19,11 +19,11 @@ public enum LeaveType {
     CasualHalf(Casual),
     Annual, //14 AnnualHalf
     AnnualHalf(Annual),
-    Medical, //14   
-    Maternity1st, // 84 working days 
+    Medical, //14
+    Maternity1st, // 84 working days
     Maternity2nd, // 42 working Days
     Maternity1stHalf(Maternity1st), //For Saturday
-    Maternity2ndHalf(Maternity2nd), //For Saturday    
+    Maternity2ndHalf(Maternity2nd), //For Saturday
     DutyLeave(true),
     DutyLeaveHalf(DutyLeave, true),
     Lieu(true),
@@ -31,7 +31,7 @@ public enum LeaveType {
     No_Pay(true),
     No_Pay_Half(No_Pay, true),
     @Deprecated
-    Sick, //    
+    Sick, //
     @Deprecated
     Maternity,
     @Deprecated
@@ -48,36 +48,33 @@ public enum LeaveType {
     public void setAutoLeave(boolean autoLeave) {
         this.autoLeave = autoLeave;
     }
-    
-    
+
+
 
     public boolean isExceptionalLeave() {
         return exceptionalLeave;
     }
 
-//    public double getLeaveEntitle() {
-//        return leaveEntitle;
-//    }
-    private LeaveType(boolean exB) {
+    LeaveType(boolean exB) {
         exceptionalLeave = exB;
     }
 
-    private LeaveType() {
+    LeaveType() {
 
     }
 
     private LeaveType parent = null;
-    
-    
 
-    private LeaveType(LeaveType parent) {
+
+
+    LeaveType(LeaveType parent) {
         this.parent = parent;
         if (this.parent != null) {
             this.parent.addChild(this);
         }
     }
 
-    private LeaveType(LeaveType parent, boolean exB) {
+    LeaveType(LeaveType parent, boolean exB) {
         this.parent = parent;
         exceptionalLeave = exB;
         if (this.parent != null) {
