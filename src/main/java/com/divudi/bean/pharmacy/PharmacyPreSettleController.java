@@ -235,8 +235,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         setNetTotal(getPreBill().getNetTotal());
     }
 
-    public void calculateRates(BillItem bi) {
-        System.out.println("calculateRates = ");
+    public void calculateRates(BillItem bi) {        
         PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
         if (pharmBillItem != null && pharmBillItem.getStock() != null) {
             ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
@@ -256,8 +255,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     @Inject
     private PriceMatrixController priceMatrixController;
     
-    public double calculateBillItemDiscountRate(BillItem bi) {
-        System.out.println("calculateBillItemDiscountRate");
+    public double calculateBillItemDiscountRate(BillItem bi) {        
         if (bi == null) {
             return 0.0;
         }
@@ -273,8 +271,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
         double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         double discountRate = 0;
-        boolean discountAllowed = bi.getItem().isDiscountAllowed();
-        System.out.println("discountAllowed = " + discountAllowed);
+        boolean discountAllowed = bi.getItem().isDiscountAllowed();       
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         //MEMBERSHIPSCHEME DISCOUNT
 //        if (membershipScheme != null && discountAllowed) {
@@ -293,12 +290,12 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 //
         //PAYMENTSCHEME DISCOUNT
 
-        System.out.println("getPaymentScheme() = " + getPaymentScheme());
+        //System.out.println("getPaymentScheme() = " + getPaymentScheme());
         if (getPaymentScheme() != null && discountAllowed) {
-            System.out.println("getPaymentMethod() = " + getPaymentMethod());
-            System.out.println("getPaymentScheme() = " + getPaymentScheme());
-            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment());
-            System.out.println("bi.getItem() = " + bi.getItem());
+//            System.out.println("getPaymentMethod() = " + getPaymentMethod());
+//            System.out.println("getPaymentScheme() = " + getPaymentScheme());
+//            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment());
+//            System.out.println("bi.getItem() = " + bi.getItem());
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
 
             System.err.println("priceMatrix = " + priceMatrix);
@@ -532,10 +529,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         if (getPaymentSchemeController().checkPaymentMethodError(getPreBill().getPaymentMethod(), paymentMethodData));
 
-        if ((getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
+        if (getPreBill().getPaymentMethod() == paymentMethod.Cash && (getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
             JsfUtil.addErrorMessage("Please select tendered amount correctly");
             return true;
         }
+        
 //        if (getPreBill().getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
 //                JsfUtil.addErrorMessage("Please select tendered amount correctly");
