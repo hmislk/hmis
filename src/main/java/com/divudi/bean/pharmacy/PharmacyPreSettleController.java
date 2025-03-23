@@ -991,17 +991,17 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public double checkAndUpdateBalance(Bill preBill){
         switch (paymentMethod) {
             case Cash:
-                balance = preBill.getNetTotal() - cashPaid;                
+                balance = getPreBill().getNetTotal() - cashPaid;                
             case Card:
-                balance = preBill.getNetTotal() - getPaymentMethodData().getCreditCard().getTotalValue();
+                balance = getPreBill().getNetTotal() - getPaymentMethodData().getCreditCard().getTotalValue();
             case Cheque:
-                balance = preBill.getNetTotal() - getPaymentMethodData().getCheque().getTotalValue();
+                balance = getPreBill().getNetTotal() - getPaymentMethodData().getCheque().getTotalValue();
             case Slip:
-                balance = preBill.getNetTotal() - getPaymentMethodData().getSlip().getTotalValue();
+                balance = getPreBill().getNetTotal() - getPaymentMethodData().getSlip().getTotalValue();
             case ewallet:
-                balance = preBill.getNetTotal() - getPaymentMethodData().getEwallet().getTotalValue();
+                balance = getPreBill().getNetTotal() - getPaymentMethodData().getEwallet().getTotalValue();
             case MultiplePaymentMethods:
-                balance = preBill.getNetTotal() - calculateMultiplePaymentMethodTotal();
+                balance = getPreBill().getNetTotal() - calculateMultiplePaymentMethodTotal();
             default:
                 return balance;
         }

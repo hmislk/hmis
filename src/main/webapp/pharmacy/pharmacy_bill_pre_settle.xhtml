@@ -174,7 +174,7 @@
                                             </p:inputText>
                                             <h:outputLabel  value="Balance " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                            <h:outputLabel id="balance" value="#{pharmacyPreSettleController.preBill.balance}" >
+                                            <h:outputLabel id="balance" value="#{pharmacyPreSettleController.checkAndUpdateBalance()}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </h:panelGrid>
