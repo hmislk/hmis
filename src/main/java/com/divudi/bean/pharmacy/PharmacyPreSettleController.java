@@ -65,6 +65,8 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
+import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -128,6 +130,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    PaymentService paymentService;
 /////////////////////////
     Item selectedAlternative;
     Bill saleReturnBill;
@@ -915,6 +919,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            
+            if(paymentMethodData.getStaffCredit().getToStaff()!=null && getPreBill().getToStaff()==null){
+                getPreBill().setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+            }else if(paymentMethodData.getStaffCredit().getToStaff()==null && getPreBill().getToStaff()!=null){
+                paymentMethodData.getStaffCredit().setToStaff(getPreBill().getToStaff());
+            }
+            
             if (getPreBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
                 return true;
@@ -939,14 +950,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 JsfUtil.addErrorMessage("No Details on multiple payment methods given");
                 return true;
             }
-            
+
             //double differenceOfBillTotalAndPaymentValue = preBill.getNetTotal() - calculateMultiplePaymentMethodTotal();
             //differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
             if (checkAndUpdateBalance() < 0) {
                 JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
                 return true;
             }
-            
+
         }
         return false;
     }
@@ -1055,6 +1066,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         setBill(getBillFacade().find(getSaleBill().getId()));
+
+        paymentService.updateBalances(payments);
+
 //        markToken();
 //        makeNull();
         //    removeSettledToken();
@@ -1551,7 +1565,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 //    public void setPaymentMethod(PaymentMethod paymentMethod) {
 //        this.paymentMethod = paymentMethod;
 //    }
-
 //    public PaymentScheme getPaymentScheme() {
 //        return paymentScheme;
 //    }
@@ -1559,7 +1572,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 //    public void setPaymentScheme(PaymentScheme paymentScheme) {
 //        this.paymentScheme = paymentScheme;
 //    }
-
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
     }

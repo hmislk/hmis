@@ -151,7 +151,9 @@
                                                 </h:panelGroup>
                                                 
                                                   <h:panelGroup id="staff_welfare" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Staff_Welfare'}">
-                                                      <pa:staff_welfare paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                      <pa:staff_welfare_asOnlyPayment
+                                                          controllerWithMultiplePayments="#{pharmacyPreSettleController}"
+                                                          paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
                                                     <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                                 </h:panelGroup>
 
