@@ -19,9 +19,10 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="printing.css"/>
 
-
         <h:panelGroup id="gpBillPreview" >
-            <div  class="container-fluid" style="width: 214mm!important; margin-top: 4cm!important; margin-bottom: 2.5cm!important"> 
+            <div  class="container-fluid" style="width: 214mm!important; margin-bottom: 2.5cm!important"> 
+                <div  style="margin-top: #{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Margin-Top Space','4cm')}"></div>
+                
                 <div style="font-family: verdana ">
 
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
@@ -63,7 +64,6 @@
                                 </td>
                             </tr>
                         </h:panelGroup>
-
 
                         <tr>
                             <td colspan="4">
@@ -590,7 +590,7 @@
                                     </h:panelGroup>
                                 </ui:repeat>
 
-                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and  Show Sum Value of a Doctor',false)}">
+                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
                                     <!-- Loop through Doctor and Nurse Charges first (Before ProfessionalCharge) -->
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'DoctorAndNurses' and bip.adjustedValue != 0}" style="font-size: 12px;">

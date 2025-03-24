@@ -5,7 +5,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -56,8 +55,8 @@ public class BillNumber implements Serializable {
     Date retiredAt;
     private String retireComments;
 
-    
-    
+
+
 
     public boolean isRetired() {
         return retired;
@@ -139,8 +138,8 @@ public class BillNumber implements Serializable {
         this.id = id;
     }
 
-    
-    
+
+
     @Override
     public int hashCode() {
         int hash = 0;

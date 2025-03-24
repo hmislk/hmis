@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -107,7 +106,7 @@ public class Bill implements Serializable, RetirableEntity {
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<BillComponent> billComponents = new ArrayList<>();
-    ////////////////////////////////////////////////   
+    ////////////////////////////////////////////////
     @Lob
     private String comments;
     // Bank Detail
