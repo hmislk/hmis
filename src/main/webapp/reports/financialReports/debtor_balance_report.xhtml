@@ -188,7 +188,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Bill Date"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.bill.billDate}">
+                            <h:outputLabel value="#{i.bill.createdAt}">
                                 <f:convertDateTime timeZone="Asia/Colombo"
                                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputLabel>
