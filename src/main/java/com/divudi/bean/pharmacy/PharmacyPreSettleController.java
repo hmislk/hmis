@@ -1046,8 +1046,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             return;
         }
 
-        if (getPreBill().getPaymentMethod() != PaymentMethod.Credit) {
-            if (checkAndUpdateBalance() != 0) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Cash) {
+            if (checkAndUpdateBalance() <= 0) {
                 JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
                 return;
             }
