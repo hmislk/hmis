@@ -213,7 +213,7 @@
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockPurchaseValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
-                                                    <f:convertNumber parent="#,###,###.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -221,7 +221,7 @@
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
-                                                    <f:convertNumber parent="#,###,###.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>

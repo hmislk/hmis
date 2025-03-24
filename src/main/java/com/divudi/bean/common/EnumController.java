@@ -5,47 +5,10 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillItemStatus;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.CalculationType;
-import com.divudi.data.CreditDuration;
-import com.divudi.data.CssFontStyle;
-import com.divudi.data.CssTextAlign;
-import com.divudi.data.CssTextDecoration;
-import com.divudi.data.CssVerticalAlign;
-import com.divudi.data.Dashboard;
-import com.divudi.data.DepartmentListMethod;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.DiscountType;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.InvestigationReportType;
-import com.divudi.data.ItemBarcodeGenerationStrategy;
-import com.divudi.data.ItemListingStrategy;
-import com.divudi.data.ItemType;
-import com.divudi.data.LoginPage;
-import com.divudi.data.PaperType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.ReportItemType;
-import com.divudi.data.SessionNumberType;
-import com.divudi.data.Sex;
-import com.divudi.data.MessageType;
-import com.divudi.data.PaymentContext;
-import com.divudi.data.PaymentType;
-import com.divudi.data.RestAuthenticationType;
-import com.divudi.data.SymanticType;
-import com.divudi.data.Title;
+import com.divudi.data.*;
 import com.divudi.data.analytics.ReportTemplateColumn;
 import com.divudi.data.analytics.ReportTemplateFilter;
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.Times;
+import com.divudi.data.hr.*;
 import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
@@ -466,9 +429,9 @@ public class EnumController implements Serializable {
     public BillTypeAtomic[] getBillTypesAtomic() {
         return BillTypeAtomic.values();
     }
-    
+
     public List<BillTypeAtomic> getBillTypesAtomicForLabTests() {
-        List<BillTypeAtomic> btas= new ArrayList<>();
+        List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.CC_BILL);
         btas.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.CC_BILL_REFUND);
@@ -819,7 +782,7 @@ public class EnumController implements Serializable {
             PaymentMethod.ewallet};
         return p;
     }
-    
+
     public PaymentMethod[] getPaymentMethodsForSupplierPayments() {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Card,
@@ -835,7 +798,8 @@ public class EnumController implements Serializable {
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.ewallet,
-            PaymentMethod.PatientDeposit};
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.OnlineSettlement};
         return p;
     }
 
@@ -907,6 +871,10 @@ public class EnumController implements Serializable {
 
     public PaymentMethod[] getAllPaymentMethods() {
         return PaymentMethod.values();
+    }
+
+    public List<BankAccountType> getBankAccountTypes() {
+        return BankAccountType.getAllValues();
     }
 
     public List<PaymentMethod> getActivePaymentMethods() {

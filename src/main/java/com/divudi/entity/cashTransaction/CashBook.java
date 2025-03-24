@@ -1,10 +1,9 @@
 package com.divudi.entity.cashTransaction;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -32,21 +31,21 @@ public class CashBook implements Serializable, RetirableEntity  {
     private Institution site;
     @ManyToOne
     private Department department;
-    
+
     //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
-    
-    //Retairing properties 
+
+    //Retairing properties
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    
+
         // Individual attributes for each PaymentMethod
     private Double onCallBalance = 0.0;
     private Double cashBalance = 0.0;
@@ -66,7 +65,7 @@ public class CashBook implements Serializable, RetirableEntity  {
     private Double onlineSettlementBalance = 0.0;
     private Double noneBalance = 0.0;
     private Double youOweMeBalance = 0.0;
-    
+
     //Editer Properties
     @ManyToOne
     private WebUser editer;
@@ -80,8 +79,8 @@ public class CashBook implements Serializable, RetirableEntity  {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
+
+
 
     @Override
     public int hashCode() {
@@ -347,5 +346,5 @@ public class CashBook implements Serializable, RetirableEntity  {
     public void setYouOweMeBalance(Double youOweMeBalance) {
         this.youOweMeBalance = youOweMeBalance;
     }
-    
+
 }

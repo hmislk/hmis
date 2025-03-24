@@ -320,6 +320,7 @@ public class PracticeBookingController implements Serializable {
         getPharmacySaleController().setPatient(opdVisit.getPatient());
         getPharmacySaleController().setOpdEncounterComments(opdVisit.getComments());
         getPharmacySaleController().setFromOpdEncounter(true);
+        getPharmacySaleController().setBillSettlingStarted(false);
         getPatientEncounterController().fillEncounterMedicines(opdVisit);
         for(ClinicalFindingValue cli :patientEncounterController.getEncounterMedicines()){
         }

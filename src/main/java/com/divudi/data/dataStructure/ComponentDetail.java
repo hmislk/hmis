@@ -5,7 +5,6 @@
  */
 package com.divudi.data.dataStructure;
 
-import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
@@ -14,22 +13,12 @@ import com.divudi.entity.Staff;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.inject.Inject;
 
 /**
  *
  * @author safrin
  */
 public class ComponentDetail {
-
-    /**
-     *
-     * URGENTLY need to remove this
-     *
-     */
-    @Deprecated
-    @Inject
-    OpdBillController opdBillController;
     private String no;
     private String comment;
     private Institution institution;

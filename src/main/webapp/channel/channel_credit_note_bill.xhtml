@@ -16,26 +16,26 @@
                         <h:panelGrid columns="15"  >
                             <h:outputLabel value="Agent Credit Note" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:commandButton id="btnSettle" value="Settle" action="#{agentAndCcPaymentController.channelAgencyCreditNoteSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                            <p:commandButton id="btnSettle" value="Settle" action="#{agentAndCcPaymentController.channelAgencyCreditNoteSettleBill}" ajax="false" icon="pi pi-check" style="background: #689f38;color: #fff;width: 120px; padding: 1px;border: 1px solid #689f38; margin: auto;" >
                             </p:commandButton> 
                             <p:defaultCommand target="btnSettle"/>
 
-                            <p:commandButton value="New Bill" ajax="false" action="#{agentAndCcPaymentController.prepareNewBill()}"  >
+                            <p:commandButton value="New Bill" ajax="false" action="#{agentAndCcPaymentController.prepareNewBill()}" style="width: 120px; background: #fbc02d; color: #212529; border: 1px solid #fbc02d; margin-left: 5px" icon="pi pi-plus" >
                             </p:commandButton>
                         </h:panelGrid>
                     </f:facet>
 
                     <p:panelGrid columns="2" style="min-width: 100%;">
                         <p:outputLabel value="Agency" />
-                        <p:autoComplete id="creditCom" forceSelection="true" value="#{agentAndCcPaymentController.current.fromInstitution}"  completeMethod="#{agencyController.completeAgency}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                        <p:autoComplete id="creditCom" forceSelection="true" value="#{agentAndCcPaymentController.current.fromInstitution}"  completeMethod="#{agencyController.completeAgency}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="50">
                             <f:ajax  event="itemSelect" execute="creditCom"  />
                             <p:column>#{ix.institutionCode}</p:column>
                             <p:column>#{ix.name}</p:column>
                         </p:autoComplete>
                         <p:outputLabel value="Payment" />
-                        <p:inputText autocomplete="off" value="#{agentAndCcPaymentController.amount}"/>                               
+                        <p:inputText autocomplete="off" value="#{agentAndCcPaymentController.amount}" style="width: 450px; padding: 5px;"/>
                         <p:outputLabel value="Description"/>
-                        <p:inputTextarea value="#{agentAndCcPaymentController.comment}"/>                                                         
+                        <p:inputTextarea value="#{agentAndCcPaymentController.comment}" style="width: 450px; height: 100px;"/>
                     </p:panelGrid>
                 </p:panel>
             </h:panelGroup>

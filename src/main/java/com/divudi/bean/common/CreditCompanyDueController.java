@@ -82,6 +82,16 @@ public class CreditCompanyDueController implements Serializable {
     private Department department;
     private Institution site;
 
+    private List<Bill> bills = new ArrayList<>();
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
     }
@@ -466,7 +476,7 @@ public class CreditCompanyDueController implements Serializable {
 
             String1Value5 newRow = new String1Value5();
             newRow.setString(ins.getName());
-            setInwardValuesAccess(ins, newRow, PaymentMethod.Credit);
+            setInwardValuesAccessForExcess(ins, newRow, PaymentMethod.Credit);
 
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
@@ -634,7 +644,9 @@ public class CreditCompanyDueController implements Serializable {
         for (PatientEncounter b : lst) {
             Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
             b.setTransDayCount(dayCount);
-            double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
+//            double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
+            double finalValue = b.getCreditUsedAmount() + b.getCreditPaidAmount();
+
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
                 dataTable5Value.getValue1PatientEncounters().add(b);
@@ -672,6 +684,26 @@ public class CreditCompanyDueController implements Serializable {
 
         }
 
+    }
+
+    private void setInwardValuesAccessForExcess(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
+        List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, false, paymentMethod);
+        for (PatientEncounter b : lst) {
+
+            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+
+            double finalValue = (Math.abs(b.getFinalBill().getNetTotal()) - Math.abs(b.getFinalBill().getPaidAmount()));
+
+            if (dayCount < 30) {
+                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+            } else if (dayCount < 60) {
+                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+            } else if (dayCount < 90) {
+                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+            } else {
+                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+            }
+        }
     }
 
     public CreditCompanyDueController() {
@@ -1252,6 +1284,39 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             institutionEncounters.add(newIns);
+        }
+    }
+
+    public void createInwardPaymentBills() {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BilledBill b where"
+                + " b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  "
+                + " and (b.forwardReferenceBill.netTotal - b.forwardReferenceBill.paidAmount) < 0";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        if (institutionOfDepartment != null) {
+            temMap.put("ins", institutionOfDepartment);
+            sql += " and b.department.institution = :ins ";
+        }
+
+        sql += " order by b.deptId desc  ";
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+        finalPaidTotal = 0;
+        finalTotal = 0;
+        finalTransPaidTotal = 0;
+
+        for (Bill bill : bills) {
+            finalTransPaidTotal += bill.getForwardReferenceBill().getNetTotal();
+            finalPaidTotal += bill.getForwardReferenceBill().getPaidAmount();
+            finalTotal += bill.getForwardReferenceBill().getNetTotal() - bill.getForwardReferenceBill().getPaidAmount();
         }
     }
 

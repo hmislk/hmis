@@ -66,6 +66,7 @@ import static com.divudi.data.BillClassType.RefundBill;
 
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
+
 import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT;
 import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
 import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
@@ -80,6 +81,7 @@ import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN;
+
 import com.divudi.data.PaymentCategory;
 import com.divudi.data.PaymentStatus;
 import com.divudi.data.PaymentType;
@@ -1086,6 +1088,13 @@ public class SearchController implements Serializable {
         paymentMethod = null;
         searchKeyword = null;
     }
+    
+    public void resetAllFiltersExceptDateRangeInstitueDepartmentSite() {
+        webUser = null;
+        departments = null;
+        paymentMethod = null;
+        searchKeyword = null;
+    }
 
     public void resetAllFilters() {
         institution = null;
@@ -1109,6 +1118,17 @@ public class SearchController implements Serializable {
     public String navigatToAllCashierSummary() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
+        return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
+    }
+    
+    public String navigatBackToAllCashierSummary() {
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Filter Reset of Cashier Summaries", false)) {
+            resetAllFiltersExceptDateRangeInstitueDepartmentSite();
+        }else{
+            resetAllFiltersExceptDateRange();
+        }
+        bundle = new ReportTemplateRowBundle();
+        generateAllCashierSummary();
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
 
@@ -12083,7 +12103,54 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createInwardServiceTablebyLoggedDepartment() {
+    public void createInwardServiceBills() {
+        Date startTime = new Date();
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from Bill b where "
+                + " b.billType = :billType "
+                + " and type(b)=:class "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false  ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.deptId desc ";
+        
+        temMap.put("billType", BillType.InwardBill);
+        temMap.put("class", BilledBill.class);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createInwardServiceTableForLab() {
         Date startTime = new Date();
 
         String sql;
@@ -12091,8 +12158,7 @@ public class SearchController implements Serializable {
         sql = "select (b.bill) from BillItem b where "
                 + " b.bill.billType = :billType "
                 + " and b.bill.createdAt between :fromDate and :toDate"
-                + " and b.bill.retired=false  "
-                + " and b.bill.department = :dep";
+                + " and b.bill.retired=false  ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.bill.patientEncounter.patient.person.name) like :patientName )";
@@ -12125,13 +12191,17 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.bill.deptId desc ";
-        temMap.put("dep", getSessionController().getDepartment());
         temMap.put("billType", BillType.InwardBill);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        List<Bill> billList = new ArrayList<>();
 
+        billList = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+        Set<Bill> uniqueBills = new HashSet<>(billList);
+
+        bills = new ArrayList<>(uniqueBills);
     }
 
     public void createInwardServiceTableDischarged() {
@@ -13671,9 +13741,11 @@ public class SearchController implements Serializable {
 
     public String navigateToSelectedCashierSummary(WebUser wu) {
         bundle = new ReportTemplateRowBundle();
-        institution = null;
-        department = null;
-        site = null;
+        if (!configOptionApplicationController.getBooleanValueByKey("Restrict Filter Reset of Cashier Summaries", false)) {
+            institution = null;
+            department = null;
+            site = null;
+        }
         webUser = wu;
         generateCashierSummary();
         return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
@@ -13681,15 +13753,18 @@ public class SearchController implements Serializable {
 
     public String navigateToSelectedCashierDetails(WebUser wu) {
         bundle = new ReportTemplateRowBundle();
-        institution = null;
-        department = null;
-        site = null;
+        if (!configOptionApplicationController.getBooleanValueByKey("Restrict Filter Reset of Cashier Summaries", false)) {
+            institution = null;
+            department = null;
+            site = null;
+        }
         paymentMethod = null;
-
         webUser = wu;
         generateCashierDetailed();
         return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
     }
+    
+    
 
     public void generateCashierSummary() {
         bundle = new ReportTemplateRowBundle();
@@ -15208,7 +15283,7 @@ public class SearchController implements Serializable {
         // If paymentStatus is ALL, no additional condition is added
 
         // Add other conditions based on your filters
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        List<BillTypeAtomic> btas = visitType.equalsIgnoreCase("OP") ? BillTypeAtomic.findByServiceType(ServiceType.OPD) : BillTypeAtomic.findByServiceType(ServiceType.INWARD);
         bundle.setDescription("Bill Types Listed: " + btas);
         if (!btas.isEmpty()) {
             jpql += " and bi.bill.billTypeAtomic in :bts ";
@@ -15273,7 +15348,11 @@ public class SearchController implements Serializable {
                     rtr.setSpeciality(speciality);
                 });
 
-        bundle.calculateTotalsForProfessionalFees();
+        if (visitType.equalsIgnoreCase("OP")) {
+            bundle.calculateTotalsForProfessionalFees();
+        } else {
+            bundle.calculateTotalsForProfessionalFeesForInward();
+        }
 
         return bundle;
     }
@@ -17186,9 +17265,10 @@ public class SearchController implements Serializable {
         parameters.put("bfr", true);
         parameters.put("br", true);
 
-        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);;
+        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
+        ;
         if (bookingType != null) {
-            switch (bookingType) {                
+            switch (bookingType) {
                 case "System Bookings":
                     bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
                     break;

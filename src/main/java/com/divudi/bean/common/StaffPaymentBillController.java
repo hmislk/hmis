@@ -671,9 +671,11 @@ public class StaffPaymentBillController implements Serializable {
             double drawerBalance = userDrawer.getCashInHandValue();
             double paymentAmount = getTotalPayingWithoutWht();
 
-            if (drawerBalance < paymentAmount) {
-                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                return;
+            if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                if (drawerBalance < paymentAmount) {
+                    JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                    return;
+                }
             }
         }
         performCalculations();
@@ -1274,8 +1276,8 @@ public class StaffPaymentBillController implements Serializable {
         if (withholdingTaxPercentage == null) {
             withholdingTaxPercentage = configOptionApplicationController.getDoubleValueByKey("Withholding Tax Percentage");
         }
-        
-        if(withholdingTaxPercentage == null){
+
+        if (withholdingTaxPercentage == null) {
             withholdingTaxPercentage = 0.0;
         }
 

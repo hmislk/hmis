@@ -112,7 +112,7 @@ public class SysMexOld {
         insId2 = insId2.substring(0, 5);
         //System.out.println("instrument Id2 = " + insId2);
 
-        if (insId1 == null ? insId2 != null : !insId1.equals(insId2)) {
+        if (!Objects.equals(insId1, insId2)) {
             return false;
         }
         //System.out.println("Instrument ID checks ok");
@@ -130,10 +130,7 @@ public class SysMexOld {
         }
 
         Double twbc = findValue(wbcStart, wbcEnd, 0);
-        if (twbc < 1000 || twbc > 50000) {
-            return false;
-        }
-        return true;
+        return twbc >= 1000 && twbc <= 50000;
     }
 
     public void shiftPositions() {
@@ -210,7 +207,7 @@ public class SysMexOld {
         StringBuilder sb = new StringBuilder();
         for (Byte b : bytes) {
             if (b != null) {
-                sb.append(b.toString()).append(" ");
+                sb.append(b).append(" ");
             }
         }
         return sb.toString().trim(); // Remove trailing space
@@ -253,7 +250,7 @@ public class SysMexOld {
     }
 
     private String round(double value, int places) {
-        String returnVal = "";
+        String returnVal;
         if (places == 0) {
             returnVal = ((long) value) + "";
         } else if (places < 0) {
@@ -270,11 +267,11 @@ public class SysMexOld {
     }
 
     private Double findValue(int from, int to, int decimals) {
-        Double val = null;
+        Double val;
 //        //System.out.println("from = " + from);
 //        //System.out.println("to = " + to);
 
-        String display = "";
+        StringBuilder display = new StringBuilder();
         for (int i = from; i < to + 1; i++) {
 //            //System.out.println("i = " + i);
             int temN;
@@ -284,29 +281,21 @@ public class SysMexOld {
                 temN = 0;
             }
 
-            display += (char) temN + "";
+            display.append((char) temN);
         }
 
-        if (decimals
-                > 0) {
+        if (decimals > 0) {
             String wn = display.substring(0, display.length() - decimals);
-            String fn = display.substring(display.length() - decimals, display.length());
-            display = wn + "." + fn;
+            String fn = display.substring(display.length() - decimals);
+            display = new StringBuilder(wn + "." + fn);
             try {
-                val = Double.parseDouble(display);
-            } catch (Exception e) {
-                val = null;
-            }
-        } else if (decimals
-                > 0) {
-            try {
-                val = Double.parseDouble(display);
+                val = Double.parseDouble(display.toString());
             } catch (Exception e) {
                 val = null;
             }
         } else {
             try {
-                val = Double.parseDouble(display);
+                val = Double.parseDouble(display.toString());
                 val = val * Math.pow(10, Math.abs(decimals));
             } catch (Exception e) {
                 val = null;
@@ -316,13 +305,13 @@ public class SysMexOld {
     }
 
     private String findStringValue(int from, int to) {
-        String display = "";
+        StringBuilder display = new StringBuilder();
         for (int i = from; i < to + 1; i++) {
 //            //System.out.println("i = " + i);
             int temN = bytes.get(i);
-            display += (char) temN + "";
+            display.append((char) temN);
         }
-        return display;
+        return display.toString();
     }
 
     public int getLengthOfMessage() {

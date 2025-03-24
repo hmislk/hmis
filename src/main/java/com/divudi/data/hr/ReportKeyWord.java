@@ -39,9 +39,6 @@ import javax.persistence.Transient;
  */
 public class ReportKeyWord {
 
-
-    CommonFunctions commonFunctions;
-
     DayType[] dayTypes;
     Staff staff;
     Times times;
@@ -88,12 +85,12 @@ public class ReportKeyWord {
     String transAddress3;
     @Transient
     String transAddress4;
-    
+
     int numOfRows=100;
 
     Date fromDate;
     Date toDate;
-    
+
     MembershipScheme membershipScheme;
     PatientEncounter patientEncounter;
 
@@ -367,11 +364,8 @@ public class ReportKeyWord {
             return;
         }
 
-        String arr[] = address.split(",");
+        String[] arr = address.split(",");
         ////// // System.out.println(arr);
-        if (arr == null) {
-            return;
-        }
         try {
             transAddress1 = arr[0];
             transAddress2 = arr[1];
@@ -481,7 +475,7 @@ public class ReportKeyWord {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth();
+            fromDate = CommonFunctions.getStartOfMonth();
         }
         return fromDate;
     }
@@ -492,7 +486,7 @@ public class ReportKeyWord {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfMonth();
+            toDate = CommonFunctions.getEndOfMonth();
         }
         return toDate;
     }

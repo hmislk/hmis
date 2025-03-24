@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,14 +101,54 @@ public class ReportsStock implements Serializable {
     @EJB
     BillItemFacade billItemFacade;
 
+    public String navigateToPharmacyReportDepartmentStockByItem() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_item?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyReportDepartmentStockByItemOrderByVmp() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
+    }
+
     /**
      * Methods
      */
     public void fillDepartmentStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+        System.out.println("fillDepartmentStocks");
+        Date startedAt = new Date();
+        System.out.println("startedAt = " + startedAt);
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+        String sql = "select s from Stock s "
+                + " where s.department=:d "
+                + " and s.stock > 0 ";
+        m.put("d", department);
+        Date beforeJpql = new Date();
+        System.out.println("beforeJpql = " + beforeJpql);
+        stocks = getStockFacade().findByJpql(sql, m);
 
+        Date afterJpql = new Date();
+        System.out.println("afterJpql = " + afterJpql);
+        stocks.sort(Comparator.comparing(s -> s.getItemBatch().getItem().getName(), String.CASE_INSENSITIVE_ORDER));
+
+        Date beforeCal = new Date();
+        System.out.println("beforeCal = " + beforeCal);
+        stockPurchaseValue = stocks.stream()
+                .mapToDouble(s -> s.getItemBatch().getPurcahseRate() * s.getStock())
+                .sum();
+
+        stockSaleValue = stocks.stream()
+                .mapToDouble(s -> s.getItemBatch().getRetailsaleRate() * s.getStock())
+                .sum();
+        Date afterCal = new Date();
+        System.out.println("afterCal = " + afterCal);
+    }
+
+    public void fillDepartmentStocksOfMedicines() {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -136,10 +177,6 @@ public class ReportsStock implements Serializable {
     }
 
     public String fillDepartmentNonEmptyStocksByVmp() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
         String sql;
 
@@ -147,16 +184,14 @@ public class ReportsStock implements Serializable {
             sql = "select s from Stock s join TREAT(s.itemBatch.item as Amp) amp "
                     + "where s.stock>:z and amp.vmp=:vmp "
                     + "order by s.itemBatch.item.name";
-            m.put("z", 0.0);
-            m.put("vmp", vmp);
         } else {
             sql = "select s from Stock s join TREAT(s.itemBatch.item as Amp) amp "
                     + "where s.stock>:z and s.department=:d and amp.vmp=:vmp "
                     + "order by s.itemBatch.item.name";
             m.put("d", department);
-            m.put("z", 0.0);
-            m.put("vmp", vmp);
         }
+        m.put("z", 0.0);
+        m.put("vmp", vmp);
         //System.err.println("");
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
@@ -171,10 +206,6 @@ public class ReportsStock implements Serializable {
     }
 
     public void fillDepartmentNonEmptyProductStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
         String sql;
         if (department == null) {
@@ -210,10 +241,6 @@ public class ReportsStock implements Serializable {
     }
 
     public void fillDepartmentNonEmptyItemStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -229,6 +256,37 @@ public class ReportsStock implements Serializable {
                 + "from Stock s where s.stock>:z and s.department=:d "
                 + "group by s.itemBatch.item.name, s.itemBatch.item.code "
                 + "order by s.itemBatch.item.name";
+        m.put("d", department);
+        m.put("z", 0.0);
+        List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (PharmacyStockRow r : lsts) {
+            stockPurchaseValue += r.getPurchaseValue();
+            stockSaleValue += r.getSaleValue();
+
+        }
+        pharmacyStockRows = lsts;
+
+    }
+
+    public void fillDepartmentStockByItemOrderByVmp() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        Map m = new HashMap();
+        String sql;
+        sql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
+                + "(s.itemBatch.item.vmp.name, "
+                + "s.itemBatch.item.code, "
+                + "s.itemBatch.item.name, "
+                + "sum(s.stock), "
+                + "sum(s.itemBatch.purcahseRate * s.stock), "
+                + "sum(s.itemBatch.retailsaleRate * s.stock))  "
+                + "from Stock s where s.stock>:z and s.department=:d "
+                + "group by s.itemBatch.item "
+                + "order by s.itemBatch.item.vmp.name, s.itemBatch.item.name";
         m.put("d", department);
         m.put("z", 0.0);
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
@@ -267,10 +325,6 @@ public class ReportsStock implements Serializable {
     }
 
     public void fillDepartmentStocksMinus() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -346,7 +400,6 @@ public class ReportsStock implements Serializable {
             double calculatedStk = 0;
             boolean flg = false;
             if (sh != null) {
-                //   ////System.out.println("Previuos Stock " + sh.getStockQty());
                 calculatedStk = (sh.getStockQty() + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit());
                 flg = true;
             } else if (phi != null) {
@@ -354,27 +407,15 @@ public class ReportsStock implements Serializable {
                 flg = true;
             }
 
-            //   ////System.out.println("calculated History Qty " + calculatedStk);
-            if (flg == true && b.getStockHistory().getStockQty() != calculatedStk) {
+            if (flg && b.getStockHistory().getStockQty() != calculatedStk) {
                 stockSet.add(b.getStock());
-                //   ////System.out.println("TRUE");
             }
-
-            //   ////System.out.println("#########");
         }
 
-        stocks = new ArrayList<>();
-        for (Stock s : stockSet) {
-            stocks.add(s);
-        }
-
+        stocks = new ArrayList<>(stockSet);
     }
 
     public void fillDepartmentStocksError2() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -461,13 +502,6 @@ public class ReportsStock implements Serializable {
                 if (calcualtedQty != curHistory) {
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
-                } else {
-                    //   ////System.out.println("Itm " + ph.getBillItem().getItem().getName());
-                    //   ////System.out.println("Prv History Qty " + preHistoryQty);
-                    //   ////System.out.println("Prv Qty " + previousPh.getQtyInUnit());
-                    //   ////System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
-                    //   ////System.out.println("History " + curHistory);
-                    //   ////System.out.println("######");
                 }
 
                 previousPh = ph;
@@ -475,20 +509,12 @@ public class ReportsStock implements Serializable {
 
         }
 
-        List<Stock> stk = new ArrayList<>();
-        for (Stock st : tmpStockList) {
-            stk.add(st);
-        }
-
-        stocks = stk;
-
+        stocks = new ArrayList<>(tmpStockList);
     }
 
     private Date date;
 
     public void fillDepartmentExpiaryStocks() {
-        Date startTime = new Date();
-
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -520,8 +546,6 @@ public class ReportsStock implements Serializable {
         if (st != null) {
             getStockFacade().edit(st);
             JsfUtil.addSuccessMessage("Edit Successful");
-        } else {
-            return;
         }
     }
 
@@ -1072,7 +1096,7 @@ public class ReportsStock implements Serializable {
         toDate = c.getTime();
         fillDepartmentExpiaryStocks();;
     }
-    
+
     public void fillThreeMonthsExpiaryOfSupplier() {
         fromDate = Calendar.getInstance().getTime();
         Calendar c = Calendar.getInstance();

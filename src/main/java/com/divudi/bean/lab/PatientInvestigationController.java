@@ -271,6 +271,7 @@ public class PatientInvestigationController implements Serializable {
     private PatientInvestigation currentPI;
 
     private boolean printIndividualBarcodes;
+    private Bill currentBill;
 
     public String sampleComponentNames(PatientSample ps) {
         List<PatientSampleComponant> pscList = getPatientSampleComponentsByPatientSample(ps);
@@ -1357,11 +1358,12 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("generateBarcodesForSelectedBill");
         selectedBillBarcodes = new ArrayList<>();
         billBarcodes = new ArrayList<>();
+        setCurrentBill(billForBarcode);
         if (billForBarcode == null) {
             JsfUtil.addErrorMessage("No Bills Seelcted");
             return;
         }
-
+        
         if (billForBarcode.isCancelled()) {
             JsfUtil.addErrorMessage("This Bill is Already Cancel");
             return;
@@ -5010,6 +5012,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setColumn2AntibioticList(List<PatientReportItemValue> column2AntibioticList) {
         this.column2AntibioticList = column2AntibioticList;
+    }
+
+    public Bill getCurrentBill() {
+        return currentBill;
+    }
+
+    public void setCurrentBill(Bill currentBill) {
+        this.currentBill = currentBill;
     }
 
     /**

@@ -221,6 +221,8 @@ public class ReportController implements Serializable {
     private Double grossFeeTotal;
     private Double discountTotal;
     private Double netTotal;
+    private double totalReagentFee;
+    private double totalAdditionalFee;
 
     private List<String> voucherStatusOnDebtorSettlement;
     private String selectedVoucherStatusOnDebtorSettlement;
@@ -3271,6 +3273,8 @@ public class ReportController implements Serializable {
                 + "sum(bi.hospitalFee), "
                 + "sum(bi.collectingCentreFee), "
                 + "sum(bi.staffFee), "
+                + "sum(bi.reagentFee), "
+                + "sum(bi.otherFee), "
                 + "sum(bi.discount), "
                 + "sum(bi.netValue)"
                 + ") "
@@ -3343,6 +3347,8 @@ public class ReportController implements Serializable {
                 posResult.setHosFee(posResult.getHosFee() - Math.abs(cancelResult.getHosFee()));
                 posResult.setCcFee(posResult.getCcFee() - Math.abs(cancelResult.getCcFee()));
                 posResult.setProFee(posResult.getProFee() - Math.abs(cancelResult.getProFee()));
+                posResult.setReagentFee(posResult.getReagentFee() - Math.abs(cancelResult.getReagentFee()));
+                posResult.setOtherFee(posResult.getOtherFee()- Math.abs(cancelResult.getOtherFee()));
                 posResult.setTotal(posResult.getTotal() - Math.abs(cancelResult.getTotal()));
                 posResult.setDiscount(posResult.getDiscount() - Math.abs(cancelResult.getDiscount()));
             }
@@ -3356,6 +3362,8 @@ public class ReportController implements Serializable {
                 posResult.setHosFee(posResult.getHosFee() - Math.abs(refundResult.getHosFee()));
                 posResult.setCcFee(posResult.getCcFee() - Math.abs(refundResult.getCcFee()));
                 posResult.setProFee(posResult.getProFee() - Math.abs(refundResult.getProFee()));
+                posResult.setReagentFee(posResult.getReagentFee() - Math.abs(refundResult.getReagentFee()));
+                posResult.setOtherFee(posResult.getOtherFee()- Math.abs(refundResult.getOtherFee()));
                 posResult.setTotal(posResult.getTotal() - Math.abs(refundResult.getTotal()));
                 posResult.setDiscount(posResult.getDiscount() - Math.abs(refundResult.getDiscount()));
             }
@@ -3367,6 +3375,8 @@ public class ReportController implements Serializable {
         totalHosFee = 0.0;
         totalCCFee = 0.0;
         totalProFee = 0.0;
+        totalReagentFee = 0.0;
+        totalAdditionalFee = 0.0;
         totalNetTotal = 0.0;
         totalDiscount = 0.0;
         totalNetHosFee = 0.0;
@@ -3376,6 +3386,8 @@ public class ReportController implements Serializable {
             totalHosFee += (twc.getHosFee());
             totalCCFee += twc.getCcFee();
             totalProFee += twc.getProFee();
+            totalReagentFee += twc.getReagentFee();
+            totalAdditionalFee += twc.getOtherFee();
             totalNetTotal += twc.getTotal();
             totalDiscount += twc.getDiscount();
             totalNetHosFee += twc.getHosFee() - twc.getDiscount();
@@ -3744,6 +3756,22 @@ public class ReportController implements Serializable {
 
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public double getTotalReagentFee() {
+        return totalReagentFee;
+    }
+
+    public void setTotalReagentFee(double totalReagentFee) {
+        this.totalReagentFee = totalReagentFee;
+    }
+
+    public double getTotalAdditionalFee() {
+        return totalAdditionalFee;
+    }
+
+    public void setTotalAdditionalFee(double totalAdditionalFee) {
+        this.totalAdditionalFee = totalAdditionalFee;
     }
 
     

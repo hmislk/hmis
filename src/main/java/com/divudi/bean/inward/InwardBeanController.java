@@ -26,7 +26,6 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PatientItem;
-import com.divudi.entity.Payment;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
@@ -96,7 +95,7 @@ public class InwardBeanController implements Serializable {
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
 
-    
+
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
@@ -113,10 +112,10 @@ public class InwardBeanController implements Serializable {
     SessionController sessionController;
 
     private CommonFunctions commonFunctions;
-    
+
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
-        Map<String, String> replaceables = CommonFunctions.getReplaceables(b);
+        Map<String, String> replaceables = Bill.toMap(b);
         return CommonFunctions.replaceText(replaceables, template);
     }
 
@@ -315,7 +314,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -354,7 +352,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -378,7 +375,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -388,7 +384,7 @@ public class InwardBeanController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
-    
+
     public double calCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas) {
         String sql;
         HashMap hm;
@@ -402,7 +398,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -425,7 +420,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -457,7 +451,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -537,7 +530,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -564,7 +556,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -611,7 +602,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -645,7 +635,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -669,7 +658,6 @@ public class InwardBeanController implements Serializable {
        List<PatientEncounter> pts1 = new ArrayList<>();
         pts1.add(patientEncounter);
         List<PatientEncounter> cpts1 = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts1.size() > 0){
             for(PatientEncounter pt : cpts1){
                 pts1.add(pt);
@@ -917,7 +905,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -956,7 +943,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -966,7 +952,7 @@ public class InwardBeanController implements Serializable {
 
         return getPatientRoomFacade().findDoubleByJpql(sql, hm);
     }
-    
+
     public double getAdmissionCharge(PatientEncounter patientEncounter) {
         Double total = 0.0;
         List<PatientEncounter> pts = new ArrayList<>();
@@ -977,7 +963,7 @@ public class InwardBeanController implements Serializable {
                 pts.add(pt);
             }
         }
-        
+
         for(PatientEncounter pt : pts){
             total = total + pt.getAdmissionType().getAdmissionFee();
         }
@@ -994,7 +980,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1015,7 +1000,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1035,7 +1019,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1055,7 +1038,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1075,7 +1057,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1095,7 +1076,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1115,7 +1095,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1162,7 +1141,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1193,7 +1171,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1303,7 +1280,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1350,7 +1326,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1390,7 +1365,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1402,18 +1376,18 @@ public class InwardBeanController implements Serializable {
 
         return val;
     }
-    
+
     public List<PatientEncounter> fetchChildPatientEncounter(PatientEncounter patientEncounter){
         List<PatientEncounter> cpt = new ArrayList<>();
-        
+
         HashMap hm = new HashMap();
         String sql = "SELECT pe FROM PatientEncounter pe "
                 + " where pe.parentEncounter = :pe "
                 + " and pe.retired=false ";
         hm.put("pe", patientEncounter);
-        
+
         cpt = encounterFacade.findByJpql(sql, hm);
-        
+
         return cpt;
     }
 
@@ -1426,7 +1400,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1447,7 +1420,6 @@ public class InwardBeanController implements Serializable {
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
-        System.out.println("cpts = " + cpts);
         if(cpts.size() > 0){
             for(PatientEncounter pt : cpts){
                 pts.add(pt);
@@ -1727,7 +1699,7 @@ public class InwardBeanController implements Serializable {
         return dbl;
 
     }
-    
+
     public double getPaidByPatientValue(PatientEncounter patientEncounter) {
 
         HashMap hm = new HashMap();
@@ -1744,7 +1716,7 @@ public class InwardBeanController implements Serializable {
         return dbl;
 
     }
-    
+
     public double getPaidByCompanyValue(PatientEncounter patientEncounter) {
 
         HashMap hm = new HashMap();
@@ -2192,7 +2164,7 @@ public class InwardBeanController implements Serializable {
 
         double duration = tif.getDurationHours() * 60;
         double consumeTimeM = 0L;
-        
+
         if(admittedAt==null){
             admittedAt = new Date();
         }
@@ -2200,9 +2172,9 @@ public class InwardBeanController implements Serializable {
         if(dischargedAt==null){
             dischargedAt=new Date();
         }
-        
-        
-        
+
+
+
         consumeTimeM = CommonFunctions.calculateDurationMin(admittedAt, dischargedAt);
 
         double count = 0;
