@@ -16,6 +16,7 @@ import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Item;
+import com.divudi.entity.pharmacy.Stock;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,6 +24,10 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -35,25 +40,59 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class StockHistoryController implements Serializable {
 
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
-    StockHistoryFacade facade;
+    private StockHistoryFacade facade;
+    @EJB
+    StockHistoryRecorder stockHistoryRecorder;
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     CommonController commonController;
 
-    List<StockHistory> pharmacyStockHistories;
-    List<Date> pharmacyStockHistoryDays;
-    Date fromDate;
-    Date toDate;
-    Date historyDate;
-    Department department;
-    DepartmentType departmentType;
+    @Inject
+    SessionController sessionController;
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private StockHistory current;
+    private List<StockHistory> pharmacyStockHistories;
+    private List<Date> pharmacyStockHistoryDays;
+    private Date fromDate;
+    private Date toDate;
+    private Date historyDate;
+    private Department department;
+    private DepartmentType departmentType;
 
-    double totalStockSaleValue;
-    double totalStockPurchaseValue;
+    private double totalStockSaleValue;
+    private double totalStockPurchaseValue;
 
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
+    public StockHistoryController() {
+    }
+
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
+    public String navigateToViewStockHistory() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        return "/analytics/pharmacy/stock_history?faces-redirect=true";
+    }
+
+    public String navigateToViewStockHistory(StockHistory stockHistory) {
+        if (stockHistory == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = stockHistory;
+        return "/analytics/pharmacy/stock_history?faces-redirect=true";
+    }
+
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Functions">
     public void fillHistoryAvailableDays() {
-        Date startTime = new Date();
-
         String jpql;
         Map m = new HashMap();
         m.put("fd", fromDate);
@@ -75,7 +114,6 @@ public class StockHistoryController implements Serializable {
         for (Date d : pharmacyStockHistoryDays) {
         }
 
-        
     }
 
     public List<StockHistory> findStockHistories(Date fd, Date td, HistoryType ht, Department dep, Item i) {
@@ -152,7 +190,6 @@ public class StockHistoryController implements Serializable {
             totalStockSaleValue += psh.getStockSaleValue();
         }
 
-        
     }
 
     public void fillStockHistoriesWithZero() {
@@ -163,6 +200,27 @@ public class StockHistoryController implements Serializable {
         fillStockHistories(true);
     }
 
+    public void recordHistory() {
+        Date startTime = new Date();
+
+        try {
+            stockHistoryRecorder.myTimer();
+            JsfUtil.addSuccessMessage("History Saved");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed due to " + e.getMessage());
+        }
+
+    }
+
+    public String viewPharmacyStockHistory() {
+        getFromDate();
+        getToDate();
+        fillHistoryAvailableDays();
+        return "/pharmacy/pharmacy_department_stock_history?faces-redirect=true";
+    }
+
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Date getHistoryDate() {
         return historyDate;
     }
@@ -191,31 +249,8 @@ public class StockHistoryController implements Serializable {
         return toDate;
     }
 
-    public String viewPharmacyStockHistory() {
-        getFromDate();
-        getToDate();
-        fillHistoryAvailableDays();
-        return "/pharmacy/pharmacy_department_stock_history?faces-redirect=true";
-    }
-
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    @EJB
-    StockHistoryRecorder stockHistoryRecorder;
-
-    public void recordHistory() {
-        Date startTime = new Date();
-
-        try {
-            stockHistoryRecorder.myTimer();
-            JsfUtil.addSuccessMessage("History Saved");
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Failed due to " + e.getMessage());
-        }
-
-        
     }
 
     public List<Date> getPharmacyStockHistoryDays() {
@@ -233,15 +268,6 @@ public class StockHistoryController implements Serializable {
     public void setPharmacyStockHistories(List<StockHistory> pharmacyStockHistories) {
         this.pharmacyStockHistories = pharmacyStockHistories;
     }
-
-    /**
-     * Creates a new instance of StockHistoryController
-     */
-    public StockHistoryController() {
-    }
-
-    @Inject
-    SessionController sessionController;
 
     public Department getDepartment() {
         if (department == null) {
@@ -285,5 +311,68 @@ public class StockHistoryController implements Serializable {
     public void setDepartmentType(DepartmentType departmentType) {
         this.departmentType = departmentType;
     }
+
+    public StockHistoryFacade getFacade() {
+        return facade;
+    }
+
+    public StockHistory getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(StockHistory current) {
+        this.current = current;
+    }
+
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
+    @FacesConverter(forClass = StockHistory.class)
+    public static class StockHistoryConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.trim().isEmpty()) {
+                return null;
+            }
+            try {
+                StockHistoryController controller = (StockHistoryController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "stockHistoryController");
+                return controller.getFacade().find(getKey(value));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        Long getKey(String value) {
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                // Rethrow the exception to handle it in getAsObject
+                throw e;
+            }
+        }
+
+        String getStringKey(Long value) {
+            if (value == null) {
+                return null;
+            }
+            return value.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof StockHistory) {
+                StockHistory stock = (StockHistory) object;
+                return getStringKey(stock.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + StockHistory.class.getName());
+            }
+        }
+    }
+    // </editor-fold>  
 
 }
