@@ -144,6 +144,12 @@ public class LaboratoryReportController implements Serializable {
         return "/reportLab/laboratory_income_report?faces-redirect=true;";
     }
     
+    public String navigateToLaboratorySummaryFromReport() {
+        resetAllFiltersExceptDateRange();
+        viewTemplate ="/reports/index.xhtml";
+        return "/reportLab/laboratory_summary?faces-redirect=true;";
+    }
+    
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Functions">
@@ -182,35 +188,29 @@ public class LaboratoryReportController implements Serializable {
     public void processLaboratoryIncomeReport() {
         System.out.println("processLaboratoryIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        
         //Add All OPD BillTypes
-//        billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-//        billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-//        billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
-//        billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        
         //Add All Inward BillTypes
-//        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-//        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        
         //Add All Package BillTypes
-//        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-//        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-//        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
-//        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        
         //Add All CC BillTypes
         billTypeAtomics.add(BillTypeAtomic.CC_BILL);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
@@ -233,6 +233,39 @@ public class LaboratoryReportController implements Serializable {
         bundle.generatePaymentDetailsForBills();
     }
 
+    public void processLaboratorySummary() {
+        System.out.println("processLaboratorySummary");
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        
+        //Add All OPD BillTypes
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        
+        //Add All Inward BillTypes
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        
+        //Add All Package BillTypes
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        
+        //Add All CC BillTypes
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
+        
+    }
+    
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
@@ -609,9 +642,7 @@ public class LaboratoryReportController implements Serializable {
     public void setMaxResult(int maxResult) {
         this.maxResult = maxResult;
     }
-
-    // </editor-fold>
-
+    
     public String getViewTemplate() {
         return viewTemplate;
     }
@@ -619,4 +650,6 @@ public class LaboratoryReportController implements Serializable {
     public void setViewTemplate(String viewTemplate) {
         this.viewTemplate = viewTemplate;
     }
+    
+    // </editor-fold>
 }
