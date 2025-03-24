@@ -24,7 +24,6 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
@@ -1904,7 +1903,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -1982,7 +1980,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -2025,11 +2022,11 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
     }
 
     private boolean checkPatientAgeSex() {
-        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().isEmpty() || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
             JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
+        if (!Person.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
             JsfUtil.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
             return true;
         }
@@ -2553,7 +2550,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
         double billVat = 0.0;
 
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -3035,14 +3031,15 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
     }
 
     public double calBillPaidValue(Bill b) {
-        String sql;
+        String jpql = "select sum(bfp.amount) "
+                + " from BillFeePayment bfp "
+                + " where bfp.retired = :ret "
+                + " and bfp.billFee.bill.id = :bid";
 
-        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.billFee.bill.id=" + b.getId();
-
-        double d = billFeePaymentFacade.findDoubleByJpql(sql);
-
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", b.getId());
+        double d = billFeePaymentFacade.findDoubleByJpql(jpql, params);
         return d;
     }
 

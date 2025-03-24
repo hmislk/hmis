@@ -21,28 +21,36 @@
                 padding: 1.5cm;
                 margin: 0 auto;
                 border: 1px solid #000;
-                font-size: 1.1rem;
+                font-size: 1rem;
+                background: #f9f9f9;
+                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
             }
 
             .receipt-header {
                 text-align: center;
                 font-weight: bold;
-                text-decoration: underline;
+                font-size: 1.2em;
                 margin-bottom: 20px;
+                border-bottom: 2px solid #ddd;
+                padding-bottom: 10px;
             }
 
-            .receipt-info, .receipt-details, .receipt-footer {
+            .receipt-info, .receipt-details{
+                background: #fff;
+                padding: 15px;
+                border-radius: 5px;
                 margin-bottom: 15px;
             }
 
             .receipt-info div, .receipt-details div {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 8px;
+                padding: 5px 0;
             }
 
             .receipt-info div label, .receipt-details div label {
-                flex: 1;
+                font-weight: bold;
+                color: #555;
             }
 
             .receipt-info div span, .receipt-details div span {
@@ -53,14 +61,20 @@
             .receipt-total {
                 text-align: right;
                 font-weight: bold;
-                font-size: 1.2rem;
-                margin-top: 20px;
-                margin-bottom: 20px;
+                font-size: 1.4rem;
+                margin: 20px 0;
+                background: #e0e0e0;
+                padding: 10px;
+                border-radius: 5px;
             }
 
             .receipt-footer {
                 text-align: center;
                 font-style: italic;
+                font-size: 0.9em;
+                color: #666;
+                border-top: 1px solid #ddd;
+                padding-top: 10px;
             }
         </style>
 
@@ -84,7 +98,7 @@
                     <label>Receipt No:</label>
                     <span>
                         <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
-                    </span>        
+                    </span>
                 </div>
                 <div>
                     <label>Date:</label>

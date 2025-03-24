@@ -13,7 +13,7 @@ public enum Sex {
     private final String label;
     private final String shortLabel;
 
-    private Sex(String label, String shortLabel) {
+    Sex(String label, String shortLabel) {
         this.label = label;
         this.shortLabel = shortLabel;
     }

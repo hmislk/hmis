@@ -4,7 +4,7 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.StaffWelfarePeriod;
+import com.divudi.data.hr.StaffWelfarePeriod;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.hr.EmployeeLeavingStatus;
 import com.divudi.data.hr.EmployeeStatus;
@@ -153,7 +153,7 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     Date dateWithOutNotice;
     @Lob
     private String signatureUrl;
-    
+
     @Enumerated
     private StaffWelfarePeriod staffWelfarePeriod;
 
@@ -250,7 +250,7 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
 //        if (getStaffEmployment()!=null && !getStaffEmployment().getStaffBasics().isEmpty()) {
 //            tmp2 = getStaffEmployment().getStaffBasics().get(getStaffEmployment().getStaffBasics().size() - 1).getStaffPaySheetComponentValue();
 //        }
-//        
+//
 //        return tmp2;
 //    }
 //    public double getLeaveHour() {

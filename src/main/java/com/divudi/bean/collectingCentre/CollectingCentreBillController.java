@@ -1806,14 +1806,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public double calBillPaidValue(Bill b) {
-        String sql;
-
-        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.billFee.bill.id=" + b.getId();
-
-        double d = getBillFeePaymentFacade().findDoubleByJpql(sql);
-
+        String jpql;
+        jpql = "select sum(bfp.amount) from BillFeePayment bfp where "
+                + " bfp.retired=:ret "
+                + " and bfp.billFee.bill.id=:bid ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("bid", b.getId());
+        double d = getBillFeePaymentFacade().findDoubleByJpql(jpql, params);
         return d;
     }
 

@@ -1165,6 +1165,10 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
                 return;
             }
         }
+        if(addedQty < requestedQty){
+            errorMessage = "Quantity is not Enough...!";
+            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) +" is Available form the Requested Quantity");
+        }
 
     }
 
