@@ -3166,7 +3166,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
-        System.out.println("billFeeIsThereAsSelectedInBillFeeBundle");
+        //System.out.println("billFeeIsThereAsSelectedInBillFeeBundle");
         if (bf == null) {
             return false;
         }
