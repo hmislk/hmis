@@ -1,12 +1,9 @@
 -- Step 1: Set database name and start date
-SET @database_name = 'mp';
+SET @database_name = 'mpdatacleaning';
 SET @start_date = '2024-05-01 00:00:00';
 
 -- Step 2: Retrieve the first bill ID after the given start date
-SET @query = CONCAT('SELECT id INTO @bill_id FROM ', @database_name, '.bill WHERE createdAt >= "', @start_date, '" ORDER BY createdAt ASC LIMIT 1;');
-PREPARE stmt FROM @query;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+SET @bill_id = (SELECT id FROM mpdatacleaning.bill WHERE createdAt >= @start_date ORDER BY createdAt ASC LIMIT 1);
 
 -- Step 3: Check retrieved bill_id
 SELECT @bill_id;
@@ -17,67 +14,82 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Step 5: Get table sizes before deletion
 SELECT TABLE_NAME, ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) AS size_mb
 FROM information_schema.tables
-WHERE TABLE_SCHEMA = @database_name
-AND TABLE_NAME IN ('adjustmentbillitem', 'agenthistory', 'agentreferencebook', 'agentsfees', 'appemail', 'appointmentactivity', 
-'bill', 'billcomponent', 'billentry', 'billfee', 'billfeepayment', 'billitem', 'billnumber', 'billsession', 'capturecomponent', 
-'cashbookentry', 'cashtransaction', 'cashtransactionhistory', 'categoryitem', 'clinicalfindingvalue', 'componentasignment', 
-'detailedfinancialbill', 'drawerentry', 'encountercomponent', 'encountercreditcompany', 'fee', 'feechange', 'feevalue', 
-'fingerprintrecord', 'fingerprintrecordhistory', 'itemusage', 'loan', 'logins', 'message', 'notification', 'patient', 'patientdeposit', 
-'patientdeposithistory', 'patientencounter', 'patientflag', 'patientinvestigation', 'patientitem', 'patientreport', 
-'patientreportitemvalue', 'patientroom', 'patientsample', 'patientsamplecomponant', 'patientsessioninstanceactivity', 
-'payeetaxrange', 'payment', 'paymentgatewaytransaction', 'paymentmethodvalue', 'phdate', 'prescription', 'prescriptiontemplate', 
-'prescriptiontemplate_prescriptiontemplate', 'roster', 'servicesessioninstance', 'sessioninstance', 'sessioninstanceactivity', 
-'sms', 'staffleaveentitle', 'staffpaysheetcomponent', 'stockhistory', 'stockvarientbillitem', 'token', 'triggersubscription', 'upload');
+WHERE TABLE_SCHEMA = @database_name;
 
--- Step 6: Define all tables to be cleaned
-SET @tables = 'adjustmentbillitem, agenthistory, agentreferencebook, agentsfees, appemail, appointmentactivity, 
-bill, billcomponent, billentry, billfee, billfeepayment, billitem, billnumber, billsession, capturecomponent, 
-cashbookentry, cashtransaction, cashtransactionhistory, categoryitem, clinicalfindingvalue, componentasignment, 
-detailedfinancialbill, drawerentry, encountercomponent, encountercreditcompany, fee, feechange, feevalue, 
-fingerprintrecord, fingerprintrecordhistory, itemusage, loan, logins, message, notification, patient, patientdeposit, 
-patientdeposithistory, patientencounter, patientflag, patientinvestigation, patientitem, patientreport, 
-patientreportitemvalue, patientroom, patientsample, patientsamplecomponant, patientsessioninstanceactivity, 
-payeetaxrange, payment, paymentgatewaytransaction, paymentmethodvalue, phdate, prescription, prescriptiontemplate, 
-prescriptiontemplate_prescriptiontemplate, roster, servicesessioninstance, sessioninstance, sessioninstanceactivity, 
-sms, staffleaveentitle, staffpaysheetcomponent, stockhistory, stockvarientbillitem, token, triggersubscription, upload';
+-- Step 6: Execute DELETE statements for each table manually
+DELETE FROM mpdatacleaning.adjustmentbillitem WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.agenthistory WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.agentreferencebook WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.agentsfees WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.appemail WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.appointmentactivity WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.bill WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.billcomponent WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.billentry WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.billfee WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.billfeepayment WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.billitem WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.billnumber WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.billsession WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.capturecomponent WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.cashbookentry WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.cashtransaction WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.cashtransactionhistory WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.categoryitem WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.clinicalfindingvalue WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.componentasignment WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.detailedfinancialbill WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.drawerentry WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.encountercomponent WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.encountercreditcompany WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.fee WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.feechange WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.feevalue WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.fingerprintrecord WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.fingerprintrecordhistory WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.itemusage WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.loan WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.logins WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.message WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.notification WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patient WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientdeposit WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientdeposithistory WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientencounter WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientflag WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientinvestigation WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientitem WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientreport WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientreportitemvalue WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientroom WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientsample WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientsamplecomponant WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.patientsessioninstanceactivity WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.payeetaxrange WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.payment WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.paymentgatewaytransaction WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.paymentmethodvalue WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.phdate WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.prescription WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.prescriptiontemplate WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.prescriptiontemplate_prescriptiontemplate WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.roster WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.servicesessioninstance WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.sessioninstance WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.sessioninstanceactivity WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.sms WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.staffleaveentitle WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.staffpaysheetcomponent WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.stockhistory WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.stockvarientbillitem WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.token WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.triggersubscription WHERE id < @bill_id;
+DELETE FROM mpdatacleaning.upload WHERE id < @bill_id;
 
--- Step 7: Generate delete queries dynamically
-SELECT GROUP_CONCAT(CONCAT('DELETE FROM ', @database_name, '.', table_name, ' WHERE id < ', @bill_id, ';') SEPARATOR ' ')
-INTO @query
-FROM (SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(@tables, ', ', n), ', ', -1) AS table_name
-      FROM (SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 
-            UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12 
-            UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15 UNION ALL SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 
-            UNION ALL SELECT 19 UNION ALL SELECT 20 UNION ALL SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23 UNION ALL SELECT 24 
-            UNION ALL SELECT 25 UNION ALL SELECT 26 UNION ALL SELECT 27 UNION ALL SELECT 28 UNION ALL SELECT 29 UNION ALL SELECT 30 
-            UNION ALL SELECT 31 UNION ALL SELECT 32 UNION ALL SELECT 33 UNION ALL SELECT 34 UNION ALL SELECT 35 UNION ALL SELECT 36 
-            UNION ALL SELECT 37 UNION ALL SELECT 38 UNION ALL SELECT 39 UNION ALL SELECT 40 UNION ALL SELECT 41 UNION ALL SELECT 42 
-            UNION ALL SELECT 43 UNION ALL SELECT 44 UNION ALL SELECT 45 UNION ALL SELECT 46 UNION ALL SELECT 47 UNION ALL SELECT 48 
-            UNION ALL SELECT 49 UNION ALL SELECT 50 UNION ALL SELECT 51 UNION ALL SELECT 52 UNION ALL SELECT 53 UNION ALL SELECT 54 
-            UNION ALL SELECT 55 UNION ALL SELECT 56 UNION ALL SELECT 57 UNION ALL SELECT 58 UNION ALL SELECT 59 UNION ALL SELECT 60 
-            UNION ALL SELECT 61 UNION ALL SELECT 62 UNION ALL SELECT 63 UNION ALL SELECT 64 UNION ALL SELECT 65 UNION ALL SELECT 66 
-            UNION ALL SELECT 67 UNION ALL SELECT 68) AS numbers 
-      WHERE n <= LENGTH(@tables) - LENGTH(REPLACE(@tables, ', ', '')) + 1) AS derived_table;
-
--- Step 8: Execute the delete statements
-PREPARE stmt FROM @query;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
--- Step 9: Get table sizes after deletion
+-- Step 7: Get table sizes after deletion
 SELECT TABLE_NAME, ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) AS size_mb
 FROM information_schema.tables
-WHERE TABLE_SCHEMA = @database_name
-AND TABLE_NAME IN ('adjustmentbillitem', 'agenthistory', 'agentreferencebook', 'agentsfees', 'appemail', 'appointmentactivity', 
-'bill', 'billcomponent', 'billentry', 'billfee', 'billfeepayment', 'billitem', 'billnumber', 'billsession', 'capturecomponent', 
-'cashbookentry', 'cashtransaction', 'cashtransactionhistory', 'categoryitem', 'clinicalfindingvalue', 'componentasignment', 
-'detailedfinancialbill', 'drawerentry', 'encountercomponent', 'encountercreditcompany', 'fee', 'feechange', 'feevalue', 
-'fingerprintrecord', 'fingerprintrecordhistory', 'itemusage', 'loan', 'logins', 'message', 'notification', 'patient', 'patientdeposit', 
-'patientdeposithistory', 'patientencounter', 'patientflag', 'patientinvestigation', 'patientitem', 'patientreport', 
-'patientreportitemvalue', 'patientroom', 'patientsample', 'patientsamplecomponant', 'patientsessioninstanceactivity', 
-'payeetaxrange', 'payment', 'paymentgatewaytransaction', 'paymentmethodvalue', 'phdate', 'prescription', 'prescriptiontemplate', 
-'prescriptiontemplate_prescriptiontemplate', 'roster', 'servicesessioninstance', 'sessioninstance', 'sessioninstanceactivity', 
-'sms', 'staffleaveentitle', 'staffpaysheetcomponent', 'stockhistory', 'stockvarientbillitem', 'token', 'triggersubscription', 'upload');
+WHERE TABLE_SCHEMA = @database_name;
 
--- Step 10: Re-enable foreign key constraints
+-- Step 8: Re-enable foreign key constraints
 SET FOREIGN_KEY_CHECKS = 1;
