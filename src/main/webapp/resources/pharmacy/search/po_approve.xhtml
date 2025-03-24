@@ -37,7 +37,7 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
-            <p:column headerText="Requested NO"  >
+            <p:column headerText="Requested No"  >
                 <h:commandLink action="/pharmacy/pharmacy_reprint_po" value="#{bill.referenceBill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
@@ -61,7 +61,7 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
-            <p:column headerText="Billed at"  >
+            <p:column headerText="Billed At"  >
                 <h:commandLink action="pharmacy_reprint_grn_return" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
@@ -82,7 +82,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>                 
-            <p:column headerText="Approved by" >
+            <p:column headerText="Approved By" >
                 <h:commandLink action="pharmacy_reprint_grn_return" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
@@ -101,7 +101,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>        
-            <p:column headerText="Paymentmethod">
+            <p:column headerText="Payment Method">
                 <h:commandLink action="/pharmacy/pharmacy_reprint_po" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>

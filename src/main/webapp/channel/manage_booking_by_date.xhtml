@@ -110,7 +110,6 @@
                         </div>
                     </div>
 
-
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{bookingControllerViewScope.printPreviewForOnlineBill}" >
@@ -382,11 +381,6 @@
                                             </div>
                                         </div>
 
-
-
-
-
-
                                     </div>
                                     <div class="col-6">
                                         <!-- Cancelled Panel -->
@@ -434,10 +428,6 @@
                                             </h:outputText>
                                         </p:panel>
 
-
-
-
-
                                         <p:panel 
                                             class="m-1"
                                             rendered="#{
@@ -480,7 +470,6 @@
                                                             event="change"
                                                             listener="#{bookingControllerViewScope.listnerForPaymentMethodChangeOnCreditSettle()}"/>
                                                 </p:selectOneMenu>
-
 
                                                 <p:outputLabel value="Discount Scheme"/>
                                                 <p:selectOneMenu 
@@ -541,7 +530,6 @@
                                                     <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder" >
                                                         <p:outputLabel value="#{-bookingControllerViewScope.cashBalance}"/>
                                                     </h:panelGroup>
-
 
                                                 </h:panelGrid>
                                                 <h:panelGroup
@@ -705,7 +693,7 @@
                                                     layout="block"
                                                     id="multiplePaymentMethods"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'MultiplePaymentMethods'}"
                                                     >
-                                                    <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100"/>
+                                                    <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" paymentMethods="#{enumController.paymentMethodsForChanneling}" class="w-100"/>
 
                                                 </h:panelGroup>
                                                 <!-- Agent Payment Method -->
@@ -782,7 +770,6 @@
                                                 <!--<p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>-->
                                             </p:selectOneMenu>
 
-
                                             <p:commandButton 
                                                 id="btnAddItem"
                                                 process="lstItems btnAddItem"
@@ -792,7 +779,6 @@
                                                 action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
                                                 update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel :#{p:resolveFirstComponentWithId('balance',view).clientId} "
                                                 ></p:commandButton>
-
 
                                             <p:dataTable id="tblBillItemsForAddingNewItem" 
                                                          value="#{bookingControllerViewScope.selectedBillSession.bill.billItems}" 
@@ -815,7 +801,6 @@
                                                     </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
-
 
                                             <p:dataTable 
                                                 id="tblBillFeesForAddingNewItem" 
@@ -852,8 +837,6 @@
                                             </p:dataTable>
                                         </p:panel>
 
-
-
                                         <p:dataTable 
                                             class="m-1"
                                             rendered="#{bookingControllerViewScope.selectedBillSession.bill.billType.parent ne 'ChannelCreditFlow' 
@@ -884,13 +867,10 @@
                                             </p:column>
                                         </p:dataTable>
 
-
-
                                     </div>
 
                                 </div>
                             </h:panelGroup>
-
                         </p:tab>
                         <p:tab title="Booking" id="booking" class="w-100">
                             <div class="row" >
@@ -915,8 +895,6 @@
                                                     <h:outputText value="NOT PAID YET" ></h:outputText>
                                                 </span>
                                             </div>
-
-
 
                                             <h:panelGrid columns="2">
                                                 <p:outputLabel value="Name"/>
@@ -954,8 +932,6 @@
                                                 <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingControllerViewScope.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
                                                 <p:outputLabel value="User"/>
                                                 <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-
-
                                                 <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"/>
                                                 <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"> 
                                                     <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
@@ -1080,8 +1056,6 @@
                                                             <f:convertDateTime pattern="MM/dd/yyyy HH:mm a"/>
                                                         </h:outputText>
 
-
-
                                                         <p:outputLabel value="Payment Method" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.paymentMethod}"/>
 
@@ -1096,8 +1070,6 @@
 
                                                         <p:outputLabel value="User" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-
-
 
                                                         <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.paidBill ne null}">
@@ -1146,8 +1118,6 @@
                                                             <f:convertDateTime pattern="MM/dd/yyyy HH:mm a"/>
                                                         </h:outputText>
 
-
-
                                                         <p:outputLabel value="Payment Method" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.paymentMethod}"/>
 
@@ -1162,8 +1132,6 @@
 
                                                         <p:outputLabel value="User" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-
-
 
                                                         <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.paidBill ne null}">
@@ -1226,7 +1194,6 @@
 
                                 </div>
                             </div>
-
 
                         </p:tab>
 
@@ -1331,6 +1298,7 @@
                                         <p:outputLabel value="Re-payment Method" class="mt-2"/>
                                         <p:selectOneMenu  id="cmbCancellPs" value="#{bookingControllerViewScope.cancelPaymentMethod}">
                                             <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                            <f:selectItem itemLabel="Same As Billed Bill" itemValue="#{bookingControllerViewScope.billSession ne null ? (bookingControllerViewScope.billSession.bill.paidBill ne null ?  bookingControllerViewScope.billSession.bill.paidBill.paymentMethod : bookingControllerViewScope.billSession.bill.paymentMethod) : null}" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                                         </p:selectOneMenu>
                                     </div>
@@ -1343,7 +1311,6 @@
                                         onclick="PF('confirmationDialog').show();">
                                     </p:commandButton>
                                 </div>
-
 
                             </h:panelGroup>
                             <h:panelGroup rendered="#{bookingControllerViewScope.printPreviewC}" >
@@ -1453,10 +1420,10 @@
                                     </p:selectOneMenu>
 
                                 </h:panelGrid>
-                                <h:panelGrid columns="2">
+<!--                                <h:panelGrid columns="2">
                                     <h:outputLabel value="Refundable Total : "/>
                                     <h:outputLabel id="tot" value="#{bookingControllerViewScope.refundableTotal}"/>
-                                </h:panelGrid>
+                                </h:panelGrid>-->
                                 <p:dataTable value="#{bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
                                     <p:column headerText="Fee Name">
                                         <p:outputLabel value="#{bi.fee.name}"/>
@@ -1468,7 +1435,7 @@
                                         <p:outputLabel value="#{bi.feeValue}"/> 
                                     </p:column>
                                     <p:column headerText="Return Value">
-                                        <p:inputText value="#{bi.tmpChangedValue}" disabled="#{configOptionApplicationController.getBooleanValueByKey('Disallow Modifications to Refund Amounts')}"  >
+                                        <p:inputText value="#{bi.tmpChangedValue}" disabled="#{configOptionApplicationController.getBooleanValueByKey('Disallow Modifications to Refund Amounts') or (configOptionApplicationController.getBooleanValueByKey('Channel Booking by date appoinment allow rufund doctor fee only') ? (bi.fee.feeType ne 'Staff' ? true :false) : false)}"  >
                                             <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{bookingControllerViewScope.calRefundTotal()}"/>
                                             <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{bookingControllerViewScope.checkRefundTotal()}"/>
                                         </p:inputText>
@@ -1493,7 +1460,7 @@
                                         filter="true" 
                                         placeholder="Select or enter a comment"
                                         filterMatchMode="contains"  
-                                        style="float: right; width: 100%" 
+                                        style="float: right; width: 75%" 
                                         class="p-2">
                                         <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems 
@@ -1502,12 +1469,12 @@
                                             itemLabel="#{option}" 
                                             itemValue="#{option}"/>
                                     </p:selectOneMenu>                                    
-                                    <p:selectOneMenu class="py-2 mx-2 w-50" id="RefundPs" value="#{bookingControllerViewScope.refundPaymentMethod}">
+                                    <p:selectOneMenu class="py-2 mx-2 w-10" id="RefundPs" value="#{bookingControllerViewScope.refundPaymentMethod}">
                                         <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
                                         <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                                     </p:selectOneMenu>
 
-                                    <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning" icon="fas fa-reply" ajax="false"
+                                    <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning py-2" icon="fas fa-reply" ajax="false"
                                                      disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
                                                                  or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
                                                      action="#{bookingControllerViewScope.channelBookingRefund()}">
@@ -1541,7 +1508,7 @@
                             rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
                             <p:panelGrid columns="2" class="w-100">
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Change Current Patient with a new Patient" ></p:outputLabel>
+                                    <p:outputLabel class="mx-2" value="Change Current Patient with a new Patient" ></p:outputLabel>
                                     <p:commandButton ajax="false" value="Change Patient" disabled ="#{bookingControllerViewScope.selectedBillSession.bill.creditCompany.institutionCode.equalsIgnoreCase('WEB_DOC990') and (bookingControllerViewScope.selectedBillSession.absent == true or bookingControllerViewScope.selectedBillSession.bill.cancelled == true)}" action="#{bookingControllerViewScope.changePatient()}" ></p:commandButton>
                                 </f:facet>
                                 <p:panel header="Current Patient for Booking" >
@@ -1580,9 +1547,6 @@
                                                  disabled="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true
                                                              or bookingControllerViewScope.selectedBillSession.bill.refunded==true}" />
                             </h:panelGrid>
-
-
-
                         </p:tab>
 
                         <p:tab title="Status" >

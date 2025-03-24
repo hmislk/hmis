@@ -5,7 +5,6 @@
  */
 package com.divudi.ws.lims;
 
-import ca.uhn.fhir.context.FhirContext;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
@@ -30,7 +29,7 @@ import javax.ws.rs.core.Response;
 import org.json.JSONObject;
 
 import ca.uhn.hl7v2.model.*;
-import com.divudi.bean.common.util.HL7Utils;
+import com.divudi.java.HL7Utils;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.ws.rs.HeaderParam;
@@ -48,7 +47,6 @@ import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DepartmentMachineController;
 import com.divudi.bean.lab.MachineController;
 
-import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.SysMex;
 import com.divudi.data.lab.SysMexTypeA;
@@ -65,7 +63,6 @@ import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.InvestigationItemValueFlagFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
@@ -1035,7 +1032,7 @@ public class LimsMiddlewareController {
 
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
                             && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.ReportImage) {
-                        
+
                         System.out.println("image found");
 
                         System.out.println("priv.getInvestigationItem().getTest() = " + priv.getInvestigationItem().getTest());
@@ -1064,7 +1061,7 @@ public class LimsMiddlewareController {
                                     priv.setFileName(testCodeFromDatabase + sid );
                                     priv.setFileType("BMP");
 
-                                   
+
                                     if (priv.getId() == null) {
                                         patientReportItemValueFacade.create(priv);
                                     } else {
@@ -1075,7 +1072,7 @@ public class LimsMiddlewareController {
                                 }
                             }
 
-                           
+
 
                         }
 

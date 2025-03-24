@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
@@ -86,6 +85,9 @@ public class BillItem implements Serializable, RetirableEntity {
     private double collectingCentreFee;
     private double staffFee;
     private double otherFee;
+    private double reagentFee;
+    
+    
 //    private double dblValue;
     @ManyToOne
     Item item;
@@ -1100,7 +1102,15 @@ public class BillItem implements Serializable, RetirableEntity {
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
     }
-    
-    
+
+    public double getReagentFee() {
+        return reagentFee;
+    }
+
+    public void setReagentFee(double reagentFee) {
+        this.reagentFee = reagentFee;
+    }
+
+
 
 }

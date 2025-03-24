@@ -1088,6 +1088,13 @@ public class SearchController implements Serializable {
         paymentMethod = null;
         searchKeyword = null;
     }
+    
+    public void resetAllFiltersExceptDateRangeInstitueDepartmentSite() {
+        webUser = null;
+        departments = null;
+        paymentMethod = null;
+        searchKeyword = null;
+    }
 
     public void resetAllFilters() {
         institution = null;
@@ -1111,6 +1118,17 @@ public class SearchController implements Serializable {
     public String navigatToAllCashierSummary() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
+        return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
+    }
+    
+    public String navigatBackToAllCashierSummary() {
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Filter Reset of Cashier Summaries", false)) {
+            resetAllFiltersExceptDateRangeInstitueDepartmentSite();
+        }else{
+            resetAllFiltersExceptDateRange();
+        }
+        bundle = new ReportTemplateRowBundle();
+        generateAllCashierSummary();
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
 
@@ -12085,6 +12103,53 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createInwardServiceBills() {
+        Date startTime = new Date();
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from Bill b where "
+                + " b.billType = :billType "
+                + " and type(b)=:class "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false  ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.deptId desc ";
+        
+        temMap.put("billType", BillType.InwardBill);
+        temMap.put("class", BilledBill.class);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
     public void createInwardServiceTableForLab() {
         Date startTime = new Date();
 
@@ -12131,14 +12196,14 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         List<Bill> billList = new ArrayList<>();
-        
+
         billList = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        
+
         Set<Bill> uniqueBills = new HashSet<>(billList);
-                 
+
         bills = new ArrayList<>(uniqueBills);
     }
-    
+
     public void createInwardServiceTableDischarged() {
 
         String sql;
@@ -13676,9 +13741,11 @@ public class SearchController implements Serializable {
 
     public String navigateToSelectedCashierSummary(WebUser wu) {
         bundle = new ReportTemplateRowBundle();
-        institution = null;
-        department = null;
-        site = null;
+        if (!configOptionApplicationController.getBooleanValueByKey("Restrict Filter Reset of Cashier Summaries", false)) {
+            institution = null;
+            department = null;
+            site = null;
+        }
         webUser = wu;
         generateCashierSummary();
         return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
@@ -13686,15 +13753,18 @@ public class SearchController implements Serializable {
 
     public String navigateToSelectedCashierDetails(WebUser wu) {
         bundle = new ReportTemplateRowBundle();
-        institution = null;
-        department = null;
-        site = null;
+        if (!configOptionApplicationController.getBooleanValueByKey("Restrict Filter Reset of Cashier Summaries", false)) {
+            institution = null;
+            department = null;
+            site = null;
+        }
         paymentMethod = null;
-
         webUser = wu;
         generateCashierDetailed();
         return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
     }
+    
+    
 
     public void generateCashierSummary() {
         bundle = new ReportTemplateRowBundle();
@@ -15278,7 +15348,11 @@ public class SearchController implements Serializable {
                     rtr.setSpeciality(speciality);
                 });
 
-        bundle.calculateTotalsForProfessionalFees();
+        if (visitType.equalsIgnoreCase("OP")) {
+            bundle.calculateTotalsForProfessionalFees();
+        } else {
+            bundle.calculateTotalsForProfessionalFeesForInward();
+        }
 
         return bundle;
     }

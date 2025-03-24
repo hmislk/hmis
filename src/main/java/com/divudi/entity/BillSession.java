@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.dataStructure.ChannelFee;
 import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
@@ -52,7 +51,7 @@ public class BillSession implements Serializable, RetirableEntity  {
     private Date completedAt;
 
     private Boolean firstVisit;
-    
+
     @ManyToOne
     private WebUser markedToCancelBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -158,8 +157,8 @@ public class BillSession implements Serializable, RetirableEntity  {
     public void setSerialNo(int serialNo) {
         this.serialNo = serialNo;
     }
-    
-    
+
+
 
     public Date getSessionDate() {
         return sessionDate;
@@ -593,5 +592,5 @@ public class BillSession implements Serializable, RetirableEntity  {
         this.firstVisit = firstVisit;
     }
 
-   
+
 }

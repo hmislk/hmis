@@ -9,7 +9,7 @@ public enum InwardChargeType {
     CT("CT Scan"),
     DressingCharges("Dressing Charges"),
     Equipment("Equipment Charges"),
-    ECG_EEG("ECG/EEG"),//"ECG/EEG/ECHO/EXECG" 
+    ECG_EEG("ECG/EEG"),//"ECG/EEG/ECHO/EXECG"
     ETUCharges("ETU Charges"),
     GeneralIssuing("General Issuing"),
     HomeVisiting("Home Visiting"),
@@ -23,7 +23,7 @@ public enum InwardChargeType {
     MedicalServices("Medical Services"),
     Medicine("Medicine"),//For BHT ISSUE
     MOCharges("MO Charges"),//GOES WITH PATIENT ROOM
-    MaintainCharges("Maintain Charges"),//GOES WITH PATIENT ROOM    
+    MaintainCharges("Maintain Charges"),//GOES WITH PATIENT ROOM
     DoctorAndNurses("Assisting Charge"),//Set Doctor && Nurse Fees
     NursingCharges("Nursing Care"),//GOES WITH PATIENT ROOM
     OxygenCharges("Oxygen Charges"),
@@ -184,7 +184,7 @@ public enum InwardChargeType {
     private final String nameAsString;
     private String name;
 
-    private InwardChargeType(String nameAsString) {
+    InwardChargeType(String nameAsString) {
         this.nameAsString = nameAsString;
     }
 

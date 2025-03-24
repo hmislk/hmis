@@ -63,7 +63,7 @@ import javax.persistence.TemporalType;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
-// </editor-fold>  
+// </editor-fold>
 
 /**
  * @author Dr M H B Ariyaratne
@@ -97,7 +97,7 @@ public class PharmacySummaryReportController implements Serializable {
     @EJB
     StockHistoryService stockHistoryService;
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private BillBeanController billBean;
@@ -143,7 +143,7 @@ public class PharmacySummaryReportController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -236,7 +236,7 @@ public class PharmacySummaryReportController implements Serializable {
         listBills();
         return "/pharmacy/reports/summary_reports/bills?faces-redirect=true";
     }
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
     public void processDailyStockBalanceReport() {
@@ -361,6 +361,7 @@ public class PharmacySummaryReportController implements Serializable {
             jpql.append(" and type(b)=:billClassType ");
             switch (billClassType) {
                 case Bill:
+                case OtherBill:
                     params.put("billClassType", com.divudi.entity.Bill.class);
                     break;
                 case BilledBill:
@@ -368,9 +369,6 @@ public class PharmacySummaryReportController implements Serializable {
                     break;
                 case CancelledBill:
                     params.put("billClassType", com.divudi.entity.CancelledBill.class);
-                    break;
-                case OtherBill:
-                    params.put("billClassType", com.divudi.entity.Bill.class);
                     break;
                 case PreBill:
                     params.put("billClassType", com.divudi.entity.PreBill.class);
@@ -454,6 +452,7 @@ public class PharmacySummaryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
@@ -488,11 +487,11 @@ public class PharmacySummaryReportController implements Serializable {
         bundle.generatePaymentDetailsForBills();
     }
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Constructors">
     public PharmacySummaryReportController() {
     }
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
 
     /**
@@ -1412,7 +1411,7 @@ public class PharmacySummaryReportController implements Serializable {
         this.maxResult = maxResult;
     }
 
-// </editor-fold>  
+// </editor-fold>
     public BillService getBillService() {
         return billService;
     }
@@ -1478,7 +1477,7 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public Long getRowsPerPageForScreen() {
-        rowsPerPageForScreen = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Printing", 20l);
+        rowsPerPageForScreen = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Printing", 20L);
         return rowsPerPageForScreen;
     }
 
@@ -1487,7 +1486,7 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public Long getRowsPerPageForPrinting() {
-        rowsPerPageForPrinting = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Screen", 20l);
+        rowsPerPageForPrinting = configOptionApplicationController.getLongValueByKey("Pharmacy Analytics - Rows per Page for Screen", 20L);
         return rowsPerPageForPrinting;
     }
 

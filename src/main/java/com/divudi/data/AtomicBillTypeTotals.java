@@ -5,7 +5,7 @@ import java.util.List;
 
 public class AtomicBillTypeTotals {
 
-    private List<AtomicBillRecord> atomicBillRecords;
+    private final List<AtomicBillRecord> atomicBillRecords;
 
     public AtomicBillTypeTotals() {
         this.atomicBillRecords = new ArrayList<>();
@@ -165,8 +165,8 @@ public class AtomicBillTypeTotals {
      */
     public static class AtomicBillRecord {
 
-        private BillTypeAtomic billType;
-        private PaymentMethod paymentMethod;
+        private final BillTypeAtomic billType;
+        private final PaymentMethod paymentMethod;
         private double paidValue;
 
         public AtomicBillRecord(BillTypeAtomic billType, PaymentMethod paymentMethod, double paidValue) {

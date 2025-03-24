@@ -60,6 +60,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.java.CommonFunctions;
+import com.divudi.service.MembershipService;
 import com.google.protobuf.Descriptors;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -138,6 +139,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private WebUserFacade webUserFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    MembershipService membershipService;
     /**
      *
      * Controllers
@@ -768,8 +771,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //            JsfUtil.addErrorMessage("No patient selected");
 //            return "";
 //        }
-//        
-//        
+//
+//
 //        patientController.setCurrent(current);
 //        patientEncounterController.setPatient(current);
 //        patientEncounterController.fillCurrentPatientLists(current);
@@ -794,6 +797,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         pharmacySaleController.setPatient(current);
+        pharmacySaleController.setBillSettlingStarted(false);
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
@@ -860,7 +864,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/inward/inward_admission?faces-redirect=true;";
 
     }
-    
+
     public String navigateToConvertNonBhtToBht(Admission nonBhtAd) {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
@@ -2010,8 +2014,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             m.put("pp", searchedPhoneNumber);
             quickSearchPatientList = getFacade().findByJpql(j, m);
         } else {
-            quickSearchPatientList = findPatientUsingPhnNumber(quickSearchPhoneNumber);
-            usePHN = true;
+            if (!quickSearchPhoneNumber.trim().isEmpty()) {
+                quickSearchPatientList = findPatientUsingPhnNumber(quickSearchPhoneNumber);
+                usePHN = true;
+            }
+
         }
 //        controller.setPaymentMethod(null);
         if (quickSearchPatientList == null) {
@@ -2162,8 +2169,40 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Family is Selected");
             return null;
         }
-        familyMembers = fetchFamilyMembers(currentFamily);
+        familyMembers = membershipService.fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
+    }
+    
+    public String navigateToManageFamily(Family family) {
+        if (family == null) {
+            JsfUtil.addErrorMessage("No Family is Selected");
+            return null;
+        }
+        currentFamily=family;
+        familyMembers = membershipService.fetchFamilyMembers(currentFamily);
+        return "/membership/family_membership_manage?faces-redirect=true";
+    }
+
+    public String deleteFamilyMembership() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family is Selected");
+            return null;
+        }
+        membershipService.deleteFamily(currentFamily, sessionController.getLoggedUser());
+        families = null;
+        JsfUtil.addSuccessMessage("Family Deleted.");
+        return navigateToSearchFamilyMembership();
+    }
+
+    public String deleteFamilyMembershipAndMembers() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family is Selected");
+            return null ;
+        }
+        membershipService.deleteFamilyAndMembers(currentFamily, sessionController.getLoggedUser());
+        families = null;
+        JsfUtil.addSuccessMessage("Family and Members Deleted.");
+        return navigateToSearchFamilyMembership();
     }
 
     public String navigateToManageIndividualMembership() {
@@ -3839,15 +3878,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.familyMember = familyMember;
     }
 
+    @Deprecated // Use membershipService.fetchFamilyMembers
     public List<FamilyMember> fetchFamilyMembers(Family family) {
-        String jpql = "select fm"
-                + " from FamilyMember fm"
-                + " where fm.retired=:ret "
-                + " and fm.family=:family";
-        Map params = new HashMap();
-        params.put("ret", false);
-        params.put("family", family);
-        return familyMemberFacade.findByJpql(jpql, params);
+        return membershipService.fetchFamilyMembers(currentFamily);
     }
 
     public List<FamilyMember> getFamilyMembers() {

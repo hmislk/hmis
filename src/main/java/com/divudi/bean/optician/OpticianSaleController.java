@@ -197,7 +197,7 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -820,7 +820,7 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
 //        } else {
 //            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
 //        }
-//        
+//
 //        sql = "select i from Amp i "
 //                + "where i.retired=false and "
 //                + "(i.name) like :n and "

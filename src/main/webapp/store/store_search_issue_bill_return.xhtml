@@ -20,7 +20,7 @@
                                 <h:outputLabel value="To Date" style="margin-left: 15px; margin-right: 5px;"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" style="width: 200px;">
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.listStoreReturns}" icon="pi pi-search" style="background-color: #0000ff; color: white; font-weight: bold; height: 40px; width: 120px; margin-left: 20px"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.listStoreReturns}" icon="pi pi-search" style="border: 1px solid #fbc02d;background-color: #fbc02d; color: black;  height: 40px; width: 120px; margin-left: 20px"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
@@ -39,82 +39,82 @@
 
                         </f:facet>
 
-                        <p:dataTable 
-                            rowIndexVar="i" 
-                            id="tblBills" 
-                            value="#{searchController.bills}" 
+                        <p:dataTable
+                            rowIndexVar="i"
+                            id="tblBills"
+                            value="#{searchController.bills}"
                             var="bill"
                             paginator="true"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
-
+                            style="text-align: center;"
                             >
 
-                            <p:column headerText="No" styleClass="alignTop">
+                            <p:column headerText="No" style="text-align: center;">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
 
-                            <p:column headerText="Bill No" >   
+                            <p:column headerText="Bill No" style="text-align: center;">
                                 <p:commandLink ajax="false" value="#{bill.deptId}"
                                               action="store_reprint_bill_unit_issue_return">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>   
+                                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="Request No" >
-                                <h:outputLabel value="#{bill.invoiceNumber}" />                                      
-                            </p:column>  
+                            <p:column headerText="Request No" style="text-align: center;">
+                                <h:outputLabel value="#{bill.invoiceNumber}" />
+                            </p:column>
 
-                            <p:column headerText="From Department"  >                                
-                                <h:outputLabel value="#{bill.department.name}" />                                    
-                            </p:column>   
+                            <p:column headerText="From Department"  style="text-align: center;">
+                                <h:outputLabel value="#{bill.department.name}" />
+                            </p:column>
 
-                            <p:column headerText="To Department"  >                                
-                                <h:outputLabel value="#{bill.toDepartment.name}" />                                    
-                            </p:column>   
+                            <p:column headerText="To Department"  style="text-align: center;">
+                                <h:outputLabel value="#{bill.toDepartment.name}" />
+                            </p:column>
 
-                            <p:column headerText="Date/Time"  >
+                            <p:column headerText="Date/Time"  style="text-align: center;">
                                 <h:outputLabel value="#{bill.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:panelGroup rendered="#{bill.refunded or bill.cancelled or bill.retired}" >
-                                    <br/>                                
+                                    <br/>
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Returned. Last return bill at " />
-                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" 
+                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}"
                                                    value="#{bill.refundedBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted at " />
-                                    <h:outputLabel style="color: red;"  
+                                    <h:outputLabel style="color: red;"
                                                    value="#{bill.retiredAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;"  
+                                    <h:outputLabel style="color: red;"
                                                    value="#{bill.cancelledBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
-                            </p:column>   
+                            </p:column>
 
 
 
-                            <p:column headerText="User" >
-                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" />                                      
+                            <p:column headerText="User" style="text-align: center;">
+                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" />
                                 <h:panelGroup rendered="#{bill.refunded or bill.cancelled or bill.retired}" >
-                                    <br/>                                
+                                    <br/>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled By " />
-                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
-                                                   value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}"
+                                                   value="#{bill.cancelledBill.creater.webUserPerson.name}" >
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
@@ -123,18 +123,18 @@
                                                    value="#{bill.refundedBill.creater.webUserPerson.name}" >
 
                                     </h:outputLabel>
-                                </h:panelGroup>                               
-                            </p:column>    
+                                </h:panelGroup>
+                            </p:column>
 
 
 
-                            <p:column headerText="Value" style="text-align: right; padding-right: 10px;"  >
+                            <p:column headerText="Value" style="text-align: center; padding-right: 10px;"  >
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Comments" >
+                            <p:column headerText="Comments" style="text-align: center;">
                                 <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
                                 </h:outputLabel>
                                 <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >

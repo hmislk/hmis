@@ -171,15 +171,18 @@
                                             <h:outputText value="#{a.bhtNo}"></h:outputText>
                                         </p:column>
                                         <p:column headerText="Patient Name"  >
-                                            <h:outputText value="#{a.patient.person.name}" ></h:outputText>
+                                            <h:outputText value="#{a.patient.person.nameWithTitle}" ></h:outputText>
                                         </p:column>
                                         <p:column headerText="Phone/Mobile" >
                                             <h:outputText value="#{a.patient.person.phone}" ></h:outputText>
                                             <h:outputText value="&nbsp;&nbsp;" ></h:outputText>
                                             <h:outputText value=", #{a.patient.person.mobile}" ></h:outputText>
                                         </p:column>
-                                        <p:column headerText="Address" >
+                                        <p:column headerText="Address" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Address in Admission Search',true)}" >
                                             <h:outputText value="#{a.patient.person.address}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Dr. Name" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Doctor Name in Admission Search',false)}" >
+                                            <h:outputText value="#{a.referringConsultant.person.nameWithTitle}" ></h:outputText>
                                         </p:column>
                                         <p:column headerText="Status" >
                                             <h:panelGroup class="my-1">

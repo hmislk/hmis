@@ -1393,7 +1393,7 @@
                             id="dealer_due_by_age"
                             ajax="false" 
                             action="/dealerPayment/dealor_due_age?faces-redirect=true" 
-                            actionListener="#{dealorDueController.makeNull()}"
+                            actionListener="#{supplierPaymentController.makeNull()}"
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>

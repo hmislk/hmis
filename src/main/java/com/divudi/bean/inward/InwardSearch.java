@@ -677,17 +677,20 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (checkInvestigation()) {
-                JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
-                return;
-            }
+            if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", false)) {
 
-            if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
-
-                ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
-                if (patientInvestigationController.sampledForAnyItemInTheBill(getBill())) {
-                    JsfUtil.addErrorMessage("Sample Already collected can't cancel");
+                if (checkInvestigation()) {
+                    JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
                     return;
+                }
+
+                if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
+
+                    ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+                    if (patientInvestigationController.sampledForAnyItemInTheBill(getBill())) {
+                        JsfUtil.addErrorMessage("Sample Already collected can't cancel");
+                        return;
+                    }
                 }
             }
 

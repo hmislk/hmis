@@ -130,6 +130,14 @@ public class CashierReportController implements Serializable {
         recreteModal();
     }
 
+
+  
+    public void init() {
+        // Set the current cashier to the logged-in user
+        currentCashier = sessionController.getLoggedUser();
+        // ... rest of initialization code ...
+    }
+
     public String navigateToDepartmentAllCashierReport() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -734,25 +742,25 @@ public class CashierReportController implements Serializable {
             PaymentMethodValue pmv = (PaymentMethodValue) o;
             switch (pmv.getPaymentMethod()) {
                 case Card:
-                    newB.setCard(pmv.getValue());
-                    finalCardTot += pmv.getValue();
+                    newB.setCard(pmv.getAmount());
+                    finalCardTot += pmv.getAmount();
                     break;
                 case Cash:
-                    newB.setCash(pmv.getValue());
-                    finalCashTot += pmv.getValue();
+                    newB.setCash(pmv.getAmount());
+                    finalCashTot += pmv.getAmount();
                     break;
 
                 case Cheque:
-                    newB.setCheque(pmv.getValue());
-                    finalChequeTot += pmv.getValue();
+                    newB.setCheque(pmv.getAmount());
+                    finalChequeTot += pmv.getAmount();
                     break;
                 case Credit:
-                    newB.setCredit(pmv.getValue());
-                    finalCreditTot += pmv.getValue();
+                    newB.setCredit(pmv.getAmount());
+                    finalCreditTot += pmv.getAmount();
                     break;
                 case Slip:
-                    newB.setSlip(pmv.getValue());
-                    finalSlipTot += pmv.getValue();
+                    newB.setSlip(pmv.getAmount());
+                    finalSlipTot += pmv.getAmount();
                     break;
             }
         }
@@ -1001,7 +1009,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        
+
 
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
@@ -1194,7 +1202,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        
+
 
     }
 
@@ -1376,7 +1384,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1409,7 +1417,7 @@ public class CashierReportController implements Serializable {
         }
         calCashierData();
 
-        
+
     }
 
     public void calculateCashierSummeryTotals() {
@@ -1483,7 +1491,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1573,7 +1581,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        
+
 
     }
 
@@ -1698,7 +1706,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1818,7 +1826,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1894,7 +1902,7 @@ public class CashierReportController implements Serializable {
 
         }
 
-        
+
 
     }
 
@@ -1929,7 +1937,7 @@ public class CashierReportController implements Serializable {
 //        int day2;
 //        day2 = Calendar.DAY_OF_YEAR(getToDate());
 //        if(day2>=2){
-//                    
+//
 //            JsfUtil.addErrorMessage("Please Enter Blow 2 Days");
 //            return 0;
 //        }
@@ -1960,7 +1968,7 @@ public class CashierReportController implements Serializable {
 //        int day2;
 //        day2 = Calendar.DAY_OF_YEAR(getToDate());
 //        if(day2>=2){
-//                    
+//
 //            JsfUtil.addErrorMessage("Please Enter Blow 2 Days");
 //            return 0;
 //        }
@@ -1991,7 +1999,7 @@ public class CashierReportController implements Serializable {
 //        int day2;
 //        day2 = Calendar.DAY_OF_YEAR(getToDate());
 //        if(day2>=2){
-//                    
+//
 //            JsfUtil.addErrorMessage("Please Enter Blow 2 Days");
 //            return 0;
 //        }
@@ -2781,8 +2789,8 @@ public class CashierReportController implements Serializable {
 
             Row fDate = sheet.createRow(2);
             fDate.createCell(0).setCellValue("From Date -  " + outputFormat.format(inputFormat.parse(fromDate.toString())));
-            
-            
+
+
             Row tDate = sheet.createRow(3);
             tDate.createCell(0).setCellValue("To Date -  " + outputFormat.format(inputFormat.parse(toDate.toString())));
 

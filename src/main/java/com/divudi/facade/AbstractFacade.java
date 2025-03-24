@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.CacheRetrieveMode;
+import javax.persistence.CacheStoreMode;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
@@ -171,6 +173,7 @@ public abstract class AbstractFacade<T> {
     public T findFreshByJpql(String jpql, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH"); // Bypass cache
+        qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
             String param = entry.getKey();
             Object value = entry.getValue();
@@ -319,15 +322,18 @@ public abstract class AbstractFacade<T> {
         return getEntityManager().find(entityClass, id);
     }
 
-    public T findWithoutCache(Object id) {
-        return getEntityManager().find(entityClass, id,
-                Collections.singletonMap("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS));
+   public T findWithoutCache(Object id) {
+        Map<String, Object> props = new HashMap<>();
+        props.put("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS);
+        props.put("javax.persistence.cache.storeMode", CacheStoreMode.REFRESH);
+        return getEntityManager().find(entityClass, id, props);
     }
 
     public T findWithLock(Object id) {
-        return getEntityManager().find(entityClass, id,
-                LockModeType.PESSIMISTIC_WRITE,
-                Collections.singletonMap("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS));
+        Map<String, Object> props = new HashMap<>();
+        props.put("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS);
+        props.put("javax.persistence.cache.storeMode", CacheStoreMode.REFRESH);
+        return getEntityManager().find(entityClass, id, LockModeType.PESSIMISTIC_WRITE, props);
     }
 
     public List<T> findAll(boolean withoutRetired) {
@@ -450,6 +456,31 @@ public abstract class AbstractFacade<T> {
         }
 
         List<?> resultList;
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
+    public List<Object[]> findRawResultsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt) {
+        Query qry = getEntityManager().createQuery(jpql);
+        Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        List<Object[]> resultList;
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
@@ -731,38 +762,38 @@ public abstract class AbstractFacade<T> {
         }
     }
 
-    public double findDoubleByJpql(String jpql, Map<String, Object> parameters, TemporalType tt) {
-        TypedQuery<Double> qry = (TypedQuery<Double>) getEntityManager().createQuery(jpql);
-        Set s = parameters.entrySet();
-        Iterator it = s.iterator();
-        while (it.hasNext()) {
-            Map.Entry m = (Map.Entry) it.next();
-            Object pVal = m.getValue();
-            String pPara = (String) m.getKey();
-            if (pVal instanceof Date) {
-//                //////// // System.out.println("pval is a date");
-                Date d = (Date) pVal;
-                qry.setParameter(pPara, d, tt);
-            } else {
-//                //////// // System.out.println("p val is NOT a date");
-                qry.setParameter(pPara, pVal);
-            }
-//            //////// // System.out.println("Parameter " + pPara + "\t and Val\t " + pVal);
-        }
-        try {
-            Object d = qry.getSingleResult();
-            return (double) d;
-        } catch (Exception e) {
-            return 0.0;
-        }
+    public double findDoubleByJpql(String jpql, Map<String, Object> parameters) {
+        return findDoubleByJpql(jpql, parameters, TemporalType.DATE, false);
     }
 
-    public double findDoubleByJpql(String jpql) {
-        TypedQuery<Double> qry = (TypedQuery<Double>) getEntityManager().createQuery(jpql);
+    public double findDoubleByJpql(String jpql, Map<String, Object> parameters, TemporalType tt) {
+        return findDoubleByJpql(jpql, parameters, tt, false);
+    }
+
+    public double findDoubleByJpql(String jpql, Map<String, Object> parameters, boolean noCache) {
+        return findDoubleByJpql(jpql, parameters, TemporalType.DATE, noCache);
+    }
+
+    public double findDoubleByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, boolean noCache) {
+        TypedQuery<Double> qry = getEntityManager().createQuery(jpql, Double.class);
+
+        for (Map.Entry<String, Object> e : parameters.entrySet()) {
+            if (e.getValue() instanceof Date) {
+                qry.setParameter(e.getKey(), (Date) e.getValue(), tt);
+            } else {
+                qry.setParameter(e.getKey(), e.getValue());
+            }
+        }
+
+        // If noCache is requested, set hints to bypass cache
+        if (noCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
 
         try {
-            Object d = qry.getSingleResult();
-            return (double) d;
+            Double result = qry.getSingleResult();
+            return result == null ? 0.0 : result;
         } catch (Exception e) {
             return 0.0;
         }
@@ -820,10 +851,6 @@ public abstract class AbstractFacade<T> {
             //   ////// // System.out.println("e = " + e);
             return 0l;
         }
-    }
-
-    public double findDoubleByJpql(String jpql, Map<String, Object> parameters) {
-        return findDoubleByJpql(jpql, parameters, TemporalType.DATE);
     }
 
     public Date findDateByJpql(String jpql, Map<String, Object> parameters) {

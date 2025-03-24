@@ -1,7 +1,6 @@
 package com.divudi.data;
 
 import com.divudi.entity.*;
-import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.lab.PatientInvestigation;
 

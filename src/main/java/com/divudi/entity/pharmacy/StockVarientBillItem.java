@@ -4,7 +4,7 @@
  */
 package com.divudi.entity.pharmacy;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;

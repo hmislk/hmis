@@ -4,7 +4,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.bean.pharmacy.DosageForm;
+import com.divudi.entity.DosageForm;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -20,11 +20,11 @@ public class DosageFormFacade extends AbstractFacade<DosageForm> {
 
     @Override
     protected EntityManager getEntityManager() {
-        if(em == null){}return em;
+        return em;
     }
 
     public DosageFormFacade() {
         super(DosageForm.class);
     }
-    
+
 }
