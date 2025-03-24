@@ -11,6 +11,7 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -132,6 +133,13 @@ public class LaboratoryReportController implements Serializable {
     
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     
+    
+    public String navigateToLaboratoryInwardOrderReportFromLabAnalytics() {
+        resetAllFiltersExceptDateRange();
+        viewTemplate ="/reportLab/lab_summeries_index.xhtml";
+        return "/reportLab/lab_inward_order_report?faces-redirect=true;";
+    }
+    
     public String navigateToLaboratoryIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         viewTemplate ="/reportLab/lab_summeries_index.xhtml";
@@ -231,6 +239,56 @@ public class LaboratoryReportController implements Serializable {
             }
         }
         bundle.generatePaymentDetailsForBills();
+    }
+    
+    
+    public void processLaboratoryInwardOrderReport() {
+        System.out.println("processLaboratoryIncomeReport");
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        
+        //Add All OPD BillTypes
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        
+        //Add All Inward BillTypes
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        
+        //Add All Package BillTypes
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        
+        //Add All CC BillTypes
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
+        
+
+        List<Bill> fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        
+        bundle = new IncomeBundle();
+        
+        for(Bill bill:fetchedBills){
+            IncomeRow billIncomeRow = new IncomeRow(bill);
+            bundle.getRows().add(billIncomeRow);
+            billService.reloadBill(bill);
+            for(BillItem billItem:bill.getBillItems()){
+                IncomeRow billItemIncomeRow = new IncomeRow(billItem);
+                bundle.getRows().add(billItemIncomeRow);
+            }
+        }
+        
+//        bundle.generatePaymentDetailsForBills();
     }
 
     public void processLaboratorySummary() {
