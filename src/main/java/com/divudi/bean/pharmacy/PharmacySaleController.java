@@ -80,6 +80,7 @@ import com.divudi.facade.UserStockContainerFacade;
 import com.divudi.facade.UserStockFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -163,6 +164,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     BillNumberGenerator billNumberBean;
     @EJB
     StaffService staffBean;
+    @EJB
+    PaymentService paymentService;
     @EJB
     private UserStockContainerFacade userStockContainerFacade;
     @EJB
@@ -2375,92 +2378,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             billSettlingStarted = false;
             return;
         }
-//        if (getPaymentMethod() == PaymentMethod.Credit) {
-//            if (toStaff == null && toInstitution == null) {
-//                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
-//                return;
-//            }
-//            if (toStaff == null && toInstitution == null) {
-//                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
-//                return;
-//            }
-//            if (toStaff != null) {
-//                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-//                    JsfUtil.addErrorMessage("No enough walfare credit.");
-//                    return;
-//                }
-//            }
-//        } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
-//            if (pt == null) {
-//                JsfUtil.addErrorMessage("Need a Patient");
-//                return;
-//            }
-//
-//            if (pt.getHasAnAccount() == false) {
-//                JsfUtil.addErrorMessage("Peation have not account");
-//                return;
-//            }
-//
-//            double runningBalance;
-//            double creditLimit;
-//            double availableValue;
-//
-//            if (pt.getRunningBalance() != null) {
-//                runningBalance = pt.getRunningBalance();
-//            } else {
-//                runningBalance = 0;
-//            }
-//
-//            if (pt.getCreditLimit() != null) {
-//                creditLimit = pt.getCreditLimit();
-//            } else {
-//                creditLimit = 0;
-//            }
-//
-//            availableValue = runningBalance + creditLimit;
-//
-//            if (availableValue < netTotal) {
-//                JsfUtil.addErrorMessage("No sufficient balance");
-//                return;
-//            }
-//        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-//            if (getPaymentMethodData() == null) {
-//                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-//                return;
-//            }
-//            if (getPaymentMethodData().getPaymentMethodMultiple() == null) {
-//                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-//                return;
-//            }
-//            if (getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
-//                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-//                return;
-//            }
-//            double multiplePaymentMethodTotalValue = 0.0;
-//            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-//                //TODO - filter only relavant value
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-//            }
-//            double differenceOfBillTotalAndPaymentValue = getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
-//            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-//            if (differenceOfBillTotalAndPaymentValue > 1.0) {
-//                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
-//                return;
-//            }
-//            if (cashPaid == 0.0) {
-//                setCashPaid(multiplePaymentMethodTotalValue);
-//            }
-//
-//        }
 
-//        if (checkAllBillItem()) {
-//            return;
-//        }
         calculateAllRates();
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
@@ -2476,7 +2394,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         drawerController.updateDrawerForIns(payments);
         saveSaleBillItems(tmpBillItems);
 
-//        getPreBill().getCashBillsPre().add(getSaleBill());
         getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
@@ -2497,6 +2414,27 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
 
         }
+
+//        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+//            staffBean.updateStaffWelfare(toStaff, netTotal);
+//            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+//        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
+//            staffBean.updateStaffCredit(toStaff, netTotal);
+//            JsfUtil.addSuccessMessage("Staff Credit Updated");
+//        }
+//
+//        if (paymentMethod == PaymentMethod.PatientDeposit) {
+//            if (getPatient().getRunningBalance() != null) {
+//                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+//            } else {
+//                getPatient().setRunningBalance(0.0 - netTotal);
+//            }
+//            getPatientFacade().edit(getPatient());
+//            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+//            patientDepositController.updateBalance(getSaleBill(), pd);
+//        }
+
+        paymentService.updateBalances(payments);
 
         resetAll();
         billSettlingStarted = false;

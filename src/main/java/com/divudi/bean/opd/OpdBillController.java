@@ -1864,17 +1864,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         billSettlingStarted = true;
         if (validatePaymentMethodData()) {
-            
+
             billSettlingStarted = false;
             return null;
         }
         BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme, getPaymentMethodData());
-        if (!discountSchemeValidation.isFlag()){
-             billSettlingStarted = false;
+        if (!discountSchemeValidation.isFlag()) {
+            billSettlingStarted = false;
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return null;
         }
-        
+
         String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill Started");
         if (!executeSettleBillActions()) {
             auditEventController.updateAuditEvent(eventUuid);
@@ -1985,7 +1985,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setPrintigBill();
         checkBillValues();
 
-        billService.calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(getBills());
+        //billService.calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(getBills());
         billService.createBillItemFeeBreakdownFromBills(getBills());
         boolean generateBarcodesForSampleTubesAtBilling = configOptionApplicationController.getBooleanValueByKey("Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically", false);
         if (generateBarcodesForSampleTubesAtBilling) {
@@ -2667,7 +2667,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             runningBalance = pd.getBalance();
             double availableForPurchase = runningBalance + creditLimitAbsolute;
 
-
             if (netTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
                 return true;
@@ -2742,8 +2741,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     double availableForPurchase = runningBalance + creditLimitAbsolute;
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
-
-
 
                         JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
                         return true;
@@ -2886,7 +2883,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 return;
             }
         }
-
 
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
@@ -3103,7 +3099,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //                System.out.println("needToAdd = " + needToAdd);
                 if (needToAdd) {
 
-
                     Department department = null;
                     Item item = null;
                     PriceMatrix priceMatrix;
@@ -3130,7 +3125,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //                    System.out.println("bf.getFeeVat(): " + bf.getFeeVat());
 //                    System.out.println("bf.getFeeVatPlusValue(): " + bf.getFeeVatPlusValue());
 
-
                     entryGross += bf.getFeeGrossValue();
                     entryNet += bf.getFeeValue();
                     entryDis += bf.getFeeDiscount();
@@ -3142,7 +3136,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //                    System.out.println("entryDis: " + entryDis);
 //                    System.out.println("entryVat: " + entryVat);
 //                    System.out.println("entryVatPlusNet: " + entryVatPlusNet);
-
                 }
             }
 
@@ -3763,14 +3756,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public double calBillPaidValue(Bill b) {
-        String sql;
+        String jpql = "select sum(bfp.amount) "
+                + " from BillFeePayment bfp "
+                + " where bfp.retired = :ret "
+                + " and bfp.billFee.bill.id = :bid";
 
-        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.billFee.bill.id=" + b.getId();
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", b.getId());
 
-        double d = billFeePaymentFacade.findDoubleByJpql(sql);
-
+        double d = billFeePaymentFacade.findDoubleByJpql(jpql, params);
         return d;
     }
 
