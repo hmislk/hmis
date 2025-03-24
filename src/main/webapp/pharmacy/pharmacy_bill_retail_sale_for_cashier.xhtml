@@ -89,7 +89,7 @@
                                 <div class="col-md-7">
                                     <p:panel>
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa-solid fa-circle-plus" /> 
                                             <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                         </f:facet>
 
@@ -203,7 +203,7 @@
                                     <p:panel id="pBis" class="my-1">
 
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa fa-list" /> 
                                             <h:outputText value="Bill Items" class="mx-4"></h:outputText>
                                             <p:commandButton 
                                                 value="Remove Selected" class="ui-button-danger" style="float: right" 
@@ -477,7 +477,7 @@
 
                                     <p:panel>
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fas fa-ban " /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fas fa-ban " /> 
                                             <h:outputText value="Not Accepted Bills" class="mx-4"></h:outputText>
                                         </f:facet>
 
@@ -505,22 +505,43 @@
                                     </common:patient_details>
                                     <p:panel class="my-1">
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                             <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                         </f:facet>
 
-                                        <div class="d-flex justify-content-between ">
-                                            <div>
-                                                <p:selectOneMenu style="width: 15em;" class="mx-2 my-1" id="pay" value="#{pharmacySaleController.paymentMethod}">    
-                                                    <f:selectItems value="#{enumController.PaymentMethodsForPharmacyRetailSale()}"/>
+                                        <div class="row">
+                                            <div class="col-6" >
+                                                <p:outputLabel 
+                                                    value="Payment Method"
+                                                    class="form-label m-1"
+                                                    for="pay"></p:outputLabel>
+                                                <p:selectOneMenu 
+                                                    class="m-1 w-100 form-control" 
+                                                    id="pay" 
+                                                    filter="true"
+                                                    filterMatchMode="contains"
+                                                    value="#{pharmacySaleController.paymentMethod}"> 
+                                                    <f:selectItems 
+                                                        value="#{enumController.paymentMethodsForPharmacyBilling}"
+                                                        var="pm"
+                                                        itemLabel="#{pm.label}"
+                                                        itemValue="#{pm}"/>
                                                     <p:ajax process="@this cmbPs " 
                                                             update="pBillDetails creditCard cheque slip credit" 
                                                             event="change"  
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
-
-                                                <p:selectOneMenu style="width: 15em;" class="mx-2 my-1" id="cmbPs" value="#{pharmacySaleController.paymentScheme}">   
-                                                    <f:selectItem itemLabel="Discount Scheme"/>
+                                            </div>
+                                            <div class="col-6" >
+                                                <p:outputLabel 
+                                                    value="Discount Scheme"
+                                                    class="m-1 form-label"
+                                                    for="pay"></p:outputLabel>
+                                                <p:selectOneMenu 
+                                                    class="w-100 m-1" 
+                                                    id="cmbPs" 
+                                                    value="#{pharmacySaleController.paymentScheme}">   
+                                                    <f:selectItem itemLabel="No Discount Scheme"/>
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                     <p:ajax process="@this pay " 
                                                             update="pBillDetails creditCard cheque slip credit" 
@@ -528,104 +549,12 @@
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
                                             </div>
-
-                                        </div>
-                                        <div class="w-100">
-
-<!--                                            <h:panelGroup id="creditCard" style="display: #{pharmacySaleController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCard paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="cheque" style="display: #{pharmacySaleController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; ">
-                                                <pa:cheque paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="slip" style="display: #{pharmacySaleController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
-                                            </h:panelGroup>-->
-
-                                            <h:panelGroup id="credit" style="display: #{pharmacySaleController.paymentMethod ne 'Credit' ? 'none' : 'block'} ;" >
-                                                <div class="row" >
-                                                    <div class="col-2">
-                                                        <p:outputLabel value="Credit Company" class="mt-2"></p:outputLabel>
-                                                    </div>
-                                                    <div class="col-8">
-                                                        <p:autoComplete 
-                                                            class="w-100 mx-4" 
-                                                            forceSelection="true" 
-                                                            value="#{pharmacySaleController.toInstitution}" 
-                                                            id="scCreditCompany"
-                                                            inputStyleClass="form-control"
-                                                            completeMethod="#{institutionController.completeCreditCompany}" 
-                                                            var="myi" 
-                                                            maxResults="15"
-                                                            itemLabel="#{myi.name}" 
-                                                            itemValue="#{myi}">
-
-                                                            <p:column headerText="Name" style="padding: 6px;">
-                                                                <h:outputLabel value="#{myi.name}" ></h:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Code" style="padding: 6px;">
-                                                                <h:outputLabel value="#{myi.code}" ></h:outputLabel>
-                                                            </p:column>
-
-                                                            <p:ajax 
-                                                                process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
-                                                                event="itemSelect"  
-                                                                listener="#{pharmacySaleController.paymentSchemeChanged}" />
-
-                                                        </p:autoComplete>
-                                                        
-                                                    </div>
-                                                </div>
-
-                                                <div class="row mt-1">
-                                                    <div class="col-2">
-                                                        <p:outputLabel value="Staff Member" class="mt-2"></p:outputLabel>
-                                                    </div>
-                                                    <div class="col-8">
-                                                        <p:autoComplete  
-                                                            forceSelection="true" 
-                                                            value="#{pharmacySaleController.toStaff}" 
-                                                            id="scStaff"
-                                                            inputStyleClass="form-control"
-                                                            completeMethod="#{staffController.completeStaff}" 
-                                                            var="mys" 
-                                                            maxResults="15"
-                                                            itemLabel="#{mys.person.nameWithTitle}" 
-                                                            itemValue="#{mys}"
-                                                            class="w-100 mx-4"
-                                                            >
-                                                            <p:column headerText="Name" style="padding: 6px;">
-                                                                <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Annual Entitlement" style="padding: 6px;">
-                                                                <h:outputLabel value="#{mys.annualWelfareQualified}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputLabel>
-                                                            </p:column>
-                                                            <p:column  headerText="Annual Utilized Value" style="padding: 6px;">
-                                                                <h:outputLabel value="#{mys.annualWelfareUtilized}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputLabel>
-                                                            </p:column>
-
-                                                            <p:ajax process="scStaff" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
-                                                                    event="itemSelect"  listener="#{pharmacySaleController.paymentSchemeChanged}" />
-
-                                                        </p:autoComplete>
-                                                        
-                                                    </div>
-                                                </div>
-
-                                            </h:panelGroup>
-
                                         </div>
                                     </p:panel>
 
                                     <p:panel>
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa fa-stethoscope" /> 
                                             <h:outputText value="Referral Details" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <h:panelGrid columns="2">
