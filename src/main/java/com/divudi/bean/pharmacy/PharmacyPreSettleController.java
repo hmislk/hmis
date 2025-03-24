@@ -752,7 +752,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     public List<Payment> createMultiplePayments(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+        if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment p = new Payment();
                 p.setBill(bill);
@@ -1047,7 +1047,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.Cash) {
-            if (checkAndUpdateBalance() <= 0) {
+            if (checkAndUpdateBalance() > 0) {
                 JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
                 return;
             }
