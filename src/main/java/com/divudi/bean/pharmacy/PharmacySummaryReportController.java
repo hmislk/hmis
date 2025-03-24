@@ -452,6 +452,7 @@ public class PharmacySummaryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);

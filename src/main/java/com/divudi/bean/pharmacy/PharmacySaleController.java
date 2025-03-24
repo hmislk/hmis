@@ -200,7 +200,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
-    PaymentScheme paymentScheme;
+    private PaymentScheme paymentScheme;
 
     int activeIndex;
 
