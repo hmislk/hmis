@@ -169,8 +169,11 @@
                                 </h:outputLabel>
                             </h:panelGrid>
                         </f:facet>
-                        <p:column>
-                            #{in+1}
+                        <p:column headerText="No">
+                            <f:facet name="header">
+                                <h:outputLabel value="No"/>
+                            </f:facet>
+                            <h:outputLabel value="#{in+1}"/>
                         </p:column>
                         <p:column headerText="Discharge Date" rendered="#{reportsController.visitType eq 'IP'}">
                             <f:facet name="header">
