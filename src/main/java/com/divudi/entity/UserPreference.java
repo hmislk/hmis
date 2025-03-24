@@ -111,6 +111,7 @@ public class UserPreference implements Serializable {
     private boolean bhtNumberWithOutAdmissionType;
     private boolean depNumGenFromToDepartment;
     private boolean tranferNetTotalbyRetailRate;
+    @Deprecated // Not needed anymore. It is always allowed
     private boolean allowtoChangePaymentMethodDuringPayment;
     private boolean opdSettleWithoutCashTendered;
     private boolean channelWithOutReferenceNumber;
@@ -380,10 +381,12 @@ public class UserPreference implements Serializable {
         this.bhtNumberWithYear = bhtNumberWithYear;
     }
 
+    @Deprecated
     public boolean isAllowtoChangePaymentMethodDuringPayment() {
         return allowtoChangePaymentMethodDuringPayment;
     }
 
+    @Deprecated
     public void setAllowtoChangePaymentMethodDuringPayment(boolean allowtoChangePaymentMethodDuringPayment) {
         this.allowtoChangePaymentMethodDuringPayment = allowtoChangePaymentMethodDuringPayment;
     }
