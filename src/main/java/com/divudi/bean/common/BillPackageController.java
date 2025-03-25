@@ -52,6 +52,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.BillValidation;
+import com.divudi.data.FeeType;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
 import static com.divudi.data.PaymentMethod.Cheque;
@@ -575,8 +576,94 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         bill.setCancelled(true);
         bill.setCancelledBill(cancellationBill);
-        getBillFacade().edit(bill);
+        if (bill.getId() == null) {
+            getBillFacade().create(bill);
+        } else {
+            getBillFacade().edit(bill);
+        }
 
+        List<BillItem> originalBillItem = getBillBean().fillBillItems(bill);
+        
+        for (BillItem bi : originalBillItem) {
+            BillItem cancelBillItem = new BillItem();
+            cancelBillItem.copy(bi);
+            cancelBillItem.setReferanceBillItem(bi);
+            cancelBillItem.setBill(cancellationBill);
+            cancelBillItem.setCreatedAt(new Date());
+            cancelBillItem.setCreater(getSessionController().getLoggedUser());
+            //Create Cancel BillItem
+            if (cancelBillItem.getId() == null) {
+                billItemFacade.create(cancelBillItem);
+            } else {
+                billItemFacade.edit(cancelBillItem);
+            }
+
+            List<BillFee> originalBillItemFees = getBillBean().fetchBillFees(bi);
+            
+            double hospitalFee = 0.0;
+            double ccFee = 0.0;
+            double staffFee = 0.0;
+            double reagentFee = 0.0;
+            double otherFee = 0.0;
+
+            for (BillFee fee : originalBillItemFees) {
+                BillFee cancelBillItemFee = new BillFee();
+                cancelBillItemFee.copy(fee);
+                cancelBillItemFee.setReferenceBillFee(fee);
+                cancelBillItemFee.setBill(cancellationBill);
+                cancelBillItemFee.setBillItem(cancelBillItem);
+
+                //Create Cancel BillItemFee
+                if (cancelBillItemFee.getId() == null) {
+                    billFeeFacade.create(cancelBillItemFee);
+                } else {
+                    billFeeFacade.edit(cancelBillItemFee);
+                }
+
+                if (cancelBillItemFee.getFee().getFeeType() == FeeType.CollectingCentre) {
+                    ccFee += cancelBillItemFee.getFeeValue();
+                } else if (cancelBillItemFee.getFee().getFeeType() == FeeType.Staff) {
+                    staffFee += cancelBillItemFee.getFeeValue();
+                } else {
+                    hospitalFee += cancelBillItemFee.getFeeValue();
+                }
+
+                if (cancelBillItemFee.getFee().getFeeType() == FeeType.Chemical) {
+                    reagentFee += cancelBillItemFee.getFeeValue();
+                } else if (cancelBillItemFee.getFee().getFeeType() == FeeType.Additional) {
+                    otherFee += cancelBillItemFee.getFeeValue();
+                }
+
+                //update Original BillItemFee
+                fee.setReferenceBillFee(cancelBillItemFee);
+                if (cancelBillItemFee.getId() == null) {
+                    billFeeFacade.create(fee);
+                } else {
+                    billFeeFacade.edit(fee);
+                }
+            }
+            
+            cancelBillItem.setHospitalFee(hospitalFee);
+            cancelBillItem.setStaffFee(staffFee);
+            cancelBillItem.setCollectingCentreFee(ccFee);
+            cancelBillItem.setReagentFee(reagentFee);
+            cancelBillItem.setOtherFee(otherFee);
+
+            if (cancelBillItem.getId() == null) {
+                billItemFacade.create(cancelBillItem);
+            } else {
+                billItemFacade.edit(cancelBillItem);
+            }
+
+            //update Original BillItem
+            bi.setReferanceBillItem(cancelBillItem);
+            if (bi.getId() == null) {
+                billItemFacade.create(bi);
+            } else {
+                billItemFacade.edit(bi);
+            }
+        }
+        
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBill, pd);
@@ -588,6 +675,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 getBillFacade().edit(cancellationBill);
             }
         }
+        
         payments = paymentService.createPayment(cancellationBill, getPaymentMethodData());
         printPreview = true;
         batchBillCancellationStarted = false;
@@ -1009,7 +1097,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         temp.setCreater(getSessionController().getLoggedUser());
 
         String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-        
+
         temp.setDeptId(billNumber);
         temp.setInsId(billNumber);
         temp.setComments(comment);

@@ -7,7 +7,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="#{laboratoryReportController.viewTemplate}">
+        <ui:composition template="#{laborataryReportController.viewTemplate}">
             <ui:define name="subcontent">
 
                 <h:form >
@@ -21,7 +21,7 @@
                                 styleClass="w-100" 
                                 inputStyleClass="w-100 form-control" 
                                 id="fromDate" 
-                                value="#{laboratoryReportController.fromDate}" 
+                                value="#{laborataryReportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
@@ -35,7 +35,7 @@
                                 styleClass="w-100 dateTimePicker" 
                                 inputStyleClass="w-100 form-control" 
                                 id="toDate"
-                                value="#{laboratoryReportController.toDate}" 
+                                value="#{laborataryReportController.toDate}" 
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 >
@@ -50,7 +50,7 @@
                             <p:selectOneMenu
                                 id="cmbRepoType"
                                 styleClass="w-100 form-control" 
-                                value="#{laboratoryReportController.reportType}" 
+                                value="#{laborataryReportController.reportType}" 
                                 filter="true">
                                 <f:selectItem itemLabel="Select" />
                                 <f:selectItem itemLabel="Detail Report" itemValue="DetailReport" />
@@ -70,7 +70,7 @@
                                 itemLabel="#{pta.name}" 
                                 itemValue="#{pta}" 
                                 forceSelection="true" 
-                                value="#{laboratoryReportController.toInstitution}" >
+                                value="#{laborataryReportController.toInstitution}" >
                                 <p:ajax process="acIns" update="cmbProDept"/>
                             </p:autoComplete>
 
@@ -83,14 +83,14 @@
                             <h:panelGroup id="cmbProDept">
 
                                 <p:selectOneMenu
-                                    rendered="#{laboratoryReportController.toInstitution ne null}"
+                                    rendered="#{laborataryReportController.toInstitution ne null}"
                                     class="w-100"  
-                                    value="#{laboratoryReportController.toDepartment}">
+                                    value="#{laborataryReportController.toDepartment}">
                                     <f:selectItem itemLabel="Select the Department" />
-                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(laboratoryReportController.toInstitution)}"/>                                        
+                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(laborataryReportController.toInstitution)}"/>                                        
                                 </p:selectOneMenu>
                                 
-                                <p:spacer width="50" rendered="#{laboratoryReportController.toInstitution eq null}"></p:spacer>
+                                <p:spacer width="50" rendered="#{laborataryReportController.toInstitution eq null}"></p:spacer>
                             </h:panelGroup>
 
                             <p:spacer width="50" ></p:spacer>
@@ -100,7 +100,7 @@
                                 <h:outputLabel value="Payment Type" class="mx-3"/>
                             </h:panelGroup>
 
-                            <p:selectOneMenu class="w-100" value="#{laboratoryReportController.methodType}">
+                            <p:selectOneMenu class="w-100" value="#{laborataryReportController.methodType}">
                                 <f:selectItem itemValue="Any" itemLabel="Any"/>
                                 <f:selectItem itemValue="Credit" itemLabel="Credit"/>
                                 <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
@@ -112,7 +112,7 @@
                                 <p:outputLabel value="Visit Type" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
 
-                            <p:selectOneMenu id="cmbVisitType" class="w-100" value="#{laboratoryReportController.visitType}">
+                            <p:selectOneMenu id="cmbVisitType" class="w-100" value="#{laborataryReportController.visitType}">
                                 <f:selectItem itemValue="Any" itemLabel="Any"/>
                                 <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
                                 <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
@@ -129,7 +129,7 @@
                                 id="cmbAdmissionType"
                                 class="w-100"
                                 autoWidth="false"
-                                value="#{laboratoryReportController.admissionType}">
+                                value="#{laborataryReportController.admissionType}">
                                 <f:selectItem itemLabel="All Admission Type" itemValue=""/>
                                 <f:selectItems  
                                     value="#{inwardReportController.admissionty}" 
@@ -147,27 +147,11 @@
                             value="Process" 
                             ajax="false"
                             style="width: 200px;"
-                            action="#{laboratoryReportController.processLaboratoryIncomeReport()}" 
+                            action="#{laborataryReportController.processLaboratoryIncomeReport()}" 
                             styleClass="ui-button-success m-1" 
                             icon="pi pi-cog">
                         </p:commandButton>
 
-                        <!--                        <p:commandButton 
-                                                    value="Download" 
-                                                    ajax="false"
-                                                    styleClass="ui-button-info m-1"
-                                                    icon="pi pi-download">
-                                                    <p:dataExporter fileName="laboratory_income_report.xlsx" target="tbl" type="xlsx" />
-                                                </p:commandButton>
-                        
-                                                <p:commandButton 
-                                                    value="Print" 
-                                                    ajax="false"
-                                                    styleClass="ui-button-warning m-1"
-                                                    icon="pi pi-print">
-                                                    <p:printer target="tbl" />
-                                                </p:commandButton>-->
-                        
                         </div>
                         
                         <h:panelGroup>
