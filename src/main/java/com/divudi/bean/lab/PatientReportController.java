@@ -1762,10 +1762,10 @@ public class PatientReportController implements Serializable {
         //System.out.println("canApproveThePatientReport");
         BooleanMessage bm = new BooleanMessage();
         boolean flag = true;
-        String appMgs = "";
+        StringBuilder appMgs = new StringBuilder();
         if (prForApproval == null) {
             bm.setFlag(flag);
-            bm.setMessage(appMgs);
+            bm.setMessage(appMgs.toString());
             return bm;
         }
         //System.out.println("stage = " + 1);
@@ -1775,21 +1775,21 @@ public class PatientReportController implements Serializable {
                 if (temii.isCanNotApproveIfValueIsEmpty()) {
                     //System.out.println("stage = " + 3);
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                        if (temIv.getStrValue() == null || temIv.getStrValue().trim().equals("")) {
+                        if (temIv.getStrValue() == null || temIv.getStrValue().trim().isEmpty()) {
                             flag = false;
-                            appMgs += temii.getEmptyValueWarning() + "\n";
+                            appMgs.append(temii.getEmptyValueWarning()).append("\n");
                         }
                     }
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Double) {
                         if (temIv.getDoubleValue() == null) {
                             flag = false;
-                            appMgs += temii.getEmptyValueWarning() + "\n";
+                            appMgs.append(temii.getEmptyValueWarning()).append("\n");
                         }
                     }
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Memo) {
-                        if (temIv.getLobValue() == null || temIv.getLobValue().trim().equals("")) {
+                        if (temIv.getLobValue() == null || temIv.getLobValue().trim().isEmpty()) {
                             flag = false;
-                            appMgs += temii.getEmptyValueWarning() + "\n";
+                            appMgs.append(temii.getEmptyValueWarning()).append("\n");
                         }
                     }
                 }
@@ -1806,13 +1806,13 @@ public class PatientReportController implements Serializable {
                     if (temii.isCanNotApproveIfValueIsAboveAbsoluteHighValue()) {
                         if (tv > temii.getAbsoluteHighValue()) {
                             flag = false;
-                            appMgs += temii.getAboveAbsoluteWarning() + "\n";
+                            appMgs.append(temii.getAboveAbsoluteWarning()).append("\n");
                         }
                     }
                     if (temii.isCanNotApproveIfValueIsBelowAbsoluteLowValue()) {
                         if (tv < temii.getAbsoluteLowValue()) {
                             flag = false;
-                            appMgs += temii.getBelowAbsoluteWarning() + "\n";
+                            appMgs.append(temii.getBelowAbsoluteWarning()).append("\n");
                         }
                     }
 
@@ -1821,7 +1821,7 @@ public class PatientReportController implements Serializable {
             }
         }
         bm.setFlag(flag);
-        bm.setMessage(appMgs);
+        bm.setMessage(appMgs.toString());
         return bm;
     }
 

@@ -10,10 +10,8 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.data.MessageType;
 import com.divudi.entity.Sms;
 import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.EmailFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SmsFacade;
-import com.divudi.facade.UserPreferenceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
@@ -35,7 +33,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,10 +49,6 @@ import org.json.JSONObject;
 public class SmsManagerEjb {
 
     @EJB
-    private EmailFacade emailFacade;
-    @EJB
-    UserPreferenceFacade userPreferenceFacade;
-    @EJB
     SmsFacade smsFacade;
     @EJB
     private SessionInstanceFacade sessionInstanceFacade;
@@ -67,7 +60,7 @@ public class SmsManagerEjb {
     @Inject
     private SessionController sessionController;
 
-    private static boolean doNotSendAnySms = false;
+    private static final boolean doNotSendAnySms = false;
 
     // Schedule sendSmsToDoctorsBeforeSession to run every 30 minutes
     @SuppressWarnings("unused")
@@ -204,7 +197,6 @@ public class SmsManagerEjb {
         if (doNotSendAnySms) {
             return true;
         }
-        List<Sms> sentSmsList = new ArrayList<>();
         Sms ec = new Sms();
         ec.setCreatedAt(new Date());
         if (session.getStaff().getPerson().getMobile() == null || session.getStaff().getPerson().getMobile().isEmpty()) {
@@ -231,7 +223,7 @@ public class SmsManagerEjb {
         params.put("rn", ec.getReceipientNumber());
         params.put("bd", ec.getCreatedAt());
 
-        sentSmsList = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<Sms> sentSmsList = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return !sentSmsList.isEmpty();
     }
 
@@ -509,10 +501,10 @@ public class SmsManagerEjb {
 
         m.put(smsUsernameParameter, smsUsername);
         m.put(smsPasswordParameter, smsPassword);
-        if (smsUserAliasParameter != null && !smsUserAliasParameter.trim().equals("")) {
+        if (smsUserAliasParameter != null && !smsUserAliasParameter.trim().isEmpty()) {
             m.put(smsUserAliasParameter, smsUserAlias);
         }
-        if (smsAdditionalParameter1 != null && !smsAdditionalParameter1.trim().equals("")) {
+        if (smsAdditionalParameter1 != null && !smsAdditionalParameter1.trim().isEmpty()) {
             m.put(smsAdditionalParameter1, smsAdditionalParameter1Value);
         }
         m.put(smsPhoneNumberParameter, sms.getReceipientNumber());
