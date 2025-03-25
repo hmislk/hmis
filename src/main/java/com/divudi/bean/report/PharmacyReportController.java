@@ -1965,7 +1965,7 @@ public class PharmacyReportController implements Serializable {
             sql.append(" and bi.bill.forwardReferenceBill Is null ");
         }
         if (reportType.equals("pending")) {
-            addFilter(sql, "and bi.bill.forwardReferenceBills is empty");
+            addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
         }
         if (reportType.equals("accepted")) {
             addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
