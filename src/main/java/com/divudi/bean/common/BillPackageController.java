@@ -675,6 +675,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 getBillFacade().edit(cancellationBill);
             }
         }
+        
         payments = paymentService.createPayment(cancellationBill, getPaymentMethodData());
         printPreview = true;
         batchBillCancellationStarted = false;
