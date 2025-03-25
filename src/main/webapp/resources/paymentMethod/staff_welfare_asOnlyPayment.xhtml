@@ -9,11 +9,13 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="controllerWithMultiplePayments"  type="com.divudi.bean.common.ControllerWithMultiplePayments" />
         <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+
         <div class="m-1" >
             <p:outputLabel
                 value="Select Staff"
@@ -21,7 +23,7 @@
             <p:autoComplete  
                 minQueryLength="3"
                 forceSelection="true" 
-                value="#{opdBillController.toStaff}" 
+                value="#{cc.attrs.paymentMethodData.staffCredit.toStaff}" 
                 id="welfareStaff"
                 completeMethod="#{staffController.completeStaff}" 
                 var="mys" 
@@ -47,10 +49,10 @@
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                 </p:column>
-                <p:ajax process="@this" 
-                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                        event="itemSelect"  
-                        listener="#{opdBillController.calTotals()}" />
+                <p:ajax 
+                    process="@this" 
+                    event="itemSelect"  
+                    listener="#{controllerWithMultiplePayments.calTotals()}" ></p:ajax>
             </p:autoComplete>
 
         </div>

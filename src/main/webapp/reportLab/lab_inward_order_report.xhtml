@@ -11,7 +11,7 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:panel header="Laboratory Income Report">
+                    <p:panel header="Laboratory Order Report">
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
@@ -42,8 +42,17 @@
                             </p:calendar>
 
                             <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <i class="fas fa-stethoscope"></i>
+                                <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{laboratoryReportController.visitType}">
+                                <f:selectItem itemLabel="Any"/>
+                                <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                <f:selectItem itemValue="CC" itemLabel="Collecting Center (CC)"/>
+                            </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
@@ -59,7 +68,7 @@
                                 <p:ajax process="cmbIns" update="cmbDept" />
                             </p:selectOneMenu>
 
-                            <p:spacer ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> 
@@ -75,7 +84,7 @@
                                 <p:ajax process="siteMenu" update="cmbDept" />
                             </p:selectOneMenu>
 
-                            <p:spacer ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
@@ -173,47 +182,102 @@
                                 <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
                             </p:selectOneMenu>
 
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Pofome Institution" for="cmbProIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete  
+                                id="cmbProIns"
+                                class="w-100" 
+                                inputStyleClass="w-100" 
+                                completeMethod="#{institutionController.completeCompany}" 
+                                var="pta" 
+                                itemLabel="#{pta.name}" 
+                                itemValue="#{pta}" 
+                                forceSelection="true" 
+                                value="#{laboratoryReportController.toInstitution}" >
+                                <p:ajax process="cmbProIns" update="cmbProDept"/>
+                            </p:autoComplete>
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Pofome Department" for="cmbProDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbProDept">
+                                <p:selectOneMenu 
+                                    rendered="#{laboratoryReportController.toInstitution ne null}"
+                                    class="w-100"  
+                                    value="#{laboratoryReportController.toDepartment}">
+                                    <f:selectItem itemLabel="Select the Department" />
+                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(laboratoryReportController.toInstitution)}"/>                                        
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
                         </h:panelGrid>
 
-                        <p:commandButton 
-                            value="Process" 
-                            ajax="false"
-                            action="#{laboratoryReportController.processLaboratoryIncomeReport()}" 
-                            styleClass="ui-button-success m-1" 
-                            icon="pi pi-cog">
-                        </p:commandButton>
+                        <div class="d-flex justify-content-between gap-2 mt-3 mb-2">
+                            <div class="d-flex gap-2">
+                                <p:commandButton 
+                                    value="Process" 
+                                    ajax="false"
+                                    style="width:10em;"
+                                    action="#{laboratoryReportController.processLaboratoryOrderReport()}" 
+                                    styleClass="ui-button-success m-1" 
+                                    icon="pi pi-cog">
+                                </p:commandButton>
 
-                        <p:commandButton 
-                            value="Download" 
-                            ajax="false"
-                            styleClass="ui-button-info m-1"
-                            icon="pi pi-download">
-                            <p:dataExporter fileName="laboratory_income_report.xlsx" target="tbl" type="xlsx" />
-                        </p:commandButton>
+                                <p:commandButton 
+                                    value="Download" 
+                                    ajax="false"
+                                    styleClass="ui-button-info m-1"
+                                    icon="pi pi-download">
+                                    <p:dataExporter fileName="laboratory_order_report.xlsx" target="tbl" type="xlsx" />
+                                </p:commandButton>
 
-                        <p:commandButton 
-                            value="Print" 
-                            ajax="false"
-                            styleClass="ui-button-warning m-1"
-                            icon="pi pi-print">
-                            <p:printer target="tbl" />
-                        </p:commandButton>
+                                <p:commandButton 
+                                    value="Print" 
+                                    ajax="false"
+                                    styleClass="ui-button-warning m-1"
+                                    icon="pi pi-print">
+                                    <p:printer target="tbl" />
+                                </p:commandButton>
+                            </div>
+                            <p:commandButton 
+                                value="Clesr" 
+                                ajax="false"
+                                action="#{laboratoryReportController.resetAllFiltersExceptDateRange()}" 
+                                class="ui-button-danger m-1" 
+                                style="float:right; width:8em;"
+                                icon="fas fa-eraser">
+                            </p:commandButton>
+                        </div>
+
 
                         <p:dataTable
                             id="tbl"
-                            style="padding: 2px!important; margin-top: 10px!important; margin: 0px!important; font-size: #{laboratoryReportController.fontSizeForScreen}!important;" 
+                            style="padding: 2px!important; margin-top: 10px!important; margin: 0px!important; font-size: 20px!important;" 
                             styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                             value="#{laboratoryReportController.bundle.rows}" 
                             var="row"
-                            paginator="true" 
+                            paginator="true"
+                            rowIndexVar="i"
                             rows="20"
                             rowsPerPageTemplate="20,50,100,500,1000,2000,5000,10000"
                             paginatorPosition="bottom">
 
                             <f:facet name="header"  >
                                 <div style="padding: 3px!important; margin: 0px!important;">
-                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 20px;">
-                                        <h:outputText value="All Sales Report"/>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 24px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="Laboratory Order Report"/>
                                         <h:panelGroup  rendered="#{laboratoryReportController.department ne null}">
                                             <div class="d-flex gap-2">
                                                 <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
@@ -221,13 +285,14 @@
                                             </div>
                                         </h:panelGroup>
                                     </div>
-                                    <div class="d-flex justify-content-between mt-2" style=" font-size: 16px;">
+                                    <div class="d-flex justify-content-center mt-2" style=" font-size: 14px;">
                                         <div class="d-flex gap-3">
                                             <h:outputText value="From Date" style="width: 6em!important; font-weight: 600;"/>
                                             <h:outputText value="#{laboratoryReportController.fromDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                             </h:outputText>
                                         </div>
+                                        <p:spacer width="50" ></p:spacer>
                                         <div class="d-flex gap-3">
                                             <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
                                             <h:outputText value="#{laboratoryReportController.toDate}">
@@ -237,164 +302,165 @@
                                         <div></div>
                                     </div>
 
+                                    <div class="d-flex justify-content-between mt-2 w-100 gap-2" style=" font-size: 16px;">
+                                        <div class="d-flex gap-2">
+                                            <h:outputText 
+                                                rendered="#{laboratoryReportController.toInstitution ne null}"
+                                                value="#{laboratoryReportController.toInstitution.name}" 
+                                                style="font-weight: 600;">
+                                            </h:outputText>
+                                            <h:outputText 
+                                                value="-" 
+                                                rendered="#{laboratoryReportController.toInstitution ne null and laboratoryReportController.toDepartment ne null}"
+                                                style="width: 2em!important; font-weight: 600; text-align: center;"/>
+                                            <h:outputText 
+                                                rendered="#{laboratoryReportController.toInstitution ne null and laboratoryReportController.toDepartment ne null}"
+                                                value="#{laboratoryReportController.toDepartment.name}" 
+                                                style="font-weight: 600;">
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </f:facet>
 
-                            <p:column headerText="Bill No" width="12em" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.bill.deptId}"  style="padding: 2px!important; margin: 0px!important;" />
-                            </p:column>
+                            <p:column 
+                                headerText="Investigation"
+                                style="padding: 6px!important; margin: 2px!important;" >
+                                <div class="d-flex gap-5">
+                                    <div class="d-flex" style="width: 230px;">
+                                        <h:outputText 
+                                            rendered="#{row.rowType eq 'Bill'}"
+                                            value="OrderNo : "
+                                            style="padding: 6px!important; margin: 2px!important;" >
+                                        </h:outputText>
+                                        <h:outputText 
+                                            rendered="#{row.rowType eq 'Bill'}"
+                                            value="#{row.bill.deptId}"
+                                            style="padding: 6px!important; margin: 2px!important; font-weight: 700;" >
+                                        </h:outputText>
+                                    </div>
 
-                            <p:column headerText="Patient"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 2px!important; margin: 0px!important;" />
-                            </p:column>
+                                    <div class="d-flex gap-1" style="width: 250px;">
+                                        <h:outputText 
+                                            rendered="#{row.rowType eq 'Bill'}"
+                                            value="Order Date : "
+                                            style="padding: 6px!important; margin: 2px!important;" >
+                                        </h:outputText>
+                                        <h:outputText 
+                                            value="#{row.bill.createdAt}"  
+                                            rendered="#{row.rowType eq 'Bill'}"
+                                            style="padding: 6px!important; margin: 2px!important; font-weight: 700;" >
+                                            <f:convertDateTime pattern="d/MM/YYYY HH:mm" />
+                                        </h:outputText>
+                                    </div>
+                                    <h:panelGroup rendered="#{row.bill.patientEncounter ne null}">
+                                        <div class="d-flex" style="width: 150px;">
+                                            <h:outputText 
+                                                rendered="#{row.rowType eq 'Bill'}"
+                                                value="BHT No : "
+                                                style="padding: 6px!important; margin: 2px!important;" >
+                                            </h:outputText>
+                                            <h:outputText 
+                                                rendered="#{row.rowType eq 'Bill'}"
+                                                value="#{row.bill.patientEncounter.bhtNo}"
+                                                style="padding: 6px!important; margin: 2px!important; font-weight: 700;" >
+                                            </h:outputText>
+                                        </div>
+                                    </h:panelGroup>
 
-                            <p:column headerText="Date"   width="8em" style="padding: 2px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.bill.createdAt}"  style="padding: 2px!important; margin: 0px!important;" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                </div>
+
+                                <h:outputText 
+                                    value=""
+                                    rendered="#{row.rowType eq 'BillItem'}"
+                                    style="padding: 6px!important; margin: 2px!important; width: 5em;" >
                                 </h:outputText>
+
+                                <h:outputText 
+                                    value="#{row.billItem.item.name}"
+                                    rendered="#{row.rowType eq 'BillItem'}"
+                                    style="padding: 6px!important; margin: 2px!important;" >
+                                </h:outputText>
+
                             </p:column>
 
-                            <p:column headerText="Net Total"  width="8em" class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.bill.netTotal}">
+                            <p:column headerText="Hos. Fee" width="8em" class="text-end" style="padding: 6px!important; margin: 2px!important;" >
+                                <h:outputText 
+                                    rendered="#{row.rowType eq 'BillItem'}"
+                                    value="#{row.billItem.hospitalFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.netTotal}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laboratoryReportController.totalHospitalFee}" style="padding: 6px!important; margin: 2px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Cash"   width="8em"  class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.cashValue}">
+                            <p:column headerText="Reagent Fee" width="8em" class="text-end" style="padding: 6px!important; margin: 2px!important;" >
+                                <h:outputText 
+                                    rendered="#{row.rowType eq 'BillItem'}"
+                                    value="#{row.billItem.reagentFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.cashValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laboratoryReportController.totalReagentFee}" style="padding: 6px!important; margin: 2px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Card"   width="8em" class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.cardValue}">
+                            <p:column headerText="Other Fee" width="8em" class="text-end" style="padding: 6px!important; margin: 2px!important;" >
+                                <h:outputText 
+                                    rendered="#{row.rowType eq 'BillItem'}"
+                                    value="#{row.billItem.otherFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.cardValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laboratoryReportController.totalOtherFee}" style="padding: 6px!important; margin: 2px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Cheque"   width="8em"  class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.chequeValue}">
+                            <p:column headerText="Net Total" width="8em" class="text-end" style="padding: 6px!important; margin: 2px!important;" >
+                                <h:outputText 
+                                    rendered="#{row.rowType eq 'BillItem'}"
+                                    value="#{row.billItem.netValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.chequeValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laboratoryReportController.totalNetTotal}" style="padding: 6px!important; margin: 2px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="IP Credit" width="8em" class="text-end light-grey-background"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.inpatientCreditValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.inpatientCreditValue}" style="padding: 2px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="OP Credit" width="8em"  class="text-end light-grey-background" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.opdCreditValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.opdCreditValue}" style="padding: 2px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Staff Credit" width="8em"  class="text-end light-grey-background"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.staffValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.staffValue}" style="padding: 2px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Agent Credit"   width="8em"  class="text-end light-grey-background"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.agentValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.agentValue}" style="padding: 2px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Total" width="8em" class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.grossTotal}" >
+                            <p:column headerText="Discount" width="8em" class="text-end" style="padding: 6px!important; margin: 2px!important;" >
+                                <h:outputText 
+                                    rendered="#{row.rowType eq 'Bill'}"
+                                    value="#{row.bill.discount}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.grossTotal}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laboratoryReportController.totalDiscount}" style="padding: 6px!important; margin: 2px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Discount" width="8em"  class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.discount}" >
+                            <p:column headerText="Service Charge" width="8em" class="text-end"  style="padding: 6px!important; margin: 2px!important;" >
+                                <h:outputText 
+                                    rendered="#{row.rowType eq 'Bill'}"
+                                    value="#{row.bill.serviceCharge}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.discount}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laboratoryReportController.totalServiceCharge}" style="padding: 6px!important; margin: 2px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Service Charge" width="8em"   class="text-end"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.serviceCharge}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.serviceCharge}" style="padding: 2px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Actual Total" width="8em" class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.netTotal}" style="padding: 2px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Actions" exportable="false" width="5em" style="padding: 2px!important; margin: 0px!important;">
-                                <p:commandLink 
-                                    value="View" 
-                                    style="font-size: #{laboratoryReportController.fontSizeForScreen}!important;" 
-                                    class="mx-1"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                    ajax="false">
-                                    <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                </p:commandLink>
                             </p:column>
 
                         </p:dataTable>
