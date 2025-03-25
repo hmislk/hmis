@@ -548,6 +548,7 @@
                                     rowIndexVar="n"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="10,25,50">
+                                <f:event type="preRenderComponent" listener="#{reportsController.resetGlobalIndex}"/>
 
                                 <p:columnGroup type="header">
                                     <p:row>
@@ -586,7 +587,7 @@
                                     </f:facet>
 
                                     <p:column headerText="Sr.No" width="5rem">
-                                        <h:outputText value="#{n+1}"/>
+                                        <h:outputText value="#{reportsController.nextIndex}"/>
                                     </p:column>
                                     <p:column headerText="BHT No" width="5rem">
                                         <h:outputText value="#{bill.patientEncounter.bhtNo}"/>
