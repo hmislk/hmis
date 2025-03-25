@@ -3619,6 +3619,8 @@ public class FinancialTransactionController implements Serializable {
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_INCREASE));
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CHANGE));
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.BANK_OUT));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.BANK_IN));
 
         Map<String, Object> m = new HashMap<>();
 
@@ -5262,7 +5264,6 @@ public class FinancialTransactionController implements Serializable {
                 p.setCashbookEntry(findCashbookEntry(p, cbEntries));
                 p.setCashbookEntryCompleted(true);
 
-
                 p.setCurrentHolder(sessionController.getLoggedUser());
                 p.setHandingOverCompleted(true);
                 p.setHandingOverStarted(false);
@@ -5715,10 +5716,23 @@ public class FinancialTransactionController implements Serializable {
         Double netTotal = currentBill.getNetTotal();
         System.out.println("netTotal = " + netTotal);
         System.out.println("getLoggedUserDrawer().getCashInHandValue() = " + getLoggedUserDrawer().getCashInHandValue());
-        if (getLoggedUserDrawer().getCashInHandValue() < netTotal) {
-            JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
-            return "";
+
+        boolean drawerManagementIsEnabled = configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true);
+
+        if (drawerManagementIsEnabled) {
+            double drawerBalance = getLoggedUserDrawer().getCashInHandValue();
+            double totalPaymentCash = 0.0;
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    totalPaymentCash += p.getPaidValue();
+                }
+            }
+            if (drawerBalance < totalPaymentCash) {
+                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                return "";
+            }
         }
+
         currentBill.setNetTotal(0 - Math.abs(netTotal));
         currentBill.setTotal(0 - Math.abs(netTotal));
         billController.save(currentBill);

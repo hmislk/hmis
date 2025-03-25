@@ -1903,7 +1903,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -1981,7 +1980,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -2552,7 +2550,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
         double billVat = 0.0;
 
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -3034,14 +3031,15 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
     }
 
     public double calBillPaidValue(Bill b) {
-        String sql;
+        String jpql = "select sum(bfp.amount) "
+                + " from BillFeePayment bfp "
+                + " where bfp.retired = :ret "
+                + " and bfp.billFee.bill.id = :bid";
 
-        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.billFee.bill.id=" + b.getId();
-
-        double d = billFeePaymentFacade.findDoubleByJpql(sql);
-
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", b.getId());
+        double d = billFeePaymentFacade.findDoubleByJpql(jpql, params);
         return d;
     }
 

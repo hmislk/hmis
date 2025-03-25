@@ -1118,6 +1118,7 @@ public class BillSearch implements Serializable {
 
     public void updateValue() {
 
+        // Round off and persist updates to BillFee objects
         for (BillFee bf : billFeesList) {
             bf.setFeeGrossValue(roundOff(bf.getFeeGrossValue(), 2));
             bf.setFeeDiscount(roundOff(bf.getFeeDiscount(), 2));
@@ -1125,49 +1126,72 @@ public class BillSearch implements Serializable {
             billFeeFacade.edit(bf);
         }
 
+        // Update BillItem calculations
         for (BillItem bt : billItemList) {
-            String sql = "select sum(b.feeGrossValue)  "
-                    + " from BillFee b "
-                    + " where b.retired=false"
-                    + " and b.billItem.id=" + bt.getId();
-            bt.setGrossValue(billItemFacade.findDoubleByJpql(sql));
 
-            sql = "select sum(b.feeDiscount)  "
+            // feeGrossValue
+            String jpql = "select sum(b.feeGrossValue) "
                     + " from BillFee b "
-                    + " where b.retired=false"
-                    + " and b.billItem.id=" + bt.getId();
+                    + " where b.retired = :ret "
+                    + " and b.billItem.id = :bid";
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("bid", bt.getId());
+            bt.setGrossValue(billItemFacade.findDoubleByJpql(jpql, params));
 
-            bt.setDiscount(billItemFacade.findDoubleByJpql(sql));
-
-            sql = "select sum(b.feeValue)  "
+            // feeDiscount
+            jpql = "select sum(b.feeDiscount) "
                     + " from BillFee b "
-                    + " where b.retired=false"
-                    + " and b.billItem.id=" + bt.getId();
-            bt.setNetValue(billItemFacade.findDoubleByJpql(sql));
+                    + " where b.retired = :ret "
+                    + " and b.billItem.id = :bid";
+            params = new HashMap<>();
+            params.put("ret", false);
+            params.put("bid", bt.getId());
+            bt.setDiscount(billItemFacade.findDoubleByJpql(jpql, params));
+
+            // feeValue
+            jpql = "select sum(b.feeValue) "
+                    + " from BillFee b "
+                    + " where b.retired = :ret "
+                    + " and b.billItem.id = :bid";
+            params = new HashMap<>();
+            params.put("ret", false);
+            params.put("bid", bt.getId());
+            bt.setNetValue(billItemFacade.findDoubleByJpql(jpql, params));
         }
 
-        String sql = "select sum(b.grossValue)  "
+        // Summaries for Bill object
+        String jpql = "select sum(b.grossValue) "
                 + " from BillItem b "
-                + " where b.retired=false"
-                + " and b.bill.id=" + bill.getId();
-        bill.setTotal(billItemFacade.findDoubleByJpql(sql));
+                + " where b.retired = :ret "
+                + " and b.bill.id = :bid";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", bill.getId());
+        bill.setTotal(billItemFacade.findDoubleByJpql(jpql, params));
 
-        sql = "select sum(b.discount)  "
+        jpql = "select sum(b.discount) "
                 + " from BillItem b "
-                + " where b.retired=false"
-                + " and b.bill.id=" + bill.getId();
+                + " where b.retired = :ret "
+                + " and b.bill.id = :bid";
+        params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", bill.getId());
+        bill.setDiscount(billItemFacade.findDoubleByJpql(jpql, params));
 
-        bill.setDiscount(billItemFacade.findDoubleByJpql(sql));
-
-        sql = "select sum(b.netValue)  "
+        jpql = "select sum(b.netValue) "
                 + " from BillItem b "
-                + " where b.retired=false"
-                + " and b.bill.id=" + bill.getId();
-        bill.setNetTotal(billItemFacade.findDoubleByJpql(sql));
+                + " where b.retired = :ret "
+                + " and b.bill.id = :bid";
+        params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", bill.getId());
+        bill.setNetTotal(billItemFacade.findDoubleByJpql(jpql, params));
+
+        // Persist final updates to Bill
         billFacade.edit(bill);
 
-        JsfUtil.addSuccessMessage("Bill Upadted");
-
+        JsfUtil.addSuccessMessage("Bill Updated");
     }
 
     public void updateBillFeeRetierd(BillFee bf) {

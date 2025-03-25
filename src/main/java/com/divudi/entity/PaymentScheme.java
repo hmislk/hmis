@@ -20,6 +20,7 @@ import javax.persistence.Temporal;
 /**
  *
  * @author buddhika
+ *
  */
 @Entity
 public class PaymentScheme implements Serializable {
@@ -31,12 +32,8 @@ public class PaymentScheme implements Serializable {
     Long id;
     String name;
     String printingName;
-  //  @Enumerated(EnumType.STRING)
-    //PaymentMethod paymentMethod;
     @Enumerated(EnumType.STRING)
     CliantType cliantType;
-    //double discountPercent = 0.0;
- //   double discountPercentForPharmacy = 0.0;
     @ManyToOne
     Institution institution;
     @ManyToOne
@@ -57,30 +54,18 @@ public class PaymentScheme implements Serializable {
     @Column(name = "validForPayments")
     boolean validForPharmacy;
     boolean validForBilledBills;
-    boolean validForCrBills;
+//    boolean validForCrBills;
     private boolean validForInpatientBills;
     boolean validForChanneling;
     private boolean staffMemberRequired;
     private boolean membershipRequired;
-    
-//    @ManyToOne
-//    MembershipScheme membershipScheme;
-//
-//    public MembershipScheme getMembershipScheme() {
-//        return membershipScheme;
-//    }
-//
-//    public void setMembershipScheme(MembershipScheme membershipScheme) {
-//        this.membershipScheme = membershipScheme;
-//    }
-//    
-//    public double getDiscountPercentForPharmacy() {
-//        return discountPercentForPharmacy;
-//    }
-//
-//    public void setDiscountPercentForPharmacy(double discountPercentForPharmacy) {
-//        this.discountPercentForPharmacy = discountPercentForPharmacy;
-//    }
+
+    private boolean staffRequired;
+    private boolean staffOrFamilyRequired;
+    private boolean memberRequired;
+    private boolean memberOrFamilyRequired;
+    private boolean seniorCitizenRequired;
+    private boolean pregnantMotherRequired;
 
     public int getOrderNo() {
         return orderNo;
@@ -106,13 +91,13 @@ public class PaymentScheme implements Serializable {
         this.validForBilledBills = validForBilledBills;
     }
 
-    public boolean isValidForCrBills() {
-        return validForCrBills;
-    }
-
-    public void setValidForCrBills(boolean validForCrBills) {
-        this.validForCrBills = validForCrBills;
-    }
+//    public boolean isValidForCrBills() {
+//        return validForCrBills;
+//    }
+//
+//    public void setValidForCrBills(boolean validForCrBills) {
+//        this.validForCrBills = validForCrBills;
+//    }
 
     public Long getId() {
         return id;
@@ -154,7 +139,6 @@ public class PaymentScheme implements Serializable {
 //    public void setPaymentMethod(PaymentMethod paymentMethod) {
 //        this.paymentMethod = paymentMethod;
 //    }
-
     public Person getPerson() {
         return person;
     }
@@ -234,9 +218,6 @@ public class PaymentScheme implements Serializable {
     public void setPrintingName(String printingName) {
         this.printingName = printingName;
     }
-    
-    
-    
 
 //    public double getDiscountPercent() {
 //        return discountPercent;
@@ -245,7 +226,6 @@ public class PaymentScheme implements Serializable {
 //    public void setDiscountPercent(double discountPercent) {
 //        this.discountPercent = discountPercent;
 //    }
-
     public Institution getInstitution() {
         return institution;
     }
@@ -285,7 +265,53 @@ public class PaymentScheme implements Serializable {
     public void setMembershipRequired(boolean membershipRequired) {
         this.membershipRequired = membershipRequired;
     }
-    
-    
-    
+
+    public boolean isStaffRequired() {
+        return staffRequired;
+    }
+
+    public void setStaffRequired(boolean staffRequired) {
+        this.staffRequired = staffRequired;
+    }
+
+    public boolean isStaffOrFamilyRequired() {
+        return staffOrFamilyRequired;
+    }
+
+    public void setStaffOrFamilyRequired(boolean staffOrFamilyRequired) {
+        this.staffOrFamilyRequired = staffOrFamilyRequired;
+    }
+
+    public boolean isMemberRequired() {
+        return memberRequired;
+    }
+
+    public void setMemberRequired(boolean memberRequired) {
+        this.memberRequired = memberRequired;
+    }
+
+    public boolean isMemberOrFamilyRequired() {
+        return memberOrFamilyRequired;
+    }
+
+    public void setMemberOrFamilyRequired(boolean memberOrFamilyRequired) {
+        this.memberOrFamilyRequired = memberOrFamilyRequired;
+    }
+
+    public boolean isSeniorCitizenRequired() {
+        return seniorCitizenRequired;
+    }
+
+    public void setSeniorCitizenRequired(boolean seniorCitizenRequired) {
+        this.seniorCitizenRequired = seniorCitizenRequired;
+    }
+
+    public boolean isPregnantMotherRequired() {
+        return pregnantMotherRequired;
+    }
+
+    public void setPregnantMotherRequired(boolean pregnantMotherRequired) {
+        this.pregnantMotherRequired = pregnantMotherRequired;
+    }
+
 }

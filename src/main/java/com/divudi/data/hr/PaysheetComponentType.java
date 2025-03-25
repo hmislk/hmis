@@ -72,10 +72,10 @@ public enum PaysheetComponentType {
         }
     }
 
-    private PaysheetComponentType parent = null;
-    private List<PaysheetComponentType> children = new ArrayList<>();
+    private final PaysheetComponentType parent;
+    private final List<PaysheetComponentType> children = new ArrayList<>();
 
-    private PaysheetComponentType(PaysheetComponentType parent) {
+    PaysheetComponentType(PaysheetComponentType parent) {
         this.parent = parent;
         if (this.parent != null) {
             this.parent.addChild(this);
@@ -83,13 +83,13 @@ public enum PaysheetComponentType {
     }
 
     public PaysheetComponentType[] children() {
-        return children.toArray(new PaysheetComponentType[children.size()]);
+        return children.toArray(new PaysheetComponentType[0]);
     }
 
     public PaysheetComponentType[] allChildren() {
         List<PaysheetComponentType> list = new ArrayList<>();
         addChildren(this, list);
-        return list.toArray(new PaysheetComponentType[list.size()]);
+        return list.toArray(new PaysheetComponentType[0]);
     }
 
     private static void addChildren(PaysheetComponentType root, List<PaysheetComponentType> list) {
@@ -109,80 +109,78 @@ public enum PaysheetComponentType {
 
     public List<PaysheetComponentType> getSystemDefinedComponents() {
 
-        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.BasicSalary,
-            PaysheetComponentType.PerformanceAllowance,
-            PaysheetComponentType.DayOffAllowance,
-            PaysheetComponentType.SleepingDayAllowance,
-            PaysheetComponentType.ExtraDutyNormal,
-            PaysheetComponentType.ExtraDutyMerchantile,
-            PaysheetComponentType.ExtraDutyPoya,
-            PaysheetComponentType.ExtraDutyDayOff,
-            PaysheetComponentType.ExtraDutySleepingDay,
-            PaysheetComponentType.No_Pay_Deduction_Basic,
-            PaysheetComponentType.Salary_Advance_Deduction,
-            PaysheetComponentType.No_Pay_Deduction_Allowance,
-            PaysheetComponentType.OT,
-            PaysheetComponentType.MerchantileAllowance,
-            PaysheetComponentType.PoyaAllowance,
-            PaysheetComponentType.AdjustmentAllowanceAdd,
-            PaysheetComponentType.AdjustmentAllowanceSub,
-            PaysheetComponentType.AdjustmentBasicAdd,
-            PaysheetComponentType.AdjustmentBasicSub});
+        return Arrays.asList(PaysheetComponentType.BasicSalary,
+                PaysheetComponentType.PerformanceAllowance,
+                PaysheetComponentType.DayOffAllowance,
+                PaysheetComponentType.SleepingDayAllowance,
+                PaysheetComponentType.ExtraDutyNormal,
+                PaysheetComponentType.ExtraDutyMerchantile,
+                PaysheetComponentType.ExtraDutyPoya,
+                PaysheetComponentType.ExtraDutyDayOff,
+                PaysheetComponentType.ExtraDutySleepingDay,
+                PaysheetComponentType.No_Pay_Deduction_Basic,
+                PaysheetComponentType.Salary_Advance_Deduction,
+                PaysheetComponentType.No_Pay_Deduction_Allowance,
+                PaysheetComponentType.OT,
+                PaysheetComponentType.MerchantileAllowance,
+                PaysheetComponentType.PoyaAllowance,
+                PaysheetComponentType.AdjustmentAllowanceAdd,
+                PaysheetComponentType.AdjustmentAllowanceSub,
+                PaysheetComponentType.AdjustmentBasicAdd,
+                PaysheetComponentType.AdjustmentBasicSub);
 
     }
 
     public List<PaysheetComponentType> getUserDefinedComponents() {
 
-        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
-            PaysheetComponentType.FixedAllowance,
-            PaysheetComponentType.FixedDeduction,
-            PaysheetComponentType.Institution_Deduction,
-            PaysheetComponentType.Advance_Payment_Deduction,
-            PaysheetComponentType.LoanInstallemant,
-            PaysheetComponentType.LoanNetSalary,
-            PaysheetComponentType.VariableAllowance,
-            PaysheetComponentType.VariableDeduction});
+        return Arrays.asList(PaysheetComponentType.Bonus,
+                PaysheetComponentType.FixedAllowance,
+                PaysheetComponentType.FixedDeduction,
+                PaysheetComponentType.Institution_Deduction,
+                PaysheetComponentType.Advance_Payment_Deduction,
+                PaysheetComponentType.LoanInstallemant,
+                PaysheetComponentType.LoanNetSalary,
+                PaysheetComponentType.VariableAllowance,
+                PaysheetComponentType.VariableDeduction);
 
     }
 
     public List<PaysheetComponentType> getUserDefinedComponentsAddidtions() {
 
-        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
-            PaysheetComponentType.FixedAllowance,
-            PaysheetComponentType.VariableAllowance});
+        return Arrays.asList(PaysheetComponentType.Bonus,
+                PaysheetComponentType.FixedAllowance,
+                PaysheetComponentType.VariableAllowance);
 
     }
 
     public List<PaysheetComponentType> getUserDefinedComponentsAddidtionsWithPerformance() {
-        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
-            PaysheetComponentType.FixedAllowance,
-            PaysheetComponentType.VariableAllowance,
-            PaysheetComponentType.PerformanceAllowance});
+        return Arrays.asList(PaysheetComponentType.Bonus,
+                PaysheetComponentType.FixedAllowance,
+                PaysheetComponentType.VariableAllowance,
+                PaysheetComponentType.PerformanceAllowance);
 
     }
 
     public List<PaysheetComponentType> getUserDefinedComponentsDeductions() {
 
-        return Arrays.asList(new PaysheetComponentType[]{
-            PaysheetComponentType.FixedDeduction,
-            PaysheetComponentType.Institution_Deduction,
-            PaysheetComponentType.Advance_Payment_Deduction,
-            PaysheetComponentType.LoanInstallemant,
-            PaysheetComponentType.LoanNetSalary,
-            PaysheetComponentType.VariableDeduction,
-            PaysheetComponentType.Salary_Advance_Deduction});
+        return Arrays.asList(PaysheetComponentType.FixedDeduction,
+                PaysheetComponentType.Institution_Deduction,
+                PaysheetComponentType.Advance_Payment_Deduction,
+                PaysheetComponentType.LoanInstallemant,
+                PaysheetComponentType.LoanNetSalary,
+                PaysheetComponentType.VariableDeduction,
+                PaysheetComponentType.Salary_Advance_Deduction);
 
     }
 
     public List<PaysheetComponentType> getUserDefinedComponentsDeductionsWithSalaryAdvance() {
-        return Arrays.asList(new PaysheetComponentType[]{
-            PaysheetComponentType.FixedDeduction,
-            PaysheetComponentType.Institution_Deduction,
-            PaysheetComponentType.Advance_Payment_Deduction,
-            PaysheetComponentType.LoanInstallemant,
-            PaysheetComponentType.LoanNetSalary,
-            PaysheetComponentType.VariableDeduction,
-            PaysheetComponentType.Salary_Advance_Deduction});
+        return Arrays.asList(PaysheetComponentType.FixedDeduction,
+                PaysheetComponentType.Institution_Deduction,
+                PaysheetComponentType.Advance_Payment_Deduction,
+                PaysheetComponentType.LoanInstallemant,
+                PaysheetComponentType.LoanNetSalary,
+                PaysheetComponentType.VariableDeduction,
+                PaysheetComponentType.Salary_Advance_Deduction);
 
     }
 

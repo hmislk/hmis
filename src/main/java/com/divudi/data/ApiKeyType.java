@@ -9,9 +9,9 @@ package com.divudi.data;
  */
 public enum ApiKeyType {
     Finance,
-    Clinical, 
-    Config, 
-    General, 
+    Clinical,
+    Config,
+    General,
     Admin,
-    Token;
+    Token
 }
