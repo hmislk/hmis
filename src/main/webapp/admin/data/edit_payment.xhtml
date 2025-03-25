@@ -48,8 +48,9 @@
                                 id="pay"
                                 value="#{billSearch.payment.paymentMethod}"
                                 >     
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
                                 <f:selectItems 
-                                    value="#{enumController.paymentMethodsForOpdBilling}"  
+                                    value="#{enumController.allPaymentMethods}"  
                                     var="pm"
                                     itemLabel="#{pm.label}"
                                     itemValue="#{pm}"/>

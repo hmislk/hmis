@@ -819,6 +819,7 @@ public class EnumController implements Serializable {
         return p;
     }
 
+    @Deprecated // Use getPaymentMethodsForPharmacyBilling
     public PaymentMethod[] PaymentMethodsForPharmacyRetailSale() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,

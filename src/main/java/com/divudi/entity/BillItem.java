@@ -85,6 +85,9 @@ public class BillItem implements Serializable, RetirableEntity {
     private double collectingCentreFee;
     private double staffFee;
     private double otherFee;
+    private double reagentFee;
+    
+    
 //    private double dblValue;
     @ManyToOne
     Item item;
@@ -210,17 +213,11 @@ public class BillItem implements Serializable, RetirableEntity {
     }
 
     public double getHospitalFee() {
-        System.out.println("getHospitalFee");
-        System.out.println("hospitalFee = " + hospitalFee);
         return hospitalFee;
     }
 
     public void setHospitalFee(double hospitalFee) {
-        System.out.println("setHospitalFee");
-        System.out.println("hospitalFee = " + hospitalFee);
-        System.out.println("this.hospitalFee before = " + this.hospitalFee);
         this.hospitalFee = hospitalFee;
-        System.out.println("this.hospitalFee after = " + this.hospitalFee);
     }
 
     public double getStaffFee() {
@@ -1098,6 +1095,14 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
+    }
+
+    public double getReagentFee() {
+        return reagentFee;
+    }
+
+    public void setReagentFee(double reagentFee) {
+        this.reagentFee = reagentFee;
     }
 
 
