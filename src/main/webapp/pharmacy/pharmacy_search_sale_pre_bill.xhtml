@@ -69,11 +69,12 @@
                                     >
                                     <p:column headerText="Bill No" > 
                                         <p:commandLink 
-                                            action="pharmacy_reprint_prebill_sale" 
+                                            action="pharmacy_reprint_prebill_sale?faces-redirect=true" 
                                             value="#{bill.deptId}" 
-                                            disabled="#{bill.referenceBill eq null}"
+                                            disabled="#{bill.referenceBill eq null}"                                            
                                             >
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/> 
+                                            <f:setPropertyActionListener value="#{bill.referenceBill.paymentMethod}" target="#{pharmacyBillSearch.paymentMethod}"/> 
                                         </p:commandLink>
                                     </p:column>
                                     
