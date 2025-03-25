@@ -41,9 +41,9 @@ import org.primefaces.model.file.UploadedFile;
  */
 @Named
 @SessionScoped
-public class LaboratoryReportController implements Serializable {
+public class LaborataryReportController implements Serializable {
 
-    public LaboratoryReportController() {
+    public LaborataryReportController() {
     }
 
     private CommonFunctions commonFunctions;
@@ -140,19 +140,19 @@ public class LaboratoryReportController implements Serializable {
 // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Navigators">
-    public String navigateToLaboratoryInwardOrderReportFromLabAnalytics() {
+    public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         return "/reportLab/lab_inward_order_report?faces-redirect=true;";
     }
 
-    public String navigateToLaboratoryIncomeReportFromLabAnalytics() {
+    public String navigateToLaborataryIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        return "/reportLab/laboratory_income_report?faces-redirect=true;";
+        return "/reportLab/laboratary_income_report?faces-redirect=true;";
     }
 
-    public String navigateToLaboratorySummaryFromReport() {
+    public String navigateToLaboratarySummaryFromReport() {
         resetAllFiltersExceptDateRange();
-        return "/reportLab/laboratory_summary?faces-redirect=true;";
+        return "/reportLab/laboratary_summary?faces-redirect=true;";
     }
 
     // </editor-fold>

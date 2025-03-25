@@ -21,7 +21,7 @@
                                 styleClass="w-100" 
                                 inputStyleClass="w-100 form-control" 
                                 id="fromDate" 
-                                value="#{laboratoryReportController.fromDate}" 
+                                value="#{laborataryReportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
@@ -35,7 +35,7 @@
                                 styleClass="w-100 dateTimePicker" 
                                 inputStyleClass="w-100 form-control" 
                                 id="toDate"
-                                value="#{laboratoryReportController.toDate}" 
+                                value="#{laborataryReportController.toDate}" 
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 >
@@ -52,7 +52,7 @@
                             <p:selectOneMenu
                                 id="cmbIns"
                                 styleClass="w-100 form-control" 
-                                value="#{laboratoryReportController.institution}" 
+                                value="#{laborataryReportController.institution}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -68,7 +68,7 @@
                             <p:selectOneMenu
                                 id="siteMenu"
                                 styleClass="w-100 form-control"  
-                                value="#{laboratoryReportController.site}" 
+                                value="#{laborataryReportController.site}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -85,9 +85,9 @@
 
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
-                                    rendered="#{laboratoryReportController.institution eq null and laboratoryReportController.site eq null}"
+                                    rendered="#{laborataryReportController.institution eq null and laborataryReportController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{laboratoryReportController.department}"
+                                    value="#{laborataryReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
@@ -100,14 +100,14 @@
 
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
-                                    rendered="#{laboratoryReportController.institution eq null and laboratoryReportController.site ne null}"
+                                    rendered="#{laborataryReportController.institution eq null and laborataryReportController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{laboratoryReportController.department}"
+                                    value="#{laborataryReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(laboratoryReportController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(laborataryReportController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
@@ -115,14 +115,14 @@
 
                                 <!-- Component 3: With Institution Only -->
                                 <p:selectOneMenu
-                                    rendered="#{laboratoryReportController.institution ne null and laboratoryReportController.site eq null}"
+                                    rendered="#{laborataryReportController.institution ne null and laborataryReportController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{laboratoryReportController.department}"
+                                    value="#{laborataryReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(laboratoryReportController.institution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(laborataryReportController.institution)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
@@ -130,14 +130,14 @@
 
                                 <!-- Component 4: With Both Institution and Site -->
                                 <p:selectOneMenu
-                                    rendered="#{laboratoryReportController.institution ne null and laboratoryReportController.site ne null}"
+                                    rendered="#{laborataryReportController.institution ne null and laborataryReportController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{laboratoryReportController.department}"
+                                    value="#{laborataryReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(laboratoryReportController.institution, laboratoryReportController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(laborataryReportController.institution, laborataryReportController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
@@ -153,7 +153,7 @@
                                 id="cmbAdmissionType"
                                 class="w-100"
                                 autoWidth="false"
-                                value="#{laboratoryReportController.admissionType}" 
+                                value="#{laborataryReportController.admissionType}" 
                                 rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                                 <f:selectItem itemLabel="All Admission Type"/>
                                 <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
@@ -168,7 +168,7 @@
                                 id="cmdDiscount"
                                 class="w-100"
                                 autoWidth="false"
-                                value="#{laboratoryReportController.paymentScheme}" >
+                                value="#{laborataryReportController.paymentScheme}" >
                                 <f:selectItem itemLabel="Select"/>
                                 <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
                             </p:selectOneMenu>
@@ -178,7 +178,7 @@
                         <p:commandButton 
                             value="Process" 
                             ajax="false"
-                            action="#{laboratoryReportController.processLaboratoryIncomeReport()}" 
+                            action="#{laborataryReportController.processLaboratoryIncomeReport()}" 
                             styleClass="ui-button-success m-1" 
                             icon="pi pi-cog">
                         </p:commandButton>
@@ -188,7 +188,7 @@
                             ajax="false"
                             styleClass="ui-button-info m-1"
                             icon="pi pi-download">
-                            <p:dataExporter fileName="laboratory_income_report.xlsx" target="tbl" type="xlsx" />
+                            <p:dataExporter fileName="laboratary_income_report.xlsx" target="tbl" type="xlsx" />
                         </p:commandButton>
 
                         <p:commandButton 
@@ -201,9 +201,9 @@
 
                         <p:dataTable
                             id="tbl"
-                            style="padding: 2px!important; margin-top: 10px!important; margin: 0px!important; font-size: #{laboratoryReportController.fontSizeForScreen}!important;" 
+                            style="padding: 2px!important; margin-top: 10px!important; margin: 0px!important; font-size: #{laborataryReportController.fontSizeForScreen}!important;" 
                             styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                            value="#{laboratoryReportController.bundle.rows}" 
+                            value="#{laborataryReportController.bundle.rows}" 
                             var="row"
                             paginator="true" 
                             rows="20"
@@ -214,23 +214,23 @@
                                 <div style="padding: 3px!important; margin: 0px!important;">
                                     <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 20px;">
                                         <h:outputText value="All Sales Report"/>
-                                        <h:panelGroup  rendered="#{laboratoryReportController.department ne null}">
+                                        <h:panelGroup  rendered="#{laborataryReportController.department ne null}">
                                             <div class="d-flex gap-2">
                                                 <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
-                                                <h:outputText value="#{laboratoryReportController.department.name}"/>
+                                                <h:outputText value="#{laborataryReportController.department.name}"/>
                                             </div>
                                         </h:panelGroup>
                                     </div>
                                     <div class="d-flex justify-content-between mt-2" style=" font-size: 16px;">
                                         <div class="d-flex gap-3">
                                             <h:outputText value="From Date" style="width: 6em!important; font-weight: 600;"/>
-                                            <h:outputText value="#{laboratoryReportController.fromDate}">
+                                            <h:outputText value="#{laborataryReportController.fromDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                             </h:outputText>
                                         </div>
                                         <div class="d-flex gap-3">
                                             <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
-                                            <h:outputText value="#{laboratoryReportController.toDate}">
+                                            <h:outputText value="#{laborataryReportController.toDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                             </h:outputText>
                                         </div>
@@ -259,7 +259,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.netTotal}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.netTotal}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -270,7 +270,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.cashValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.cashValue}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -281,7 +281,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.cardValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.cardValue}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -292,7 +292,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.chequeValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.chequeValue}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -303,7 +303,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.inpatientCreditValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.inpatientCreditValue}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -314,7 +314,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.opdCreditValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.opdCreditValue}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -325,7 +325,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.staffValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.staffValue}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -336,7 +336,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.agentValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.agentValue}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -347,7 +347,7 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.grossTotal}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.grossTotal}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -358,7 +358,7 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.discount}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.discount}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -369,7 +369,7 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.serviceCharge}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.serviceCharge}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -380,7 +380,7 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer" >
-                                    <h:outputText value="#{laboratoryReportController.bundle.summaryRow.netTotal}" style="padding: 2px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.netTotal}" style="padding: 2px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -389,7 +389,7 @@
                             <p:column headerText="Actions" exportable="false" width="5em" style="padding: 2px!important; margin: 0px!important;">
                                 <p:commandLink 
                                     value="View" 
-                                    style="font-size: #{laboratoryReportController.fontSizeForScreen}!important;" 
+                                    style="font-size: #{laborataryReportController.fontSizeForScreen}!important;" 
                                     class="mx-1"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
