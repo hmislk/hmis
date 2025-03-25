@@ -9,13 +9,12 @@
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form >
-
-                    <p:panel rendered="#{!pharmacyPreSettleController.billPreview}">
+                    <p:panel 
+                        rendered="#{!pharmacyPreSettleController.billPreview}"
+                        class="w-100 m-1">
                         <f:facet name="header" >
                             <h:outputLabel value="Pharmacy Bill Accept Payment" ></h:outputLabel> 
                             <p:commandButton 
@@ -29,138 +28,161 @@
                         <div class="row">
                             <div class="col-6">
                                 <p:panel header="Pharmacy Retail Bill">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Accept Payment for Pharmacy Bill" ></h:outputText>
+                                        <p:commandButton 
+                                            ajax= "true"
+                                            id="refresh"
+                                            update="pBillDetails"
+                                            style="float:right;"
+                                            class="ui-button-warning mx-1"
+                                            title="Refresh Balancce"
+                                            icon="pi pi-refresh"                                                             
+                                            action="#{pharmacyPreSettleController.checkAndUpdateBalance()}" />
 
-                                    <div class="row mb-4 d-flex align-items-center">
-                                        <div class="row"  style="overflow-x: auto; max-width: 100%">  
-                                            <div class="col-3 d-flex">                                         
-                                                <p:selectOneMenu 
+                                        <p:commandButton
+                                            ajax= "false"
+                                            value="Settle and Accept Payment"
+                                            id="settle"
+                                            style="float:right;"
+                                            class="ui-button-success mx-1"
+                                            icon="fa-solid fa-check"                                                             
+                                            action="#{pharmacyPreSettleController.settleBillWithPay2}" />
 
-                                                    id="cmbPs"  
-                                                    style="width: 100%"
-                                                    value="#{pharmacyPreSettleController.preBill.paymentMethod}"                                     
-                                                    disabled="#{!sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment}"> 
-                                                    <f:selectItem itemLabel="Select Payment"></f:selectItem>
-                                                    <f:selectItems value="#{enumController.PaymentMethodsForPharmacyRetailSale()}" />
-                                                    <p:ajax 
-                                                        process="cmbPs" 
-                                                        listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}"
-                                                        update="creditCard cheque slip multiplePaymentMethods pBillDetails credit discountScheme" 
-                                                        event="change" />
+                                        <p:defaultCommand target="settle"/>
 
-                                                </p:selectOneMenu>
+                                    </f:facet>
 
-                                            </div>
+                                    <div class="row" >
+                                        <div class="col-6" >
+                                            <p:outputLabel 
+                                                value="Payment Method" 
+                                                class="form-label"
+                                                for="cmbPs" ></p:outputLabel>
 
-                                            <p:selectOneMenu style="width: 15em;" class="mx-2 my-1" id="discountScheme"  value="#{pharmacyPreSettleController.paymentScheme}">   
-                                                <f:selectItem itemLabel="Discount Scheme"/>
+                                            <p:selectOneMenu 
+                                                id="cmbPs"  
+                                                class="w-100"
+                                                filter="true"
+                                                filterMatchMode="contains"
+                                                value="#{pharmacyPreSettleController.preBill.paymentMethod}" > 
+                                                <f:selectItem itemLabel="Select Payment"></f:selectItem>
+                                                <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" />
+                                                <p:ajax 
+                                                    process="cmbPs" 
+                                                    listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}"
+                                                    update="panelPaymentDetails pBillDetails discountScheme" 
+                                                    event="change" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="col-6" >
+                                            <p:outputLabel 
+                                                value="Discount Scheme" 
+                                                class="form-label"
+                                                for="discountScheme" ></p:outputLabel>
+                                            <p:selectOneMenu 
+                                                class="w-100"
+                                                id="discountScheme" 
+                                                value="#{pharmacyPreSettleController.preBill.paymentScheme}">   
+                                                <f:selectItem itemLabel="No Discount Scheme"/>
                                                 <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                 <p:ajax process="@this pay " 
-                                                        update="creditCard cheque slip multiplePaymentMethods pBillDetails credit" 
+                                                        update="panelPaymentDetails pBillDetails" 
                                                         event="change"  
                                                         listener="#{pharmacyPreSettleController.updateTotals()}"/>
                                             </p:selectOneMenu>
-
-                                            <div class="col-1 d-flex mx-1">
-                                                <p:commandButton ajax= "true"
-                                                                 id="refresh"
-                                                                 update="pBillDetails"
-                                                                 style="width: 100%;padding: 0"
-                                                                 class="ui-button-warning"
-                                                                 title="Refresh Balancce"
-                                                                 icon=" pi pi-refresh"                                                             
-                                                                 action="#{pharmacyPreSettleController.checkAndUpdateBalance()}" />
-
-                                            </div>
-
-                                            <div class="col-3 d-flex mx-1">
-                                                <p:commandButton ajax= "false"
-                                                                 value="Settle and Accept Payment"
-                                                                 id="settle"
-                                                                 style="width: 100%;padding: 0"
-                                                                 class="ui-button-success"
-                                                                 icon="fa-solid fa-check"                                                             
-                                                                 action="#{pharmacyPreSettleController.settleBillWithPay2}" />
-
-                                                <p:defaultCommand target="settle"/>
-                                            </div>
-
                                         </div>
-
 
                                     </div>
 
-                                    <div class="row">
-                                        <div style="overflow-x: auto; max-width: 100%">
-                                            <h:panelGroup
-                                                id="credit"
-                                                class="row"
-                                                layout="block" 
-                                                style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Credit' ? 'none' : 'block'} ; "
-                                                >
-                                                <div class="my-1" >
-                                                    <div class="row">
-                                                        <div class="col-12 d-flex ">
-                                                            <p:autoComplete 
-                                                                id="creditCompany" 
-                                                                class="w-100 -mx-2"
-                                                                inputStyleClass="form-control"
-                                                                forceSelection="true"
-                                                                value="#{pharmacyPreSettleController.toInstitution}"  
-                                                                completeMethod="#{institutionController.completeCreditCompany}" 
-                                                                var="ix"
-                                                                minQueryLength="2"
-                                                                placeholder="Company (Type at least 4 letters to search)"
-                                                                itemLabel="#{ix.name}" 
-                                                                itemValue="#{ix}" 
-                                                                size="10"  >
 
-                                                                <f:ajax  
-                                                                    event="itemSelect" 
-                                                                    listener="#{pharmacyPreSettleController.updateTotals()}"
-                                                                    execute="@this" 
-                                                                    render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"/>
-                                                            </p:autoComplete> 
-                                                            <p:commandLink 
-                                                                id="btnAddNewCreditCom" 
-                                                                value="(+)"
-                                                                class="mx-3 mt-1"
-                                                                title="Add New Credit Company"
-                                                                ajax="false" 
-                                                                action="#{navigationController.navigateToCreditCompany()}"
-                                                                actionListener="#{creditCompanyController.prepareAdd()}" />  
+                                    <div class="row">
+                                        <div style="col-12">
+                                            <h:panelGroup id="panelPaymentDetails" >
+                                                <h:panelGroup
+                                                    id="credit"
+                                                    class="row"
+                                                    layout="block" 
+                                                    rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Credit'}"
+                                                    >
+                                                    <div class="my-1" >
+                                                        <div class="row">
+                                                            <div class="col-12 d-flex ">
+                                                                <p:autoComplete 
+                                                                    id="creditCompany" 
+                                                                    class="w-100 -mx-2"
+                                                                    inputStyleClass="form-control"
+                                                                    forceSelection="true"
+                                                                    value="#{pharmacyPreSettleController.toInstitution}"  
+                                                                    completeMethod="#{institutionController.completeCreditCompany}" 
+                                                                    var="ix"
+                                                                    minQueryLength="2"
+                                                                    placeholder="Company (Type at least 4 letters to search)"
+                                                                    itemLabel="#{ix.name}" 
+                                                                    itemValue="#{ix}" 
+                                                                    size="10"  >
+                                                                    <f:ajax  
+                                                                        event="itemSelect" 
+                                                                        listener="#{pharmacyPreSettleController.updateTotals()}"
+                                                                        execute="@this" 
+                                                                        render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"/>
+                                                                </p:autoComplete> 
+                                                                <p:commandLink 
+                                                                    id="btnAddNewCreditCom" 
+                                                                    value="(+)"
+                                                                    class="mx-3 mt-1"
+                                                                    title="Add New Credit Company"
+                                                                    ajax="false" 
+                                                                    action="#{navigationController.navigateToCreditCompany()}"
+                                                                    actionListener="#{creditCompanyController.prepareAdd()}" />  
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="creditCard" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Card'}">
+                                                    <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="staff" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Staff'}">
+                                                    <pa:staff_credit paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+                                                
+                                                  <h:panelGroup id="staff_welfare" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Staff_Welfare'}">
+                                                      <pa:staff_welfare_asOnlyPayment
+                                                          controllerWithMultiplePayments="#{pharmacyPreSettleController}"
+                                                          paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="cheque" class="w-100" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Cheque'}" >
+                                                    <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="slip" class="w-100" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Slip'}">
+                                                    <pa:slipDetailsAsOnlyPayment paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="eWallet" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'ewallet'}">
+                                                    <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    class="row my-2 w-100"
+                                                    layout="block" 
+                                                    id="multiplePaymentMethods"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                    >
+                                                    <pa:multiple_payment_methods controller="#{pharmacyPreSettleController}" paymentMethods="#{enumController.PaymentMethodsForPharmacyRetailSale()}" class="w-100"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="creditCard" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCard paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="cheque" class="w-100" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                                <pa:cheque paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="slip" class="w-100" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="eWallet" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
-                                                <pa:ewallet paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup
-                                                class="row my-2 w-100"
-                                                layout="block" 
-                                                id="multiplePaymentMethods"  style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;" 
-                                                >
-                                                <pa:multiple_payment_methods controller="#{pharmacyPreSettleController}" paymentMethods="#{enumController.PaymentMethodsForPharmacyRetailSale()}" class="w-100"/>
-                                                <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
-                                            </h:panelGroup>
                                         </div>
                                     </div>
 

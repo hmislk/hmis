@@ -157,6 +157,12 @@ public class IncomeRow implements Serializable {
         this.bill = bill;
         rowType = "Bill";
     }
+    
+    public IncomeRow(BillItem billItem) {
+        this();
+        this.billItem = billItem;
+        rowType = "BillItem";
+    }
 
     public IncomeRow(SessionInstance sessionInstance) {
         this();
