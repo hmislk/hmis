@@ -2271,7 +2271,7 @@ public class ChannelApi {
                 for (ServiceSession s : sessions) {
                     object = new JSONObject();
                     object.put("session_id", s.getId());
-                    object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
+                    object.put("session_date", CommonFunctions.getDateFormat((Date) s.getSessionDate()));
                     object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
                     object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s.getEndingTime()));
                     object.put("session_max_no", s.getMaxNo());
@@ -2681,7 +2681,7 @@ public class ChannelApi {
                 for (ServiceSession s : sessions) {
                     object = new JSONObject();
                     object.put("session_id", s.getId());
-                    object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
+                    object.put("session_date", CommonFunctions.getDateFormat((Date) s.getSessionDate()));
                     object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
                     object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s.getEndingTime()));
                     object.put("session_max_no", s.getMaxNo());
@@ -3064,7 +3064,7 @@ public class ChannelApi {
                 map.put("bill_patient_name", billObjects.get(0).getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", billObjects.get(0).getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", billObjects.get(0).getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", getCommonController().getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
+                map.put("bill_session_date", CommonFunctions.getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
                 map.put("bill_session_start_time", getCommonController().getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
                 map.put("bill_created_at", getCommonController().getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
                 map.put("bill_total", getCommonController().getDouble(billObjects.get(0).getBill().getNetTotal()));
@@ -3115,7 +3115,7 @@ public class ChannelApi {
                 map.put("bill_patient_name", o.getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", o.getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", o.getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", getCommonController().getDateFormat(o.getBill().getSingleBillSession().getSessionDate()));
+                map.put("bill_session_date", CommonFunctions.getDateFormat(o.getBill().getSingleBillSession().getSessionDate()));
                 map.put("bill_session_start_time", getCommonController().getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
                 map.put("bill_created_at", getCommonController().getDateTimeFormat24(o.getBill().getCreatedAt()));
                 map.put("bill_total", getCommonController().getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));

@@ -60,6 +60,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
+import com.divudi.java.CommonFunctions;
 import com.divudi.service.StaffService;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
@@ -290,7 +291,7 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
-        
+
         getBillSession().getBill().setBillPaymentCompletelySettled(true);
         getBillFacade().edit(getBillSession().getBill());
 
@@ -317,7 +318,7 @@ public class ChannelBillController implements Serializable {
         creditCompany = null;
         toStaff = null;
         paymentMethodData = null;
-        
+
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
 
@@ -650,8 +651,8 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorCheckForSettle() {
-        
-        
+
+
         if (settlePaymentMethod == PaymentMethod.OnCall ) {
             JsfUtil.addErrorMessage("You Can't Settle On-Call Bill with OnCall Payment");
             return true;
@@ -961,7 +962,7 @@ public class ChannelBillController implements Serializable {
             RefundBill rpb = (RefundBill) createRefundBill1(bill.getPaidBill());
             BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
             BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
-           
+
             billSession.getPaidBillSession().setReferenceBillSession(rpSession);
             billSessionFacade.edit(billSession.getPaidBillSession());
 
@@ -981,7 +982,7 @@ public class ChannelBillController implements Serializable {
     }
 
     List<BillFee> listBillFees;
-    
+
       public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -993,7 +994,7 @@ public class ChannelBillController implements Serializable {
         setPaymentMethodData(p, pm);
         return p;
     }
-      
+
      public void setPaymentMethodData(Payment p, PaymentMethod pm) {
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
@@ -1257,7 +1258,7 @@ public class ChannelBillController implements Serializable {
                 }
             }
 
-            //Update BillSession        
+            //Update BillSession
             billSession.setReferenceBillSession(cbs);
             billSessionFacade.edit(billSession);
 
@@ -1323,7 +1324,7 @@ public class ChannelBillController implements Serializable {
                 }
             }
 
-            //Update BillSession        
+            //Update BillSession
             billSession.setReferenceBillSession(cbs);
             billSessionFacade.edit(billSession);
 
@@ -1763,7 +1764,7 @@ public class ChannelBillController implements Serializable {
         if( bill.getPaymentMethod() == PaymentMethod.OnCall){
                 rb.setPaymentMethod(refundPaymentMethod);
         }
-        
+
         getBillFacade().edit(rb);
 
 //Need To Update Agent BAllance
@@ -2295,10 +2296,10 @@ public class ChannelBillController implements Serializable {
 
     private String chanellBookingSms(Bill b) {
         String s;
-        String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
+        String date = CommonFunctions.getDateFormat(b.getSingleBillSession().getSessionDate(),
                 "dd MMM");
         //System.out.println("date = " + date);
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 b.getSingleBillSession().getSessionTime(),
                 "hh:mm a");
         //System.out.println("time = " + time);
@@ -2320,7 +2321,7 @@ public class ChannelBillController implements Serializable {
 //            }
 //        }
         if (ss != null && ss.getStartingTime() != null) {
-            time = CommonController.getDateFormat(
+            time = CommonFunctions.getDateFormat(
                     ss.getStartingTime(),
                     "hh:mm a");
         } else {
@@ -2344,9 +2345,9 @@ public class ChannelBillController implements Serializable {
 
     private String chanellReminderSms(Bill b) {
         String s;
-        String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
+        String date = CommonFunctions.getDateFormat(b.getSingleBillSession().getSessionDate(),
                 "dd MMM");
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 b.getSingleBillSession().getSessionTime(),
                 "hh:mm a");
         String doc = b.getSingleBillSession().getStaff().getPerson().getNameWithTitle();

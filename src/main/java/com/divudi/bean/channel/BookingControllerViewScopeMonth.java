@@ -72,7 +72,6 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.service.StaffService;
 import com.divudi.entity.Doctor;
@@ -425,7 +424,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return;
         }
 
-        Bill printingBill = createBillForChannelReshedule(selectedBillSession);        
+        Bill printingBill = createBillForChannelReshedule(selectedBillSession);
         BillItem savingBillItem = createSessionItemForReshedule(printingBill);
         if (printingBill.getBillType() == BillType.ChannelResheduleWithPayment) {
             createPayment(printingBill, paymentMethod);
@@ -441,25 +440,25 @@ public class BookingControllerViewScopeMonth implements Serializable {
         newBillSession.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
         newBillSession.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
         newBillSession.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
-        
+
         printingBill.setSingleBillSession(newBillSession);
         printingBill.setSingleBillItem(savingBillItem);
         printingBill.getSingleBillItem().setItem(savingBillItem.getItem());
-        
+
         newBillSession.setBill(printingBill);
-        
+
         PriceMatrix priceMatrix;
         List<BillFee> savingBillFees = new ArrayList<>();
 
         priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
 
         List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(printingBill, savingBillItem, true, priceMatrix);
-        
+
 
         if (savingBillFeesFromSession != null) {
             savingBillFees.addAll(savingBillFeesFromSession);
         }
-        
+
         savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
         savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
         savingBillItem.setBillSession(newBillSession);
@@ -469,9 +468,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
         printingBill.setSingleBillItem(savingBillItem);
         printingBill.setSingleBillSession(newBillSession);
         printingBill.setBillFees(savingBillFees);
-        
+
         calculateBillTotalsFromBillFees(printingBill, savingBillFees);
-        
+
         List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
 
@@ -1362,7 +1361,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, 2);
         String temId = securityController.encryptAlphanumeric(r.getId().toString(), securityKey);
-        String url = commonController.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
         String b = "Your session of "
                 + r.getSessionInstance().getOriginatingSession().getName()
                 + " Started. "
@@ -2096,7 +2095,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 }
             }
 
-            //Update BillSession        
+            //Update BillSession
             billSession.setReferenceBillSession(cbs);
             billSessionFacade.edit(billSession);
 
@@ -2162,7 +2161,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 }
             }
 
-            //Update BillSession        
+            //Update BillSession
             billSession.setReferenceBillSession(cbs);
             billSessionFacade.edit(billSession);
 
@@ -2732,22 +2731,22 @@ public class BookingControllerViewScopeMonth implements Serializable {
             JsfUtil.addErrorMessage("Please enter a name");
             return true;
         }
-        
+
         if(p.getPerson().getDob() == null){
             JsfUtil.addErrorMessage("Please enter patient age");
             return true;
         }
-        
+
         if (p.getPerson().getPhone() == null || p.getPerson().getPhone().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a phone number");
             return true;
         }
-        
+
         if (p.getPerson().getMobile() == null || p.getPerson().getMobile().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a mobile number");
             return true;
         }
-        
+
         if (p.getPerson().getArea()== null) {
             JsfUtil.addErrorMessage("Please enter a area");
             return true;
@@ -2939,12 +2938,12 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
-                
+
                 if(reservedBooking){
                      bookedPatientCount = bookedPatientCount;
                 }else{
                     bookedPatientCount = bookedPatientCount + reservedNumbers.size();
-                } 
+                }
 
                 if (selectedSessionInstance.getCancelPatientCount() != null) {
                     long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
@@ -3213,8 +3212,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
         ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         String s;
 
-        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
-        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
         int no = b.getSingleBillSession().getSerialNo();
@@ -3253,10 +3252,10 @@ public class BookingControllerViewScopeMonth implements Serializable {
         ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         String s;
 
-        String sessionTime = CommonController.getDateFormat(selectedSessionInstance.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
-        String sessionDate = CommonController.getDateFormat(selectedSessionInstance.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
-        String oldSessionTime = CommonController.getDateFormat(selectedSessionInstance.getOriginatingSession().getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
-        String oldSessionDate = CommonController.getDateFormat(selectedSessionInstance.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String sessionTime = CommonFunctions.getDateFormat(selectedSessionInstance.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonFunctions.getDateFormat(selectedSessionInstance.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String oldSessionTime = CommonFunctions.getDateFormat(selectedSessionInstance.getOriginatingSession().getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String oldSessionDate = CommonFunctions.getDateFormat(selectedSessionInstance.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
         int no = b.getSingleBillSession().getSerialNo();
@@ -3299,15 +3298,15 @@ public class BookingControllerViewScopeMonth implements Serializable {
         ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         String s;
 
-        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
-        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
         int no = b.getSingleBillSession().getSerialNo();
         String insName = sessionController.getLoggedUser().getInstitution().getName();
 
-        String newSessionTime = CommonController.getDateFormat(b1.getSessionTime(), sessionController.getApplicationPreference().getShortTimeFormat());
-        String newSessionDate = CommonController.getDateFormat(b1.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String newSessionTime = CommonFunctions.getDateFormat(b1.getSessionTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String newSessionDate = CommonFunctions.getDateFormat(b1.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String newDoc = bs.getStaff().getPerson().getNameWithTitle();
         int newNo = b1.getSerialNo();
 
@@ -4813,7 +4812,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             } else {
                 if(feeNetTotalForSelectedBill != null){
                     savingBill.setNetTotal(feeNetTotalForSelectedBill);
-                } 
+                }
             }
         }
 

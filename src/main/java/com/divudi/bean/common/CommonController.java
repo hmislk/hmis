@@ -17,10 +17,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -87,17 +86,10 @@ public class CommonController implements Serializable {
         DecimalFormat decimalFormat = new DecimalFormat(format);
         try {
             String formattedValue = decimalFormat.format(number);
-            Double returningDbl = decimalFormat.parse(formattedValue).doubleValue();
-            return returningDbl;
+            return decimalFormat.parse(formattedValue).doubleValue();
         } catch (ParseException e) {
             return 0.0; // Handle any parsing errors gracefully by returning 0.0
         }
-    }
-
-    public String getBaseUrl() {
-        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        String url = req.getRequestURL().toString();
-        return url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
     }
 
     public Date getCurrentDateTime() {
@@ -211,20 +203,6 @@ public class CommonController implements Serializable {
         return pat.matcher(email).matches();
     }
 
-    public static String getDateFormat(Date date) {
-        String s = "";
-        DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
-        s = d.format(date);
-        return s;
-    }
-
-    public static String getDateFormat(Date date, String formatString) {
-        String s = "";
-        DateFormat d = new SimpleDateFormat(formatString);
-        s = d.format(date);
-        return s;
-    }
-
     public static Long convertStringToLong(String value) {
         try {
             return Long.parseLong(value);
@@ -249,36 +227,29 @@ public class CommonController implements Serializable {
     }
 
     public static String formatDate(Date date, String formatString) {
-        String s = "";
+        String s;
         DateFormat d = new SimpleDateFormat(formatString);
         s = d.format(date);
         return s;
     }
 
     public String getDateFormat2(Date date) {
-        String s = "";
+        String s;
         DateFormat d = new SimpleDateFormat("YYYY-MMM-dd");
         s = d.format(date);
         return s;
     }
 
     public String getTimeFormat12(Date date) {
-        String s = "";
+        String s;
         DateFormat d = new SimpleDateFormat("hh:mm:ss a");
         s = d.format(date);
         return s;
     }
 
     public String getTimeFormat24(Date date) {
-        String s = "";
+        String s;
         DateFormat d = new SimpleDateFormat("HH:mm:ss");
-        s = d.format(date);
-        return s;
-    }
-
-    public String getDateTimeFormat12(Date date) {
-        String s = "";
-        DateFormat d = new SimpleDateFormat("YYYY-MM-dd hh:mm:ss a");
         s = d.format(date);
         return s;
     }

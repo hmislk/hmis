@@ -36,6 +36,8 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+
+import com.divudi.java.CommonFunctions;
 import org.primefaces.model.ScheduleModel;
 
 /**
@@ -131,7 +133,7 @@ public class PatientPortalController implements Serializable {
         selectedConsultant = null;
         selectedSpeciality = null;
         selectedSessionInstance = null;
-        String oldURLMethord = commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml";
+        String oldURLMethord = CommonFunctions.getBaseUrl() + "faces/channel/patient_portal.xhtml";
         return "/channel/patient_portal.xhtml";
     }
 

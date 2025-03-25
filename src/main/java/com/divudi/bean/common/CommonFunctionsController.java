@@ -61,9 +61,9 @@ public class CommonFunctionsController {
         }
         return result.toString().trim();
     }
-    
+
     public static String getDateTimeFormat(Date date) {
-        String s = "";
+        String s;
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd hh:mm:ss a");
         s = d.format(date);
         return s;

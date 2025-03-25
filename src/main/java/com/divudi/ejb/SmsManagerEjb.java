@@ -5,11 +5,9 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.MessageType;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.entity.Sms;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.EmailFacade;
@@ -250,8 +248,8 @@ public class SmsManagerEjb {
             return "";
         }
         String s;
-        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), "HH:mm");
-        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), "dd MMMMM yyyy");
+        String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), "HH:mm");
+        String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), "dd MMMMM yyyy");
         String doc = si.getStaff().getPerson().getNameWithTitle();
         String booked = si.getBookedPatientCount().toString();
         String paid = si.getPaidPatientCount().toString();

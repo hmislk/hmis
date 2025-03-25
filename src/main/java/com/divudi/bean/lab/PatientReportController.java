@@ -43,11 +43,7 @@ import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import static com.divudi.data.InvestigationItemValueType.Memo;
-import static com.divudi.data.InvestigationItemValueType.Varchar;
 import com.divudi.data.ReportType;
-import static com.divudi.data.ReportType.GENARATE;
-import static com.divudi.data.ReportType.UPLOAD;
 import com.divudi.data.UploadType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.Upload;
@@ -1462,14 +1458,14 @@ public class PatientReportController implements Serializable {
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
         ed = getSecurityController().encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         b += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -1561,14 +1557,14 @@ public class PatientReportController implements Serializable {
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
         ed = getSecurityController().encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         b += "<p>"
                 + "The report before reversing approval is attached. The current report can be viewed at following link"
                 + "<br/>"
@@ -1593,7 +1589,7 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
         String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(), securityKey);
-        String url = commonController.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
@@ -1610,7 +1606,7 @@ public class PatientReportController implements Serializable {
         } catch (UnsupportedEncodingException ex) {
             // Handle the exception
         }
-        String url = commonController.getBaseUrl() + "faces/requests/report1.xhtml?id=" + temId;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report1.xhtml?id=" + temId;
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
@@ -1627,13 +1623,13 @@ public class PatientReportController implements Serializable {
             temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
         ed = getSecurityController().encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
@@ -1650,13 +1646,13 @@ public class PatientReportController implements Serializable {
             temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
         ed = getSecurityController().encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         return url;
     }
 
@@ -1728,7 +1724,7 @@ public class PatientReportController implements Serializable {
                     }
                 }
 
-                String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+                String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
                 ed = getSecurityController().encrypt(ed);
                 try {
                     ed = URLEncoder.encode(ed, "UTF-8");
@@ -1736,7 +1732,7 @@ public class PatientReportController implements Serializable {
                     // Handle the exception
                 }
 
-                String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+                String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
 
                 // Create the QR code contents using the variables and URL
                 String qrCodeContents = "Patient Name: " + patientName + "\n"

@@ -25,6 +25,9 @@ import java.util.regex.Pattern;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
+
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
 /**
@@ -159,7 +162,7 @@ public class CommonFunctions {
 
     //----------Date Time Formats
     public static String getDateFormat(Date date) {
-        String s = "";
+        String s;
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
         s = d.format(date);
         return s;
@@ -169,7 +172,7 @@ public class CommonFunctions {
         if (date == null) {
             date = new Date();
         }
-        if (formatString == null || formatString.trim().equals("")) {
+        if (formatString == null || formatString.trim().isEmpty()) {
             formatString = "dd MMMM yyyy";
         }
         String s;
@@ -410,6 +413,12 @@ public class CommonFunctions {
         return formatDate(date, ddMMyyyy);
     }
 
+    public static String getBaseUrl() {
+        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        String url = req.getRequestURL().toString();
+        return url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
+    }
+
     public Date getFirstDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -490,8 +499,7 @@ public class CommonFunctions {
 
     public static double roundToTwoDecimalPlaces(double num, int decimalPlaces) {
         double mul = Math.pow(10, decimalPlaces);
-        double roundOff = (double) Math.round(num * mul) / mul;
-        return roundOff;
+        return (double) Math.round(num * mul) / mul;
     }
 
     public DateRange getDateRangeForOT(Date date) {
