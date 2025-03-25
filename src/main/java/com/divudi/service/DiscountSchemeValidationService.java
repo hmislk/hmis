@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.data.BooleanMessage;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.ComponentDetail;
@@ -8,6 +9,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 /**
  *
@@ -16,6 +18,9 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class DiscountSchemeValidationService {
+
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public BooleanMessage validateDiscountScheme(Bill bill, PaymentMethodData pmd) {
         BooleanMessage validated = new BooleanMessage();
@@ -70,10 +75,14 @@ public class DiscountSchemeValidationService {
                 return validated;
             }
             for (ComponentDetail cd : pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethod() == PaymentMethod.Staff || cd.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-                    validated.setFlag(false);
-                    validated.setMessage("Discount scheme can NOT be applied for Multiple Payment Methods.");
-                    return validated;
+
+                boolean staffPaymentMethodsAreAllowedInsideMultiplePayments = configOptionApplicationController.getBooleanValueByKey("Staff Payment Methods Are Allowed Inside Multiple Payments", true);
+                if (!staffPaymentMethodsAreAllowedInsideMultiplePayments) {
+                    if (cd.getPaymentMethod() == PaymentMethod.Staff || cd.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                        validated.setFlag(false);
+                        validated.setMessage("Discount scheme can NOT be applied for Multiple Payment Methods.");
+                        return validated;
+                    }
                 }
             }
         } else if (paymentMethod == PaymentMethod.Staff || paymentMethod == PaymentMethod.Staff_Welfare) {
