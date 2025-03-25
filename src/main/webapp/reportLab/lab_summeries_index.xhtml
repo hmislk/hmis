@@ -66,10 +66,6 @@
                                 <p:tab title="Inward" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Inward Order Report" 
-                                                action="#{laboratoryReportController.navigateToLaboratoryInwardOrderReportFromLabAnalytics}"/>
                                             <p:commandButton ajax="false" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab?faces-redirect=true;"/>
                                             <p:commandButton ajax="false" value="Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin?faces-redirect=true;"/>
                                             <p:commandButton ajax="false" value="Investigation Summary Inward" action="report_investigation_summery_by_inward?faces-redirect=true;"/>
@@ -107,6 +103,12 @@
                                                 ajax="false" 
                                                 value="Laboratory Income Report" 
                                                 action="#{laboratoryReportController.navigateToLaboratoryIncomeReportFromLabAnalytics()}">
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Laboratory Order Report" 
+                                                action="#{laboratoryReportController.navigateToLaboratoryInwardOrderReportFromLabAnalytics}">
                                             </p:commandButton>
                                             
                                             <p:commandButton ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types?faces-redirect=true;"/> 
