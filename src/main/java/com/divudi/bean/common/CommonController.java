@@ -7,7 +7,6 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -224,26 +223,6 @@ public class CommonController implements Serializable {
         } catch (NumberFormatException e) {
             return 0.0;
         }
-    }
-
-    public String getTimeFormat24(Date date) {
-        String s;
-        DateFormat d = new SimpleDateFormat("HH:mm:ss");
-        s = d.format(date);
-        return s;
-    }
-
-    public String getDateTimeFormat24(Date date) {
-        String s = "";
-        DateFormat d = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-        s = d.format(date);
-        return s;
-    }
-
-    public Date getConvertDateTimeFormat24(String dateString) throws ParseException {
-        DateFormat d = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = d.parse(dateString);
-        return date;
     }
 
     public String getDouble(double d) {

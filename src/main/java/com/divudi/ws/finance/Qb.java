@@ -3912,8 +3912,8 @@ public class Qb {
                 map.put("bill_phone", billObjects.get(0).getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", billObjects.get(0).getBill().getStaff().getPerson().getName());
                 map.put("bill_session_date", CommonFunctions.formatDate(billObjects.get(0).getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
-                map.put("bill_session_start_time", commonController.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
-                map.put("bill_created_at", commonController.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
+                map.put("bill_session_start_time", CommonFunctions.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", CommonFunctions.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
                 map.put("bill_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal()));
                 map.put("bill_vat", commonController.getDouble(billObjects.get(0).getBill().getVat()));
                 map.put("bill_vat_plus_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
@@ -3959,8 +3959,8 @@ public class Qb {
                 map.put("bill_phone", o.getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", o.getBill().getStaff().getPerson().getName());
                 map.put("bill_session_date", CommonFunctions.formatDate(o.getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
-                map.put("bill_session_start_time", commonController.getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
-                map.put("bill_created_at", commonController.getDateTimeFormat24(o.getBill().getCreatedAt()));
+                map.put("bill_session_start_time", CommonFunctions.getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", CommonFunctions.getDateTimeFormat24(o.getBill().getCreatedAt()));
                 map.put("bill_total", commonController.getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));
                 array.put(map);
             } catch (Exception e) {

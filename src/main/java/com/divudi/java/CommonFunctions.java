@@ -407,6 +407,25 @@ public class CommonFunctions {
         return url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
     }
 
+    public static String getTimeFormat24(Date date) {
+        String s;
+        DateFormat d = new SimpleDateFormat("HH:mm:ss");
+        s = d.format(date);
+        return s;
+    }
+
+    public static String getDateTimeFormat24(Date date) {
+        String s;
+        DateFormat d = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        s = d.format(date);
+        return s;
+    }
+
+    public static Date getConvertDateTimeFormat24(String dateString) throws ParseException {
+        DateFormat d = new SimpleDateFormat("yyyy-MM-dd");
+        return d.parse(dateString);
+    }
+
     public Date getFirstDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);

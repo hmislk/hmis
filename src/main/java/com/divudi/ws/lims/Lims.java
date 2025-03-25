@@ -6,7 +6,6 @@
 package com.divudi.ws.lims;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.pharmacy.StockController;
