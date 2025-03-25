@@ -982,7 +982,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public double checkAndUpdateBalance() {
         if (getPreBill().getPaymentMethod() != null) {
             switch (getPreBill().getPaymentMethod()) {
-                case Cash:
+                case Cash:                   
                     balance = getPreBill().getNetTotal() - cashPaid;
                     break;
                 case Card:
@@ -1007,6 +1007,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     break;
             }
         }
+       
         updateTotals();
         return balance;
     }
@@ -1454,7 +1455,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void setNetTotal(double netTotal) {
-        balance = cashPaid - netTotal;
+        //balance = cashPaid - netTotal;
         this.netTotal = netTotal;
     }
 
