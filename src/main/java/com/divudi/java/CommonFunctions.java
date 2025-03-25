@@ -160,14 +160,6 @@ public class CommonFunctions {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    //----------Date Time Formats
-    public static String getDateFormat(Date date) {
-        String s;
-        DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
-        s = d.format(date);
-        return s;
-    }
-
     public static String getDateFormat(Date date, String formatString) {
         if (date == null) {
             date = new Date();
@@ -175,10 +167,7 @@ public class CommonFunctions {
         if (formatString == null || formatString.trim().isEmpty()) {
             formatString = "dd MMMM yyyy";
         }
-        String s;
-        DateFormat d = new SimpleDateFormat(formatString);
-        s = d.format(date);
-        return s;
+        return formatDate(date, formatString);
     }
 
     public static LocalDateTime convertDateToLocalDateTime(Date date) {
@@ -216,13 +205,12 @@ public class CommonFunctions {
     }
 
     public static Long convertStringToLongByRemoveSpecialChars(String phonenumber) {
-        if (phonenumber == null || phonenumber.trim().equals("")) {
+        if (phonenumber == null || phonenumber.trim().isEmpty()) {
             return null;
         }
         try {
             String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
-            Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
-            return convertedPhoneNumber;
+            return Long.parseLong(cleandPhoneNumber);
         } catch (Exception e) {
             return null;
         }

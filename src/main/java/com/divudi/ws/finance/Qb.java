@@ -3911,7 +3911,7 @@ public class Qb {
                 map.put("bill_patient_name", billObjects.get(0).getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", billObjects.get(0).getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", billObjects.get(0).getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", CommonFunctions.getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
+                map.put("bill_session_date", CommonFunctions.formatDate(billObjects.get(0).getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
                 map.put("bill_session_start_time", commonController.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
                 map.put("bill_created_at", commonController.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
                 map.put("bill_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal()));
@@ -3958,7 +3958,7 @@ public class Qb {
                 map.put("bill_patient_name", o.getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", o.getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", o.getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", CommonFunctions.getDateFormat(o.getBill().getSingleBillSession().getSessionDate()));
+                map.put("bill_session_date", CommonFunctions.formatDate(o.getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
                 map.put("bill_session_start_time", commonController.getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
                 map.put("bill_created_at", commonController.getDateTimeFormat24(o.getBill().getCreatedAt()));
                 map.put("bill_total", commonController.getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));
