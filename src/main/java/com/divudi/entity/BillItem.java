@@ -213,17 +213,11 @@ public class BillItem implements Serializable, RetirableEntity {
     }
 
     public double getHospitalFee() {
-        System.out.println("getHospitalFee");
-        System.out.println("hospitalFee = " + hospitalFee);
         return hospitalFee;
     }
 
     public void setHospitalFee(double hospitalFee) {
-        System.out.println("setHospitalFee");
-        System.out.println("hospitalFee = " + hospitalFee);
-        System.out.println("this.hospitalFee before = " + this.hospitalFee);
         this.hospitalFee = hospitalFee;
-        System.out.println("this.hospitalFee after = " + this.hospitalFee);
     }
 
     public double getStaffFee() {
