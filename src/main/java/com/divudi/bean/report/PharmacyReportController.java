@@ -252,6 +252,7 @@ public class PharmacyReportController implements Serializable {
     private List<AgentReferenceBook> agentReferenceBooks;
 
     private boolean showPaymentData;
+    private boolean showData;
 
     private List<BillAndItemDataRow> billAndItemDataRows;
     private BillAndItemDataRow headerBillAndItemDataRow;
@@ -1929,17 +1930,22 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private void addFilter(StringBuilder sql, String condition) {
+        if (condition != null && !condition.isEmpty()) {
+            sql.append(" ").append(condition).append(" ");
+        }
+    }
+
     public void processGoodInTransistReport() {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder sql = new StringBuilder();
         sql.append("select bi from BillItem bi"
                 + " where bi.bill.billType = :bt"
                 + " and bi.retired = :ret"
-                + " and bi.bill.cancelled = false"
+                + " and bi.bill.billedBill is null "
                 + " and bi.bill.createdAt between :fd and :td"
                 + " and bi.bill.toStaff is not null"
-                + " and bi.bill.fromDepartment is not null"
-                + " and bi.bill.forwardReferenceBills is empty ");
+                + " and bi.bill.fromDepartment is not null");
 
         parameters.put("bt", BillType.PharmacyTransferIssue);
         parameters.put("ret", false);
@@ -1955,7 +1961,20 @@ public class PharmacyReportController implements Serializable {
         addFilter(sql, parameters, "bi.item", "item", item);
         addFilter(sql, parameters, "bi.item.category", "cat", category);
         addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
-
+        if (showData) {
+            reportType = "pending";
+            sql.append(" and bi.bill.forwardReferenceBill Is null ");
+        }
+        if (reportType.equals("pending")) {
+            addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
+        }
+        if (reportType.equals("accepted")) {
+            addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
+        }
+        if (reportType.equals("issueCancel")) {
+            addFilter(sql, "and bi.bill.cancelled = true");
+        }
+        System.out.println("dccdjidci" + showData);
         sql.append(" order by bi.bill.id ");
 
         billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
@@ -2230,7 +2249,7 @@ public class PharmacyReportController implements Serializable {
     public void processClosingStock() {
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
-        stockQty=0.0;
+        stockQty = 0.0;
         if (reportType.equals("batchWise")) {
             processClosingStockForBatchReport();
         } else if (reportType.equals("itemWise")) {
@@ -3753,5 +3772,13 @@ public class PharmacyReportController implements Serializable {
 
     public void setToSite(Institution toSite) {
         this.toSite = toSite;
+    }
+
+    public boolean isShowData() {
+        return showData;
+    }
+
+    public void setShowData(boolean showData) {
+        this.showData = showData;
     }
 }

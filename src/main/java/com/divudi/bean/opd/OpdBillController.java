@@ -1874,7 +1874,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return null;
         }
-
         String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill Started");
         if (!executeSettleBillActions()) {
             auditEventController.updateAuditEvent(eventUuid);
