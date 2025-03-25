@@ -827,14 +827,14 @@ public class PatientReportController implements Serializable {
         String calString = "";
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
 
-            if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().equals("")) {
+            if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().isEmpty()) {
                 if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                    double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
-                    priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
+                    double tmpDbl = CommonFunctions.extractDoubleValue(priv.getStrValue());
+                    priv.setStrValue(CommonFunctions.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
                     priv.setDoubleValue(tmpDbl);
                 } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
                     Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
-                    Double numberWithFormatter = CommonController.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
+                    Double numberWithFormatter = CommonFunctions.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
                     priv.setDoubleValue(numberWithFormatter);
                     priv.setStrValue(numberWithFormatter + "");
                 }
@@ -1800,7 +1800,7 @@ public class PatientReportController implements Serializable {
                         tv = temIv.getDoubleValue();
                     }
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                        tv = commonController.getDouble(temIv.getStrValue());
+                        tv = CommonFunctions.getDouble(temIv.getStrValue());
                     }
                     //System.out.println("tv = " + tv);
                     if (temii.isCanNotApproveIfValueIsAboveAbsoluteHighValue()) {
@@ -1955,7 +1955,7 @@ public class PatientReportController implements Serializable {
         UserPreference pf = getSessionController().getApplicationPreference();
 
         if (pf != null && pf.getSentEmailWithInvestigationReportApproval()) {
-            if (CommonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
+            if (CommonFunctions.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
                 AppEmail e;
 
                 e = new AppEmail();
@@ -2166,7 +2166,7 @@ public class PatientReportController implements Serializable {
         JsfUtil.addSuccessMessage("Approval Reversed");
 
         try {
-            if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
+            if (CommonFunctions.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
                 AppEmail e = new AppEmail();
                 e.setCreatedAt(new Date());
                 e.setCreater(sessionController.getLoggedUser());

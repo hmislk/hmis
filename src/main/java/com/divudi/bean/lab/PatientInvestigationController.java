@@ -2,7 +2,6 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemForItemController;
@@ -61,13 +60,6 @@ import com.divudi.data.lab.PatientSampleWrapper;
 import com.divudi.data.lab.Priority;
 import com.divudi.data.lab.SampleTubeLabel;
 import com.divudi.data.lab.SearchDateType;
-import static com.divudi.data.lab.SearchDateType.ORDERED_DATE;
-import static com.divudi.data.lab.SearchDateType.REPORT_AUTHORIZED;
-import static com.divudi.data.lab.SearchDateType.REPORT_PRINTED;
-import static com.divudi.data.lab.SearchDateType.SAMPLE_ACCEPTED_DATE;
-import static com.divudi.data.lab.SearchDateType.SAMPLE_COLLECTED_DATE;
-import static com.divudi.data.lab.SearchDateType.SAMPLE_GENERATED_DATE;
-import static com.divudi.data.lab.SearchDateType.SAMPLE_SENT_DATE;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Route;
 import com.divudi.entity.Staff;
@@ -150,8 +142,6 @@ public class PatientInvestigationController implements Serializable {
     private InstitutionLabSumeryController labReportSearchByInstitutionController;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     private BillBeanController billBeanController;
     @Inject
@@ -1363,7 +1353,7 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No Bills Seelcted");
             return;
         }
-        
+
         if (billForBarcode.isCancelled()) {
             JsfUtil.addErrorMessage("This Bill is Already Cancel");
             return;
@@ -3764,7 +3754,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (patientSamplesSet.isEmpty()) {
             ptLabel = zplTemplate;
-            ptLabel = ptLabel.replace("#{header}", commonController.shortDate(patientSamples.get(0).getBill().getBillDate())
+            ptLabel = ptLabel.replace("#{header}", CommonFunctions.shortDate(patientSamples.get(0).getBill().getBillDate())
                     + " "
                     + patientSamples.get(0).getBill().getPatient().getPerson().getName());
             ptLabel = ptLabel.replace("#{barcode}", "" + patientSamples.get(0).getBill().getIdStr());
@@ -3779,7 +3769,7 @@ public class PatientInvestigationController implements Serializable {
         } else {
             for (PatientSample ps : patientSamplesSet) {
                 ptLabel = zplTemplate;
-                ptLabel = ptLabel.replace("#{header}", commonController.shortDate(ps.getBill().getBillDate())
+                ptLabel = ptLabel.replace("#{header}", CommonFunctions.shortDate(ps.getBill().getBillDate())
                         + " "
                         + ps.getPatient().getPerson().getName());
                 ptLabel = ptLabel.replace("#{barcode}", "" + ps.getIdStr());
@@ -5140,14 +5130,6 @@ public class PatientInvestigationController implements Serializable {
         patientReports = patientReportFacade.findByJpql(jpql, params);
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     @Deprecated
     public List<PatientSample> prepareSampleCollectionByBillsForPhlebotomyRoom(List<Bill> bills, WebUser wu) {
         String j = "";
@@ -5731,7 +5713,7 @@ public class PatientInvestigationController implements Serializable {
 //            if(status == "Approved"){
 //                continue;
 //            }
-//            
+//
 //            switch (pr.getPatientInvestigation().getStatus()) {
 //                case ORDERED:
 //                    status = "Ordered";

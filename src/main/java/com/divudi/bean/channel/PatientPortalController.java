@@ -1,6 +1,5 @@
 package com.divudi.bean.channel;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PaymentGatewayController;
 import com.divudi.bean.common.SessionController;
@@ -75,8 +74,6 @@ public class PatientPortalController implements Serializable {
     PatientController patientController;
     @Inject
     BookingController bookingController;
-    @Inject
-    CommonController commonController;
     @Inject
     PaymentGatewayController paymentGatewayController;
     @Inject
@@ -333,7 +330,7 @@ public class PatientPortalController implements Serializable {
         if (otpVerify) {
             searchedPatients = new ArrayList<>();
             String j;
-            Long PatientphoneNumberLong = commonController.convertStringToLong(PatientphoneNumber);
+            Long PatientphoneNumberLong = CommonFunctions.convertStringToLongOrZero(PatientphoneNumber);
             Map m = new HashMap();
             j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
             m.put("pp", PatientphoneNumberLong);

@@ -296,8 +296,8 @@ public class InpatientClinicalDataController implements Serializable {
         if (encounter.getCurrentPatientRoom() != null) {
             encounter.getCurrentPatientRoom().getName();
         }
-        String weight = CommonController.formatNumber(encounter.getWeight(), "0.0") + " kg";
-        String height = CommonController.formatNumber(encounter.getHeight(), "0") + " cm";
+        String weight = CommonFunctions.formatNumber(encounter.getWeight(), "0.0") + " kg";
+        String height = CommonFunctions.formatNumber(encounter.getHeight(), "0") + " cm";
         String bmi = encounter.getBmiFormatted();
         String rr = encounter.getRespiratoryRate()+" bpm";
         String bp = encounter.getBp();
@@ -507,8 +507,8 @@ public class InpatientClinicalDataController implements Serializable {
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
 
         String visitDate = CommonFunctions.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
-        String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String weight = CommonFunctions.formatNumber(e.getWeight(), "0.0") + " kg";
+        String height = CommonFunctions.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String comments = e.getComments();

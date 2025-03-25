@@ -111,8 +111,6 @@ public class InwardBeanController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    private CommonFunctions commonFunctions;
-
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
         Map<String, String> replaceables = Bill.toMap(b);
@@ -2127,14 +2125,6 @@ public class InwardBeanController implements Serializable {
         this.timedItemFeeFacade = timedItemFeeFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public double calTotalLinen(PatientEncounter patientEncounter) {
 
         if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {
@@ -2143,7 +2133,7 @@ public class InwardBeanController implements Serializable {
 
         double linen = 0.0;
 
-        Long dayCount = getCommonFunctions().getDayCount(patientEncounter.getDateOfAdmission(), patientEncounter.getDateOfDischarge());
+        Long dayCount = CommonFunctions.getDayCount(patientEncounter.getDateOfAdmission(), patientEncounter.getDateOfDischarge());
 
         for (PatientRoom pr : getPatientRooms(patientEncounter)) {
             linen += pr.getAddedLinenCharge();
@@ -2208,7 +2198,7 @@ public class InwardBeanController implements Serializable {
             dischargedDate = new Date();
         }
 
-        consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
+        consumeTime = CommonFunctions.calculateDurationMin(admittedDate, dischargedDate);
         if (consumeTime == 0) {
             return 0;
         }

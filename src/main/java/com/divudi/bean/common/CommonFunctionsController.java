@@ -242,15 +242,6 @@ public class CommonFunctionsController {
         return durationHours;
     }
 
-    public long calculateDurationMin(Date dob, Date toDate) {
-        if (dob == null || toDate == null || dob.getTime() > toDate.getTime()) {
-            return 0;
-        }
-        long dMin;
-        dMin = (toDate.getTime() - dob.getTime()) / (1000 * 60);
-        return dMin;
-    }
-
     public Date getStartOfDay(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

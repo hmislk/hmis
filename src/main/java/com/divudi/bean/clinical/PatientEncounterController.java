@@ -9,7 +9,6 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -55,8 +54,6 @@ import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.lab.PatientReport;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientReportFacade;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -119,10 +116,6 @@ public class PatientEncounterController implements Serializable {
     private ItemUsageFacade itemUsageFacade;
     @EJB
     private PrescriptionFacade prescriptionFacade;
-    @EJB
-    private PatientReportFacade prFacade;
-    @EJB
-    BillItemFacade billItemFacade;
 
     /**
      * Controllers
@@ -135,8 +128,6 @@ public class PatientEncounterController implements Serializable {
     PharmacySaleController pharmacySaleController;
     @Inject
     BillController billController;
-    @Inject
-    CommonController commonController;
     @Inject
     DocumentTemplateController documentTemplateController;
     @Inject
@@ -1332,8 +1323,8 @@ public class PatientEncounterController implements Serializable {
         String phn = e.getPatient().getPhn() != null ? e.getPatient().getPhn() : "";
 
         String visitDate = CommonFunctions.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
-        String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String weight = CommonFunctions.formatNumber(e.getWeight(), "0.0") + " kg";
+        String height = CommonFunctions.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp() != null ? e.getBp() : "";
         String rr = e.getRespiratoryRate() != null ? e.getRespiratoryRate() + " bpm" : "";
@@ -2551,14 +2542,6 @@ public class PatientEncounterController implements Serializable {
 
     public void setGraphInvestigationItem(InvestigationItem graphInvestigationItem) {
         this.graphInvestigationItem = graphInvestigationItem;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<PatientEncounter> getSelectedItems() {

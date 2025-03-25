@@ -25,6 +25,8 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.java.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,7 +106,7 @@ public class VmpController implements Serializable {
         if (vmp == null) {
             vmp = new Vmp();
             vmp.setName(vmpName);
-            String vmpCode = CommonController.nameToCode("vmp_" + vmpName);
+            String vmpCode = CommonFunctions.nameToCode("vmp_" + vmpName);
             vmp.setSymanticType(SymanticType.Pharmacologic_Substance);
             getFacade().create(vmp);
         }
@@ -291,7 +293,7 @@ public class VmpController implements Serializable {
         }
         v = new Vmp();
         v.setName(vmpName);
-        v.setCode("vmp_" + CommonController.nameToCode(vmpName));
+        v.setCode("vmp_" + CommonFunctions.nameToCode(vmpName));
         v.setVtm(vtm);
         v.setDosageForm(dosageForm);
         v.setStrengthOfAnIssueUnit(strengthOfAnIssueUnit);
@@ -321,7 +323,7 @@ public class VmpController implements Serializable {
         }
         v = new Vmp();
         v.setName(vmpName);
-        v.setCode("vmp_" + CommonController.nameToCode(vmpName));
+        v.setCode("vmp_" + CommonFunctions.nameToCode(vmpName));
         v.setVtm(vtm);
         v.setDosageForm(dosageForm);
         v.setStrengthUnit(strengthUnit);

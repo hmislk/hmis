@@ -8,7 +8,6 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
@@ -235,8 +234,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     OpdBillController opdBillController;
     @Inject
     ChannelScheduleController channelScheduleController;
-    @Inject
-    private CommonController commonController;
     @Inject
     SecurityController securityController;
     @Inject

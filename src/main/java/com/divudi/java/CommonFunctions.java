@@ -5,11 +5,11 @@
  */
 package com.divudi.java;
 
+import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+
+import java.text.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -22,6 +22,8 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -426,6 +428,174 @@ public class CommonFunctions {
         return d.parse(dateString);
     }
 
+    public static Date getCurrentDateTime() {
+        return new Date();
+    }
+
+    public static String formatNumber(Double number, String format) {
+        if (number == null) {
+            return "";
+        }
+        DecimalFormat decimalFormat = new DecimalFormat(format);
+        return decimalFormat.format(number);
+    }
+
+    /**
+     * Formats a Double value according to the given format string and returns
+     * it as a double.
+     *
+     * @param number The Double value to be formatted.
+     * @param format The format string specifying the desired format.
+     * @return The formatted double value.
+     */
+    public static double formatDouble(Double number, String format) {
+        if (number == null) {
+            return 0.0; // Handle null input gracefully by returning 0.0
+        }
+
+        DecimalFormat decimalFormat = new DecimalFormat(format);
+        try {
+            String formattedValue = decimalFormat.format(number);
+            return decimalFormat.parse(formattedValue).doubleValue();
+        } catch (ParseException e) {
+            return 0.0; // Handle any parsing errors gracefully by returning 0.0
+        }
+    }
+
+    public static String shortDate(Date date) {
+        SimpleDateFormat dt1 = new SimpleDateFormat("dMMMyy");
+        return (dt1.format(date));
+    }
+
+    public static double dateDifferenceInSeconds(Date fromDate, Date toDate) {
+        long timeInMs = toDate.getTime() - fromDate.getTime();
+        return (double) timeInMs / 1000;
+    }
+
+    public static boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\."
+                + "[a-zA-Z0-9_+&*-]+)*@"
+                + "(?:[a-zA-Z0-9-]+\\.)+[a-z"
+                + "A-Z]{2,7}$";
+
+        Pattern pat = Pattern.compile(emailRegex);
+        if (email == null) {
+            return false;
+        }
+        return pat.matcher(email).matches();
+    }
+
+    public static Long convertStringToLongOrZero(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
+    }
+
+    public static double extractDoubleValue(String input) {
+        String cleanedInput = input.replaceAll(",", ""); // Remove commas
+        cleanedInput = cleanedInput.trim(); // Trim leading and trailing whitespace
+
+        if (cleanedInput.isEmpty()) {
+            return 0.0;
+        }
+
+        try {
+            return Double.parseDouble(cleanedInput);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    public static String getDouble(double d) {
+        String s;
+        NumberFormat myFormatter = new DecimalFormat("##0.00");
+        s = myFormatter.format(d);
+        return s;
+    }
+
+    public static Double getDouble(String s) {
+        Double d = null;
+        if (s == null) {
+            return d;
+        }
+        try {
+            d = Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            d = 0.0;
+        }
+        return d;
+    }
+
+    public static double dateDifferenceInMinutes(Date fromDate, Date toDate) {
+        if (fromDate == null || toDate == null) {
+            return 0;
+        }
+        long timeInMs = toDate.getTime() - fromDate.getTime();
+        return (double) timeInMs / (1000 * 60);
+    }
+
+    public static String formatToLongDate(Date date, String dateFormat) {
+        if (date == null) {
+            return "";
+        }
+
+        SimpleDateFormat d = new SimpleDateFormat(dateFormat);
+
+        return d.format(date);
+    }
+
+    public static Date getDateBeforeThreeMonthsCurrentDateTime() {
+        Calendar calendar = Calendar.getInstance();
+        // Subtract three months from the current date
+        calendar.add(Calendar.MONTH, -3);
+        // Set time to the beginning of the day (optional, based on your requirement)
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    public static boolean renderPaginator(List<Object> list, int count) {
+        boolean render = false;
+        if (list == null) {
+            return render;
+        }
+        if (list.size() > count) {
+            render = true;
+        }
+        return render;
+    }
+
+    public static Date getDateAfterThreeMonthsCurrentDateTime() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
+        cal.add(Calendar.MONTH, 3);
+        return cal.getTime();
+    }
+
+    public static boolean sameDate(Date date1, Date date2) {
+        Calendar d1 = Calendar.getInstance();
+        d1.setTime(date1);
+        DateTime first = new DateTime(date1);
+        DateTime second = new DateTime(date2);
+        LocalDate firstDate = first.toLocalDate();
+        LocalDate secondDate = second.toLocalDate();
+        return firstDate.equals(secondDate);
+    }
+
+    public static Date retiermentDate(Date dob) {
+        if (dob == null) {
+            dob = new Date();
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(dob);
+        cal.add(Calendar.YEAR, 50);
+        return cal.getTime();
+    }
+
     public Date getFirstDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -670,7 +840,7 @@ public class CommonFunctions {
     public Date guessDob(String docStr) {
         //////// // System.out.println("year string is " + docStr);
         try {
-            int years = Integer.valueOf(docStr);
+            int years = Integer.parseInt(docStr);
             //////// // System.out.println("int year is " + years);
             Calendar now = Calendar.getInstance(TimeZone.getTimeZone("IST"));
             //////// // System.out.println("now before is " + now);
@@ -685,49 +855,41 @@ public class CommonFunctions {
         }
     }
 
-    public Date guessDob(YearMonthDay yearMonthDay) {
-        // //////// // System.out.println("year string is " + docStr);
-        int years = 0;
-        int month = 0;
-        int day = 0;
+    public static Date guessDob(YearMonthDay yearMonthDay) {
+        int years;
+        int month;
+        int day;
         Calendar now = Calendar.getInstance(TimeZone.getTimeZone("IST"));
         try {
             if (yearMonthDay.getYear() != null && !yearMonthDay.getYear().isEmpty()) {
-                years = Integer.valueOf(yearMonthDay.getYear());
+                years = Integer.parseInt(yearMonthDay.getYear());
                 now.add(Calendar.YEAR, -years);
             }
 
             if (yearMonthDay.getMonth() != null && !yearMonthDay.getMonth().isEmpty()) {
-                month = Integer.valueOf(yearMonthDay.getMonth());
+                month = Integer.parseInt(yearMonthDay.getMonth());
                 now.add(Calendar.MONTH, -month);
             }
 
             if (yearMonthDay.getDay() != null && !yearMonthDay.getDay().isEmpty()) {
-                day = Integer.valueOf(yearMonthDay.getDay());
+                day = Integer.parseInt(yearMonthDay.getDay());
                 now.add(Calendar.DATE, -day);
             }
 
             return now.getTime();
         } catch (Exception e) {
-            //////// // System.out.println("Error is " + e.getMessage());
             return new Date();
 
         }
     }
 
     public Date guessDobFromMonth(String docStr) {
-        //////// // System.out.println("year string is " + docStr);
         try {
-            int month = Integer.valueOf(docStr);
-            //////// // System.out.println("int month is " + month);
+            int month = Integer.parseInt(docStr);
             Calendar now = Calendar.getInstance(TimeZone.getTimeZone("IST"));
-            //////// // System.out.println("now before is " + now);
             now.add(Calendar.MONTH, -month);
-            //////// // System.out.println("now after is " + now);
-            //////// // System.out.println("now time is " + now.getTime());
             return now.getTime();
         } catch (Exception e) {
-            //////// // System.out.println("Error is " + e.getMessage());
             return new Date();
 
         }
@@ -742,7 +904,6 @@ public class CommonFunctions {
         if (ageInDays < 0) {
             return "";
         }
-        //////// // System.out.println("Age in days " + ageInDays);
         if (ageInDays < 60) {
             return ageInDays + " days";
         } else if (ageInDays < 366) {
@@ -857,17 +1018,16 @@ public class CommonFunctions {
             return null;
         }
 
-        return Double.valueOf(value).longValue();
+        return value.longValue();
     }
 
-    public static Long convertStringToLong(String value) {
+    public static Long convertStringToLongOrNull(String value) {
         if (value == null || value.isEmpty()) {
             return null;
         }
         try {
             return Long.parseLong(value);
         } catch (NumberFormatException e) {
-
             return null;
         }
     }

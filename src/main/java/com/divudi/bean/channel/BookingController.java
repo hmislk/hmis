@@ -7,7 +7,6 @@ package com.divudi.bean.channel;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
@@ -201,8 +200,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     BookingControllerViewScope bookingControllerViewScope;
     @Inject
     SecurityController securityController;
-    @Inject
-    private CommonController commonController;
 
 //     * Properties
 //     */
