@@ -226,27 +226,6 @@ public class CommonController implements Serializable {
         }
     }
 
-    public static String formatDate(Date date, String formatString) {
-        String s;
-        DateFormat d = new SimpleDateFormat(formatString);
-        s = d.format(date);
-        return s;
-    }
-
-    public String getDateFormat2(Date date) {
-        String s;
-        DateFormat d = new SimpleDateFormat("YYYY-MMM-dd");
-        s = d.format(date);
-        return s;
-    }
-
-    public String getTimeFormat12(Date date) {
-        String s;
-        DateFormat d = new SimpleDateFormat("hh:mm:ss a");
-        s = d.format(date);
-        return s;
-    }
-
     public String getTimeFormat24(Date date) {
         String s;
         DateFormat d = new SimpleDateFormat("HH:mm:ss");
@@ -264,7 +243,6 @@ public class CommonController implements Serializable {
     public Date getConvertDateTimeFormat24(String dateString) throws ParseException {
         DateFormat d = new SimpleDateFormat("yyyy-MM-dd");
         Date date = d.parse(dateString);
-//        //// // System.out.println("date = " + date +" ~ dateString = " + dateString);
         return date;
     }
 

@@ -42,6 +42,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
+
+import com.divudi.java.CommonFunctions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.divudi.data.LoginRequest;
@@ -490,7 +492,7 @@ public class Lims {
             } else {
                 jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
                 jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
-                jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+                jSONObject.put("billDate", CommonFunctions.formatDate(bill.getCreatedAt(), "dd MMM yy"));
             }
             jSONObject.put("id", ps.getIdStr() != null ? ps.getIdStr() : "");
         }
@@ -544,7 +546,7 @@ public class Lims {
 
             jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
             jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
-            jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+            jSONObject.put("billDate", CommonFunctions.formatDate(bill.getCreatedAt(), "dd MMM yy"));
 
             jSONObject.put("id", bill.getIdStr() != null ? bill.getIdStr() : "");
         }
@@ -589,7 +591,7 @@ public class Lims {
 
             jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
             jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
-            jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+            jSONObject.put("billDate", CommonFunctions.formatDate(bill.getCreatedAt(), "dd MMM yy"));
 
             jSONObject.put("id", bill.getIdStr() != null ? bill.getIdStr() : "");
         }

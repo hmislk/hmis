@@ -65,6 +65,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
+import com.divudi.java.CommonFunctions;
 import org.primefaces.model.DefaultStreamedContent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseId;
@@ -550,7 +552,7 @@ public class PastPatientEncounterController implements Serializable {
             m.put("doc", doctor);
         }
         items = getFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
+
         return "/clinical/clinical_reports_all_opd_visits?faces-redirect=true";
     }
 
@@ -1079,7 +1081,7 @@ public class PastPatientEncounterController implements Serializable {
 
         return clinicalFindingValueFacade.findByJpql(sql, m);
     }
-    
+
     public String navigateToOldOpdVisitFromSearch() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing");
@@ -1145,7 +1147,7 @@ public class PastPatientEncounterController implements Serializable {
             }
         }
     }
-    
+
     public void fillCurrentEncounterLists(PatientEncounter encounter) {
         encounterFindingValues = fillCurrentEncounterFindingValues(encounter, null);
         encounterMedicines = fillEncounterMedicines(encounter);
@@ -1181,7 +1183,7 @@ public class PastPatientEncounterController implements Serializable {
         String nic = e.getPatient().getPerson().getNic() != null ? e.getPatient().getPerson().getNic() : "";
         String phn = e.getPatient().getPhn() != null ? e.getPatient().getPhn() : "";
 
-        String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String visitDate = CommonFunctions.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
         String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
         String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
@@ -1296,11 +1298,11 @@ public class PastPatientEncounterController implements Serializable {
                 ixSameLine += " / ";
             }
         }
-        
+
         String bpPrSameLine = "";
         bpPrSameLine += (e.getBp() != null ? "BP - " + e.getBp() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" : "BP - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
         bpPrSameLine += (e.getPr() != null ? "PR - " + e.getPr() : "PR - ");
-        
+
         String visitDx = "";
         for (ClinicalFindingValue ix : getEncounterDiagnoses()) {
             visitDx += ix.getItemValue().getName();
@@ -2676,7 +2678,7 @@ public class PastPatientEncounterController implements Serializable {
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitProcedure);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
-    
+
     private List<ClinicalFindingValue> fillEncounterInvestigationResults(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitInvestigationResult);
@@ -2718,7 +2720,7 @@ public class PastPatientEncounterController implements Serializable {
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitPrescription);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
-    
+
     private List<ClinicalFindingValue> fillPlanOfAction(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.PlanOfAction);
@@ -2878,7 +2880,7 @@ public class PastPatientEncounterController implements Serializable {
     public void setEncounterFindingValues(List<ClinicalFindingValue> encounterFindingValues) {
         this.encounterFindingValues = encounterFindingValues;
     }
-    
+
     public ClinicalFindingValue getEncounterPlanOfAction() {
         if (encounterPlanOfAction == null) {
             encounterPlanOfAction = new ClinicalFindingValue();
@@ -3009,7 +3011,7 @@ public class PastPatientEncounterController implements Serializable {
         this.patientProcedures = patientProcedures;
     }
 
-    
+
 
 }
 

@@ -71,6 +71,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
+import com.divudi.java.CommonFunctions;
 import org.primefaces.model.DefaultStreamedContent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseId;
@@ -811,9 +813,9 @@ public class PatientEncounterController implements Serializable {
 //        if (bill.getId()==null){
 //            billFacade.create(bill);
 //        }
-//        
+//
 //        bi.setBill(bill);
-//        
+//
 //        if (bi.getId() == null) {
 //            billItemFacade.create(bi);
 //        }
@@ -1329,7 +1331,7 @@ public class PatientEncounterController implements Serializable {
         String nic = e.getPatient().getPerson().getNic() != null ? e.getPatient().getPerson().getNic() : "";
         String phn = e.getPatient().getPhn() != null ? e.getPatient().getPhn() : "";
 
-        String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String visitDate = CommonFunctions.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
         String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
         String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();

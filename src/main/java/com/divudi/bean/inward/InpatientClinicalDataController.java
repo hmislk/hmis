@@ -71,6 +71,8 @@ import javax.faces.event.PhaseId;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.divudi.java.CommonFunctions;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -281,13 +283,13 @@ public class InpatientClinicalDataController implements Serializable {
         String sex = encounter.getPatient().getPerson().getSex() != null ? encounter.getPatient().getPerson().getSex().name() : "";
         String address = encounter.getPatient().getPerson().getAddress() != null ? encounter.getPatient().getPerson().getAddress() : "";
         String phone = encounter.getPatient().getPerson().getPhone() != null ? encounter.getPatient().getPerson().getPhone() : "";
-        String visitDate = CommonController.formatDate(encounter.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String doa = CommonController.formatDate(encounter.getDateOfAdmission(), sessionController.getApplicationPreference().getLongDateFormat());
+        String visitDate = CommonFunctions.formatDate(encounter.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String doa = CommonFunctions.formatDate(encounter.getDateOfAdmission(), sessionController.getApplicationPreference().getLongDateFormat());
         String dod;
         if (encounter.getDateOfDischarge() == null) {
-            dod = CommonController.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
+            dod = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
         } else {
-            dod = CommonController.formatDate(encounter.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
+            dod = CommonFunctions.formatDate(encounter.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
         }
         String bht = encounter.getBhtNo();
         String room = "";
@@ -504,7 +506,7 @@ public class InpatientClinicalDataController implements Serializable {
         String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
 
-        String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String visitDate = CommonFunctions.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
         String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
         String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
@@ -972,7 +974,7 @@ public class InpatientClinicalDataController implements Serializable {
             m.put("doc", doctor);
         }
         items = getFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
+
         return "/clinical/clinical_reports_all_opd_visits?faces-redirect=true";
     }
 
