@@ -1962,6 +1962,7 @@ public class PharmacyReportController implements Serializable {
         addFilter(sql, parameters, "bi.item.category", "cat", category);
         addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
         if (showData) {
+            reportType = "pending";
             sql.append(" and bi.bill.forwardReferenceBill Is null ");
         }
         if (reportType.equals("pending")) {
