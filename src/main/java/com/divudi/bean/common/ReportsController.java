@@ -3612,9 +3612,10 @@ public class ReportsController implements Serializable {
 //            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
 //            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
 //            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-//            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
         } else if (visitType.equalsIgnoreCase("OP")) {
 //            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
 //            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -5514,7 +5515,7 @@ public class ReportsController implements Serializable {
         Double billTotal = 0.0;
 
         for (Bill bill : bills) {
-            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null) {
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
                 billTotal += bill.getPatientEncounter().getFinalBill().getGrantTotal();
             } else {
                 billTotal += bill.getGrantTotal();
@@ -5528,7 +5529,7 @@ public class ReportsController implements Serializable {
         Double discount = 0.0;
 
         for (Bill bill : bills) {
-            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null) {
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
                 discount += bill.getPatientEncounter().getFinalBill().getDiscount();
             } else {
                 discount += bill.getDiscount();
@@ -5542,7 +5543,7 @@ public class ReportsController implements Serializable {
         Double netTotal = 0.0;
 
         for (Bill bill : bills) {
-            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null) {
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
                 netTotal += bill.getPatientEncounter().getFinalBill().getNetTotal();
             } else {
                 netTotal += bill.getNetTotal();
@@ -5556,7 +5557,7 @@ public class ReportsController implements Serializable {
         Double settledAmountByPatient = 0.0;
 
         for (Bill bill : bills) {
-            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null) {
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
                 settledAmountByPatient += bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
             } else {
                 settledAmountByPatient += bill.getSettledAmountByPatient();
@@ -5570,7 +5571,7 @@ public class ReportsController implements Serializable {
         Double settledAmountBySponsor = 0.0;
 
         for (Bill bill : bills) {
-            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null) {
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
                 settledAmountBySponsor += bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
             } else {
                 settledAmountBySponsor += bill.getSettledAmountBySponsor();
@@ -5584,7 +5585,7 @@ public class ReportsController implements Serializable {
         Double balance = 0.0;
 
         for (Bill bill : bills) {
-            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null) {
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
                 balance += bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() -
                         bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
 
