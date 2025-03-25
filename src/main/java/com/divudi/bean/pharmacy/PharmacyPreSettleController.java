@@ -1007,7 +1007,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     break;
             }
         }
-
+        updateTotals();
         return balance;
     }
 
