@@ -3636,6 +3636,12 @@ public class ReportsController implements Serializable {
 
         bundle = generateOpdAndInwardDueBills(opdBts);
 
+        if (visitType.equalsIgnoreCase("IP")) {
+            updateSettledAmountsForIP();
+        } else if (visitType.equalsIgnoreCase("OP")) {
+            updateSettledAmountsForOP();
+        }
+
         groupBills();
     }
 
@@ -4167,6 +4173,138 @@ public class ReportsController implements Serializable {
         b.createRowValuesFromBill();
         b.calculateTotalsWithCredit();
         return b;
+    }
+
+    private void updateSettledAmountsForIP() {
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Bill bill = row.getBill();
+
+            if (bill.isCancelled() || bill.isRefunded()) {
+                continue;
+            }
+
+            PatientEncounter patientEncounter = bill.getPatientEncounter();
+            Bill finalBill = patientEncounter.getFinalBill();
+
+            List<Bill> bills = calculateSettledPatientBillIP(finalBill);
+            double total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountByPatient(total);
+            }
+
+            bills = calculateSettledSponsorBillIP(finalBill);
+            total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountBySponsor(total);
+            }
+        }
+    }
+
+    private List<Bill> calculateSettledPatientBillIP(Bill bill) {
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            bts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            bts.add(BillTypeAtomic.INWARD_DEPOSIT);
+            bts.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        }
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br ";
+
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        jpql += "AND bill.forwardReferenceBill.id = :rb ";
+        parameters.put("rb", bill.getId());
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        return rs.stream().map(ReportTemplateRow::getBill).collect(Collectors.toList());
+    }
+
+    private List<Bill> calculateSettledSponsorBillIP(Bill bill) {
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            bts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            bts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        }
+
+        parameters.put("br", true);
+        parameters.put("bts", bts);
+        parameters.put("rb", bill.getId());
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.billTypeAtomic in :bts "
+                + "AND bill.forwardReferenceBill.id = :rb ";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        List<Bill> bills = rs.stream().map(ReportTemplateRow::getBill).collect(Collectors.toList());
+
+        String sql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.billTypeAtomic in :bts "
+                + "AND bill.billedBill.forwardReferenceBill.id = :rb ";
+
+        rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(sql, parameters, TemporalType.TIMESTAMP);
+
+        bills.addAll(rs.stream().map(ReportTemplateRow::getBill).collect(Collectors.toList()));
+
+        return bills;
+    }
+
+    private void updateSettledAmountsForOP() {
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Bill bill = row.getBill();
+
+            if (bill.isCancelled() || bill.isRefunded()) {
+                continue;
+            }
+
+            List<Bill> bills = calculateSettledSponsorBillOP(bill);
+            total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (bill) {
+                bill.setSettledAmountBySponsor(total);
+            }
+        }
+    }
+
+    private List<Bill> calculateSettledSponsorBillOP(Bill bill) {
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        if (visitType.equalsIgnoreCase("OP")) {
+            bts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            bts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        }
+
+        parameters.put("br", true);
+        parameters.put("bts", bts);
+        parameters.put("rb", bill);
+
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "JOIN BillItem billItem ON bill.id = billItem.bill.id "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.billTypeAtomic in :bts "
+                + "AND billItem.referenceBill = :rb ";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        return rs.stream().map(ReportTemplateRow::getBill).collect(Collectors.toList());
     }
 
     private void groupBills() {
