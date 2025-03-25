@@ -9,7 +9,6 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
@@ -120,8 +119,6 @@ public class PatientEncounterController implements Serializable {
     /**
      * Controllers
      */
-    @Inject
-    private CommonFunctionsController commonFunctions;
     @Inject
     SessionController sessionController;
     @Inject
@@ -2439,7 +2436,7 @@ public class PatientEncounterController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = new Date();
-            fromDate = getCommonFunctions().getStartOfDay(fromDate);
+            fromDate = CommonFunctions.getStartOfDay(fromDate);
         }
         return fromDate;
     }
@@ -2451,7 +2448,7 @@ public class PatientEncounterController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = new Date();
-            toDate = getCommonFunctions().getEndOfDay(toDate);
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
@@ -2498,10 +2495,6 @@ public class PatientEncounterController implements Serializable {
 
     public PatientFacade getPatientFacade() {
         return patientFacade;
-    }
-
-    public CommonFunctionsController getCommonFunctions() {
-        return commonFunctions;
     }
 
     public BillFacade getBillFacade() {

@@ -9,7 +9,6 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ClinicalFindingValueController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
@@ -88,8 +87,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     RoomChangeController roomChangeController;
     @Inject
     InpatientClinicalDataController inpatientClinicalDataController;
-    @Inject
-    CommonFunctionsController commonFunctionsController;
     @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
@@ -1030,8 +1027,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     private void savePatient() {
         String tc = sessionController.getApplicationPreference().getChangeTextCasesPatientName();
-        String updatedPersonName = commonFunctionsController.changeTextCases(getPatient().getPerson().getName(), tc);
-        String updatedAddress = commonFunctionsController.changeTextCases(getPatient().getPerson().getAddress(), tc);
+        String updatedPersonName = CommonFunctions.changeTextCases(getPatient().getPerson().getName(), tc);
+        String updatedAddress = CommonFunctions.changeTextCases(getPatient().getPerson().getAddress(), tc);
         if (updatedPersonName == null) {
             getPatient().getPerson().setName(updatedPersonName);
         }

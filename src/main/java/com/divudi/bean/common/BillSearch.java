@@ -183,8 +183,6 @@ public class BillSearch implements Serializable {
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
-    CommonFunctionsController commonFunctionsController;
-    @Inject
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
     PatientDepositController patientDepositController;
@@ -3154,13 +3152,7 @@ public class BillSearch implements Serializable {
     }
 
     public boolean chackRefundORCancelBill(Bill bill) {
-        boolean result = false;
-        if (commonFunctionsController.dateAfter24Hours(bill.getCreatedAt()).after(new Date())) {
-            result = true;
-        } else {
-            result = false;
-        }
-        return result;
+        return CommonFunctions.dateAfter24Hours(bill.getCreatedAt()).after(new Date());
     }
 
     public String navigateToViewSingleOpdBill() {

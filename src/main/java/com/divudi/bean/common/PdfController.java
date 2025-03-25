@@ -75,8 +75,6 @@ public class PdfController {
     PatientInvestigationController patientInvestigationController;
     @Inject
     SearchController searchController;
-    @Inject
-    CommonFunctionsController commonFunctionsController;
 
     /**
      * Creates a new instance of PdfController
@@ -1196,7 +1194,7 @@ public class PdfController {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
 
             document.add(new Paragraph(addingBundle.getName()));
-            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+            document.add(new Paragraph(CommonFunctions.getDateTimeFormat(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat(searchController.getToDate())));
 
             Table table = new Table(new float[]{55, 20, 25, 25, 25, 25, 25});
             table.setWidth(UnitValue.createPercentValue(100));
@@ -1241,7 +1239,7 @@ public class PdfController {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
 
             document.add(new Paragraph(addingBundle.getName()));
-            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+            document.add(new Paragraph(CommonFunctions.getDateTimeFormat(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat(searchController.getToDate())));
 
             Table table = new Table(new float[]{55, 20, 25, 25, 25, 25});
             table.setWidth(UnitValue.createPercentValue(100));
@@ -1283,7 +1281,7 @@ public class PdfController {
     private void populateTableForItemizedSalesReportWithProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle != null && addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
             document.add(new Paragraph(addingBundle.getName()));
-            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+            document.add(new Paragraph(CommonFunctions.getDateTimeFormat(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat(searchController.getToDate())));
 
             Table table = new Table(new float[]{40, 10, 60, 10, 20, 20, 10, 10, 10, 10});
             table.setWidth(UnitValue.createPercentValue(100));
@@ -1335,7 +1333,7 @@ public class PdfController {
     private void populateTableForItemizedSalesReportWithoutProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle != null && addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
             document.add(new Paragraph(addingBundle.getName()));
-            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+            document.add(new Paragraph(CommonFunctions.getDateTimeFormat(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat(searchController.getToDate())));
 
             Table table = new Table(new float[]{40, 10, 60, 10, 20, 20, 10, 10, 10});
             table.setWidth(UnitValue.createPercentValue(100));

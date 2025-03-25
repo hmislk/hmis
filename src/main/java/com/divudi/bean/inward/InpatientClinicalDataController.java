@@ -11,7 +11,6 @@ package com.divudi.bean.inward;
 import com.divudi.bean.clinical.*;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
@@ -119,8 +118,6 @@ public class InpatientClinicalDataController implements Serializable {
     /**
      * Controllers
      */
-    @Inject
-    private CommonFunctionsController commonFunctions;
     @Inject
     SessionController sessionController;
     @Inject
@@ -2453,7 +2450,7 @@ public class InpatientClinicalDataController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = new Date();
-            fromDate = getCommonFunctions().getStartOfDay(fromDate);
+            fromDate = CommonFunctions.getStartOfDay(fromDate);
         }
         return fromDate;
     }
@@ -2465,7 +2462,7 @@ public class InpatientClinicalDataController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = new Date();
-            toDate = getCommonFunctions().getEndOfDay(toDate);
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
@@ -2512,10 +2509,6 @@ public class InpatientClinicalDataController implements Serializable {
 
     public PatientFacade getPatientFacade() {
         return patientFacade;
-    }
-
-    public CommonFunctionsController getCommonFunctions() {
-        return commonFunctions;
     }
 
     public BillFacade getBillFacade() {
