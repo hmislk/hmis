@@ -3306,7 +3306,8 @@ public class ReportController implements Serializable {
                 BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
                 BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
                 BillTypeAtomic.CC_BILL,
-                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.INWARD_SERVICE_BILL);
 
         m.put("bType", bTypes);  // Use 'bType' for IN clause
 
@@ -3325,11 +3326,11 @@ public class ReportController implements Serializable {
         // Fetch results for OpdBill
         List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         // Now fetch results for OpdBillCancel (use a list for single bType)
-        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION));
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION,BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
         List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Now fetch results for OpdBillRefund (use a list for single bType)
-        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND));
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND,BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
 
         List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 

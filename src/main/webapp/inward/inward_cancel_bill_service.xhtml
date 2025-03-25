@@ -20,9 +20,14 @@
                                     </div>
                                     <div class="d-flex align-items-center" style="width: 50%">
                                         <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{inwardSearch.comment}"/>
-                                <p:spacer width="20%"></p:spacer>
-                                        <p:commandButton class="ui-button-danger mx-2" icon="fas fa-cancel" ajax="false" value="Cancel" action="#{inwardSearch.cancelBillService()}" >
-                            </p:commandButton>
+                                        <p:spacer width="20%"></p:spacer>
+                                        <p:commandButton 
+                                            class="ui-button-danger mx-2" 
+                                            icon="fas fa-cancel" 
+                                            ajax="false" 
+                                            value="Cancel" 
+                                            action="#{inwardSearch.cancelBillService()}" >
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </f:facet>                            
@@ -86,7 +91,7 @@
                                     <h:outputLabel value="#{bip.netValue}"/>                                
                                 </p:column>
                             </p:dataTable>
-                            </p:panel>
+                        </p:panel>
                     </h:panelGroup>
 
 
