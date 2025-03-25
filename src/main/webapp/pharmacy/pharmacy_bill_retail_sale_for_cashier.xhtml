@@ -89,7 +89,7 @@
                                 <div class="col-md-7">
                                     <p:panel>
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa-solid fa-circle-plus" /> 
                                             <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                         </f:facet>
 
@@ -203,7 +203,7 @@
                                     <p:panel id="pBis" class="my-1">
 
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa fa-list" /> 
                                             <h:outputText value="Bill Items" class="mx-4"></h:outputText>
                                             <p:commandButton 
                                                 value="Remove Selected" class="ui-button-danger" style="float: right" 
@@ -434,40 +434,6 @@
                                                                 </p:column>
                                                             </p:dataTable>
                                                         </h:panelGroup>
-
-                                                        <!--                                            <h:panelGroup >
-                                                                                                        <h:outputLabel value="Stocks " escape="false" ></h:outputLabel>
-                                                                                                        <b>
-                                                                                                            <h:outputLabel value=" NOT " escape="false" ></h:outputLabel>
-                                                        
-                                                                                                            <i>
-                                                                                                                <h:outputLabel value=" available " escape="false" ></h:outputLabel>
-                                                                                                            </i>
-                                                                                                        </b>
-                                                                                                        <h:outputLabel value=" for these tiems." escape="false" ></h:outputLabel>
-                                                        
-                                                                                                    </h:panelGroup>
-                                                                                                    <h:panelGroup>
-                                                                                                        <p:dataTable id="lstSelectItems" 
-                                                                                                                     selection="#{pharmacySaleController.selectedAvailableAmp}"
-                                                                                                                     value="#{pharmacySaleController.itemsWithoutStocks}" 
-                                                                                                                     var="si" 
-                                                                                                                     selectionMode="single"
-                                                                                                                     rowKey="#{si.id}"
-                                                                                                                     emptyMessage="No items with that name without stocks.">
-                                                                                                            <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" listener="#{pharmacySaleController.selectReplaceableStocksNew()}" ></p:ajax>
-                                                                                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" listener="#{pharmacySaleController.selectReplaceableStocksNew()}" ></p:ajax>
-                                                                                                            <p:column headerText="Generic">
-                                                        #{si.vmp.name}
-                                                    </p:column>
-                                                    <p:column headerText="Name">
-                                                        <span class="ui-messages-info-icon" ></span>
-                                                        #{si.name}
-                                                    </p:column>
-            
-                                                </p:dataTable>
-                                            </h:panelGroup>-->
-
                                                     </div>
 
                                                 </h:panelGroup> 
@@ -477,7 +443,7 @@
 
                                     <p:panel>
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fas fa-ban " /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fas fa-ban " /> 
                                             <h:outputText value="Not Accepted Bills" class="mx-4"></h:outputText>
                                         </f:facet>
 
@@ -503,24 +469,46 @@
                                         editable="true"
                                         controller="#{pharmacySaleController}">
                                     </common:patient_details>
-                                    <p:panel class="my-1">
+
+                                    <p:panel class="m-1 w-100">
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                             <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                         </f:facet>
 
-                                        <div class="d-flex justify-content-between ">
-                                            <div>
-                                                <p:selectOneMenu style="width: 15em;" class="mx-2 my-1" id="pay" value="#{pharmacySaleController.paymentMethod}">    
-                                                    <f:selectItems value="#{enumController.PaymentMethodsForPharmacyRetailSale()}"/>
+                                        <div class="row">
+                                            <div class="col-6" >
+                                                <p:outputLabel 
+                                                    value="Payment Method"
+                                                    class="form-label m-1"
+                                                    for="pay"></p:outputLabel>
+                                                <p:selectOneMenu 
+                                                    class="m-1 w-100 form-control" 
+                                                    id="pay" 
+                                                    filter="true"
+                                                    filterMatchMode="contains"
+                                                    value="#{pharmacySaleController.paymentMethod}"> 
+                                                    <f:selectItems 
+                                                        value="#{enumController.paymentMethodsForPharmacyBilling}"
+                                                        var="pm"
+                                                        itemLabel="#{pm.label}"
+                                                        itemValue="#{pm}"/>
                                                     <p:ajax process="@this cmbPs " 
                                                             update="pBillDetails creditCard cheque slip credit" 
                                                             event="change"  
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
-
-                                                <p:selectOneMenu style="width: 15em;" class="mx-2 my-1" id="cmbPs" value="#{pharmacySaleController.paymentScheme}">   
-                                                    <f:selectItem itemLabel="Discount Scheme"/>
+                                            </div>
+                                            <div class="col-6" >
+                                                <p:outputLabel 
+                                                    value="Discount Scheme"
+                                                    class="m-1 form-label"
+                                                    for="pay"></p:outputLabel>
+                                                <p:selectOneMenu 
+                                                    class="w-100 m-1" 
+                                                    id="cmbPs" 
+                                                    value="#{pharmacySaleController.paymentScheme}">   
+                                                    <f:selectItem itemLabel="No Discount Scheme"/>
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                     <p:ajax process="@this pay " 
                                                             update="pBillDetails creditCard cheque slip credit" 
@@ -528,125 +516,43 @@
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
                                             </div>
-
-                                        </div>
-                                        <div class="w-100">
-
-<!--                                            <h:panelGroup id="creditCard" style="display: #{pharmacySaleController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCard paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="cheque" style="display: #{pharmacySaleController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; ">
-                                                <pa:cheque paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="slip" style="display: #{pharmacySaleController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
-                                            </h:panelGroup>-->
-
-                                            <h:panelGroup id="credit" style="display: #{pharmacySaleController.paymentMethod ne 'Credit' ? 'none' : 'block'} ;" >
-                                                <div class="row" >
-                                                    <div class="col-2">
-                                                        <p:outputLabel value="Credit Company" class="mt-2"></p:outputLabel>
-                                                    </div>
-                                                    <div class="col-8">
-                                                        <p:autoComplete 
-                                                            class="w-100 mx-4" 
-                                                            forceSelection="true" 
-                                                            value="#{pharmacySaleController.toInstitution}" 
-                                                            id="scCreditCompany"
-                                                            inputStyleClass="form-control"
-                                                            completeMethod="#{institutionController.completeCreditCompany}" 
-                                                            var="myi" 
-                                                            maxResults="15"
-                                                            itemLabel="#{myi.name}" 
-                                                            itemValue="#{myi}">
-
-                                                            <p:column headerText="Name" style="padding: 6px;">
-                                                                <h:outputLabel value="#{myi.name}" ></h:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Code" style="padding: 6px;">
-                                                                <h:outputLabel value="#{myi.code}" ></h:outputLabel>
-                                                            </p:column>
-
-                                                            <p:ajax 
-                                                                process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
-                                                                event="itemSelect"  
-                                                                listener="#{pharmacySaleController.paymentSchemeChanged}" />
-
-                                                        </p:autoComplete>
-                                                        
-                                                    </div>
-                                                </div>
-
-                                                <div class="row mt-1">
-                                                    <div class="col-2">
-                                                        <p:outputLabel value="Staff Member" class="mt-2"></p:outputLabel>
-                                                    </div>
-                                                    <div class="col-8">
-                                                        <p:autoComplete  
-                                                            forceSelection="true" 
-                                                            value="#{pharmacySaleController.toStaff}" 
-                                                            id="scStaff"
-                                                            inputStyleClass="form-control"
-                                                            completeMethod="#{staffController.completeStaff}" 
-                                                            var="mys" 
-                                                            maxResults="15"
-                                                            itemLabel="#{mys.person.nameWithTitle}" 
-                                                            itemValue="#{mys}"
-                                                            class="w-100 mx-4"
-                                                            >
-                                                            <p:column headerText="Name" style="padding: 6px;">
-                                                                <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Annual Entitlement" style="padding: 6px;">
-                                                                <h:outputLabel value="#{mys.annualWelfareQualified}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputLabel>
-                                                            </p:column>
-                                                            <p:column  headerText="Annual Utilized Value" style="padding: 6px;">
-                                                                <h:outputLabel value="#{mys.annualWelfareUtilized}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputLabel>
-                                                            </p:column>
-
-                                                            <p:ajax process="scStaff" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
-                                                                    event="itemSelect"  listener="#{pharmacySaleController.paymentSchemeChanged}" />
-
-                                                        </p:autoComplete>
-                                                        
-                                                    </div>
-                                                </div>
-
-                                            </h:panelGroup>
-
                                         </div>
                                     </p:panel>
 
-                                    <p:panel>
+                                    <p:panel class="m-1 w-100">
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa fa-stethoscope" /> 
                                             <h:outputText value="Referral Details" class="mx-4"></h:outputText>
                                         </f:facet>
-                                        <h:panelGrid columns="2">
-                                            <p:outputLabel value="Referring Doctor" ></p:outputLabel>
-                                            <p:autoComplete 
-                                                forceSelection="true" 
-                                                id="cmbDoc" 
-                                                value="#{pharmacySaleController.preBill.referredBy}" 
-                                                completeMethod="#{doctorController.completeDoctor}" 
-                                                var="ix" itemLabel="#{ix.person.name}" 
-                                                itemValue="#{ix}" 
-                                                size="30" 
-                                                class="mx-4 w-100"
-                                                inputStyleClass="form-control"
-                                                >
-                                            </p:autoComplete>
-                                            <p:outputLabel value="Comments" ></p:outputLabel>
-                                            <p:inputTextarea value="#{pharmacySaleController.comment}" id="comment" class="w-100 mx-4"/>
-                                        </h:panelGrid>
+
+                                        <div class="row" >
+                                            <div class="col-6" >
+                                                <p:outputLabel value="Referring Doctor" class="m-1"></p:outputLabel>
+                                                <p:autoComplete 
+                                                    forceSelection="true" 
+                                                    id="cmbDoc" 
+                                                    value="#{pharmacySaleController.preBill.referredBy}" 
+                                                    completeMethod="#{doctorController.completeDoctor}" 
+                                                    var="ix" itemLabel="#{ix.person.name}" 
+                                                    itemValue="#{ix}" 
+                                                    size="30" 
+                                                    class="m-1 w-100"
+                                                    inputStyleClass="w-100"
+                                                    >
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="col-6" >
+                                                <p:outputLabel value="Comments" class="m-1"></p:outputLabel>
+                                                <p:inputTextarea value="#{pharmacySaleController.comment}" id="comment" class="w-100 m-1"/>
+                                            </div>
+                                        </div>
+
+
+
+
                                     </p:panel>
-                                    <p:panel id="pBillDetails" class="my-1" >
+
+                                    <p:panel id="pBillDetails" class="m-1 w-100" >
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                             <h:outputText value="Bill Details" class="mx-4"></h:outputText>
@@ -707,6 +613,7 @@
 
 
                                     </p:panel>
+
                                 </div>
                             </div>
                         </p:panel>
@@ -715,32 +622,29 @@
 
                 <h:form>
                     <p:panel  rendered="#{pharmacySaleController.billPreview}" >
+                        <div class="nonPrintBlock row" >
 
-                        <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" ></p:commandButton>
-                        <p:defaultCommand  target="btnPrint" />  
+                            <div class="col-6" >
+                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
 
-                        <div class="nonPrintBlock d-flex justify-content-between" >
-                            <div>
+
                                 <p:commandButton 
                                     accesskey="p" 
                                     id="btnPrint" 
-                                    value="Print" 
+                                    value="Print Bill" 
                                     ajax="false"
                                     icon="fa fa-print"
                                     rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
-                                    class="ui-button-info"
+                                    class="ui-button-info m-1"
                                     action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    accesskey="n" 
-                                    value="New Bill" 
-                                    icon="fa fa-plus"
-                                    class="ui-button-warning mx-1"
-                                    ajax="false" 
-                                    action="#{pharmacySaleController.resetAll()}" >
-                                </p:commandButton>
 
                                 <p:commandButton 
                                     accesskey="a" 
@@ -748,7 +652,7 @@
                                     value="Print Token" 
                                     ajax="false"
                                     icon="fa fa-print"
-                                    class="ui-button-info"
+                                    class="ui-button-info m-1"
                                     action="#" >
                                     <p:printer target="TokenPreview" ></p:printer>
                                 </p:commandButton>
@@ -756,38 +660,46 @@
                                 <p:commandButton
                                     accesskey="a"
                                     id="btnPrintTokenBill"
-                                    value="Print Token And Bill"
+                                    value="Print Bill &amp; Token"
                                     ajax="false"
                                     icon="fa fa-print"
-                                    class="ui-button-info mx-1"
+                                    class="ui-button-info m-1"
                                     action="#" >
                                     <p:printer target="gpBillPreviewTokenAndBill" ></p:printer>
                                 </p:commandButton>
-
-                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
-                                    <f:selectItem itemLabel="Please Select Paper Type" />
-                                    <f:selectItems value="#{enumController.paperTypes}" />
-                                </p:selectOneMenu>
-                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
                             </div>
-
-                            <div class="d-flex justify-content-end">
+                            <div class="col-4" >
                                 <p:commandButton 
                                     value="Manage Pharmacy Tokens"
                                     ajax="false" 
-                                    class="ui-button-secondary"
+                                    class="ui-button-secondary m-1"
                                     icon="fas fa-arrow-left"
                                     action="#{tokenController.navigateToManagePharmacyTokens()}" >
                                 </p:commandButton>
-                            </div>
-                        </div>
+                                <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
-                        <div class="d-flex mb-5 mt-2 gap-2 justify-content-end">
-                            <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                            </div>
+
+
+                            <div class="col-2" >
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="New Bill" 
+                                    icon="fa fa-plus"
+                                    class="ui-button-success m-1"
+                                    ajax="false" 
+                                    action="#{pharmacySaleController.resetAll()}" >
+                                </p:commandButton>
+
+
+                            </div>
+
+
+
+
                         </div>
 
 
