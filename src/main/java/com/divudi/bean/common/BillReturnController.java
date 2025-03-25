@@ -315,6 +315,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         double returningNetTotal = 0.0;
         double returningHospitalTotal = 0.0;
         double returningStaffTotal = 0.0;
+        double returningReagentTotal = 0.0;
+        double returningOtherTotal = 0.0;
         double returningDiscount = 0.0;
 
         newlyReturnedBillItems = new ArrayList<>();
@@ -327,6 +329,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             returningNetTotal += selectedBillItemToReturn.getNetValue();
             returningHospitalTotal += selectedBillItemToReturn.getHospitalFee();
             returningStaffTotal += selectedBillItemToReturn.getStaffFee();
+            returningReagentTotal += selectedBillItemToReturn.getReagentFee();
+            returningOtherTotal += selectedBillItemToReturn.getOtherFee();
             returningDiscount += selectedBillItemToReturn.getDiscount();
 
             BillItem newlyCreatedReturningItem = new BillItem();

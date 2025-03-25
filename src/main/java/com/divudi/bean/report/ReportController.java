@@ -178,7 +178,7 @@ public class ReportController implements Serializable {
     private List<BillTypeAtomic> billTypeAtomics;
 
     private BillTypeAtomic billTypeAtomic;
-    
+
     private Date warrentyStartDate;
     private Date warrentyEndDate;
 
@@ -243,13 +243,13 @@ public class ReportController implements Serializable {
         } else {
             switch (ah.getHistoryType()) {
                 case CollectingCentreDeposit:
-                    style = configOptionApplicationController.getColorValueByKey("Collecting Centre Payment Received Bill Row Color in CC Statement","#79f199");
+                    style = configOptionApplicationController.getColorValueByKey("Collecting Centre Payment Received Bill Row Color in CC Statement", "#79f199");
                     break;
                 case CollectingCentreDepositCancel:
-                    style = configOptionApplicationController.getColorValueByKey("Collecting Centre Payment Cancel Bill Row Color in CC Statement","#df8663");
+                    style = configOptionApplicationController.getColorValueByKey("Collecting Centre Payment Cancel Bill Row Color in CC Statement", "#df8663");
                     break;
                 default:
-                    style = ""; 
+                    style = "";
                     // Default style or no style
                     break;
             }
@@ -1364,7 +1364,7 @@ public class ReportController implements Serializable {
             netTotal += b.getTotal();
         }
     }
-    
+
     public String navigatetoOPDLabReportByMenu() {
         return "/lab/report_for_opd_print?faces-redirect=true";
     }
@@ -1376,82 +1376,82 @@ public class ReportController implements Serializable {
     public String navigateToPrescriptionList() {
         return "/pharmacy/prescription_list?faces-redirect=true";
     }
-    
+
     public String navigateToCourierLabReportsPrint() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/courier_lab_report_print?faces-redirect=true";
     }
-    
+
     public String navigateToCCReportsPrint() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_report_print?faces-redirect=true";
     }
-    
+
     public String navigateToCCCurrentBalanceReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_current_balance_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCBalanceReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_balance_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCReceiptReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_recipt_reports?faces-redirect=true";
     }
-    
+
     public String navigateToCCBillWiseDetailReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_bill_wise_detail_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCWiseInvoiceListReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_wise_invoice_list_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCStatementReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCWiseSummaryReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_wise_summary_report?faces-redirect=true";
     }
-    
+
     public String navigateToTestWiseCountReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_test_wise_count_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCRouteAnalysisReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/route_analysis_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCBookReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_center_book_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCBookWiseDetail() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/collection_centre_book_wise_detail?faces-redirect=true";
     }
-    
+
     public String navigateToCCInvestigationListReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/cc_investigation_list?faces-redirect=true";
     }
-    
+
     public String navigateToCCBillItemListReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/cc_bill_item_list?faces-redirect=true";
     }
-    
+
     private Person person;
 
     public String navigateToPrescriptionListFromPrescriptionSummery(Long personId) {
@@ -1575,8 +1575,8 @@ public class ReportController implements Serializable {
             jpql += " and bi.item.machine=:machine ";
             m.put("machine", machine);
         }
-        
-        if(billTypeAtomic!=null){
+
+        if (billTypeAtomic != null) {
             jpql += " and bi.bill.billTypeAtomic=:billTypeAtomic ";
             m.put("billTypeAtomic", billTypeAtomic);
         }
@@ -3305,8 +3305,9 @@ public class ReportController implements Serializable {
         List<BillTypeAtomic> bTypes = Arrays.asList(
                 BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
                 BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
-                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT
-        );
+                BillTypeAtomic.CC_BILL,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+
         m.put("bType", bTypes);  // Use 'bType' for IN clause
 
         m.put("invType", Investigation.class);
@@ -3324,11 +3325,11 @@ public class ReportController implements Serializable {
         // Fetch results for OpdBill
         List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         // Now fetch results for OpdBillCancel (use a list for single bType)
-        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION));
         List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Now fetch results for OpdBillRefund (use a list for single bType)
-        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND));
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND));
 
         List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
@@ -3348,7 +3349,7 @@ public class ReportController implements Serializable {
                 posResult.setCcFee(posResult.getCcFee() - Math.abs(cancelResult.getCcFee()));
                 posResult.setProFee(posResult.getProFee() - Math.abs(cancelResult.getProFee()));
                 posResult.setReagentFee(posResult.getReagentFee() - Math.abs(cancelResult.getReagentFee()));
-                posResult.setOtherFee(posResult.getOtherFee()- Math.abs(cancelResult.getOtherFee()));
+                posResult.setOtherFee(posResult.getOtherFee() - Math.abs(cancelResult.getOtherFee()));
                 posResult.setTotal(posResult.getTotal() - Math.abs(cancelResult.getTotal()));
                 posResult.setDiscount(posResult.getDiscount() - Math.abs(cancelResult.getDiscount()));
             }
@@ -3358,19 +3359,20 @@ public class ReportController implements Serializable {
         for (TestWiseCountReport refundResult : refundResults) {
             TestWiseCountReport posResult = resultMap.get(refundResult.getTestName());
             if (posResult != null) {
-                posResult.setCount(posResult.getCount() - Math.abs(refundResult.getCount()));
                 posResult.setHosFee(posResult.getHosFee() - Math.abs(refundResult.getHosFee()));
                 posResult.setCcFee(posResult.getCcFee() - Math.abs(refundResult.getCcFee()));
                 posResult.setProFee(posResult.getProFee() - Math.abs(refundResult.getProFee()));
                 posResult.setReagentFee(posResult.getReagentFee() - Math.abs(refundResult.getReagentFee()));
-                posResult.setOtherFee(posResult.getOtherFee()- Math.abs(refundResult.getOtherFee()));
+                posResult.setOtherFee(posResult.getOtherFee() - Math.abs(refundResult.getOtherFee()));
                 posResult.setTotal(posResult.getTotal() - Math.abs(refundResult.getTotal()));
                 posResult.setDiscount(posResult.getDiscount() - Math.abs(refundResult.getDiscount()));
             }
         }
 
-        testWiseCounts = new ArrayList<>(resultMap.values());
+        List<TestWiseCountReport> tempTestWiseCounts = new ArrayList<>(resultMap.values());
 
+        testWiseCounts = new  ArrayList<>();
+        
         totalCount = 0.0;
         totalHosFee = 0.0;
         totalCCFee = 0.0;
@@ -3381,16 +3383,20 @@ public class ReportController implements Serializable {
         totalDiscount = 0.0;
         totalNetHosFee = 0.0;
 
-        for (TestWiseCountReport twc : testWiseCounts) {
-            totalCount += twc.getCount();
-            totalHosFee += (twc.getHosFee());
-            totalCCFee += twc.getCcFee();
-            totalProFee += twc.getProFee();
-            totalReagentFee += twc.getReagentFee();
-            totalAdditionalFee += twc.getOtherFee();
-            totalNetTotal += twc.getTotal();
-            totalDiscount += twc.getDiscount();
-            totalNetHosFee += twc.getHosFee() - twc.getDiscount();
+        for (TestWiseCountReport twc : tempTestWiseCounts) {
+            if (twc.getCount() > 0.0) {
+                testWiseCounts.add(twc);
+
+                totalCount += twc.getCount();
+                totalHosFee += (twc.getHosFee());
+                totalCCFee += twc.getCcFee();
+                totalProFee += twc.getProFee();
+                totalReagentFee += twc.getReagentFee();
+                totalAdditionalFee += twc.getOtherFee();
+                totalNetTotal += twc.getTotal();
+                totalDiscount += twc.getDiscount();
+                totalNetHosFee += twc.getHosFee() - twc.getDiscount();
+            }
         }
     }
 
@@ -3774,7 +3780,4 @@ public class ReportController implements Serializable {
         this.totalAdditionalFee = totalAdditionalFee;
     }
 
-    
-    
-    
 }

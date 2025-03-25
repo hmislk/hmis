@@ -228,6 +228,21 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            
+                            <p:column 
+                                headerText="CC Fee" 
+                                width="5em" 
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report - Show CC Fee Column',false)}">
+                                <h:outputText value="#{c.ccFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalCCFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
                             <p:column 
                                 headerText="Other Fee" 
