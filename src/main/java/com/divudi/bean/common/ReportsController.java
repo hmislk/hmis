@@ -339,6 +339,24 @@ public class ReportsController implements Serializable {
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1;
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
 
+    private int globalIndex;
+
+    public int getGlobalIndex() {
+        return globalIndex;
+    }
+
+    public void setGlobalIndex(int globalIndex) {
+        this.globalIndex = globalIndex;
+    }
+
+    public void resetGlobalIndex() {
+        globalIndex = 0;
+    }
+
+    public int getNextIndex() {
+        return ++globalIndex;
+    }
+
     private boolean showChart;
 
     public String getDischargedStatus() {
@@ -3609,6 +3627,8 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
         }
 
         bundle.setName("Bills");
@@ -4185,7 +4205,7 @@ public class ReportsController implements Serializable {
                         bills.add(bill1);
                         billMap.put(bill1.getPatientEncounter().getFinalBill().getCreditCompany(), bills);
                     }
-                } else if(bill1.getCreditCompany() != null) {
+                } else if (bill1.getCreditCompany() != null) {
                     if (billMap.containsKey(bill1.getCreditCompany())) {
                         billMap.get(bill1.getCreditCompany()).add(bill1);
                     } else {
@@ -5482,7 +5502,7 @@ public class ReportsController implements Serializable {
         for (Bill bill : bills) {
             if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null) {
                 discount += bill.getPatientEncounter().getFinalBill().getDiscount();
-            }else {
+            } else {
                 discount += bill.getDiscount();
             }
         }
