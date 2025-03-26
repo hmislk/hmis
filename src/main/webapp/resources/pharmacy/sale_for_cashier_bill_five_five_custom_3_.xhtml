@@ -53,10 +53,10 @@
                             </h:panelGroup>
                         </tr>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="false" >
-                    #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
-                </h:panelGroup>
+                        #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
+                    </h:panelGroup>
 
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
@@ -136,20 +136,40 @@
                         </td>
                     </tr>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}" >
+
+                    <tr>
+                        <td >Discount:</td>
+                        <td  style="text-align: right;">
+                            <h:outputLabel  value="#{-cc.attrs.bill.discount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td >Net Total:</td>
+                        <td style="text-align: right;">
+                            <h:outputLabel style="font-weight: bold" value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Cash'}">
+
                         <tr>
-                            <td >Discount:</td>
-                            <td  style="text-align: right;">
-                                <h:outputLabel  value="#{-cc.attrs.bill.discount}">
+                            <td >Tendered :</td>
+                            <td style="text-align: right;">
+                                <h:outputLabel value="#{cc.attrs.bill.cashPaid}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
+
                         <tr>
-                            <td >Net Total:</td>
+                            <td >Balance :</td>
                             <td style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                <h:outputLabel value="#{cc.attrs.bill.balance}">
+                                    <f:convertNumber integerOnly="true" />
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -164,6 +184,8 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+
+
                 </table>
 
                 <table  style="font-size: 8pt;">
