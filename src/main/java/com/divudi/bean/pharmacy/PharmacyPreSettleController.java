@@ -20,6 +20,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.BooleanMessage;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
@@ -65,6 +66,9 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
+import com.divudi.service.BillService;
+import com.divudi.service.DiscountSchemeValidationService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -105,6 +109,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     DrawerController drawerController;
 ////////////////////////
     @EJB
+    DiscountSchemeValidationService discountSchemeValidationService;
+    @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
@@ -128,6 +134,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    PaymentService paymentService;
 /////////////////////////
     Item selectedAlternative;
     Bill saleReturnBill;
@@ -154,7 +162,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     List<Item> itemsWithoutStocks;
     private List<Token> settledToken;
     /////////////////////////
-    private PaymentScheme paymentScheme;
+//    private PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
     double cashPaid;
     double netTotal;
@@ -162,7 +170,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     double total;
     Double editingQty;
     private Token token;
-    private PaymentMethod paymentMethod;
+//    private PaymentMethod paymentMethod;
 
     public double calculatRemainForMultiplePaymentTotal() {
 
@@ -172,7 +180,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     public void recieveRemainAmountAutomatically() {
         double remainAmount = calculatRemainForMultiplePaymentTotal();
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
@@ -284,12 +292,12 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         //PAYMENTSCHEME DISCOUNT
 
         //System.out.println("getPaymentScheme() = " + getPaymentScheme());
-        if (getPaymentScheme() != null && discountAllowed) {
+        if (getPreBill().getPaymentScheme() != null && discountAllowed) {
 //            System.out.println("getPaymentMethod() = " + getPaymentMethod());
 //            System.out.println("getPaymentScheme() = " + getPaymentScheme());
 //            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment());
 //            System.out.println("bi.getItem() = " + bi.getItem());
-            PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
+            PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPreBill().getPaymentMethod(), getPreBill().getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
 
             System.err.println("priceMatrix = " + priceMatrix);
             if (priceMatrix != null) {
@@ -306,8 +314,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
 
         //PAYMENTMETHOD DISCOUNT
-        if (getPaymentMethod() != null && discountAllowed) {
-            PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getSessionController().getDepartment(), bi.getItem());
+        if (getPreBill().getPaymentMethod() != null && discountAllowed) {
+            PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPreBill().getPaymentMethod(), getSessionController().getDepartment(), bi.getItem());
 
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
@@ -322,7 +330,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
 
         //CREDIT COMPANY DISCOUNT
-        if (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
             discountRate = toInstitution.getPharmacyDiscount();
 
             double dr;
@@ -485,7 +493,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             return true;
         }
 
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             if (getPaymentMethodData() == null) {
                 JsfUtil.addErrorMessage("No Details on multiple payment methods given");
                 return true;
@@ -527,7 +535,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         if (getPaymentSchemeController().checkPaymentMethodError(getPreBill().getPaymentMethod(), paymentMethodData));
 
-        if (getPreBill().getPaymentMethod() == paymentMethod.Cash && (getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Cash && (getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
             JsfUtil.addErrorMessage("Please select tendered amount correctly");
             return true;
         }
@@ -871,7 +879,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public boolean errorCheckOnPaymentMethod() {
-        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getPreBill().getPaymentMethod(), getPaymentMethodData())) {
             return true;
         }
 
@@ -902,7 +910,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 //                return true;
 //            }
 //        }
-        if (paymentMethod == PaymentMethod.Staff) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Staff) {
             if (getPreBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member.");
                 return true;
@@ -914,7 +922,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
         }
 
-        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            
+            if(paymentMethodData.getStaffCredit().getToStaff()!=null && getPreBill().getToStaff()==null){
+                getPreBill().setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+            }else if(paymentMethodData.getStaffCredit().getToStaff()==null && getPreBill().getToStaff()!=null){
+                paymentMethodData.getStaffCredit().setToStaff(getPreBill().getToStaff());
+            }
+            
             if (getPreBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
                 return true;
@@ -926,7 +941,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         }
 
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             if (getPaymentMethodData() == null) {
                 JsfUtil.addErrorMessage("No Details on multiple payment methods given");
                 return true;
@@ -939,14 +954,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 JsfUtil.addErrorMessage("No Details on multiple payment methods given");
                 return true;
             }
-            
+
             //double differenceOfBillTotalAndPaymentValue = preBill.getNetTotal() - calculateMultiplePaymentMethodTotal();
             //differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
             if (checkAndUpdateBalance() < 0) {
                 JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
                 return true;
             }
-            
+
         }
         return false;
     }
@@ -1041,6 +1056,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
         }
 
+         BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(getPreBill().getPaymentMethod(), getPreBill().getPaymentScheme(), getPaymentMethodData());
+        if (!discountSchemeValidation.isFlag()) {
+//            billSettlingStarted = false;
+            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
+            return;
+        }
+        
         saveSaleBill();
 //        saveSaleBillItems();
 
@@ -1055,6 +1077,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         setBill(getBillFacade().find(getSaleBill().getId()));
+
+        paymentService.updateBalances(payments);
+
 //        markToken();
 //        makeNull();
         //    removeSettledToken();
@@ -1210,7 +1235,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         qty = null;
         stock = null;
         editingQty = null;
-        paymentMethod = PaymentMethod.Cash;
+//        paymentMethod = PaymentMethod.Cash;
         paymentMethodData = null;
         setCashPaid(0.0);
     }
@@ -1338,7 +1363,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             } else {
                 setPreBill(args);
                 getPreBill().setPaymentMethod(args.getPaymentMethod());
-                paymentMethod = getPreBill().getPaymentMethod();
+                getPreBill().setPaymentScheme(args.getPaymentScheme());
+//                paymentMethod = getPreBill().getPaymentMethod();
                 return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
             }
         } else {
@@ -1543,22 +1569,20 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         this.settledToken = settledToken;
     }
 
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
-    public PaymentScheme getPaymentScheme() {
-        return paymentScheme;
-    }
-
-    public void setPaymentScheme(PaymentScheme paymentScheme) {
-        this.paymentScheme = paymentScheme;
-    }
-
+//    public PaymentMethod getPaymentMethod() {
+//        return paymentMethod;
+//    }
+//
+//    public void setPaymentMethod(PaymentMethod paymentMethod) {
+//        this.paymentMethod = paymentMethod;
+//    }
+//    public PaymentScheme getPaymentScheme() {
+//        return paymentScheme;
+//    }
+//
+//    public void setPaymentScheme(PaymentScheme paymentScheme) {
+//        this.paymentScheme = paymentScheme;
+//    }
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
     }

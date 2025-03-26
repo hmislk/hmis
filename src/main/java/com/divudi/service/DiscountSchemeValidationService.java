@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.data.BooleanMessage;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.ComponentDetail;
@@ -8,6 +9,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 
 /**
  *
@@ -16,6 +18,9 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class DiscountSchemeValidationService {
+
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public BooleanMessage validateDiscountScheme(Bill bill, PaymentMethodData pmd) {
         BooleanMessage validated = new BooleanMessage();
@@ -60,6 +65,30 @@ public class DiscountSchemeValidationService {
 
         return validated;
     }
+    
+    public BooleanMessage validateDiscountScheme(PaymentMethod paymentMethod, PaymentScheme discountScheme) {
+        BooleanMessage validated = new BooleanMessage();
+        validated.setFlag(true);
+        validated.setMessage("No error in validating discount scheme.");
+        if (paymentMethod == null) {
+            validated.setFlag(false);
+            validated.setMessage("Payment Method is missing.");
+            return validated;
+        }
+        if (discountScheme == null) {
+            validated.setFlag(true);
+            validated.setMessage("No Discount Scheme. Therefore nothing to validate.");
+            return validated;
+        }
+        if (discountScheme.isStaffRequired()) {
+            BooleanMessage validateStaffRequirement = validateDiscountSchemeForStaffRequired(paymentMethod, discountScheme);
+            if (!validateStaffRequirement.isFlag()) {
+                return validateStaffRequirement;
+            }
+        }
+
+        return validated;
+    }
 
     public BooleanMessage validateDiscountSchemeForStaffRequired(PaymentMethod paymentMethod, PaymentScheme discountScheme, PaymentMethodData pmd) {
         BooleanMessage validated = new BooleanMessage();
@@ -70,10 +99,14 @@ public class DiscountSchemeValidationService {
                 return validated;
             }
             for (ComponentDetail cd : pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethod() == PaymentMethod.Staff || cd.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-                    validated.setFlag(false);
-                    validated.setMessage("Discount scheme can NOT be applied for Multiple Payment Methods.");
-                    return validated;
+
+                boolean staffPaymentMethodsAreAllowedInsideMultiplePayments = configOptionApplicationController.getBooleanValueByKey("Staff Payment Methods Are Allowed Inside Multiple Payments", true);
+                if (!staffPaymentMethodsAreAllowedInsideMultiplePayments) {
+                    if (cd.getPaymentMethod() == PaymentMethod.Staff || cd.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                        validated.setFlag(false);
+                        validated.setMessage("Discount scheme can NOT be applied for Multiple Payment Methods.");
+                        return validated;
+                    }
                 }
             }
         } else if (paymentMethod == PaymentMethod.Staff || paymentMethod == PaymentMethod.Staff_Welfare) {
@@ -87,5 +120,25 @@ public class DiscountSchemeValidationService {
         }
         return validated;
     }
+    
+    
+    
+    public BooleanMessage validateDiscountSchemeForStaffRequired(PaymentMethod paymentMethod, PaymentScheme discountScheme) {
+        BooleanMessage validated = new BooleanMessage();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+                validated.setFlag(false);
+                validated.setMessage("Invalid multiple payment method data.");
+                return validated;
+        } else if (paymentMethod == PaymentMethod.Staff || paymentMethod == PaymentMethod.Staff_Welfare) {
+            validated.setFlag(true);
+            validated.setMessage("Discount scheme is validated against Payment Method.");
+            return validated;
+        } else {
+            validated.setFlag(false);
+            validated.setMessage("Discount scheme " + discountScheme.getName() + " can NOT be allowed with the payment method " + paymentMethod.getLabel());
+            return validated;
+        }
+    }
+    
 
 }
