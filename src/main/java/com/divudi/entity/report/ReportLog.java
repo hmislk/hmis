@@ -128,6 +128,10 @@ public class ReportLog implements Serializable {
     public ReportLog setStartTime(Date startTime) {
         this.startTime = startTime;
 
+        if (endTime != null && startTime != null) {
+            executionTimeInMillis = endTime.getTime() - startTime.getTime();
+        }
+
         return this;
     }
 
@@ -137,6 +141,10 @@ public class ReportLog implements Serializable {
 
     public ReportLog setEndTime(Date endTime) {
         this.endTime = endTime;
+
+        if (endTime != null && startTime != null) {
+            executionTimeInMillis = endTime.getTime() - startTime.getTime();
+        }
 
         return this;
     }

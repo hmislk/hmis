@@ -30,13 +30,10 @@ public class ReportTimerController implements Serializable {
 
         final Date endTime = new Date();
 
-        final long durationInMilliseconds = endTime.getTime() - startTime.getTime();
-
         ReportLog reportLog = new ReportLog()
                 .setReport(reportType)
                 .setStartTime(startTime)
-                .setEndTime(endTime)
-                .setExecutionTimeInMillis(durationInMilliseconds);
+                .setEndTime(endTime);
 
         save(reportLog, loggedUser);
     }
