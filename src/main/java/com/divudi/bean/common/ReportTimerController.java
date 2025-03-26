@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// TODO : Move to a more appropriate package (util, common, etc.)
 @Stateless
 public class ReportTimerController implements Serializable {
     private static final Logger LOGGER = Logger.getLogger(ReportTimerController.class.getName());
