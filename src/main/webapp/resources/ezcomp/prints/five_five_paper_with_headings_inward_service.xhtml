@@ -254,7 +254,7 @@
                     </tr>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.printName}"  style="text-transform: capitalize!important;"  >
@@ -271,7 +271,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
