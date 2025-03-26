@@ -32,16 +32,6 @@ public class CommonController implements Serializable {
     public CommonController() {
     }
 
-    private int number;
-
-    public int getNumber() {
-        return number;
-    }
-
-    public void increment() {
-        number++;
-    }
-
     public String convertToWordJSF(double number) {
         return CommonFunctions.convertToWord(number);
     }
