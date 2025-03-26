@@ -1,9 +1,11 @@
 package com.divudi.data;
 
 import static com.divudi.data.PaymentMethod.Cash;
+
 import com.divudi.entity.*;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1077,7 +1079,8 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                double amount = isOutpatient ? row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal();
+                double amount = isOutpatient ? row.getBill().getNetTotal() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
+                        row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal();
                 total += amount;
             }
         }
@@ -1117,7 +1120,10 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                double amount = isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+
+                double amount = isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
+                        row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+
                 settledAmountByPatientsTotal += amount;
             }
         }
@@ -1130,7 +1136,9 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                double amount = isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
+                double amount = isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
+                        row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
+
                 settledAmountBySponsorsTotal += amount;
             }
         }
@@ -1143,7 +1151,13 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                double amount = isOutpatient ? row.getBill().getBalance() : row.getBill().getPatientEncounter().getFinalBill().getBalance();
+
+                double amount = isOutpatient ? row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient() :
+                        row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
+                                row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient() :
+                                row.getBill().getPatientEncounter().getFinalBill().getNetTotal() - row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor() -
+                                        row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+
                 totalBalance += amount;
             }
         }
