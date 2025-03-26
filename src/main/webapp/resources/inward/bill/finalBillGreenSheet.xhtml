@@ -51,12 +51,12 @@
                     <table class="headingPrinting" >
                         <tr>
                             <td colspan="4">
-                                <h:outputLabel class="mark" value="**Dialysis Invoice**"
+                                <h:outputLabel style="font-size: 18px;" class="mark" value="**Dialysis Invoice**"
                                                rendered="#{cc.attrs.duplicate ne true and cc.attrs.hosCopy ne true}"/>
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="" ><h:outputLabel class="mark" value="**Dialysis Invoice**Duplicate Bill**" rendered="#{cc.attrs.duplicate eq true}"/></td>
+                            <td colspan="4" class="" ><h:outputLabel class="mark" style="font-size: 18px;" value="**Dialysis Invoice**Duplicate Bill**" rendered="#{cc.attrs.duplicate eq true}"/></td>
                         </tr>
                         <tr>
                             <td colspan="4"><h:outputLabel class="mark" value="**Dialysis Invoice**Original Bill**" rendered="#{cc.attrs.hosCopy eq true}"/></td>
@@ -73,7 +73,7 @@
                                     <div class="row w-100 my-2">
                                         <div class="col-6">
                                             <div class="row">
-                                                <div class="col-5"><h:outputLabel value="Bill NO" /></div>
+                                                <div class="col-5"><h:outputLabel value="Bill No" /></div>
                                                 <div class="col-1"><h:outputLabel value=":" /></div>
                                                 <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></div>
                                             </div>
@@ -210,7 +210,7 @@
                     <table class="tbl"  >
                         <tr style="t">
                             <td style="text-align: left; font-weight: bold;">
-                                <h:outputLabel value="Discription" />
+                                <h:outputLabel value="Description" />
                             </td>
                             <td>
                                 <h:outputLabel value="" />

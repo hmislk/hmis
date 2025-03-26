@@ -6,10 +6,8 @@
 package com.divudi.ws.finance;
 
 import com.divudi.bean.common.ApiKeyController;
-import com.divudi.bean.common.AuthenticateController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
-
 import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -44,8 +42,6 @@ public class Finance {
 
     @EJB
     private BillFacade billFacade;
-    @Inject
-    AuthenticateController authenticateController;
     @Inject
     ApiKeyController apiKeyController;
 
