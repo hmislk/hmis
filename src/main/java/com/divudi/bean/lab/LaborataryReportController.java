@@ -302,7 +302,7 @@ public class LaborataryReportController implements Serializable {
                     IncomeRow billItemIncomeRow = new IncomeRow(billItem);
                     bundle.getRows().add(billItemIncomeRow);
                     checkInInvestigationBillItem = true;
-                    totalHospitalFee += billItem.getHospitalFee();
+                    totalHospitalFee += (billItem.getHospitalFee() - billItem.getReagentFee()- billItem.getOtherFee());
                     totalReagentFee += billItem.getReagentFee();
                     totalOtherFee += billItem.getOtherFee();
                     totalNetTotal += billItem.getNetValue();
@@ -314,7 +314,6 @@ public class LaborataryReportController implements Serializable {
             } else {
                 bundle.getRows().remove(billIncomeRow);
             }
-
         }
     }
 

@@ -251,7 +251,7 @@
                                 </p:commandButton>
                             </div>
                             <p:commandButton 
-                                value="Clesr" 
+                                value="Clear" 
                                 ajax="false"
                                 action="#{laborataryReportController.resetAllFiltersExceptDateRange()}" 
                                 class="ui-button-danger m-1" 
@@ -259,7 +259,6 @@
                                 icon="fas fa-eraser">
                             </p:commandButton>
                         </div>
-
 
                         <p:dataTable
                             id="tbl"
@@ -322,7 +321,6 @@
                                             </h:outputText>
                                         </div>
                                     </div>
-
                                 </div>
                             </f:facet>
 
@@ -370,7 +368,6 @@
                                             </h:outputText>
                                         </div>
                                     </h:panelGroup>
-
                                 </div>
 
                                 <h:outputText 
@@ -390,7 +387,7 @@
                             <p:column headerText="Hos. Fee" width="8em" class="text-end" style="padding: 6px!important; margin: 2px!important;" >
                                 <h:outputText 
                                     rendered="#{row.rowType eq 'BillItem'}"
-                                    value="#{row.billItem.hospitalFee}">
+                                    value="#{row.billItem.hospitalFee - (row.billItem.reagentFee + row.billItem.otherFee)}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer" >
