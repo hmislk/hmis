@@ -211,6 +211,8 @@
                             </h:panelGroup>
                             <h:panelGroup id="cmbProDept">
                                 <p:selectOneMenu 
+                                    filter="true"
+                                    filterMatchMode="contains"
                                     rendered="#{laborataryReportController.toInstitution ne null}"
                                     class="w-100"  
                                     value="#{laborataryReportController.toDepartment}">

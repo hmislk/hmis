@@ -572,9 +572,9 @@ public class BillBhtController implements Serializable {
         //getCurrent().setCashPaid(cashPaid);
         temp.setBillType(BillType.InwardBill);
         temp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BILL);
-
+        temp.setIpOpOrCc("IP");
         getBillBean().setSurgeryData(temp, getBatchBill(), SurgeryBillType.Service);
-
+        
         temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
         temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
