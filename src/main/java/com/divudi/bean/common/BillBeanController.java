@@ -2478,10 +2478,10 @@ public class BillBeanController implements Serializable {
         BillFee f;
         f = new BillFee();
         f.setFee(i);
-        if(patientEncounter.isForiegner()){
+        if (patientEncounter.isForiegner()) {
             f.setFeeValue(i.getFfee());
             f.setFeeGrossValue(i.getFfee());
-        }else{
+        } else {
             f.setFeeValue(i.getFee());
             f.setFeeGrossValue(i.getFee());
         }
@@ -3180,7 +3180,7 @@ public class BillBeanController implements Serializable {
         }
         return lstBills;
     }
-    
+
     public List<Bill> billsForTheDayNotPaid(BillType type, Department department, Date fromDate, Date toDate) {
         List<Bill> lstBills;
         String sql;
@@ -3195,13 +3195,12 @@ public class BillBeanController implements Serializable {
                 + " and b.retired=false "
                 + " and b.netTotal!=0 ";
 
-        
-        if(fromDate != null && toDate !=null){
+        if (fromDate != null && toDate != null) {
             sql += " and b.createdAt between :fromDate and :toDate ";
             temMap.put("fromDate", fromDate);
             temMap.put("toDate", toDate);
         }
-        
+
         sql += " order by b.id desc";
 
         temMap.put("billType", type);
@@ -3935,10 +3934,11 @@ public class BillBeanController implements Serializable {
         List<BillFee> list = new ArrayList<>();
         double ccfee = 0.0;
         double woccfee = 0.0;
-        double staffFee;
-        double collectingCentreFee;
-        double hospitalFee;
-        double otherFee;
+        double staffFee = 0.0;
+        double collectingCentreFee = 0.0;
+        double hospitalFee = 0.0;
+        double reagentFee = 0.0;
+        double otherFee = 0.0;
         for (BillFee bf : e.getLstBillFees()) {
             bf.setCreatedAt(Calendar.getInstance().getTime());
             bf.setCreater(wu);
@@ -3958,9 +3958,28 @@ public class BillBeanController implements Serializable {
             }
             list.add(bf);
 
+            if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                collectingCentreFee += bf.getFeeValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Staff) {
+                staffFee += bf.getFeeValue();
+            } else {
+                hospitalFee += bf.getFeeValue();
+            }
+
+            if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                reagentFee += bf.getFeeValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Additional) {
+                otherFee += bf.getFeeValue();
+            }
         }
         e.getBillItem().setTransCCFee(ccfee);
         e.getBillItem().setTransWithOutCCFee(woccfee);
+
+        e.getBillItem().setHospitalFee(hospitalFee);
+        e.getBillItem().setCollectingCentreFee(collectingCentreFee);
+        e.getBillItem().setStaffFee(staffFee);
+        e.getBillItem().setReagentFee(reagentFee);
+        e.getBillItem().setOtherFee(otherFee);
 
         return list;
     }

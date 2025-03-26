@@ -1,5 +1,6 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
@@ -41,14 +43,16 @@ import org.primefaces.model.file.UploadedFile;
  */
 @Named
 @SessionScoped
-public class LaboratoryReportController implements Serializable {
+public class LaborataryReportController implements Serializable {
 
-    public LaboratoryReportController() {
+    public LaborataryReportController() {
     }
 
     private CommonFunctions commonFunctions;
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    SessionController sessionController;
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -140,19 +144,21 @@ public class LaboratoryReportController implements Serializable {
 // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Navigators">
-    public String navigateToLaboratoryInwardOrderReportFromLabAnalytics() {
+    public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         return "/reportLab/lab_inward_order_report?faces-redirect=true;";
     }
 
-    public String navigateToLaboratoryIncomeReportFromLabAnalytics() {
+    public String navigateToLaborataryIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        return "/reportLab/laboratory_income_report?faces-redirect=true;";
+        setToInstitution(sessionController.getInstitution());
+        setToDepartment(sessionController.getDepartment());
+        return "/reportLab/laboratary_income_report?faces-redirect=true;";
     }
 
-    public String navigateToLaboratorySummaryFromReport() {
+    public String navigateToLaboratarySummaryFromReport() {
         resetAllFiltersExceptDateRange();
-        return "/reportLab/laboratory_summary?faces-redirect=true;";
+        return "/reportLab/laboratary_summary?faces-redirect=true;";
     }
 
     // </editor-fold>
@@ -229,7 +235,7 @@ public class LaboratoryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
 
-        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme,toInstitution,toDepartment,visitType);
         bundle = new IncomeBundle(bills);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {

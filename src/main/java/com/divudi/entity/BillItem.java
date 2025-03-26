@@ -262,6 +262,8 @@ public class BillItem implements Serializable, RetirableEntity {
         discountRate = billItem.getDiscountRate();
         staffFee = billItem.getStaffFee();
         hospitalFee = billItem.getHospitalFee();
+        otherFee = billItem.getOtherFee();
+        reagentFee = billItem.getReagentFee();
         Rate = billItem.getRate();
         marginRate = billItem.getMarginRate();
         netRate = billItem.getNetRate();
@@ -334,6 +336,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vatPlusNetValue = 0 - billItem.getVatPlusNetValue();
         collectingCentreFee = 0 - billItem.getCollectingCentreFee();
         otherFee = 0 - billItem.getOtherFee();
+        reagentFee = 0 - billItem.getReagentFee();
         feeValue = 0 - billItem.getFeeValue();
     }
 
@@ -354,6 +357,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vatPlusNetValue = 0 - getVatPlusNetValue();
         collectingCentreFee = 0 - getCollectingCentreFee();
         otherFee = 0 - getOtherFee();
+        reagentFee = 0 - getReagentFee();
         feeValue = 0 - getFeeValue();
     }
 

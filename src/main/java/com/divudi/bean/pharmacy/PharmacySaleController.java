@@ -2043,13 +2043,38 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (getPreBill().isCancelled() == true) {
             getPreBill().setCancelled(false);
         }
-//        if (checkAllBillItem()) {
-//            //   Before Settle Bill Current Bills Item Check Agian There is any otheruser change his qty
-//            return;
-//        }
-//        if (errorCheckForPreBill()) {
-//            return;
-//        }
+
+        if (getPaymentMethod() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Please select Payment Method");
+            return;
+        }
+
+        BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme);
+        if (!discountSchemeValidation.isFlag()) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
+            return;
+        }
+
+        boolean patientRequiredForPharmacySale = configOptionApplicationController.getBooleanValueByKey(
+                "Patient is required in Pharmacy Retail Sale Bill for " + sessionController.getDepartment().getName(),
+                false
+        );
+
+        Patient pt=null;
+        if (patientRequiredForPharmacySale) {
+            if (getPatient() == null
+                    || getPatient().getPerson() == null
+                    || getPatient().getPerson().getName() == null
+                    || getPatient().getPerson().getName().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please Select a Patient");
+                billSettlingStarted = false;
+                return;
+            } else {
+                pt = savePatient();
+            }
+        }
 
         if (billPreview) {
 
@@ -2057,7 +2082,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         calculateAllRates();
 
-        Patient pt = savePatient();
         List<BillItem> tmpBillItems = new ArrayList<>(getPreBill().getBillItems());
         getPreBill().setBillItems(null);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
@@ -2430,7 +2454,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
 //            patientDepositController.updateBalance(getSaleBill(), pd);
 //        }
-
         paymentService.updateBalances(payments);
 
         resetAll();
