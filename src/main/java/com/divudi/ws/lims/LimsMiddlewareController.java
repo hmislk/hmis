@@ -8,7 +8,6 @@ package com.divudi.ws.lims;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
-import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientSampleComponantFacade;
@@ -27,7 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONObject;
-
 import ca.uhn.hl7v2.model.*;
 import com.divudi.java.HL7Utils;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +44,6 @@ import ca.uhn.hl7v2.parser.Parser;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DepartmentMachineController;
 import com.divudi.bean.lab.MachineController;
-
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.SysMex;
 import com.divudi.data.lab.SysMexTypeA;
@@ -93,8 +90,6 @@ public class LimsMiddlewareController {
     //FOR UNIT TESTING
 
     @EJB
-    InvestigationItemFacade investigationItemFacade;
-    @EJB
     PatientSampleComponantFacade patientSampleComponantFacade;
     @EJB
     PatientSampleFacade patientSampleFacade;
@@ -108,8 +103,7 @@ public class LimsMiddlewareController {
     WebUserFacade webUserFacade;
     @EJB
     ItemFacade itemFacade;
-    @EJB
-    private PatientReportItemValueFacade ptRivFacade;
+
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 
