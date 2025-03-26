@@ -95,11 +95,17 @@
                             <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" />                   
                         </p:column>  
 
-                        <p:column headerText="Purchase Rate" style="width:25px!important;"> 
+                        <p:column headerText="Rate" style="width:25px!important;"> 
                             <h:outputText value="#{ph.rate}"  >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>                        
-                        </p:column>                 
+                        </p:column> 
+                        
+                        <p:column headerText="Net Rate" style="width:25px!important;"> 
+                            <h:outputText value="#{ph.netRate}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>                        
+                        </p:column> 
 
 
                         <p:column headerText="Batch No" style="width:25px!important;">                       
