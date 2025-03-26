@@ -42,6 +42,10 @@ public class CommonController implements Serializable {
         number++;
     }
 
+    public String convertToWordJSF(double number) {
+        return CommonFunctions.convertToWord(number);
+    }
+
     public String formatToLongDate(Date date) {
         // Load the date format from session preferences
         String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
@@ -70,6 +74,10 @@ public class CommonController implements Serializable {
 
     public boolean sameDate(Date date1, Date date2) {
         return CommonFunctions.sameDate(date1, date2);
+    }
+
+    public Date getEndOfDay() {
+        return CommonFunctions.getEndOfDay(new Date());
     }
 
     public SessionInstance convertToSessionInstance(Object ob) {
