@@ -185,7 +185,7 @@ public class SaleReturnController implements Serializable {
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setTotal(0 - getReturnBill().getTotal());
-        getReturnBill().setNetTotal(getReturnBill().getTotal());
+        getReturnBill().setNetTotal(0 - getReturnBill().getNetTotal());
         getReturnBill().setDiscount(0-getReturnBill().getDiscount());
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
@@ -214,7 +214,7 @@ public class SaleReturnController implements Serializable {
 
         refundBill.setReferenceBill(getReturnBill());
         refundBill.setTotal(getReturnBill().getTotal());
-        refundBill.setNetTotal(getReturnBill().getTotal());
+        refundBill.setNetTotal(getReturnBill().getNetTotal());
         refundBill.setDiscount(getReturnBill().getDiscount());
 
         refundBill.setCreater(getSessionController().getLoggedUser());
@@ -445,6 +445,8 @@ public class SaleReturnController implements Serializable {
 
         savePreReturnBill();
         savePreComponent();
+        getReturnBill().setTotal(getReturnBill().getNetTotal()+getReturnBill().getDiscount());
+        
 
         getBill().getReturnPreBills().add(getReturnBill());
         getBillFacade().edit(getBill());
@@ -494,7 +496,6 @@ public class SaleReturnController implements Serializable {
         for (BillItem p : getBillItems()) {
             grossTotal += p.getNetRate() * p.getQty();
             discount += p.getDiscountRate()*p.getQty();
-            System.out.println("discount per item"+p.getDiscountRate());
 
         }
         getReturnBill().setDiscount(discount);
