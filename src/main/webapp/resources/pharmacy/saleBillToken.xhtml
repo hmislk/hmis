@@ -49,7 +49,7 @@
             <div class="billDetails" >
                 <table style="width: 100%;" >
                     <tr>
-                        <td style="width: 15%; text-align: left;" >
+                        <td style="width: 30%; text-align: right;" >
                             <h:outputLabel value="Date" class="billDetails" ></h:outputLabel>
                         </td>
                         <td>:</td>
@@ -58,8 +58,7 @@
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" ></td>
-                        <td style="width: 15%" ></td>
+                        
                         <td style="width: 30%" >
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
@@ -69,7 +68,7 @@
                     </tr>
 
                     <tr>
-                        <td style="width: 15% ;text-align: left;" >
+                        <td style="width: 30% ;text-align: right;" >
                             <h:outputLabel value="Inv.No" class="billDetails"></h:outputLabel>
                         </td>
                         <td>:</td>
@@ -77,8 +76,7 @@
                             <h:outputLabel value="#{cc.attrs.bill.deptId}"  class="billDetails">
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" ></td>
-                        <td style="width: 15%" ></td>
+                        
 
                         <td style="width: 30%" >
                             <h:outputLabel value="#{cc.attrs.bill.creater.staff.name}" class="billDetails">
@@ -87,7 +85,7 @@
                     </tr>
 
                     <tr>
-                        <td style="width: 15% ;text-align: left;" >
+                        <td style="width: 30% ;text-align: right;" >
                             <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
                         </td>
                         <td>:</td>
@@ -95,24 +93,20 @@
                             <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  class="billDetails">
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" ></td>
-                        <td style="width: 15%" ></td>
+                        
                         <td style="width: 30%" ></td>
                     </tr>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
-                            <td style="width: 15% ;text-align: left;" >
+                            <td style="width: 30% ;text-align: right;" >
                                 <h:outputLabel value="Name" class="billDetails"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  class="billDetails"></h:outputLabel>
                             </td>
-                            <td style="width: 10%" >
-                            </td>
-                            <td style="width: 15%" >
-                            </td>
+                            
                             <td style="width: 30%" >
                             </td>
                         </tr>
