@@ -30,22 +30,17 @@ public class ReportTimerController implements Serializable {
 
         final Date endTime = new Date();
 
-        ReportLog reportLog = new ReportLog()
-                .setReport(reportType)
-                .setStartTime(startTime)
-                .setEndTime(endTime);
+        final ReportLog reportLog = new ReportLog(reportType, loggedUser, startTime, endTime);
 
-        save(reportLog, loggedUser);
+        save(reportLog);
     }
 
-    public void save(ReportLog reportLog, WebUser loggedUser) {
+    public void save(ReportLog reportLog) {
         if (reportLog == null) {
             return;
         }
 
         if (reportLog.getId() == null) {
-            reportLog.setGeneratedBy(loggedUser);
-
             try {
                 getFacade().create(reportLog);
             } catch (Exception e) {
