@@ -1,5 +1,6 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -11,6 +12,7 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -21,6 +23,7 @@ import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.java.CommonFunctions;
 import com.divudi.service.BillService;
 import javax.enterprise.context.SessionScoped;
@@ -29,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
@@ -39,14 +43,16 @@ import org.primefaces.model.file.UploadedFile;
  */
 @Named
 @SessionScoped
-public class LaboratoryReportController implements Serializable {
+public class LaborataryReportController implements Serializable {
 
-    public LaboratoryReportController() {
+    public LaborataryReportController() {
     }
-    
+
     private CommonFunctions commonFunctions;
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    SessionController sessionController;
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -125,31 +131,36 @@ public class LaboratoryReportController implements Serializable {
 
     // Numeric variables
     private int maxResult = 50;
-    
+
     private String viewTemplate;
+
+    private double totalHospitalFee;
+    private double totalReagentFee;
+    private double totalOtherFee;
+    private double totalNetTotal;
+    private double totalDiscount;
+    private double totalServiceCharge;
 
 // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Navigators">
-    
-    public String navigateToLaboratoryIncomeReportFromLabAnalytics() {
+    public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        viewTemplate ="/reportLab/lab_summeries_index.xhtml";
-        return "/reportLab/laboratory_income_report?faces-redirect=true;";
+        return "/reportLab/lab_inward_order_report?faces-redirect=true;";
     }
-    
-    public String navigateToLaboratoryIncomeReportFromReport() {
+
+    public String navigateToLaborataryIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        viewTemplate ="/reports/index.xhtml";
-        return "/reportLab/laboratory_income_report?faces-redirect=true;";
+        setToInstitution(sessionController.getInstitution());
+        setToDepartment(sessionController.getDepartment());
+        return "/reportLab/laboratary_income_report?faces-redirect=true;";
     }
-    
-    public String navigateToLaboratorySummaryFromReport() {
+
+    public String navigateToLaboratarySummaryFromReport() {
         resetAllFiltersExceptDateRange();
-        viewTemplate ="/reports/index.xhtml";
-        return "/reportLab/laboratory_summary?faces-redirect=true;";
+        return "/reportLab/laboratary_summary?faces-redirect=true;";
     }
-    
+
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Functions">
@@ -183,12 +194,20 @@ public class LaboratoryReportController implements Serializable {
         setDownloadingExcel(null);
         setFile(null);
         setSearchKeyword(new SearchKeyword());
+        setFromDate(null);
+        setToDate(null);
+        setVisitType(null);
+        totalHospitalFee = 0.0;
+        totalReagentFee = 0.0;
+        totalOtherFee = 0.0;
+        totalNetTotal = 0.0;
+        totalDiscount = 0.0;
+        totalServiceCharge = 0.0;
     }
 
     public void processLaboratoryIncomeReport() {
-        System.out.println("processLaboratoryIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-        
+
         //Add All OPD BillTypes
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
@@ -196,13 +215,13 @@ public class LaboratoryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        
+
         //Add All Inward BillTypes
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-        
+
         //Add All Package BillTypes
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
@@ -210,14 +229,13 @@ public class LaboratoryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-        
+
         //Add All CC BillTypes
         billTypeAtomics.add(BillTypeAtomic.CC_BILL);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
-        
 
-        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme,toInstitution,toDepartment,visitType);
         bundle = new IncomeBundle(bills);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {
@@ -233,10 +251,9 @@ public class LaboratoryReportController implements Serializable {
         bundle.generatePaymentDetailsForBills();
     }
 
-    public void processLaboratorySummary() {
-        System.out.println("processLaboratorySummary");
+    public void processLaboratoryOrderReport() {
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-        
+
         //Add All OPD BillTypes
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
@@ -244,13 +261,13 @@ public class LaboratoryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        
+
         //Add All Inward BillTypes
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-        
+
         //Add All Package BillTypes
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
@@ -258,14 +275,53 @@ public class LaboratoryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-        
+
         //Add All CC BillTypes
         billTypeAtomics.add(BillTypeAtomic.CC_BILL);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
-        
+
+        List<Bill> fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, toInstitution, toDepartment, visitType);
+
+        bundle = new IncomeBundle();
+
+        totalHospitalFee = 0.0;
+        totalReagentFee = 0.0;
+        totalOtherFee = 0.0;
+        totalNetTotal = 0.0;
+        totalDiscount = 0.0;
+        totalServiceCharge = 0.0;
+
+        for (Bill bill : fetchedBills) {
+            IncomeRow billIncomeRow = new IncomeRow(bill);
+            bundle.getRows().add(billIncomeRow);
+            boolean checkInInvestigationBillItem = false;
+            billService.reloadBill(bill);
+            for (BillItem billItem : bill.getBillItems()) {
+                if (billItem.getItem() instanceof Investigation) {
+                    IncomeRow billItemIncomeRow = new IncomeRow(billItem);
+                    bundle.getRows().add(billItemIncomeRow);
+                    checkInInvestigationBillItem = true;
+                    totalHospitalFee += billItem.getHospitalFee();
+                    totalReagentFee += billItem.getReagentFee();
+                    totalOtherFee += billItem.getOtherFee();
+                    totalNetTotal += billItem.getNetValue();
+                }
+            }
+            if (checkInInvestigationBillItem == true) {
+                totalDiscount += bill.getDiscount();
+                totalServiceCharge += bill.getServiceCharge();
+            } else {
+                bundle.getRows().remove(billIncomeRow);
+            }
+
+        }
     }
-    
+
+    public void processLaboratorySummary() {
+
+    }
+
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
@@ -642,7 +698,7 @@ public class LaboratoryReportController implements Serializable {
     public void setMaxResult(int maxResult) {
         this.maxResult = maxResult;
     }
-    
+
     public String getViewTemplate() {
         return viewTemplate;
     }
@@ -650,6 +706,54 @@ public class LaboratoryReportController implements Serializable {
     public void setViewTemplate(String viewTemplate) {
         this.viewTemplate = viewTemplate;
     }
-    
+
+    public double getTotalHospitalFee() {
+        return totalHospitalFee;
+    }
+
+    public void setTotalHospitalFee(double totalHospitalFee) {
+        this.totalHospitalFee = totalHospitalFee;
+    }
+
+    public double getTotalReagentFee() {
+        return totalReagentFee;
+    }
+
+    public void setTotalReagentFee(double totalReagentFee) {
+        this.totalReagentFee = totalReagentFee;
+    }
+
+    public double getTotalOtherFee() {
+        return totalOtherFee;
+    }
+
+    public void setTotalOtherFee(double totalOtherFee) {
+        this.totalOtherFee = totalOtherFee;
+    }
+
+    public double getTotalNetTotal() {
+        return totalNetTotal;
+    }
+
+    public void setTotalNetTotal(double totalNetTotal) {
+        this.totalNetTotal = totalNetTotal;
+    }
+
+    public double getTotalDiscount() {
+        return totalDiscount;
+    }
+
+    public void setTotalDiscount(double totalDiscount) {
+        this.totalDiscount = totalDiscount;
+    }
+
+    public double getTotalServiceCharge() {
+        return totalServiceCharge;
+    }
+
+    public void setTotalServiceCharge(double totalServiceCharge) {
+        this.totalServiceCharge = totalServiceCharge;
+    }
+
     // </editor-fold>
 }
