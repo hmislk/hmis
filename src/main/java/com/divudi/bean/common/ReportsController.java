@@ -14,6 +14,7 @@ import com.divudi.data.*;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.data.reports.CollectionCenterReport;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.*;
 import com.divudi.entity.cashTransaction.CashBookEntry;
@@ -156,6 +157,8 @@ public class ReportsController implements Serializable {
     DrawerController drawerController;
     @Inject
     EnumController enumController;
+    @Inject
+    private ReportTimerController reportTimerController;
 
     /**
      * Properties
@@ -2302,27 +2305,29 @@ public class ReportsController implements Serializable {
     }
 
     public void generateRouteAnalysisReport() {
-        System.out.println("generateRouteAnalysisReport = " + this);
-        bundle = new ReportTemplateRowBundle();
+        reportTimerController.trackReportExecution(() -> {
+            System.out.println("generateRouteAnalysisReport = " + this);
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
 
-        opdBts.add(BillTypeAtomic.CC_BILL);
-        opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-        opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.CC_BILL);
+            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
 
-        System.out.println("bill items");
+            System.out.println("bill items");
 
-        bundle.setName("Route Analysis Bill Items");
-        bundle.setBundleType("billItemList");
+            bundle.setName("Route Analysis Bill Items");
+            bundle.setBundleType("billItemList");
 
-        bundle = generateCollectingCenterWiseBillItems(opdBts);
+            bundle = generateCollectingCenterWiseBillItems(opdBts);
 
-        if (reportType.equalsIgnoreCase("detail")) {
-            groupCollectingCenterWiseBillsMonthly();
-        } else {
-            groupRouteWiseBillsMonthly();
-        }
+            if (reportType.equalsIgnoreCase("detail")) {
+                groupCollectingCenterWiseBillsMonthly();
+            } else {
+                groupRouteWiseBillsMonthly();
+            }
+        }, CollectionCenterReport.ROUTE_ANALYSIS_REPORT, sessionController.getLoggedUser());
     }
 
     private void groupRouteWiseBillsMonthly() {
