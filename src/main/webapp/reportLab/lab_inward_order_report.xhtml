@@ -188,7 +188,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Pofome Institution" for="cmbProIns" class="mx-3"/>
+                                <h:outputLabel value="Service Institution" for="cmbProIns" class="mx-3"/>
                             </h:panelGroup>
                             <p:autoComplete  
                                 id="cmbProIns"
@@ -207,10 +207,12 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Pofome Department" for="cmbProDept" class="mx-3"/>
+                                <h:outputLabel value="Service Department" for="cmbProDept" class="mx-3"/>
                             </h:panelGroup>
                             <h:panelGroup id="cmbProDept">
                                 <p:selectOneMenu 
+                                    filter="true"
+                                    filterMatchMode="contains"
                                     rendered="#{laborataryReportController.toInstitution ne null}"
                                     class="w-100"  
                                     value="#{laborataryReportController.toDepartment}">

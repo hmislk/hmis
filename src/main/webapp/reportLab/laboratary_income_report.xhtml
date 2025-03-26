@@ -42,8 +42,17 @@
                             </p:calendar>
 
                             <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <i class="fas fa-stethoscope"></i>
+                                <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{laborataryReportController.visitType}">
+                                <f:selectItem itemLabel="Any"/>
+                                <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                <f:selectItem itemValue="CC" itemLabel="Collecting Center (CC)"/>
+                            </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
@@ -172,6 +181,45 @@
                                 <f:selectItem itemLabel="Select"/>
                                 <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
                             </p:selectOneMenu>
+                            
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Service Institution" for="cmbProIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete  
+                                id="cmbProIns"
+                                class="w-100" 
+                                inputStyleClass="w-100" 
+                                completeMethod="#{institutionController.completeCompany}" 
+                                var="pta" 
+                                itemLabel="#{pta.name}" 
+                                itemValue="#{pta}" 
+                                forceSelection="true" 
+                                value="#{laborataryReportController.toInstitution}" >
+                                <p:ajax process="cmbProIns" update="cmbProDept"/>
+                            </p:autoComplete>
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Service Department" for="cmbProDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbProDept">
+                                <p:selectOneMenu 
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    rendered="#{laborataryReportController.toInstitution ne null}"
+                                    class="w-100"  
+                                    value="#{laborataryReportController.toDepartment}">
+                                    <f:selectItem itemLabel="Select the Department" />
+                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(laborataryReportController.toInstitution)}"/>                                        
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
                         </h:panelGrid>
 
@@ -212,7 +260,10 @@
 
                             <f:facet name="header"  >
                                 <div style="padding: 3px!important; margin: 0px!important;">
-                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 20px;">
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 24px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
                                         <h:outputText value="All Sales Report"/>
                                         <h:panelGroup  rendered="#{laborataryReportController.department ne null}">
                                             <div class="d-flex gap-2">
@@ -221,13 +272,14 @@
                                             </div>
                                         </h:panelGroup>
                                     </div>
-                                    <div class="d-flex justify-content-between mt-2" style=" font-size: 16px;">
+                                    <div class="d-flex justify-content-center mt-2" style=" font-size: 14px;">
                                         <div class="d-flex gap-3">
                                             <h:outputText value="From Date" style="width: 6em!important; font-weight: 600;"/>
                                             <h:outputText value="#{laborataryReportController.fromDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                             </h:outputText>
                                         </div>
+                                        <p:spacer width="50" ></p:spacer>
                                         <div class="d-flex gap-3">
                                             <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
                                             <h:outputText value="#{laborataryReportController.toDate}">
@@ -235,6 +287,25 @@
                                             </h:outputText>
                                         </div>
                                         <div></div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between mt-2 w-100 gap-2" style=" font-size: 16px;">
+                                        <div class="d-flex gap-2">
+                                            <h:outputText 
+                                                rendered="#{laborataryReportController.toInstitution ne null}"
+                                                value="#{laborataryReportController.toInstitution.name}" 
+                                                style="font-weight: 600;">
+                                            </h:outputText>
+                                            <h:outputText 
+                                                value="-" 
+                                                rendered="#{laborataryReportController.toInstitution ne null and laborataryReportController.toDepartment ne null}"
+                                                style="width: 2em!important; font-weight: 600; text-align: center;"/>
+                                            <h:outputText 
+                                                rendered="#{laborataryReportController.toInstitution ne null and laborataryReportController.toDepartment ne null}"
+                                                value="#{laborataryReportController.toDepartment.name}" 
+                                                style="font-weight: 600;">
+                                            </h:outputText>
+                                        </div>
                                     </div>
 
                                 </div>
