@@ -20,6 +20,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.BooleanMessage;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
@@ -66,6 +67,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -106,6 +108,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     @Inject
     DrawerController drawerController;
 ////////////////////////
+    @EJB
+    DiscountSchemeValidationService discountSchemeValidationService;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -1052,6 +1056,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
         }
 
+         BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(getPreBill().getPaymentMethod(), getPreBill().getPaymentScheme(), getPaymentMethodData());
+        if (!discountSchemeValidation.isFlag()) {
+//            billSettlingStarted = false;
+            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
+            return;
+        }
+        
         saveSaleBill();
 //        saveSaleBillItems();
 
