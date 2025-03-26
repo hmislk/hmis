@@ -566,6 +566,21 @@ public class PharmacyIssueController implements Serializable {
 
     }
 
+public String checkTheDepartment() {
+    // Check if department is the same as logged-in user's department
+    if (toDepartment != null &&
+            Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
+        JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+        return null;
+    }
+
+
+    settleBill();
+
+
+    return "pharmacy/pharmacy_issue";
+}
+
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {
             if (Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(), getBillItem().getPharmaceuticalBillItem().getStock().getId())) {
