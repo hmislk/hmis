@@ -13437,7 +13437,7 @@ public class SearchController implements Serializable {
                 bundle = generateStaffWelfareBillItems(opdBts, staffPaymentMethods);
                 bundle.calculateTotalByBillItems();
             }
-        }, FinancialReport.STAFF_WELFARE_REPORT);
+        }, FinancialReport.STAFF_WELFARE_REPORT, sessionController.getLoggedUser());
     }
 
     public void generateDailyReturn() {

@@ -2327,7 +2327,7 @@ public class ReportsController implements Serializable {
             } else {
                 groupRouteWiseBillsMonthly();
             }
-        }, CollectionCenterReport.ROUTE_ANALYSIS_REPORT);
+        }, CollectionCenterReport.ROUTE_ANALYSIS_REPORT, sessionController.getLoggedUser());
     }
 
     private void groupRouteWiseBillsMonthly() {
