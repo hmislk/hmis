@@ -594,6 +594,35 @@
                         </div>
                     </div>
                 </f:facet>
+                
+                <style>
+                    @media print{
+                        .purhcaseBill{
+                            width: 297mm!important;
+                        }
+                        
+                        .hideProfit{
+                            display: none!important;
+                        }
+                        
+                        .showProfit{
+                            
+                        }
+                        
+                    }
+                    
+                    @media screen{
+                        .purhcaseBill{
+                            width: 100%!important;
+                        }
+                        
+                        .showProfit{
+                            
+                        }
+                    }
+                    
+                </style>
+                
                 <h:panelGroup id="gpBillPreview" >
                     <pharmacy:purhcase 
                         bill="#{pharmacyPurchaseController.bill}" 
@@ -605,5 +634,4 @@
             </p:panel>
         </h:form>
     </ui:define>  
-
 </ui:composition>
