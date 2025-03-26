@@ -2271,18 +2271,18 @@ public class ChannelApi {
                 for (ServiceSession s : sessions) {
                     object = new JSONObject();
                     object.put("session_id", s.getId());
-                    object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
-                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
-                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s.getEndingTime()));
+                    object.put("session_date", CommonFunctions.formatDate(s.getSessionDate(), "YYYY-MM-dd"));
+                    object.put("session_starting_time", CommonFunctions.getTimeFormat24(s.getStartingTime()));
+                    object.put("session_ending_time", CommonFunctions.getTimeFormat24(s.getEndingTime()));
                     object.put("session_max_no", s.getMaxNo());
                     object.put("session_is_refundable", s.isRefundable());
                     object.put("session_duration", s.getDuration());
                     object.put("session_room_no", s.getRoomNo());
 //                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
-                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
-                    object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
-                    object.put("session_forign_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, true)));
-                    object.put("session_forign_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, true)));
+                    object.put("session_fee", CommonFunctions.getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_fee_vat", CommonFunctions.getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_forign_fee", CommonFunctions.getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, true)));
+                    object.put("session_forign_fee_vat", CommonFunctions.getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, true)));
                     object.put("session_is_leaved", s.isDeactivated());
                     array.put(object);
 //            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
@@ -2559,8 +2559,8 @@ public class ChannelApi {
         JSONArray bill = new JSONArray();
         try {
             long b_id = Long.parseLong(agent_id);
-            Date fromDate = getCommonController().getConvertDateTimeFormat24(from_date);
-            Date toDate = getCommonController().getConvertDateTimeFormat24(to_date);
+            Date fromDate = CommonFunctions.getConvertDateTimeFormat24(from_date);
+            Date toDate = CommonFunctions.getConvertDateTimeFormat24(to_date);
             bill = billsDetails(b_id, fromDate, toDate, true);
             if (bill != null) {
                 jSONObjectOut.put("bookings", bill);
@@ -2681,16 +2681,16 @@ public class ChannelApi {
                 for (ServiceSession s : sessions) {
                     object = new JSONObject();
                     object.put("session_id", s.getId());
-                    object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
-                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
-                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s.getEndingTime()));
+                    object.put("session_date", CommonFunctions.formatDate(s.getSessionDate(), "YYYY-MM-dd"));
+                    object.put("session_starting_time", CommonFunctions.getTimeFormat24(s.getStartingTime()));
+                    object.put("session_ending_time", CommonFunctions.getTimeFormat24(s.getEndingTime()));
                     object.put("session_max_no", s.getMaxNo());
                     object.put("session_is_refundable", s.isRefundable());
                     object.put("session_duration", s.getDuration());
                     object.put("session_room_no", s.getRoomNo());
 //                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
-                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
-                    object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_fee", CommonFunctions.getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_fee_vat", CommonFunctions.getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
                     object.put("session_is_leaved", s.isDeactivated());
                     array.put(object);
 //            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
@@ -3064,12 +3064,12 @@ public class ChannelApi {
                 map.put("bill_patient_name", billObjects.get(0).getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", billObjects.get(0).getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", billObjects.get(0).getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", getCommonController().getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
-                map.put("bill_session_start_time", getCommonController().getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
-                map.put("bill_created_at", getCommonController().getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
-                map.put("bill_total", getCommonController().getDouble(billObjects.get(0).getBill().getNetTotal()));
-                map.put("bill_vat", getCommonController().getDouble(billObjects.get(0).getBill().getVat()));
-                map.put("bill_vat_plus_total", getCommonController().getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
+                map.put("bill_session_date", CommonFunctions.formatDate(billObjects.get(0).getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
+                map.put("bill_session_start_time", CommonFunctions.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", CommonFunctions.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
+                map.put("bill_total", CommonFunctions.getDouble(billObjects.get(0).getBill().getNetTotal()));
+                map.put("bill_vat", CommonFunctions.getDouble(billObjects.get(0).getBill().getVat()));
+                map.put("bill_vat_plus_total", CommonFunctions.getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -3115,10 +3115,10 @@ public class ChannelApi {
                 map.put("bill_patient_name", o.getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", o.getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", o.getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", getCommonController().getDateFormat(o.getBill().getSingleBillSession().getSessionDate()));
-                map.put("bill_session_start_time", getCommonController().getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
-                map.put("bill_created_at", getCommonController().getDateTimeFormat24(o.getBill().getCreatedAt()));
-                map.put("bill_total", getCommonController().getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));
+                map.put("bill_session_date", CommonFunctions.formatDate(o.getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
+                map.put("bill_session_start_time", CommonFunctions.getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", CommonFunctions.getDateTimeFormat24(o.getBill().getCreatedAt()));
+                map.put("bill_total", CommonFunctions.getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));
                 array.put(map);
             } catch (Exception e) {
                 e.printStackTrace();
