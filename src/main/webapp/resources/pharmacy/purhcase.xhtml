@@ -17,8 +17,8 @@
     <cc:implementation>
         
         <!--        <div class="a4bill">-->
-        <div style="font-family: sans-serif!important;
-             width: 297mm;
+        <div class="purhcaseBill"
+            style="font-family: sans-serif!important;
              border: none!important;
              margin-top: 10px;
              height: 210mm;">
@@ -98,12 +98,17 @@
 
                     <p:column style="padding: 4px; width: 4em;">
                         <f:facet name="header">QTY</f:facet>
-                            #{bip.pharmaceuticalBillItem.qty}
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputLabel>
                     </p:column>
 
                     <p:column style="padding: 4px; width: 4em;">
                         <f:facet name="header">Free</f:facet>
-                            #{bip.pharmaceuticalBillItem.freeQty}
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}">
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputLabel>
+                            
                     </p:column>
 
                     <p:column style="padding: 4px; width: 5em;">
@@ -141,7 +146,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  style="padding: 4px; width: 5em;" rendered="#{cc.attrs.ShowProfit}">
+                    <p:column  style="padding: 4px; width: 5em;" class="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit' }">
                         <f:facet name="header">Profit %</f:facet>
                         <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
                             <f:convertNumber pattern="0.0" ></f:convertNumber>
