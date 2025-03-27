@@ -8,7 +8,6 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.PaymentController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Title;
@@ -19,7 +18,6 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Person;
-import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PersonFacade;
@@ -68,8 +66,6 @@ public class IouBillController implements Serializable {
     BillBeanController billBean;
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     private BillController billController;
     @Inject
@@ -715,14 +711,6 @@ public class IouBillController implements Serializable {
 
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public double getReturnAmount() {

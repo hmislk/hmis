@@ -10,7 +10,6 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -26,16 +25,6 @@ import com.divudi.data.dataStructure.DepartmentBillItems;
 import com.divudi.data.dataStructure.InwardBillItem;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
-import static com.divudi.data.inward.InwardChargeType.AdministrationCharge;
-import static com.divudi.data.inward.InwardChargeType.AdmissionFee;
-import static com.divudi.data.inward.InwardChargeType.DoctorAndNurses;
-import static com.divudi.data.inward.InwardChargeType.LinenCharges;
-import static com.divudi.data.inward.InwardChargeType.MOCharges;
-import static com.divudi.data.inward.InwardChargeType.MaintainCharges;
-import static com.divudi.data.inward.InwardChargeType.MedicalCareICU;
-import static com.divudi.data.inward.InwardChargeType.Medicine;
-import static com.divudi.data.inward.InwardChargeType.NursingCharges;
-import static com.divudi.data.inward.InwardChargeType.ProfessionalCharge;
 import static com.divudi.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
 
@@ -70,7 +59,6 @@ import com.divudi.facade.TimedItemFeeFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.EncounterCreditCompany;
-import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.facade.EncounterCreditCompanyFacade;
 import com.divudi.java.CommonFunctions;
@@ -89,7 +77,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import kotlin.collections.ArrayDeque;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -103,7 +90,6 @@ public class BhtSummeryController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private PatientRoomFacade patientRoomFacade;
     @EJB
@@ -131,13 +117,7 @@ public class BhtSummeryController implements Serializable {
     @Inject
     WebUserController webUserController;
     @Inject
-    BhtEditController bhtEditController;
-    @Inject
     PriceMatrixController priceMatrixController;
-    @Inject
-    CommonController commonController;
-    @Inject
-    InpatientClinicalDataController inpatientClinicalDataController;
     //////////////////////////
     @Inject
     private SessionController sessionController;
@@ -151,7 +131,7 @@ public class BhtSummeryController implements Serializable {
     RoomChangeController roomChangeController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    ////////////////////////    
+    ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
     private List<BillFee> doctorAndNurseFee;
@@ -1289,7 +1269,7 @@ public class BhtSummeryController implements Serializable {
         JsfUtil.addSuccessMessage("Original Bill Saved");
 
     }
-    
+
     public void createTempBill(){
         tempBill = null;
         saveTempBill();
@@ -1699,7 +1679,7 @@ public class BhtSummeryController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
     }
-    
+
     private void saveTempBill() {
 
         getTempBill().setGrantTotal(grantTotal);
@@ -1793,7 +1773,7 @@ public class BhtSummeryController implements Serializable {
         }
     }
 
-//    public void edit 
+//    public void edit
     // private void saveAdmissionBillFee
     private void saveBillItem() {
         double temProfFee = 0;
@@ -1841,7 +1821,7 @@ public class BhtSummeryController implements Serializable {
 
         getBillFacade().edit(getCurrent());
     }
-    
+
     private void saveTempBillItem() {
         double temProfFee = 0;
         double temHosFee = 0.0;
@@ -1932,7 +1912,7 @@ public class BhtSummeryController implements Serializable {
         }
 
     }
-    
+
     private void updateProTempBillFee(BillItem bItem) {
         for (BillFee bf : getProfesionallFee()) {
             bf.setReferenceBillItem(bItem);
@@ -1953,7 +1933,7 @@ public class BhtSummeryController implements Serializable {
         }
 
     }
-    
+
     private void updateProTempBillFeeForDocAndNeurses(BillItem bItem) {
         for (BillFee bf : getDoctorAndNurseFee()) {
             bf.setReferenceBillItem(bItem);
@@ -1996,7 +1976,7 @@ public class BhtSummeryController implements Serializable {
         bItem.setBillFees(list);
 
     }
-    
+
     private void saveTempRoomBillFee(List<PatientRoom> patientRooms, BillItem bItem) {
         List<BillFee> list = new ArrayList<>();
         for (PatientRoom pt : patientRooms) {
@@ -2153,7 +2133,7 @@ public class BhtSummeryController implements Serializable {
         patientEncounter = null;
         makeNull();
     }
-    
+
     public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe) {
         List<BillItem> newBillItems = new ArrayList<>();
         Map<Staff, BillFee> staffFeeMap = new HashMap<>();
@@ -2807,7 +2787,7 @@ public class BhtSummeryController implements Serializable {
     public void setOriginalBill(Bill originalBill) {
         this.originalBill = originalBill;
     }
-    
+
     public Bill getTempBill() {
         if (tempBill == null) {
             tempBill = new BilledBill();
@@ -3006,14 +2986,6 @@ public class BhtSummeryController implements Serializable {
 
     public void setAdmissionTypeFacade(AdmissionTypeFacade admissionTypeFacade) {
         this.admissionTypeFacade = admissionTypeFacade;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public WebUserController getWebUserController() {

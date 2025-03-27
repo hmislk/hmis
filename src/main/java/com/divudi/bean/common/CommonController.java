@@ -9,7 +9,6 @@ import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 
 import com.divudi.java.CommonFunctions;
@@ -19,7 +18,6 @@ import com.divudi.java.CommonFunctions;
  * @author buddhika
  */
 @Named
-@SessionScoped
 public class CommonController implements Serializable {
 
     /**
