@@ -1157,7 +1157,7 @@ public class ReportController implements Serializable {
             List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
             bundle.setReportTemplateRows(results);
-        }, LaboratoryReport.SAMPLE_CARRIER_REPORT, sessionController.getLoggedUser());
+        }, CollectionCenterReport.COLLECTION_CENTER_BALANCE_REPORT, sessionController.getLoggedUser());
     }
 
     public void processCurrentCollectionCenterBalance() {
@@ -1833,7 +1833,7 @@ public class ReportController implements Serializable {
                 m.put("inv", invoiceNumber);
             }
             agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT,sessionController.getLoggedUser());
+        }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT,sessionController.getLoggedUser());
     }
 
     public void processCollectingCentreStatementReport() {
@@ -2178,72 +2178,74 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectingCentreReciptReport() {
-        bundle = new ReportTemplateRowBundle();
-        List<BillTypeAtomic> billtypes = new ArrayList<>();
-        billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_BILL);
-        billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL);
-        billtypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
-        billtypes.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> billtypes = new ArrayList<>();
+            billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_BILL);
+            billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL);
+            billtypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+            billtypes.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
 
-        String jpql = "select new com.divudi.data.ReportTemplateRow(bill) "
-                + " from Bill bill "
-                + " where bill.retired=:ret"
-                + " and bill.billDate between :fd and :td "
-                + " and bill.billTypeAtomic in :bTypes";
+            String jpql = "select new com.divudi.data.ReportTemplateRow(bill) "
+                    + " from Bill bill "
+                    + " where bill.retired=:ret"
+                    + " and bill.billDate between :fd and :td "
+                    + " and bill.billTypeAtomic in :bTypes";
 
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bTypes", billtypes);
+            Map<String, Object> m = new HashMap<>();
+            m.put("ret", false);
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+            m.put("bTypes", billtypes);
 
-        if (site != null) {
-            jpql += " and bill.department.site = :route ";
-            m.put("route", site);
-        }
+            if (site != null) {
+                jpql += " and bill.department.site = :route ";
+                m.put("route", site);
+            }
 
-        if (route != null) {
-            jpql += " and bill.fromInstitution.route = :route ";
-            m.put("route", route);
-        }
+            if (route != null) {
+                jpql += " and bill.fromInstitution.route = :route ";
+                m.put("route", route);
+            }
 
-        if (institution != null) {
-            jpql += " and bill.institution = :ins ";
-            m.put("ins", institution);
-        }
+            if (institution != null) {
+                jpql += " and bill.institution = :ins ";
+                m.put("ins", institution);
+            }
 
-        if (collectingCentre != null) {
-            jpql += " and bill.fromInstitution = :cc ";
-            m.put("cc", collectingCentre);
-        }
+            if (collectingCentre != null) {
+                jpql += " and bill.fromInstitution = :cc ";
+                m.put("cc", collectingCentre);
+            }
 
-        if (toDepartment != null) {
-            jpql += " and bill.toDepartment = :tdep ";
-            m.put("tdep", toDepartment);
-        }
+            if (toDepartment != null) {
+                jpql += " and bill.toDepartment = :tdep ";
+                m.put("tdep", toDepartment);
+            }
 
-        if (department != null) {
-            jpql += " and bill.department = :dep ";
-            m.put("dep", department);
-        }
+            if (department != null) {
+                jpql += " and bill.department = :dep ";
+                m.put("dep", department);
+            }
 
-        if (phn != null && !phn.isEmpty()) {
-            jpql += " and bill.patient.phn = :phn ";
-            m.put("phn", phn);
-        }
+            if (phn != null && !phn.isEmpty()) {
+                jpql += " and bill.patient.phn = :phn ";
+                m.put("phn", phn);
+            }
 
-        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " and bill.deptId = :inv ";
-            m.put("inv", invoiceNumber);
-        }
+            if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+                jpql += " and bill.deptId = :inv ";
+                m.put("inv", invoiceNumber);
+            }
 
-        if (doctor != null) {
-            jpql += " and bill.referredBy = :refDoc ";
-            m.put("refDoc", doctor);
-        }
+            if (doctor != null) {
+                jpql += " and bill.referredBy = :refDoc ";
+                m.put("refDoc", doctor);
+            }
 
-        bundle.setReportTemplateRows((List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, m));
-        bundle.calculateTotalByBills();
+            bundle.setReportTemplateRows((List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, m));
+            bundle.calculateTotalByBills();
+        }, LaboratoryReport.SAMPLE_CARRIER_REPORT, sessionController.getLoggedUser());
     }
 
     public void downloadLabTestCount() {
