@@ -1833,7 +1833,7 @@ public class ReportController implements Serializable {
                 m.put("inv", invoiceNumber);
             }
             agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT,sessionController.getLoggedUser());
+        }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT,sessionController.getLoggedUser());
     }
 
     public void processCollectingCentreStatementReport() {
