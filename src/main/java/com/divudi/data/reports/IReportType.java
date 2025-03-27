@@ -5,5 +5,5 @@ public interface IReportType {
 
     String getReportType();
 
-    String getValue();
+    String getReportName();
 }
