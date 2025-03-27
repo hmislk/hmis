@@ -59,8 +59,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
     @Inject
     SessionController sessionController;
 
-
-    CommonFunctions commonFunctions;
     List<LeaveForm> leaveForms;
     Staff approvedStaff;
     Staff staff;
@@ -189,7 +187,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and ss.id !=" + staffShift.getId();
         hm.put("stf", staffShift.getStaff());
 //        hm.put("date", staffShift.getShiftDate());
-        hm.put("fd",commonFunctions.getFirstDayOfYear());
+        hm.put("fd", CommonFunctions.getFirstDayOfYear());
         hm.put("td", staffShift.getShiftDate());
         hm.put("dtp", DayType.Normal);
         hm.put("cls", StaffShiftExtra.class);
@@ -242,7 +240,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and ss.id !=" + staffShift.getId();
         hm.put("stf", staffShift.getStaff());
 //        hm.put("date", staffShift.getShiftDate());
-        hm.put("fd", commonFunctions.getFirstDayOfYear());
+        hm.put("fd", CommonFunctions.getFirstDayOfYear());
         hm.put("td", staffShift.getShiftDate());
         hm.put("dtp", DayType.Normal);
         hm.put("cls", StaffShiftExtra.class);
@@ -324,8 +322,8 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         }
 
         leaved = humanResourceBean.calStaffLeave(getCurrentLeaveForm().getStaff(), leaveTypeLocal,
-                getCommonFunctions().getFirstDayOfYear(new Date()),
-                getCommonFunctions().getLastDayOfYear(new Date()));
+                CommonFunctions.getFirstDayOfYear(new Date()),
+                CommonFunctions.getLastDayOfYear(new Date()));
 
     }
 
@@ -587,7 +585,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         ss.setLeaveType(leaveType);
         ss.calLeaveTime();
         ss.setLeaveForm(form);
-        // ss.setLeaveType(leaveType); move to up 
+        // ss.setLeaveType(leaveType); move to up
         ss.setAutoLeave(true);
         staffShiftFacade.edit(ss);
 
@@ -758,14 +756,6 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
     public void setLeaveFormFacade(LeaveFormFacade leaveFormFacade) {
         this.leaveFormFacade = leaveFormFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public Staff getApprovedStaff() {

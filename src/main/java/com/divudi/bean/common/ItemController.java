@@ -988,7 +988,7 @@ public class ItemController implements Serializable {
             } else {
                 item = new Item();
                 item.setName(name);
-                item.setCode(CommonController.nameToCode(name));
+                item.setCode(CommonFunctions.nameToCode(name));
                 item.setParentItem(parentItem);
                 getFacade().create(item);
             }
@@ -1516,7 +1516,7 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
     }
-    
+
     public void markSelectedItemsForRequestForQuentity() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");

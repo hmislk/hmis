@@ -14,14 +14,12 @@ import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.AgencyController;
 import com.divudi.bean.common.AreaController;
 import com.divudi.bean.common.CategoryController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConsultantController;
 import com.divudi.bean.common.CreditCompanyController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.EnumController;
-import com.divudi.bean.common.FeeController;
 import com.divudi.bean.common.FeeValueController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
@@ -57,7 +55,6 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Fee;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -84,7 +81,6 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.membership.MembershipController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.pharmacy.PharmacyPurchaseController;
 import com.divudi.data.SymanticHyrachi;
@@ -94,7 +90,6 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Family;
 import com.divudi.entity.FamilyMember;
-import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
 import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.membership.MembershipScheme;
@@ -112,7 +107,6 @@ import com.divudi.facade.FeeFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.java.CommonFunctions;
-import com.mysql.cj.jdbc.interceptors.SessionAssociationInterceptor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.inject.Named;
@@ -141,24 +135,10 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.xssf.usermodel.XSSFTable;
-import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
-
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.poi.ss.SpreadsheetVersion;
 
 @Named
 @ViewScoped
@@ -5859,7 +5839,7 @@ public class DataUploadController implements Serializable {
                 if (idCell.getCellType() == CellType.STRING) {
                     idStr = idCell.getStringCellValue();
 
-                    id = CommonFunctions.convertStringToLong(idStr);
+                    id = CommonFunctions.convertStringToLongOrNull(idStr);
 
                 } else if (idCell.getCellType() == CellType.NUMERIC) {
                     Double tmp;
@@ -5885,7 +5865,7 @@ public class DataUploadController implements Serializable {
                 }
             }
 
-            if (name == null || name.trim().equals("")) {
+            if (name == null || name.trim().isEmpty()) {
                 continue;
             }
 
@@ -6084,7 +6064,7 @@ public class DataUploadController implements Serializable {
             Cell nameCell = row.getCell(1);
             if (nameCell != null) {
                 vtm.setName(nameCell.getStringCellValue());
-                vtm.setCode(CommonController.nameToCode("vtm_" + vtm.getName()));
+                vtm.setCode(CommonFunctions.nameToCode("vtm_" + vtm.getName()));
             }
             vtm.setCreatedAt(new Date());
             vtm.setCreater(sessionController.getLoggedUser());
@@ -6118,7 +6098,7 @@ public class DataUploadController implements Serializable {
             Cell nameCell = row.getCell(1);
             if (nameCell != null) {
                 atm.setName(nameCell.getStringCellValue());
-                atm.setCode(CommonController.nameToCode("atm_" + atm.getName()));
+                atm.setCode(CommonFunctions.nameToCode("atm_" + atm.getName()));
             }
             Cell vtmCell = row.getCell(2);
             if (vtmCell != null) {
@@ -6543,7 +6523,7 @@ public class DataUploadController implements Serializable {
 
 //            amp = new Amp();
             amp.setName(ampName);
-            amp.setCode("amp_" + CommonController.nameToCode(ampName));
+            amp.setCode("amp_" + CommonFunctions.nameToCode(ampName));
 
             if (vmp != null) {
                 amp.setVmp(vmp);

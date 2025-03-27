@@ -4,9 +4,6 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.cashTransaction.CashBookEntryController;
-import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -16,24 +13,9 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.service.StaffService;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -41,12 +23,10 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
-import com.divudi.entity.WebUser;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PaymentFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -71,16 +51,12 @@ public class AgentAndCcPaymentController implements Serializable {
     @EJB
     private BillNumberGenerator billNumberGenerator;
     private boolean printPreview = false;
-    @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private BillNumberGenerator billNumberBean;
     @Inject
     private SessionController sessionController;
     @Inject
     InstitutionController institutionController;
-    @Inject
-    CommonController commonController;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -89,10 +65,6 @@ public class AgentAndCcPaymentController implements Serializable {
     private InstitutionFacade institutionFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
-    @EJB
-    StaffService staffBean;
-    @EJB
-    PaymentFacade paymentFacade;
     @EJB
     CashTransactionBean cashTransactionBean;
     @EJB
@@ -105,11 +77,7 @@ public class AgentAndCcPaymentController implements Serializable {
     @Inject
     AgentAndCcApplicationController collectingCentreApplicationController;
     @Inject
-    DrawerController drawerController;
-    @Inject
     private PaymentSchemeController paymentSchemeController;
-    @Inject
-    CashBookEntryController cashBookEntryController;
 
     private PatientEncounter patientEncounter;
     private BillItem currentBillItem;
@@ -161,7 +129,7 @@ public class AgentAndCcPaymentController implements Serializable {
         if (getCurrent().getPaymentMethod() == null) {
             return true;
         }
-        
+
         if(getCurrent().getNetTotal()<=0){
             JsfUtil.addErrorMessage("Enter a value");
             return true;
@@ -262,8 +230,8 @@ public class AgentAndCcPaymentController implements Serializable {
             ccDepositSettlingStarted = false;
             return;
         }
-        
-        
+
+
 //        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
         createAndAddBillItemToCcPaymentReceiptBill();
 //        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -482,7 +450,7 @@ public class AgentAndCcPaymentController implements Serializable {
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-//        
+//
         collectingCentreApplicationController.updateCcBalance(
                 getCurrent().getCollectingCentre(),
                 0,
@@ -513,7 +481,7 @@ public class AgentAndCcPaymentController implements Serializable {
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-//        
+//
         collectingCentreApplicationController.updateCcBalance(
                 getCurrent().getCollectingCentre(),
                 0,
@@ -919,14 +887,6 @@ public class AgentAndCcPaymentController implements Serializable {
 
     public void setAgentHistoryFacade(AgentHistoryFacade agentHistoryFacade) {
         this.agentHistoryFacade = agentHistoryFacade;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public double getAmount() {

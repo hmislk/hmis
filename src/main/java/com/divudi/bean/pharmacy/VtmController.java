@@ -9,13 +9,14 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -189,7 +190,7 @@ public class VtmController implements Serializable {
         if (nvtm == null) {
             nvtm = new Vtm();
             nvtm.setName(name);
-            nvtm.setCode(CommonController.nameToCode("vtm_" + name));
+            nvtm.setCode(CommonFunctions.nameToCode("vtm_" + name));
             getFacade().create(nvtm);
         }
         return nvtm;

@@ -9,8 +9,6 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
@@ -55,8 +53,6 @@ import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.lab.PatientReport;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientReportFacade;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,6 +67,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
+import com.divudi.java.CommonFunctions;
 import org.primefaces.model.DefaultStreamedContent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseId;
@@ -117,24 +115,16 @@ public class PatientEncounterController implements Serializable {
     private ItemUsageFacade itemUsageFacade;
     @EJB
     private PrescriptionFacade prescriptionFacade;
-    @EJB
-    private PatientReportFacade prFacade;
-    @EJB
-    BillItemFacade billItemFacade;
 
     /**
      * Controllers
      */
-    @Inject
-    private CommonFunctionsController commonFunctions;
     @Inject
     SessionController sessionController;
     @Inject
     PharmacySaleController pharmacySaleController;
     @Inject
     BillController billController;
-    @Inject
-    CommonController commonController;
     @Inject
     DocumentTemplateController documentTemplateController;
     @Inject
@@ -811,9 +801,9 @@ public class PatientEncounterController implements Serializable {
 //        if (bill.getId()==null){
 //            billFacade.create(bill);
 //        }
-//        
+//
 //        bi.setBill(bill);
-//        
+//
 //        if (bi.getId() == null) {
 //            billItemFacade.create(bi);
 //        }
@@ -1329,9 +1319,9 @@ public class PatientEncounterController implements Serializable {
         String nic = e.getPatient().getPerson().getNic() != null ? e.getPatient().getPerson().getNic() : "";
         String phn = e.getPatient().getPhn() != null ? e.getPatient().getPhn() : "";
 
-        String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
-        String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String visitDate = CommonFunctions.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String weight = CommonFunctions.formatNumber(e.getWeight(), "0.0") + " kg";
+        String height = CommonFunctions.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp() != null ? e.getBp() : "";
         String rr = e.getRespiratoryRate() != null ? e.getRespiratoryRate() + " bpm" : "";
@@ -2446,7 +2436,7 @@ public class PatientEncounterController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = new Date();
-            fromDate = getCommonFunctions().getStartOfDay(fromDate);
+            fromDate = CommonFunctions.getStartOfDay(fromDate);
         }
         return fromDate;
     }
@@ -2458,7 +2448,7 @@ public class PatientEncounterController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = new Date();
-            toDate = getCommonFunctions().getEndOfDay(toDate);
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
@@ -2507,10 +2497,6 @@ public class PatientEncounterController implements Serializable {
         return patientFacade;
     }
 
-    public CommonFunctionsController getCommonFunctions() {
-        return commonFunctions;
-    }
-
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -2549,14 +2535,6 @@ public class PatientEncounterController implements Serializable {
 
     public void setGraphInvestigationItem(InvestigationItem graphInvestigationItem) {
         this.graphInvestigationItem = graphInvestigationItem;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<PatientEncounter> getSelectedItems() {

@@ -4,11 +4,9 @@
  */
 package com.divudi.bean.channel;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.hr.StaffController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -52,7 +50,6 @@ import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.ArrivalRecordFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ServiceSessionFacade;
@@ -186,14 +183,11 @@ public class ChannelReportTemplateController implements Serializable {
     List<StaffBookingWithCount> staffBookingWithCounts;
     List<AreaWithCount> areaWithCount;
     List<StaffWithAreaRow> staffWithAreaRows;
-    CommonFunctions commonFunctions;
     /////
     @EJB
     private BillSessionFacade billSessionFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    @EJB
-    private BillItemFacade billItemFacade;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -203,10 +197,6 @@ public class ChannelReportTemplateController implements Serializable {
     private ChannelBean channelBean;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
-    @Inject
-    StaffController staffController;
     @Inject
     BookingController bookingController;
     @Inject
@@ -465,7 +455,7 @@ public class ChannelReportTemplateController implements Serializable {
 
 //        Bill b = new Bill();
 //        b.setNetTotal(netTotal);
-//        
+//
         rows = new ArrayList<>();
 
         ChannelReportColumnModel br;
@@ -961,9 +951,9 @@ public class ChannelReportTemplateController implements Serializable {
         if (staff != null) {
             j += " and bs.sessionInstance.originatingSession.staff =:staff";
             m.put("staff", staff);
-       
-        }      
-        
+
+        }
+
         if(selectedBillTypeInOBReport != null){
             switch (selectedBillTypeInOBReport) {
                 case "Cancelled":
@@ -1017,7 +1007,7 @@ public class ChannelReportTemplateController implements Serializable {
                     bundle.setLong5(bundle.getLong5() + (sessionInstance.getRefundedPatientCount() != null ? sessionInstance.getRefundedPatientCount() : 0));
                     bundle.setLong6(bundle.getLong6() + (sessionInstance.getRemainingPatientCount() != null ? sessionInstance.getRemainingPatientCount() : 0));
                 }
-                
+
                 if(!bill.isCancelled()){
                     bundle.setLong7(bundle.getLong7()+(long)bill.getNetTotal());
                 }
@@ -2865,7 +2855,7 @@ public class ChannelReportTemplateController implements Serializable {
 //                + " and type(bf.bill)=:class "
 //                + " and bf.fee.feeType =:ft"
 //                + " and bf.bill.createdAt between :fd and :td ";
-//        
+//
 //        m.put("fd", getFromDate());
 //        m.put("td", getToDate());
 //        m.put("ft", FeeType.Service);
@@ -3169,8 +3159,8 @@ public class ChannelReportTemplateController implements Serializable {
         //System.out.println("Inside getChannelUnPaidBillListbyClassTypes");
         HashMap hm = new HashMap();
 
-        Date fd = commonFunctions.getStartOfDay(d);
-        Date td = commonFunctions.getEndOfDay(d);
+        Date fd = CommonFunctions.getStartOfDay(d);
+        Date td = CommonFunctions.getEndOfDay(d);
 
         String sql = "SELECT distinct(bf.bill) FROM BillFee bf "
                 + " WHERE bf.retired = false "
@@ -3278,8 +3268,8 @@ public class ChannelReportTemplateController implements Serializable {
         Date tod = new Date();
 
         if (fd != null && td == null) {
-            frd = commonFunctions.getStartOfDay(fd);
-            tod = commonFunctions.getEndOfDay(fd);
+            frd = CommonFunctions.getStartOfDay(fd);
+            tod = CommonFunctions.getEndOfDay(fd);
         }
 
         sql = "Select distinct(s) From ServiceSession s "
@@ -3348,8 +3338,8 @@ public class ChannelReportTemplateController implements Serializable {
         }
 
         if (d != null) {
-            fd = commonFunctions.getStartOfDay(d);
-            td = commonFunctions.getEndOfDay(d);
+            fd = CommonFunctions.getStartOfDay(d);
+            td = CommonFunctions.getEndOfDay(d);
             sql += " and bi.createdAt between :fd and :td ";
             hm.put("fd", fd);
             hm.put("td", td);
@@ -3397,8 +3387,8 @@ public class ChannelReportTemplateController implements Serializable {
         //System.out.println("Inside getStaffbyClassType");
         HashMap hm = new HashMap();
 
-        Date fd = commonFunctions.getStartOfDay(d);
-        Date td = commonFunctions.getEndOfDay(d);
+        Date fd = CommonFunctions.getStartOfDay(d);
+        Date td = CommonFunctions.getEndOfDay(d);
 
         String sql = "SELECT count(bi.paidForBillFee.bill) FROM BillItem bi "
                 + " WHERE bi.retired = false "
@@ -3786,7 +3776,7 @@ public class ChannelReportTemplateController implements Serializable {
     public List<Staff> getStaffbyClassType(List<BillType> bts, Date fd, Date td) {
         HashMap hm = new HashMap();
 //        String sql = "select p from Staff p where p.retired=false ";
-//        
+//
 //        if(st!=null){
 //            //System.out.println("1");
 //            sql+=" and type(p)=:class ";
@@ -5105,8 +5095,8 @@ public class ChannelReportTemplateController implements Serializable {
                 + " and ar.retired=false "
                 + " order by ar.serviceSession.startingTime ";
 
-        m.put("fd", commonFunctions.getStartOfDay());
-        m.put("td", commonFunctions.getEndOfDay());
+        m.put("fd", CommonFunctions.getStartOfDay());
+        m.put("td", CommonFunctions.getEndOfDay());
 
         arrivalRecords = arrivalRecordFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
@@ -5435,7 +5425,7 @@ public class ChannelReportTemplateController implements Serializable {
 
         }
 
-//    
+//
     }
 
     public void createTotalDoctorAllBTT() {
@@ -5485,7 +5475,7 @@ public class ChannelReportTemplateController implements Serializable {
 
         }
 
-//     
+//
     }
 
     public void createTodayAbsentList() {
@@ -5812,8 +5802,8 @@ public class ChannelReportTemplateController implements Serializable {
         Date nowDate = getFromDate();
 
         while (nowDate.before(getToDate())) {
-            Date fd = commonFunctions.getStartOfDay(nowDate);
-            Date td = commonFunctions.getEndOfDay(nowDate);
+            Date fd = CommonFunctions.getStartOfDay(nowDate);
+            Date td = CommonFunctions.getEndOfDay(nowDate);
             AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
             if (createAgentHistory(fd, td, institution, historyTypes).size() > 0) {
                 ahwd.setDate(nowDate);
@@ -5850,8 +5840,8 @@ public class ChannelReportTemplateController implements Serializable {
         Date nowDate = getFromDate();
 
         while (nowDate.before(getToDate())) {
-            Date fd = commonFunctions.getStartOfDay(nowDate);
-            Date td = commonFunctions.getEndOfDay(nowDate);
+            Date fd = CommonFunctions.getStartOfDay(nowDate);
+            Date td = CommonFunctions.getEndOfDay(nowDate);
             AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
             if (createAgentHistory(fd, td, institution, historyTypes).size() > 0) {
                 ahwd.setDate(nowDate);
@@ -7745,14 +7735,6 @@ public class ChannelReportTemplateController implements Serializable {
         public void setSubTotal(double subTotal) {
             this.subTotal = subTotal;
         }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public ChannelTotal getChannelTotal() {

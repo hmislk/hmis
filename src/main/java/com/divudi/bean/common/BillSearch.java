@@ -54,42 +54,6 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.CC_BILL;
-import static com.divudi.data.BillTypeAtomic.CC_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.CC_BILL_REFUND;
-import static com.divudi.data.BillTypeAtomic.CC_CREDIT_NOTE;
-import static com.divudi.data.BillTypeAtomic.CC_CREDIT_NOTE_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.CC_DEBIT_NOTE;
-import static com.divudi.data.BillTypeAtomic.CC_DEBIT_NOTE_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
-import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
-import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL;
-import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL;
-import static com.divudi.data.BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL;
-import static com.divudi.data.BillTypeAtomic.CHANNEL_REFUND;
-import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL;
-import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_DIRECT_ISSUE;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN;
-import static com.divudi.data.BillTypeAtomic.SUPPLEMENTARY_INCOME;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.OptionScope;
 import com.divudi.data.lab.PatientInvestigationStatus;
@@ -105,7 +69,6 @@ import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -115,8 +78,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -126,7 +87,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.beanutils.BeanUtils;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
 
@@ -203,8 +163,6 @@ public class BillSearch implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
-    private CommonController commonController;
-    @Inject
     private WebUserController webUserController;
     @Inject
     private PharmacyPreSettleController pharmacyPreSettleController;
@@ -224,8 +182,6 @@ public class BillSearch implements Serializable {
     ConfigOptionController configOptionController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
-    @Inject
-    CommonFunctionsController commonFunctionsController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
@@ -1715,7 +1671,7 @@ public class BillSearch implements Serializable {
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-//        
+//
         collectingCentreApplicationController.updateCcBalance(
                 getBill().getInstitution(),
                 rb.getTotalHospitalFee(),
@@ -3198,13 +3154,7 @@ public class BillSearch implements Serializable {
     }
 
     public boolean chackRefundORCancelBill(Bill bill) {
-        boolean result = false;
-        if (commonFunctionsController.dateAfter24Hours(bill.getCreatedAt()).after(new Date())) {
-            result = true;
-        } else {
-            result = false;
-        }
-        return result;
+        return CommonFunctions.dateAfter24Hours(bill.getCreatedAt()).after(new Date());
     }
 
     public String navigateToViewSingleOpdBill() {
@@ -4941,14 +4891,6 @@ public class BillSearch implements Serializable {
 
     public void setOpdPreSettleController(OpdPreSettleController opdPreSettleController) {
         this.opdPreSettleController = opdPreSettleController;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<BillSummery> getBillSummeries() {
