@@ -19,6 +19,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.inject.Inject;
+
+import com.divudi.java.CommonFunctions;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
@@ -106,7 +108,7 @@ public class PaymentGatewayController implements Serializable {
                     + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
                     newPaymentGatewayTransaction.getIdStr(), orderAmount, "LKR", templateForOrderDescription.toString(), "PURCHASE",
-                    commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_status.xhtml", "Sethma");
+                    CommonFunctions.getBaseUrl() + "faces/patient_portal_channelling_payment_status.xhtml", "Sethma");
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
@@ -171,12 +173,12 @@ public class PaymentGatewayController implements Serializable {
                     patientPortalController.completeBooking();
                     try {
                         patientPortalController.setCurrentPaymentGatewayTransaction(newPaymentGatewayTransaction);
-                        FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_successful.xhtml");
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(CommonFunctions.getBaseUrl() + "faces/patient_portal_channelling_payment_successful.xhtml");
                     } catch (IOException e) {
                     }
                 }else{
                     try {
-                        FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_unsuccessful.xhtml");
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(CommonFunctions.getBaseUrl() + "faces/patient_portal_channelling_payment_unsuccessful.xhtml");
                     } catch (IOException e) {
                     }
                 }

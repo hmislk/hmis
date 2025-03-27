@@ -54,6 +54,8 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+
+import com.divudi.java.CommonFunctions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import javax.ws.rs.core.Response;
@@ -190,7 +192,7 @@ public class ApiMembership {
             person.setTitle(Title.valueOf(title));
             person.setName(name);
             person.setSex(Sex.valueOf(sex));
-            person.setDob(getCommonController().getConvertDateTimeFormat24(dob));
+            person.setDob(CommonFunctions.getConvertDateTimeFormat24(dob));
             person.setAddress(address);
             person.setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
             person.setNic(nic);
