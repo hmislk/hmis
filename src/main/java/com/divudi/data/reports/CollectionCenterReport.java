@@ -2,7 +2,8 @@ package com.divudi.data.reports;
 
 public enum CollectionCenterReport implements IReportType {
     ROUTE_ANALYSIS_REPORT("Route Analysis Report"),
-    COLLECTION_CENTER_STATEMENT_REPORT("Collection Centre Statement Report");
+    COLLECTION_CENTER_STATEMENT_REPORT("Collection Centre Statement Report"),
+    COLLECTION_CENTER_REPORTS_PRINT("Collection Centre Reports Print");
 
     private final String displayName;
 

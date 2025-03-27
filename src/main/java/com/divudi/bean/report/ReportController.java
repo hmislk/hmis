@@ -19,6 +19,7 @@ import com.divudi.data.dataStructure.ItemDetailsCell;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.reports.CollectionCenterReport;
 import com.divudi.data.reports.FinancialReport;
+import com.divudi.data.reports.LaboratoryReport;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -1712,93 +1713,95 @@ public class ReportController implements Serializable {
 
 //    Not COrrect
     public void listCcReportPrint() {
-        String jpql;
-        Map<String, Object> params = new HashMap<>();
+        reportTimerController.trackReportExecution(() -> {
+            String jpql;
+            Map<String, Object> params = new HashMap<>();
 
-        jpql = "SELECT i "
-                + " FROM PatientInvestigation i "
-                + " WHERE i.retired = :ret ";
+            jpql = "SELECT i "
+                    + " FROM PatientInvestigation i "
+                    + " WHERE i.retired = :ret ";
 
-        jpql += " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
-        params.put("fd", getFromDate());
-        params.put("td", getToDate());
+            jpql += " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
 
-        if (institution != null) {
-            jpql += " AND i.billItem.bill.creater.institution.name = :orderedInstitution ";
-            params.put("orderedInstitution", institution.getName());
-        }
+            if (institution != null) {
+                jpql += " AND i.billItem.bill.creater.institution.name = :orderedInstitution ";
+                params.put("orderedInstitution", institution.getName());
+            }
 
-        if (department != null) {
-            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
-            params.put("orderedDepartment", department);
-        }
+            if (department != null) {
+                jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+                params.put("orderedDepartment", department);
+            }
 
-        if (site != null) {
-            jpql += " AND i.billItem.bill.department.site=:site";
-            params.put("site", site);
-        }
+            if (site != null) {
+                jpql += " AND i.billItem.bill.department.site=:site";
+                params.put("site", site);
+            }
 
-        if (toInstitution != null) {
-            jpql += " AND i.performInstitution = :peformingInstitution ";
-            params.put("peformingInstitution", toInstitution);
-        }
+            if (toInstitution != null) {
+                jpql += " AND i.performInstitution = :peformingInstitution ";
+                params.put("peformingInstitution", toInstitution);
+            }
 
-        if (toDepartment != null) {
-            jpql += " AND i.performDepartment = :peformingDepartment ";
-            params.put("peformingDepartment", toDepartment);
-        }
+            if (toDepartment != null) {
+                jpql += " AND i.performDepartment = :peformingDepartment ";
+                params.put("peformingDepartment", toDepartment);
+            }
 
-        if (collectingCentre != null) {
-            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
-            params.put("collectionCenter", collectingCentre);
-        } else {
-            jpql += " AND (i.billItem.bill.collectingCentre is not null OR i.billItem.bill.fromInstitution.institutionType=:ccType) ";
-            params.put("ccType", InstitutionType.CollectingCentre);
-        }
+            if (collectingCentre != null) {
+                jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+                params.put("collectionCenter", collectingCentre);
+            } else {
+                jpql += " AND (i.billItem.bill.collectingCentre is not null OR i.billItem.bill.fromInstitution.institutionType=:ccType) ";
+                params.put("ccType", InstitutionType.CollectingCentre);
+            }
 
-        if (route != null) {
-            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
-            params.put("route", getRoute());
-        }
+            if (route != null) {
+                jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+                params.put("route", getRoute());
+            }
 
-        if (phn != null && !phn.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.patient.phn=:phn ";
-            params.put("phn", phn);
-        }
+            if (phn != null && !phn.trim().isEmpty()) {
+                jpql += " AND i.billItem.bill.patient.phn=:phn ";
+                params.put("phn", phn);
+            }
 
-        if (doctor != null) {
-            jpql += " AND i.billItem.bill.referredBy.person.name = :referringDoctor ";
-            params.put("referringDoctor", doctor.getPerson().getName());
-        }
+            if (doctor != null) {
+                jpql += " AND i.billItem.bill.referredBy.person.name = :referringDoctor ";
+                params.put("referringDoctor", doctor.getPerson().getName());
+            }
 
-        if (investigation != null) {
-            jpql += " AND i.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
-        }
+            if (investigation != null) {
+                jpql += " AND i.investigation = :investigation ";
+                params.put("investigation", getInvestigation());
+            }
 
-        if (category != null) {
-            jpql += " AND i.investigation.category = :cat ";
-            params.put("cat", category);
-        }
+            if (category != null) {
+                jpql += " AND i.investigation.category = :cat ";
+                params.put("cat", category);
+            }
 
-        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " AND i.billItem.bill.deptId = :iNo ";
-            params.put("iNo", invoiceNumber);
-        }
+            if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+                jpql += " AND i.billItem.bill.deptId = :iNo ";
+                params.put("iNo", invoiceNumber);
+            }
 
-        if (patientInvestigationStatus != null) {
-            jpql += " AND i.status = :patientInvestigationStatus ";
-            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
-        }
+            if (patientInvestigationStatus != null) {
+                jpql += " AND i.status = :patientInvestigationStatus ";
+                params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+            }
 
-        jpql += " ORDER BY i.id DESC";
+            jpql += " ORDER BY i.id DESC";
 
-        params.put("ret", false);
+            params.put("ret", false);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            System.out.println("jpql = " + jpql);
 
-        patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        }, CollectionCenterReport.COLLECTION_CENTER_REPORTS_PRINT, sessionController.getLoggedUser());
     }
 
     public void processCollectingCentreStatementReportNew() {
