@@ -1,5 +1,23 @@
 package com.divudi.data;
 
+import static com.divudi.data.PaymentMethod.Agent;
+import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
+import static com.divudi.data.PaymentMethod.Credit;
+import static com.divudi.data.PaymentMethod.IOU;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.data.PaymentMethod.None;
+import static com.divudi.data.PaymentMethod.OnCall;
+import static com.divudi.data.PaymentMethod.OnlineSettlement;
+import static com.divudi.data.PaymentMethod.PatientDeposit;
+import static com.divudi.data.PaymentMethod.PatientPoints;
+import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.Staff_Welfare;
+import static com.divudi.data.PaymentMethod.Voucher;
+import static com.divudi.data.PaymentMethod.YouOweMe;
+import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.entity.*;
 import com.divudi.entity.channel.SessionInstance;
 
@@ -266,8 +284,6 @@ public class IncomeBundle implements Serializable {
         }
     }
 
-
-
     public void generatePaymentDetailsForBills() {
         for (IncomeRow r : getRows()) {
             Bill b = r.getBill();
@@ -325,6 +341,109 @@ public class IncomeBundle implements Serializable {
                         break;
                     case MultiplePaymentMethods:
                         calculateBillPaymentValuesFromPayments(r);
+                        break;
+                    case OnlineSettlement:
+                        r.setOnlineSettlementValue(b.getNetTotal());
+                        break;
+                    case PatientDeposit:
+                        r.setPatientDepositValue(b.getNetTotal());
+                        break;
+                    case PatientPoints:
+                        r.setPatientPointsValue(b.getNetTotal());
+                        break;
+                    case Slip:
+                        r.setSlipValue(b.getNetTotal());
+                        break;
+                    case Staff:
+                        r.setStaffValue(b.getNetTotal());
+                        break;
+                    case Staff_Welfare:
+                        r.setStaffWelfareValue(b.getNetTotal());
+                        break;
+                    case Voucher:
+                        r.setVoucherValue(b.getNetTotal());
+                        break;
+                    case ewallet:
+                        r.setEwalletValue(b.getNetTotal());
+                        break;
+                    case YouOweMe:
+                        break;
+                }
+
+            }
+
+        }
+        populateSummaryRow();
+    }
+
+    public void generatePaymentDetailsForBillsAndBatchBills() {
+        for (IncomeRow r : getRows()) {
+            Bill b = r.getBill();
+            Bill bb = r.getBatchBill();
+            Bill rb = r.getReferanceBill();
+
+            if (b == null) {
+                continue;
+            }
+
+            r.setGrossTotal(b.getTotal());
+            r.setNetTotal(b.getNetTotal());
+            r.setDiscount(b.getDiscount());
+            r.setServiceCharge(b.getMargin());
+            r.setActualTotal(b.getTotal() - b.getServiceCharge());
+
+            PaymentMethod pm = null;
+            if (bb != null) {
+                pm = bb.getPaymentMethod();
+            } else {
+                pm = b.getPaymentMethod();
+            }
+
+            if (pm == null) {
+                r.setCreditValue(b.getNetTotal());
+                if (r.getBill().getPatientEncounter() != null) {
+                    r.setOpdCreditValue(0);
+                    r.setInpatientCreditValue(b.getNetTotal());
+                } else {
+                    r.setOpdCreditValue(0);
+                    r.setInpatientCreditValue(0);
+                    r.setNoneValue(b.getNetTotal());
+                }
+
+            } else {
+                switch (pm) {
+                    case Agent:
+                        r.setAgentValue(b.getNetTotal());
+                        break;
+                    case Card:
+                        r.setCardValue(b.getNetTotal());
+                        break;
+                    case Cash:
+                        r.setCashValue(b.getNetTotal());
+                        break;
+                    case Cheque:
+                        r.setChequeValue(b.getNetTotal());
+                        break;
+                    case IOU:
+                        r.setIouValue(b.getNetTotal());
+                        break;
+                    case None:
+                        break;
+                    case OnCall:
+                        r.setOnCallValue(b.getNetTotal());
+                        break;
+                    case Credit:
+                        r.setCreditValue(b.getNetTotal());
+                        if (r.getBill().getPatientEncounter() != null) {
+                            r.setOpdCreditValue(0);
+                            r.setInpatientCreditValue(b.getNetTotal());
+                        } else {
+                            r.setOpdCreditValue(b.getNetTotal());
+                            r.setInpatientCreditValue(0);
+                        }
+                        break;
+                    case MultiplePaymentMethods:
+                        calculateBillAndBatchBillPaymentValuesFromPayments(r);
                         break;
                     case OnlineSettlement:
                         r.setOnlineSettlementValue(b.getNetTotal());
@@ -433,6 +552,104 @@ public class IncomeBundle implements Serializable {
                         break;
                     default:
                         r.setNoneValue(r.getNoneValue() + p.getPaidValue());
+                }
+            }
+        }
+    }
+
+    private void calculateBillAndBatchBillPaymentValuesFromPayments(IncomeRow r) {
+        // Validate the row and Bill.
+        if (r == null || r.getBill() == null || r.getBill().getPaymentMethod() == null
+                || r.getBill().getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
+            return;
+        }
+
+        // Identify the batch bill and the individual bill.
+        Bill batchBill = r.getBatchBill();
+        Bill individualBill = r.getBill();
+
+        // Net totals for ratio calculation (if needed).
+        double netTotalOfBatchBill = batchBill != null ? batchBill.getNetTotal() : 0.0;
+        double netTotalOfIndividualBill = individualBill.getNetTotal();
+
+        // Determine the ratio for allocating batch-bill payments to the individual bill.
+        // If there's no batch bill or the batch bill total is zero, we use a ratio of 1.0 (i.e., full amount).
+        double ratio = 1.0;
+        if (batchBill != null && netTotalOfBatchBill != 0.0) {
+            ratio = netTotalOfIndividualBill / netTotalOfBatchBill;
+        }
+
+        // Retrieve the associated payments.
+        List<Payment> payments = r.getPayments();
+        if (payments == null || payments.isEmpty()) {
+            return;
+        }
+
+        // Process each payment, allocating its value according to the ratio if a batch bill is present.
+        for (Payment p : payments) {
+            double allocatedValue = p.getPaidValue() * ratio;
+
+            if (p.getPaymentMethod() == null) {
+                r.setNoneValue(r.getNoneValue() + allocatedValue);
+            } else {
+                switch (p.getPaymentMethod()) {
+                    case Agent:
+                        r.setAgentValue(r.getAgentValue() + allocatedValue);
+                        break;
+                    case Card:
+                        r.setCardValue(r.getCardValue() + allocatedValue);
+                        break;
+                    case Cash:
+                        r.setCashValue(r.getCashValue() + allocatedValue);
+                        break;
+                    case Cheque:
+                        r.setChequeValue(r.getChequeValue() + allocatedValue);
+                        break;
+                    case Credit:
+                        r.setCreditValue(r.getCreditValue() + allocatedValue);
+                        if (individualBill.getPatientEncounter() != null) {
+                            r.setInpatientCreditValue(r.getInpatientCreditValue() + allocatedValue);
+                        } else {
+                            r.setOpdCreditValue(r.getOpdCreditValue() + allocatedValue);
+                        }
+                        break;
+                    case IOU:
+                        r.setIouValue(r.getIouValue() + allocatedValue);
+                        break;
+                    case OnCall:
+                        r.setOnCallValue(r.getOnCallValue() + allocatedValue);
+                        break;
+                    case OnlineSettlement:
+                        r.setOnlineSettlementValue(r.getOnlineSettlementValue() + allocatedValue);
+                        break;
+                    case PatientDeposit:
+                        r.setPatientDepositValue(r.getPatientDepositValue() + allocatedValue);
+                        break;
+                    case PatientPoints:
+                        r.setPatientPointsValue(r.getPatientPointsValue() + allocatedValue);
+                        break;
+                    case Slip:
+                        r.setSlipValue(r.getSlipValue() + allocatedValue);
+                        break;
+                    case Staff:
+                        r.setStaffValue(r.getStaffValue() + allocatedValue);
+                        break;
+                    case Staff_Welfare:
+                        r.setStaffWelfareValue(r.getStaffWelfareValue() + allocatedValue);
+                        break;
+                    case Voucher:
+                        r.setVoucherValue(r.getVoucherValue() + allocatedValue);
+                        break;
+                    case ewallet:
+                        r.setEwalletValue(r.getEwalletValue() + allocatedValue);
+                        break;
+                    case YouOweMe:
+                    case None:
+                    case MultiplePaymentMethods:
+                        // No special action needed here.
+                        break;
+                    default:
+                        r.setNoneValue(r.getNoneValue() + allocatedValue);
                 }
             }
         }
