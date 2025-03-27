@@ -11,9 +11,6 @@ import java.util.List;
 @ApplicationScoped
 public class CommonFunctionsProxy {
 
-    public CommonFunctionsProxy() {
-    }
-
     public String convertToWordJSF(double number) {
         return CommonFunctions.convertToWord(number);
     }

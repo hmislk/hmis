@@ -6,7 +6,6 @@
 package com.divudi.ws.fhir;
 
 import com.divudi.bean.common.ApiKeyController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -62,8 +61,6 @@ public class Fhir {
     @EJB
     private BillItemFacade billItemFacade;
 
-    @Inject
-    private CommonController commonController;
     @Inject
     ApiKeyController apiKeyController;
 
