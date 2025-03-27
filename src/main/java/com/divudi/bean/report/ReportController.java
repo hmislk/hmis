@@ -1124,38 +1124,40 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectionCenterBalance() {
-        bundle = new ReportTemplateRowBundle();
-        String jpql;
-        Map<String, Object> parameters = new HashMap<>();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
+            String jpql;
+            Map<String, Object> parameters = new HashMap<>();
 
-        // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
-        jpql = "select new com.divudi.data.ReportTemplateRow(ah) "
-                + " from AgentHistory ah "
-                + " where ah.retired <> :ret "
-                + " and ah.createdAt < :hxDate "
-                + " and ah.agency.institutionType=:insType "
-                + " and ah.id = (select max(subAh.id) "
-                + " from AgentHistory subAh "
-                + " where subAh.retired <> :ret "
-                + " and subAh.agency = ah.agency "
-                + " and subAh.agency.institutionType=:insType  "
-                + " and subAh.createdAt < :hxDate)";
+            // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
+            jpql = "select new com.divudi.data.ReportTemplateRow(ah) "
+                    + " from AgentHistory ah "
+                    + " where ah.retired <> :ret "
+                    + " and ah.createdAt < :hxDate "
+                    + " and ah.agency.institutionType=:insType "
+                    + " and ah.id = (select max(subAh.id) "
+                    + " from AgentHistory subAh "
+                    + " where subAh.retired <> :ret "
+                    + " and subAh.agency = ah.agency "
+                    + " and subAh.agency.institutionType=:insType  "
+                    + " and subAh.createdAt < :hxDate)";
 
-        Date nextDayStart = CommonFunctions.getNextDateStart(getFromDate());
+            Date nextDayStart = CommonFunctions.getNextDateStart(getFromDate());
 
-        parameters.put("ret", true);
-        parameters.put("hxDate", nextDayStart);  // Ensure this is the first millisecond of the next day
-        parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
+            parameters.put("ret", true);
+            parameters.put("hxDate", nextDayStart);  // Ensure this is the first millisecond of the next day
+            parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
 
-        if (collectingCentre != null) {
-            jpql += " and ah.agency = :cc";
-            parameters.put("cc", collectingCentre);
-        }
+            if (collectingCentre != null) {
+                jpql += " and ah.agency = :cc";
+                parameters.put("cc", collectingCentre);
+            }
 
-        // Fetch the results and convert to ReportTemplateRow
-        List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+            // Fetch the results and convert to ReportTemplateRow
+            List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        bundle.setReportTemplateRows(results);
+            bundle.setReportTemplateRows(results);
+        }, LaboratoryReport.SAMPLE_CARRIER_REPORT, sessionController.getLoggedUser());
     }
 
     public void processCurrentCollectionCenterBalance() {
