@@ -8,7 +8,6 @@ import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.channel.ChannelReportController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
 
@@ -92,8 +91,6 @@ public class PracticeBookingController implements Serializable {
     private ChannelSearchController channelSearchController;
     @Inject
     private PatientController patientController;
-    @Inject
-    CommonController commonController; 
     @Inject
     private OpdBillController opdBillController;
     ///////////////////
@@ -583,7 +580,7 @@ public class PracticeBookingController implements Serializable {
         lst = getServiceSessionFacade().findByJpql(jpql, m);
         return lst;
     }
-    
+
     public void listCompleteAndToCompleteBillSessions() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -591,15 +588,15 @@ public class PracticeBookingController implements Serializable {
 
         listCompletedBillSessions();
         listToCompleteBillSessions();
-        
-        
+
+
     }
 
     List<PatientEncounter> encounters;
 
     public void listPatientEncounters() {
         Date startTime = new Date();
-        
+
         String sql = "Select pe From PatientEncounter pe "
                 + " where pe.retired=false "
                 + " and pe.patientEncounterType=:t "
@@ -612,8 +609,8 @@ public class PracticeBookingController implements Serializable {
         PatientEncounter pe = new PatientEncounter();
 //        pe.getBillSession().getSessionDate();
         encounters = patientEncounterFacade.findByJpql(sql, hh, TemporalType.DATE);
-        
-        
+
+
     }
 
     public List<PatientEncounter> getEncounters() {
@@ -699,7 +696,7 @@ public class PracticeBookingController implements Serializable {
         }
         return selectedServiceSession;
     }
-    
+
     public void addToQueue() {
         if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null) {
             JsfUtil.addErrorMessage("Please select a patient");
@@ -718,7 +715,7 @@ public class PracticeBookingController implements Serializable {
         listBillSessions();
         JsfUtil.addSuccessMessage("Added to the queue");
     }
-    
+
     private BillItem addToBilledItem(Bill b) {
         BillItem bi = new BillItem();
         bi.setCreatedAt(new Date());
@@ -963,14 +960,6 @@ public class PracticeBookingController implements Serializable {
 
     public void setPharmacySaleController(PharmacySaleController pharmacySaleController) {
         this.pharmacySaleController = pharmacySaleController;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public OpdBillController getOpdBillController() {

@@ -57,8 +57,6 @@ public class AppointmentController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    @Inject
-    CommonController commonController;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -225,7 +223,7 @@ public class AppointmentController implements Serializable {
     }
 
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getNewPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -592,7 +590,7 @@ public class AppointmentController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             AppointmentController controller = (AppointmentController) facesContext.getApplication().getELResolver().
@@ -625,10 +623,6 @@ public class AppointmentController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + Appointment.class.getName());
             }
         }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
     }
 
 }

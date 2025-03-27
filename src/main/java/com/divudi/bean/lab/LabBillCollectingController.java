@@ -119,7 +119,7 @@ public class LabBillCollectingController implements Serializable {
     private Patient tmpPatient;
 
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getNewPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 

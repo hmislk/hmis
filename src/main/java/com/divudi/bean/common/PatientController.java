@@ -61,7 +61,7 @@ import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.java.CommonFunctions;
 import com.divudi.service.MembershipService;
-import com.google.protobuf.Descriptors;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -155,8 +155,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     PatientEncounterController patientEncounterController;
     @Inject
     OpticianSaleController opticianSaleController;
-    @Inject
-    private CommonController commonController;
     @Inject
     private SecurityController securityController;
     @Inject
@@ -855,7 +853,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigatePatientAdmit() {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
         }
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
@@ -868,7 +866,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToConvertNonBhtToBht(Admission nonBhtAd) {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
         }
         ad.setPatient(nonBhtAd.getPatient());
         admissionController.setCurrentNonBht(nonBhtAd);
@@ -2172,7 +2170,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         familyMembers = membershipService.fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
     }
-    
+
     public String navigateToManageFamily(Family family) {
         if (family == null) {
             JsfUtil.addErrorMessage("No Family is Selected");
@@ -2288,7 +2286,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         String membershipNumberWithDigitsOnly = CommonFunctions.getDigitsOnlyByRemovingWhitespacesAndNonDigitCharacters(paramMembershipNumber);
-        Long membershipNumberLong = CommonFunctions.convertStringToLong(membershipNumberWithDigitsOnly);
+        Long membershipNumberLong = CommonFunctions.convertStringToLongOrNull(membershipNumberWithDigitsOnly);
         return fetchFamilyFromMembershipNumber(membershipNumberLong, paramMembershipScheme, phoneNumber);
     }
 
@@ -2764,7 +2762,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     @Deprecated
     public void dateChangeListen() {
-        getCurrent().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getCurrent().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
     }
 
     @Deprecated
@@ -3954,14 +3952,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setMembershipScheme(MembershipScheme membershipScheme) {
         this.membershipScheme = membershipScheme;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public String getPassword() {

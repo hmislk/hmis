@@ -69,7 +69,7 @@ import org.primefaces.model.ScheduleModel;
 /**
  *
  * @author Dr M H B Ariyaratne
- * 
+ *
  */
 @Named
 @SessionScoped
@@ -372,8 +372,8 @@ public class ClinicScheduleController implements Serializable {
         ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         String s;
 
-        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
-        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
 

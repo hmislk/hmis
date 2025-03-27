@@ -183,8 +183,28 @@
                             </p:selectOneMenu>
                             
                             <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" for="acStaff" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acStaff" 
+                                inputStyleClass="w-100"
+                                value="#{laborataryReportController.webUser}" 
+                                var="user"
+                                maxResults="15"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" style="padding: 6px;">
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name"  style="padding: 6px;">
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
                             
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 

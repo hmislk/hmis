@@ -5,8 +5,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.HistoryType;
@@ -16,7 +14,8 @@ import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Stock;
+import com.divudi.java.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,14 +44,12 @@ public class StockHistoryController implements Serializable {
     private StockHistoryFacade facade;
     @EJB
     StockHistoryRecorder stockHistoryRecorder;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
-    @Inject
-    CommonController commonController;
 
     @Inject
     SessionController sessionController;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private StockHistory current;
     private List<StockHistory> pharmacyStockHistories;
@@ -66,12 +63,12 @@ public class StockHistoryController implements Serializable {
     private double totalStockSaleValue;
     private double totalStockPurchaseValue;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public StockHistoryController() {
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToViewStockHistory() {
         if (current == null) {
@@ -90,7 +87,7 @@ public class StockHistoryController implements Serializable {
         return "/analytics/pharmacy/stock_history?faces-redirect=true";
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public void fillHistoryAvailableDays() {
         String jpql;
@@ -219,7 +216,7 @@ public class StockHistoryController implements Serializable {
         return "/pharmacy/pharmacy_department_stock_history?faces-redirect=true";
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Date getHistoryDate() {
         return historyDate;
@@ -231,7 +228,7 @@ public class StockHistoryController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctionsController.getFirstDayOfYear(new Date());
+            fromDate = CommonFunctions.getFirstDayOfYear(new Date());
 //            fillHistoryAvailableDays();
         }
         return fromDate;
@@ -243,7 +240,7 @@ public class StockHistoryController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = CommonFunctionsController.getLastDayOfYear(new Date());
+            toDate = CommonFunctions.getLastDayOfYear(new Date());
 //            fillHistoryAvailableDays();
         }
         return toDate;
@@ -296,14 +293,6 @@ public class StockHistoryController implements Serializable {
         this.totalStockPurchaseValue = totalStockPurchaseValue;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public DepartmentType getDepartmentType() {
         return departmentType;
     }
@@ -324,7 +313,7 @@ public class StockHistoryController implements Serializable {
         this.current = current;
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Inner Classes">
     @FacesConverter(forClass = StockHistory.class)
     public static class StockHistoryConverter implements Converter {
@@ -373,6 +362,6 @@ public class StockHistoryController implements Serializable {
             }
         }
     }
-    // </editor-fold>  
+    // </editor-fold>
 
 }

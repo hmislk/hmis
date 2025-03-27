@@ -205,8 +205,6 @@ public class DataAdministrationController implements Serializable {
     BillSearch billSearch;
     @Inject
     InstitutionController institutionController;
-    @Inject
-    CommonFunctionsController commonFunctionsController;
 
     @EJB
     ItemFacade itemFacade;
@@ -2109,7 +2107,7 @@ public class DataAdministrationController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctionsController.getStartOfMonth(new Date());
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -2120,7 +2118,7 @@ public class DataAdministrationController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctionsController.getEndOfMonth(new Date());
+            toDate = CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
