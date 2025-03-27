@@ -6,7 +6,6 @@
 package com.divudi.ws.common;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
@@ -101,8 +100,6 @@ public class ApiMembership {
     SessionController sessionController;
     @Inject
     InstitutionController institutionController;
-    @Inject
-    CommonController commonController;
     @Inject
     PatientController patientController;
     @Inject
@@ -744,14 +741,6 @@ public class ApiMembership {
 
     public void setInstitutionFacade(InstitutionFacade institutionFacade) {
         this.institutionFacade = institutionFacade;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public PatientFacade getPatientFacade() {

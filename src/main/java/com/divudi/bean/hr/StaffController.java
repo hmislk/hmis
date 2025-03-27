@@ -8,9 +8,7 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.entity.FormItemValue;
-import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.InvestigationItemType;
@@ -84,10 +82,6 @@ public class StaffController implements Serializable {
     HrReportController hrReportController;
     @Inject
     StaffSalaryController staffSalaryController;
-    @Inject
-    CommonController commonController;
-    @Inject
-    PersonController personController;
 
     ////
     @EJB
@@ -1741,14 +1735,6 @@ public class StaffController implements Serializable {
 
     public String navigateToManageStaffIndex() {
         return "/admin/staff/admin_manage_staff_index.xhtml?faces-redirect=true";
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }
