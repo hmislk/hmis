@@ -13,7 +13,7 @@
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputText styleClass="fas fa-search" />
-                            <h:outputLabel value="Agency Refferance Book " class="mx-4"/>                          
+                            <h:outputLabel value="Agency Refferance Book " class="mx-4"/>
                         </f:facet>
 
                         <div class="row">
@@ -21,42 +21,42 @@
                                 <div class="form d-flex flex-column" >
                                     <h:panelGroup id="searchKeyword">
                                         <h:outputLabel value="From Date"/>
-                                        <p:calendar id="fromDate" 
-                                                    value="#{agentReferenceBookController.frmDate}" 
-                                                    navigator="false" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                    styleClass="dateTimePicker" 
-                                                    class="w-100" 
+                                        <p:calendar id="fromDate"
+                                                    value="#{agentReferenceBookController.frmDate}"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="dateTimePicker"
+                                                    class="w-100"
                                                     inputStyleClass="form-control"
-                                                    maxdate="#{commonController.endOfDayOnCurrentDate}">      
+                                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
                                         </p:calendar>
                                         <p:spacer height="10" width="5" ></p:spacer>
 
                                         <h:outputLabel value="To Date"/>
                                         <p:calendar id="toDate"
                                                     value="#{agentReferenceBookController.toDate}"
-                                                    navigator="false" 
+                                                    navigator="false"
                                                     styleClass="dateTimePicker"
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                     class="w-100"
-                                                    inputStyleClass="form-control">                                                                              
+                                                    inputStyleClass="form-control">
                                         </p:calendar>
                                         <p:spacer height="10" width="5" ></p:spacer>
 
                                         <hr/>
-                                        
+
 
                                     </h:panelGroup>
 
                                     <div class="d-grid gap-2 mt-2">
-                                        <p:commandButton 
+                                        <p:commandButton
                                             icon="fas fa-search"
-                                            id="btnSearch" 
-                                            ajax="false" 
-                                            value="Search" 
+                                            id="btnSearch"
+                                            ajax="false"
+                                            value="Search"
                                             class="ui-button-success"
                                             action="#{agentReferenceBookController.searchReferenceBooks()}" />
-                                        
+
                                     </div>
 
                                 </div>
@@ -65,49 +65,49 @@
                             <div class="col-md-10">
                                 <h:outputText value="#{agentReferenceBookController.agentRefBookList.size()}"/>
                                 <p:defaultCommand target="btnSearch" />
-                                <p:dataTable rowIndexVar="i" 
-                                             id="tblrefBook" 
-                                             value="#{agentReferenceBookController.agentRefBookList}" 
-                                             var="refBook"  
-                                             style="min-width: 100%;"  
+                                <p:dataTable rowIndexVar="i"
+                                             id="tblrefBook"
+                                             value="#{agentReferenceBookController.agentRefBookList}"
+                                             var="refBook"
+                                             style="min-width: 100%;"
                                              rows ="10"
                                              rowKey="#{refBook.id}"
                                              paginator="true"
                                              paginatorPosition="bottom"
                                              rowsPerPageTemplate="5,10,25,50"
                                              >
-                                    
+
                                     <p:column headerText="Book No" filterBy="#{refBook.strbookNumber}" filterMatchMode="contains"
                                               sortBy="#{refBook.id}"
                                               styleClass="alignTop" width="150">
                                         <h:outputLabel value="#{refBook.strbookNumber}"/>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Agency Code" filterBy="#{refBook.institution.code}" filterMatchMode="contains"
                                               sortBy="#{refBook.institution.code}"
                                               styleClass="alignTop" width="150">
                                         <h:outputLabel value="#{refBook.institution.code}"/>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Agency Name" filterBy="#{refBook.institution.name}" filterMatchMode="contains"
                                               sortBy="#{refBook.institution.name}"
                                               styleClass="alignTop" width="150">
                                         <h:outputLabel value="#{refBook.institution.name}"/>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Book Starting Reference No" filterBy="#{bill.startingReferenceNumber}" filterMatchMode="contains"
                                               sortBy="#{refBook.id}"
                                               styleClass="alignTop" width="150">
                                         <h:outputLabel value="#{refBook.startingReferenceNumber}"/>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Book Ending Reference Number" filterBy="#{bill.endingReferenceNumber}" filterMatchMode="contains"
                                               sortBy="#{refBook.id}"
                                               styleClass="alignTop" width="150">
                                         <h:outputLabel value="#{refBook.endingReferenceNumber}"/>
                                     </p:column>
-                                    
-                                                     
+
+
                                 </p:dataTable>
                             </div>
                         </div>

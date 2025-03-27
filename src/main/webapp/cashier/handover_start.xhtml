@@ -81,7 +81,7 @@
                                             <p:selectOneMenu value="#{financialTransactionController.cashbookDate}" styleClass="w-100" converter="longDateConverter">
                                                 <f:selectItem itemLabel="Select Date" ></f:selectItem>
                                                 <f:selectItems value="#{financialTransactionController.cashbookDates}" var="date"
-                                                               itemLabel="#{commonController.formatToLongDate(date, sessionController.applicationPreference.longDateFormat)}"
+                                                               itemLabel="#{commonFunctionsProxy.formatToLongDate(date, sessionController.applicationPreference.longDateFormat)}"
                                                                itemValue="#{date}" />
                                             </p:selectOneMenu>
                                         </h:panelGroup>

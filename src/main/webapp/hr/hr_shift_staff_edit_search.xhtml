@@ -5,7 +5,7 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                
+
                 xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
@@ -16,7 +16,7 @@
                     <p:panel>
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar value="#{staffShiftController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">                                    
+                            <p:calendar value="#{staffShiftController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
@@ -50,12 +50,12 @@
                         </p:commandButton>
                     </p:panel>
                     <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
-                        <p:dataTable value="#{staffShiftController.staffShifts}" var="l" 
+                        <p:dataTable value="#{staffShiftController.staffShifts}" var="l"
                                      rowStyleClass="#{l.retired eq true ? 'redText':''}"
                                      scrollable="true"
                                      scrollHeight="300" id="tb1">
                             <f:facet name="header">
-                                
+
                                 <h:outputLabel value="Staff Shift"/><br/>
                                 <h:outputLabel value="  From : "  />
                                 <h:outputLabel  value="#{staffShiftController.fromDate}" >
@@ -63,7 +63,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel/>
                                 <h:outputLabel/>
-                                <h:outputLabel value="  To : "/> 
+                                <h:outputLabel value="  To : "/>
                                 <h:outputLabel  value="#{staffShiftController.toDate}">
                                     <f:convertDateTime pattern="dd MM yy "/>
                                 </h:outputLabel><br/>
@@ -125,7 +125,7 @@
                             <f:facet name="footer">
                                 <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                 <p:outputLabel value="Print At : " />
-                                <p:outputLabel value="#{commonController.currentDateTime}" >
+                                <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                     <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                 </p:outputLabel>
                             </f:facet>
@@ -135,6 +135,6 @@
 
             </p:panel>
         </h:form>
-    </ui:define> 
+    </ui:define>
 
 </ui:composition>

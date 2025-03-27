@@ -18,19 +18,19 @@
                     <div class="col-6">
                         <p:panel header="Staff"  id="staff">
                             <h:outputLabel value="Select Staff"/>
-                            <p:autoComplete class="w-100 my-1" inputStyleClass="w-100"  forceSelection="true" 
+                            <p:autoComplete class="w-100 my-1" inputStyleClass="w-100"  forceSelection="true"
                                             value="#{staffChangeController.staff}"
-                                            completeMethod="#{staffController.completeStaffCode}"  
+                                            completeMethod="#{staffController.completeStaffCode}"
                                             var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            >   
-                                <f:ajax event="itemSelect" execute="@this" render="lst det" listener="#{staffChangeController.findBasic(commonController.currentDateTime)}" />
+                                            >
+                                <f:ajax event="itemSelect" execute="@this" render="lst det" listener="#{staffChangeController.findBasic(commonFunctionsProxy.currentDateTime)}" />
                                 <p:column headerText="Name">
                                     #{mys.person.name}
                                 </p:column>
                                 <p:column headerText="Code">
                                     #{mys.code}
                                 </p:column>
-                            </p:autoComplete>   
+                            </p:autoComplete>
                         </p:panel>
 
                         <p:panel>
@@ -75,10 +75,10 @@
                                 <p:selectOneMenu class="w-100" value="#{staffChangeController.staff.designation}" >
                                     <f:selectItem itemLabel="Please Staff Designation"/>
                                     <f:selectItems value="#{designationController.items}" var="ii" itemValue="#{ii}" itemLabel="#{ii.name}"/>
-                                </p:selectOneMenu>   
+                                </p:selectOneMenu>
                                 <h:outputLabel value="Staff Basic"/>
                                 <h:outputLabel class="mx-2" value="#{staffChangeController.staff.basic}"/>
-                            </h:panelGrid>  
+                            </h:panelGrid>
 
                         </p:panel>
                     </div>
@@ -103,7 +103,7 @@
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j1.toDate}">
                                 <f:convertDateTime pattern="yyyy MMM dd"/>
-                            </h:outputLabel>                            
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Department">
                             <h:outputLabel value="#{j1.department.name}"/>
@@ -125,7 +125,7 @@
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j2.toDate}">
                                 <f:convertDateTime pattern="yyyy MMM dd"/>
-                            </h:outputLabel>  
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Employee Status">
                             <h:outputLabel value="#{j2.employeeStatus}"/>
@@ -147,14 +147,14 @@
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j3.toDate}">
                                 <f:convertDateTime pattern="yyyy MMM dd"/>
-                            </h:outputLabel>  
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Category">
                             <h:outputLabel value="#{j3.staffCategory.name}"/>
                         </p:column>
                         <p:column headerText="Change User">
                             <h:outputLabel value="#{j3.creater.webUserPerson.name}"/>
-                        </p:column>                        
+                        </p:column>
                     </p:dataTable>
 
                     <p:dataTable  value="#{staffChangeController.staff.staffEmployment.staffGrades}" var="j4">
@@ -169,7 +169,7 @@
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j4.toDate}">
                                 <f:convertDateTime pattern="yyyy MMM dd"/>
-                            </h:outputLabel>  
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Grade">
                             <h:outputLabel value="#{j4.grade.name}"/>
@@ -191,7 +191,7 @@
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j5.toDate}">
                                 <f:convertDateTime pattern="yyyy MMM dd"/>
-                            </h:outputLabel>  
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Designation">
                             <h:outputLabel value="#{j5.designation.name}"/>
@@ -213,14 +213,14 @@
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j6.toDate}">
                                 <f:convertDateTime pattern="yyyy MMM dd"/>
-                            </h:outputLabel>  
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Basic">
                             <h:outputLabel value="#{j6.basic.staffPaySheetComponentValue}"/>
                         </p:column>
                         <p:column headerText="Change User">
                             <h:outputLabel value="#{j6.creater.webUserPerson.name}"/>
-                        </p:column>                        
+                        </p:column>
                     </p:dataTable>
 
                 </p:panelGrid>
