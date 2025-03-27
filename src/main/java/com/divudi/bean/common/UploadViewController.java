@@ -10,6 +10,8 @@ import javax.ejb.EJB;
 import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
+
+import com.divudi.java.CommonFunctions;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -59,7 +61,7 @@ public class UploadViewController {
     }
 
     private Upload findCategoryUploadById(String id) {
-        Long lid = CommonController.convertStringToLong(id);
+        Long lid = CommonFunctions.convertStringToLongOrZero(id);
         String jpql = "select u "
                 + " from Upload u "
                 + " where u.retired=:ret "
@@ -73,7 +75,7 @@ public class UploadViewController {
 
     public String getReportTemplate(String id) {
         Upload u = findCategoryUploadById(id);
-        
+
         String url = "";
         if (u == null) {
 

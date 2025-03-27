@@ -37,7 +37,6 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.persistence.TemporalType;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 import javax.inject.Inject;
 
 /**
@@ -69,7 +68,7 @@ public class BillNumberGenerator {
     private String getLockKey(Institution institution, Department toDepartment, BillType billType) {
         return institution.getId() + "-" + toDepartment.getId() + "-" + billType.name();
     }
-    
+
     private String getLockKey(Institution institution, Department toDepartment, BillTypeAtomic billType, PaymentMethod paymentMethod) {
         return institution.getId() + "-" + toDepartment.getId() + "-" + billType.name() + "-" + paymentMethod.getLabel();
     }
@@ -125,7 +124,7 @@ public class BillNumberGenerator {
             // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
         }
     }
-    
+
     public BillNumber fetchLastBillNumberForYear(Institution institution, Department toDepartment, BillTypeAtomic billType, PaymentMethod paymentMethod) {
         String lockKey = getLockKey(institution, toDepartment, billType, paymentMethod);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
@@ -344,7 +343,7 @@ public class BillNumberGenerator {
             hm.put("endOfYear", endOfYear.getTime());
             hm.put("paymentMethod", paymentMethod);
 
-            
+
 
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
             if (dd == null) {
@@ -427,7 +426,7 @@ public class BillNumberGenerator {
 
         return billNumber;
     }
-    
+
     public PatientFacade getPatientFacade() {
         return patientFacade;
     }

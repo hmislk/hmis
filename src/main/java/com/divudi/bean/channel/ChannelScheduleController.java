@@ -268,7 +268,7 @@ public class ChannelScheduleController implements Serializable {
 //        itemController.fillItemsForInward();
         return "/channel/channel_shedule?faces-redirect=true";
     }
-    
+
     public String navigateToListRetiredChannelSchedules() {
         return "/channel/retired_channel_shedules?faces-redirect=true";
     }
@@ -379,8 +379,8 @@ public class ChannelScheduleController implements Serializable {
         ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         String s;
 
-        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
-        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
 
@@ -423,7 +423,7 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("Select Item Fee");
             return;
         }
-        if (itemFee.getName() == null || itemFee.getName().trim().equals("")) {
+        if (itemFee.getName() == null || itemFee.getName().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Fill Fee Name");
             return;
         }
@@ -818,7 +818,7 @@ public class ChannelScheduleController implements Serializable {
         retiredItems = getFacade().findByJpql(sql, hm);
         System.out.println("retiredItems = " + retiredItems);
     }
-    
+
     public void unretireCurrentServiceSession(){
         System.out.println("unretireCurrentServiceSession");
         if(current==null){

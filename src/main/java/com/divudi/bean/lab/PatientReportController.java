@@ -43,11 +43,7 @@ import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import static com.divudi.data.InvestigationItemValueType.Memo;
-import static com.divudi.data.InvestigationItemValueType.Varchar;
 import com.divudi.data.ReportType;
-import static com.divudi.data.ReportType.GENARATE;
-import static com.divudi.data.ReportType.UPLOAD;
 import com.divudi.data.UploadType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.Upload;
@@ -831,14 +827,14 @@ public class PatientReportController implements Serializable {
         String calString = "";
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
 
-            if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().equals("")) {
+            if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().isEmpty()) {
                 if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                    double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
-                    priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
+                    double tmpDbl = CommonFunctions.extractDoubleValue(priv.getStrValue());
+                    priv.setStrValue(CommonFunctions.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
                     priv.setDoubleValue(tmpDbl);
                 } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
                     Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
-                    Double numberWithFormatter = CommonController.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
+                    Double numberWithFormatter = CommonFunctions.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
                     priv.setDoubleValue(numberWithFormatter);
                     priv.setStrValue(numberWithFormatter + "");
                 }
@@ -1462,14 +1458,14 @@ public class PatientReportController implements Serializable {
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
         ed = getSecurityController().encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         b += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -1561,14 +1557,14 @@ public class PatientReportController implements Serializable {
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
         ed = getSecurityController().encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         b += "<p>"
                 + "The report before reversing approval is attached. The current report can be viewed at following link"
                 + "<br/>"
@@ -1593,7 +1589,7 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
         String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(), securityKey);
-        String url = commonController.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
@@ -1610,7 +1606,7 @@ public class PatientReportController implements Serializable {
         } catch (UnsupportedEncodingException ex) {
             // Handle the exception
         }
-        String url = commonController.getBaseUrl() + "faces/requests/report1.xhtml?id=" + temId;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report1.xhtml?id=" + temId;
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
@@ -1627,13 +1623,13 @@ public class PatientReportController implements Serializable {
             temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
         ed = getSecurityController().encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
@@ -1650,13 +1646,13 @@ public class PatientReportController implements Serializable {
             temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
         ed = getSecurityController().encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         return url;
     }
 
@@ -1728,7 +1724,7 @@ public class PatientReportController implements Serializable {
                     }
                 }
 
-                String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+                String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
                 ed = getSecurityController().encrypt(ed);
                 try {
                     ed = URLEncoder.encode(ed, "UTF-8");
@@ -1736,7 +1732,7 @@ public class PatientReportController implements Serializable {
                     // Handle the exception
                 }
 
-                String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+                String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
 
                 // Create the QR code contents using the variables and URL
                 String qrCodeContents = "Patient Name: " + patientName + "\n"
@@ -1766,10 +1762,10 @@ public class PatientReportController implements Serializable {
         //System.out.println("canApproveThePatientReport");
         BooleanMessage bm = new BooleanMessage();
         boolean flag = true;
-        String appMgs = "";
+        StringBuilder appMgs = new StringBuilder();
         if (prForApproval == null) {
             bm.setFlag(flag);
-            bm.setMessage(appMgs);
+            bm.setMessage(appMgs.toString());
             return bm;
         }
         //System.out.println("stage = " + 1);
@@ -1779,21 +1775,21 @@ public class PatientReportController implements Serializable {
                 if (temii.isCanNotApproveIfValueIsEmpty()) {
                     //System.out.println("stage = " + 3);
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                        if (temIv.getStrValue() == null || temIv.getStrValue().trim().equals("")) {
+                        if (temIv.getStrValue() == null || temIv.getStrValue().trim().isEmpty()) {
                             flag = false;
-                            appMgs += temii.getEmptyValueWarning() + "\n";
+                            appMgs.append(temii.getEmptyValueWarning()).append("\n");
                         }
                     }
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Double) {
                         if (temIv.getDoubleValue() == null) {
                             flag = false;
-                            appMgs += temii.getEmptyValueWarning() + "\n";
+                            appMgs.append(temii.getEmptyValueWarning()).append("\n");
                         }
                     }
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Memo) {
-                        if (temIv.getLobValue() == null || temIv.getLobValue().trim().equals("")) {
+                        if (temIv.getLobValue() == null || temIv.getLobValue().trim().isEmpty()) {
                             flag = false;
-                            appMgs += temii.getEmptyValueWarning() + "\n";
+                            appMgs.append(temii.getEmptyValueWarning()).append("\n");
                         }
                     }
                 }
@@ -1804,19 +1800,19 @@ public class PatientReportController implements Serializable {
                         tv = temIv.getDoubleValue();
                     }
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                        tv = commonController.getDouble(temIv.getStrValue());
+                        tv = CommonFunctions.getDouble(temIv.getStrValue());
                     }
                     //System.out.println("tv = " + tv);
                     if (temii.isCanNotApproveIfValueIsAboveAbsoluteHighValue()) {
                         if (tv > temii.getAbsoluteHighValue()) {
                             flag = false;
-                            appMgs += temii.getAboveAbsoluteWarning() + "\n";
+                            appMgs.append(temii.getAboveAbsoluteWarning()).append("\n");
                         }
                     }
                     if (temii.isCanNotApproveIfValueIsBelowAbsoluteLowValue()) {
                         if (tv < temii.getAbsoluteLowValue()) {
                             flag = false;
-                            appMgs += temii.getBelowAbsoluteWarning() + "\n";
+                            appMgs.append(temii.getBelowAbsoluteWarning()).append("\n");
                         }
                     }
 
@@ -1825,7 +1821,7 @@ public class PatientReportController implements Serializable {
             }
         }
         bm.setFlag(flag);
-        bm.setMessage(appMgs);
+        bm.setMessage(appMgs.toString());
         return bm;
     }
 
@@ -1959,7 +1955,7 @@ public class PatientReportController implements Serializable {
         UserPreference pf = getSessionController().getApplicationPreference();
 
         if (pf != null && pf.getSentEmailWithInvestigationReportApproval()) {
-            if (CommonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
+            if (CommonFunctions.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
                 AppEmail e;
 
                 e = new AppEmail();
@@ -2170,7 +2166,7 @@ public class PatientReportController implements Serializable {
         JsfUtil.addSuccessMessage("Approval Reversed");
 
         try {
-            if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
+            if (CommonFunctions.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
                 AppEmail e = new AppEmail();
                 e.setCreatedAt(new Date());
                 e.setCreater(sessionController.getLoggedUser());

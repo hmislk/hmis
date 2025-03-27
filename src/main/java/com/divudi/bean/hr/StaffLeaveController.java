@@ -37,14 +37,13 @@ public class StaffLeaveController implements Serializable {
     @EJB
     private StaffLeaveFacade staffLeaveFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private HumanResourceBean humanResourceBean;
 
     public void createLeave() {
         staffLeaves = getHumanResourceBean().getStaffLeave(getCurrent().getStaff(),
-                getCommonFunctions().getFirstDayOfYear(new Date()),
-                getCommonFunctions().getLastDayOfYear(new Date()));
+                CommonFunctions.getFirstDayOfYear(new Date()),
+                CommonFunctions.getLastDayOfYear(new Date()));
     }
 
     public LeaveType[] getLeaveType() {
@@ -99,14 +98,6 @@ public class StaffLeaveController implements Serializable {
         this.staffLeaveFacade = staffLeaveFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public HumanResourceBean getHumanResourceBean() {
         return humanResourceBean;
     }
@@ -122,8 +113,8 @@ public class StaffLeaveController implements Serializable {
     public void setStaffLeaves(List<StaffLeave> staffLeaves) {
         this.staffLeaves = staffLeaves;
     }
-    
-    
+
+
 
     @FacesConverter(forClass = StaffLeave.class)
     public static class LeaveConverter implements Converter {
