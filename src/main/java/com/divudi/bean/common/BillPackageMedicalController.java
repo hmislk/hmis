@@ -82,8 +82,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    private CommonController commonController;
 
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
@@ -121,7 +119,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     @Inject
     private BillBeanController billBean;
 
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -236,14 +233,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     private void savePatient() {
@@ -1299,8 +1288,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     }
 
     public void dateChangeListen() {
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
-
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
     }
 
     public Integer getIndex() {
@@ -1407,7 +1395,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            frmDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }
@@ -1418,7 +1406,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1449,14 +1437,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     public void setServiceItem(Item ServiceItem) {
         this.ServiceItem = ServiceItem;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     @Override

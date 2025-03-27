@@ -66,8 +66,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     SessionController sessionController;
     @Inject
     BillBeanController billBean;
-    @Inject
-    AdmissionController admissionController;
     /////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -101,8 +99,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
-
-    CommonFunctions commonFunctions;
 
     YearMonthDay yearMonthDay;
     private PaymentMethod paymentMethod;
@@ -421,7 +417,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public void dateChangeListen() {
-        getCurrent().getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getCurrent().getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -596,14 +592,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BillBeanController getBillBean() {

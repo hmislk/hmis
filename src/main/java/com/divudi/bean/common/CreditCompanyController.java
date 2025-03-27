@@ -36,8 +36,6 @@ public class CreditCompanyController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @EJB
     private InstitutionFacade ejbFacade;
     List<Institution> selectedItems;
@@ -55,7 +53,7 @@ public class CreditCompanyController implements Serializable {
         if (name == null) {
             return null;
         }
-        if (name.trim().equals("")) {
+        if (name.trim().isEmpty()) {
             return null;
         }
         String jpql = "select c "
@@ -69,8 +67,8 @@ public class CreditCompanyController implements Serializable {
         m.put("n", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
-    
+
+
     public List<Institution> completeCredit(String query) {
         List<Institution> suggestions;
         String sql;
@@ -150,7 +148,7 @@ public class CreditCompanyController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public void save(Institution cc) {
         if (cc == null) {
             return;
@@ -175,22 +173,22 @@ public class CreditCompanyController implements Serializable {
                 + "where i.retired=false ";
         institutions = getEjbFacade().findByJpql(sql);
 
-        
+
     }
 
     public void fillInstitutions() {
 
         String sql;
         Map m=new HashMap();
-        
+
         sql= "select i from Institution i "
                 + " where i.retired=false ";
-        
+
         if (institutionType != null) {
             sql += " and i.institutionType=:insT";
             m.put("insT", institutionType);
         }
-        
+
         institutions = getEjbFacade().findByJpql(sql,m);
 
     }
@@ -257,14 +255,6 @@ public class CreditCompanyController implements Serializable {
             items = getEjbFacade().findByJpql(sql);
         }
         return items;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public InstitutionType getInstitutionType() {

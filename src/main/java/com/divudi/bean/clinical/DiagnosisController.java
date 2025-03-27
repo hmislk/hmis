@@ -26,6 +26,8 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
+
+import com.divudi.java.CommonFunctions;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -54,7 +56,7 @@ public class DiagnosisController implements Serializable {
     public String navigateToManageDiagnoses() {
         return "/emr/admin/diagnoses";
     }
-    
+
     // Method to generate the Excel file and initiate the download
     public void downloadAsExcel() {
         getItems();
@@ -124,7 +126,7 @@ public class DiagnosisController implements Serializable {
             c = new ClinicalEntity();
             c.setSymanticType(SymanticType.Disease_or_Syndrome);
             c.setName(dxName);
-            c.setCode(CommonController.nameToCode("Disease_or_Syndrome_" + dxName));
+            c.setCode(CommonFunctions.nameToCode("Disease_or_Syndrome_" + dxName));
             getFacade().create(c);
         }
         return c;

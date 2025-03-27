@@ -110,7 +110,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private List<BillFee> billFees;
     private List<ServiceSession> serviceSessions;
     private List<ServiceSession> serviceSessionList;
-    /////////////////////    
+    /////////////////////
     private Date fromDate;
     private Date toDate;
     private Date date;
@@ -160,7 +160,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         dueBillFees = null;
         payingBillFees = null;
         billFees = null;
-        /////////////////////    
+        /////////////////////
         fromDate = null;
         toDate = null;
         current = null;
@@ -183,7 +183,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         dueBillFees = null;
         payingBillFees = null;
         billFees = null;
-        /////////////////////    
+        /////////////////////
         fromDate = null;
         toDate = null;
         current = null;
@@ -555,12 +555,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
 //                + " and abs(abs(b.feeValue) - abs(b.paidValue)) > 1 "
 //                + " and b.bill.billType in :bt "
 //                + " and b.bill.singleBillSession.sessionInstance=:si"
-//        
+//
 //        if(configOptionApplicationController.getBooleanValueByKey("Only Show Completed Channel Bookings On Doctor Payments")) {
 //            sql +=" and b.bill.singleBillSession.completed=:com";
 //            hm.put("com", true);
 //        }
-//        
+//
 //        sql += " order by b.bill.singleBillSession.serialNo ";
 //        hm.put("si", getSessionInstance());
 //        hm.put("bt", bts);
@@ -1162,10 +1162,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private String generateDoctorPaymentSms(Bill b) {
         String s;
         String template;
-        String date = CommonController.getDateFormat(b.getBillDate(),
+        String date = CommonFunctions.getDateFormat(b.getBillDate(),
                 "dd MMM");
         //System.out.println("date = " + date);
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 b.getBillTime(),
                 "hh:mm a");
         //System.out.println("time = " + time);
@@ -1175,7 +1175,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         }
         if (ss != null && ss.getStartingTime() != null) {
-            time = CommonController.getDateFormat(
+            time = CommonFunctions.getDateFormat(
                     ss.getStartingTime(),
                     "hh:mm a");
         } else {
@@ -1210,16 +1210,16 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private String generateSessionPaymentSms(Bill b, SessionInstance si) {
         String s;
         String template;
-        String date = CommonController.getDateFormat(si.getSessionDate(),
+        String date = CommonFunctions.getDateFormat(si.getSessionDate(),
                 "dd MMM");
         //System.out.println("date = " + date);
         String time = "";
         if (si.getSessionTime() != null) {
-            time = CommonController.getDateFormat(
+            time = CommonFunctions.getDateFormat(
                     si.getSessionTime(),
                     "hh:mm a");
         } else if (si.getOriginatingSession().getStartingTime() != null) {
-            time = CommonController.getDateFormat(
+            time = CommonFunctions.getDateFormat(
                     si.getOriginatingSession().getStartingTime(),
                     "hh:mm a");
         }
@@ -1250,11 +1250,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
         SessionInstance si = b.getSingleBillSession().getSessionInstance();
         ServiceSession oss = si.getOriginatingSession();
 
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 oss.getStartingTime(),
                 sessionController.getApplicationPreference().getShortTimeFormat());
 
-        String date = CommonController.getDateFormat(si.getSessionDate(),
+        String date = CommonFunctions.getDateFormat(si.getSessionDate(),
                 "dd MMM");
 
         String doc = b.getStaff().getPerson().getNameWithTitle();
@@ -1287,11 +1287,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
         SessionInstance si = sii;
         ServiceSession oss = si.getOriginatingSession();
 
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 oss.getStartingTime(),
                 sessionController.getApplicationPreference().getShortTimeFormat());
 
-        String date = CommonController.getDateFormat(si.getSessionDate(),
+        String date = CommonFunctions.getDateFormat(si.getSessionDate(),
                 "dd MMM");
 
         String doc = b.getStaff().getPerson().getNameWithTitle();

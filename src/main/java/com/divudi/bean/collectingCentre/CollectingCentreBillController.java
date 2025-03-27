@@ -148,8 +148,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Inject
     ServiceSessionFunctions serviceSessionBean;
     @Inject
-    CommonController commonController;
-    @Inject
     SessionController sessionController;
     @Inject
     PaymentSchemeController paymentSchemeController;
@@ -878,7 +876,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-//        
+//
         collectingCentreApplicationController.updateCcBalance(
                 collectingCentre,
                 totalHosFee,
@@ -1149,7 +1147,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void dateChangeListen() {
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -2433,14 +2431,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setReminingCashPaid(double reminingCashPaid) {
         this.reminingCashPaid = reminingCashPaid;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<String> getReferralIds() {

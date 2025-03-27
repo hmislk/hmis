@@ -5,7 +5,6 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.channel.BookingController;
-import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -64,8 +63,6 @@ public class ChannelBean {
     SessionController sessionController;
     @Inject
     BookingController bookingController;
-    @Inject
-    ChannelBillController channelBillController;
 
     public ChannelFee getChannelFee(BillSession bs, FeeType feeType) {
         ChannelFee doctorFee = new ChannelFee();
@@ -336,7 +333,7 @@ public class ChannelBean {
         }
     }
 
-//    
+//
 //    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessions(List<ServiceSession> inputSessions) {
 //        int sessionDayCount = 0;
 //        List<ServiceSession> createdSessions = new ArrayList<>();
@@ -1074,7 +1071,7 @@ public class ChannelBean {
         return sessionNumberGenerator;
     }
 
-//    
+//
 //    public List<ServiceSession> generateServiceSessionsForSelectedDate(List<ServiceSession> inputSessions, Date date) {
 //        int sessionDayCount = 0;
 //        List<ServiceSession> createdSessions = new ArrayList<>();

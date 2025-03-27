@@ -14,19 +14,6 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -38,10 +25,8 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
-import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.Admission;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
@@ -58,7 +43,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 
 /**
  *
@@ -95,8 +79,6 @@ public class CashRecieveBillController implements Serializable {
     private BillController billController;
     @Inject
     private CashBookEntryController cashBookEntryController;
-    @Inject
-    CommonController commonController;
     @Inject
     private DrawerController drawerController;
     @Inject
@@ -208,7 +190,7 @@ public class CashRecieveBillController implements Serializable {
 //        }
 //        calTotal();
 //    }
-    
+
     public void selectInstitutionListenerBht() {
         Institution ins = institution;
         makeNull();
@@ -549,7 +531,7 @@ public class CashRecieveBillController implements Serializable {
         }
         getCurrent().setNetTotal(n);
     }
-    
+
     public void calulateTotalForSettlingCreditForInwardCreditCompanyPaymentBills() {
         double n = 0.0;
         for (BillItem b : selectedBillItems) {
@@ -887,7 +869,7 @@ public class CashRecieveBillController implements Serializable {
         printPreview = true;
 
     }
-    
+
     public void settleCreditForInwardCreditCompanyPaymentBills() {
         if (getSelectedBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Item ");
@@ -930,7 +912,7 @@ public class CashRecieveBillController implements Serializable {
         } else {
             getBillFacade().edit(getCurrent());
         }
-        
+
        updateReferanceBills();
 
         for (BillItem savingBillItem : getBillItems()) {
@@ -1133,8 +1115,8 @@ public class CashRecieveBillController implements Serializable {
         saveBill(BillType.CashRecieveBill, BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         updateReferanceBills();
         saveBillItemBht();
-        
-        
+
+
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         //   savePayments();
@@ -1142,7 +1124,7 @@ public class CashRecieveBillController implements Serializable {
         printPreview = true;
 
     }
-    
+
     public void updateReferanceBills(){
         for(BillItem b : getBillItems()){
             b.getReferenceBill().setPaid(true);
@@ -1627,14 +1609,6 @@ public class CashRecieveBillController implements Serializable {
 
     public void setAdmissionController(AdmissionController admissionController) {
         this.admissionController = admissionController;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Bill getSelectedBill() {
