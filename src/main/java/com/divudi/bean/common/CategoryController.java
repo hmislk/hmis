@@ -23,6 +23,8 @@ import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.SymanticHyrachi;
+import com.divudi.java.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -170,7 +172,7 @@ public class CategoryController implements Serializable {
         if (c == null) {
             c = new Category();
             c.setName(qry);
-            c.setCode("category_" + CommonController.nameToCode(qry));
+            c.setCode("category_" + CommonFunctions.nameToCode(qry));
             getFacade().create(c);
         }
         return c;

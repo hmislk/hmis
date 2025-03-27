@@ -91,9 +91,6 @@ public class StaffLeaveEntitleController implements Serializable {
         current = null;
     }
 
-
-    CommonFunctions commonFunctions;
-
     public void saveSelected() {
 
         if (getCurrent().getFromDate() == null) {
@@ -232,14 +229,6 @@ public class StaffLeaveEntitleController implements Serializable {
     Date fromDate;
     Date toDate;
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public Date getFromDate() {
         return fromDate;
     }
@@ -316,8 +305,8 @@ public class StaffLeaveEntitleController implements Serializable {
         }
 
         for (StaffLeaveEntitle s : selectedItems) {
-            s.setFromDate(commonFunctions.getFirstDayOfYear(fromDate));
-            s.setToDate(commonFunctions.getLastDayOfYear(toDate));
+            s.setFromDate(CommonFunctions.getFirstDayOfYear(fromDate));
+            s.setToDate(CommonFunctions.getLastDayOfYear(toDate));
             ejbFacade.edit(s);
         }
     }
@@ -386,5 +375,5 @@ public class StaffLeaveEntitleController implements Serializable {
         }
     }
 
-    
+
 }

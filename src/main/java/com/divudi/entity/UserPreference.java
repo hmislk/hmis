@@ -151,7 +151,7 @@ public class UserPreference implements Serializable {
     @Deprecated
     @Enumerated(EnumType.STRING)
     private ApplicationInstitution applicationInstitution;
-    
+
     @Deprecated //Use Application Configuration
     @Enumerated(EnumType.STRING)
     private PaymentMethod channellingPaymentMethod;
@@ -1034,7 +1034,7 @@ public class UserPreference implements Serializable {
     }
 
     public String getLongDateFormat() {
-        if (longDateFormat == null || longDateFormat.trim().equals("")) {
+        if (longDateFormat == null || longDateFormat.trim().isEmpty()) {
             longDateFormat = "dd MMMM yyyy";
         }
         return longDateFormat;
@@ -1045,7 +1045,7 @@ public class UserPreference implements Serializable {
     }
 
     public String getShortDateFormat() {
-        if (shortDateFormat == null || shortDateFormat.trim().equals("")) {
+        if (shortDateFormat == null || shortDateFormat.trim().isEmpty()) {
             shortDateFormat = "dd MMM yy";
         }
         return shortDateFormat;
@@ -1056,7 +1056,7 @@ public class UserPreference implements Serializable {
     }
 
     public String getLongDateTimeFormat() {
-        if (longDateTimeFormat == null || longDateTimeFormat.trim().equals("")) {
+        if (longDateTimeFormat == null || longDateTimeFormat.trim().isEmpty()) {
             longDateTimeFormat = "dd MMM yyyy HH:mm:ss";
         }
         return longDateTimeFormat;
@@ -1067,7 +1067,7 @@ public class UserPreference implements Serializable {
     }
 
     public String getShortDateTimeFormat() {
-        if (shortDateTimeFormat == null || shortDateTimeFormat.trim().equals("")) {
+        if (shortDateTimeFormat == null || shortDateTimeFormat.trim().isEmpty()) {
             shortDateTimeFormat = "dd MMM yy HH:mm";
         }
         return shortDateTimeFormat;
@@ -1078,7 +1078,7 @@ public class UserPreference implements Serializable {
     }
 
     public String getLongTimeFormat() {
-        if (longTimeFormat == null || longTimeFormat.trim().equals("")) {
+        if (longTimeFormat == null || longTimeFormat.trim().isEmpty()) {
             longTimeFormat = "HH:mm:ss";
         }
         return longTimeFormat;
@@ -1089,7 +1089,7 @@ public class UserPreference implements Serializable {
     }
 
     public String getShortTimeFormat() {
-        if (shortTimeFormat == null || shortTimeFormat.trim().equals("")) {
+        if (shortTimeFormat == null || shortTimeFormat.trim().isEmpty()) {
             shortTimeFormat = "HH:mm";
         }
         return shortTimeFormat;

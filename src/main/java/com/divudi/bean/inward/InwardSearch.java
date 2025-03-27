@@ -381,7 +381,7 @@ public class InwardSearch implements Serializable {
     }
 
     public void dateChangeListen() {
-        getBill().getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getBill().getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
     }
 
     public Patient getPatient() {

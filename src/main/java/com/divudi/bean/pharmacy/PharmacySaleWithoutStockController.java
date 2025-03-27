@@ -8,7 +8,6 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
@@ -28,6 +27,7 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.java.CommonFunctions;
 import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -1643,9 +1643,9 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
-        calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
+        calDateOfExpiry.setTime(CommonFunctions.getEndOfDay(date));
         Calendar cal = Calendar.getInstance();
-        cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
+        cal.setTime(CommonFunctions.getEndOfDay(new Date()));
         cal.add(Calendar.DATE, 31);
         if (cal.getTimeInMillis() <= calDateOfExpiry.getTimeInMillis()) {
             return false;

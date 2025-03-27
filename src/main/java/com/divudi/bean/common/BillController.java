@@ -142,8 +142,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController;
-    @Inject
     PaymentSchemeController paymentSchemeController;
     @Inject
     ApplicationController applicationController;
@@ -2447,7 +2445,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getNewPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -4389,7 +4387,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             BillController controller = (BillController) facesContext.getApplication().getELResolver().
@@ -4422,10 +4420,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         + object.getClass().getName() + "; expected type: " + BillController.class.getName());
             }
         }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
     }
 
     public double getNetPlusVat() {

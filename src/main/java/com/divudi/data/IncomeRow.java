@@ -24,6 +24,8 @@ public class IncomeRow implements Serializable {
 
     private Category category;
     private Bill bill;
+    private Bill batchBill;
+    private Bill referanceBill;
     private BillItem billItem;
     private BillFee billFee;
     private Payment payment;
@@ -1195,4 +1197,22 @@ public class IncomeRow implements Serializable {
         this.payments = payments;
     }
 
+    public Bill getBatchBill() {
+        return batchBill;
+    }
+
+    public void setBatchBill(Bill batchBill) {
+        this.batchBill = batchBill;
+    }
+
+    public Bill getReferanceBill() {
+        return referanceBill;
+    }
+
+    public void setReferanceBill(Bill referanceBill) {
+        this.referanceBill = referanceBill;
+    }
+
+    
+    
 }

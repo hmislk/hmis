@@ -990,7 +990,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public void dateChangeListen() {
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
