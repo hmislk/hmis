@@ -9,12 +9,11 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.FormItemValue;
+import com.divudi.entity.FormItemValue;
 import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.InvestigationItemType;
-import com.divudi.data.Sex;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.hr.SalaryPaymentFrequency;
@@ -48,7 +47,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -133,7 +131,7 @@ public class StaffController implements Serializable {
         itemsToRemove = null;
         items = null;
     }
-    
+
     private String signatureUrl;
 
     public void saveSignatureUrl() {
@@ -148,13 +146,13 @@ public class StaffController implements Serializable {
         }
         System.out.println("getStaffController().getCurrent = " + getCurrent());
         System.out.println("Signature Url = " + getSignatureUrl());
-        
+
         current.setSignatureUrl(getSignatureUrl());
-        ejbFacade.edit(getCurrent()); 
+        ejbFacade.edit(getCurrent());
         signatureUrl = null;
         JsfUtil.addSuccessMessage("Added Signature Url");
     }
-    
+
     public void removeSignatureUrl() {
         System.out.println("RemoveSignatureUrl");
         if (current.getId() == null || current.getId() == 0) {
@@ -162,7 +160,7 @@ public class StaffController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
         System.out.println("getStaffController().getCurrent = " + getCurrent());
-        
+
         current.setSignatureUrl(null);
         ejbFacade.edit(getCurrent());
         JsfUtil.addSuccessMessage("Remove Signature Url");

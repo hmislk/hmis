@@ -17,11 +17,6 @@ import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.ItemLight;
-import static com.divudi.data.ItemListingStrategy.ALL_ITEMS;
-import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT;
-import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION;
-import static com.divudi.data.ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT;
-import static com.divudi.data.ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -31,29 +26,8 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
+import com.divudi.entity.*;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.Staff;
-import com.divudi.entity.UserPreference;
-import com.divudi.entity.WebUser;
 import com.divudi.entity.hr.WorkingTime;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -68,7 +42,6 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.Token;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -1075,15 +1048,15 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     private boolean checkPatientAgeSex() {
-        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().isEmpty() || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
             JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
+        if (!Person.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
             JsfUtil.addErrorMessage("Check Title,Age,Sex");
             return true;
         }
-        if (getPatient().getPerson().getPhone().length() < 1) {
+        if (getPatient().getPerson().getPhone().isEmpty()) {
             JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
             return true;
         }
@@ -1286,7 +1259,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
-        
+
         if (addAllBillFees) {
             addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
         } else if (siteBasedBillFees) {
@@ -1294,8 +1267,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         } else {
             addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
         }
-        
-        
+
+
         addStaffToBillFees(addingEntry.getLstBillFees());
 
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(getCurrentBillItem()));

@@ -7,11 +7,11 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.membership.MembershipScheme;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import javax.annotation.PostConstruct;
 import javax.persistence.CascadeType;
@@ -314,6 +314,36 @@ public class Person implements Serializable, RetirableEntity  {
         nameWithTitle = temT + " " + getName();
 
         return nameWithTitle;
+    }
+
+    public static Boolean checkAgeSex(Date dob, Sex sex, Title title) {
+        Date toDate = Calendar.getInstance().getTime();
+
+        if ((toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24) == 0) {
+            return false;
+        }
+
+        long age = ((toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24)) / 365;
+
+        if (title == Title.Baby || title == Title.Baby_Of) {
+            if (age > 6) {
+                return false;
+            }
+        } else if ((title == Title.Master)) {
+            if (age > 13) {
+                return false;
+            }
+        }
+
+        if (title == Title.Mrs || title == Title.Ms || title == Title.Miss || title == Title.DrMrs || title == Title.DrMiss) {
+            return sex != Sex.Male;
+        }
+
+        if (title == Title.Mr || title == Title.Master || title == Title.Dr) {
+            return sex != Sex.Female;
+        }
+
+        return true;
     }
 
     public void setNameWithTitle(String nameWithTitle) {

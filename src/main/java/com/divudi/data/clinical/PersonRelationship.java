@@ -138,8 +138,8 @@ public class PersonRelationship implements Serializable {
     public void setApToBpRelationship(Relationship apToBpRelationship) {
         this.apToBpRelationship = apToBpRelationship;
     }
-    
-    
+
+
 
     @Override
     public int hashCode() {
@@ -155,10 +155,7 @@ public class PersonRelationship implements Serializable {
             return false;
         }
         PersonRelationship other = (PersonRelationship) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override

@@ -1,13 +1,10 @@
 package com.divudi.ws.lims;
 
-import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.lab.Analyzer;
-import static com.divudi.data.lab.Analyzer.HumaCount5D;
 import java.util.ArrayList;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.PatientSample;
-import com.divudi.entity.lab.Sample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import javax.inject.Inject;
@@ -24,7 +21,6 @@ import org.carecode.lims.libraries.OrderRecord;
 import org.carecode.lims.libraries.PatientRecord;
 import org.carecode.lims.libraries.QueryRecord;
 import java.util.Arrays;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,8 +38,6 @@ public class MiddlewareController {
     @EJB
     PatientSampleFacade patientSampleFacade;
 
-    @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     LimsMiddlewareController limsMiddlewareController;
 
@@ -142,6 +136,7 @@ public class MiddlewareController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response receivePatientResults(String jsonInput) {
+        System.out.println("receivePatientResults");
         try {
             Gson gson = new Gson();
             DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
@@ -160,11 +155,12 @@ public class MiddlewareController {
                 AnalyzerDetails analyzerDetails = dataBundle.getMiddlewareSettings().getAnalyzerDetails();
                 System.out.println("analyzerDetails = " + analyzerDetails);
                 Analyzer analyzer = Analyzer.valueOf(analyzerDetails.getAnalyzerName().replace(" ", "_")); // Ensuring enum compatibility
+                System.out.println("analyzer = " + analyzer);
                 switch (analyzer) {
                     case BioRadD10:
                         return processBioRadD10(dataBundle);
-                    case Sysmex_XS_Series:
-                        return processSysmexXSSeries(dataBundle);
+
+
                     case Dimension_Clinical_Chemistry_System:
                         return processDimensionClinicalChemistrySystem(dataBundle);
                     case Gallery_Indiko:
@@ -173,7 +169,8 @@ public class MiddlewareController {
                         return processCelltacMEK(dataBundle);
                     case BA400:
                         return processBA400(dataBundle);
-
+                    case Sysmex_XS_Series:
+//                         return processSysmexXSSeries(dataBundle);
                     case MaglumiX3HL7:
                     case MindrayBC5150:
                     case IndikoPlus:

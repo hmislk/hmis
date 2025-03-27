@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.RetirableEntity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -73,8 +72,8 @@ public class PatientItem implements Serializable, RetirableEntity {
         this.adjustedValue = adjustedValue;
     }
 
-    
-    
+
+
     public double getDiscount() {
         return discount;
     }

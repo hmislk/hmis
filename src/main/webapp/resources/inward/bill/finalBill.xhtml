@@ -19,9 +19,10 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="printing.css"/>
 
-
         <h:panelGroup id="gpBillPreview" >
-            <div  class="container-fluid" style="width: 214mm!important; margin-top: 4cm!important; margin-bottom: 2.5cm!important"> 
+            <div  class="container-fluid" style="width: 214mm!important; margin-bottom: 2.5cm!important"> 
+                <div  style="margin-top: #{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Margin-Top Space','4cm')}"></div>
+                
                 <div style="font-family: verdana ">
 
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
@@ -64,7 +65,6 @@
                             </tr>
                         </h:panelGroup>
 
-
                         <tr>
                             <td colspan="4">
                                 <h:outputLabel class="mark" style="font-size: 18px;" value="**Hospital Bill**" rendered="#{cc.attrs.hosCopy eq true }"/>
@@ -96,7 +96,7 @@
                             <div class="col-6 W-100 ">
                                 <div class="col-6 d-flex justify-content-between">
                                     <div class="col-5 w-100 d-flex justify-content-between">
-                                        <h:outputLabel value="Bill NO" />
+                                        <h:outputLabel value="Bill No" />
                                         <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
                                     </div>
                                     <div class="col-7 d-flex w-100">
@@ -252,7 +252,7 @@
                         <table class=" w-100"  >
                             <tr style="t">
                                 <td style="text-align: left; font-weight: bold; font-size: 14px;">
-                                    <h:outputLabel value="Discription" />
+                                    <h:outputLabel value="Description" />
                                 </td>
                                 <td>
                                     <h:outputLabel value="" />

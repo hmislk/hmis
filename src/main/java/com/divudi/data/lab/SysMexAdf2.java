@@ -22,7 +22,7 @@ public class SysMexAdf2 {
     private String inputStringBytesPlusSeperated;
     private String inputStringCharactors;
     private List<Byte> bytes;
-   
+
     private int lengthOfMessage = 255;
     private int instrumentIdStart = 4;
     private int instrumentIdEnd = 19;
@@ -73,7 +73,6 @@ public class SysMexAdf2 {
     private String basoPercentage;
 
     public boolean isCorrectReport() {
-        boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
             return false;
         }
@@ -93,13 +92,10 @@ public class SysMexAdf2 {
         }
 
         Double twbc = findValue(wbcStart, wbcEnd, 0);
-        if (twbc < 1000 || twbc > 50000) {
-            return false;
-        }
-        return true;
+        return twbc >= 1000 && twbc <= 50000;
     }
 
-    
+
     private void textToByteArraySeperatedByPlus() {
         bytes = new ArrayList<>();
         String strInput = inputStringBytesPlusSeperated;
@@ -153,7 +149,7 @@ public class SysMexAdf2 {
     }
 
     private String round(double value, int places) {
-        String returnVal = "";
+        String returnVal;
         if (places == 0) {
             returnVal = ((long) value) + "";
         } else if (places < 0) {
@@ -170,9 +166,9 @@ public class SysMexAdf2 {
     }
 
     private Double findValue(int from, int to, int decimals) {
-        Double val = null;
+        Double val;
 
-        String display = "";
+        StringBuilder display = new StringBuilder();
         for (int i = from; i < to + 1; i++) {
             //System.out.println("i = " + i);
             int temN;
@@ -182,29 +178,21 @@ public class SysMexAdf2 {
                 temN = 0;
             }
 
-            display += (char) temN + "";
+            display.append((char) temN);
         }
 
-        if (decimals
-                > 0) {
+        if (decimals > 0) {
             String wn = display.substring(0, display.length() - decimals);
-            String fn = display.substring(display.length() - decimals, display.length());
-            display = wn + "." + fn;
+            String fn = display.substring(display.length() - decimals);
+            display = new StringBuilder(wn + "." + fn);
             try {
-                val = Double.parseDouble(display);
-            } catch (Exception e) {
-                val = null;
-            }
-        } else if (decimals
-                > 0) {
-            try {
-                val = Double.parseDouble(display);
+                val = Double.parseDouble(display.toString());
             } catch (Exception e) {
                 val = null;
             }
         } else {
             try {
-                val = Double.parseDouble(display);
+                val = Double.parseDouble(display.toString());
                 val = val * Math.pow(10, Math.abs(decimals));
             } catch (Exception e) {
                 val = null;
@@ -214,13 +202,13 @@ public class SysMexAdf2 {
     }
 
     private String findStringValue(int from, int to) {
-        String display = "";
+        StringBuilder display = new StringBuilder();
         for (int i = from; i < to + 1; i++) {
 //            //System.out.println("i = " + i);
             int temN = bytes.get(i);
-            display += (char) temN + "";
+            display.append((char) temN);
         }
-        return display;
+        return display.toString();
     }
 
     public int getLengthOfMessage() {
@@ -263,7 +251,7 @@ public class SysMexAdf2 {
         this.sampleIdEnd = sampleIdEnd;
     }
 
-    
+
     public int getWbcStart() {
         return wbcStart;
     }
@@ -657,7 +645,7 @@ public class SysMexAdf2 {
         textToByteArrayByCharactors();
     }
 
-   
+
     public int getInstrumentId2Start() {
         return instrumentId2Start;
     }

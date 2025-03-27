@@ -569,37 +569,69 @@
             </p:panel>
 
             <p:panel rendered="#{pharmacyPurchaseController.printPreview}">
-                <p:panel class="m-0 p-0" >
-                    <f:facet name="header" >
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <h:outputText styleClass="fa-solid fa-circle-plus" />
-                                <h:outputLabel value="Direct Purchase Order" class="mx-4"></h:outputLabel>
-                            </div>
-                            <div>
-                                <p:commandButton 
-                                    ajax="false" 
-                                    class="ui-button-success"
-                                    icon="fa fa-plus"
-                                    action="#{pharmacyPurchaseController.makeNull()}" 
-                                    value="New Bill"/>                    
-                                <p:commandButton 
-                                    value="Print" 
-                                    ajax="false" 
-                                    action="#" 
-                                    class="ui-button-info mx-2"
-                                    icon="fas fa-print">
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-                            </div>
+                <f:facet name="header" >
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-circle-plus" />
+                            <h:outputLabel value="Direct Purchase Order" class="mx-4"></h:outputLabel>
                         </div>
-                    </f:facet>
-                    <p:panel id="gpBillPreview">
-                        <pharmacy:purhcase bill="#{pharmacyPurchaseController.bill}"/>
-                    </p:panel>
-                </p:panel>
+                        <div>
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                action="#" 
+                                class="ui-button-info mx-2"
+                                icon="fas fa-print">
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                class="ui-button-success"
+                                icon="fa fa-plus"
+                                action="#{pharmacyPurchaseController.makeNull()}" 
+                                value="New Bill"/>                    
+
+                        </div>
+                    </div>
+                </f:facet>
+                
+                <style>
+                    @media print{
+                        .purhcaseBill{
+                            width: 297mm!important;
+                        }
+                        
+                        .hideProfit{
+                            display: none!important;
+                        }
+                        
+                        .showProfit{
+                            
+                        }
+                        
+                    }
+                    
+                    @media screen{
+                        .purhcaseBill{
+                            width: 100%!important;
+                        }
+                        
+                        .showProfit{
+                            
+                        }
+                    }
+                    
+                </style>
+                
+                <h:panelGroup id="gpBillPreview" >
+                    <pharmacy:purhcase 
+                        bill="#{pharmacyPurchaseController.bill}" 
+                        ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                        ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                    </pharmacy:purhcase>
+                </h:panelGroup>
+
             </p:panel>
         </h:form>
     </ui:define>  
-
 </ui:composition>

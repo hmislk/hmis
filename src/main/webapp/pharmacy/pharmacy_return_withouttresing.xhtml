@@ -36,7 +36,7 @@
                                 <div class="col-md-8">
                                     <p:panel class="m-1">
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa-solid fa-circle-plus" /> 
                                             <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <div class="row w-100 m-1 p-1 boder-1">
@@ -332,7 +332,7 @@
                                                 value="#{pharmacyReturnwithouttresing.preBill.netTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
-                                            
+
                                             <p:separator ></p:separator>
                                             <p:separator ></p:separator>
                                             <h:outputLabel value="Sale Value" ></h:outputLabel>
@@ -342,12 +342,8 @@
                                                 value="#{pharmacyReturnwithouttresing.preBill.pharmacyBill.saleValue}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
-                                            
 
                                         </p:panelGrid>
-
-
-
 
                                     </p:panel>
                                 </div>
@@ -355,29 +351,18 @@
 
                         </p:panel>
 
-
-
-
-
-
-
                     </p:panel>
-
 
                 </h:form>
 
                 <h:form>
 
-
                     <p:panel  rendered="#{pharmacyReturnwithouttresing.billPreview}" >
-
-
-
 
                         <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
-                        <div class="nonPrintBlock" >
+                        <div class="nonPrintBlock mb-4" >
                             <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" class="ui-button-info" icon="fas fa-print">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -395,13 +380,14 @@
 
 
                         </div>
+
                         <!--                        <div >
                                                     <h:panelGroup   id="gpBillPreview"> 
                                                         <phi:issue bill="#{pharmacyReturnwithouttresing.printBill}"></phi:issue>
                                                     </h:panelGroup>
                                                 </div>-->
 
-                        <h:panelGroup   id="gpBillPreview" > 
+                        <h:panelGroup   id="gpBillPreview"> 
 
                             <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
 
@@ -425,27 +411,27 @@
 
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
 
-                                <div >
+                                <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:saleBill_five_five bill="#{pharmacyReturnwithouttresing.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
 
-                            </h:panelGroup>                            
+                            </h:panelGroup>  
 
+                            <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}"> 
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:pharmacyReturnWithoutTresingA4 bill="#{pharmacyReturnwithouttresing.printBill}" duplicate="false"></phi:pharmacyReturnWithoutTresingA4>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>  
                         </h:panelGroup> 
-
-
-
                     </p:panel>
-
-
-
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>

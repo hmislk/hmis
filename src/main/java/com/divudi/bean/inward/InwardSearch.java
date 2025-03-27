@@ -1088,7 +1088,7 @@ public class InwardSearch implements Serializable {
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
 //        cb.setBillType(BillType.InwardProfessional);
-        cb.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+        cb.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
         return cb;
     }
 

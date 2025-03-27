@@ -78,6 +78,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import com.divudi.java.CommonFunctions;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.primefaces.event.CellEditEvent;
 import javax.faces.context.FacesContext;
@@ -541,23 +542,23 @@ public class PatientReportController implements Serializable {
 ////                    + ",\n\n Please find the results of your " + getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + ".");
 //
 //            message.setContent(emailMessageBody(currentPatientReport), "text/html; charset=utf-8");
-//            //3) create MimeBodyPart object and set your message text     
+//            //3) create MimeBodyPart object and set your message text
 //            BodyPart msbp1 = new MimeBodyPart();
 //            msbp1.setText("Final Lab report of patient");
 //
-//            //4) create new MimeBodyPart object and set DataHandler object to this object      
+//            //4) create new MimeBodyPart object and set DataHandler object to this object
 //            MimeBodyPart msbp2 = new MimeBodyPart();
 ////            createHtmlFile();
 //            DataSource source = new FileDataSource(createPDFAndSaveAsaFile());
 //            msbp2.setDataHandler(new DataHandler(source));
 //            msbp2.setFileName("/tmp/report" + getCurrentPatientReport().getId() + ".pdf");
 //
-//            //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
+//            //5) create Multipart object and add Mimdler(soeBodyPart objects to this object
 //            Multipart multipart = new MimeMultipart();
 //            multipart.addBodyPart(msbp1);
 //            multipart.addBodyPart(msbp2);
 //
-//            //6) set the multiplart object to the message object  
+//            //6) set the multiplart object to the message object
 //            message.setContent(multipart);
 //
 //            Transport.send(message);
@@ -1291,7 +1292,7 @@ public class PatientReportController implements Serializable {
         }
 
         // Extract placeholders from the identified template
-        List<String> placeholders = extractPlaceholders(templateItem.getHtmltext());
+        List<String> placeholders = CommonFunctions.extractPlaceholders(templateItem.getHtmltext());
         System.out.println("Placeholders found: " + placeholders);
 
         // Store replacements in a map
@@ -1390,19 +1391,6 @@ public class PatientReportController implements Serializable {
             }
         }
 
-    }
-
-// Utility method to extract placeholders from HTML content
-    private List<String> extractPlaceholders(String htmlContent) {
-        List<String> placeholders = new ArrayList<>();
-        if (htmlContent != null) {
-            Pattern pattern = Pattern.compile("\\{(.*?)\\}");
-            Matcher matcher = pattern.matcher(htmlContent);
-            while (matcher.find()) {
-                placeholders.add(matcher.group(1));
-            }
-        }
-        return placeholders;
     }
 
     public String emailMessageBody(PatientReport r) {
@@ -2147,7 +2135,7 @@ public class PatientReportController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("SMS Sent");
-//        
+//
     }
 
     public void reverseApprovalOfPatientReport() {
@@ -2749,7 +2737,7 @@ public class PatientReportController implements Serializable {
         if (!patientReport.getApproved()) {
             if (configOptionApplicationController.getBooleanValueByKey("Obtaining the report format related to the logged-in department's site.", false)) {
                 avalilableReportFormats = reportFormatController.fillReportFormatsForLoggedDepartmentSite(patientReport);
-                
+
                 if(!avalilableReportFormats.isEmpty()){
                     if(avalilableReportFormats.size()>=1){
                         patientReport.setReportFormat(avalilableReportFormats.get(0));

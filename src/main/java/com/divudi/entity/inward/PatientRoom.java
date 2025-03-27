@@ -4,7 +4,7 @@
  */
 package com.divudi.entity.inward;
 
-import com.divudi.bean.common.RetirableEntity;
+import com.divudi.entity.RetirableEntity;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -110,7 +110,7 @@ public class PatientRoom implements Serializable, RetirableEntity {
     double ajdustedLinenCharge;
     double ajdustedAdministrationCharge;
     double ajdustedMedicalCareCharge;
-    ///////Added 
+    ///////Added
     double addedRoomCharge = 0.0;
     double addedMaintainCharge;
     double addedMoCharge;
@@ -649,7 +649,7 @@ public class PatientRoom implements Serializable, RetirableEntity {
         this.discountNursingCharge = discountNursingCharge;
     }
 
-    public double getAdjustedRoomCharge() {        
+    public double getAdjustedRoomCharge() {
         return adjustedRoomCharge;
     }
 
@@ -657,7 +657,7 @@ public class PatientRoom implements Serializable, RetirableEntity {
         this.adjustedRoomCharge = adjustedRoomCharge;
     }
 
-    public double getAdjustedMaintainCharge() {       
+    public double getAdjustedMaintainCharge() {
         return adjustedMaintainCharge;
     }
 
@@ -666,7 +666,7 @@ public class PatientRoom implements Serializable, RetirableEntity {
     }
 
     public double getAdjustedMoCharge() {
-      
+
         return adjustedMoCharge;
     }
 
@@ -674,7 +674,7 @@ public class PatientRoom implements Serializable, RetirableEntity {
         this.adjustedMoCharge = adjustedMoCharge;
     }
 
-    public double getAjdustedNursingCharge() {        
+    public double getAjdustedNursingCharge() {
         return ajdustedNursingCharge;
     }
 
