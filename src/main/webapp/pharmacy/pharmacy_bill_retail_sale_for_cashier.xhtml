@@ -721,7 +721,8 @@
                                     </div>
                                 </h:panelGroup>
                                 
-                                 <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}">
+                                 <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',false) or 
+                                                                                            sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFiveCustom3'}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                              <phi:saleBillToken id="saleBillToken2" bill="#{pharmacySaleController.printBill}"></phi:saleBillToken>
@@ -765,7 +766,8 @@
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
+                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',false) or 
+                                                                                            sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFiveCustom3'}"> 
                                     <div>
                                          <phi:sale_bill_five_five_custom_3 bill="#{pharmacySaleController.printBill}"/>
                                     </div>
