@@ -52,7 +52,7 @@ public class ReportLog implements Serializable {
         this.startTime = startTime;
         this.endTime = endTime;
         this.reportType = reportType.getReportType();
-        this.reportName = reportType.getValue();
+        this.reportName = reportType.getReportName();
         this.executionTimeInMillis = endTime.getTime() - startTime.getTime();
     }
 
@@ -102,7 +102,7 @@ public class ReportLog implements Serializable {
             if (clazz.isEnum() && IReportType.class.isAssignableFrom(clazz)) {
                 for (Object constant : clazz.getEnumConstants()) {
                     IReportType report = (IReportType) constant;
-                    if (report.getValue().equalsIgnoreCase(reportName)) {
+                    if (report.getReportName().equalsIgnoreCase(reportName)) {
                         return report;
                     }
                 }

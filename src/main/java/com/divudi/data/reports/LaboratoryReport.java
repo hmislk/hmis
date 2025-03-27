@@ -1,11 +1,11 @@
 package com.divudi.data.reports;
 
-public enum CollectionCenterReport implements IReportType {
-    ROUTE_ANALYSIS_REPORT("Route Analysis Report");
+public enum LaboratoryReport implements IReportType {
+    SAMPLE_CARRIER_REPORT("Sample Carrier Report");
 
     private final String displayName;
 
-    CollectionCenterReport(String displayName) {
+    LaboratoryReport(String displayName) {
         this.displayName = displayName;
     }
 

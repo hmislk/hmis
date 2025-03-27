@@ -20,7 +20,7 @@ public enum FinancialReport implements IReportType {
     }
 
     @Override
-    public String getValue() {
+    public String getReportName() {
         return this.name();
     }
 }
