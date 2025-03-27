@@ -1,13 +1,6 @@
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.DoctorController;
-import com.divudi.bean.common.InstitutionController;
-import com.divudi.bean.common.ItemApplicationController;
-import com.divudi.bean.common.ItemController;
-import com.divudi.bean.common.PatientController;
-import com.divudi.bean.common.PersonController;
-import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
@@ -24,6 +17,8 @@ import com.divudi.data.TestWiseCountReport;
 import com.divudi.data.dataStructure.BillAndItemDataRow;
 import com.divudi.data.dataStructure.ItemDetailsCell;
 import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.data.reports.CollectionCenterReport;
+import com.divudi.data.reports.FinancialReport;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -232,6 +227,10 @@ public class ReportController implements Serializable {
     private String reportType;
     private Speciality speciality;
     private String reportTemplateFileIndexName;
+    @Named
+    @Inject
+    private SessionController sessionController;
+    private ReportTimerController reportTimerController;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -1803,32 +1802,33 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectingCentreStatementReportNew() {
+        reportTimerController.trackReportExecution(() -> {
+            String jpql = "select ah "
+                    + " from AgentHistory ah "
+                    + " where ah.retired=:ret"
+                    + " and ah.createdAt between :fd and :td ";
 
-        String jpql = "select ah "
-                + " from AgentHistory ah "
-                + " where ah.retired=:ret"
-                + " and ah.createdAt between :fd and :td ";
+            Map<String, Object> m = new HashMap<>();
+            m.put("ret", false);
+            m.put("fd", fromDate);
+            m.put("td", toDate);
 
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+            if (collectingCentre != null) {
+                jpql += " and ah.agency = :cc ";
+                m.put("cc", collectingCentre);
+            }
 
-        if (collectingCentre != null) {
-            jpql += " and ah.agency = :cc ";
-            m.put("cc", collectingCentre);
-        }
+            if (institution != null) {
+                jpql += " and ah.bill.institution = :ins ";
+                m.put("ins", institution);
+            }
 
-        if (institution != null) {
-            jpql += " and ah.bill.institution = :ins ";
-            m.put("ins", institution);
-        }
-
-        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " and (ah.bill.insId = :inv or ah.bill.deptId = :inv) ";
-            m.put("inv", invoiceNumber);
-        }
-        agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+            if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+                jpql += " and (ah.bill.insId = :inv or ah.bill.deptId = :inv) ";
+                m.put("inv", invoiceNumber);
+            }
+            agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT,sessionController.getLoggedUser());
     }
 
     public void processCollectingCentreStatementReport() {
