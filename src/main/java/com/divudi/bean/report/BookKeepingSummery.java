@@ -6,7 +6,6 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;import com.divudi.bean.inward.AdmissionTypeController;
@@ -151,8 +150,7 @@ public class BookKeepingSummery implements Serializable {
     boolean withOutPro = true;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     DepartmentFacade departmentFacade;
 
@@ -676,7 +674,7 @@ public class BookKeepingSummery implements Serializable {
 //            System.err.println("##################");
 //            for (Item i : getBillBean().fetchBilledOpdItem(cat, fromDate, toDate, institution)) {
 //                //   System.err.println("Item " + i.getName() + " TIME " + new Date());
-//            
+//
 //                double count = getBillBean().calBilledIcount(i, getFromDate(), getToDate(), getInstitution());
 //                double hos = getBillBean().calFeeValue(i, FeeType.OwnInstitution, getFromDate(), getToDate(), getInstitution());
 //                //     double pro = getFee(i, FeeType.Staff);
@@ -1009,7 +1007,7 @@ public class BookKeepingSummery implements Serializable {
         opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
-        
+
     }
 
     public void createOPdLabListWithProDayEndTableWithCredit() {
@@ -1268,7 +1266,7 @@ public class BookKeepingSummery implements Serializable {
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotalWithCredit = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
-        
+
     }
 
     public long calCountTotal(long count) {
@@ -1445,7 +1443,7 @@ public class BookKeepingSummery implements Serializable {
 
         }
 
-        
+
 
     }
 
@@ -1602,7 +1600,7 @@ public class BookKeepingSummery implements Serializable {
         cans = getBillTotalbyDateBill(getFromDate(), getToDate(), institution, department, btps, BillClassType.CancelledBill, false, false);
         refs = getBillTotalbyDateBill(getFromDate(), getToDate(), institution, department, btps, BillClassType.RefundBill, false, false);
 
-        
+
     }
 
     public void createInwardOpdFee() {
@@ -1621,9 +1619,9 @@ public class BookKeepingSummery implements Serializable {
         countTotals = (long) getCountTotal(bookKeepingSummeryRowsInward);
 
 //        bookKeepingSummeryRowsOpd.addAll(createFee(BillClassType.BilledBill, BillType.OpdBill, FeeType.Chemical, getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
-//        //// // System.out.println("bookKeepingSummeryRows = " + bookKeepingSummeryRows.size());        
+//        //// // System.out.println("bookKeepingSummeryRows = " + bookKeepingSummeryRows.size());
 //        totalRegentFee=getTotal(bookKeepingSummeryRowsOpd);
-        
+
     }
 
     public void createInwardOpdCount() {
@@ -1638,7 +1636,7 @@ public class BookKeepingSummery implements Serializable {
 
         countTotals = (long) getCountTotal(bookKeepingSummeryRowsInward);
 
-        
+
 
     }
 
@@ -1993,7 +1991,7 @@ public class BookKeepingSummery implements Serializable {
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotalByPayMethod = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), paymentMethod);
 
-        
+
     }
 
     public void createOPdLabListWithProDayEndTablebyInward() {
@@ -2955,7 +2953,7 @@ public class BookKeepingSummery implements Serializable {
         m.put("billType", bty);
         m.put("ins", institution);
         m.put("ft", fTy);
-        //    m.put("ins", getSessionController().getInstitution());        
+        //    m.put("ins", getSessionController().getInstitution());
 
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
@@ -2993,7 +2991,7 @@ public class BookKeepingSummery implements Serializable {
 
 //            //inward bills
 //            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
-//            //double 
+//            //double
             newRow.setValue1(hospitalFeeCash);
             newRow.setValue2(regentFeeCash);
             newRow.setValue3(proTotCash);
@@ -3015,7 +3013,7 @@ public class BookKeepingSummery implements Serializable {
         bksr.setProFee(profeTotal);
         bksr.setReagentFee(regentTot);
 
-        
+
 
     }
 
@@ -3866,7 +3864,7 @@ public class BookKeepingSummery implements Serializable {
 //        PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card,PaymentMethod.OnlineSettlement};
 //        FeeType[] feeTypes = {FeeType.OwnInstitution, FeeType.CollectingCentre};
 //        getBillBean().calFeeValue(getFromDate(), getToDate(), Arrays.asList(feeTypes), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
-//        
+//
 //    }
     public void createCashCategoryWithoutProDay() {
         Date startTime = new Date();
@@ -3938,7 +3936,7 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
 
-        
+
     }
 
     public void createDoctorPaymentChannelling() {
@@ -4160,7 +4158,7 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
-//    
+//
 //    public void createDoctorPaymentInwardTemporaryTesting() {
 //        System.err.println("Doctor Payment Inward");
 //        inwardProfessionalPayments = new ArrayList<>();
@@ -4324,7 +4322,7 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
 
-        
+
     }
 
     Institution creditCompany;
@@ -4357,7 +4355,7 @@ public class BookKeepingSummery implements Serializable {
             }
         }
 
-        
+
     }
 
     public void processCreditPaidItems() {
@@ -4379,7 +4377,7 @@ public class BookKeepingSummery implements Serializable {
             }
         }
 
-        
+
     }
 
     public void createCashCategoryWithoutProMonth() {
@@ -4430,7 +4428,7 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
 
-        
+
     }
 
     public void createCashCategoryWithProMonth() {
@@ -4487,7 +4485,7 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
 
-        
+
     }
 
     public void createCashCategoryWithProMonth2() {
@@ -4500,7 +4498,7 @@ public class BookKeepingSummery implements Serializable {
     private void createFinalSummery() {
         finalValues = new ArrayList<>();
         String1Value2 dd;
-        ////////              
+        ////////
         dd = new String1Value2();
         dd.setString("Net Cash");
         Double tmp = grantTotal - (creditCardTotal + slipTotal + chequeTotal + departmentProfessionalPaymentTotal + channellingProfessionalPaymentTotal + inwardProfessionalPaymentTotal);
@@ -4526,7 +4524,7 @@ public class BookKeepingSummery implements Serializable {
     private void createFinalSummeryMonth() {
         finalValues = new ArrayList<>();
         String1Value2 dd;
-        ////////       
+        ////////
         dd = new String1Value2();
         dd.setString("Card Total ");
         dd.setValue1(0 - creditCardTotal);
@@ -4617,22 +4615,22 @@ public class BookKeepingSummery implements Serializable {
 //            + " order by c.name, i.name, bf.fee.feeType" ;
 //
 //    temMap.put (
-//            
+//
 //
 //    "toDate", toDate);
-//    temMap.put (       
+//    temMap.put (
 //
 //    "fromDate", fromDate);
 //    temMap.put (
-//            
+//
 //
 //    "ins", institution);
 //    temMap.put (
-//            
+//
 //
 //    "bTp", BillType.OpdBill);
 //    temMap.put (
-//            
+//
 //
 //    "pms", paymentMethods);
     public List<Double> fetchCategoryIncome(Category c, List<PaymentMethod> paymentMethods, Date fDate, Date tDate, boolean byDate, boolean withoutpro) {
@@ -5210,14 +5208,6 @@ public class BookKeepingSummery implements Serializable {
 
     public void setHeader(String header) {
         this.header = header;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<String1Value2> getVatTableOpdCash() {

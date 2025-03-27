@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
@@ -63,8 +62,6 @@ public class StoreController1 implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     //////////
     @EJB
     AmppFacade AmppFacade;
@@ -89,14 +86,14 @@ public class StoreController1 implements Serializable {
     // private double grantStock;
     private Date fromDate;
     private Date toDate;
-    
+
     ////////
     //List<DepartmentStock> departmentStocks;
     private List<DepartmentSale> departmentSale;
     private List<BillItem> grns;
     private List<BillItem> pos;
     private List<BillItem> directPurchase;
-    
+
      private int manageStoreReportIndex;
 
     public void makeNull() {
@@ -679,8 +676,8 @@ public class StoreController1 implements Serializable {
     public void setInstitutionBhtIssue(List<InstitutionSale> institutionBhtIssue) {
         this.institutionBhtIssue = institutionBhtIssue;
     }
-    
-    
+
+
 
     public void createInstitutionBhtIssue() {
         List<Institution> insList = getCompany();
@@ -890,7 +887,7 @@ public class StoreController1 implements Serializable {
 
     public void createTable() {
         Date startTime = new Date();
-        
+
         createGrnTable();
         createPoTable();
         createDirectPurchaseTable();
@@ -900,7 +897,7 @@ public class StoreController1 implements Serializable {
         createInstitutionTransferIssue();
         createInstitutionTransferReceive();
         createInstitutionIssue();
-        
+
 
     }
 
@@ -1255,14 +1252,6 @@ public class StoreController1 implements Serializable {
         this.AmppFacade = AmppFacade;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public int getManageStoreReportIndex() {
         return manageStoreReportIndex;
     }
@@ -1271,5 +1260,5 @@ public class StoreController1 implements Serializable {
         this.manageStoreReportIndex = manageStoreReportIndex;
     }
 
-    
+
 }

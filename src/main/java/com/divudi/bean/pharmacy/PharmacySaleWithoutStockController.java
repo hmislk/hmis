@@ -7,7 +7,6 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
@@ -103,8 +102,6 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     SearchController searchController;
     @Inject
     DrawerController drawerController;
-    @Inject
-    CommonController commonController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -2026,14 +2023,6 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
 
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     @Override

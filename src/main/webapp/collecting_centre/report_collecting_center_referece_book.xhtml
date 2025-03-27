@@ -13,7 +13,7 @@
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputText styleClass="fas fa-search" />
-                            <h:outputLabel value="Collection Center Refferance Book " class="mx-4"/>                          
+                            <h:outputLabel value="Collection Center Refferance Book " class="mx-4"/>
                         </f:facet>
 
                         <div class="row">
@@ -21,41 +21,41 @@
 
                                 <div class="col-2">
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar 
-                                        id="fromDate" 
-                                        value="#{agentReferenceBookController.frmDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                        styleClass="dateTimePicker" 
-                                        class="w-100" 
+                                    <p:calendar
+                                        id="fromDate"
+                                        value="#{agentReferenceBookController.frmDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        styleClass="dateTimePicker"
+                                        class="w-100"
                                         inputStyleClass="form-control"
-                                        maxdate="#{commonController.endOfDayOnCurrentDate}">      
+                                        maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
                                     </p:calendar>
                                 </div>
 
                                 <div class="col-2">
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar 
+                                    <p:calendar
                                         id="toDate"
                                         value="#{agentReferenceBookController.toDate}"
-                                        navigator="false" 
+                                        navigator="false"
                                         styleClass="dateTimePicker"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         class="w-100"
-                                        inputStyleClass="form-control">                                                                              
+                                        inputStyleClass="form-control">
                                     </p:calendar>
                                 </div>
 
                                 <div class="col-5">
                                     <p:outputLabel value="Collecting Centre Name" />
-                                    <p:autoComplete 
-                                        converter="deal" 
+                                    <p:autoComplete
+                                        converter="deal"
                                         styleClass="w-100"
                                         inputStyleClass="w-100"
                                         placeholder="Collecting Centre Name"
-                                        value="#{agentReferenceBookController.collectingCentre}" 
+                                        value="#{agentReferenceBookController.collectingCentre}"
                                         forceSelection="true"
-                                        completeMethod="#{institutionController.completeCollectingCenter}" 
+                                        completeMethod="#{institutionController.completeCollectingCenter}"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
                                         <p:column style="padding: 6px;"><i class="pi pi-tag"></i> #{vt.code}</p:column>
                                         <p:column style="padding: 6px;"><i class="pi pi-user"></i> #{vt.name}</p:column>
@@ -64,11 +64,11 @@
 
                                 <div class="col-2">
                                     <h:outputLabel value=""/>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         icon="fas fa-search"
-                                        id="btnSearch" 
-                                        ajax="false" 
-                                        value="Search" 
+                                        id="btnSearch"
+                                        ajax="false"
+                                        value="Search"
                                         class="ui-button-success w-100 mt-4"
                                         action="#{agentReferenceBookController.searchReferenceBooks()}" >
                                     </p:commandButton>
@@ -82,12 +82,12 @@
                                 <div class="col-md-12">
                                     <h:outputText value="#{agentReferenceBookController.agentRefBookList.size()}" rendered="false"/>
 
-                                    <p:dataTable 
-                                        rowIndexVar="i" 
-                                        id="tblrefBook" 
-                                        value="#{agentReferenceBookController.agentRefBookList}" 
-                                        var="refBook"  
-                                        style="min-width: 100%;"  
+                                    <p:dataTable
+                                        rowIndexVar="i"
+                                        id="tblrefBook"
+                                        value="#{agentReferenceBookController.agentRefBookList}"
+                                        var="refBook"
+                                        style="min-width: 100%;"
                                         rows ="20"
                                         rowKey="#{refBook.id}"
                                         paginator="true"
@@ -96,54 +96,54 @@
                                         >
 
 
-                                        <p:column 
+                                        <p:column
                                             style="padding: 6px;"
-                                            headerText="S. No" 
+                                            headerText="S. No"
                                             width="2">
                                             <h:outputLabel value="#{i+1}"/>
                                         </p:column>
 
-                                        <p:column 
+                                        <p:column
                                             headerText="Book No" style="padding: 6px;"
-                                            filterBy="#{refBook.strbookNumber}" 
+                                            filterBy="#{refBook.strbookNumber}"
                                             filterMatchMode="contains"
                                             sortBy="#{refBook.id}"
                                             styleClass="alignTop" width="20">
                                             <h:outputLabel value="#{refBook.strbookNumber}"/>
                                         </p:column>
 
-                                        <p:column 
+                                        <p:column
                                             headerText="Centre Code" style="padding: 6px;"
-                                            filterBy="#{refBook.institution.code}" 
+                                            filterBy="#{refBook.institution.code}"
                                             filterMatchMode="contains"
                                             sortBy="#{refBook.institution.code}"
                                             styleClass="alignTop" width="30">
                                             <h:outputLabel value="#{refBook.institution.code}"/>
                                         </p:column>
 
-                                        <p:column 
+                                        <p:column
                                             headerText="Centre Name" style="padding: 6px;"
-                                            filterBy="#{refBook.institution.name}" 
+                                            filterBy="#{refBook.institution.name}"
                                             filterMatchMode="contains"
                                             sortBy="#{refBook.institution.name}"
                                             styleClass="alignTop" width="150">
                                             <h:outputLabel value="#{refBook.institution.name}"/>
                                         </p:column>
 
-                                        <p:column 
+                                        <p:column
                                             style="padding: 6px;"
                                             width="15">
                                             <f:facet name="header">
                                                 <div class="d-flex justify-content-center">
                                                     <h:outputLabel value="Starting"/>
                                                 </div>
-                                            </f:facet> 
+                                            </f:facet>
                                             <h:outputLabel class="d-flex justify-content-center" value="#{refBook.startingReferenceNumber}">
                                                 <f:convertNumber pattern="##0"/>
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column 
+                                        <p:column
                                             style="padding: 6px;"
                                             width="15">
                                             <f:facet name="header">
@@ -176,24 +176,24 @@
                                         </p:column>
 
                                         <p:column headerText="Action" style="padding: 6px;" width="10">
-                                            <div class="d-flex gap-2"> 
-                                                <p:commandButton 
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
                                                     class="ui-button-warning"
                                                     icon="fas fa-edit"
                                                     title="To Update"
                                                     disabled="#{refBook.retired or refBook.fullyUtilized}"
-                                                    process="@this" 
+                                                    process="@this"
                                                     update="edit"
                                                     oncomplete="PF('edit').show()"
                                                     >
                                                 </p:commandButton>
-                                                <p:commandButton 
+                                                <p:commandButton
                                                     class="ui-button-danger"
                                                     icon="bi bi-trash-fill"
-                                                    title="To Delete"  
+                                                    title="To Delete"
                                                     disabled="#{refBook.retired or refBook.fullyUtilized}"
-                                                    process="@this" 
-                                                    update="dlg" 
+                                                    process="@this"
+                                                    update="dlg"
                                                     oncomplete="PF('dlg').show()"
                                                     >
                                                 </p:commandButton>
@@ -203,15 +203,15 @@
                                                 <div>
                                                     <div class="d-flex gap-2">
                                                         <p:inputText value="#{agentReferenceBookController.comment}" placeholder="Add Comment" class="w-100"></p:inputText>
-                                                        <p:commandButton 
-                                                            id="btnremove" 
-                                                            value="Remove" 
+                                                        <p:commandButton
+                                                            id="btnremove"
+                                                            value="Remove"
                                                             ajax="false"
                                                             icon="fas fa-trash"
                                                             class="ui-button-danger"
                                                             onclick="if (!confirm('Are You Sure You Want to Delete this Reference Book?'))
                                                                         return false;"
-                                                            action="#{agentReferenceBookController.deleteAgentBook(refBook)}" 
+                                                            action="#{agentReferenceBookController.deleteAgentBook(refBook)}"
                                                             oncomplete="PF('dlg').hide();" >
                                                         </p:commandButton>
                                                     </div>
@@ -225,14 +225,14 @@
                                                             <h:outputText value="Collecting Centre Name"  class="w-100"></h:outputText>
                                                         </div>
                                                         <div class="col-5">
-                                                            <p:autoComplete 
-                                                                converter="deal" 
+                                                            <p:autoComplete
+                                                                converter="deal"
                                                                 styleClass="w-100"
                                                                 inputStyleClass="w-100"
                                                                 placeholder="Collecting Centre Name"
-                                                                value="#{refBook.institution}" 
+                                                                value="#{refBook.institution}"
                                                                 forceSelection="true"
-                                                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                                                completeMethod="#{institutionController.completeCollectingCenter}"
                                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
                                                                 <p:column style="padding: 6px;"><i class="pi pi-tag"></i> #{vt.code}</p:column>
                                                                 <p:column style="padding: 6px;"><i class="pi pi-user"></i> #{vt.name}</p:column>
@@ -282,15 +282,15 @@
                                                     </div>
 
                                                     <div class="d-flex justify-content-end mt-2">
-                                                        <p:commandButton 
-                                                            id="btnupdate" 
-                                                            value="Update" 
+                                                        <p:commandButton
+                                                            id="btnupdate"
+                                                            value="Update"
                                                             ajax="false"
                                                             icon="fas fa-pencil"
                                                             class="ui-button-warning"
                                                             onclick="if (!confirm('Are You Sure You Want to Update this Reference Book?'))
                                                                         return false;"
-                                                            action="#{agentReferenceBookController.updateAgentBook(refBook)}" 
+                                                            action="#{agentReferenceBookController.updateAgentBook(refBook)}"
                                                             oncomplete="PF('edit').hide();" >
                                                         </p:commandButton>
                                                     </div>

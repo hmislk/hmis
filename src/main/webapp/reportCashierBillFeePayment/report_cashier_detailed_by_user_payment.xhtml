@@ -5,7 +5,7 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"       
+                xmlns:p="http://primefaces.org/ui"
                 xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
                 >
@@ -18,13 +18,13 @@
                 <p:panel  header="Cashier Report">
                     <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{opdPreBillReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                    maxdate="#{commonController.endOfDayOnCurrentDate}" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{opdPreBillReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}" >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{opdPreBillReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    maxdate="#{commonController.endOfDayOnCurrentDate}" >
+                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}" >
                         </p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                         <p:autoComplete  completeMethod="#{webUserController.completeUser}" class="w-100 mx-4" inputStyleClass="w-100"
@@ -35,7 +35,7 @@
                     <h:panelGrid columns="6" class="my-2" >
                         <p:commandButton id="btnRefresh" ajax="false" value="Process"
                                          class="ui-button-warning" icon="fas fa-refresh"
-                                         action="#{opdPreBillReportController.createCashierTableByUserPayment}" />  
+                                         action="#{opdPreBillReportController.createCashierTableByUserPayment}" />
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >

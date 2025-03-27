@@ -1,30 +1,15 @@
-/*
- * Open Hospital Management Information System
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
- */
-package com.divudi.bean.common;
+package com.divudi.java;
 
 import com.divudi.entity.channel.SessionInstance;
-import java.io.Serializable;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 import java.util.Date;
 import java.util.List;
-import javax.inject.Named;
 
-import com.divudi.java.CommonFunctions;
-
-/**
- *
- * @author buddhika
- */
 @Named
-public class CommonController implements Serializable {
-
-    /**
-     * Creates a new instance of CommonController
-     */
-    public CommonController() {
-    }
+@ApplicationScoped
+public class CommonFunctionsProxy {
 
     public String convertToWordJSF(double number) {
         return CommonFunctions.convertToWord(number);

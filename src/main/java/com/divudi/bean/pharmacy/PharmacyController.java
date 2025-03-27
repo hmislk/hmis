@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
@@ -95,8 +94,6 @@ public class PharmacyController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     private AmpController ampController;
     @Inject
@@ -4585,14 +4582,6 @@ public class PharmacyController implements Serializable {
 
     public void setHasTransferIn(boolean hasTransferIn) {
         this.hasTransferIn = hasTransferIn;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public ItemFacade getItemFacade() {

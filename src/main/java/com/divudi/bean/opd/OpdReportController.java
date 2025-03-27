@@ -107,8 +107,6 @@ public class OpdReportController implements Serializable {
     @Inject
     private TransferController transferController;
     @Inject
-    private CommonController commonController;
-    @Inject
     private PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     private WebUserController webUserController;
@@ -477,14 +475,14 @@ public class OpdReportController implements Serializable {
                 case OPD_BILL_CANCELLATION:
                 case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
                 case OPD_BILL_REFUND:
-                    
-                    
+
+
             }
-            
+
             if (r.getBill().getPaymentMethod() == null) {
                 continue;
             }
-            
+
             if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
                 r.setPayments(billService.fetchBillPayments(r.getBill(), r.getBatchBill()));
             }
@@ -665,20 +663,6 @@ public class OpdReportController implements Serializable {
      */
     public void setTransferController(TransferController transferController) {
         this.transferController = transferController;
-    }
-
-    /**
-     * @return the commonController
-     */
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    /**
-     * @param commonController the commonController to set
-     */
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     /**

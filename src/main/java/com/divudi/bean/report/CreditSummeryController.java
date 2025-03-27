@@ -6,7 +6,6 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -92,8 +91,6 @@ public class CreditSummeryController implements Serializable {
 
     @Inject
     BillController billController;
-    @Inject
-    CommonController commonController;
 
     /**
      * Creates a new instance of CreditSummery
@@ -101,15 +98,8 @@ public class CreditSummeryController implements Serializable {
      * @return
      */
     public void makeNull() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         dailyCash = null;
         dailyCredit = null;
-        //   categoryWithItem = null;
-
-        
     }
 
     public Item getItem() {
@@ -394,7 +384,7 @@ public class CreditSummeryController implements Serializable {
         opdCreditVatTotal = getFeeVatTotal();
         createVatTables();
 
-        
+
 
     }
 
@@ -602,7 +592,7 @@ public class CreditSummeryController implements Serializable {
         }
         creditBills.removeAll(bills);
 
-        
+
 
     }
 
@@ -737,14 +727,6 @@ public class CreditSummeryController implements Serializable {
 
     public void setTotal(double total) {
         this.total = total;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public double getTotalVat() {
