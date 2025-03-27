@@ -9,7 +9,6 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
@@ -95,8 +94,6 @@ public class InvestigationController implements Serializable {
      */
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -481,7 +478,7 @@ public class InvestigationController implements Serializable {
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
         return investigationItemController.toEditInvestigationFormat();
     }
-    
+
     public String navigateExportReoirtFormat() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -498,7 +495,7 @@ public class InvestigationController implements Serializable {
         investigationItemController.listInvestigationItem();
         return "/admin/lims/export?faces-redirect=true";
     }
-    
+
     public String navigateToEditFormatSinglePastData() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -1268,9 +1265,9 @@ public class InvestigationController implements Serializable {
         parameters.put("nameQuery", "%" + qry.toUpperCase() + "%");
         parameters.put("codeQuery", "%" + qry + "%");
         parameters.put("ret", false);
-        
+
         List<Investigation> completeItems = getFacade().findByJpql(jpql,parameters);
-        
+
 
 //        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry + "%' and  order by c.name");
         return completeItems;
@@ -1990,7 +1987,7 @@ public class InvestigationController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             InvestigationController controller = (InvestigationController) facesContext.getApplication().getELResolver().
@@ -2005,9 +2002,7 @@ public class InvestigationController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -2023,14 +2018,6 @@ public class InvestigationController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + InvestigationController.class.getName());
             }
         }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Department getDepartment() {

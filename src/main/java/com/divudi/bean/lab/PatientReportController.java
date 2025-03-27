@@ -1,15 +1,12 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.ApplicationController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.PdfController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TransferController;
-import com.divudi.bean.common.WebUserController;
-
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BooleanMessage;
 import com.divudi.data.CalculationType;
@@ -137,8 +134,6 @@ public class PatientReportController implements Serializable {
     @Inject
     ItemForItemController itemForItemController;
     @Inject
-    private CommonController commonController;
-    @Inject
     private InvestigationItemController investigationItemController;
     @Inject
     CommonReportItemController commonReportItemController;
@@ -150,8 +145,6 @@ public class PatientReportController implements Serializable {
     private SecurityController securityController;
     @Inject
     PatientInvestigationController patientInvestigationController;
-    @Inject
-    WebUserController webUserController;
     @Inject
     PatientReportUploadController patientReportUploadController;
     @Inject
@@ -2865,10 +2858,6 @@ public class PatientReportController implements Serializable {
 
     public void setSelectables(List<Selectable> selectables) {
         this.selectables = selectables;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
     }
 
     public InvestigationItemController getInvestigationItemController() {

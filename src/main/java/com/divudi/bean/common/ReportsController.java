@@ -1,15 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.cashTransaction.CashBookEntryController;
-import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.cashTransaction.DrawerEntryController;
-import com.divudi.bean.channel.ChannelSearchController;
-import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.opd.OpdBillController;
-import com.divudi.bean.pharmacy.PharmacyBillSearch;
-import com.divudi.bean.pharmacy.PharmacyPreSettleController;
-import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.data.*;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -30,8 +21,6 @@ import com.divudi.facade.*;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
-import com.divudi.service.BillService;
-import com.divudi.service.PatientInvestigationService;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -44,7 +33,6 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
-
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
@@ -71,10 +59,7 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 public class ReportsController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    /**
-     * EJBs
-     */
-    private CommonFunctions commonFunctions;
+
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -88,21 +73,13 @@ public class ReportsController implements Serializable {
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
-    BillSessionFacade billSessionFacade;
-    @EJB
     StockFacade stockFacade;
     @EJB
     PatientReportFacade patientReportFacade;
     @EJB
     private PatientFacade patientFacade;
     @EJB
-    TokenFacade tokenFacade;
-    @EJB
     private DrawerFacade drawerFacade;
-    @EJB
-    BillService billService;
-    @EJB
-    PatientInvestigationService patientInvestigationService;
     @EJB
     PatientEncounterFacade peFacade;
     List<PatientEncounter> patientEncounters;
@@ -111,53 +88,11 @@ public class ReportsController implements Serializable {
      * Inject
      */
     @Inject
-    private BillBeanController billBean;
-    @Inject
     private SessionController sessionController;
     @Inject
     TransferController transferController;
     @Inject
-    private CommonController commonController;
-    @Inject
-    PharmacySaleBhtController pharmacySaleBhtController;
-    @Inject
-    SmsController smsController;
-    @Inject
-    AuditEventApplicationController auditEventApplicationController;
-    @Inject
-    WebUserController webUserController;
-    @Inject
-    OpdPreSettleController opdPreSettleController;
-    @Inject
-    PharmacyPreSettleController pharmacyPreSettleController;
-    @Inject
-    TokenController tokenController;
-    @Inject
     private DepartmentController departmentController;
-    @Inject
-    BillSearch billSearch;
-    @Inject
-    PharmacyBillSearch pharmacyBillSearch;
-    @Inject
-    OpdBillController opdBillController;
-    @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    ChannelSearchController channelSearchController;
-    @Inject
-    ReportTemplateController reportTemplateController;
-    @Inject
-    CashBookEntryController cashBookEntryController;
-    @Inject
-    ExcelController excelController;
-    @Inject
-    PdfController pdfController;
-    @Inject
-    DrawerEntryController drawerEntryController;
-    @Inject
-    DrawerController drawerController;
-    @Inject
-    EnumController enumController;
     @Inject
     private ReportTimerController reportTimerController;
 
@@ -377,14 +312,6 @@ public class ReportsController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public UploadedFile getFile() {
@@ -712,7 +639,7 @@ public class ReportsController implements Serializable {
     }
 
     public Date getMaxDate() {
-        maxDate = commonFunctions.getEndOfDay(new Date());
+        maxDate = CommonFunctions.getEndOfDay(new Date());
         return maxDate;
     }
 

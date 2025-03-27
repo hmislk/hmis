@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.hr.PaysheetComponentType;
@@ -67,8 +66,6 @@ public class StaffBasicController implements Serializable {
     private Date toDate;
     private ReportKeyWord reportKeyWord;
     Institution staffInstitution;
-    @Inject
-    CommonController commonController;
 
     public void removeAll() {
         for (StaffPaysheetComponent spc : getSelectedStaffComponent()) {
@@ -194,7 +191,7 @@ public class StaffBasicController implements Serializable {
 
     private void createComponent() {
 
-        //////// // System.out.println("ceate D :" + getCurrent().getStaff().getStaffEmployment());     
+        //////// // System.out.println("ceate D :" + getCurrent().getStaff().getStaffEmployment());
         StaffBasics tmp = new StaffBasics();
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
@@ -383,7 +380,7 @@ public class StaffBasicController implements Serializable {
         items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
         calTotal(items);
 
-        
+
 
     }
 
@@ -603,14 +600,6 @@ public class StaffBasicController implements Serializable {
 
     public void setDate(Date date) {
         this.date = date;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public int getHrAdminMenuIndex() {

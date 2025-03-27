@@ -38,8 +38,6 @@ import com.divudi.bean.common.util.JsfUtil;
 public class IncomeExpensessBillController implements Serializable {
 
     @Inject
-    CommonController commonController;
-    @Inject
     PaymentSchemeController paymentSchemeController;
     @Inject
     BillBeanController billBean;
@@ -98,8 +96,8 @@ public class IncomeExpensessBillController implements Serializable {
 
         return false;
     }
-    
-    
+
+
     private boolean errorCheckCancel() {
         if (getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select Payment Methord");
@@ -201,11 +199,11 @@ public class IncomeExpensessBillController implements Serializable {
     public void prepareNewBill() {
         recreateModel();
     }
-    
+
     public void cancelIncomeBill(){
         cancelBill(BillType.ChannelIncomeBill, BillNumberSuffix.ICAN);
     }
-    
+
     public void cancelExpencesBill(){
         cancelBill(BillType.ChannelExpenesBill, BillNumberSuffix.ECAN);
     }
@@ -342,14 +340,6 @@ public class IncomeExpensessBillController implements Serializable {
 
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public PaymentMethodData getPaymentMethodData() {

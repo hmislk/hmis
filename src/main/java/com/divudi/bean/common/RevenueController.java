@@ -45,8 +45,7 @@ public class RevenueController implements Serializable {
     InstitutionController institutionController;
     @Inject
     DepartmentController departmentController;
-    @Inject
-    CommonController commonController;
+
     /**
      * Properties
      */
@@ -66,7 +65,6 @@ public class RevenueController implements Serializable {
      * Functions
      */
     public void fillRevenueSummery() {
-        Date startTime = new Date();
 
         ////// // System.out.println("fillRevenueSummery ");
         rows = new ArrayList<>();
@@ -105,13 +103,13 @@ public class RevenueController implements Serializable {
             grandTotal += insTotal;
         }
 
-        
+
 
     }
 
     public void fillRevenueReport() {
         Date startTime = new Date();
-        
+
         ////// // System.out.println("fillRevenueReport");
         rows = new ArrayList<>();
         List<Institution> institutions = getInstitutionController().getCompanies();
@@ -285,8 +283,8 @@ public class RevenueController implements Serializable {
 
         grandTotal = cashTotal + creditTotal + creditCardTotal + chequeTotal;
 
-        
-        
+
+
 
     }
 
@@ -403,14 +401,6 @@ public class RevenueController implements Serializable {
         this.chequeTotal = chequeTotal;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public int getRevenueReportIndex() {
         return revenueReportIndex;
     }
@@ -418,7 +408,5 @@ public class RevenueController implements Serializable {
     public void setRevenueReportIndex(int revenueReportIndex) {
         this.revenueReportIndex = revenueReportIndex;
     }
-
-    
 }
 
