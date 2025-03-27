@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.divudi.java.CommonFunctions;
@@ -23,9 +22,6 @@ import com.divudi.java.CommonFunctions;
 @SessionScoped
 public class CommonController implements Serializable {
 
-    @Inject
-    private SessionController sessionController;
-
     /**
      * Creates a new instance of CommonController
      */
@@ -36,9 +32,7 @@ public class CommonController implements Serializable {
         return CommonFunctions.convertToWord(number);
     }
 
-    public String formatToLongDate(Date date) {
-        // Load the date format from session preferences
-        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+    public String formatToLongDate(Date date, String dateFormat) {
         return CommonFunctions.formatToLongDate(date, dateFormat);
     }
 
@@ -83,14 +77,5 @@ public class CommonController implements Serializable {
 
     public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
         return CommonFunctions.dateDifferenceInMinutes(fromDate, toDate);
-    }
-
-    //----------Date Time Formats
-    public SessionController getSessionController() {
-        return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
     }
 }
