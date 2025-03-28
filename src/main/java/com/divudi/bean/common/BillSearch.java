@@ -333,6 +333,10 @@ public class BillSearch implements Serializable {
         return "bill_payment_opd?faces-redirect=true";
     }
 
+    public String navigateToInwardSearchService() {
+        return "/inward/inward_reprint_bill_service?faces-redirect=true";
+    }
+
     public List<Payment> fetchBillPayments(Bill bill) {
         return billService.fetchBillPayments(bill);
     }

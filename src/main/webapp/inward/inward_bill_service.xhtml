@@ -625,15 +625,14 @@
                                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                                         <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                     </p:commandButton>
-                                                    <p:commandButton 
-                                                        ajax="false"
-                                                        title="Manage Bill"
-                                                        class="ui-button-warning m-1"
-                                                        icon="fa fa-file-invoice"
-                                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                    <p:commandButton
+                                                            ajax="false"
+                                                            title="Manage Bill"
+                                                            class="ui-button-warning m-1"
+                                                            icon="fa fa-file-invoice"
+                                                            action="#{billSearch.navigateToInwardSearchService()}">
                                                         <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                     </p:commandButton>
-
                                                     <p:commandButton 
                                                         title="To Sample Management" 
                                                         icon="fas fa-flask"
