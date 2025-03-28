@@ -10,32 +10,32 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.hr.StaffController;
-import com.divudi.data.Dashboard;
-import com.divudi.data.Privileges;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Person;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserDashboard;
-import com.divudi.entity.WebUserPrivilege;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.WebUserDashboardFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.WebUserPrivilegeFacade;
-import com.divudi.facade.WebUserRoleFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.data.Dashboard;
+import com.divudi.core.data.Privileges;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserDashboard;
+import com.divudi.core.entity.WebUserPrivilege;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.WebUserDashboardFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
+import com.divudi.core.facade.WebUserRoleFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.hr.StaffImageController;
-import com.divudi.data.LoginPage;
-import com.divudi.entity.UserNotification;
-import com.divudi.entity.WebUserRole;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.UserNotificationFacade;
-import com.divudi.light.common.WebUserLight;
+import com.divudi.core.data.LoginPage;
+import com.divudi.core.entity.UserNotification;
+import com.divudi.core.entity.WebUserRole;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.UserNotificationFacade;
+import com.divudi.core.light.common.WebUserLight;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -652,7 +652,7 @@ public class WebUserController implements Serializable {
     private void fillLightUsers() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
+        jpql = "Select new com.divudi.core.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
                 + " from WebUser wu "
                 + " where wu.retired=:ret "
                 + " and wu.staff is not null "
@@ -664,7 +664,7 @@ public class WebUserController implements Serializable {
     private void fillLightUsersWithoutStaff() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
+        jpql = "Select new com.divudi.core.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
                 + " from WebUser wu "
                 + " where wu.retired=:ret "
                 + " and wu.staff is null "

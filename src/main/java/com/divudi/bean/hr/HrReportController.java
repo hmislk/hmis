@@ -7,50 +7,50 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.MonthEndRecord;
-import com.divudi.data.dataStructure.WeekDayWork;
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.DepartmentAttendance;
-import com.divudi.data.hr.FingerPrintRecordType;
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.hr.StaffLeaveBallance;
-import com.divudi.data.hr.StaffShiftAggrgation;
+import com.divudi.core.data.MonthEndRecord;
+import com.divudi.core.data.dataStructure.WeekDayWork;
+import com.divudi.core.data.hr.DayType;
+import com.divudi.core.data.hr.DepartmentAttendance;
+import com.divudi.core.data.hr.FingerPrintRecordType;
+import com.divudi.core.data.hr.LeaveType;
+import com.divudi.core.data.hr.PaysheetComponentType;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.hr.StaffLeaveBallance;
+import com.divudi.core.data.hr.StaffShiftAggrgation;
 
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Department;
-import com.divudi.entity.Form;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.FingerPrintRecord;
-import com.divudi.entity.hr.FingerPrintRecordHistory;
-import com.divudi.entity.hr.SalaryCycle;
-import com.divudi.entity.hr.Shift;
-import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.entity.hr.StaffSalary;
-import com.divudi.entity.hr.StaffSalaryComponant;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.hr.StaffShiftExtra;
-import com.divudi.entity.hr.StaffShiftHistory;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FingerPrintRecordFacade;
-import com.divudi.facade.FingerPrintRecordHistoryFacade;
-import com.divudi.facade.FormFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ShiftFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffLeaveFacade;
-import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.facade.StaffSalaryComponantFacade;
-import com.divudi.facade.StaffSalaryFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.util.JsfUtil;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Form;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.FingerPrintRecord;
+import com.divudi.core.entity.hr.FingerPrintRecordHistory;
+import com.divudi.core.entity.hr.SalaryCycle;
+import com.divudi.core.entity.hr.Shift;
+import com.divudi.core.entity.hr.StaffLeave;
+import com.divudi.core.entity.hr.StaffPaysheetComponent;
+import com.divudi.core.entity.hr.StaffSalary;
+import com.divudi.core.entity.hr.StaffSalaryComponant;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.entity.hr.StaffShiftExtra;
+import com.divudi.core.entity.hr.StaffShiftHistory;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.FingerPrintRecordFacade;
+import com.divudi.core.facade.FingerPrintRecordHistoryFacade;
+import com.divudi.core.facade.FormFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ShiftFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffLeaveFacade;
+import com.divudi.core.facade.StaffPaysheetComponentFacade;
+import com.divudi.core.facade.StaffSalaryComponantFacade;
+import com.divudi.core.facade.StaffSalaryFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.facade.StaffShiftHistoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -1859,7 +1859,7 @@ public class HrReportController implements Serializable {
 
         String sql = "";
         HashMap hm = new HashMap();
-        sql = "select new com.divudi.data.hr.StaffLeaveBallance(ss.staff,ss.leaveType,sum(ss.qty)) "
+        sql = "select new com.divudi.core.data.hr.StaffLeaveBallance(ss.staff,ss.leaveType,sum(ss.qty)) "
                 + " from StaffLeave ss "
                 + " where ss.retired=false "
                 + " and ss.leaveDate between :frm  and :to ";
@@ -1916,7 +1916,7 @@ public class HrReportController implements Serializable {
         String sql = "";
 
         HashMap hm = new HashMap();
-        sql = "select new com.divudi.data.hr.DepartmentAttendance(ss.staff.workingDepartment,"
+        sql = "select new com.divudi.core.data.hr.DepartmentAttendance(ss.staff.workingDepartment,"
                 + "FUNC('Date',ss.shiftDate),count(distinct(ss.staff))) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
@@ -3674,7 +3674,7 @@ public class HrReportController implements Serializable {
         String sql = "";
 
         HashMap hm = new HashMap();
-        sql = "select new com.divudi.data.hr.StaffShiftAggrgation(ss.staff,"
+        sql = "select new com.divudi.core.data.hr.StaffShiftAggrgation(ss.staff,"
                 + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime+ss.leavedTimeOther)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
@@ -5240,7 +5240,7 @@ public class HrReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -5251,7 +5251,7 @@ public class HrReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.util.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

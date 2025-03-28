@@ -8,11 +8,11 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.PatientReportController;
-import com.divudi.entity.Staff;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.facade.StaffFacade;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;

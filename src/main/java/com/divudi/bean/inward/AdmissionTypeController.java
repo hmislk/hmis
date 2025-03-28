@@ -10,11 +10,11 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CategoryItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.CategoryItem;
-import com.divudi.entity.Item;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.facade.AdmissionTypeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.CategoryItem;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.AdmissionTypeFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

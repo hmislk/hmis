@@ -11,11 +11,11 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.lab.InvestigationCategory;
-import com.divudi.entity.lab.Machine;
-import com.divudi.facade.InvestigationCategoryFacade;
-import com.divudi.facade.MachineFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.facade.InvestigationCategoryFacade;
+import com.divudi.core.facade.MachineFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

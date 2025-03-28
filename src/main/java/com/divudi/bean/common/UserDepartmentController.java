@@ -7,14 +7,14 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserDepartment;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.WebUserDepartmentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserDepartment;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.WebUserDepartmentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;

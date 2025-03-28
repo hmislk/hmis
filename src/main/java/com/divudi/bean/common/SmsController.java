@@ -5,13 +5,13 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.MessageType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.Sms;
-import com.divudi.facade.SmsFacade;
-import com.divudi.util.JsfUtil;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 
 import java.util.List;
 import java.util.Map;

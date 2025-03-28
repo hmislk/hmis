@@ -6,12 +6,12 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.entity.inward.RoomFacilityCharge;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.RoomFacade;
-import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.RoomFacade;
+import com.divudi.core.facade.RoomFacilityChargeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

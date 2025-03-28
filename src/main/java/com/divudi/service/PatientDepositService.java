@@ -1,16 +1,16 @@
 package com.divudi.service;
 
-import com.divudi.util.JsfUtil;
-import com.divudi.data.HistoryType;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.PatientDepositHistory;
-import com.divudi.entity.Payment;
-import com.divudi.facade.PatientDepositFacade;
-import com.divudi.facade.PatientDepositHistoryFacade;
-import com.divudi.facade.PatientFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.core.entity.PatientDepositHistory;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.PatientDepositFacade;
+import com.divudi.core.facade.PatientDepositHistoryFacade;
+import com.divudi.core.facade.PatientFacade;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

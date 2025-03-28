@@ -10,9 +10,9 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.lab.InvestigationTube;
-import com.divudi.facade.InvestigationTubeFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.facade.InvestigationTubeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

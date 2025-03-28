@@ -1,10 +1,10 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Relation;
+import com.divudi.core.entity.Relation;
 
-import com.divudi.facade.RelationFacade;
-import com.divudi.util.JsfUtil;
-import com.divudi.util.JsfUtil.PersistAction;
+import com.divudi.core.facade.RelationFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.JsfUtil.PersistAction;
 
 import java.io.Serializable;
 import java.util.Date;

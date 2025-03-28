@@ -7,9 +7,9 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.Area;
-import com.divudi.facade.AreaFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Area;
+import com.divudi.core.facade.AreaFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

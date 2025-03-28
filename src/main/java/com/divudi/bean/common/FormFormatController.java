@@ -9,14 +9,14 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.hr.HrReportController;
-import com.divudi.entity.Category;
-import com.divudi.entity.FormFormat;
-import com.divudi.entity.Staff;
-import com.divudi.entity.lab.CommonReportItem;
-import com.divudi.facade.CommonReportItemFacade;
-import com.divudi.facade.FormFormatFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.FormFormat;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.lab.CommonReportItem;
+import com.divudi.core.facade.CommonReportItemFacade;
+import com.divudi.core.facade.FormFormatFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

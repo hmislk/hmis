@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.facade.AuditEventFacade;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.facade.AuditEventFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

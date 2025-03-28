@@ -4,12 +4,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.TriggerType;
-import com.divudi.entity.TriggerSubscription;
-import com.divudi.facade.TriggerSubscriptionFacade;
-import com.divudi.entity.Department;
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.WebUserRole;
+import com.divudi.core.data.TriggerType;
+import com.divudi.core.entity.TriggerSubscription;
+import com.divudi.core.facade.TriggerSubscriptionFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.WebUserRole;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

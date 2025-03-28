@@ -4,22 +4,22 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.DealerDueDetailRow;
-import com.divudi.data.dataStructure.InstitutionBills;
-import com.divudi.data.dataStructure.InstitutionEncounters;
-import com.divudi.data.table.String1Value5;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.DealerDueDetailRow;
+import com.divudi.core.data.dataStructure.InstitutionBills;
+import com.divudi.core.data.dataStructure.InstitutionEncounters;
+import com.divudi.core.data.table.String1Value5;
 
 import com.divudi.ejb.CreditBean;
-import com.divudi.entity.*;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.facade.AdmissionFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.util.CommonFunctions;
 
 import java.io.OutputStream;
 
@@ -706,7 +706,7 @@ public class CreditCompanyDueController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1181,21 +1181,21 @@ public class CreditCompanyDueController implements Serializable {
             for (PatientEncounter b : lst) {
 //                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
-                b.getFinalBill().setNetTotal(com.divudi.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
+                b.getFinalBill().setNetTotal(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
                 b.setCreditPaidAmount(Math.abs(b.getCreditPaidAmount()));
-                b.setCreditPaidAmount(com.divudi.util.CommonFunctions.round(b.getCreditPaidAmount()));
-                b.getFinalBill().setPaidAmount(com.divudi.util.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
+                b.setCreditPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getCreditPaidAmount()));
+                b.getFinalBill().setPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
                 b.setTransPaid(b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
                 //// // System.out.println("b.getTransPaid() = " + b.getTransPaid());
-                b.setTransPaid(com.divudi.util.CommonFunctions.round(b.getTransPaid()));
+                b.setTransPaid(com.divudi.core.util.CommonFunctions.round(b.getTransPaid()));
 
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getTransPaid());
 
             }
-            newIns.setTotal(com.divudi.util.CommonFunctions.round(newIns.getTotal()));
-            newIns.setPaidTotal(com.divudi.util.CommonFunctions.round(newIns.getPaidTotal()));
+            newIns.setTotal(com.divudi.core.util.CommonFunctions.round(newIns.getTotal()));
+            newIns.setPaidTotal(com.divudi.core.util.CommonFunctions.round(newIns.getPaidTotal()));
             institutionEncounters.add(newIns);
         }
 
@@ -1218,21 +1218,21 @@ public class CreditCompanyDueController implements Serializable {
             for (PatientEncounter b : lst) {
 //                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
-                b.getFinalBill().setNetTotal(com.divudi.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
+                b.getFinalBill().setNetTotal(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
                 b.setCreditPaidAmount(Math.abs(b.getCreditPaidAmount()));
-                b.setCreditPaidAmount(com.divudi.util.CommonFunctions.round(b.getCreditPaidAmount()));
-                b.getFinalBill().setPaidAmount(com.divudi.util.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
+                b.setCreditPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getCreditPaidAmount()));
+                b.getFinalBill().setPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
                 b.setTransPaid(b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
                 //// // System.out.println("b.getTransPaid() = " + b.getTransPaid());
-                b.setTransPaid(com.divudi.util.CommonFunctions.round(b.getTransPaid()));
+                b.setTransPaid(com.divudi.core.util.CommonFunctions.round(b.getTransPaid()));
 
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getTransPaid());
 
             }
-            newIns.setTotal(com.divudi.util.CommonFunctions.round(newIns.getTotal()));
-            newIns.setPaidTotal(com.divudi.util.CommonFunctions.round(newIns.getPaidTotal()));
+            newIns.setTotal(com.divudi.core.util.CommonFunctions.round(newIns.getTotal()));
+            newIns.setPaidTotal(com.divudi.core.util.CommonFunctions.round(newIns.getPaidTotal()));
             institutionEncounters.add(newIns);
         }
     }

@@ -6,15 +6,15 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.HistoryType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.HistoryType;
 import com.divudi.ejb.StockHistoryRecorder;
-import com.divudi.entity.Department;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.Item;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Item;
+import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.util.Date;

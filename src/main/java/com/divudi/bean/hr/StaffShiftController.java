@@ -9,12 +9,12 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.util.JsfUtil;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.hr.StaffShiftReplace;
-import com.divudi.facade.StaffShiftFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.entity.hr.StaffShiftReplace;
+import com.divudi.core.facade.StaffShiftFacade;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;

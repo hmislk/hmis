@@ -7,34 +7,34 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.*;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Payment;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.util.JsfUtil;
-import com.divudi.data.analytics.ReportTemplateType;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.*;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.analytics.ReportTemplateType;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PaymentHandoverItem;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.CashBook;
-import com.divudi.entity.cashTransaction.CashBookEntry;
-import com.divudi.entity.cashTransaction.DenominationTransaction;
-import com.divudi.entity.cashTransaction.DetailedFinancialBill;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.DrawerFacade;
-import com.divudi.facade.PaymentHandoverItemFacade;
-import com.divudi.facade.PaymentMethodValueFacade;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PaymentHandoverItem;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.CashBook;
+import com.divudi.core.entity.cashTransaction.CashBookEntry;
+import com.divudi.core.entity.cashTransaction.DenominationTransaction;
+import com.divudi.core.entity.cashTransaction.DetailedFinancialBill;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.PaymentHandoverItemFacade;
+import com.divudi.core.facade.PaymentMethodValueFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -2838,7 +2838,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillShifts(Integer count, Boolean completed, Date fromDate, Date toDate, WebUser paramUser) {
         bundle = new ReportTemplateRowBundle();
-        String jpql = "Select new com.divudi.data.ReportTemplateRow(b) "
+        String jpql = "Select new com.divudi.core.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic=:bta ";

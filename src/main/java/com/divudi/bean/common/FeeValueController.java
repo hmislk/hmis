@@ -8,14 +8,14 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.FeeValue;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Service;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.FeeValueFacade;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.FeeValue;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.FeeValueFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

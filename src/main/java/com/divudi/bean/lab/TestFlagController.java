@@ -9,15 +9,15 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.util.JsfUtil;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.Sex;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.TestFlag;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.TestFlagFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.Sex;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.TestFlag;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.InvestigationItemFacade;
+import com.divudi.core.facade.TestFlagFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

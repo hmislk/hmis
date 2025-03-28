@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.hr.BankAccount;
-import com.divudi.facade.BankAccountFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.hr.BankAccount;
+import com.divudi.core.facade.BankAccountFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

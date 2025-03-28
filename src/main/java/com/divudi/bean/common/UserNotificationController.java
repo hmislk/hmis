@@ -8,23 +8,23 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.bean.pharmacy.PurchaseOrderController;
 import com.divudi.bean.pharmacy.TransferIssueController;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.OptionScope;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.OptionScope;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.UserNotification;
-import com.divudi.entity.Notification;
-import com.divudi.entity.Sms;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.NotificationFacade;
-import com.divudi.facade.SmsFacade;
-import com.divudi.facade.UserNotificationFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.UserNotification;
+import com.divudi.core.entity.Notification;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.NotificationFacade;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.facade.UserNotificationFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

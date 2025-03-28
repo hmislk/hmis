@@ -8,8 +8,8 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.Vocabulary;
-import com.divudi.facade.VocabularyFacade;
+import com.divudi.core.entity.Vocabulary;
+import com.divudi.core.facade.VocabularyFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,7 +27,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 
 /**
  *

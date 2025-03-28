@@ -6,10 +6,10 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.cashTransaction.CashBook;
-import com.divudi.facade.CashBookFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.cashTransaction.CashBook;
+import com.divudi.core.facade.CashBookFacade;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,11 +32,11 @@ public class CashBookController implements Serializable {
 
     @EJB
     private CashBookFacade cashbookFacade;
-    
+
     @Inject
     private SessionController sessionController;
 
-    
+
     private CashBook cashBook;
 
     @Deprecated //Use CashbookService
@@ -44,15 +44,15 @@ public class CashBookController implements Serializable {
         if (site==null) {
             return null;
         }
-        
+
         if (ins==null) {
             return null;
         }
-        
+
         if (dept==null) {
             return null;
         }
-        
+
         String sql;
         Map m = new HashMap();
         m.put("ins", ins);
@@ -73,7 +73,7 @@ public class CashBookController implements Serializable {
             cb.setDepartment(dept);
             cb.setSite(site);
             cashbookFacade.create(cb);
-        } 
+        }
         return cb;
     }
 

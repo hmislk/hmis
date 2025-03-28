@@ -8,13 +8,13 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.util.JsfUtil;
-import com.divudi.data.Title;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Person;
-import com.divudi.entity.Speciality;
-import com.divudi.facade.DoctorFacade;
-import com.divudi.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.Title;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.facade.DoctorFacade;
+import com.divudi.core.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

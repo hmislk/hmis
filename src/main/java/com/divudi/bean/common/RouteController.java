@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.Route;
-import com.divudi.facade.RouteFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.entity.Route;
+import com.divudi.core.facade.RouteFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

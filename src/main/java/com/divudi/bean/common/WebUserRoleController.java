@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.WebUserRole;
-import com.divudi.facade.WebUserRoleFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.WebUserRole;
+import com.divudi.core.facade.WebUserRoleFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

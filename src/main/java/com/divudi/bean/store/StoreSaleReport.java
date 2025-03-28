@@ -6,27 +6,27 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.DatedBills;
-import com.divudi.data.dataStructure.PharmacyDetail;
-import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
-import com.divudi.data.dataStructure.PharmacySummery;
-import com.divudi.data.table.String1Value3;
-import com.divudi.data.table.String2Value4;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.DatedBills;
+import com.divudi.core.data.dataStructure.PharmacyDetail;
+import com.divudi.core.data.dataStructure.PharmacyPaymetMethodSummery;
+import com.divudi.core.data.dataStructure.PharmacySummery;
+import com.divudi.core.data.table.String1Value3;
+import com.divudi.core.data.table.String2Value4;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -1106,7 +1106,7 @@ public class StoreSaleReport implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1127,7 +1127,7 @@ public class StoreSaleReport implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.util.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

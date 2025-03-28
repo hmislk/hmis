@@ -12,11 +12,11 @@ import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UploadController;
 
-import com.divudi.entity.Upload;
-import com.divudi.entity.lab.ReportFormat;
-import com.divudi.facade.ReportFormatFacade;
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.lab.PatientReport;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.entity.lab.ReportFormat;
+import com.divudi.core.facade.ReportFormatFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.lab.PatientReport;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;

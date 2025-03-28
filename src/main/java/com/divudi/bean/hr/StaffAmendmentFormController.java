@@ -8,16 +8,16 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 
 
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.AmendmentForm;
-import com.divudi.entity.hr.Shift;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.facade.AmendmentFormFacade;
-import com.divudi.facade.ShiftFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.util.JsfUtil;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.AmendmentForm;
+import com.divudi.core.entity.hr.Shift;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.facade.AmendmentFormFacade;
+import com.divudi.core.facade.ShiftFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.facade.StaffShiftHistoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -464,7 +464,7 @@ public class StaffAmendmentFormController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -475,7 +475,7 @@ public class StaffAmendmentFormController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.util.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

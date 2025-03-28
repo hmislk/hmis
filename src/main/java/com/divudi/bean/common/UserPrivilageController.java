@@ -10,17 +10,17 @@
 package com.divudi.bean.common;
 
 // <editor-fold defaultstate="collapsed" desc="Imports">
-import com.divudi.data.Privileges;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserPrivilege;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.WebUserPrivilegeFacade;
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.WebUserRole;
-import com.divudi.entity.WebUserRolePrivilege;
-import com.divudi.facade.WebUserRolePrivilegeFacade;
+import com.divudi.core.data.Privileges;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserPrivilege;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.WebUserRole;
+import com.divudi.core.entity.WebUserRolePrivilege;
+import com.divudi.core.facade.WebUserRolePrivilegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

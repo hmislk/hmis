@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
 
         <cc:attribute name="duplicate" />
     </cc:interface>
@@ -27,23 +27,23 @@
             </div>
 
             <div class="headingBill mt-2">
-                <h:outputLabel value="Pharmacy Token"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="Pharmacy Token"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
-            
+
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
-            
+
             <h:panelGroup rendered="#{not empty tokenController.findPharmacyTokens(cc.attrs.bill)}">
                 <div class="billline">
                     <h:outputLabel value="#{tokenController.findPharmacyTokens(cc.attrs.bill).tokenNumber}" style="font-size: 30px;"/>
                 </div>
-            </h:panelGroup>  
+            </h:panelGroup>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div class="billDetails" >
@@ -58,7 +58,7 @@
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                        
+
                         <td style="width: 30%" >
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
@@ -76,7 +76,7 @@
                             <h:outputLabel value="#{cc.attrs.bill.deptId}"  class="billDetails">
                             </h:outputLabel>
                         </td>
-                        
+
 
                         <td style="width: 30%" >
                             <h:outputLabel value="#{cc.attrs.bill.creater.staff.name}" class="billDetails">
@@ -93,7 +93,7 @@
                             <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  class="billDetails">
                             </h:outputLabel>
                         </td>
-                        
+
                         <td style="width: 30%" ></td>
                     </tr>
 
@@ -106,7 +106,7 @@
                             <td style="width: 30%;" >
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  class="billDetails"></h:outputLabel>
                             </td>
-                            
+
                             <td style="width: 30%" >
                             </td>
                         </tr>
@@ -116,7 +116,7 @@
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div class="billline m-1">

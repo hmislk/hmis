@@ -1,10 +1,10 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Patient;
-import com.divudi.entity.channel.SessionInstance;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.bean.channel.PatientPortalController;
-import com.divudi.entity.PaymentGatewayTransaction;
-import com.divudi.facade.PaymentGatewayTransactionFacade;
+import com.divudi.core.entity.PaymentGatewayTransaction;
+import com.divudi.core.facade.PaymentGatewayTransactionFacade;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URLDecoder;
@@ -20,7 +20,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.inject.Inject;
 
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.util.CommonFunctions;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;

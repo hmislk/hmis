@@ -6,9 +6,9 @@ package com.divudi.ejb;
 
 import com.divudi.bean.channel.ChannelScheduleController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.entity.ServiceSession;
-import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.core.data.ApplicationInstitution;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.facade.ServiceSessionFacade;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

@@ -10,9 +10,9 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.lab.Sample;
-import com.divudi.facade.SampleFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.entity.lab.Sample;
+import com.divudi.core.facade.SampleFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

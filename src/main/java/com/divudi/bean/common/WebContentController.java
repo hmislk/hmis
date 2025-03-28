@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.WebContentType;
-import static com.divudi.data.WebContentType.ShortText;
-import com.divudi.entity.WebContent;
-import com.divudi.entity.WebLanguage;
-import com.divudi.facade.WebContentFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.data.WebContentType;
+import static com.divudi.core.data.WebContentType.ShortText;
+import com.divudi.core.entity.WebContent;
+import com.divudi.core.entity.WebLanguage;
+import com.divudi.core.facade.WebContentFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

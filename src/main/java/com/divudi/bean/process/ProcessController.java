@@ -1,16 +1,16 @@
 package com.divudi.bean.process;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.util.JsfUtil;
-import com.divudi.data.process.ProcessStepActionType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.process.ProcessDefinition;
-import com.divudi.entity.process.ProcessInstance;
-import com.divudi.entity.process.ProcessStepActionDefinition;
-import com.divudi.entity.process.ProcessStepDefinition;
-import com.divudi.entity.process.ProcessStepInstance;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.process.ProcessStepActionType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.process.ProcessDefinition;
+import com.divudi.core.entity.process.ProcessInstance;
+import com.divudi.core.entity.process.ProcessStepActionDefinition;
+import com.divudi.core.entity.process.ProcessStepDefinition;
+import com.divudi.core.entity.process.ProcessStepInstance;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.ProcessService;
 import javax.inject.Named;
 import java.io.Serializable;

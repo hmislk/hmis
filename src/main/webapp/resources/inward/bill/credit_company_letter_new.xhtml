@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" /> 
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="bill" />
     </cc:interface>
 
@@ -85,7 +85,7 @@
                     <tr>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress3}"/>
-                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress4 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress4 eq '') 
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress4 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress4 eq '')
                                                                  and (cc.attrs.bill.patientEncounter.creditCompany.transAddress3 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress3 ne '')}"/>
                             <h:outputLabel value="," rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress4 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress4 ne ''}"/>
                         </td>
@@ -95,7 +95,7 @@
                     <tr>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress4}"/>
-                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress5 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress5 eq '') 
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress5 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress5 eq '')
                                                                  and (cc.attrs.bill.patientEncounter.creditCompany.transAddress4 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress4 ne '')}"/>
                             <h:outputLabel value="," rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress5 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress5 ne ''}"/>
                         </td>
@@ -105,7 +105,7 @@
                     <tr>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress5}"/>
-                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress6 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress6 eq '') 
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress6 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress6 eq '')
                                                                  and (cc.attrs.bill.patientEncounter.creditCompany.transAddress5 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress5 ne '')}"/>
                             <h:outputLabel value="," rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress6 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress6 ne ''}"/>
                         </td>
@@ -115,7 +115,7 @@
                     <tr>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress6}"/>
-                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress7 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress7 eq '') 
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress7 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress7 eq '')
                                                                  and (cc.attrs.bill.patientEncounter.creditCompany.transAddress6 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress6 ne '')}"/>
                             <h:outputLabel value="," rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress7 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress7 ne ''}"/>
                         </td>
@@ -178,7 +178,7 @@
                     <tr>
                         <td colspan="3">
                             <p>
-                                Settlement of Hospital Charges Against Bill No : 
+                                Settlement of Hospital Charges Against Bill No :
                                 <b> <h:outputLabel value=" #{cc.attrs.bill.deptId}"/></b>
                             </p>
                         </td>

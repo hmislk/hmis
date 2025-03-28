@@ -10,11 +10,11 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.facade.PatientSampleFacade;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

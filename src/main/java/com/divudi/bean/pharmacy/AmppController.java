@@ -9,14 +9,14 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.facade.AmppFacade;
-import com.divudi.facade.VmppFacade;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.VmppFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

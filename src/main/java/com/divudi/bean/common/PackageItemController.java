@@ -7,19 +7,19 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PackageFee;
-import com.divudi.entity.PackageItem;
-import com.divudi.entity.Packege;
-import com.divudi.entity.Service;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PackageFeeFacade;
-import com.divudi.facade.PackageItemFacade;
-import com.divudi.facade.PackegeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PackageFee;
+import com.divudi.core.entity.PackageItem;
+import com.divudi.core.entity.Packege;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PackageFeeFacade;
+import com.divudi.core.facade.PackageItemFacade;
+import com.divudi.core.facade.PackegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

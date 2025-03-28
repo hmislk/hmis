@@ -1,7 +1,7 @@
 package com.divudi.bean.process;
 
-import com.divudi.entity.process.ProcessDefinition;
-import com.divudi.facade.ProcessDefinitionFacade;
+import com.divudi.core.entity.process.ProcessDefinition;
+import com.divudi.core.facade.ProcessDefinitionFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -17,7 +17,7 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr 
+ * @author Dr
  * M H B Ariyaratne
  *
  */
@@ -29,7 +29,7 @@ public class ProcessDefinitionController implements Serializable {
 
     @EJB
     private ProcessDefinitionFacade processDefinitionFacade;
-    
+
     private int index = 0;
 
     // Current ProcessDefinition being created or edited
@@ -83,7 +83,7 @@ public class ProcessDefinitionController implements Serializable {
         fillAllProcesses();
         return "/process/admin/process_definitions?faces-redirect=true;";
     }
-    
+
     /**
      * Navigates to the manage Process Definitions view.
      *
@@ -127,7 +127,7 @@ public class ProcessDefinitionController implements Serializable {
             this.current = processDefinition;
             this.editable = true;
         } else {
-            FacesContext.getCurrentInstance().addMessage(null, 
+            FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_WARN, "No Process Selected", "Please select a process to edit."));
         }
         return null; // Stay on the same page
@@ -142,23 +142,23 @@ public class ProcessDefinitionController implements Serializable {
         try {
             if (current.getId() == null) {
                 processDefinitionFacade.create(current);
-                FacesContext.getCurrentInstance().addMessage(null, 
+                FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Process Created", "Process has been successfully created."));
             } else {
                 processDefinitionFacade.edit(current);
-                FacesContext.getCurrentInstance().addMessage(null, 
+                FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Process Updated", "Process has been successfully updated."));
             }
             items = null; // Invalidate list to trigger re-query
             editable = false;
         } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null, 
+            FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "An error occurred while saving the process."));
         }
         return null; // Stay on the same page
     }
-    
-    
+
+
 
     /**
      * Deletes the specified ProcessDefinition by flagging it as retired.
@@ -171,15 +171,15 @@ public class ProcessDefinitionController implements Serializable {
             try {
                 processDefinition.setRetired(true);
                 processDefinitionFacade.edit(processDefinition);
-                FacesContext.getCurrentInstance().addMessage(null, 
+                FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_INFO, "Process Retired", "Process has been successfully retired."));
                 items = null; // Invalidate list to trigger re-query
             } catch (Exception e) {
-                FacesContext.getCurrentInstance().addMessage(null, 
+                FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "An error occurred while retiring the process."));
             }
         } else {
-            FacesContext.getCurrentInstance().addMessage(null, 
+            FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_WARN, "No Process Selected", "Please select a process to retire."));
         }
         return null; // Stay on the same page
@@ -192,7 +192,7 @@ public class ProcessDefinitionController implements Serializable {
         current = null;
         items = null;
         editable = false;
-        FacesContext.getCurrentInstance().addMessage(null, 
+        FacesContext.getCurrentInstance().addMessage(null,
             new FacesMessage(FacesMessage.SEVERITY_INFO, "Reset", "Process form has been reset."));
     }
 

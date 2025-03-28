@@ -4,16 +4,16 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.data.dataStructure.InvestigationSummeryData;
+import com.divudi.core.data.dataStructure.InvestigationSummeryData;
 
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Item;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Item;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -126,8 +126,8 @@ public class InvestigationMonthSummeryController implements Serializable {
 //                + "b.item.id=" + w.getId() + " and  b.bill.createdAt between :fromDate and :toDate";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
-        //    temMap.put("pactype", com.divudi.entity.Packege.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
+        //    temMap.put("pactype", com.divudi.core.entity.Packege.class);
         List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         double tot = 0.0;
@@ -174,7 +174,7 @@ public class InvestigationMonthSummeryController implements Serializable {
 
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
 
         investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 

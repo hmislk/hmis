@@ -9,9 +9,9 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentHandoverItem;
-import com.divudi.facade.PaymentHandoverItemFacade;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentHandoverItem;
+import com.divudi.core.facade.PaymentHandoverItemFacade;
 
 import java.io.Serializable;
 import java.util.Date;

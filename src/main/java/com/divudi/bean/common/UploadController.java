@@ -1,11 +1,11 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.UploadType;
-import com.divudi.entity.Category;
-import com.divudi.entity.Upload;
-import com.divudi.entity.WebContent;
-import com.divudi.facade.UploadFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.data.UploadType;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.entity.WebContent;
+import com.divudi.core.facade.UploadFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;

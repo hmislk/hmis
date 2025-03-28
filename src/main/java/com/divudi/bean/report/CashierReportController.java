@@ -8,25 +8,25 @@ import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PaymentMethodValue;
-import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.dataStructure.CashierSummeryData;
-import com.divudi.data.dataStructure.WebUserBillsTotal;
-import com.divudi.data.table.String1Value1;
-import com.divudi.data.table.String1Value5;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentMethodValue;
+import com.divudi.core.data.dataStructure.BillsTotals;
+import com.divudi.core.data.dataStructure.CashierSummeryData;
+import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.table.String1Value1;
+import com.divudi.core.data.table.String1Value5;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.util.JsfUtil;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -1908,7 +1908,7 @@ public class CashierReportController implements Serializable {
     private List<Object> userBillTotalsWithPaymentMethods(WebUser w, Bill billClass, BillType billType) {
         String sql;
         Map temMap = new HashMap();
-        sql = "select new com.divudi.data.PaymentMethodValue(b.paymentMethod, sum(b.netTotal+b.vat))"
+        sql = "select new com.divudi.core.data.PaymentMethodValue(b.paymentMethod, sum(b.netTotal+b.vat))"
                 + " from Bill b "
                 + " where type(b)=:bill "
                 + " and b.creater=:cret "

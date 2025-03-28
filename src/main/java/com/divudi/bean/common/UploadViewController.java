@@ -1,7 +1,7 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Upload;
-import com.divudi.facade.UploadFacade;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -11,7 +11,7 @@ import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
 
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.util.CommonFunctions;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 

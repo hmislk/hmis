@@ -9,9 +9,9 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.util.JsfUtil;
-import com.divudi.entity.hr.Grade;
-import com.divudi.facade.GradeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.hr.Grade;
+import com.divudi.core.facade.GradeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

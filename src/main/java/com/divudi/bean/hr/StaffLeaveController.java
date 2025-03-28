@@ -6,13 +6,13 @@
 package com.divudi.bean.hr;
 
 
-import com.divudi.data.hr.LeaveType;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.data.hr.LeaveType;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.hr.Grade;
-import com.divudi.entity.hr.StaffLeave;
-import com.divudi.facade.StaffLeaveFacade;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.entity.hr.Grade;
+import com.divudi.core.entity.hr.StaffLeave;
+import com.divudi.core.facade.StaffLeaveFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

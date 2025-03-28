@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.WebLanguage;
-import com.divudi.facade.WebLanguageFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.entity.WebLanguage;
+import com.divudi.core.facade.WebLanguageFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

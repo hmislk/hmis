@@ -1,7 +1,7 @@
 package com.divudi.bean.clinical;
 
-import com.divudi.entity.PatientEncounter;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
 import java.io.Serializable;
 import javax.enterprise.context.SessionScoped;

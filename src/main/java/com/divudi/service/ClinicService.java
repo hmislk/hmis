@@ -4,16 +4,16 @@
  */
 package com.divudi.service;
 
-import com.divudi.data.BillType;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Item;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.util.CommonFunctions;
+import com.divudi.core.data.BillType;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.ArrayList;

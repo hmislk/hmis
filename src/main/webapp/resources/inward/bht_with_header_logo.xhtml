@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="admission" type="com.divudi.entity.inward.Admission" />
+        <cc:attribute name="admission" type="com.divudi.core.entity.inward.Admission" />
         <cc:attribute name="controller"  />
     </cc:interface>
 
@@ -127,7 +127,7 @@
                         </tr>
 
                     </table>
-                </div>                
+                </div>
 
                 <div class="mt-3" style="font-weight: bold;">
                     <p:outputLabel   value="GUARDIAN DETAILS" />
@@ -149,14 +149,14 @@
                             <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.guardianRelationshipToPatient.name}" /> </td>
                         </tr>
-                        <tr>                            
+                        <tr>
                             <td style="width: 17%"><h:outputLabel value="Address in Full"></h:outputLabel></td>
                             <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td style="width: 25%">
                                 <h:outputLabel value="#{cc.attrs.admission.guardian.address}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
-                            </td>                                              
+                            </td>
                         </tr>
                         <tr>
                             <td style="width: 17%"><h:outputLabel value="Attendant's Mobile No"></h:outputLabel></td>

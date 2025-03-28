@@ -10,14 +10,14 @@ package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.membership.AllowedPaymentMethod;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.AllowedPaymentMethodFacade;
-import com.divudi.facade.PaymentSchemeFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.membership.AllowedPaymentMethod;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.AllowedPaymentMethodFacade;
+import com.divudi.core.facade.PaymentSchemeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

@@ -5,9 +5,9 @@
  */
 package com.divudi.beans.forms;
 
-import com.divudi.entity.forms.ComponentAsignment;
-import com.divudi.facade.forms.ComponentAssignmentFacade;
-import com.divudi.util.JsfUtil;
+import com.divudi.core.entity.forms.ComponentAsignment;
+import com.divudi.core.facade.forms.ComponentAssignmentFacade;
+import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
