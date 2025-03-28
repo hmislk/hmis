@@ -1081,6 +1081,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         paymentService.updateBalances(payments);
 
+        markComplete(getPreBill());
 //        markToken();
 //        makeNull();
         //    removeSettledToken();
