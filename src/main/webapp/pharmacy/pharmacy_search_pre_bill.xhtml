@@ -146,13 +146,13 @@
                                         <div class="row">
                                             <div class="col-12 d-flex justify-content-center align-items-center">
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    ajax="true"
                                                     icon="fa-solid fa-phone"
                                                     title="Call Customer"
                                                     class="ui-button-warning"
-                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
-                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}">
-                                                    
+                                                    action="#{pharmacyPreSettleController.markToken(bill)}"                                   
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or pharmacyPreSettleController.findTokenFromBill(bill).isCalled() }">
+                                                                  
                                                 </p:commandButton>
 
                                                 <p:commandButton
