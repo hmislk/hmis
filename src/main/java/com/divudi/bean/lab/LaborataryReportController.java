@@ -146,6 +146,8 @@ public class LaborataryReportController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
+        setToInstitution(sessionController.getInstitution());
+        setToDepartment(sessionController.getDepartment());
         return "/reportLab/lab_inward_order_report?faces-redirect=true;";
     }
 
@@ -156,8 +158,10 @@ public class LaborataryReportController implements Serializable {
         return "/reportLab/laboratary_income_report?faces-redirect=true;";
     }
 
-    public String navigateToLaboratarySummaryFromReport() {
+    public String navigateToLaboratarySummaryFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
+        setToInstitution(sessionController.getInstitution());
+        setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_summary?faces-redirect=true;";
     }
 
@@ -318,6 +322,9 @@ public class LaborataryReportController implements Serializable {
     }
 
     public void processLaboratorySummary() {
+        System.out.println("processLaboratorySummary");
+        
+        bundle = new IncomeBundle(bills);
 
     }
 

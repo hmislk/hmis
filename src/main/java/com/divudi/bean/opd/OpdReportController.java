@@ -35,6 +35,11 @@ import static com.divudi.data.BillClassType.PreBill;
 import static com.divudi.data.BillClassType.RefundBill;
 
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
 import com.divudi.data.IncomeBundle;
 import com.divudi.data.IncomeRow;
 import com.divudi.data.ReportTemplateRow;
@@ -221,6 +226,10 @@ public class OpdReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToOpdIncomeReport() {
         return "/opd/analytics/summary_reports/opd_income_report?faces-redirect=true";
+    }
+    
+    public String navigateToOpdIncomeDailySummary() {
+        return "/opd/analytics/summary_reports/opd_income_daily_summary?faces-redirect=true";
     }
 
 // </editor-fold>
@@ -488,6 +497,65 @@ public class OpdReportController implements Serializable {
             }
         }
         bundle.generatePaymentDetailsForBillsAndBatchBills();
+    }
+    
+    public void processOpdIncomeSummaryByDate() {
+        System.out.println("processOpdIncomeReport");
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+        List<Bill> bills = billService.fetchBillsWithToInstitution(
+                fromDate,
+                toDate,
+                institution,
+                site,
+                department,
+                toInstitution,
+                toDepartment,
+                toSite,
+                webUser,
+                billTypeAtomics,
+                admissionType,
+                paymentScheme
+        );
+
+        bundle = new IncomeBundle(bills);
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            if(r.getBill().getBillTypeAtomic()==null){
+                continue;
+            }
+            Bill batchBill = null;
+            switch(r.getBill().getBillTypeAtomic()){
+                case OPD_BILL_WITH_PAYMENT:
+                    batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
+                    r.setBatchBill(batchBill);
+                case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+                    batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
+                    r.setBatchBill(batchBill);
+                    r.setReferanceBill(r.getBill().getReferenceBill());
+                case OPD_BILL_CANCELLATION:
+                case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                case OPD_BILL_REFUND:
+                    
+                    
+            }
+            
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill(), r.getBatchBill()));
+            }
+        }
+        bundle.generatePaymentDetailsForBillsAndBatchBillsByDate();
     }
 
 // </editor-fold>

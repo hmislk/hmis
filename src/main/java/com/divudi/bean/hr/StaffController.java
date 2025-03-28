@@ -72,9 +72,6 @@ import org.primefaces.model.file.UploadedFile;
 @SessionScoped
 public class StaffController implements Serializable {
 
-    StreamedContent scCircular;
-    StreamedContent scCircularById;
-    private UploadedFile file;
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
@@ -83,7 +80,7 @@ public class StaffController implements Serializable {
     @Inject
     StaffSalaryController staffSalaryController;
 
-    ////
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private StaffEmploymentFacade staffEmploymentFacade;
     @EJB
@@ -94,27 +91,78 @@ public class StaffController implements Serializable {
     private DepartmentFacade departmentFacade;
     @EJB
     StaffSalaryFacade staffSalaryFacade;
-    List<Staff> selectedItems;
-    List<Staff> selectedList;
+    @EJB
+    private CommonReportItemFacade criFacade;
+    @EJB
+    FormItemValueFacade fivFacade;
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    SessionController sessionController;
+    @Inject
+    HrReportController hrReportController;
+    @Inject
+    StaffSalaryController staffSalaryController;
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private StreamedContent scCircular;
+    private StreamedContent scCircularById;
+    private UploadedFile file;
+    private List<Staff> selectedItems;
+    private List<Staff> selectedList;
     private List<Staff> staff;
     private List<Staff> filteredStaff;
     private Staff selectedStaff;
     private Staff current;
     private Person currentPerson;
-    List<Staff> staffWithCode;
+    private List<Staff> staffWithCode;
     private List<Staff> items = null;
-    String selectText = "";
+    private String selectText = "";
 
-    @EJB
-    private CommonReportItemFacade criFacade;
-    @EJB
-    FormItemValueFacade fivFacade;
-    Category formCategory;
+    private Category formCategory;
     private List<CommonReportItem> formItems = null;
-    List<Staff> itemsToRemove;
-    Date tempRetireDate = null;
-    boolean removeResign = false;
+    private List<Staff> itemsToRemove;
+    private Date tempRetireDate = null;
+    private boolean removeResign = false;
+    private Double eligibleWelfareLimit;
 
+    public Double getEligibleWelfareLimit() {
+        return eligibleWelfareLimit;
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Functions">
+    public void assignEligibleWelfareLimitToSelectedStaff() {
+        if (selectedItems == null || selectedItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No staff selected.");
+            return;
+        }
+
+        int count = 0;
+        for (Staff staff : selectedItems) {
+            staff.setAnnualWelfareQualified(eligibleWelfareLimit);
+            ejbFacade.edit(staff);
+            count++;
+        }
+
+        JsfUtil.addSuccessMessage("Welfare eligibility limit assigned to " + count + " staff member(s).");
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    public void setEligibleWelfareLimit(Double eligibleWelfareLimit) {
+        this.eligibleWelfareLimit = eligibleWelfareLimit;
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
+    // </editor-fold>
     public void removeSelectedItems() {
         for (Staff s : itemsToRemove) {
             s.setRetired(true);
@@ -163,6 +211,11 @@ public class StaffController implements Serializable {
     public String navigateToListStaff() {
         fillItems();
         return "/admin/staff/staff_list?faces-redirect=true;";
+    }
+
+    public String navigateToStaffWelfareEligibilityAdjustmentList() {
+        fillItems();
+        return "/admin/staff/staff_welfare_eligibility_adjustment_list?faces-redirect=true;";
     }
 
     public String navigateToManageStaff(Staff staff) {
