@@ -79,6 +79,30 @@
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierGetPaid()}"/>
                                 <h:outputLabel/>
 
+                                <p:commandButton
+                                    ajax="false"
+                                    class="ui-button-secondary w-100 my-4"
+                                    icon="fa-solid fa-desktop"
+                                    value=" View In Display"
+                                    actionListener="#{tokenController.fillPharmacyTokensCalled()}"
+                                    style="font-size: 20px; font-weight: bold"
+                                    onclick="openFullScreen(); return false;">
+                                        
+                                </p:commandButton>
+
+                                <h:outputScript>
+                                    function openFullScreen() {
+                                        var url = "#{request.contextPath}/faces/token/pharmacy_tokens_called_sale_for_cashier.xhtml";
+                                        var newWindow = window.open(url, '_blank', 'toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,fullscreen=yes');
+                                        if (newWindow) {
+                                            newWindow.moveTo(0, 0);
+                                            newWindow.resizeTo(screen.width, screen.height);
+                                        }
+                                    }
+                                </h:outputScript>
+
+
+
                                 <p:defaultCommand target="btnSearch"/>
 
                                 <p:commandButton  ajax="false" value="OPD Payment" action="/opd_search_pre_batch_bill.xhtml" rendered="false"/>
@@ -154,7 +178,7 @@
                                                     update="actionRow"
                                                     action="#{pharmacyPreSettleController.markToken(bill)}"                                   
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or pharmacyPreSettleController.findTokenFromBill(bill).isCalled() }">
-                                                              
+
                                                 </p:commandButton>
 
                                                 <p:commandButton
