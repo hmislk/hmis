@@ -1,8 +1,8 @@
 package com.divudi.service;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.AuditEventFacade;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.AuditEventFacade;
 import com.google.gson.Gson;
 import java.util.Date;
 import javax.ejb.EJB;

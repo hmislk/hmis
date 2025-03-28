@@ -9,10 +9,10 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticType;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.facade.ClinicalEntityFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.facade.ClinicalEntityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,8 +55,8 @@ public class SymptomController implements Serializable {
     public String navigateToManageSymptoms(){
         return "/emr/admin/symptoms";
     }
-    
-    
+
+
     public List<ClinicalEntity> completeDiagnosis(String qry) {
         List<ClinicalEntity> c;
         Map m = new HashMap();
@@ -118,7 +118,7 @@ public class SymptomController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
 
     public void prepareAdd() {
         current = new ClinicalEntity();

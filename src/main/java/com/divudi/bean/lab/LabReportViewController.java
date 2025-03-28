@@ -1,6 +1,5 @@
 package com.divudi.bean.lab;
 
-import com.divudi.entity.Upload;
 import java.io.ByteArrayInputStream;
 import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;

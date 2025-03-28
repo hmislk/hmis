@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.Category;
-import com.divudi.entity.MetadataCategory;
-import com.divudi.entity.MetadataSuperCategory;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.MetadataSuperCategoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.MetadataCategory;
+import com.divudi.core.entity.MetadataSuperCategory;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.MetadataSuperCategoryFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

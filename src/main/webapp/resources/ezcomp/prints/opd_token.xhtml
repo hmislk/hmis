@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="token" type="com.divudi.entity.Token"  />
+        <cc:attribute name="token" type="com.divudi.core.entity.Token"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -19,24 +19,24 @@
         <div class="posbill" style="text-align: center;">
 
             <div class="headingBill">
-                <h:outputLabel value="#{cc.attrs.token.counter.name}" style="font-size: 16px; font-weight: 900"/>    
+                <h:outputLabel value="#{cc.attrs.token.counter.name}" style="font-size: 16px; font-weight: 900"/>
             </div>
             <div class="headingBill">
-                <h:outputLabel value="OPD Token" style="font-size: 13px; font-weight: 900"/>    
+                <h:outputLabel value="OPD Token" style="font-size: 13px; font-weight: 900"/>
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div class="billline" style="margin-top: -10px;">
                 <h1>
                     #{cc.attrs.token.tokenNumber}
-                </h1>                         
+                </h1>
             </div>
 
             <div class="billline" style="margin-top: -20px;">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div style="margin-top: -10px;font-size: 12pt;font-weight: bold">
@@ -44,7 +44,7 @@
 
             </div>
             <div class="billline d-flex justify-content-center my-1">
-                <p:barcode value="#{cc.attrs.token.idStr}" 
+                <p:barcode value="#{cc.attrs.token.idStr}"
                            width="400"
                            height="100"
                            type="code128"  >
@@ -52,7 +52,7 @@
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div class="billDetails" >
@@ -88,10 +88,10 @@
                 </table>
             </div>
             <div class="billline">
-                <h:outputLabel value="#{cc.attrs.token.bill.re}"   />                           
+                <h:outputLabel value="#{cc.attrs.token.bill.re}"   />
             </div>
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
         </div>

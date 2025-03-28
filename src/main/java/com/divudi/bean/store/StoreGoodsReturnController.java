@@ -5,23 +5,23 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmaceuticalItemController;
 import com.divudi.bean.pharmacy.PharmacyController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -106,7 +106,7 @@ public class StoreGoodsReturnController implements Serializable {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
-        
+
         if (tmp.getPharmaceuticalBillItem().getFreeQtyInUnit() > storeCalculation.calFreeQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpFreeQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
@@ -258,7 +258,7 @@ public class StoreGoodsReturnController implements Serializable {
             double rCacnelled = storeCalculation.getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
 
             double netQty = Math.abs(rBilled) - Math.abs(rCacnelled);
-            
+
             double rFreeBilled = storeCalculation.getTotalFreeQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
             double rFreeCacnelled = storeCalculation.getTotalFreeQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
             double netFreeQty = Math.abs(rFreeBilled) - Math.abs(rFreeCacnelled);
@@ -268,7 +268,7 @@ public class StoreGoodsReturnController implements Serializable {
             //System.err.println("Net " + netQty);
             retPh.setQty((double) (grnPh.getQtyInUnit() - netQty));
             retPh.setQtyInUnit((double) (grnPh.getQtyInUnit() - netQty));
-            
+
             retPh.setFreeQty((double) (grnPh.getQtyInUnit() - netFreeQty));
             retPh.setFreeQtyInUnit((double) (grnPh.getFreeQtyInUnit() - netFreeQty));
 
@@ -283,7 +283,7 @@ public class StoreGoodsReturnController implements Serializable {
 //                suggessions.add(item);
 //            }
 //
-//            
+//
 //            bi.setTmpSuggession(suggessions);
             bi.setTmpQty((double) (grnPh.getQtyInUnit() - netQty));
             bi.setPharmaceuticalBillItem(retPh);

@@ -11,11 +11,11 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.VtmFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.util.ArrayList;

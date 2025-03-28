@@ -1,30 +1,30 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.IncomeBundle;
-import com.divudi.data.IncomeRow;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.pharmacy.DailyStockBalanceReport;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.IncomeBundle;
+import com.divudi.core.data.IncomeRow;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -54,13 +54,13 @@ public class LaborataryReportController implements Serializable {
     @Inject
     SessionController sessionController;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillService billService;
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -142,7 +142,7 @@ public class LaborataryReportController implements Serializable {
     private double totalServiceCharge;
 
 // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
@@ -166,7 +166,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public void resetAllFiltersExceptDateRange() {
         setViewTemplate(null);
@@ -323,13 +323,13 @@ public class LaborataryReportController implements Serializable {
 
     public void processLaboratorySummary() {
         System.out.println("processLaboratorySummary");
-        
+
         bundle = new IncomeBundle(bills);
 
     }
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;

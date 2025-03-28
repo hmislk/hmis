@@ -1,7 +1,7 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.facade.AuditEventFacade;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.facade.AuditEventFacade;
 import java.util.ArrayList;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;

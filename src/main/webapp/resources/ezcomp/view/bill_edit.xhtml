@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="editable" type="java.lang.Boolean" default="false"/>
     </cc:interface>
 
@@ -58,13 +58,13 @@
             <p:separator />
 
             <p:outputLabel value="Credit Company" />
-            <p:autoComplete value="#{cc.attrs.bill.creditCompany}" 
-                            completeMethod="#{institutionController.completeIns}" 
-                            var="i" itemLabel="#{i.name}" itemValue="#{i}" 
+            <p:autoComplete value="#{cc.attrs.bill.creditCompany}"
+                            completeMethod="#{institutionController.completeIns}"
+                            var="i" itemLabel="#{i.name}" itemValue="#{i}"
                             rendered="#{cc.attrs.editable}" />
             <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" rendered="#{!cc.attrs.editable}" />
 
-            
+
 
 
         </p:panelGrid>

@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -56,8 +56,8 @@
                         <tr >
                             <td>
                                 <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.bill.deptId eq null}" />
-                                <h:commandLink rendered="#{row.payment.bill ne null}" 
-                                               action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                <h:commandLink rendered="#{row.payment.bill ne null}"
+                                               action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                                styleClass="btn btn-link" title="View Bill Details">
                                     <f:setPropertyActionListener value="#{row.payment.bill}" target="#{billSearch.bill}" />
                                     <i class="fa fa-search" aria-hidden="true"></i> <!-- Example using FontAwesome's search icon -->

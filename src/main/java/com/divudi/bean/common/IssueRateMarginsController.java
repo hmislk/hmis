@@ -7,12 +7,12 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.IssueRateMargins;
-import com.divudi.facade.IssueRateMarginsFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.IssueRateMargins;
+import com.divudi.core.facade.IssueRateMarginsFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
