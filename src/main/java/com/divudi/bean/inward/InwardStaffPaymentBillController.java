@@ -1,12 +1,9 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -24,7 +21,6 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -63,9 +59,6 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class InwardStaffPaymentBillController implements Serializable {
-
-    @Inject
-    CommonController commonController;
 
     @EJB
     private RefundBillFacade refundBillFacade;
@@ -1076,7 +1069,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         dueBillFees = null;
         payingBillFees = null;
         billFees = null;
-        /////////////////////    
+        /////////////////////
         fromDate = null;
         toDate = null;
         current = null;
@@ -1866,14 +1859,6 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setTotalDocFeeDueNotDischarged(double totalDocFeeDueNotDischarged) {
         this.totalDocFeeDueNotDischarged = totalDocFeeDueNotDischarged;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Double getWithholdingTaxLimit() {

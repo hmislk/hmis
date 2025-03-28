@@ -4,8 +4,6 @@
  */
 package com.divudi.bean.optician;
 
-import com.divudi.bean.common.CommonController;
-
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -101,8 +99,6 @@ public class OpticianPurchaseController implements Serializable {
     private SessionController sessionController;
     @Inject
     PharmacyCalculation pharmacyBillBean;
-    @Inject
-    CommonController commonController;
 
     @Inject
     ItemController itemController;
@@ -328,7 +324,7 @@ public class OpticianPurchaseController implements Serializable {
     }
 
     public void setBatch(BillItem pid) {
-        if (pid.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+        if (pid.getPharmaceuticalBillItem().getStringValue().trim().isEmpty()) {
             Date date = pid.getPharmaceuticalBillItem().getDoe();
             DateFormat df = new SimpleDateFormat("ddMMyyyy");
             String reportDate = df.format(date);
@@ -340,7 +336,7 @@ public class OpticianPurchaseController implements Serializable {
     }
 
     public void setBatch() {
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getStringValue().trim().isEmpty()) {
             Date date = getCurrentBillItem().getPharmaceuticalBillItem().getDoe();
             DateFormat df = new SimpleDateFormat("ddMMyyyy");
             String reportDate = df.format(date);
@@ -412,11 +408,6 @@ public class OpticianPurchaseController implements Serializable {
     }
 
     public void settle() {
-
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
             return;
@@ -428,7 +419,7 @@ public class OpticianPurchaseController implements Serializable {
         if (getBill().getReferenceInstitution() == null) {
             JsfUtil.addErrorMessage("Select Reference Institution");
         }
-        if (getBill().getInvoiceNumber() == null || "".equals(getBill().getInvoiceNumber().trim())) {
+        if (getBill().getInvoiceNumber() == null || getBill().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Fill Invoice Number");
             return;
         }
@@ -622,7 +613,7 @@ public class OpticianPurchaseController implements Serializable {
     }
 //
 //    public void recreate() {
-//       
+//
 ////        cashPaid = 0.0;
 //        currentPharmacyItemData = null;
 //        pharmacyItemDatas = null;
@@ -897,14 +888,6 @@ public class OpticianPurchaseController implements Serializable {
 
     public void setBillListWithTotals(BillListWithTotals billListWithTotals) {
         this.billListWithTotals = billListWithTotals;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public double getBillItemsTotalQty() {

@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.channel;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.DoctorSpecialityController;

@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
@@ -54,8 +53,6 @@ public class InwardPriceAdjustmntController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController;
-    @Inject
     PharmaceuticalItemCategoryController pharmaceuticalItemCategoryController;
     @EJB
     private PriceMatrixFacade ejbFacade;
@@ -97,7 +94,7 @@ public class InwardPriceAdjustmntController implements Serializable {
     }
 
 //    public void copyPriceMetrixAsCredit(){
-//        
+//
 //        String sql;
 //        HashMap hm = new HashMap();
 //        sql = " select pm from InwardPriceAdjustment pm "
@@ -105,7 +102,7 @@ public class InwardPriceAdjustmntController implements Serializable {
 //                + " and pm.paymentMethod =:pay";
 //        hm.put("pay", PaymentMethod.Cash);
 //        inwardPriceAdjustments = ejbFacade.findByJpql(sql, hm);
-//        
+//
 //        for(InwardPriceAdjustment pm : inwardPriceAdjustments){
 //            InwardPriceAdjustment prima = new InwardPriceAdjustment();
 //            prima.setDepartment(pm.getDepartment());
@@ -454,7 +451,7 @@ public class InwardPriceAdjustmntController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             InwardPriceAdjustmntController controller = (InwardPriceAdjustmntController) facesContext.getApplication().getELResolver().
@@ -469,9 +466,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -488,13 +483,4 @@ public class InwardPriceAdjustmntController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

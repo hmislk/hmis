@@ -6,7 +6,6 @@
 package com.divudi.ws.finance;
 
 import com.divudi.bean.common.ApiKeyController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -67,8 +66,6 @@ public class Qb {
     @EJB
     private BillFeeFacade billFeeFacade;
 
-    @Inject
-    private CommonController commonController;
     @Inject
     ApiKeyController apiKeyController;
 

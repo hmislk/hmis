@@ -25,7 +25,7 @@
                                         value="#{searchController.fromDate}"
                                         navigator="false"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        maxdate="#{commonController.endOfDay}">
+                                        maxdate="#{commonFunctionsProxy.endOfDay}">
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
                                     <p:calendar
@@ -33,7 +33,7 @@
                                         value="#{searchController.toDate}"
                                         navigator="false"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        maxdate="#{commonController.endOfDay}">
+                                        maxdate="#{commonFunctionsProxy.endOfDay}">
                                     </p:calendar>
 
                                     <h:outputLabel value="Bill No"/>

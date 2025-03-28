@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -70,8 +69,6 @@ public class InwardReportControllerBht implements Serializable {
     @EJB
     BillService billService;
     ////
-    @Inject
-    CommonController commonController;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -1592,13 +1589,4 @@ public class InwardReportControllerBht implements Serializable {
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

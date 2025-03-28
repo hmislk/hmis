@@ -51,8 +51,6 @@ public class NotificationController implements Serializable {
     @Inject
     SecurityController securityController;
     @Inject
-    CommonController commonController;
-    @Inject
     ConfigOptionController configOptionController;
     @EJB
     private NotificationFacade ejbFacade;

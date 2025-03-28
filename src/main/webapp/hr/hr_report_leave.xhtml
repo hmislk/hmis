@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -38,7 +38,7 @@
                             <p:selectOneMenu  value="#{hrReportController.reportKeyWord.leaveType}">
                                 <f:selectItem itemLabel="Select Day Type : "/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
-                            </p:selectOneMenu>   
+                            </p:selectOneMenu>
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffLeave()}"/>
@@ -48,7 +48,7 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >                     
+                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >
                             <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
                                 <f:facet name="header">
                                     <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
@@ -59,7 +59,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{hrReportController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy "/>
                                     </h:outputLabel><br/>
@@ -93,27 +93,27 @@
                                 </p:column>
                                 <p:column headerText="Staff Roster" >
                                     #{ss.staff.roster.name}
-                                </p:column>  
+                                </p:column>
                                 <p:column headerText="Leave Type" >
                                     #{ss.leaveType}
                                 </p:column>
 
                                 <p:column headerText="Crated Date" >
                                     #{ss.createdAt}
-                                </p:column>  
+                                </p:column>
                                 <p:column headerText="Leave Date" >
                                     #{ss.leaveDate}
-                                </p:column>  
+                                </p:column>
                                 <p:column headerText="Leave Qty" >
                                     #{ss.qty}
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Comments" >
                                     #{ss.form.comments}
-                                </p:column> 
+                                </p:column>
                                  <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                  </f:facet>

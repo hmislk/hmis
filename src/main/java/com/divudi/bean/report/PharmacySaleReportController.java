@@ -7,7 +7,6 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -239,8 +238,6 @@ public class PharmacySaleReportController implements Serializable {
     /////
 
     /////
-    @Inject
-    CommonController commonController;
     @Inject
     AuditEventApplicationController auditEventApplicationController;
     @Inject
@@ -2310,7 +2307,7 @@ public class PharmacySaleReportController implements Serializable {
 //                + " or f.paymentMethod=:pm4 )"
 //                + " and f.toInstitution=:ins "
 //                + " and f.institution=:billedIns ";
-//        
+//
         sql = "select sum(f.total - f.staffFee) "
                 + " from Bill f "
                 + " where f.retired=false "
@@ -5003,7 +5000,7 @@ public class PharmacySaleReportController implements Serializable {
 
 //            //inward bills
 //            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
-//            //double 
+//            //double
             newRow.setValue1(hospitalFeeCash);
             newRow.setValue2(regentFeeCash);
             newRow.setValue3(proTotCash);
@@ -8754,14 +8751,6 @@ public class PharmacySaleReportController implements Serializable {
 
     public void setItemsWithDistributers(List<ItemsWithDistributer> itemsWithDistributers) {
         this.itemsWithDistributers = itemsWithDistributers;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Vmp getVmp() {

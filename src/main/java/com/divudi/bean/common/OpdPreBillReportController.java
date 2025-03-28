@@ -55,17 +55,13 @@ public class OpdPreBillReportController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController;
-    @Inject
     CashierReportController cashierReportController;
     @Inject
     EnumController enumController;
     @Inject
-    CommonController commonController1; 
-    @Inject
     AuditEventApplicationController auditEventApplicationController;
 
-            
+
 
     List<Bill> bills;
     List<WebUserBillsTotal> webUserBillsTotals;
@@ -111,11 +107,11 @@ public class OpdPreBillReportController implements Serializable {
     BillsTotals userBilledBillsPharmacyGRNPayment;
     BillsTotals userCancellededBillsPharmacyGRNPayment;
     BillsTotals userRefundedBillsPharmacyGRNPayment;
-    
+
     //Doc Pay
     BillsTotals userBilledBillsDocPay;
     BillsTotals userCancellededBillsDocPay;
-    
+
     //For show totals
     List<BillsTotals>totalRow = new ArrayList<>();
 
@@ -138,7 +134,7 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public void createCashierTableByUser() {
-        
+
         Date startTime = new Date();
 
         if (getWebUser() == null) {
@@ -154,13 +150,13 @@ public class OpdPreBillReportController implements Serializable {
         userCancellededBillsPharmacy = createBillsTotals(new CancelledBill(), BillType.PharmacySale, getWebUser(), getDepartment(), getToDepartment());
         userRefundedBillsPharmacy = createBillsTotals(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment(), getToDepartment());
 
-        
-        
+
+
     }
 
     public void createCashierTableByUserPayment() {
         Date startTime = new Date();
-        
+
         if (getWebUser() == null) {
             JsfUtil.addErrorMessage("Please Select A User");
             return;
@@ -211,7 +207,7 @@ public class OpdPreBillReportController implements Serializable {
         billsTotalses.add(userCancellededBillsPharmacyGRNPayment);
         userRefundedBillsPharmacyGRNPayment = createBillsTotalsPayment(new RefundBill(), BillType.GrnPayment, getWebUser(), getDepartment());
         billsTotalses.add(userRefundedBillsPharmacyGRNPayment);
-        
+
         userBilledBillsDocPay = createBillsTotalsPayment(new BilledBill(), BillType.PaymentBill, getWebUser(), getDepartment());
         billsTotalses.add(userBilledBillsDocPay);
         userCancellededBillsDocPay = createBillsTotalsPayment(new CancelledBill(), BillType.PaymentBill, getWebUser(), getDepartment());
@@ -219,7 +215,7 @@ public class OpdPreBillReportController implements Serializable {
 
         calTotals(billsTotalses);
 
-        
+
     }
 
     public String createCashierTableByUserPaymentForDetail() {
@@ -229,7 +225,7 @@ public class OpdPreBillReportController implements Serializable {
         return "/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment";
 
     }
-    
+
     public String navigateToReportCashierDetailedByUserPayment(){
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -238,7 +234,7 @@ public class OpdPreBillReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -259,17 +255,17 @@ public class OpdPreBillReportController implements Serializable {
         auditEvent.setEventTrigger("navigateToReportCashierDetailedByUserPayment()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
-        
+
+
         return "/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment.xhtml?faces-redirect=true";
     }
-    
+
     public String navigateToReportCashierSummeryByUserPayment(){
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -278,7 +274,7 @@ public class OpdPreBillReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -299,20 +295,20 @@ public class OpdPreBillReportController implements Serializable {
         auditEvent.setEventTrigger("navigateToReportCashierSummeryByUserPayment()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
-        
+
+
         return "/reportCashierBillFeePayment/report_cashier_summery_by_user_payment.xhtml?faces-redirect=true";
     }
-    
-    
-    
-            
+
+
+
+
     public String navigateToReportCashierSummeryAllTotalOnly(){
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -321,7 +317,7 @@ public class OpdPreBillReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -342,17 +338,17 @@ public class OpdPreBillReportController implements Serializable {
         auditEvent.setEventTrigger("navigateToReportCashierSummeryAllTotalOnly()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
-        
+
+
         return "/reportCashierBillFeePayment/report_cashier_summery_all_total_only.xhtml?faces-redirect=true";
     }
-    
+
     public String navigateToReportCashierSummeryAll(){
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -361,7 +357,7 @@ public class OpdPreBillReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -382,31 +378,31 @@ public class OpdPreBillReportController implements Serializable {
         auditEvent.setEventTrigger("navigateToReportCashierSummeryAll()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
-        
+
+
         return "/reportCashierBillFeePayment/report_cashier_summery_all.xhtml?faces-redirect=true";
     }
-    
-            
+
+
 
     public void createCashierTableByAllUserPaymentDetail() {
         Date startTime = new Date();
         createCashierTableByAllUserPayment(true);
-        
-        
+
+
     }
 
     public void createCashierTableByAllUserPaymentSummery() {
         Date startTime  = new Date();
         createCashierTableByAllUserPayment(false);
-        
-        
+
+
     }
 
     public void createCashierTableByAllUserPayment(boolean detail) {
@@ -1163,21 +1159,4 @@ public class OpdPreBillReportController implements Serializable {
     public void setUserCancellededBillsDocPay(BillsTotals userCancellededBillsDocPay) {
         this.userCancellededBillsDocPay = userCancellededBillsDocPay;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
-    public CommonController getCommonController1() {
-        return commonController1;
-    }
-
-    public void setCommonController1(CommonController commonController1) {
-        this.commonController1 = commonController1;
-    }
-    
 }

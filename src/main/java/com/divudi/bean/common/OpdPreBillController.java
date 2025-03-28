@@ -113,8 +113,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     @Inject
     PaymentSchemeController paymentSchemeController;
     @Inject
-    private CommonController commonController;
-    @Inject
     private EnumController enumController;
     @Inject
     private OpdPreBillController opdPreBillController;
@@ -128,8 +126,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     WorkingTimeController workingTimeController;
     @Inject
     OpdTokenController opdTokenController;
-    @Inject
-    TokenController tokenController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -2094,14 +2090,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<ItemLight> getOpdItems() {
