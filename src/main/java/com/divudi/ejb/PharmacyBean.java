@@ -462,7 +462,7 @@ public class PharmacyBean {
 //            System.out.println("qty = " + qty);
 //            System.out.println("s.getStock() + qty"+s.getStock() + qty );
 //            System.out.println("p///// = ");
-            getStockFacade().create(s);
+            getStockFacade().createAndFlush(s);
         } else {
             s.setStock(s.getStock() + qty);
 //             System.out.println("s.getStock() = " + s.getStock());
@@ -790,7 +790,7 @@ public class PharmacyBean {
         sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
         System.out.println("sh.getTotalItemStock() = " + sh.getTotalItemStock());
         if (sh.getId() == null) {
-            getStockHistoryFacade().create(sh);
+            getStockHistoryFacade().createAndFlush(sh); // Creating does not gurantee writing to the database. If we call reading from database without cache, it gives a null pointer
         } else {
             getStockHistoryFacade().editAndCommit(sh);
         }
@@ -832,7 +832,7 @@ public class PharmacyBean {
         sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), phItem.getBillItem().getBill().getFromDepartment().getInstitution()));
         sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
         if (sh.getId() == null) {
-            getStockHistoryFacade().create(sh);
+            getStockHistoryFacade().createAndFlush(sh);
         } else {
             getStockHistoryFacade().editAndFlush(sh);
         }
