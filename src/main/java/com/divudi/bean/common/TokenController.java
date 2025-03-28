@@ -202,7 +202,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         b.getBillTypeAtomic();
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
-        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         m.put("cal", true); // Tokens that are called
         m.put("prog", false); // Tokens that are not in progress
         m.put("com", false); // Tokens that are not completed
