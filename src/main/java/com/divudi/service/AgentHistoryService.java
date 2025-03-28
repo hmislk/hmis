@@ -1,8 +1,8 @@
 package com.divudi.service;
 
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.AgentHistoryFacade;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.AgentHistoryFacade;
 import java.util.Date;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

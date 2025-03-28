@@ -5,11 +5,11 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.DepartmentType;
-import com.divudi.entity.Category;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.facade.AmpFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.facade.AmpFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

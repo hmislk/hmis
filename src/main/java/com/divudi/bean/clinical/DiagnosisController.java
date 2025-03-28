@@ -9,10 +9,10 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticType;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.facade.ClinicalEntityFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.facade.ClinicalEntityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,7 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.CommonFunctions;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;

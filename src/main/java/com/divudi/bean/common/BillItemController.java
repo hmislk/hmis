@@ -8,8 +8,8 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.BillItem;
-import com.divudi.facade.BillItemFacade;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.facade.BillItemFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

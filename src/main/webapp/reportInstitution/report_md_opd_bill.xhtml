@@ -84,8 +84,8 @@
                     </p:column>
 
                     <p:column headerText="Cancelled/Refunded" filterBy="#{bill.class}" filterMatchMode="contains" >
-                        <p:outputLabel value="Refunded" rendered="#{bill.class eq 'class com.divudi.entity.RefundBill'}"/>
-                        <p:outputLabel value="Cancelled" rendered="#{bill.class eq 'class com.divudi.entity.CancelledBill'}"/>
+                        <p:outputLabel value="Refunded" rendered="#{bill.class eq 'class com.divudi.core.entity.RefundBill'}"/>
+                        <p:outputLabel value="Cancelled" rendered="#{bill.class eq 'class com.divudi.core.entity.CancelledBill'}"/>
                     </p:column>
 
                     <p:column headerText="Bill No" filterBy="#{bill.deptId}" filterMatchMode="contains" >

@@ -11,78 +11,78 @@ import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
 
-import com.divudi.data.reports.FinancialReport;
+import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.Token;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PatientReportFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.Token;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientReportFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
-import com.divudi.data.BillCategory;
-import com.divudi.data.BillClassType;
+import com.divudi.core.data.BillCategory;
+import com.divudi.core.data.BillClassType;
 
-import com.divudi.data.BillFinanceType;
-import com.divudi.data.BillTypeAtomic;
+import com.divudi.core.data.BillFinanceType;
+import com.divudi.core.data.BillTypeAtomic;
 
-import com.divudi.data.PaymentCategory;
-import com.divudi.data.PaymentStatus;
-import com.divudi.data.PaymentType;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.ServiceType;
-import com.divudi.data.analytics.ReportTemplateType;
-import com.divudi.entity.Category;
-import com.divudi.entity.Payment;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.CashBookEntry;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.DrawerFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.TokenFacade;
-import com.divudi.java.CommonFunctions;
-import com.divudi.light.common.BillLight;
-import com.divudi.light.common.BillSummaryRow;
+import com.divudi.core.data.PaymentCategory;
+import com.divudi.core.data.PaymentStatus;
+import com.divudi.core.data.PaymentType;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
+import com.divudi.core.data.analytics.ReportTemplateType;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.CashBookEntry;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.TokenFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.light.common.BillLight;
+import com.divudi.core.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientInvestigationService;
 
@@ -6161,7 +6161,7 @@ public class SearchController implements Serializable {
 
     public void listBillsAndItemsWithFees() {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + " FROM Bill bill "
                 + "WHERE 1=1 "
                 + "AND bill.billTypeAtomic in :bts ";
@@ -8459,7 +8459,7 @@ public class SearchController implements Serializable {
         billLights = null;
         String sql;
         Map temMap = new HashMap();
-        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.deptId, bill.createdAt, bill.fromInstitution.name, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+        sql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.createdAt, bill.fromInstitution.name, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
                 + " from BilledBill bill "
                 + " where bill.billType = :billType "
                 + " and bill.createdAt between :fromDate and :toDate "
@@ -8696,7 +8696,7 @@ public class SearchController implements Serializable {
         bills = null;
         String sql;
         Map temMap = new HashMap();
-        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.deptId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+        sql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
                 + " from BilledBill bill "
                 + " where bill.billType = :billType "
                 + " and bill.createdAt between :fromDate and :toDate "
@@ -8792,7 +8792,7 @@ public class SearchController implements Serializable {
             Date td) {
         String sql;
         Map temMap = new HashMap();
-        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.deptId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+        sql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
                 + " from BilledBill bill "
                 + " where bill.billType = :billType "
                 + " and bill.createdAt between :fromDate and :toDate "
@@ -8883,7 +8883,7 @@ public class SearchController implements Serializable {
         String jpql;
         Map params = new HashMap();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow(b) "
+        jpql = "select new com.divudi.core.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate "
@@ -9206,7 +9206,7 @@ public class SearchController implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select new com.divudi.data.ReportTemplateRow(bf) "
+        sql = "select new com.divudi.core.data.ReportTemplateRow(bf) "
                 + " from BillFee bf "
                 + " where bf.bill.billTypeAtomic in :billTypesAtomics "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
@@ -9649,7 +9649,7 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "b.billTypeAtomic, "
                 + "sum(b.total), "
                 + "sum(b.discount), "
@@ -9719,7 +9719,7 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "b.billTypeAtomic, "
                 + "sum(b.total), "
                 + "sum(b.discount), "
@@ -9776,7 +9776,7 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "p.bill.billTypeAtomic, "
                 + "sum(p.paidValue), "
                 + "count(p.bill), "
@@ -9850,7 +9850,7 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "p.paymentMethod, "
                 + "sum(p.paidValue), "
                 + "count(p.bill)) "
@@ -9926,7 +9926,7 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "p.bill.billTypeAtomic, "
                 + "sum(p.paidValue), "
                 + "count(p.bill), "
@@ -9996,7 +9996,7 @@ public class SearchController implements Serializable {
 //        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
 //        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 //
-//        jpql = "select new com.divudi.light.common.BillSummaryRow("
+//        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
 //                + "b.billTypeAtomic, "
 //                + "sum(b.total), "
 //                + "sum(b.discount), "
@@ -10057,7 +10057,7 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "sum(b.total), "
                 + "sum(b.discount), "
                 + "sum(b.netTotal), "
@@ -10109,7 +10109,7 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "sum(b.total), "
                 + "sum(b.discount), "
                 + "sum(b.netTotal), "
@@ -10231,7 +10231,7 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "b.billTypeAtomic, "
                 + "sum(b.total), "
                 + "sum(b.discount), "
@@ -10299,7 +10299,7 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "b.billTypeAtomic, "
                 + "sum(b.total), "
                 + "sum(b.discount), "
@@ -10361,7 +10361,7 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
+        jpql = "select new com.divudi.core.light.common.BillSummaryRow("
                 + "b.billTypeAtomic, "
                 + "sum(b.total), "
                 + "sum(b.discount), "
@@ -10429,22 +10429,22 @@ public class SearchController implements Serializable {
             jpql.append(" and type(b)=:billClassType ");
             switch (billClassType) {
                 case Bill:
-                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
                     break;
                 case BilledBill:
-                    params.put("billClassType", com.divudi.entity.BilledBill.class);
+                    params.put("billClassType", com.divudi.core.entity.BilledBill.class);
                     break;
                 case CancelledBill:
-                    params.put("billClassType", com.divudi.entity.CancelledBill.class);
+                    params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
                     break;
                 case OtherBill:
-                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
                     break;
                 case PreBill:
-                    params.put("billClassType", com.divudi.entity.PreBill.class);
+                    params.put("billClassType", com.divudi.core.entity.PreBill.class);
                     break;
                 case RefundBill:
-                    params.put("billClassType", com.divudi.entity.RefundBill.class);
+                    params.put("billClassType", com.divudi.core.entity.RefundBill.class);
                     break;
 
             }
@@ -10536,7 +10536,7 @@ public class SearchController implements Serializable {
     public void listBillTypes() {
         bundle = new ReportTemplateRowBundle();
         Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select new com.divudi.data.ReportTemplateRow("
+        StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.ReportTemplateRow("
                 + "b.billType, b.billClassType, b.billTypeAtomic, count(b), sum(b.total), sum(b.discount), sum(b.netTotal))"
                 + " from Bill b where b.retired=:ret ");
         params.put("ret", false);
@@ -10618,22 +10618,22 @@ public class SearchController implements Serializable {
             jpql.append(" and type(b)=:billClassType ");
             switch (billClassType) {
                 case Bill:
-                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
                     break;
                 case BilledBill:
-                    params.put("billClassType", com.divudi.entity.BilledBill.class);
+                    params.put("billClassType", com.divudi.core.entity.BilledBill.class);
                     break;
                 case CancelledBill:
-                    params.put("billClassType", com.divudi.entity.CancelledBill.class);
+                    params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
                     break;
                 case OtherBill:
-                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
                     break;
                 case PreBill:
-                    params.put("billClassType", com.divudi.entity.PreBill.class);
+                    params.put("billClassType", com.divudi.core.entity.PreBill.class);
                     break;
                 case RefundBill:
-                    params.put("billClassType", com.divudi.entity.RefundBill.class);
+                    params.put("billClassType", com.divudi.core.entity.RefundBill.class);
                     break;
 
             }
@@ -13583,23 +13583,23 @@ public class SearchController implements Serializable {
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
 
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), p.creater, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr "
@@ -13650,7 +13650,7 @@ public class SearchController implements Serializable {
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
 
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, sum(p.paidValue) ) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
@@ -14431,23 +14431,23 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generatePaymentMethodColumnsByBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
@@ -14502,23 +14502,23 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generatePaymentMethodColumnsByStaffWelfareBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr AND bill.retired <> :br "
@@ -14579,7 +14579,7 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generateBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -14632,7 +14632,7 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generateStaffWelfareBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "
@@ -17059,23 +17059,23 @@ public class SearchController implements Serializable {
 
     public void generateOpdSaleByBill() {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
@@ -17207,23 +17207,23 @@ public class SearchController implements Serializable {
 
     public void generateChannelIncome() {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
@@ -17489,23 +17489,23 @@ public class SearchController implements Serializable {
 
     public void generateAllCashierSummary() {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), p.creater, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
@@ -17554,23 +17554,23 @@ public class SearchController implements Serializable {
 
     public void generateDepartmentRevenueReport() {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.toDepartment, bill.billTypeAtomic, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
@@ -17621,23 +17621,23 @@ public class SearchController implements Serializable {
 
     public void generateTotalCashierSummary() {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr AND bill.retired <> :br ";

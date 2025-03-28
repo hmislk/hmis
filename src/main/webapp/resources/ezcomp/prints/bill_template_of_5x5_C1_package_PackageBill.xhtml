@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" ></cc:attribute>
@@ -49,12 +49,12 @@
                         <h:outputLabel value="&nbsp;" />
                         <h:outputLabel value="Refuned" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
                         <h:outputLabel value="&nbsp;" />
                         <h:outputLabel value="Cancelled" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup>
                         <h:outputLabel value="&nbsp;" />
                         <h:outputLabel value=" Receipt"/>
@@ -123,7 +123,7 @@
                     </div>
                 </h:panelGroup>
             </div>
-            
+
             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Print OPD Bill Session Number')}" >
                 <h:panelGroup  rendered="#{cc.attrs.bill.singleBillSession ne null}" >
                     <div class="billline">
@@ -152,14 +152,14 @@
                             <h:outputLabel value="Amount" ></h:outputLabel>
                         </td>
                     </tr>
-                    
+
 
                         <tr class="billDetailsFiveFive">
                             <td  style="width:80%!important;">
                                 <h:outputLabel value="#{cc.attrs.bill.billPackege.name}"></h:outputLabel>
                             </td>
                             <td style="width:10%!important;">
-                                
+
                             </td>
                             <td   style="width:10%!important;text-align: right;">
                                 <h:outputLabel value="#{cc.attrs.bill.total}" style="text-align: right;" class="w-100">

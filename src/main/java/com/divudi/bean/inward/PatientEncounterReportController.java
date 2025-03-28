@@ -4,10 +4,10 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.data.BillType;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.facade.BillItemFacade;
+import com.divudi.core.data.BillType;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.facade.BillItemFacade;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -28,24 +28,24 @@ public class PatientEncounterReportController implements Serializable {
     PatientEncounter current;
     @EJB
     BillItemFacade billItemFacade;
-    
+
     public void selectAllBillItems(){
 //    BillItem bi = new BillItem();
 //    bi.getBill().getPatientEncounter();
 //    bi.getBill().getBillType();
-    
+
         String sql;
         Map m = new HashMap();
-        
+
         sql = "select b from BillItem b where b.bill.patientEncounter=:pNo and b.bill.billType=:bt and b.retired=false";
-        
+
         m.put("pNo", current);
         m.put("bt", BillType.PharmacyBhtPre);
         billItem = getBillItemFacade().findByJpql(sql, m);
-        
+
     }
-    
-    
+
+
     /**
      * Creates a new instance of PatientEncounterReportController
      */
@@ -75,6 +75,6 @@ public class PatientEncounterReportController implements Serializable {
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
     }
-    
-    
+
+
 }

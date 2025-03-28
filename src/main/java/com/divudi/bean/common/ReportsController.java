@@ -1,26 +1,26 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.*;
-import com.divudi.data.analytics.ReportTemplateType;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.reports.CollectionCenterReport;
-import com.divudi.data.reports.LaboratoryReport;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.*;
+import com.divudi.core.data.analytics.ReportTemplateType;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.reports.CollectionCenterReport;
+import com.divudi.core.data.reports.LaboratoryReport;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.*;
-import com.divudi.entity.cashTransaction.CashBookEntry;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.RoomCategory;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.facade.*;
-import com.divudi.java.CommonFunctions;
-import com.divudi.light.common.BillLight;
-import com.divudi.light.common.BillSummaryRow;
+import com.divudi.core.entity.*;
+import com.divudi.core.entity.cashTransaction.CashBookEntry;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.RoomCategory;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.facade.*;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.light.common.BillLight;
+import com.divudi.core.light.common.BillSummaryRow;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -1609,7 +1609,7 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateSampleCarrierBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(pi) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(pi) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
                 + "JOIN billItem.bill bill "
@@ -1708,7 +1708,7 @@ public class ReportsController implements Serializable {
 
     private ReportTemplateRowBundle generateBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -2052,7 +2052,7 @@ public class ReportsController implements Serializable {
 
     private ReportTemplateRowBundle generateWeeklyBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -2162,7 +2162,7 @@ public class ReportsController implements Serializable {
 
     private ReportTemplateRowBundle generateBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -2439,7 +2439,7 @@ public class ReportsController implements Serializable {
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br ";
         parameters.put("br", true);
@@ -2514,7 +2514,7 @@ public class ReportsController implements Serializable {
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br ";
         parameters.put("br", true);
@@ -2681,7 +2681,7 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
                                                                     boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br "
                 + "AND bill.creditCompany is not null ";
@@ -2783,7 +2783,7 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateReportBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -2860,7 +2860,7 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateReportBill(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :bfr AND bill.retired <> :br ";
 
@@ -2953,7 +2953,7 @@ public class ReportsController implements Serializable {
 
     public ReportTemplateRowBundle generateCollectionCenterBookWiseBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br ";
 
@@ -3113,7 +3113,7 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateCollectingCenterBillWiseBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -3212,7 +3212,7 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateCreditInvoiceDispatchBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -3367,14 +3367,14 @@ public class ReportsController implements Serializable {
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
                 + "AND billItem.item is not null "
                 + "AND (pi IS NOT NULL OR bill.billTypeAtomic IN :cancellableTypes)";
-//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+//        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
 //                + "FROM PatientInvestigation pi "
 //                + "JOIN pi.billItem billItem "
 //                + "JOIN billItem.bill bill "
@@ -3487,7 +3487,7 @@ public class ReportsController implements Serializable {
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty), billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty), billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
@@ -4080,7 +4080,7 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateOpdAndInwardDueBills(List<BillTypeAtomic> bts, List<PaymentMethod> paymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br "
                 + "AND bill.creditCompany is not null ";
@@ -4218,7 +4218,7 @@ public class ReportsController implements Serializable {
             bts.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
         }
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br ";
 
@@ -4248,7 +4248,7 @@ public class ReportsController implements Serializable {
         parameters.put("bts", bts);
         parameters.put("rb", bill.getId());
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br "
                 + "AND bill.billTypeAtomic in :bts "
@@ -4258,7 +4258,7 @@ public class ReportsController implements Serializable {
 
         List<Bill> bills = rs.stream().map(ReportTemplateRow::getBill).collect(Collectors.toList());
 
-        String sql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String sql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br "
                 + "AND bill.billTypeAtomic in :bts "
@@ -4301,7 +4301,7 @@ public class ReportsController implements Serializable {
         parameters.put("bts", bts);
         parameters.put("rb", bill);
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "JOIN BillItem billItem ON bill.id = billItem.bill.id "
                 + "WHERE bill.retired <> :br "
@@ -4669,11 +4669,11 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateDiscountBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+//        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
 //                + "FROM Bill bill "
 //                + "WHERE bill.retired <> :br "
 //                + "AND bill.paymentScheme is not null ";
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br "
                 + "AND bill.discount > 0 ";
@@ -4769,13 +4769,13 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateDiscountBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+//        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
 //                + "FROM BillItem billItem "
 //                + "JOIN billItem.bill bill "
 //                + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "
 //                + "AND billItem.bill.paymentScheme is not null ";
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "

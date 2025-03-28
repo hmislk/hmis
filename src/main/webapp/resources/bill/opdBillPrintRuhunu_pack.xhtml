@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup"/>
         <cc:attribute name="refund"/>
         <cc:attribute name="cancell"/>
@@ -63,15 +63,15 @@
                         <tr>
                             <td colspan="5" >
 
-                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} *Cancelled"  
-                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null 
-                                                           and cc.attrs.bill.cancelled eq true}"/> 
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} *Cancelled"
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null
+                                                           and cc.attrs.bill.cancelled eq true}"/>
 
-                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.deptId} **Refunded" 
-                                               rendered="#{cc.attrs.bill.refundedBill.deptId ne null 
-                                                           and cc.attrs.bill.refunded eq true}"/> 
+                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.deptId} **Refunded"
+                                               rendered="#{cc.attrs.bill.refundedBill.deptId ne null
+                                                           and cc.attrs.bill.refunded eq true}"/>
 
-                                <h:outputLabel value="*Refunded" 
+                                <h:outputLabel value="*Refunded"
                                                rendered="#{cc.attrs.bill.billClassType eq 'RefundBill'}"/>
                             </td>
                         </tr>
@@ -93,7 +93,7 @@
                                 <p:spacer height="1" width="10" ></p:spacer>
                             </td>
                             <td>
-                                <h:outputLabel value="Date"/>         
+                                <h:outputLabel value="Date"/>
                             </td>
                             <td>
                                 <h:outputLabel value="#{cc.attrs.bill.billDate}">
@@ -121,7 +121,7 @@
                             </td>
                             <td>
                                 <h:panelGroup>
-                                    <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />                                
+                                    <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />
                                 </h:panelGroup>
                             </td>
 
@@ -285,7 +285,7 @@
 
                 </h:panelGroup>
             </div>
-        </h:panelGroup>                
+        </h:panelGroup>
 
     </cc:implementation>
 </html>

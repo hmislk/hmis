@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -16,19 +16,19 @@
 
         <p:toolbar style="margin-bottom: 20px;">
             <p:toolbarGroup align="left" >
-                <p:commandButton 
-                    value="Excel" 
-                    icon="pi pi-file-excel" 
-                    ajax="false" 
+                <p:commandButton
+                    value="Excel"
+                    icon="pi pi-file-excel"
+                    ajax="false"
                     styleClass="ui-button-success">
-                    <p:dataExporter 
-                        target="tbl" 
-                        type="xlsx" 
+                    <p:dataExporter
+                        target="tbl"
+                        type="xlsx"
                         fileName="#{reportTemplateController.reportTemplateRowBundle.reportTemplate.name}" ></p:dataExporter>
                 </p:commandButton>
-                <p:commandButton 
-                    value="Print" 
-                    icon="pi pi-print" 
+                <p:commandButton
+                    value="Print"
+                    icon="pi pi-print"
                     ajax="false"
                     styleClass="ui-button-info">
                     <p:printer target="tbl" ></p:printer>
@@ -37,7 +37,7 @@
         </p:toolbar>
 
 
-        <p:dataTable 
+        <p:dataTable
             id="tbl"
             value="#{reportTemplateController.reportTemplateRowBundle.reportTemplateRows}" var="rtr" rowKey="#{rtr.id}"
             paginator="true" rows="10" paginatorPosition="bottom"

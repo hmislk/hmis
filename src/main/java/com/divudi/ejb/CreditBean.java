@@ -5,15 +5,15 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.CountedServiceType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.entity.*;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PatientEncounterFacade;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CountedServiceType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.*;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -432,7 +432,7 @@ public class CreditBean {
 
         return getBillItemFacade().findDoubleByJpql(sql, params);
     }
-    
+
     public double getPaidAmountByBillTypeAtomic(Bill b, BillTypeAtomic billType) {
         return getPaidAmountByBillTypeAtomic(b, Collections.singletonList(billType)); // Calls the overloaded method
     }

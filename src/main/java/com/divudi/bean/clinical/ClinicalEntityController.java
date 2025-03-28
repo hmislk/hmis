@@ -9,11 +9,11 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticType;
-import com.divudi.entity.Department;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.facade.ClinicalEntityFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.facade.ClinicalEntityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,11 +52,11 @@ public class ClinicalEntityController implements Serializable {
     public String navigateToManageClinicalEntities() {
         return "/emr/admin/clinical_entities";
     }
-    
+
     public String navigateToMangeSurgeries() {
         return "/emr/admin/clinical_entities";
     }
-    
+
     public ClinicalEntity findItemByName(String name,Department dept) {
         try {
             String jpql;
@@ -104,11 +104,11 @@ public class ClinicalEntityController implements Serializable {
     public List<ClinicalEntity> getBloodGroup() {
         return listClinicalEntity(SymanticType.Blood_Group);
     }
-    
+
     public List<ClinicalEntity> getCivilStatus() {
         return listClinicalEntity(SymanticType.Civil_status);
     }
-    
+
      public List<ClinicalEntity> getRelationships() {
         return listClinicalEntity(SymanticType.Relationships);
     }

@@ -10,9 +10,9 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.lab.InvestigationTube;
-import com.divudi.facade.InvestigationTubeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.facade.InvestigationTubeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,7 +45,7 @@ public class InvestigationTubeController implements Serializable {
 
     private InvestigationTube current;
     private List<InvestigationTube> items = null;
-    
+
     public String navigateToManageContainers() {
         prepareAdd();
         return "/admin/lims/manage_containers?faces-redirect=true";
@@ -59,7 +59,7 @@ public class InvestigationTubeController implements Serializable {
     public InvestigationTube getAnyTube(){
         return getItems().get(0);
     }
-    
+
     public String navigateToEditTube() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -94,7 +94,7 @@ public class InvestigationTubeController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public InvestigationTube getTube(String name) {
         for (InvestigationTube tube : getItems()) {
             if (tube.getName().equalsIgnoreCase(name)) {
@@ -103,7 +103,7 @@ public class InvestigationTubeController implements Serializable {
         }
         return null; // or throw an exception if an unknown name is not acceptable
     }
-    
+
     public InvestigationTube findAndCreateInvestigationTubeByName(String qry) {
         InvestigationTube i;
         String jpql;

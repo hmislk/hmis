@@ -1,36 +1,27 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Staff;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Staff;
 
-import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.cashTransaction.Drawer;
 
-import com.divudi.facade.BillFacade;
+import com.divudi.core.facade.BillFacade;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
-import com.divudi.service.StaffService;
+
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -290,7 +281,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, , 
+        // fetch original bill now, checked alteady returned, cancelled, ,
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
@@ -449,7 +440,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, , 
+        // fetch original bill now, checked alteady returned, cancelled, ,
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.CC_BILL_REFUND);

@@ -6,8 +6,8 @@
 
 package com.divudi.bean.common;
 
-import com.divudi.entity.BillExpense;
-import com.divudi.facade.AbstractFacade;
+import com.divudi.core.entity.BillExpense;
+import com.divudi.core.facade.AbstractFacade;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -29,5 +29,5 @@ public class BillExpenseFacade extends AbstractFacade<BillExpense> {
     public BillExpenseFacade() {
         super(BillExpense.class);
     }
-    
+
 }

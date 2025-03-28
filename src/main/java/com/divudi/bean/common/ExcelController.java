@@ -1,7 +1,7 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.CommonFunctions;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;

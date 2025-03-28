@@ -4,55 +4,55 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.ItemBatchQty;
-import com.divudi.data.StockQty;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.IssueRateMargins;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.entity.pharmacy.PharmaceuticalItemType;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.entity.pharmacy.StoreItemCategory;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.AmppFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.IssueRateMarginsFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.MeasurementUnitFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.PharmaceuticalItemCategoryFacade;
-import com.divudi.facade.PharmaceuticalItemTypeFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.StoreItemCategoryFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VmppFacade;
-import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemBatchQty;
+import com.divudi.core.data.StockQty;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.IssueRateMargins;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.pharmacy.StoreItemCategory;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.IssueRateMarginsFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.MeasurementUnitFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.PharmaceuticalItemCategoryFacade;
+import com.divudi.core.facade.PharmaceuticalItemTypeFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.facade.StoreItemCategoryFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VmppFacade;
+import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -473,7 +473,7 @@ public class PharmacyBean {
         addToStockHistory(pharmaceuticalBillItem, s, staff);
         return s;
     }
-    
+
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Department department) {
         String sql;
         HashMap hm = new HashMap();
@@ -735,7 +735,7 @@ public class PharmacyBean {
         return true;
     }
 
-    
+
     public boolean deductFromStockWithoutHistory(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;
