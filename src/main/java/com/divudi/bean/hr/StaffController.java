@@ -73,12 +73,6 @@ import org.primefaces.model.file.UploadedFile;
 public class StaffController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
-    @Inject
-    HrReportController hrReportController;
-    @Inject
-    StaffSalaryController staffSalaryController;
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -503,9 +497,6 @@ public class StaffController implements Serializable {
     }
 
     public void createActiveStaffTable(Date ssDate) {
-        Date startTime = new Date();
-        Date toDate = null;
-
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
         String sql = "select ss from Staff ss "
@@ -618,7 +609,7 @@ public class StaffController implements Serializable {
     }
 
     public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate) {
-        List<Staff> salaryGeneratedStaff = new ArrayList<>();
+        List<Staff> salaryGeneratedStaff;
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
         salaryGeneratedStaff = hrReportController.fetchOnlySalaryGeneratedStaff();
         createActiveStaffTable(ssDate);
@@ -627,10 +618,6 @@ public class StaffController implements Serializable {
     }
 
     public void createActiveStaffTable() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
         String sql = "select ss from Staff ss "
@@ -982,20 +969,19 @@ public class StaffController implements Serializable {
         } else {
             // So, browser is requesting the image. Get ID value from actual request param.
             String id = context.getExternalContext().getRequestParameterMap().get("id");
-            Long l;
+            long l;
             try {
-                l = Long.valueOf(id);
+                l = Long.parseLong(id);
             } catch (NumberFormatException e) {
-                l = 0l;
+                l = 0L;
             }
             Staff temImg = getFacade().find(Long.valueOf(id));
             if (temImg != null) {
 
                 InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
-                StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
 
 //                return new DefaultStreamedContent(new ByteArrayInputStream(temImg.getBaImage()), temImg.getFileType());
-                return str;
+                return DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
             } else {
                 return new DefaultStreamedContent();
             }
@@ -1021,9 +1007,8 @@ public class StaffController implements Serializable {
 //            return new DefaultStreamedContent(new ByteArrayInputStream(current.getBaImage()), current.getFileType(), current.getFileName());
 
             InputStream targetStream = new ByteArrayInputStream(current.getBaImage());
-            StreamedContent str = DefaultStreamedContent.builder().contentType(current.getFileType()).name(current.getFileName()).stream(() -> targetStream).build();
 
-            return str;
+            return DefaultStreamedContent.builder().contentType(current.getFileType()).name(current.getFileName()).stream(() -> targetStream).build();
         } else {
             //////System.out.println("nulls");
             return new DefaultStreamedContent();
@@ -1077,7 +1062,7 @@ public class StaffController implements Serializable {
     }
 
     private void fillSelectedItemsWithAllStaff() {
-        String jpql = "";
+        String jpql;
         HashMap params = new HashMap();
         jpql = "select c "
                 + " from Staff c "
@@ -1092,7 +1077,7 @@ public class StaffController implements Serializable {
     }
 
     private void fillSelectedItemsWithNonDoctorStaff() {
-        String jpql = "";
+        String jpql;
         HashMap params = new HashMap<>();
         jpql = "SELECT c "
                 + "FROM Staff c "
@@ -1105,7 +1090,7 @@ public class StaffController implements Serializable {
     }
 
     public void resetWorkingHour() {
-        String sql = "";
+        String sql;
         HashMap hm = new HashMap();
         sql = "select c from Staff c "
                 + " where c.retired=false "
@@ -1124,7 +1109,7 @@ public class StaffController implements Serializable {
     }
 
     public void resetLateInEarlyOutLeaveAllowed() {
-        String sql = "";
+        String sql;
         HashMap hm = new HashMap();
         sql = "select c from Staff c "
                 + " where c.retired=false "
@@ -1690,11 +1675,7 @@ public class StaffController implements Serializable {
 
         List<StaffSalary> cycles = staffSalaryFacade.findByJpql(sql, m, TemporalType.DATE);
 
-        if (cycles.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return !cycles.isEmpty();
 
     }
 
@@ -1744,7 +1725,7 @@ public class StaffController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             StaffController controller = (StaffController) facesContext.getApplication().getELResolver().
@@ -1760,15 +1741,13 @@ public class StaffController implements Serializable {
             try {
                 key = Long.valueOf(value);
             } catch (Exception e) {
-                key = 0l;
+                key = 0L;
             }
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
