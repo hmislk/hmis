@@ -11,7 +11,6 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeManager;
@@ -86,8 +85,6 @@ public class BillBhtController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     ItemController itemController;
     @Inject
@@ -170,13 +167,13 @@ public class BillBhtController implements Serializable {
         stickers = convertJsonToList(json);
         return "/inward/inward_bill_service_investigation_label_print?faces-redirect=true";
     }
-    
+
     public String navigateToSampleManegmentFromInward() {
         patientInvestigationController.setBills(bills);
         patientInvestigationController.searchBillsWithoutSampleId();
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
-    
+
     public String navigateToSampleManegmentFromInwardIntrimBill(Bill b) {
         List<Bill> newBills = new ArrayList<>();
         newBills.add(b);
@@ -574,7 +571,7 @@ public class BillBhtController implements Serializable {
         temp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BILL);
         temp.setIpOpOrCc("IP");
         getBillBean().setSurgeryData(temp, getBatchBill(), SurgeryBillType.Service);
-        
+
         temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
         temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 

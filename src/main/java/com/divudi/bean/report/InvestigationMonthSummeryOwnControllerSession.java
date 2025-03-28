@@ -4,11 +4,9 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.lab.InvestigationController;
-import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.InvestigationSummeryData;
@@ -61,15 +59,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
      */
     @Inject
     private SessionController sessionController;
-    @Inject
-    PatientInvestigationController patientInvestigationController;
-    @Inject
-    CommonController commonController;
+
     /**
      * EJBs
      */
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -651,14 +645,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.billFacade = billFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public Institution getReportedInstitution() {
         return reportedInstitution;
     }
@@ -843,7 +829,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         m.put("ixbt", Investigation.class);
         insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
 
-        
+
     }
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {
@@ -901,7 +887,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 //            if (bobj.length < 3) {
 //                continue;
 //            }
-//            
+//
 //            ItemInstitutionCollectingCentreCountRow r = new ItemInstitutionCollectingCentreCountRow();
 //            r.setItem((Item) bobj[0]);
 //            r.setCount((Long) bobj[1]);
@@ -1460,9 +1446,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         return investigations;
     }
-    
-    
-    
+
+
+
     public List<Item> getBillItemsFromCollectingCentres(BillType[] bts) {
         Map temMap = new HashMap();
         String sql = "select distinct ix from BillItem bi join bi.item ix "
@@ -1487,7 +1473,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         return investigations;
     }
-    
+
 
     public List<Item> getInvestigations3(BillType[] bts) {
         Map temMap = new HashMap();
@@ -1876,14 +1862,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public void setItemsLab(List<InvestigationSummeryData> itemsLab) {
         this.itemsLab = itemsLab;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<Bill> getBilledBills() {

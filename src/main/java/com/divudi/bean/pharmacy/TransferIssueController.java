@@ -5,7 +5,6 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -62,8 +61,6 @@ public class TransferIssueController implements Serializable {
     private SessionController sessionController;
     @Inject
     BillController billController;
-    @Inject
-    CommonController commonController;
     @Inject
     NotificationController notificationController;
     ////

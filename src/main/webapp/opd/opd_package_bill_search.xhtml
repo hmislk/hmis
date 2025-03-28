@@ -26,85 +26,85 @@
                                 <div class="form d-flex flex-column" >
                                     <h:panelGroup id="searchKeyword">
                                         <h:outputLabel value="From Date"/>
-                                        <p:calendar id="fromDate" 
-                                                    value="#{searchController.fromDate}" 
-                                                    navigator="false" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                    styleClass="dateTimePicker" 
-                                                    class="w-100" 
+                                        <p:calendar id="fromDate"
+                                                    value="#{searchController.fromDate}"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="dateTimePicker"
+                                                    class="w-100"
                                                     inputStyleClass="form-control"
-                                                    maxdate="#{commonController.endOfDayOnCurrentDate}">      
+                                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
                                         </p:calendar>
 
                                         <h:outputLabel value="To Date"/>
                                         <p:calendar id="toDate"
                                                     value="#{searchController.toDate}"
-                                                    navigator="false" 
+                                                    navigator="false"
                                                     styleClass="dateTimePicker"
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                     class="w-100"
-                                                    inputStyleClass="form-control">                                                                              
+                                                    inputStyleClass="form-control">
                                         </p:calendar>
 
-                                        <p:commandButton 
+                                        <p:commandButton
                                             icon="fas fa-search"
-                                            id="btnSearch" 
-                                            ajax="false" 
-                                            value="Search" 
+                                            id="btnSearch"
+                                            ajax="false"
+                                            value="Search"
                                             class="ui-button-success w-100 mt-2"
                                             action="#{searchController.searchOpdPackageBills()}" >
                                         </p:commandButton>
 
-                                        <p:commandButton 
+                                        <p:commandButton
                                             id="btnExcel"
                                             icon="fa-solid fa-file-excel"
-                                            ajax="false" 
+                                            ajax="false"
                                             value="Download"
                                             class="w-100 mt-1">
                                             <p:dataExporter fileName="OPD Package Bills" type="xlsx" target="tblBills" ></p:dataExporter>
                                         </p:commandButton>
 
-                                        <p:commandButton 
+                                        <p:commandButton
                                             id="btnClear"
                                             icon="fas fa-broom"
-                                            value="Clear" 
-                                            class="w-100 mt-1 mb-2 ui-button-warning" 
+                                            value="Clear"
+                                            class="w-100 mt-1 mb-2 ui-button-warning"
                                             action="#{searchController.clearOpdBillSearchData}"
                                             process="btnClear"
                                             update="searchKeyword">
                                         </p:commandButton>
 
 
-                                        <p:inputText 
-                                            placeholder="Bill No" 
-                                            autocomplete="off" 
+                                        <p:inputText
+                                            placeholder="Bill No"
+                                            autocomplete="off"
                                             class="w-100"
                                             value="#{searchController.searchKeyword.billNo}" />
 
 
-                                        <p:inputText 
-                                            placeholder="Name" 
+                                        <p:inputText
+                                            placeholder="Name"
                                             class="form-control my-1"
-                                            autocomplete="off" 
+                                            autocomplete="off"
                                             value="#{searchController.searchKeyword.patientName}" />
 
 
-                                        <p:inputText 
-                                            placeholder="Phone" 
+                                        <p:inputText
+                                            placeholder="Phone"
                                             class="form-control"
-                                            autocomplete="off"  
+                                            autocomplete="off"
                                             value="#{searchController.searchKeyword.patientPhone}" />
 
 
-                                        <p:inputText 
-                                            placeholder="Total" 
+                                        <p:inputText
+                                            placeholder="Total"
                                             class="form-control my-1"
-                                            autocomplete="off"  
+                                            autocomplete="off"
                                             value="#{searchController.searchKeyword.total}"
                                             />
 
-                                        <p:inputText 
-                                            placeholder="Net Total"   
+                                        <p:inputText
+                                            placeholder="Net Total"
                                             class="form-control"
                                             autocomplete="off"
                                             value="#{searchController.searchKeyword.netTotal}"/>
@@ -113,7 +113,7 @@
                                         <hr/>
 
                                         <h:outputLabel value="From Institution" class="w-100"/>
-                                        <p:selectOneMenu 
+                                        <p:selectOneMenu
                                             id="cmdFromInstitution"
                                             value="#{searchController.fromInstitution}"
                                             filter="true"
@@ -122,26 +122,26 @@
                                             autoWidth="false"
                                             >
                                             <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems 
+                                            <f:selectItems
                                                 value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                 var="i"
                                                 itemLabel="#{i.name}"
                                                 itemValue="#{i}" ></f:selectItems>
-                                            <p:ajax 
-                                                process="cmdFromInstitution" 
+                                            <p:ajax
+                                                process="cmdFromInstitution"
                                                 update="cmdFromDepartment" >
                                             </p:ajax>
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="From Department"/><br/>
-                                        <p:selectOneMenu 
+                                        <p:selectOneMenu
                                             id="cmdFromDepartment"
                                             placeholder="Ordering Department"
-                                            value="#{searchController.fromDepartment}" 
+                                            value="#{searchController.fromDepartment}"
                                             filter="true"
                                             class="w-100">
                                             <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems 
+                                            <f:selectItems
                                                 value="#{departmentController.getInsDepartments(searchController.fromInstitution)}"
                                                 var="d"
                                                 itemLabel="#{d.name}"
@@ -150,7 +150,7 @@
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="To Institution"/>
-                                        <p:selectOneMenu 
+                                        <p:selectOneMenu
                                             id="cmdToInstitution"
                                             value="#{searchController.toInstitution}"
                                             filter="true"
@@ -159,26 +159,26 @@
                                             class="w-100"
                                             >
                                             <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems 
+                                            <f:selectItems
                                                 value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                 var="i"
                                                 itemLabel="#{i.name}"
                                                 itemValue="#{i}" ></f:selectItems>
-                                            <p:ajax 
-                                                process="cmdToInstitution" 
+                                            <p:ajax
+                                                process="cmdToInstitution"
                                                 update="cmdToDepartment" >
                                             </p:ajax>
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="To Department"/><br/>
-                                        <p:selectOneMenu 
+                                        <p:selectOneMenu
                                             id="cmdToDepartment"
                                             placeholder="Peforming Department"
-                                            value="#{searchController.toDepartment}" 
+                                            value="#{searchController.toDepartment}"
                                             filter="true"
                                             class="w-100">
                                             <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems 
+                                            <f:selectItems
                                                 value="#{departmentController.getInsDepartments(searchController.toInstitution)}"
                                                 var="d"
                                                 itemLabel="#{d.name}"
@@ -187,14 +187,14 @@
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="Select Bill Type"/><br/>
-                                        <p:selectOneMenu 
+                                        <p:selectOneMenu
                                             id="cmdBillSelector"
                                             placeholder="Select Bill Type"
-                                            value="#{searchController.selectedOpdPackageBillSelector}" 
+                                            value="#{searchController.selectedOpdPackageBillSelector}"
                                             filter="true"
                                             class="w-100">
                                             <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems 
+                                            <f:selectItems
                                                 value="#{searchController.getOpdPackageBillSelector()}"
                                                 var="d"
                                                 itemLabel="#{d}"
@@ -209,12 +209,12 @@
 
                             <div class="col-md-10">
                                 <p:defaultCommand target="btnSearch" />
-                                <p:dataTable 
-                                    rowIndexVar="i" 
-                                    id="tblBills" 
-                                    value="#{searchController.bills}" 
-                                    var="bill"  
-                                    style="min-width: 100%;"  
+                                <p:dataTable
+                                    rowIndexVar="i"
+                                    id="tblBills"
+                                    value="#{searchController.bills}"
+                                    var="bill"
+                                    style="min-width: 100%;"
                                     rows ="15"
                                     paginator="true"
                                     paginatorPosition="bottom"
@@ -222,9 +222,9 @@
                                     rowsPerPageTemplate="15,25,50"
                                     >
 
-                                    <p:column 
-                                        headerText="Bill NO" 
-                                        sortBy="#{bill.deptId}" 
+                                    <p:column
+                                        headerText="Bill NO"
+                                        sortBy="#{bill.deptId}"
                                         filterMatchMode="contains"
                                         filterBy="#{bill.deptId}">
                                         <p:outputLabel  value="#{bill.deptId}" ></p:outputLabel>
@@ -267,15 +267,15 @@
 
                                     </p:column>
 
-                                    <p:column headerText="Billed By" sortBy="#{bill.fromDepartment.name}" filterBy="#{bill.fromDepartment.name}" filterMatchMode="contains">                                
+                                    <p:column headerText="Billed By" sortBy="#{bill.fromDepartment.name}" filterBy="#{bill.fromDepartment.name}" filterMatchMode="contains">
                                         <h:outputLabel id="byDep" value="#{bill.fromDepartment.name}" />
                                         <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
                                             <h:outputLabel value="#{bill.cancelledBill.department.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
                                             <h:outputLabel value="#{bill.refundedBill.department.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Billed by" 
-                                              sortBy="#{bill.creater.name}" 
+                                    <p:column headerText="Billed by"
+                                              sortBy="#{bill.creater.name}"
                                               filterMatchMode="contains"
                                               filterBy="#{bill.creater.name}">
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
@@ -283,25 +283,25 @@
                                             <h:outputLabel value="#{bill.cancelledBill.creater.webUserPerson.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
                                             <h:outputLabel value="#{bill.refundedBill.creater.webUserPerson.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
                                         </h:panelGroup>
-                                    </p:column>   
+                                    </p:column>
 
-                                    <p:column 
+                                    <p:column
                                         headerText="Client"
                                         filterMatchMode="contains"
-                                        sortBy="#{bill.patient.person.name}" 
-                                        filterBy="#{bill.patient.person.name}" >                               
+                                        sortBy="#{bill.patient.person.name}"
+                                        filterBy="#{bill.patient.person.name}" >
                                         <h:panelGroup id="pt">
                                             <h:commandLink  value="#{bill.patient.person.nameWithTitle}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                                 <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                             </h:commandLink>
-                                            <h:outputLabel 
-                                                value="#{bill.patient.person.nameWithTitle}" 
+                                            <h:outputLabel
+                                                value="#{bill.patient.person.nameWithTitle}"
                                                 rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Remarks" >  
+                                    <p:column headerText="Remarks" >
                                         <h:panelGroup id="remark">
                                             <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
@@ -336,7 +336,7 @@
                                         </p:tooltip>
                                     </p:column>
 
-                                    <p:column headerText="Gross Value" sortBy="#{bill.total}" 
+                                    <p:column headerText="Gross Value" sortBy="#{bill.total}"
                                               styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{bill.total}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -347,19 +347,19 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
+                                    <p:column headerText="Net Value" sortBy="#{bill.netTotal}"
                                               styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
 
                                     <p:column headerText="Actions" style="width: 12em;" >
                                         <p:commandButton
-                                            icon="pi pi-wallet" 
+                                            icon="pi pi-wallet"
                                             styleClass="m-1"
-                                            ajax="false" 
-                                            title="Navigate to Manage Package Batch Bill" 
+                                            ajax="false"
+                                            title="Navigate to Manage Package Batch Bill"
                                             value="Manage"
                                             action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>

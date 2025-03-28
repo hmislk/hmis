@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -103,8 +102,6 @@ public class PharmacyPurchaseController implements Serializable {
     private SessionController sessionController;
     @Inject
     PharmacyCalculation pharmacyBillBean;
-    @Inject
-    CommonController commonController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     /**
@@ -562,10 +559,10 @@ public class PharmacyPurchaseController implements Serializable {
 
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
-            
+
             double lastPurchaseRate = 0.0;
             lastPurchaseRate = getPharmacyBean().getLastPurchaseRate(i.getItem());
-            
+
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
                 continue;
             }
@@ -881,11 +878,11 @@ public class PharmacyPurchaseController implements Serializable {
         }
         return bill;
     }
-    
+
     public double findLastRetailRate(Amp amp){
         return getPharmacyBean().getLastRetailRate(amp, getSessionController().getDepartment());
     }
-            
+
 
     public void setBill(BilledBill bill) {
         this.bill = bill;
@@ -1026,14 +1023,6 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void setBillListWithTotals(BillListWithTotals billListWithTotals) {
         this.billListWithTotals = billListWithTotals;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public double getBillItemsTotalQty() {

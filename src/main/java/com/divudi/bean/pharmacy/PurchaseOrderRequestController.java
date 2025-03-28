@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.EnumController;
@@ -66,8 +65,6 @@ public class PurchaseOrderRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -616,14 +613,6 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public boolean isPrintPreview() {

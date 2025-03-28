@@ -27,7 +27,7 @@
                 <p:selectBooleanCheckbox value="#{shiftController.checked}"/>
 
                 <p:panel id="datatable" styleClass="noBorder summeryBorder">
-                    <p:dataTable id="tbl1" value="#{shiftController.shiftList}" var="p">  
+                    <p:dataTable id="tbl1" value="#{shiftController.shiftList}" var="p">
                         <f:facet name="header">
                             <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
                             <h:outputLabel value="Entered Shift Report"/>
@@ -119,14 +119,14 @@
                         <!--                        <p:column headerText="Created Date">
                                                     <h:outputLabel value="#{p.createdAt}"></h:outputLabel>
                                                 </p:column>
-                        
+
                                                 <p:column headerText="Ceated By">
                                                     <h:outputLabel value="#{p.creater.webUserPerson.nameWithTitle}"></h:outputLabel>
                                                 </p:column>-->
                         <f:facet name="footer">
                             <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                             <p:outputLabel value="Print At : " />
-                            <p:outputLabel value="#{commonController.currentDateTime}" >
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                 <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                             </p:outputLabel>
                         </f:facet>
@@ -135,6 +135,6 @@
 
             </p:panel>
         </h:form>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>
