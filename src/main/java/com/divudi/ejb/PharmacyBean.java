@@ -790,7 +790,7 @@ public class PharmacyBean {
         sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
         System.out.println("sh.getTotalItemStock() = " + sh.getTotalItemStock());
         if (sh.getId() == null) {
-            getStockHistoryFacade().createAndFlush(sh);
+            getStockHistoryFacade().createAndFlush(sh); // Creating does not gurantee writing to the database. If we call reading from database without cache, it gives a null pointer
         } else {
             getStockHistoryFacade().editAndCommit(sh);
         }
