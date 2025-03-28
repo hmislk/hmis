@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -92,8 +91,6 @@ public class InwardReportController1 implements Serializable {
     List<ItemRateRow> itemRateRows;
     List<Item> items;
 
-
-    private CommonFunctions commonFunctions;
     @EJB
     BillFeeFacade billFeeFacade;
     @EJB
@@ -102,9 +99,6 @@ public class InwardReportController1 implements Serializable {
     PatientRoomFacade patientRoomFacade;
     @EJB
     BillFacade billFacade;
-
-    @Inject
-    CommonController commonController;
 
     double billFreeGross;
     double billFeeMargin;
@@ -1079,7 +1073,7 @@ public class InwardReportController1 implements Serializable {
 
     public void bhtCreditPayments() {
         Date startTime = new Date();
-        
+
         HashMap hm = new HashMap();
         String sql = "Select b from BillItem b "
                 + " where b.retired=false "
@@ -1113,8 +1107,8 @@ public class InwardReportController1 implements Serializable {
 
         billItems = BillItemFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         totalBhtCreditPayments();
-        
-        
+
+
 
     }
 
@@ -1157,7 +1151,7 @@ public class InwardReportController1 implements Serializable {
 
     public void opdCreditPayments() {
         Date startTime = new Date();
-        
+
         HashMap hm = new HashMap();
         String sql = "Select b.referenceBill.billItems"
                 + " from BillItem b "
@@ -1193,7 +1187,7 @@ public class InwardReportController1 implements Serializable {
         billItems = BillItemFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         totalOfOpdCreditPayments();
 
-        
+
     }
 
     public Double totalOfOpdCreditPayments() {
@@ -1222,7 +1216,7 @@ public class InwardReportController1 implements Serializable {
 
     public void createRoomTime() {
         Date startTime = new Date();
-        
+
         categoryTimes = new ArrayList<>();
 
         for (RoomCategory rm : roomCategoryController.getItems()) {
@@ -1250,8 +1244,8 @@ public class InwardReportController1 implements Serializable {
             row.setAdded(added);
             categoryTimes.add(row);
         }
-        
-        
+
+
     }
 
     public void createRoomTime(Category cat) {
@@ -1275,7 +1269,7 @@ public class InwardReportController1 implements Serializable {
 
     public void createBHTDiscountTable() {
         Date statTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
         billItems = new ArrayList<>();
@@ -1325,8 +1319,8 @@ public class InwardReportController1 implements Serializable {
         inwardMargin = dbl[1];
         inwardDiscount = dbl[2];
         inwardNetValue = dbl[3];
-        
-        
+
+
 
     }
 
@@ -1517,8 +1511,8 @@ public class InwardReportController1 implements Serializable {
         createFinalSummeryMonth();
         createPaidByPatient();
         createCreditPayment();
-        
-        
+
+
 
     }
 
@@ -1615,7 +1609,7 @@ public class InwardReportController1 implements Serializable {
     private void createFinalSummeryMonth() {
         finalValues = new ArrayList<>();
         String1Value2 dd;
-        ////////       
+        ////////
         dd = new String1Value2();
         dd.setString("Total Gross ");
         dd.setValue1(inwardGross + opdSrviceGross + roomGross + professionalGross + timedGross);
@@ -1901,7 +1895,7 @@ public class InwardReportController1 implements Serializable {
 //            billFeeDiscount += f.getFeeDiscount();
 //            billFeeMargin += f.getFeeMargin();
 //            billFeeNet += f.getFeeValue();
-//            
+//
 //        }
         Double[] dbl = totalOfProcessProfessionalFees();
 
@@ -2389,7 +2383,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -2400,7 +2394,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -2447,14 +2441,6 @@ public class InwardReportController1 implements Serializable {
 
     public void setProfessionals(List<String1Value2> professionals) {
         this.professionals = professionals;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -2809,7 +2795,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getFromDatePaid() {
         if (fromDatePaid == null) {
-            fromDatePaid = getCommonFunctions().getStartOfDay(new Date());
+            fromDatePaid = CommonFunctions.getStartOfDay(new Date());
         }
 
         return fromDatePaid;
@@ -2821,7 +2807,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getToDatePaid() {
         if (toDatePaid == null) {
-            toDatePaid = getCommonFunctions().getEndOfDay(new Date());
+            toDatePaid = CommonFunctions.getEndOfDay(new Date());
         }
         return toDatePaid;
     }
@@ -2901,13 +2887,4 @@ public class InwardReportController1 implements Serializable {
         }
 
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
 }

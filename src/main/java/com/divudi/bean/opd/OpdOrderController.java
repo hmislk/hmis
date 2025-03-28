@@ -166,8 +166,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     @Inject
     private ItemMappingController itemMappingController;
     @Inject
-    private CommonController commonController;
-    @Inject
     private PaymentSchemeController paymentSchemeController;
     @Inject
     private ApplicationController applicationController;
@@ -179,8 +177,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     private PriceMatrixController priceMatrixController;
     @Inject
     private PatientController patientController;
-    @Inject
-    private AuditEventApplicationController auditEventApplicationController;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -4371,14 +4367,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
     public void setBillId(Long billId) {
         this.billId = billId;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public double getNetPlusVat() {

@@ -27,7 +27,7 @@
                                     navigator="false"
                                     inputStyleClass="form-control"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    maxdate="#{commonController.endOfDay}">
+                                    maxdate="#{commonFunctionsProxy.endOfDay}">
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar
@@ -37,7 +37,7 @@
                                     inputStyleClass="form-control"
                                     navigator="false"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    maxdate="#{commonController.endOfDay}">
+                                    maxdate="#{commonFunctionsProxy.endOfDay}">
                                 </p:calendar>
 
                                 <h:outputLabel value="Bill No" class="mt-2"/>

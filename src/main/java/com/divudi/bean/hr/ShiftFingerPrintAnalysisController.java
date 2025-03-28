@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.dataStructure.ShiftTable;
@@ -14,8 +13,6 @@ import com.divudi.data.hr.FingerPrintComparator;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.Times;
-import static com.divudi.data.hr.Times.inTime;
-import static com.divudi.data.hr.Times.outTime;
 
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Form;
@@ -33,7 +30,6 @@ import com.divudi.facade.FingerPrintRecordHistoryFacade;
 import com.divudi.facade.FormFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,7 +61,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     @EJB
     HumanResourceBean humanResourceBean;
 
-    CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;
     @EJB
@@ -88,8 +83,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     StaffAdditionalFormController staffAdditionalFormController;
     @Inject
     ShiftTableController shiftTableController;
-    @Inject
-    CommonController commonController;
     /**
      *
      * Properties
@@ -544,12 +537,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-        
+
     }
 
     public void createShiftTableByStaff() {
         Date startTime = new Date();
-        
+
         if (errorCheck()) {
             return;
         }
@@ -613,8 +606,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-        
-        
+
+
     }
 
     private List<Form> fetchAdditionalForm(StaffShift staffShift) {
@@ -754,12 +747,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
 //    public List<StaffShift> fetchStaffShift(StaffShift referenceShift){
 //        String sql="";
-//        
-//        
+//
+//
 //    }
     public void createShiftTableAdditional() {
         Date startTime = new Date();
-        
+
         if (errorCheck()) {
             return;
         }
@@ -824,8 +817,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-        
-        
+
+
     }
 
     public void createShiftTableAdditionalByStaff() {
@@ -1405,7 +1398,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.calCulateTimes();
                 //Update Extra Time
                 ss.calExtraTimeWithStartOrEndRecord();
-                //Update Staff Shift OT time if DayOff or Sleeping Day                
+                //Update Staff Shift OT time if DayOff or Sleeping Day
                 ss.calExtraTimeComplete();
 
                 ss.calMultiplyingFactor(ss.getShift().getDayType());
@@ -1482,14 +1475,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         this.staffShiftFacade = staffShiftFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public List<ShiftTable> getShiftTables() {
         return shiftTables;
     }
@@ -1543,13 +1528,4 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     public void setErrorMessage(List<String> errorMessage) {
         this.errorMessage = errorMessage;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

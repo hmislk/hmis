@@ -36,8 +36,6 @@ public class PaymentGatewayController implements Serializable {
     PaymentGatewayTransactionFacade paymentGatewayTransactionFacade;
 
     @Inject
-    CommonController commonController;
-    @Inject
     SessionController sessionController;
     @Inject
     PatientPortalController patientPortalController;

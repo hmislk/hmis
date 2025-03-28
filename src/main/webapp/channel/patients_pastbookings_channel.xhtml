@@ -24,30 +24,30 @@
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar class="w-100" 
-                                            inputStyleClass="w-100" 
-                                            id="fromDate" 
-                                            value="#{patientController.fromDate}" 
-                                            navigator="false" 
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            maxdate="#{commonController.endOfDayOnCurrentDate}"  >      
+                                <p:calendar class="w-100"
+                                            inputStyleClass="w-100"
+                                            id="fromDate"
+                                            value="#{patientController.fromDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"  >
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar class="w-100" 
-                                            inputStyleClass="w-100" 
-                                            id="toDate" 
-                                            value="#{patientController.toDate}" 
-                                            navigator="false" 
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            maxdate="#{commonController.endOfDayOnCurrentDate}"  >                                                                              
+                                <p:calendar class="w-100"
+                                            inputStyleClass="w-100"
+                                            id="toDate"
+                                            value="#{patientController.toDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"  >
                                 </p:calendar>
 
                                 <div class="d-grid gap-2 my-2">
-                                    <p:commandButton id="btnSearch" 
-                                                     class="ui-button-warning" 
-                                                     icon="fas fa-search" 
-                                                     ajax="false" 
-                                                     value="Search" 
+                                    <p:commandButton id="btnSearch"
+                                                     class="ui-button-warning"
+                                                     icon="fas fa-search"
+                                                     ajax="false"
+                                                     value="Search"
                                                      action="#{patientController.fillPatientsPastChannelbookings}" />
 
                                 </div>
@@ -57,10 +57,10 @@
                             </div>
 
                             <div class="col-md-10">
-                                <p:dataTable rowIndexVar="i" 
-                                             id="tblBills" 
-                                             value="#{patientController.patientsPastChannelBookings}" 
-                                             var="bfp" 
+                                <p:dataTable rowIndexVar="i"
+                                             id="tblBills"
+                                             value="#{patientController.patientsPastChannelBookings}"
+                                             var="bfp"
                                              rows ="10"
                                              rowStyleClass="#{bill.cancelled?'text-danger':''} "
                                              paginator="true"
@@ -71,26 +71,26 @@
                                     <p:column headerText="No" styleClass="alignTop">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" >                                
-                                        <h:outputLabel id="billNo" 
+                                    <p:column headerText="Bill No" >
+                                        <h:outputLabel id="billNo"
                                                        value="#{bfp.deptId}" />
-                                    </p:column>    
+                                    </p:column>
 
                                     <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bfp.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Billed by"  >
                                         <h:outputLabel value="#{bfp.creater.name}" >
 
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Consultant"  >
                                         <h:outputLabel value="#{bfp.staff.person.nameWithTitle}" >
 
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Session" filterBy="#{bfp.singleBillSession.sessionInstance.name}" >
                                         <h:outputLabel value="#{bfp.singleBillSession.sessionInstance.name}" />
                                         <h:outputLabel value="#{bfp.singleBillSession.sessionInstance.sessionDate}">
@@ -99,26 +99,26 @@
                                         <h:outputLabel value="#{bfp.singleBillSession.sessionInstance.sessionAt}">
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="HH:mm a" />
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Payment Amount for BFP" >
-                                        <h:outputLabel value="#{bfp.total}" >                                      
+                                        <h:outputLabel value="#{bfp.total}" >
                                         </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed Department" >
-                                        <h:outputLabel value="#{bfp.department.name}" >                                      
+                                        <h:outputLabel value="#{bfp.department.name}" >
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
 
                                     <p:column headerText="Patient" >
-                                        <h:outputLabel value="#{bfp.patient.person.nameWithTitle}" >                                      
+                                        <h:outputLabel value="#{bfp.patient.person.nameWithTitle}" >
                                         </h:outputLabel>
-                                    </p:column>  
+                                    </p:column>
 
                                     <p:column headerText="Action">
-                                        <p:commandButton 
-                                            class="m-2 ui-button-success" 
-                                            value="View Bill" 
+                                        <p:commandButton
+                                            class="m-2 ui-button-success"
+                                            value="View Bill"
                                             onclick="PF('confirmationDialog').show();"
                                             />
 
@@ -134,7 +134,7 @@
                                 </p:dataTable>
 
                             </div>
-                        </div>                           
+                        </div>
 
 
                     </p:panel>

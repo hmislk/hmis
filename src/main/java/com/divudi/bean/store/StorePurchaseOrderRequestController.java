@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.NotificationController;
@@ -46,8 +45,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -66,7 +64,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     private BillItem currentBillItem;
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
-    //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
+    //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     @Inject
     StoreCalculation storeCalculation;
     private boolean printPreview;
@@ -267,7 +265,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
         notificationController.createNotification(getCurrentBill());
 
     }
-    
+
     public List<BillItem> generateBillItems(Bill bill) {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -359,8 +357,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void request() {
-        
-        
+
+
 
         if (getCurrentBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
@@ -538,14 +536,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void setStoreBeen(StoreBean storeBeen) {
         this.storeBeen = storeBeen;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public boolean isPrintPreview() {

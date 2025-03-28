@@ -150,8 +150,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
     @Inject
     private ItemMappingController itemMappingController;
     @Inject
-    private CommonController commonController;
-    @Inject
     private PaymentSchemeController paymentSchemeController;
     @Inject
     private ApplicationController applicationController;
@@ -163,8 +161,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
     private PriceMatrixController priceMatrixController;
     @Inject
     private PatientController patientController;
-    @Inject
-    private AuditEventApplicationController auditEventApplicationController;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -3605,14 +3601,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
 
     public void setBillId(Long billId) {
         this.billId = billId;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public double getNetPlusVat() {

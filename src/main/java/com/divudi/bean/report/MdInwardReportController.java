@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -86,7 +85,7 @@ public class MdInwardReportController implements Serializable {
     Bill bill;
     ReportKeyWord reportKeyWord;
     private int managaeInwardReportIndex = -1;
-    
+
     ////////////////////////////////////
 
     private CommonFunctions commonFunctions;
@@ -109,8 +108,6 @@ public class MdInwardReportController implements Serializable {
     ///////////////////////////////
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
 
     //reporting purpuse
     boolean showCreatedDate = false;
@@ -125,8 +122,8 @@ public class MdInwardReportController implements Serializable {
 
         return PaymentMethod.values();
     }
-    
-    
+
+
 
     public void makeNull() {
         fromDate = null;
@@ -164,7 +161,7 @@ public class MdInwardReportController implements Serializable {
         }
         return tmp;
     }
-    
+
     public double getNetTotal() {
         double tmp = 0.0;
         List<Bill> list;
@@ -177,7 +174,7 @@ public class MdInwardReportController implements Serializable {
             for (Bill b : list) {
                 tmp += b.getNetTotal();
             }
-        }  
+        }
         return tmp;
     }
 
@@ -281,7 +278,7 @@ public class MdInwardReportController implements Serializable {
 
         }
 
-        
+
 
     }
 
@@ -307,7 +304,7 @@ public class MdInwardReportController implements Serializable {
             bills = new ArrayList<>();
 
         }
-        
+
     }
 
     public List<Bill> getBills() {
@@ -361,7 +358,7 @@ public class MdInwardReportController implements Serializable {
         temMap.put("fromDate", fromDate);
         count = getBillFacade().findLongByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        
+
 
     }
 
@@ -407,7 +404,7 @@ public class MdInwardReportController implements Serializable {
             total += b.getNetValue();
         }
 
-        
+
     }
 
     public void createCreditInwardOpdPharmacyBills() {
@@ -624,7 +621,7 @@ public class MdInwardReportController implements Serializable {
         for (BillItem bi : billItem) {
             purchaseValue += bi.getPharmaceuticalBillItem().getPurchaseRate() * bi.getPharmaceuticalBillItem().getQty();
         }
-        
+
     }
 
     public void listInBhtBillItemsStore() {
@@ -678,7 +675,7 @@ public class MdInwardReportController implements Serializable {
     }
 
 //    public void listInwardBillItems(){
-//    
+//
 //        Map m=new HashMap();
 //        String jpql;
 //        jpql="select b from BillItem b where"
@@ -690,8 +687,8 @@ public class MdInwardReportController implements Serializable {
 //        m.put("dept", dept);
 //        m.put("biTy", BillType.InwardFinalBill);
 //        billItem=getBillItemFacade().findByJpql(jpql, m,TemporalType.TIMESTAMP);
-//        
-//        
+//
+//
 //    }
     double totalValue;
 
@@ -972,7 +969,7 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = calTotInwdPaymentBills(new CancelledBill());
         refundTotal = calTotInwdPaymentBills(new RefundBill());
 
-        
+
     }
 
     private double calInwdPaymentBillsNotDischarge(Bill bill) {
@@ -1541,7 +1538,7 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = depositByCreatedDateValue(new CancelledBill(), false);
         refundTotal = depositByCreatedDateValue(new RefundBill(), false);
 
-        
+
 
     }
 
@@ -1563,7 +1560,7 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = depositByCreatedDateValue(new CancelledBill(), true);
         refundTotal = depositByCreatedDateValue(new RefundBill(), true);
 
-        
+
     }
 
     public void createAllPaymentByCreatedDateDischarged() {
@@ -1577,7 +1574,7 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = allPaymentByCreatedDateValue(new CancelledBill(), true);
         refundTotal = allPaymentByCreatedDateValue(new RefundBill(), true);
 
-        
+
     }
 
     public void createDepositByCreatedDateDischargedAll() {
@@ -1591,7 +1588,7 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = depositByCreatedDateValue(new CancelledBill());
         refundTotal = depositByCreatedDateValue(new RefundBill());
 
-        
+
 
     }
 
@@ -1609,7 +1606,7 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = calPaymentBillsAdmitted(new CancelledBill());
         refundTotal = calPaymentBillsAdmitted(new RefundBill());
 
-        
+
 
     }
 
@@ -1635,7 +1632,7 @@ public class MdInwardReportController implements Serializable {
         sql = "";
         grantTotal = calPaymentBills(sql);
 
-        
+
 
     }
 
@@ -1646,7 +1643,7 @@ public class MdInwardReportController implements Serializable {
         completePayments = fetchPaymentBillsNotDicharged();
         completePaymentsTotal = calPaymentBillsNotDicharged();
 
-        
+
 
     }
 
@@ -1710,7 +1707,7 @@ public class MdInwardReportController implements Serializable {
 
         completePaymentsTotal = calPaymentBillsNotDicharged();
 
-        
+
     }
 
     @EJB
@@ -1804,7 +1801,7 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = calInwdPaymentBillsDischarge(new CancelledBill());
         refundTotal = calInwdPaymentBillsDischarge(new RefundBill());
 
-        
+
     }
 
     public void makeListNull() {
@@ -1890,7 +1887,7 @@ public class MdInwardReportController implements Serializable {
             itemWithFees.add(iwf);
         }
 
-        
+
     }
 
     public void createItemWithFeeByDischargeDate() {
@@ -2045,7 +2042,7 @@ public class MdInwardReportController implements Serializable {
             ////// // System.out.println("total = " + total);
         }
 
-        
+
 
     }
 
@@ -2061,7 +2058,7 @@ public class MdInwardReportController implements Serializable {
         Date startTime = new Date();
 
         createBillWithBillFee(false, false, true);
-        
+
     }
 
     //619
@@ -2306,7 +2303,7 @@ public class MdInwardReportController implements Serializable {
             ////// // System.out.println("total = " + total);
         }
 
-        
+
 
     }
 
@@ -2385,7 +2382,7 @@ public class MdInwardReportController implements Serializable {
             ////// // System.out.println("total = " + total);
         }
 
-        
+
 
     }
 
@@ -3032,14 +3029,6 @@ public class MdInwardReportController implements Serializable {
             this.due = due;
         }
 
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }
