@@ -11,7 +11,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -99,7 +99,7 @@ public class StorePurchaseOrderController implements Serializable {
     }
 
 
-    
+
     public void addExtraItem() {
         if (getCurrentBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("Please select and item from the list");
@@ -116,7 +116,7 @@ public class StorePurchaseOrderController implements Serializable {
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getStoreBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getStoreBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
-      
+
         getBillItems().add(getCurrentBillItem());
 
         calTotal();

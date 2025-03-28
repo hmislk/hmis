@@ -10,7 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -88,7 +88,7 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
     BillNumberGenerator billNumberBean;
 
     CommonFunctions commonFunctions;
-    //////////////////    
+    //////////////////
     private List<Bill> items = null;
     List<BillFee> lstBillFees;
     List<BillItem> lstBillItems;

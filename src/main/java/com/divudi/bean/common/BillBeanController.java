@@ -4,7 +4,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillFeeBundleEntry;
@@ -14,19 +14,6 @@ import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.OpdBillingStrategy;
 import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.PaymentType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -493,8 +480,8 @@ public class BillBeanController implements Serializable {
 //                + " and bi.item.department.institution=:ins"
 //                + " and bi.bill.createdAt between :fromDate and :toDate "
 //                + " and bi.bill.paymentMethod in :pms";
-//        
-//        
+//
+//
 //        HashMap temMap = new HashMap();
 //
 //        temMap.put("toDate", toDate);
@@ -929,7 +916,7 @@ public class BillBeanController implements Serializable {
 //        return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 //
 //    }
-//    
+//
     public double calDoctorPaymentInward(Date fromDate, Date toDate, Institution institution) {
         String sql = "Select sum(b.netValue) "
                 + " FROM BillItem b "
@@ -3877,7 +3864,7 @@ public class BillBeanController implements Serializable {
         saveBillComponent(e, b, wu);
         saveBillFee(e, b, wu);
 //            if (b.getBillType() != BillType.InwardBill && e.getBillItem() != null) {
-//                
+//
 //                e.getBillItem().setBillSession(getServiceSessionBean().saveBillSession(e.getBillItem()));
 //            }
         getBillItemFacade().edit(e.getBillItem());

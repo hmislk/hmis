@@ -53,7 +53,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;

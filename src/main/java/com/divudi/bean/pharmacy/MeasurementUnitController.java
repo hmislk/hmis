@@ -15,7 +15,7 @@ import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.facade.MeasurementUnitFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.java.CommonFunctions;
 
 import java.io.Serializable;

@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.facade.DepartmentFacade;
@@ -140,5 +140,5 @@ public class KitchenController implements Serializable {
         return items;
     }
 
-    
+
 }

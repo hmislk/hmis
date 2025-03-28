@@ -7,7 +7,7 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.cashTransaction.DetailedFinancialBill;
 import com.divudi.facade.DetailedFinancialBillFacade;
 import java.io.Serializable;
@@ -24,7 +24,7 @@ import javax.inject.Named;
 /**
  * Controller for managing DetailedFinancialBill entities.
  * Handles creation, editing, and basic operations.
- * 
+ *
  * @author Dr M H B Ariyaratne
  */
 @Named

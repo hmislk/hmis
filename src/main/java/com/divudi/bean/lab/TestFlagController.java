@@ -9,7 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.Sex;
 import com.divudi.entity.lab.Investigation;
@@ -430,14 +430,14 @@ public class TestFlagController implements Serializable {
 
     public List<InvestigationItem> getInvestigationItemsOfValueandFlagType() {
         List<InvestigationItemType> iit = Arrays.asList(InvestigationItemType.Calculation, InvestigationItemType.Value);
-    
+
         if (investigation != null) {
             Map<String, Object> m = new HashMap<>();
             String jpql = "select i from InvestigationItem i where "
                     + " i.retired=false"
                     + " and i.item.id=:id "
                     + " and i.ixItemType in :itemType";
-           
+
             m.put("itemType", iit);
             m.put("id", investigation.getId());
             investigationItemsOfValueandFlagType = getInvestigationItemFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);

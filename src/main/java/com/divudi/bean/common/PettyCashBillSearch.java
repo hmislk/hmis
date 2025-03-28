@@ -12,7 +12,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.entity.Bill;
@@ -46,7 +46,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import org.joda.time.LocalTime;
+
 import org.primefaces.model.LazyDataModel;
 
 /**
@@ -107,13 +107,13 @@ public class PettyCashBillSearch implements Serializable {
     WebUser user;
     private SearchKeyword searchKeyword;
 
-    
+
     public String navigateToPettyCashCancel() {
         return "petty_cash_bill_cancel";
-        
+
     }
-    
-    
+
+
 
     public void sendToApprovePettyCashBillCancellation() {
         Bill b = new Bill();
@@ -327,7 +327,7 @@ public class PettyCashBillSearch implements Serializable {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
-    
+
     public void cancelBill() {
         Date current = new Date();
         Date midNight = getMidnight();
@@ -751,8 +751,8 @@ public class PettyCashBillSearch implements Serializable {
     public List<Bill> getBills() {
         return bills;
     }
-    
-        
+
+
 public WebUser getUser() {
         return user;
     }

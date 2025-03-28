@@ -39,7 +39,7 @@ import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.ReportType;
 import com.divudi.data.UploadType;
 import com.divudi.data.lab.PatientInvestigationStatus;

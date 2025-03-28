@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.PatientReport;
@@ -89,7 +89,7 @@ public class StaffImageController implements Serializable {
             JsfUtil.addErrorMessage("Please select staff member");
             return "";
         }
-        
+
         try {
             in = getFile().getInputStream();
             File f = new File(getStaffController().getCurrent().toString() + getStaffController().getCurrent().getFileType());

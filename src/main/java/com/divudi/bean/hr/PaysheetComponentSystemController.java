@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
@@ -44,7 +44,7 @@ public class PaysheetComponentSystemController implements Serializable {
     private PaysheetComponent current;
     private List<PaysheetComponent> items = null;
     String selectText = "";
-   
+
     public List<PaysheetComponent> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from PaysheetComponent c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
@@ -233,5 +233,5 @@ public class PaysheetComponentSystemController implements Serializable {
         }
     }
 
-  
+
 }

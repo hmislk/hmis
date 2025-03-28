@@ -12,7 +12,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;

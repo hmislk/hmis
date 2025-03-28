@@ -5,7 +5,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.pharmacy.PharmaceuticalItemController;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.data.BillClassType;
@@ -106,7 +106,7 @@ public class StoreGoodsReturnController implements Serializable {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
-        
+
         if (tmp.getPharmaceuticalBillItem().getFreeQtyInUnit() > storeCalculation.calFreeQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpFreeQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
@@ -258,7 +258,7 @@ public class StoreGoodsReturnController implements Serializable {
             double rCacnelled = storeCalculation.getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
 
             double netQty = Math.abs(rBilled) - Math.abs(rCacnelled);
-            
+
             double rFreeBilled = storeCalculation.getTotalFreeQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
             double rFreeCacnelled = storeCalculation.getTotalFreeQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
             double netFreeQty = Math.abs(rFreeBilled) - Math.abs(rFreeCacnelled);
@@ -268,7 +268,7 @@ public class StoreGoodsReturnController implements Serializable {
             //System.err.println("Net " + netQty);
             retPh.setQty((double) (grnPh.getQtyInUnit() - netQty));
             retPh.setQtyInUnit((double) (grnPh.getQtyInUnit() - netQty));
-            
+
             retPh.setFreeQty((double) (grnPh.getQtyInUnit() - netFreeQty));
             retPh.setFreeQtyInUnit((double) (grnPh.getFreeQtyInUnit() - netFreeQty));
 
@@ -283,7 +283,7 @@ public class StoreGoodsReturnController implements Serializable {
 //                suggessions.add(item);
 //            }
 //
-//            
+//
 //            bi.setTmpSuggession(suggessions);
             bi.setTmpQty((double) (grnPh.getQtyInUnit() - netQty));
             bi.setPharmaceuticalBillItem(retPh);

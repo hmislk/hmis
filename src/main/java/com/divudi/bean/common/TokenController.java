@@ -17,7 +17,7 @@ import com.divudi.entity.Token;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.TokenFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.PaymentMethod;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -47,7 +47,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
-    // </editor-fold> 
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -61,7 +61,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
 
-    // </editor-fold> 
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
 
@@ -79,7 +79,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     private boolean patientDetailsEditable;
 
-    // </editor-fold> 
+    // </editor-fold>
     public TokenController() {
 
     }
@@ -466,7 +466,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    // </editor-fold> 
+    // </editor-fold>
     public Token getCurrentToken() {
         return currentToken;
     }

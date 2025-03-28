@@ -9,7 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.inward.Admission;
@@ -128,7 +128,7 @@ public class DischargeController implements Serializable {
         makeNull();
     }
 
-   
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }

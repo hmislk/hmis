@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -69,7 +69,7 @@ public class PackageItemController implements Serializable {
     List<Item> serviceItems;
     private Institution institution;
     private Department department;
-    
+
 
     private boolean canRemovePackageItemfromPackage;
 
@@ -86,7 +86,7 @@ public class PackageItemController implements Serializable {
 
         return serviceItems;
     }
-    
+
     public String navigateToPackageItemList(){
          return "/admin/pricing/package_item?faces-redirect=true";
      }
@@ -189,7 +189,7 @@ public class PackageItemController implements Serializable {
         JsfUtil.addSuccessMessage("Added");
         recreateModel();
     }
-    
+
     public void EditPackageItem() {
         if (getCurrentPackege() == null) {
             JsfUtil.addErrorMessage("Please select a package");
@@ -209,9 +209,9 @@ public class PackageItemController implements Serializable {
 
         recreateModel();
         getItems();
-        
+
         JsfUtil.addSuccessMessage("Updated");
-        
+
     }
 
     public void removeFromPackage() {
@@ -300,14 +300,14 @@ public class PackageItemController implements Serializable {
     private PackageItemFacade getFacade() {
         return ejbFacade;
     }
-    
+
     public void prepareToAddNew(){
         current = new PackageItem();
     }
-    
+
     public void clearValus(){
         canRemovePackageItemfromPackage = false;
-        
+
     }
 
     /**
@@ -526,8 +526,8 @@ public class PackageItemController implements Serializable {
     public void setDepartment(Department department) {
         this.department = department;
     }
-    
-    
+
+
 
     /**
      *

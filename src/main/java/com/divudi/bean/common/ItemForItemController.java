@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.Item;
 import com.divudi.entity.lab.ItemForItem;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -169,9 +169,9 @@ public class ItemForItemController implements Serializable {
         recreateModel();
         getItems();
     }
-    
-    
-    
+
+
+
     public void save(ItemForItem saving) {
         if (saving != null && getCurrent().getId() > 0) {
             getFacade().edit(current);

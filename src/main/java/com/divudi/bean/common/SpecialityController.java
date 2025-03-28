@@ -1,8 +1,8 @@
 /*
  * Open Hospital Management Information System
- * 
- * Dr M H B Ariyaratne 
- * Acting Consultant (Health Informatics) 
+ *
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
  * (94) 71 5812399
  * (94) 71 5812399
  */
@@ -32,7 +32,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DualListModel;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 
 /**
  *

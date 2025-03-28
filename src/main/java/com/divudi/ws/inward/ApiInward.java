@@ -8,7 +8,7 @@ package com.divudi.ws.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;

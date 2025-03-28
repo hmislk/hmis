@@ -15,8 +15,7 @@ import com.divudi.bean.common.UploadController;
 import com.divudi.entity.Upload;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ReportFormatFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.UploadType;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.lab.PatientReport;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -285,7 +284,7 @@ public class ReportFormatController implements Serializable {
             jpql += " AND i.institution = :site";
             params.put("site", sessionController.getDepartment().getSite());
         }
-        
+
         ReportFormat  parentCategory = ejbFacade.find(patientReport.getPatientInvestigation().getInvestigation().getReportFormat().getId());
         params.put("rf", parentCategory  );
 
@@ -326,9 +325,9 @@ public class ReportFormatController implements Serializable {
         }
         return items;
     }
-    
+
     private List<ReportFormat> parentFormat;
-    
+
     public List<ReportFormat> getParentFormat() {
         if (parentFormat == null) {
             String sql = "SELECT i FROM ReportFormat i where i.retired=false and i.parentCategory=null order by i.name";

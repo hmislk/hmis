@@ -9,21 +9,14 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.report.ReportController;
 import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
@@ -133,7 +126,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         return "/patient_deposit/receive?faces-redirect=true";
     }
 
-    
+
     public void clearDataForPatientDeposit() {
         patientController.setCurrent(null);
         current = null;
@@ -308,7 +301,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         patientController.save(patient);
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PATIENT_DEPOSIT);
-        
+
         getBill().setInsId(deptId);
         getBill().setDeptId(deptId);
 

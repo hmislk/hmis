@@ -28,7 +28,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.MessageType;
 import com.divudi.data.OptionScope;

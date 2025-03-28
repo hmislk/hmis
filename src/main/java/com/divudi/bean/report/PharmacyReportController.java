@@ -7,7 +7,7 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.WebUserController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.pharmacy.StockHistoryController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillItemStatus;
@@ -1083,7 +1083,7 @@ public class PharmacyReportController implements Serializable {
 //            jpql += " and bi.fromDepartment=:fdept ";
 //            m.put("fdept", department);
 //        }
-//        
+//
 //        if (referingDoctor  != null) {
 //            jpql += " and bi.referredBy=:refDoc ";
 //            m.put("refDoc", referingDoctor);
@@ -1092,7 +1092,7 @@ public class PharmacyReportController implements Serializable {
 //        jpql += " order by bi.referredBy.person.name ";
 //        prescriptionSummaryReportRows = (List<PrescriptionSummaryReportRow>) billFacade.findLightsByJpql(jpql, m);
 //    }
-//    
+//
     public void processPresciptionSummeryReport() {
         String jpql = "select new "
                 + " com.divudi.light.common.PrescriptionSummaryReportRow(bi.referredBy.person.name, bi.referredBy.person.id, count(bi), sum(bi.netTotal)) "

@@ -5,7 +5,7 @@
 package com.divudi.facade;
 
 import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -30,5 +30,5 @@ public class PatientInvestigationFacade extends AbstractFacade<PatientInvestigat
     public PatientInvestigationFacade() {
         super(PatientInvestigation.class);
     }
-    
+
 }

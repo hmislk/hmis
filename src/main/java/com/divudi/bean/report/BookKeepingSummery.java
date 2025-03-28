@@ -8,7 +8,7 @@ package com.divudi.bean.report;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;import com.divudi.bean.inward.AdmissionTypeController;
+import com.divudi.java.JsfUtil;import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;

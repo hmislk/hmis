@@ -44,7 +44,7 @@ import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.lab.BillBarcode;

@@ -6,7 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
@@ -446,7 +446,7 @@ public class SaleReturnController implements Serializable {
         savePreReturnBill();
         savePreComponent();
         getReturnBill().setTotal(getReturnBill().getNetTotal()+getReturnBill().getDiscount());
-        
+
 
         getBill().getReturnPreBills().add(getReturnBill());
         getBillFacade().edit(getBill());

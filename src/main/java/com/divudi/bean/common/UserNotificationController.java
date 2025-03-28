@@ -8,19 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.bean.pharmacy.PurchaseOrderController;
 import com.divudi.bean.pharmacy.TransferIssueController;
-import static com.divudi.data.BillType.InwardPharmacyRequest;
-import static com.divudi.data.BillType.PharmacyOrder;
-import static com.divudi.data.BillType.PharmacyOrderApprove;
-import static com.divudi.data.BillType.PharmacyTransferIssue;
-import static com.divudi.data.BillType.PharmacyTransferRequest;
 import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
 import com.divudi.data.OptionScope;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;

@@ -35,7 +35,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -114,7 +114,7 @@ public class ChannelReportTempController implements Serializable {
     boolean sessoinDate;
     boolean paid;
     boolean scan;
-    
+
 
     /**
      * Creates a new instance of ChannelReportTempController
@@ -429,7 +429,7 @@ public class ChannelReportTempController implements Serializable {
         bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null);
 
     }
-    
+
     public void createCollectingCenterPaymentTable() {
         bills = new ArrayList<>();
         BillType[] bts = {BillType.CollectingCentrePaymentReceiveBill};
@@ -741,7 +741,7 @@ public class ChannelReportTempController implements Serializable {
 
         agencies = getInstitutionFacade().findByJpql(sql, m);
     }
-    
+
     public void createCollectingcenterBalanceTable() {
         String sql;
         HashMap m = new HashMap();
@@ -965,7 +965,7 @@ public class ChannelReportTempController implements Serializable {
         this.channelBean = channelBean;
     }
 
-   
+
     public SessionController getSessionController() {
         return sessionController;
     }

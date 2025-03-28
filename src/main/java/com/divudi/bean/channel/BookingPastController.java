@@ -6,7 +6,7 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
@@ -338,7 +338,7 @@ public class BookingPastController implements Serializable {
 //        hh.put("ss", getSelectedServiceSession());
 //        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 //    }
-    
+
     public void fillBillSessions() {
         selectedBillSession = null;
 //        selectedServiceSession = ((ServiceSession) event.getObject());
@@ -478,7 +478,7 @@ public class BookingPastController implements Serializable {
         Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
         return dbl;
     }
-    
+
     public List<ServiceSession> fetchCreatedServiceSession(Staff s, Date d) {
         String sql;
         Map m = new HashMap();
@@ -493,13 +493,13 @@ public class BookingPastController implements Serializable {
         m.put("class", ServiceSession.class);
         return getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
-    
+
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
         setStaff(null);
         billSessions=null;
     }
-    
+
     public List<Staff> getSelectedConsultants() {
         String sql;
         Map m = new HashMap();
@@ -585,13 +585,13 @@ public class BookingPastController implements Serializable {
         return consultants;
     }
 
-    public Staff getStaff() {        
+    public Staff getStaff() {
         return staff;
     }
 
     public void setStaff(Staff staff) {
         this.staff = staff;
-        makeBillSessionNull();        
+        makeBillSessionNull();
     }
 
     public StaffFacade getStaffFacade() {
@@ -832,7 +832,7 @@ public class BookingPastController implements Serializable {
         return date;
     }
 
-    public void setDate(Date date) {        
+    public void setDate(Date date) {
         this.date = date;
         makeBillSessionNull();
         serviceSessions = new ArrayList<>();

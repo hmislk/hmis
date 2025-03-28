@@ -8,7 +8,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -492,7 +492,7 @@ public class StoreSaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Please Select a BHT");
             return;
         }
-        
+
         if(getPatientEncounter().isDischarged()){
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
@@ -511,7 +511,7 @@ public class StoreSaleBhtController implements Serializable {
         savePreBillFinally(pt, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), btp, billNumberSuffix);
         savePreBillItemsFinally(tmpBillItems);
 
-        // Calculation Margin and Create Billfee 
+        // Calculation Margin and Create Billfee
         updateFee(getPreBill().getBillItems(),getPatientEncounter().getPaymentMethod());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));

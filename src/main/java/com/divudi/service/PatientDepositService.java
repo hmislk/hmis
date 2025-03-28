@@ -1,17 +1,6 @@
 package com.divudi.service;
 
-import com.divudi.bean.common.util.JsfUtil;
-import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BILL_REFUND;
-import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT;
-import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED;
-import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT_REFUND;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.HistoryType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
@@ -81,7 +70,7 @@ public class PatientDepositService {
             patientFacade.edit(p);
         }
     }
-    
+
     public void updateBalance(Payment p, PatientDeposit pd) {
         switch (p.getBill().getBillTypeAtomic()) {
             case PATIENT_DEPOSIT:
@@ -115,7 +104,7 @@ public class PatientDepositService {
             case PATIENT_DEPOSIT_CANCELLED:
                 handleOutPayment(p, pd);
                 break;
-                
+
             case INWARD_DEPOSIT:
                 handleOutPayment(p, pd);
                 break;
@@ -124,7 +113,7 @@ public class PatientDepositService {
                 throw new AssertionError();
         }
     }
-    
+
     public void updateBalance(Bill b, PatientDeposit pd) {
         switch (b.getBillTypeAtomic()) {
             case PATIENT_DEPOSIT:
@@ -199,7 +188,7 @@ public class PatientDepositService {
         JsfUtil.addSuccessMessage("Balance Updated.");
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
-    
+
     public void handleInPayment(Payment p, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(p.getPaidValue());
@@ -208,7 +197,7 @@ public class PatientDepositService {
         JsfUtil.addSuccessMessage("Balance Updated.");
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, p.getBill(), beforeBalance, afterBalance,  Math.abs(p.getPaidValue()));
     }
-    
+
     public void handleOutPayment(Payment p, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance - Math.abs( p.getPaidValue());
@@ -251,5 +240,5 @@ public class PatientDepositService {
         patientDepositHistoryFacade.create(pdh);
     }
 
-    
+
 }

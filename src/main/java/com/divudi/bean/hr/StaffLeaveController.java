@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 
 import com.divudi.data.hr.LeaveType;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.hr.Grade;
 import com.divudi.entity.hr.StaffLeave;

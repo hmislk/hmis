@@ -13,7 +13,7 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.entity.DosageForm;
 import com.divudi.facade.DosageFormFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

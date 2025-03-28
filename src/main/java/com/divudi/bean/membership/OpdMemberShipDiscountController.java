@@ -8,9 +8,8 @@
  */
 package com.divudi.bean.membership;
 
-import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -443,7 +442,7 @@ public class OpdMemberShipDiscountController implements Serializable {
             }
         }
     }
-    
+
     public void savePharmacyCategoryPaymentSchemeForAllCategoriesAndSelectedPaymentMethod() {
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Please select a Payment Scheme");

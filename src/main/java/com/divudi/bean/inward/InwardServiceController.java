@@ -10,7 +10,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.FeeType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.dataStructure.ServiceFee;
@@ -369,12 +369,12 @@ public class InwardServiceController implements Serializable {
         }
         return items;
     }
-    
+
     public List<InwardService> findInwardServices() {
         String sql = "select c from InwardService c where c.retired=false order by c.name";
         return getFacade().findByJpql(sql);
     }
-    
+
 
     public List<InwardService> getItem() {
         String sql;

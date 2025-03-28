@@ -1,19 +1,10 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
 import com.divudi.data.dataStructure.PaymentMethodData;
 
 import com.divudi.ejb.BillNumberGenerator;
@@ -30,7 +21,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
-import com.divudi.service.StaffService;
+
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -290,7 +281,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, , 
+        // fetch original bill now, checked alteady returned, cancelled, ,
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
@@ -449,7 +440,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, , 
+        // fetch original bill now, checked alteady returned, cancelled, ,
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.CC_BILL_REFUND);

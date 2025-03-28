@@ -1,12 +1,12 @@
 /*
  * Open Hospital Management Information System
  * Dr M H B Ariyaratne
- * buddhika.ari@gmail.comcontroller class which are not used. 
+ * buddhika.ari@gmail.comcontroller class which are not used.
  */
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;

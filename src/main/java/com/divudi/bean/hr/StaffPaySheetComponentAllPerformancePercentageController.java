@@ -5,7 +5,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
@@ -223,15 +223,15 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
                 + " from StaffPaysheetComponent ss"
                 + " where ss.retired=false "
                 + " and ss.paysheetComponent.componentType=:pct ";
-                
+
         if (getFromDate() != null) {
             sql += " and ((ss.fromDate <=:fd "
                     + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
             hm.put("fd", getFromDate());
         }
-        
+
         hm.put("pct", PaysheetComponentType.PerformanceAllowancePercentage);
-        
+
 //        if (paysheetComponent != null) {
 //            sql += " and ss.paysheetComponent=:tp ";
 //            hm.put("tp", getPaysheetComponent());
@@ -303,7 +303,7 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
         return getPaysheetComponentFacade().findByJpql(sql, hm);
 
     }
-    
+
     public StaffPaySheetComponentAllPerformancePercentageController() {
     }
 

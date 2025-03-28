@@ -52,7 +52,7 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -473,7 +473,7 @@ public class PharmacyBean {
         addToStockHistory(pharmaceuticalBillItem, s, staff);
         return s;
     }
-    
+
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Department department) {
         String sql;
         HashMap hm = new HashMap();
@@ -735,7 +735,7 @@ public class PharmacyBean {
         return true;
     }
 
-    
+
     public boolean deductFromStockWithoutHistory(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;

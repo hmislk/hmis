@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.hr.HrmVariables;
 import com.divudi.entity.hr.PayeeTaxRange;
 import com.divudi.facade.HrmVariablesFacade;
@@ -44,7 +44,7 @@ public class HrmVariablesController implements Serializable {
 
     ;
 
-   
+
     public void prepareAdd() {
         current = new HrmVariables();
     }
@@ -121,7 +121,7 @@ public class HrmVariablesController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("Nothing to Delete");
         }
-        
+
         current = null;
         getCurrent();
     }

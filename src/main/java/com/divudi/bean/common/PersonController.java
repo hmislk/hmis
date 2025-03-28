@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.Person;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
@@ -46,7 +46,7 @@ public class PersonController implements Serializable {
         selectedItems = getFacade().findByJpql("select c from Person c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
-    
+
     public Person findPerson(Long id){
         return getFacade().find(id);
     }

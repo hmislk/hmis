@@ -47,7 +47,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.Speciality;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
@@ -388,7 +388,7 @@ public class ChannelReportController implements Serializable {
 
 //        Bill b = new Bill();
 //        b.setNetTotal(netTotal);
-//        
+//
         rows = new ArrayList<>();
 
         ChannelReportColumnModel br;
@@ -2098,7 +2098,7 @@ public class ChannelReportController implements Serializable {
 //                + " and type(bf.bill)=:class "
 //                + " and bf.fee.feeType =:ft"
 //                + " and bf.bill.createdAt between :fd and :td ";
-//        
+//
 //        m.put("fd", getFromDate());
 //        m.put("td", getToDate());
 //        m.put("ft", FeeType.Service);
@@ -2839,7 +2839,7 @@ public class ChannelReportController implements Serializable {
     public List<Staff> getStaffbyClassType(List<BillType> bts, Date fd, Date td) {
         HashMap hm = new HashMap();
 //        String sql = "select p from Staff p where p.retired=false ";
-//        
+//
 //        if(st!=null){
 //            //System.out.println("1");
 //            sql+=" and type(p)=:class ";

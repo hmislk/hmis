@@ -22,7 +22,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -43,7 +43,7 @@ public  class MedicalPackageNameController implements Serializable {
     private List<MedicalPackage> items = null;
     private List<Item> itemList = null;
 
-    
+
      public List<MedicalPackage> completePack(String query) {
         List<MedicalPackage> suggestions;
         String sql;
@@ -58,7 +58,7 @@ public  class MedicalPackageNameController implements Serializable {
         }
         return suggestions;
     }
-    
+
     /**
      *
      */
@@ -144,9 +144,9 @@ public  class MedicalPackageNameController implements Serializable {
         }
         return items;
     }
-    
-  
-    
+
+
+
     public List<MedicalPackage> getWithoutInactiveItems() {
         String temSql;
         temSql = "SELECT i FROM MedicalPackage i where i.retired=false "

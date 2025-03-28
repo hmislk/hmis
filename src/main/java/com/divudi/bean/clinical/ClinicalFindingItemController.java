@@ -9,7 +9,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.ClinicalEntityFacade;
 import java.io.Serializable;
@@ -108,7 +108,7 @@ public class ClinicalFindingItemController implements Serializable {
         this.sessionController = sessionController;
     }
 
-   
+
 
     public ClinicalEntity getCurrent() {
         if (current == null) {
@@ -190,5 +190,5 @@ public class ClinicalFindingItemController implements Serializable {
         }
     }
 
-   
+
 }

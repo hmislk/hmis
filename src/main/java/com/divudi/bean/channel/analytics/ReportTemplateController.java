@@ -9,7 +9,7 @@
 package com.divudi.bean.channel.analytics;
 
 import com.divudi.bean.common.*;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
@@ -20,7 +20,7 @@ import com.divudi.data.analytics.ReportTemplateColumn;
 import com.divudi.data.analytics.ReportTemplateFilter;
 import com.divudi.data.analytics.ReportTemplateType;
 import static com.divudi.data.analytics.ReportTemplateType.ITEM_SUMMARY_BY_BILL;
-import com.divudi.entity.Bill;
+
 import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
 import com.divudi.entity.Institution;

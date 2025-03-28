@@ -5,7 +5,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -192,7 +192,7 @@ public class StoreTransferReceiveController implements Serializable {
 
             getReceivedBill().getBillItems().add(i);
         }
-        
+
         if(getReceivedBill().getBillItems().isEmpty() || getReceivedBill().getBillItems() == null){
             JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
             return;

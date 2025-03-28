@@ -4,7 +4,7 @@
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.BillExpense;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -96,7 +96,7 @@ public class BillExpenseController implements Serializable {
     }
 
     public void saveSelected() {
-        
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");

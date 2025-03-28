@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.entity.Patient;
 import com.divudi.entity.clinical.ClinicalFindingValue;
@@ -115,7 +115,7 @@ public class ClinicalFindingValueController implements Serializable {
     public List<ClinicalFindingValue> getItems() {
         return items;
     }
-    
+
     public List<ClinicalFindingValue> findClinicalFindingValues(Patient pt, ClinicalFindingValueType type) {
         if (items == null) {
             String j;

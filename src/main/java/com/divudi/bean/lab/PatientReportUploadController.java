@@ -1,7 +1,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.UploadType;
 import com.divudi.entity.Upload;
 import com.divudi.entity.lab.PatientInvestigation;

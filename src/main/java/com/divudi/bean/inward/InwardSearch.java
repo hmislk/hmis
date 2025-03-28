@@ -35,7 +35,7 @@ import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.PaymentFacade;

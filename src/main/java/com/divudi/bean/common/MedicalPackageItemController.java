@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (94) 71 5812399
  *
  */
@@ -28,11 +28,11 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * 
+ *
  */
 @Named
 @SessionScoped

@@ -1,6 +1,6 @@
 package com.divudi.bean.store;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.pharmacy.Amp;

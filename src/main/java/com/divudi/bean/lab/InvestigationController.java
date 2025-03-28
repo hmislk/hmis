@@ -40,7 +40,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.WorksheetItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.Sample;

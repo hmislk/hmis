@@ -7,7 +7,7 @@ package com.divudi.beans.forms;
 
 import com.divudi.entity.forms.ComponentAsignment;
 import com.divudi.facade.forms.ComponentAssignmentFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -24,12 +24,12 @@ public class ComponentAsignmentController implements Serializable {
 
     @EJB
     ComponentAssignmentFacade componentAsignmentFacade;
-    
-    
+
+
     public ComponentAsignmentController() {
     }
     private ComponentAsignment current;
-    
+
     public void saveCurrent(){
         if(current==null){
             JsfUtil.addErrorMessage("Nothing to sava");
@@ -43,13 +43,13 @@ public class ComponentAsignmentController implements Serializable {
         }
         JsfUtil.addSuccessMessage("Saved");
     }
-    
+
     public String navigateToAddNewForms(){
       current =new ComponentAsignment();
-      return "/forms/add";  
+      return "/forms/add";
     }
     public String navigateToListAllForms(){
-      return "/forms/add";  
+      return "/forms/add";
     }
 
     public ComponentAsignment getCurrent() {

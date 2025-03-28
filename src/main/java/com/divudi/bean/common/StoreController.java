@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.pharmacy.Stock;
@@ -234,6 +234,6 @@ public class StoreController implements Serializable {
     public void setStoreTabIndex(int storeTabIndex) {
         this.storeTabIndex = storeTabIndex;
     }
-    
-    
+
+
 }

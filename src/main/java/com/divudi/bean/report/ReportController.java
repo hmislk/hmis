@@ -1,7 +1,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.*;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -18,7 +18,6 @@ import com.divudi.data.dataStructure.BillAndItemDataRow;
 import com.divudi.data.dataStructure.ItemDetailsCell;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.reports.CollectionCenterReport;
-import com.divudi.data.reports.FinancialReport;
 import com.divudi.data.reports.LaboratoryReport;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -1894,7 +1893,7 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
-//    
+//
 //    public void processPharmacySaleReferralCount() {
 //        String jpql = "select new com.divudi.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
 //                + " from Bill bi "
@@ -1913,7 +1912,7 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.fromDepartment=:fdept ";
 //            m.put("fdept", department);
 //        }
-//        
+//
 //        if (referingDoctor  != null) {
 //            jpql += " and bi.referredBy=:refDoc ";
 //            m.put("refDoc", referingDoctor);
@@ -1922,7 +1921,7 @@ public class ReportController implements Serializable {
 //        jpql += " order by bi.referredBy.person.name ";
 //        prescriptionSummaryReportRows = (List<PrescriptionSummaryReportRow>) billFacade.findLightsByJpql(jpql, m);
 //    }
-//    
+//
     public void processPresciptionSummeryReport() {
         String jpql = "select new "
                 + " com.divudi.light.common.PrescriptionSummaryReportRow(bi.referredBy.person.name, bi.referredBy.person.id, count(bi), sum(bi.netTotal)) "
@@ -3380,7 +3379,7 @@ public class ReportController implements Serializable {
         List<TestWiseCountReport> tempTestWiseCounts = new ArrayList<>(resultMap.values());
 
         testWiseCounts = new  ArrayList<>();
-        
+
         totalCount = 0.0;
         totalHosFee = 0.0;
         totalCCFee = 0.0;

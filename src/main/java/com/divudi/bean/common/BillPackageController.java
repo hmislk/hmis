@@ -10,8 +10,6 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
@@ -48,19 +46,11 @@ import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.BillValidation;
 import com.divudi.data.FeeType;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.service.StaffService;
 import com.divudi.entity.BillFeePayment;
@@ -271,7 +261,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
                 if (Objects.equals(e.getBillItem().getItem().getTransDepartment().getId(), d.getId())) {
                     getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                    // getBillBean().calculateBillItem(myBill, e);   
+                    // getBillBean().calculateBillItem(myBill, e);
                     list.add(e.getBillItem());
                     tmp.add(e);
                 }
@@ -583,7 +573,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         List<BillItem> originalBillItem = getBillBean().fillBillItems(bill);
-        
+
         for (BillItem bi : originalBillItem) {
             BillItem cancelBillItem = new BillItem();
             cancelBillItem.copy(bi);
@@ -599,7 +589,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
 
             List<BillFee> originalBillItemFees = getBillBean().fetchBillFees(bi);
-            
+
             double hospitalFee = 0.0;
             double ccFee = 0.0;
             double staffFee = 0.0;
@@ -642,7 +632,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     billFeeFacade.edit(fee);
                 }
             }
-            
+
             cancelBillItem.setHospitalFee(hospitalFee);
             cancelBillItem.setStaffFee(staffFee);
             cancelBillItem.setCollectingCentreFee(ccFee);
@@ -663,7 +653,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 billItemFacade.edit(bi);
             }
         }
-        
+
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBill, pd);
@@ -675,7 +665,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 getBillFacade().edit(cancellationBill);
             }
         }
-        
+
         payments = paymentService.createPayment(cancellationBill, getPaymentMethodData());
         printPreview = true;
         batchBillCancellationStarted = false;
@@ -1063,7 +1053,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     private Bill saveBill(Department bt, BilledBill temp) {
 
-        //getCurrent().setCashBalance(cashBalance); 
+        //getCurrent().setCashBalance(cashBalance);
         //getCurrent().setCashPaid(cashPaid);
         //  temp.setBillType(bt);
         temp.setBillType(BillType.OpdBill);

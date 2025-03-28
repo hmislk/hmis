@@ -7,7 +7,7 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.AgentAndCcApplicationController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CollectingCentrePaymentMethod;
@@ -183,12 +183,12 @@ public class CollectingCentreController implements Serializable {
         auditDataBefore = null;
     }
 
-    
+
     public void processCollectingCentreBookWiseDetail(){
         //TO DO - Add Logic
         bills = new ArrayList<>();
     }
-    
+
     public String saveAgentHistoryAndNavigateBackToCcStatement() {
         if (agentHistory == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -304,7 +304,7 @@ public class CollectingCentreController implements Serializable {
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-//        
+//
         collectingCentreApplicationController.updateCcBalance(
                 collectingCentre,
                 0,
@@ -708,7 +708,7 @@ public class CollectingCentreController implements Serializable {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
-    
-    
+
+
 
 }

@@ -6,7 +6,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -234,12 +234,12 @@ public class StoreBillSearch implements Serializable {
 
     private LazyDataModel<Bill> lazyBills;
 
-   
+
     public LazyDataModel<Bill> getSearchSaleBills() {
         return lazyBills;
     }
 
-  
+
     public EjbApplication getEjbApplication() {
         return ejbApplication;
     }
@@ -854,7 +854,7 @@ public class StoreBillSearch implements Serializable {
 
             can.getBillItems().add(b);
         }
-        
+
         for (BillItem i : can.getBilledBill().getBillExpenses()) {
             BillItem b = new BillItem();
             b.copy(i);
@@ -1100,7 +1100,7 @@ public class StoreBillSearch implements Serializable {
 //
 //            ph.setBillItem(b);
 //            getPharmaceuticalBillItemFacade().edit(ph);
-//   
+//
 //            getBillItemFacede().edit(b);
 //
 //            can.getBillItems().add(b);
@@ -1777,7 +1777,7 @@ public class StoreBillSearch implements Serializable {
         return bills;
     }
 
-  
+
     public void updatePhIem() {
         if (currentBillItem == null) {
             return;
@@ -1824,7 +1824,7 @@ public class StoreBillSearch implements Serializable {
         lazyBills = null;
 
     }
-    
+
     public String viewBill() {
 
         if (bill != null) {

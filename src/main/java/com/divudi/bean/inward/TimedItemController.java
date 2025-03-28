@@ -10,7 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.inward.TimedItem;
@@ -111,8 +111,8 @@ public class TimedItemController implements Serializable {
         departmentType = DepartmentType.Inward;
         return "/inward/inward_timed_service_consume";
     }
-    
-    
+
+
     public List<TimedItem> completeTimedService(String query) {
         List<TimedItem> suggestions;
         String sql;
@@ -286,7 +286,7 @@ public class TimedItemController implements Serializable {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Created Successfully");
         } else {
-//            
+//
 //            getFacade().create(getCurrent());
 //            if (billedAs == false) {
 //                getCurrent().setBilledAs(getCurrent());
@@ -379,7 +379,7 @@ public class TimedItemController implements Serializable {
         m.put("pasindu", false);
 
         items = getFacade().findByJpql(jpql, m);
-    }  
+    }
 
     public List<TimedItem> getItems() {
         if (items == null) {

@@ -19,7 +19,7 @@ import com.divudi.entity.lab.ReportFormat;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.CommonReportItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -54,7 +54,7 @@ public class CommonReportItemController implements Serializable {
     private CommonReportItemFacade ejbFacade;
     @EJB
     CategoryFacade categoryFacade;
-//  Controllers    
+//  Controllers
     @Inject
     SessionController sessionController;
     @Inject

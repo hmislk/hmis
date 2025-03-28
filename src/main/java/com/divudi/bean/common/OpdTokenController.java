@@ -1,7 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -48,7 +48,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
-    // </editor-fold> 
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -70,7 +70,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Inject
     OpdPreBillController opdPreBillController;
 
-    // </editor-fold> 
+    // </editor-fold>
     private Token currentToken;
     private Token onGoingToken;
     private Token removeingToken;
@@ -376,7 +376,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
         //System.out.println("currentTokens = " + currentTokens);
     }
-    
+
     public void fillOpdWaitingTokensCounts() {
         Map<String, Object> m = new HashMap<>();
         String j = "Select new com.divudi.data.TokenCount(t.counter, t.staff, count(t)) "
@@ -387,15 +387,15 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
                 + " and t.tokenType=:ty"
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
-        
+
         boolean testing = false;
         if(testing){
             Token t=new Token();
             t.getCounter();
             t.getStaff();
-            
+
         }
-        
+
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("cal", false); // Tokens that are called
@@ -489,7 +489,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
 //    public void startTokenService() {
-//        
+//
 //    }
 //
 //    public void completeTokenService() {
@@ -515,7 +515,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
 //    public void restartTokenService() {
-//        
+//
 //    }
     public void reverseCompleteTokenService() {
         if (currentToken == null) {
@@ -638,8 +638,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         return doctor;
     }
 
-    
-    
+
+
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
@@ -677,7 +677,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
 
-    
+
 
     @Override
     public void listnerForPaymentMethodChange() {

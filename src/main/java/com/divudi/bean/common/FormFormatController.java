@@ -16,7 +16,7 @@ import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.facade.FormFormatFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -71,7 +71,7 @@ public class FormFormatController implements Serializable {
 //            j+= " and s.workingDepartment =:dep ";
 //            m.put("dep", hrReportController.getReportKeyWord().getDepartment());
 //        }
-//        
+//
 //        if(hrReportController.getReportKeyWord().getInstitution()!=null){
 //            j+= " and s.workingDepartment.institution =:ins ";
 //            m.put("ins", hrReportController.getReportKeyWord().getInstitution());
@@ -216,7 +216,7 @@ public class FormFormatController implements Serializable {
         }
         return items;
     }
-    
+
     public String navigateToManageForms(){
         return "/forms/index";
     }

@@ -9,7 +9,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.hr.Grade;
 import com.divudi.facade.GradeFacade;
 import java.io.Serializable;
@@ -44,7 +44,7 @@ public class GradeController implements Serializable {
     private List<Grade> items = null;
     String selectText = "";
 
-   
+
 
     public List<Grade> completeGrade(String qry) {
         List<Grade> a = null;

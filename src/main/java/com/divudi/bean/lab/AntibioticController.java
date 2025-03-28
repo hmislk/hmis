@@ -10,7 +10,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.lab.Antibiotic;
 import com.divudi.facade.AntibioticFacade;
 import com.divudi.facade.SpecialityFacade;
@@ -66,7 +66,7 @@ public class AntibioticController implements Serializable {
         prepareAdd();
         return "/admin/lims/manage_antibiotics?faces-redirect=true";
     }
-    
+
     public List<Antibiotic> completeAntibiotic(String query) {
         List<Antibiotic> suggestions;
         String sql;

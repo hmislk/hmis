@@ -16,7 +16,7 @@ import com.divudi.facade.WebUserFacade;
 import java.util.HashMap;
 import java.util.Map;
 import com.divudi.data.LoginRequest;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;

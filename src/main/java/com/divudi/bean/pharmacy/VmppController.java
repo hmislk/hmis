@@ -9,7 +9,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.VmppFacade;
 import java.io.Serializable;

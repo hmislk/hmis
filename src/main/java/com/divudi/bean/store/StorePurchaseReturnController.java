@@ -5,7 +5,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.pharmacy.PharmaceuticalItemController;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.data.BillClassType;

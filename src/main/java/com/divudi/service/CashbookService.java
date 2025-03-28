@@ -1,6 +1,6 @@
 package com.divudi.service;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -23,18 +23,18 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class CashbookService {
-    
+
     @EJB
     CashBookEntryFacade cashbookEntryFacade;
     @EJB
     CashBookFacade cashbookFacade;
 
-    
+
     public void writeCashBookEntryAtPaymentCreation(Payment p) {
         CashBook cashbook = findAndSaveCashBookBySite(p.getDepartment().getSite(), p.getInstitution(), p.getDepartment());
         writeCashBookEntryAtPaymentCreation(p, p.getCreater(), cashbook, p.getDepartment());
     }
-    
+
     public void writeCashBookEntryAtPaymentCreation(Payment p, WebUser user, CashBook cashbook, Department department) {
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
@@ -55,7 +55,7 @@ public class CashbookService {
         cashbookEntryFacade.create(current);
 
     }
-    
+
     public void updateBalances(PaymentMethod pm, Double Value, CashBookEntry cbe) {
         Map m = new HashMap<>();
         String jpql = "Select cbe from CashBookEntry cbe where "
@@ -97,15 +97,15 @@ public class CashbookService {
         if (site==null) {
             return null;
         }
-        
+
         if (ins==null) {
             return null;
         }
-        
+
         if (dept==null) {
             return null;
         }
-        
+
         String sql;
         Map m = new HashMap();
         m.put("ins", ins);
@@ -126,8 +126,8 @@ public class CashbookService {
             cb.setDepartment(dept);
             cb.setSite(site);
             cashbookFacade.create(cb);
-        } 
+        }
         return cb;
     }
-    
+
 }

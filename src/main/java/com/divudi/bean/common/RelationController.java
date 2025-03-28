@@ -3,8 +3,8 @@ package com.divudi.bean.common;
 import com.divudi.entity.Relation;
 
 import com.divudi.facade.RelationFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.common.util.JsfUtil.PersistAction;
+import com.divudi.java.JsfUtil;
+import com.divudi.java.JsfUtil.PersistAction;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -142,7 +142,7 @@ public class RelationController implements Serializable {
     private void recreateModel() {
         items = null;
     }
-    
+
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);

@@ -11,7 +11,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.FeeType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.inward.InwardChargeType;
@@ -162,7 +162,7 @@ public class TheatreServiceController implements Serializable {
 
     public void prepareAdd() {
         current = new TheatreService();
-    
+
     }
 
     public void bulkUpload() {
@@ -319,7 +319,7 @@ public class TheatreServiceController implements Serializable {
 
     }
 
-    
+
     @EJB
     private ItemFeeFacade itemFeeFacade;
 

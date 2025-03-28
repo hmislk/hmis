@@ -1,6 +1,6 @@
 package com.divudi.bean.process;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.process.ProcessDefinition;
 import com.divudi.entity.process.ProcessStepActionDefinition;
 import com.divudi.entity.process.ProcessStepDefinition;
@@ -16,7 +16,6 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**

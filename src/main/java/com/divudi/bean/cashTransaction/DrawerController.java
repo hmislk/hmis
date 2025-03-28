@@ -10,26 +10,8 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.IOU;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.None;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.PatientPoints;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import static com.divudi.data.PaymentMethod.Voucher;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
@@ -304,7 +286,7 @@ public class DrawerController implements Serializable {
         }
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Down">
     public void updateDrawerForOuts(List<Payment> payments, WebUser webUser) {
         for (Payment payment : payments) {
@@ -324,7 +306,7 @@ public class DrawerController implements Serializable {
         updateDrawer(bill, Math.abs(value), paymentMethod, webUser);
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     public void updateDrawerForIns(List<Payment> payments) {
         if (payments == null) {
             return;

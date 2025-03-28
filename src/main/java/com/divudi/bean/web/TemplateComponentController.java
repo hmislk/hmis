@@ -1,7 +1,7 @@
 package com.divudi.bean.web;
 
 import com.divudi.entity.web.TemplateComponent;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.facade.web.TemplateComponentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -52,7 +52,7 @@ public class TemplateComponentController implements Serializable {
                 + " from TemplateComponent t";
         items = facade.findByJpql(jpql);
     }
-    
+
     public void saveCurrent() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -81,7 +81,7 @@ public class TemplateComponentController implements Serializable {
     public void setItems(List<TemplateComponent> items) {
         this.items = items;
     }
-    
-    
+
+
 
 }

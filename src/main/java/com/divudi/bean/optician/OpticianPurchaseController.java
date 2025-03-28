@@ -6,7 +6,7 @@ package com.divudi.bean.optician;
 
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.pharmacy.AmpController;
 import com.divudi.bean.pharmacy.StockController;
 

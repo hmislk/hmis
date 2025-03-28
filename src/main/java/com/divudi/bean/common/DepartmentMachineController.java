@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.lab.DepartmentMachine;

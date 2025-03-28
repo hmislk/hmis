@@ -9,7 +9,7 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -416,8 +416,8 @@ public class PaymentController implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
     }
-    
-    
+
+
 
     /**
      *

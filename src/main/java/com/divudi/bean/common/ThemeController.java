@@ -13,7 +13,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 /**
  *
  * @author Buddhika
@@ -87,11 +87,11 @@ public class ThemeController implements Serializable {
             JsfUtil.addSuccessMessage("Theme updated");
         }
     }
-    
+
     public String navigateToChangeOwnTheme(){
         return "/user_theme?faces-redirect=true";
     }
-    
+
     public WebUserFacade getFacade() {
         return facade;
     }

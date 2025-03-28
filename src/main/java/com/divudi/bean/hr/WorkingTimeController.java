@@ -20,7 +20,7 @@ import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.WorkingTime;
 import com.divudi.facade.WorkingTimeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.inward.AdmissionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;

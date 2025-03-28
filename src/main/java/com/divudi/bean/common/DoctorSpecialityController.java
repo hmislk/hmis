@@ -10,7 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.DoctorSpeciality;
 import com.divudi.facade.DoctorSpecialityFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -119,15 +119,15 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public void saveSelected() {
-        
+
         if(getCurrent().getName() == null || getCurrent().getName().isEmpty()){
             JsfUtil.addErrorMessage("Name is required");
             return;
         }
-        
+
 //        if(getCurrent().getDescription()== null || getCurrent().getDescription().isEmpty() ){
 //            JsfUtil.addErrorMessage("Description is required");
-//            return;  
+//            return;
 //        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {

@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillClassType;

@@ -7,7 +7,7 @@
 package com.divudi.facade;
 
 import com.divudi.entity.inward.InwardService;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -32,5 +32,5 @@ public class InwardServiceFacade extends AbstractFacade<InwardService> {
     public InwardServiceFacade() {
         super(InwardService.class);
     }
-    
+
 }

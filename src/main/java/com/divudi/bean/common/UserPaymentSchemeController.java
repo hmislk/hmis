@@ -26,7 +26,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -164,7 +164,7 @@ public  class UserPaymentSchemeController implements Serializable {
         getEjbFacade().create(d);
         currentPaymentScheme = null;
     }
-    
+
     public List<WebUserPaymentScheme> getItemsBill() {
 
 
@@ -213,7 +213,7 @@ public  class UserPaymentSchemeController implements Serializable {
         //////// // System.out.println("Setting user");
         items=null;
         this.selectedUser = selectedUser;
-        
+
     }
 
     public List<PaymentScheme> getSelectedUserDeparment() {

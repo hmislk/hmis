@@ -1,7 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.Denomination;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.OptionScope;
 import com.divudi.data.OptionValueType;
 import com.divudi.entity.Department;
@@ -291,7 +290,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
@@ -309,7 +308,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
     public String getColorValueByKey(String key, String defaultColorHashCode) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {

@@ -9,7 +9,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Institution;
 import com.divudi.facade.InstitutionFacade;
@@ -65,7 +65,7 @@ public class StoreDealorController implements Serializable {
         current = new Institution();
         current.setInstitutionType(InstitutionType.StoreDealor);
     }
-  
+
     private void recreateModel() {
         items = null;
     }

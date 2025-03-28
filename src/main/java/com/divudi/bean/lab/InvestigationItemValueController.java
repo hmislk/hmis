@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.lab;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValue;
 import com.divudi.entity.lab.PatientReportItemValue;
@@ -216,5 +216,5 @@ public class InvestigationItemValueController implements Serializable {
         }
     }
 
-    
+
 }

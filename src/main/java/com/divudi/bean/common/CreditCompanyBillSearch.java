@@ -11,21 +11,8 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.CreditBean;
@@ -285,7 +272,7 @@ public class CreditCompanyBillSearch implements Serializable {
         CancelledBill cb = new CancelledBill();
         cb.copy(getBill());
         cb.invertAndAssignValuesFromOtherBill(getBill());
-        
+
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, billSuffix));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, billSuffix));
 
@@ -357,7 +344,7 @@ public class CreditCompanyBillSearch implements Serializable {
 //
 //        return tmp;
 //    }
-//      
+//
 //       private void saveBhtBillItem(Bill b) {
 //        BillItem temBi = new BillItem();
 //        temBi.setBill(b);
@@ -398,7 +385,7 @@ public class CreditCompanyBillSearch implements Serializable {
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
                 createPayment(cb, paymentMethod);
-                printPreview = true;             
+                printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
                 JsfUtil.addSuccessMessage("Awaiting Cancellation");
@@ -486,7 +473,7 @@ public class CreditCompanyBillSearch implements Serializable {
     List<Bill> billsToApproveCancellation;
     List<Bill> billsApproving;
     private Bill billForCancel;
-    
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {

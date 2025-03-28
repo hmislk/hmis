@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.*;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.SearchKeyword;

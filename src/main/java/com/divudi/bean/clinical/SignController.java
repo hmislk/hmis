@@ -9,7 +9,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.ClinicalEntityFacade;
@@ -51,7 +51,7 @@ public class SignController implements Serializable {
     private ClinicalEntity current;
     private List<ClinicalEntity> items = null;
     String selectText = "";
-    
+
     public String navigateToManageSigns(){
         return "/emr/admin/signs";
     }

@@ -6,7 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -1730,12 +1730,12 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             //System.out.println("Staff Credit Updated");
         }
 
-        //System.out.println("001");  
+        //System.out.println("001");
         if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
-        //System.out.println("End Payment");  
+        //System.out.println("End Payment");
         return p;
     }
 
@@ -1754,7 +1754,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
-        //System.out.println("End Payment");  
+        //System.out.println("End Payment");
         return p;
     }
 

@@ -4,7 +4,7 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.facade.InvestigationFacade;
@@ -86,10 +86,10 @@ public class LabWorksheetController implements Serializable {
         JsfUtil.addSuccessMessage("Added");
         current=null;
     }
-    
 
-    
-    
+
+
+
         public void removeWorksheetItem(){
         if(current==null){
             JsfUtil.addErrorMessage("No worksheet");
@@ -105,8 +105,8 @@ public class LabWorksheetController implements Serializable {
         current=null;
     }
 
-    
-    
+
+
     public void saveIx(){
     for(WorksheetItem wsi:investigation.getWorksheetItems()){
         getWiFacade().edit(wsi);

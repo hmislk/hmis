@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.store;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.pharmacy.FrequencyUnitController;
 import com.divudi.entity.pharmacy.FrequencyUnit;
 import com.divudi.facade.FrequencyUnitFacade;
@@ -42,7 +42,7 @@ public  class StoreFrequencyUnitController implements Serializable {
     private List<FrequencyUnit> items = null;
     String selectText = "";
 
-   
+
     public void prepareAdd() {
         current = new FrequencyUnit();
     }

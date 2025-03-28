@@ -14,7 +14,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.java.CommonFunctions;
 
 import java.io.Serializable;

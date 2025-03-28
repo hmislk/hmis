@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
@@ -161,10 +161,10 @@ public class UserDepartmentController implements Serializable {
         getEjbFacade().create(d);
         items=null;
         currentDepartment = null;
-        
+
     }
-    
-    
+
+
     public void addRouteForUser() {
         if (selectedUser == null) {
             JsfUtil.addSuccessMessage("Select A User");
@@ -181,7 +181,7 @@ public class UserDepartmentController implements Serializable {
         getEjbFacade().create(d);
         items=null;
         currentDepartment = null;
-        
+
     }
 
     public List<WebUserDepartment> fillWebUserDepartments(WebUser wu) {
@@ -208,8 +208,8 @@ public class UserDepartmentController implements Serializable {
         }
         return items;
     }
-    
-    
+
+
 
     public WebUserDepartmentFacade getEjbFacade() {
         return ejbFacade;

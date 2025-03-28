@@ -9,7 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -203,7 +203,7 @@ public  class IxCalController implements Serializable {
         if (ix != null) {
             //////// // System.out.println("ii count is " + ix.getReportItems().size());
             for (ReportItem ii : ix.getReportItems()) {
-                
+
                 if (ii instanceof InvestigationItem && ii.getIxItemType() == InvestigationItemType.Calculation) {
                     //////// // System.out.println("ii is " + ii);
                 }

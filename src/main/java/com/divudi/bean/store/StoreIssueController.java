@@ -37,7 +37,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -119,7 +119,7 @@ public class StoreIssueController implements Serializable {
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -515,14 +515,14 @@ public class StoreIssueController implements Serializable {
 
     @EJB
     private CashTransactionBean cashTransactionBean;
-    
+
     public boolean checkIssue(){
         if(getPreBill().getInvoiceNumber()==null || getPreBill().getInvoiceNumber().trim().equals("")){
             JsfUtil.addErrorMessage("Please Input Issue Number");
             ////System.out.println("invoice number = " + getPreBill().getInvoiceNumber());
             return true;
         }
-        
+
         return false;
     }
 
@@ -533,7 +533,7 @@ public class StoreIssueController implements Serializable {
          if(checkIssue()){
             return;
         }
-        
+
         if (checkAllBillItem()) {
             //   ////System.out.println("Check all bill Ietems");
             return;
@@ -543,9 +543,9 @@ public class StoreIssueController implements Serializable {
             //   ////System.out.println("Error for sale bill");
             return;
         }
-        
+
         getPreBill().setPaidAmount(getPreBill().getTotal());
-        
+
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
@@ -592,7 +592,7 @@ public class StoreIssueController implements Serializable {
             errorMessage = "Please select Deferent Department to send items";
             return;
         }
-        
+
         if (getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select To Department");
             errorMessage = "Please select the department to send items";
@@ -794,7 +794,7 @@ public class StoreIssueController implements Serializable {
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
             return;
         }
-        
+
         if (getToDepartment() == null) {
             errorMessage = "Please select a department to issue.";
             JsfUtil.addErrorMessage("Please select to department");

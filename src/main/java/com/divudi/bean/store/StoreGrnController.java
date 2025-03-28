@@ -30,7 +30,7 @@ import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
@@ -178,7 +178,7 @@ public class StoreGrnController implements Serializable {
 
 //        for(BillItem bi : billItems){
 //            if(bi.getPharmaceuticalBillItem().getPurchaseRate() > bi.getPharmaceuticalBillItem().getRetailRate())
-//           msg = "Check Purchase Rate and Retail Rate"; 
+//           msg = "Check Purchase Rate and Retail Rate";
 //        }
         if (b.getInvoiceNumber() == null || "".equals(b.getInvoiceNumber().trim())) {
             msg = "Please Fill invoice number";
@@ -345,7 +345,7 @@ public class StoreGrnController implements Serializable {
             getBillItemFacade().create(i);
             getGrnBill().getBillExpenses().add(i);
         }
-        
+
         Payment p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
 
         getGrnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
@@ -375,14 +375,14 @@ public class StoreGrnController implements Serializable {
         printPreview = true;
 
     }
-    
+
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
         setPaymentMethodData(p, pm);
         return p;
     }
-    
+
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
 
         p.setInstitution(getSessionController().getInstitution());
@@ -534,7 +534,7 @@ public class StoreGrnController implements Serializable {
 
         }
     }
-    
+
     public String navigateToRecieve() {
         clearList();
         createGrn();
@@ -620,11 +620,11 @@ public class StoreGrnController implements Serializable {
         // billItem.setId(billItem.getSearialNoInteger().longValue());
         // billItem.setId(billItem.getSearialNoInteger().longValue());
 
-//        billItem.setSearialNo(getBillItems().size() + 1);        
+//        billItem.setSearialNo(getBillItems().size() + 1);
         getBillItems().add(billItem);
 //
 //        getBillItemController().setItems(getBillItems());
-//      
+//
 //        getBillItemController().setItems(getBillItems());
     }
 

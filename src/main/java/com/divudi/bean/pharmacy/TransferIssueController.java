@@ -7,7 +7,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;

@@ -10,7 +10,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.WebUserController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;

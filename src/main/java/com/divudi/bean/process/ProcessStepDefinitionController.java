@@ -1,6 +1,6 @@
 package com.divudi.bean.process;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.process.ProcessDefinition;
 import com.divudi.entity.process.ProcessStepDefinition;
 import com.divudi.facade.ProcessStepDefinitionFacade;
@@ -195,7 +195,7 @@ public class ProcessStepDefinitionController implements Serializable {
         processStepDefinitionFacade.edit(current);
         JsfUtil.addSuccessMessage("Deleted");
         items = null;
-        return null; 
+        return null;
     }
 
     /**

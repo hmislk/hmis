@@ -28,7 +28,7 @@ import com.divudi.facade.WebUserDashboardFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.hr.StaffImageController;
 import com.divudi.data.LoginPage;
 import com.divudi.entity.UserNotification;
@@ -301,7 +301,7 @@ public class WebUserController implements Serializable {
                 return false;
             }
         }
-        
+
         if (getSessionController().getLoggedUser() == null) {
             return hasPri;
         }

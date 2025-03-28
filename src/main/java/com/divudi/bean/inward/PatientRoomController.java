@@ -9,7 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.PatientRoomFacade;
 import java.io.Serializable;

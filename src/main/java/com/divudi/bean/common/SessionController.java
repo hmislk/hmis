@@ -39,7 +39,7 @@ import com.divudi.facade.WebUserDepartmentFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.Staff;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.Denomination;
@@ -992,7 +992,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
 
-//    
+//
 //    public void decryptAllUsers() {
 //        String temSQL;
 //        temSQL = "SELECT u FROM WebUser u";

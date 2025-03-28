@@ -6,12 +6,11 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.UserPrivilageController.PrivilegeHolder;
 import com.divudi.entity.TriggerSubscription;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.Privileges;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserPrivilege;
 import com.divudi.entity.WebUserRole;
 import com.divudi.entity.WebUserRolePrivilege;
 import com.divudi.entity.WebUserRoleUser;
@@ -101,7 +100,7 @@ public class WebUserRoleUserController implements Serializable {
             userPrivilageController.addUserPrivilege(p, webUser, department);
         }
     }
-    
+
 
     public void addUsers() {
         if (current == null) {

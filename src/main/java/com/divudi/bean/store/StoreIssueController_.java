@@ -35,7 +35,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,7 +65,7 @@ import org.primefaces.event.SelectEvent;
 public class StoreIssueController_ implements Serializable {
 
     String errorMessage = null;
-    
+
     /**
      * Creates a new instance of PharmacySaleController
      */
@@ -116,7 +116,7 @@ public class StoreIssueController_ implements Serializable {
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -504,7 +504,7 @@ public class StoreIssueController_ implements Serializable {
     private CashTransactionBean cashTransactionBean;
 
     public void settleBill() {
-        
+
         editingQty = null;
      //   ////System.out.println("editingQty = " + editingQty);
         errorMessage=null;
@@ -548,7 +548,7 @@ public class StoreIssueController_ implements Serializable {
 
     public void addBillItem() {
         errorMessage=null;
-        
+
         editingQty = null;
 
         if (billItem == null) {
@@ -802,8 +802,8 @@ public class StoreIssueController_ implements Serializable {
         editingQty = null;
 
     }
-    
-   
+
+
 
     public SessionController getSessionController() {
         return sessionController;
@@ -1055,6 +1055,6 @@ public class StoreIssueController_ implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
-    
-    
+
+
 }

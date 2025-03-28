@@ -6,7 +6,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -258,9 +258,9 @@ public class StoreAdjustmentController implements Serializable {
         getBillItem().getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         getBillItem().getPharmaceuticalBillItem().setFreeQty(0.0f);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        
+
         Stock fetchedStock = getStockFacade().find(stock.getId());
-        
+
         //Adjustment Rates
         getBillItem().getPharmaceuticalBillItem().setBeforeAdjustmentValue(fetchedStock.getStock());
         getBillItem().getPharmaceuticalBillItem().setAfterAdjustmentValue(qty);
@@ -311,12 +311,12 @@ public class StoreAdjustmentController implements Serializable {
 
         //pharmaceutical Bill Item
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
-        
+
         //Adjustment Rates
         getBillItem().getPharmaceuticalBillItem().setBeforeAdjustmentValue(ib.getPurcahseRate());
         getBillItem().getPharmaceuticalBillItem().setAfterAdjustmentValue(pr);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(ib);
-        
+
         //Values
         getBillItem().setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
         getBillItem().setNetValue(getStock().getStock() * getBillItem().getNetRate());
@@ -339,7 +339,7 @@ public class StoreAdjustmentController implements Serializable {
         System.out.println("Pharmaceutical BillItem = " + getBillItem().getPharmaceuticalBillItem());
         return getBillItem().getPharmaceuticalBillItem();
     }
-    
+
     private void saveRetailSaleRateAdjustmentBillItems() {
         billItem = new BillItem();
 
@@ -353,12 +353,12 @@ public class StoreAdjustmentController implements Serializable {
 
         //pharmaceutical Bill Item
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
-        
+
         //Adjustment Rates
         getBillItem().getPharmaceuticalBillItem().setBeforeAdjustmentValue(itemBatch.getPurcahseRate());
         getBillItem().getPharmaceuticalBillItem().setAfterAdjustmentValue(rsr);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(itemBatch);
-        
+
         //Values
         getBillItem().setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
         getBillItem().setNetValue(getStock().getStock() * getBillItem().getNetRate());
@@ -454,14 +454,14 @@ public class StoreAdjustmentController implements Serializable {
         }
 
         saveAdjustmentBill(BillTypeAtomic.STORE_STAFF_STOCK_ADJUSTMENT);
-        
+
         getDeptAdjustmentPreBill().setStaff(getStock().getStaff());
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
-        
+
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
         setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
         getStoreBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
@@ -788,7 +788,7 @@ public class StoreAdjustmentController implements Serializable {
 //    }
 //    public void fillSelectStock(){
 //        List<Stock> items = new ArrayList<>();
-//        
+//
 //        String sql;
 //        Map m = new HashMap();
 //        sql = "select i "
@@ -799,7 +799,7 @@ public class StoreAdjustmentController implements Serializable {
 //
 //        items = getStockFacade().findByJpql(sql, m);
 //
-//        
+//
 //    }
     public Item getSelectedItem() {
         return selectedItem;

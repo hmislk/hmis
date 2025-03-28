@@ -14,7 +14,7 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemLight;
 import com.divudi.entity.Category;
@@ -36,13 +36,11 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
-import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
@@ -119,7 +117,7 @@ public class ItemFeeManager implements Serializable {
         itemFees = new ArrayList<>();
         return "/admin/pricing/download_base_item_fees?faces-redirect=true";
     }
-    
+
     public String navigateToUploadToReplaceSiteFeesByItemCode() {
         itemFees = new ArrayList<>();
         return "/admin/pricing/upload_to_replace_site_fees_by_item_code?faces-redirect=true";

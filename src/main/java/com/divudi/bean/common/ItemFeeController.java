@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -87,7 +87,7 @@ public class ItemFeeController implements Serializable {
         return d;
     }
 
-    
+
     public List<ItemFee> fillDepartmentItemFees(Department department) {
         String jpql = "SELECT f"
                 + " FROM ItemFee f "
@@ -103,8 +103,8 @@ public class ItemFeeController implements Serializable {
 
         return itemFeeFacade.findByJpql(jpql, parameters);
     }
-    
-   
+
+
     public List<Department> getInstitutionDepatrments(ItemFee fee) {
         List<Department> d;
         //////// // System.out.println("gettin ins dep ");
@@ -272,8 +272,8 @@ public class ItemFeeController implements Serializable {
     public List<ItemFee> getCharges() {
         return fees;
     }
-    
-    
+
+
 
     public void setCharges(List<ItemFee> charges) {
         this.fees = charges;

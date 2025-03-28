@@ -23,7 +23,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -241,7 +241,7 @@ public class RoomChangeController implements Serializable {
             JsfUtil.addErrorMessage("Can't Change Room Without a Room.");
             return;
         }
-        
+
         if (newRoomFacilityCharge == null){
             JsfUtil.addErrorMessage("There is No Room Selected");
             return;

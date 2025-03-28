@@ -22,7 +22,7 @@ import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Reorder;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.ReorderFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;

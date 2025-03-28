@@ -8,7 +8,7 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -26,20 +26,9 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillClassType;
-import static com.divudi.data.BillClassType.BilledBill;
-import static com.divudi.data.BillClassType.CancelledBill;
-import static com.divudi.data.BillClassType.OtherBill;
-import static com.divudi.data.BillClassType.PreBill;
-import static com.divudi.data.BillClassType.RefundBill;
 
 import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
 import com.divudi.data.IncomeBundle;
 import com.divudi.data.IncomeRow;
 import com.divudi.data.ReportTemplateRow;
@@ -227,7 +216,7 @@ public class OpdReportController implements Serializable {
     public String navigateToOpdIncomeReport() {
         return "/opd/analytics/summary_reports/opd_income_report?faces-redirect=true";
     }
-    
+
     public String navigateToOpdIncomeDailySummary() {
         return "/opd/analytics/summary_reports/opd_income_daily_summary?faces-redirect=true";
     }
@@ -498,7 +487,7 @@ public class OpdReportController implements Serializable {
         }
         bundle.generatePaymentDetailsForBillsAndBatchBills();
     }
-    
+
     public void processOpdIncomeSummaryByDate() {
         System.out.println("processOpdIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -543,14 +532,14 @@ public class OpdReportController implements Serializable {
                 case OPD_BILL_CANCELLATION:
                 case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
                 case OPD_BILL_REFUND:
-                    
-                    
+
+
             }
-            
+
             if (r.getBill().getPaymentMethod() == null) {
                 continue;
             }
-            
+
             if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
                 r.setPayments(billService.fetchBillPayments(r.getBill(), r.getBatchBill()));
             }

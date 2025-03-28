@@ -16,7 +16,7 @@ import com.divudi.facade.AmendmentFormFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -159,8 +159,8 @@ public class StaffAmendmentFormController implements Serializable {
         if(fromStaffShift2nd!=null)fromStaffShift2nd.reset();
         if(toStaffShift1st!=null)toStaffShift1st.reset();
         if(toStaffShift2nd!=null)toStaffShift2nd.reset();
-        
-        
+
+
         //Create New Staff Shift if ToSatffShift is null
         if (getCurrAmendmentForm().getToShift() != null && toStaffShift1st == null) {
             toStaffShift1st = createToStaffShift(getCurrAmendmentForm().getToShift());
@@ -231,7 +231,7 @@ public class StaffAmendmentFormController implements Serializable {
         clear();
     }
 
-//    
+//
 //           StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
 //        staffShiftHistory.setCreatedAt(new Date());
 //        staffShiftHistory.setCreater(sessionController.getLoggedUser());

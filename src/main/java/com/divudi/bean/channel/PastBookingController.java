@@ -63,7 +63,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Fee;
@@ -255,9 +255,9 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return output;
     }
 
-    
 
-  
+
+
     public void fillFees() {
         selectedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
@@ -609,8 +609,8 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return false;
     }
 
-   
-   
+
+
 
 
     public void updateSerial() {
@@ -1618,7 +1618,7 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 
     }
 
-  
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -2117,7 +2117,7 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return bi;
     }
 
- 
+
     private String generateBillNumberInsId(Bill bill) {
         String suffix = getSessionController().getInstitution().getInstitutionCode();
         BillClassType billClassType = null;

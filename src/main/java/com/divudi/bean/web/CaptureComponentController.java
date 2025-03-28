@@ -10,7 +10,7 @@ import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.web.CaptureComponent;
 import com.divudi.entity.web.DesignComponent;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.DynamicHtmlFormComponent;
 import com.divudi.facade.web.CaptureComponentFacade;
 import com.divudi.facade.web.DesignComponentFacade;
@@ -204,7 +204,7 @@ public class CaptureComponentController implements Serializable {
                 facade.edit(cc);
             }
         }
-        
+
         JsfUtil.addErrorMessage("Saved");
     }
 

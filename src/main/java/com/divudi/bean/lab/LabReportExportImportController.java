@@ -5,8 +5,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.facade.InvestigationItemFacade;
-import java.io.File;
-import java.io.FileOutputStream;
+
 import java.io.IOException;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -33,7 +32,7 @@ import com.divudi.data.InvestigationItemValueType;
 import com.divudi.entity.Item;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.bean.emr.DataUploadController;
 import com.divudi.data.CssFontStyle;
 import com.divudi.data.CssTextAlign;
@@ -44,9 +43,7 @@ import com.divudi.java.CommonFunctions;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import static org.apache.poi.ss.usermodel.CellType.FORMULA;
-import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
-import static org.apache.poi.ss.usermodel.CellType.STRING;
+
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -84,7 +81,7 @@ public class LabReportExportImportController implements Serializable {
     private UploadedFile file;
     private StreamedContent downloadingExcel;
 
-// </editor-fold>   
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigation Method">
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Methods">

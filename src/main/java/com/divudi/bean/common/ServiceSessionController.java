@@ -21,7 +21,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -208,8 +208,8 @@ public class ServiceSessionController implements Serializable {
             }
         }
     }
-    
-    
+
+
     @FacesConverter(forClass = ServiceSession.class)
     public static class ServiceSessionConverter implements Converter {
 
@@ -251,5 +251,5 @@ public class ServiceSessionController implements Serializable {
         }
     }
 
-    
+
 }

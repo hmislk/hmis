@@ -5,7 +5,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.JsfUtil;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Consultant;
@@ -298,7 +298,7 @@ public class PersonInstitutionController implements Serializable {
         return getPersonInstitutionFacade().findByJpql(sql, m);
     }
 
-   
+
 
     public PersonInstitutionFacade getJpaController() {
         if (jpaController == null) {
@@ -339,11 +339,11 @@ public class PersonInstitutionController implements Serializable {
         personInstitutionItems = null;
     }
 
-   
+
     private PersonInstitutionFacade getFacade() {
         return personInstitutionFacade;
     }
-    // new method for create doctor session 
+    // new method for create doctor session
 
     @FacesConverter(forClass = PersonInstitution.class)
     public static class PersonInstitutionConverter implements Converter {
