@@ -1092,18 +1092,22 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
     
     public void unmarkToken(Bill bill){
+        System.out.println("start unmark");
         Token t = findTokenFromBill(bill);
         if(t == null){
             return;
         }
-        t.setCalled(true);
+        t.setCalled(false);
         t.setCalledAt(null);
         t.setInProgress(false);
         t.setCompleted(false);
         tokenController.save(t);
+        System.out.println("end unmark");
+        
     }
 
     public void markToken(Bill bill) {
+        System.out.println("start mark");
         Token t = findTokenFromBill(bill);
         if (t == null) {
             return;
@@ -1113,6 +1117,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         t.setInProgress(false);
         t.setCompleted(false);
         tokenController.save(t);
+        System.out.println("end mark");
     }
 
 //    public void removeSettledToken() {
