@@ -6,7 +6,7 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                
+
                 xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
 
@@ -16,7 +16,7 @@
             <h:form>
 
 
-                <p:panel id="panelPrint"  
+                <p:panel id="panelPrint"
                          header="Turn Around Time">
 
                     <h:panelGrid columns="2" style="min-width: 50%;" styleClass="noPrintButton">
@@ -31,9 +31,9 @@
                         <autocomplete:department value="#{investigationMonthSummeryOwnControllerSession.department}" ></autocomplete:department>
                         <h:outputLabel value="Item"/>
                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
-                                        value="#{investigationMonthSummeryOwnControllerSession.item}" 
-                                        completeMethod="#{investigationController.completeInvest}" 
-                                        var="apt" itemLabel="#{apt.name}" 
+                                        value="#{investigationMonthSummeryOwnControllerSession.item}"
+                                        completeMethod="#{investigationController.completeInvest}"
+                                        var="apt" itemLabel="#{apt.name}"
                                         itemValue="#{apt}" size="30"  style="width: 400px;">
                             <p:column>
                                 #{apt.name}
@@ -47,7 +47,7 @@
 
                         </p:autoComplete>
                                                 <h:panelGroup >
-                            <p:commandButton ajax="false"  value="Process"  
+                            <p:commandButton ajax="false"  value="Process"
                                              action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTimeByBills}"
                                              icon="fa-solid fa-arrows-rotate"
                                              class="ui-button-warning"/>
@@ -59,20 +59,20 @@
                                              class="mx-1 ui-button-info">
                                 <p:printer target="tbl" ></p:printer>
                             </p:commandButton>
-                            
+
                         </h:panelGroup>
                     </h:panelGrid>
 
-                   
+
 
                         <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnControllerSession.pis}" var="pi" class="w-100"
                                      rows="10"
-                                     paginator="true" 
+                                     paginator="true"
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}" 
+                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                                      paginatorPosition="bottom">
-                                    
+
                             <p:column headerText="Ins Id" >
                                 <p:outputLabel value="#{pi.billItem.bill.deptId}" ></p:outputLabel>
                             </p:column>
@@ -108,17 +108,17 @@
                                                         </p:column>-->
                             <p:column headerText="Turn Around time" >
                                 <h:panelGroup rendered="#{pi.approveAt ne null}" >
-                                    <p:outputLabel value="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt)}" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) lt 60}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt)}" rendered="#{commonFunctionsProxy.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) lt 60}" >
                                         <f:convertNumber pattern="0" ></f:convertNumber>
                                     </p:outputLabel>
-                                    <p:outputLabel value=" minutes" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) lt 60}" >
+                                    <p:outputLabel value=" minutes" rendered="#{commonFunctionsProxy.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) lt 60}" >
                                     </p:outputLabel>
-                                    <p:outputLabel value="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt)/60}" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) gt 60}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt)/60}" rendered="#{commonFunctionsProxy.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) gt 60}" >
                                         <f:convertNumber pattern="0.0" ></f:convertNumber>
                                     </p:outputLabel>
-                                    <p:outputLabel value=" hours" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) gt 60}" >
+                                    <p:outputLabel value=" hours" rendered="#{commonFunctionsProxy.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) gt 60}" >
                                     </p:outputLabel>
-                                    <p:outputLabel value="One Hour" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) eq 60}" >
+                                    <p:outputLabel value="One Hour" rendered="#{commonFunctionsProxy.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) eq 60}" >
                                     </p:outputLabel>
                                 </h:panelGroup>
                             </p:column>
@@ -126,11 +126,11 @@
 
                         </p:dataTable>
 
-                  
 
 
 
-                </p:panel>        
+
+                </p:panel>
             </h:form>
         </h:panelGroup>
     </ui:define>

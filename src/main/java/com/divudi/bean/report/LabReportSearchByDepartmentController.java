@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -42,8 +41,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     String txtSearch;
     Date fromDate;
     Date toDate;
@@ -563,7 +561,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
         billsList = getLabBillsOwn();
         calTotals();
 
-        
+
     }
 
     public List<Bill> getLabBillsOwn() {
@@ -919,13 +917,4 @@ public class LabReportSearchByDepartmentController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
-    
 }

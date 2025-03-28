@@ -39,8 +39,7 @@ public class IssueRateMarginsController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private IssueRateMarginsFacade ejbFacade;
     private IssueRateMargins current;
@@ -112,8 +111,8 @@ public class IssueRateMarginsController implements Serializable {
         }
 
         createMargins();
-        
-        
+
+
     }
 
     public void onEdit(IssueRateMargins tmp) {
@@ -196,7 +195,7 @@ public class IssueRateMarginsController implements Serializable {
 
         items = ejbFacade.findByJpql(sql);
 
-        
+
     }
 
     public IssueRateMargins getCurrent() {
@@ -246,7 +245,7 @@ public class IssueRateMarginsController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             IssueRateMarginsController controller = (IssueRateMarginsController) facesContext.getApplication().getELResolver().
@@ -261,9 +260,7 @@ public class IssueRateMarginsController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -280,17 +277,4 @@ public class IssueRateMarginsController implements Serializable {
             }
         }
     }
-
-    /**
-     *
-     */
-    
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

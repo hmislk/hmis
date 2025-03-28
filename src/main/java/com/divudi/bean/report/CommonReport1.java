@@ -5,7 +5,6 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.AuditEventApplicationController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -61,8 +60,6 @@ public class CommonReport1 implements Serializable {
 
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject AuditEventApplicationController auditEventApplicationController;
     ///////////////////
     @EJB
@@ -70,7 +67,7 @@ public class CommonReport1 implements Serializable {
     @EJB
     PersonInstitutionFacade personInstitutionFacade;
 
- 
+
     CommonFunctions commonFunctions;
     ////////////////////
     private Institution collectingIns;
@@ -105,7 +102,7 @@ public class CommonReport1 implements Serializable {
     private BillsTotals agentCancelBill;
     private BillsTotals inwardPayments;
     private BillsTotals inwardPaymentCancel;
-    //////////////////    
+    //////////////////
     private List<String1Value1> dataTableData;
     List<DocTotal> docTotals;
     ///
@@ -442,7 +439,7 @@ public class CommonReport1 implements Serializable {
             biledBillsTotal += bi.getNetValue() + bi.getVat();
         }
 
-        
+
 
     }
 
@@ -495,7 +492,7 @@ public class CommonReport1 implements Serializable {
             biledBillsTotal += bilst.getNetTotal();
         }
 
-        
+
 
     }
 
@@ -1883,7 +1880,7 @@ public class CommonReport1 implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1904,8 +1901,8 @@ public class CommonReport1 implements Serializable {
         auditEvent.setEventTrigger("createOpdBillList()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
- 
+
+
 
 //        if (paymentScheme == null) {
 //            JsfUtil.addErrorMessage("Please Select Payment Scheme");
@@ -1918,7 +1915,7 @@ public class CommonReport1 implements Serializable {
         cancelBillsTotal = fetchBillsTotal(new CancelledBill(), BillType.OpdBill, paymentScheme);
         refundBillsTotal = fetchBillsTotal(new RefundBill(), BillType.OpdBill, paymentScheme);
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1992,7 +1989,7 @@ public class CommonReport1 implements Serializable {
         biledBills = getLabBillsOwnBilled();
         getLabBillsOwnBilledTotals();
 
-        
+
     }
 
     public void createWithCreditbyDepartmentBilledBillItem() {
@@ -2024,7 +2021,7 @@ public class CommonReport1 implements Serializable {
         }
 //        getLabBillsOwnBilledTotals();
 
-        
+
     }
 
     public List<Bill> getLabBillsOwnBilled() {
@@ -2348,14 +2345,6 @@ public class CommonReport1 implements Serializable {
 
     public void setRefundBillsTotal(double refundBillsTotal) {
         this.refundBillsTotal = refundBillsTotal;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public boolean isOnlyOPD() {

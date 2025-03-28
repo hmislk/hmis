@@ -2335,6 +2335,20 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return;
         }
+        if ((getPatient().getMobileNumberStringTransient() == null
+                || getPatient().getMobileNumberStringTransient().trim().isEmpty())
+                && configOptionApplicationController.getBooleanValueByKey("Patient details are required for retail sale")) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Please enter pateint details to the bill.");
+            return;
+        }
+        if (getPaymentMethod() == PaymentMethod.Card
+                && (getPaymentMethodData().getCreditCard().getNo() == null
+                || getPaymentMethodData().getCreditCard().getNo().trim().isEmpty())
+                && configOptionApplicationController.getBooleanValueByKey("Pharmacy retail sale CreditCard last digits is Mandatory")) {
+            JsfUtil.addErrorMessage("Please enter a Credit Card last 4 digits");
+            return;
+        }
 
         BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme, getPaymentMethodData());
         if (!discountSchemeValidation.isFlag()) {

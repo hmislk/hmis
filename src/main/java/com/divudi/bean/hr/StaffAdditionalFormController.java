@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.SystemTimeStamp;
@@ -57,8 +56,7 @@ public class StaffAdditionalFormController implements Serializable {
     private AdditionalFormFacade additionalFormFacade;
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     Date date;
     List<StaffShift> staffShifts;
     List<AditionalWithTime> aditionalWithTimes;
@@ -108,7 +106,7 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     public void timeEnterListenerFrom() {
-//        System.err.println("Starting From ");        
+//        System.err.println("Starting From ");
         getCurrentAdditionalForm().setFromTime(getFromSystemTimeStamp().getTime());
 //        System.err.println("Ending From ");
     }
@@ -119,13 +117,13 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     public void timeSelectListenerFrom() {
-//        System.err.println("Starting Select From ");                
+//        System.err.println("Starting Select From ");
         getFromSystemTimeStamp().processTime(getCurrentAdditionalForm().getFromTime());
 //        System.err.println("Ending Select From ");
     }
 
     public void timeSelectListenerTo() {
-//        System.err.println("Starting Select To ");                
+//        System.err.println("Starting Select To ");
         getToSystemTimeStamp().processTime(getCurrentAdditionalForm().getToTime());
 //        System.err.println("Ending Select To ");
     }
@@ -266,7 +264,7 @@ public class StaffAdditionalFormController implements Serializable {
 
     public void searchByCreatedDate() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -282,8 +280,8 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
-        
-        
+
+
     }
 
     public void calTotals(List<AdditionalForm> list) {
@@ -304,7 +302,7 @@ public class StaffAdditionalFormController implements Serializable {
 
     public void searchFormByCreatedDate() {
         Date startTime = new Date();
-        
+
         String sql = "";
         Map m = new HashMap();
 
@@ -323,8 +321,8 @@ public class StaffAdditionalFormController implements Serializable {
         hrForms = hrFormFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
-        
-        
+
+
     }
 
 //    public void searchFormByApprovedDate() {
@@ -348,7 +346,7 @@ public class StaffAdditionalFormController implements Serializable {
 //    }
     public void searchFormByShiftDate() {
         Date startTime = new Date();
-        
+
         String sql = "";
         Map m = new HashMap();
 
@@ -365,8 +363,8 @@ public class StaffAdditionalFormController implements Serializable {
         hrForms = hrFormFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
-        
-        
+
+
     }
 
     public List<HrForm> getHrForms() {
@@ -379,7 +377,7 @@ public class StaffAdditionalFormController implements Serializable {
 
     public void searchByShiftDate() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -395,13 +393,13 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
-        
-        
+
+
     }
 
     public void searchByApproveDate() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -417,8 +415,8 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
-        
-        
+
+
     }
 
     public void createAmmendmentTable() {
@@ -454,7 +452,7 @@ public class StaffAdditionalFormController implements Serializable {
 
         calMinitsAditional(additionalForms);
 
-        
+
 
     }
 
@@ -489,7 +487,7 @@ public class StaffAdditionalFormController implements Serializable {
 
     public void createAmmendmentTableApprovedDate() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -517,14 +515,14 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         calMinitsAditional(additionalForms);
-        
-        
+
+
 
     }
 
     public void createAmmendmentTableShiftDate() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -552,8 +550,8 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         calMinitsAditional(additionalForms);
-        
-        
+
+
 
     }
 
@@ -1540,14 +1538,4 @@ public class StaffAdditionalFormController implements Serializable {
     public void setTotalAllTime(double totalAllTime) {
         this.totalAllTime = totalAllTime;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
-    
 }

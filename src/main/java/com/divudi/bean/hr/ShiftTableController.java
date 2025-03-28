@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.dataStructure.ShiftTable;
@@ -60,10 +59,7 @@ public class ShiftTableController implements Serializable {
     SessionController sessionController;
     @Inject
     ShiftController shiftController;
-    @Inject
-    StaffShiftController staffShiftController;
-    @Inject
-    CommonController commonController;
+
     boolean all;
     Staff staff;
 
@@ -255,7 +251,7 @@ public class ShiftTableController implements Serializable {
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        
+
     }
 
     public void fetchShiftTable() {
@@ -344,7 +340,7 @@ public class ShiftTableController implements Serializable {
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        
+
     }
 
     public void fetchShiftTableByStaff() {
@@ -608,7 +604,7 @@ public class ShiftTableController implements Serializable {
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        
+
     }
 
     public double fetchWorkTime(Staff staff, Date date) {
@@ -841,13 +837,4 @@ public class ShiftTableController implements Serializable {
     public void setStaff(Staff staff) {
         this.staff = staff;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

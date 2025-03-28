@@ -66,8 +66,6 @@ public class ServiceController implements Serializable {
     SessionController sessionController;
     @Inject
     private ServiceSubCategoryController serviceSubCategoryController;
-    @Inject
-    CommonController commonController;
     @EJB
     private ServiceFacade ejbFacade;
     @EJB
@@ -291,7 +289,7 @@ public class ServiceController implements Serializable {
     }
 
     public List<Service> getSelectedItems() {
-        if (selectText.trim().equals("")) {
+        if (selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Service c where c.retired=false order by c.name");
         } else {
             selectedItems = getFacade().findByJpql("select c from Service c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -300,7 +298,7 @@ public class ServiceController implements Serializable {
     }
 
     public List<Service> getRetiredSelectedItems() {
-        if (selectRetiredText.trim().equals("")) {
+        if (selectRetiredText.trim().isEmpty()) {
             selectedRetiredItems = getFacade().findByJpql("select c from Service c where c.retired=true order by c.name");
         } else {
             selectedRetiredItems = getFacade().findByJpql("select c from Service c where c.retired=true and (c.name) like '%" + getSelectRetiredText().toUpperCase() + "%' order by c.name");
@@ -346,7 +344,7 @@ public class ServiceController implements Serializable {
     }
 
     public void bulkUpload() {
-        List<String> lstLines = Arrays.asList(getBulkText().split("\\r?\\n"));
+        String[] lstLines = getBulkText().split("\\r?\\n");
         for (String s : lstLines) {
             List<String> w = Arrays.asList(s.split(","));
             try {
@@ -361,7 +359,7 @@ public class ServiceController implements Serializable {
                 tix.setName(ix);
                 tix.setDepartment(null);
 
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
 
         }
@@ -376,18 +374,12 @@ public class ServiceController implements Serializable {
     }
 
     public void recreateModel() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         items = null;
         filterItem = null;
-
-        
     }
 
     private boolean errorCheck() {
-        if (getCurrent().isUserChangable() && getCurrent().isDiscountAllowed() == true) {
+        if (getCurrent().isUserChangable() && getCurrent().isDiscountAllowed()) {
             JsfUtil.addErrorMessage("Cant tick both User can Change & Discount Allowed");
             return true;
         }
@@ -402,11 +394,11 @@ public class ServiceController implements Serializable {
      */
     public String generateShortCode(String name) {
         // Initialize the code as an empty string.
-        String code = "";
+        StringBuilder code = new StringBuilder();
         if (name == null) {
             return "";
         }
-        if (name.trim().equals("")) {
+        if (name.trim().isEmpty()) {
             return "";
         }
 
@@ -415,25 +407,25 @@ public class ServiceController implements Serializable {
 
         // If there's only one word, take the first three letters as the code.
         if (words.length == 1 && words[0].length() >= 3) {
-            code = words[0].substring(0, 3).toLowerCase();
+            code = new StringBuilder(words[0].substring(0, 3).toLowerCase());
         } else {
             // If there are multiple words, take the first letter of each word as the code.
             for (String word : words) {
                 if (!word.isEmpty()) {
-                    code += word.charAt(0);
+                    code.append(word.charAt(0));
                 }
             }
             // Make the code lowercase for simplicity.
-            code = code.toLowerCase();
+            code = new StringBuilder(code.toString().toLowerCase());
         }
 
-        return code;
+        return code.toString();
     }
 
     public void genarateItemCode(List<Service> temp) {
         Integer max = 0;
         String itemPatternString = returnPatternForItemCode();
-        if (temp != null && !temp.isEmpty() && temp.size() != 0) {
+        if (temp != null && !temp.isEmpty()) {
             for (Service service : temp) {
                 Integer itemCodeNumber = returnNumberForItemCode(service.getCode());
                 if (itemCodeNumber > max) {
@@ -441,13 +433,13 @@ public class ServiceController implements Serializable {
                 }
             }
         }
-        String ItemCode = itemPatternString + "" + (String.valueOf(max + 1));
+        String ItemCode = itemPatternString + ((max + 1));
         setGenaratedServiceCode(ItemCode);
 
     }
 
     public Integer returnNumberForItemCode(String itemCode) {
-        Integer code = 0;
+        int code = 0;
         String[] parts = itemCode.split("\\D+");
         for (String part : parts) {
             if (!part.isEmpty()) {
@@ -1158,7 +1150,7 @@ public class ServiceController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ServiceController controller = (ServiceController) facesContext.getApplication().getELResolver().
@@ -1192,13 +1184,4 @@ public class ServiceController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

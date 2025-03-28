@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
@@ -42,8 +41,7 @@ public class StoreTransferRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -73,7 +71,7 @@ public class StoreTransferRequestController implements Serializable {
         billItems = null;
         printPreview = false;
     }
-    
+
     public void changeDepartment() {
         billItems = null;
         bill.setToDepartment(null);
@@ -215,8 +213,8 @@ public class StoreTransferRequestController implements Serializable {
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Created");
 
         printPreview = true;
-        
-        
+
+
 
     }
 
@@ -361,13 +359,4 @@ public class StoreTransferRequestController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
-    
 }

@@ -9,7 +9,6 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
@@ -66,8 +65,6 @@ public class InwardProfessionalBillController implements Serializable {
     SessionController sessionController;
     @Inject
     AdmissionController admissionController;
-    @Inject
-    CommonController commonController;
     ////////////////////
     @EJB
     private BillFacade ejbFacade;
@@ -92,7 +89,7 @@ public class InwardProfessionalBillController implements Serializable {
     BillNumberGenerator billNumberBean;
 
     CommonFunctions commonFunctions;
-    //////////////////    
+    //////////////////
     private List<Bill> items = null;
     List<BillFee> lstBillFees;
     List<BillItem> lstBillItems;
@@ -1038,13 +1035,4 @@ public class InwardProfessionalBillController implements Serializable {
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

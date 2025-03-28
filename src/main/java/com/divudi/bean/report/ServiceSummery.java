@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -63,8 +62,6 @@ public class ServiceSummery implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     // private List<DailyCash> dailyCashs;
     @Temporal(TemporalType.TIMESTAMP)
     private Date fromDate;
@@ -157,7 +154,7 @@ public class ServiceSummery implements Serializable {
 
         staffs = getStaffFacade().findByJpql(sql);
 
-        
+
 
     }
 
@@ -819,7 +816,7 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
 
-        
+
 
     }
 
@@ -842,7 +839,7 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
 
-        
+
     }
 
     List<Bill> bills;
@@ -899,7 +896,7 @@ public class ServiceSummery implements Serializable {
 
         calTotal(bills);
 
-        
+
 
     }
 
@@ -993,7 +990,7 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            ////// // System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
-        
+
 
     }
 
@@ -1046,7 +1043,7 @@ public class ServiceSummery implements Serializable {
             reagentFeeTotalGT += svItem.getValue4();
         }
 
-        
+
     }
 
     public void createSummaryTable(Bill bill) {
@@ -1101,7 +1098,7 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, false);
 
-        
+
     }
 
     public void createServiceSummeryInwardAddedDate() {
@@ -1126,7 +1123,7 @@ public class ServiceSummery implements Serializable {
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
         hosFeeMarginTotal = calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
 
-        
+
 
     }
 
@@ -1147,7 +1144,7 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, true);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, true);
 
-        
+
     }
 
     List<BillItemWithFee> serviceSummery;
@@ -1354,7 +1351,7 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
-        
+
 
     }
 
@@ -1403,7 +1400,7 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
-        
+
     }
 
     private void calServiceTot1(BillType billType, boolean discharged) {
@@ -1452,7 +1449,7 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.InwardBill, false);
         calServiceTot(BillType.InwardBill, false);
 
-        
+
 
     }
 
@@ -1535,7 +1532,7 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.InwardBill, true);
         //calServiceTot(BillType.InwardBill, true);
 
-        
+
 
     }
 
@@ -2124,14 +2121,6 @@ public class ServiceSummery implements Serializable {
 
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public boolean isOnlyInwardBills() {
