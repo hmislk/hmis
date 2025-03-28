@@ -18,6 +18,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.TokenFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -183,6 +184,31 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     public String navigateToManagePharmacyTokensCalledByCounter() {
         return "/token/pharmacy_tokens_called_counter_wise"; // Adjust the navigation string as per your page structure
+    }
+    
+    public void fillSaleForCashierBillsTokens(){
+        Map m = new HashMap();
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.bill.billTypeAtomic = :bta"
+                + " and t.called=:cal "
+                + " and t.tokenType=:ty"
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com";
+        
+        Bill b = new Bill();
+        b.getBillTypeAtomic();
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+        m.put("cal", true); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("com", false); // Tokens that are not completed
+        m.put("ty", TokenType.PHARMACY_TOKEN);
+        j += " order by t.id";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
 
     public void fillPharmacyTokensCalled() {
