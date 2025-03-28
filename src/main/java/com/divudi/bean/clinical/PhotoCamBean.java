@@ -9,7 +9,7 @@ import com.divudi.bean.common.PatientController;
 
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.facade.ClinicalFindingValueFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;

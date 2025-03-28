@@ -10,7 +10,7 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;

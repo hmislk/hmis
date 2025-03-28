@@ -9,14 +9,14 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.hr.LeaveType;
 
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.facade.StaffLeaveEntitleFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

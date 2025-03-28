@@ -6,7 +6,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.UserPrivilageController.PrivilegeHolder;
 import com.divudi.entity.TriggerSubscription;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.Privileges;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;

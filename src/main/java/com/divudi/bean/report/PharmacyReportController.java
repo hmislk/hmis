@@ -7,7 +7,7 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.WebUserController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.pharmacy.StockHistoryController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillItemStatus;
@@ -68,7 +68,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.PrescriptionSummaryReportRow;
 

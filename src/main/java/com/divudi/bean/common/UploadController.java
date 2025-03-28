@@ -5,7 +5,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Upload;
 import com.divudi.entity.WebContent;
 import com.divudi.facade.UploadFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;

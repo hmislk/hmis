@@ -16,7 +16,7 @@ import com.divudi.entity.inward.TimedItemFee;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.TimedItemFacade;
 import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

@@ -7,7 +7,7 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.CashBookEntryData;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportTemplateRow;
@@ -23,7 +23,7 @@ import com.divudi.facade.CashBookEntryFacade;
 import com.divudi.facade.CashBookFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;

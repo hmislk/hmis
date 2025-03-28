@@ -22,7 +22,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -225,7 +225,7 @@ public class PharmacySaleReport1 implements Serializable {
        // m.put("btp", BillType.PharmacyPre);
         m.put("class", bill.getClass());
         m.put("btp", BillType.PharmacySale);
-        sql = "select i from Bill i where i.referenceBill.department=:d  "                
+        sql = "select i from Bill i where i.referenceBill.department=:d  "
                 + " and i.billType=:btp and type(i)=:class and"
                 + " i.createdAt between :fd and :td order by i.deptId ";
         return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -382,8 +382,8 @@ public class PharmacySaleReport1 implements Serializable {
         grantNetTotal = calGrantNetTotalByDepartment();
 
     }
-    
-    
+
+
 
     public void createSalePaymentMethod() {
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
@@ -613,17 +613,17 @@ public class PharmacySaleReport1 implements Serializable {
             nowDate = nc.getTime();
 
         }
-        
+
         billedDetail.setDiscount(calGrantDiscountByDepartment(new BilledBill()));
         billedDetail.setCashTotal(calGrantTotalByPaymentMethod(PaymentMethod.Cash, new BilledBill()));
         billedDetail.setCreditTotal(calGrantTotalByPaymentMethod(PaymentMethod.Credit, new BilledBill()));
         billedDetail.setCardTotal(calGrantTotalByPaymentMethod(PaymentMethod.Card, new BilledBill()));
-        
+
         cancelledDetail.setDiscount(calGrantDiscountByDepartment(new CancelledBill()));
         cancelledDetail.setCashTotal(calGrantTotalByPaymentMethod(PaymentMethod.Cash, new CancelledBill()));
         cancelledDetail.setCreditTotal(calGrantTotalByPaymentMethod(PaymentMethod.Credit, new CancelledBill()));
         cancelledDetail.setCardTotal(calGrantTotalByPaymentMethod(PaymentMethod.Card, new CancelledBill()));
-        
+
         refundedDetail.setDiscount(calGrantDiscountByDepartment(new RefundBill()));
         refundedDetail.setCashTotal(calGrantTotalByPaymentMethod(PaymentMethod.Cash, new RefundBill()));
         refundedDetail.setCreditTotal(calGrantTotalByPaymentMethod(PaymentMethod.Credit, new RefundBill()));
@@ -644,7 +644,7 @@ public class PharmacySaleReport1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -655,7 +655,7 @@ public class PharmacySaleReport1 implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

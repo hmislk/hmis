@@ -12,7 +12,7 @@ import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Route;
 import java.io.Serializable;

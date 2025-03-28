@@ -9,7 +9,7 @@
 package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;

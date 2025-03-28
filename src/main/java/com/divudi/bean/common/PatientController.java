@@ -53,13 +53,13 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.inward.PatientRoom;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.service.MembershipService;
 
 import java.io.ByteArrayInputStream;

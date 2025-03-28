@@ -12,7 +12,7 @@ import com.divudi.data.Icon;
 import com.divudi.entity.Department;
 import com.divudi.entity.UserIcon;
 import com.divudi.facade.UserIconFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.WebUserRole;
 import java.io.Serializable;
 import java.util.ArrayList;

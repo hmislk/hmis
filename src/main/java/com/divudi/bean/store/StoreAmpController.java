@@ -14,7 +14,7 @@ import com.divudi.data.DepartmentType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.facade.AmpFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;

@@ -55,7 +55,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
 import java.text.DateFormat;

@@ -9,7 +9,7 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
@@ -19,7 +19,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.entity.hr.BankAccount;
 import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.Date;

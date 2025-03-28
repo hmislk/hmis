@@ -9,7 +9,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.store.StoreBean;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;

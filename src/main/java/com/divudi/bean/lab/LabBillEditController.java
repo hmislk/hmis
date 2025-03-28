@@ -5,7 +5,7 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.Bill;
 import com.divudi.facade.BillFacade;
 import java.io.Serializable;

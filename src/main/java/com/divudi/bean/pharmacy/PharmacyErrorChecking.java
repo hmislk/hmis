@@ -18,7 +18,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.BillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

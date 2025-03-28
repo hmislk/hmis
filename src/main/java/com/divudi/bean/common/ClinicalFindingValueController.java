@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.entity.Patient;
 import com.divudi.entity.clinical.ClinicalFindingValue;

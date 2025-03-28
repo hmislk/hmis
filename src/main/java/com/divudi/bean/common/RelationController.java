@@ -3,8 +3,8 @@ package com.divudi.bean.common;
 import com.divudi.entity.Relation;
 
 import com.divudi.facade.RelationFacade;
-import com.divudi.java.JsfUtil;
-import com.divudi.java.JsfUtil.PersistAction;
+import com.divudi.util.JsfUtil;
+import com.divudi.util.JsfUtil.PersistAction;
 
 import java.io.Serializable;
 import java.util.Date;

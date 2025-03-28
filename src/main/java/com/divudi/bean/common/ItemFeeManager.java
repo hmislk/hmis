@@ -14,7 +14,7 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemLight;
 import com.divudi.entity.Category;

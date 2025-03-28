@@ -12,7 +12,7 @@ import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemSupplierPrices;
 import com.divudi.data.ItemType;

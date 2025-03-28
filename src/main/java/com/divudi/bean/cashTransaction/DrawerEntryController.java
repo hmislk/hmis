@@ -1,12 +1,12 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.DrawerEntry;
 import com.divudi.facade.DrawerEntryFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;

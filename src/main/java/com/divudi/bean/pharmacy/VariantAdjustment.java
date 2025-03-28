@@ -18,7 +18,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockVarientBillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -93,7 +93,7 @@ public class VariantAdjustment implements Serializable {
         stockVarientBillItems = tmp;
     }
 
-    
+
     public void clearList() {
         printPreview = false;
 //        billItems = null;
@@ -174,7 +174,7 @@ public class VariantAdjustment implements Serializable {
         for (StockVarientBillItem i : tmp) {
             StockVarientBillItem bi = new StockVarientBillItem();
             bi.clone(i);
-            
+
             getStockVarientBillItems().add(i);
         }
 
@@ -278,7 +278,7 @@ public class VariantAdjustment implements Serializable {
     }
 
     public void makeListNull() {
-//        pharmaceuticalBillItems = null;   
+//        pharmaceuticalBillItems = null;
         searchBills = null;
 
     }

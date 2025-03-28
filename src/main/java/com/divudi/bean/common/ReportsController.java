@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.*;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -18,7 +18,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.*;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
 import com.itextpdf.text.*;

@@ -30,7 +30,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
-import static com.divudi.java.CommonFunctions.formatDate;
+import static com.divudi.util.CommonFunctions.formatDate;
 
 /**
  *

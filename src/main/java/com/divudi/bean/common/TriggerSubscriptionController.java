@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.TriggerType;
 import com.divudi.entity.Department;
 import com.divudi.entity.TriggerSubscription;

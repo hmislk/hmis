@@ -10,7 +10,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.WebUserController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
@@ -31,7 +31,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -23,7 +23,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ServiceFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -285,8 +285,8 @@ public class MdReportController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
-    
+
+
     private List<Item> item() {
         String sql;
         List<Item> tmp;
@@ -323,7 +323,7 @@ public class MdReportController implements Serializable {
     }
 
     public List<ItemWithFee> getItemWithFees() {
-       
+
         if (itemWithFees == null) {
             itemWithFees = new ArrayList<>();
             for (Item i : item()) {

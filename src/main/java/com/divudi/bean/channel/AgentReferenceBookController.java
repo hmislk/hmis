@@ -18,8 +18,8 @@ import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.InstitutionFacade;
-import com.divudi.java.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.JsfUtil;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -467,7 +467,7 @@ public class AgentReferenceBookController implements Serializable {
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            frmDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }

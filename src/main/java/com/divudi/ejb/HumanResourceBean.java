@@ -41,7 +41,7 @@ import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -946,13 +946,13 @@ public class HumanResourceBean {
 //
 //        return getStaffShiftFacade().findByJpql(sql, m, TemporalType.DATE);
 //    }
-//    
+//
 //     public List<Staff> fetchStaff(Roster roster) {
-//        Map m = new HashMap();     
+//        Map m = new HashMap();
 //        m.put("s", roster);
 //        String sql = "Select ss from Staff ss "
 //                + " where ss.retired=false "
-//                + " and ss.roster=:s "              
+//                + " and ss.roster=:s "
 //                + " order by ss.staff.codeInterger ";
 //
 //        return getStaffFacade().findByJpql(sql, m, TemporalType.DATE);
@@ -1381,10 +1381,10 @@ public class HumanResourceBean {
 //       private StaffShift calPrevStaffShift(StaffShift tmp) {
 //
 //        StaffShift preShift = fetchPrevStaffShift(tmp);
-//        
-//        
-//        
-//        
+//
+//
+//
+//
 //        StaffShift preDayStaffShift = fetchPrevDayStaffShift(tmp);
 //
 //        if (preDayStaffShift != null) {
@@ -1729,17 +1729,17 @@ public class HumanResourceBean {
         hm.put("to", toDate);
 //        //System.out.println("hm = " + hm);
 //        List<StaffLeave> leaves=getStaffLeaveFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
-//        
+//
 //        //System.out.println("leaves.size() = " + leaves.size());
-//        
+//
 //        for (StaffLeave l : leaves) {
 //            //System.out.println("l.getLeaveDate() = " + l.getLeaveDate());
 //            //System.out.println("l.getForm().getFromTime() = " + l.getForm().getFromTime());
 //            //System.out.println("l.getForm().getToTime() = " + l.getForm().getToTime());
-//            
+//
 //        }
-//        
-//        
+//
+//
 //        return d;
 
         return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
@@ -2509,7 +2509,7 @@ public class HumanResourceBean {
                 endRecord.setRecordTimeStamp(commonFunctions.getEndOfDay(toDate));
                 getFingerPrintRecordFacade().edit(endRecord);
                 //Update Staff shift
-//                ss.setShiftEndTime(commonFunctions.getEndOfDay(dateRange.getToDate()));               
+//                ss.setShiftEndTime(commonFunctions.getEndOfDay(dateRange.getToDate()));
                 getStaffShiftFacade().edit(ss);
             }
         }
@@ -2710,7 +2710,7 @@ public class HumanResourceBean {
 //                //System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified());
             } else if ((ss.getLeaveType() == LeaveType.AnnualHalf || ss.getLeaveType() == LeaveType.CasualHalf)
                     && (ss.isConsiderForEarlyOut() || ss.isConsiderForLateIn())) {
-//                
+//
                 //
                 List<StaffLeave> staffLeave = fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
 
@@ -2734,7 +2734,7 @@ public class HumanResourceBean {
                             d = ss.getWorkedWithinTimeFrameVarified();
                         } else {
                             d = ss.getWorkedWithinTimeFrameVarified() + (ss.getShift().getLeaveHourHalf() * 60 * 60);
-                            //cheeck leave count is 2 give leave time 
+                            //cheeck leave count is 2 give leave time
                         }
                         if ((ss.getShift().getDurationMin() * 60) < d) {
                             dbl += ss.getShift().getDurationMin() * 60;
@@ -3404,8 +3404,8 @@ public class HumanResourceBean {
     public List<ExtraDutyCount> calExtraDuty(Date date, Staff staff) {
 
         DateRange dateRange = new DateRange();
-        dateRange.setFromDate(com.divudi.java.CommonFunctions.getStartOfMonth(date));
-        dateRange.setToDate(com.divudi.java.CommonFunctions.getEndOfMonth(date));
+        dateRange.setFromDate(com.divudi.util.CommonFunctions.getStartOfMonth(date));
+        dateRange.setToDate(com.divudi.util.CommonFunctions.getEndOfMonth(date));
 
         //System.err.println("From : " + dateRange.getFromDate());
         //System.err.println("To : " + dateRange.getToDate());
@@ -3622,7 +3622,7 @@ public class HumanResourceBean {
         this.staffFacade = staffFacade;
     }
 
-   
+
 
     public StaffShiftFacade getStaffShiftFacade() {
         return staffShiftFacade;

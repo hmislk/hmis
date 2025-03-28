@@ -42,7 +42,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
 
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.divudi.data.LoginRequest;

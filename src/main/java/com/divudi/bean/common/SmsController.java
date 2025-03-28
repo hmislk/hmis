@@ -10,8 +10,8 @@ import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Sms;
 import com.divudi.facade.SmsFacade;
-import com.divudi.java.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.JsfUtil;
+import com.divudi.util.CommonFunctions;
 
 import java.util.List;
 import java.util.Map;

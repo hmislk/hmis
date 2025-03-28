@@ -20,7 +20,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.inject.Inject;
 
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;

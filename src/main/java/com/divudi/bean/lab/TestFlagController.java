@@ -9,7 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.Sex;
 import com.divudi.entity.lab.Investigation;

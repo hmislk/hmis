@@ -5,7 +5,7 @@
  */
 package com.divudi.service;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.Staff;
 import com.divudi.facade.StaffFacade;
 import javax.ejb.EJB;

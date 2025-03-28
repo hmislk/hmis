@@ -37,7 +37,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,11 +97,11 @@ public class CashSummeryController implements Serializable {
     @Inject
     private AdmissionTypeController admissionTypeController;
     boolean paginator;
-    
+
     public void makePaginatorFalse(){
         paginator=false;
     }
-    
+
 
     public long getCountTotal() {
         long countTotal = 0;
@@ -1134,7 +1134,7 @@ public class CashSummeryController implements Serializable {
             }
             if (!tmpItemList.isEmpty() && tmpItemList.get(0).getItem() != null && tmpItemList.get(0).getItem().getDepartment() != null) {
                 n.setDepartment(tmpItemList.get(0).getItem().getDepartment());
-                
+
             }
             n.setItemWithFees(tmpItemList);
             categoryWithItem.add(n);

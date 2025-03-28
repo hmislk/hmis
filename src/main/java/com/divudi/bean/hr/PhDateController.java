@@ -9,12 +9,12 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.hr.DayType;
 
 import com.divudi.entity.hr.PhDate;
 import com.divudi.facade.PhDateFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -206,7 +206,7 @@ public class PhDateController implements Serializable {
 
     public Date getFrDate() {
         if (frDate == null) {
-            frDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            frDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return frDate;
     }
@@ -217,7 +217,7 @@ public class PhDateController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

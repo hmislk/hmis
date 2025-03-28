@@ -11,7 +11,7 @@ import com.divudi.entity.inward.RoomFacilityCharge;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

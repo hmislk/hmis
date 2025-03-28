@@ -21,7 +21,7 @@ import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFlagFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -243,9 +243,9 @@ public class PatientReportBean {
             }
         }
     }
-    
-    
-    
+
+
+
      public void addPatientReportItemValuesForTemplateReport(PatientReport ptReport) {
          System.out.println("addPatientReportItemValuesForTemplateReport");
         String sql = "";
@@ -452,7 +452,7 @@ public class PatientReportBean {
             ii.setIxItemValueType(InvestigationItemValueType.Varchar);
             ii.setCssTop("90%");
             getIiFacade().edit(ii);
-            
+
             i.getReportItems().add(ii);
             getIxFacade().edit(i);
 

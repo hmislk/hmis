@@ -51,7 +51,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

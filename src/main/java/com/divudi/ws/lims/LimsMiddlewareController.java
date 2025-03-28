@@ -16,7 +16,7 @@ import com.divudi.facade.WebUserFacade;
 import java.util.HashMap;
 import java.util.Map;
 import com.divudi.data.LoginRequest;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
@@ -27,7 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONObject;
 import ca.uhn.hl7v2.model.*;
-import com.divudi.java.HL7Utils;
+import com.divudi.util.HL7Utils;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.ws.rs.HeaderParam;
@@ -1643,7 +1643,7 @@ public class LimsMiddlewareController {
         String sql;
         dl = ii.getName();
 
-        long ageInDays = com.divudi.java.CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
+        long ageInDays = com.divudi.util.CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
         sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
         List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {

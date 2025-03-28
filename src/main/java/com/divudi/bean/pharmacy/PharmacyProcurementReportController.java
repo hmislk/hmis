@@ -35,7 +35,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;

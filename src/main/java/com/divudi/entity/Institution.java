@@ -8,7 +8,7 @@ import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.channel.AgentReferenceBook;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

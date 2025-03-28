@@ -4,7 +4,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.OptionScope;
 import com.divudi.data.OptionValueType;
 import com.divudi.entity.Department;

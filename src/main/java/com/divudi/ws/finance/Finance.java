@@ -12,7 +12,7 @@ import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.facade.BillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;

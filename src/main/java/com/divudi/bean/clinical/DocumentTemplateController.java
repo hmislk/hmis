@@ -6,7 +6,7 @@ import com.divudi.data.clinical.DocumentTemplateType;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.clinical.DocumentTemplate;
 import com.divudi.facade.DocumentTemplateFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

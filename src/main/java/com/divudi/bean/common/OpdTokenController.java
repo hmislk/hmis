@@ -1,7 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;

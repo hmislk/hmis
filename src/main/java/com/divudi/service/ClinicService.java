@@ -4,11 +4,7 @@
  */
 package com.divudi.service;
 
-import com.divudi.ejb.*;
 import com.divudi.data.BillType;
-import static com.divudi.data.SessionNumberType.ByCategory;
-import static com.divudi.data.SessionNumberType.ByItem;
-import static com.divudi.data.SessionNumberType.BySubCategory;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
@@ -17,7 +13,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillSessionFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.ArrayList;

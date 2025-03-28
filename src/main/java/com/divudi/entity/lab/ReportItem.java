@@ -5,16 +5,9 @@
 package com.divudi.entity.lab;
 
 import com.divudi.data.CssFontStyle;
-import static com.divudi.data.CssFontStyle.Italic;
-import static com.divudi.data.CssFontStyle.Normal;
-import static com.divudi.data.CssFontStyle.Oblique;
 import com.divudi.data.CssOverflow;
 import com.divudi.data.CssPosition;
 import com.divudi.data.CssTextAlign;
-import static com.divudi.data.CssTextAlign.Center;
-import static com.divudi.data.CssTextAlign.Justify;
-import static com.divudi.data.CssTextAlign.Left;
-import static com.divudi.data.CssTextAlign.Right;
 import com.divudi.data.CssTextDecoration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
@@ -24,7 +17,7 @@ import com.divudi.data.lab.DataEntryMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;

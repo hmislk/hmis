@@ -15,7 +15,7 @@ import com.divudi.bean.common.UploadController;
 import com.divudi.entity.Upload;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ReportFormatFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.lab.PatientReport;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

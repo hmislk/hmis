@@ -10,7 +10,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
@@ -24,7 +24,7 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.util.ArrayList;

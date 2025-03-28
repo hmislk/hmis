@@ -11,7 +11,7 @@ import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.Shift;
 import com.divudi.facade.RosterFacade;
 import com.divudi.facade.ShiftFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

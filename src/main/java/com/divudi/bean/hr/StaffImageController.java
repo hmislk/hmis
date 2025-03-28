@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.PatientReport;

@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.channel;
 import com.divudi.bean.common.*;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.Area;
 import com.divudi.entity.channel.PatientSessionInstanceActivity;
 import com.divudi.facade.AreaFacade;

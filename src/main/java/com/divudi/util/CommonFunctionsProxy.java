@@ -1,4 +1,4 @@
-package com.divudi.java;
+package com.divudi.util;
 
 import com.divudi.entity.channel.SessionInstance;
 

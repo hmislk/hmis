@@ -1,4 +1,4 @@
-package com.divudi.java;
+package com.divudi.util;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;

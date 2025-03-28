@@ -4,7 +4,7 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.facade.InvestigationFacade;

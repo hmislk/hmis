@@ -10,7 +10,7 @@ import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -56,7 +56,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 

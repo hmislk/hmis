@@ -9,7 +9,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.hr.Designation;
 import com.divudi.facade.DesignationFacade;
 import java.io.Serializable;

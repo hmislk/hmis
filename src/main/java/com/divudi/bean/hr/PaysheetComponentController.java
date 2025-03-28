@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;

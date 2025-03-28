@@ -29,7 +29,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.InstitutionFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -376,7 +376,7 @@ public class GoogleChartController implements Serializable {
         if (mainJSONArray.length()<2) {
             mainJSONArray = new JSONArray();
         }
-        
+
         return mainJSONArray.toString();
     }
 

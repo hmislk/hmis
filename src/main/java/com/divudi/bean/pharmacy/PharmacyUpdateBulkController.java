@@ -5,7 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Category;
 import com.divudi.entity.pharmacy.Amp;

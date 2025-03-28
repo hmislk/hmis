@@ -19,7 +19,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -504,7 +504,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         }
         return labBillsB;
     }
-    
+
     public String navigateToReportIncomeWithoutCreditByInstitution(){
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -513,7 +513,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -540,7 +540,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_income_without_credit_by_institution.xhtml?faces-redirect=true";
-        
+
     }
 
     public String navigatToReportLabHandOverByDateSummery(){
@@ -551,7 +551,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -578,10 +578,10 @@ public class LabReportSearchByInstitutionController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportLab/report_lab_hand_over_by_date_summery.xhtml?faces-redirect=true";
-        
+
     }
-    
-    
+
+
     public String navigatToReportCashierDetailedUserByBillType(){
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -590,7 +590,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -617,7 +617,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportLab/report_cashier_detailed_user_by_billType.xhtml?faces-redirect=true";
-        
+
     }
     public List<Bill> getLabBillsWithoutC() {
         if (labBillsC == null) {
@@ -807,7 +807,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         }
         return labBills;
     }
-    
+
     public List<Bill> getBills(){
         return bills;
     }
@@ -1121,7 +1121,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         recreteModal();
         this.txtSearch = txtSearch;
     }
-    
+
     private List<Bill> bills;
 
     private void recreteModal() {

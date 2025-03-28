@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.store;
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.pharmacy.FrequencyUnitController;
 import com.divudi.entity.pharmacy.FrequencyUnit;
 import com.divudi.facade.FrequencyUnitFacade;

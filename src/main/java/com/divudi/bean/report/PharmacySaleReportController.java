@@ -8,7 +8,7 @@ package com.divudi.bean.report;
 import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -54,7 +54,7 @@ import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -7355,7 +7355,7 @@ public class PharmacySaleReportController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
 
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -7366,7 +7366,7 @@ public class PharmacySaleReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

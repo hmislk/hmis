@@ -10,7 +10,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Institution;
 import com.divudi.facade.InstitutionFacade;

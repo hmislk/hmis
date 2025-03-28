@@ -13,7 +13,7 @@ import com.divudi.entity.MetadataCategory;
 import com.divudi.entity.MetadataSuperCategory;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.MetadataSuperCategoryFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

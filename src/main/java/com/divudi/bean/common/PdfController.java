@@ -10,7 +10,7 @@ import java.io.InputStream;
 import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import com.divudi.entity.lab.PatientReport;

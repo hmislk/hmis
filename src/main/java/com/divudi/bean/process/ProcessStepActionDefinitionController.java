@@ -1,6 +1,6 @@
 package com.divudi.bean.process;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.process.ProcessDefinition;
 import com.divudi.entity.process.ProcessStepActionDefinition;
 import com.divudi.entity.process.ProcessStepDefinition;

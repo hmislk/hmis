@@ -8,7 +8,7 @@ import com.divudi.data.TriggerType;
 import com.divudi.entity.TriggerSubscription;
 import com.divudi.facade.TriggerSubscriptionFacade;
 import com.divudi.entity.Department;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.WebUserRole;
 import java.io.Serializable;
 import java.util.ArrayList;

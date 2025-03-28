@@ -27,8 +27,8 @@ import com.divudi.facade.LeaveFormFacade;
 import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.java.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.JsfUtil;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -776,7 +776,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -787,7 +787,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

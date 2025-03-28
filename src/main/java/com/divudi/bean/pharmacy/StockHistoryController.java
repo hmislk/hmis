@@ -12,9 +12,9 @@ import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.entity.Department;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.Item;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.util.Date;

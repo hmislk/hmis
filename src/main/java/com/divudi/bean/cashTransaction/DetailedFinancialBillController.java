@@ -7,7 +7,7 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.cashTransaction.DetailedFinancialBill;
 import com.divudi.facade.DetailedFinancialBillFacade;
 import java.io.Serializable;

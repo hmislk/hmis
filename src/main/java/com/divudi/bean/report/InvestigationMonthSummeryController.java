@@ -13,7 +13,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,8 +55,8 @@ public class InvestigationMonthSummeryController implements Serializable {
     public InvestigationMonthSummeryController() {
     }
 
-    
-    
+
+
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
     }
@@ -66,7 +66,7 @@ public class InvestigationMonthSummeryController implements Serializable {
     }
 
     public Date getFromDate() {
-        if (fromDate == null) {            
+        if (fromDate == null) {
             fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
@@ -206,7 +206,7 @@ public class InvestigationMonthSummeryController implements Serializable {
     }
 
     public List<InvestigationSummeryData> getItemDetails() {
-        
+
         itemDetails = new ArrayList<InvestigationSummeryData>();
 
         for (Item w : getInvestigations()) {

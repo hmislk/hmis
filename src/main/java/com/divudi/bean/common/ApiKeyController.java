@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.ApiKeyType;
 import com.divudi.entity.ApiKey;
 import com.divudi.facade.ApiKeyFacade;

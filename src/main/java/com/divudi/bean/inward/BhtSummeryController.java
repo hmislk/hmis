@@ -56,12 +56,12 @@ import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.EncounterCreditCompany;
 import com.divudi.entity.Staff;
 import com.divudi.facade.EncounterCreditCompanyFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.time.Duration;

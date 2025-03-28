@@ -80,7 +80,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.pharmacy.PharmacyPurchaseController;
 import com.divudi.data.SymanticHyrachi;
@@ -106,7 +106,7 @@ import com.divudi.facade.FamilyMemberFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.inject.Named;

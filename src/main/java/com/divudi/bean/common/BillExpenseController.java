@@ -4,7 +4,7 @@
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.BillExpense;
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -3,7 +3,7 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-package com.divudi.java;
+package com.divudi.util;
 
 import java.util.concurrent.TimeUnit;
 

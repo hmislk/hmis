@@ -13,7 +13,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.ServiceSession;
 import com.divudi.facade.BillSessionFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;

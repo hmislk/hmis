@@ -10,7 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CategoryItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.CategoryItem;
 import com.divudi.entity.Item;
 import com.divudi.entity.inward.AdmissionType;

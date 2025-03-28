@@ -5,7 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.SymanticHyrachi;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -41,36 +41,36 @@ public class Category implements Serializable {
     int orderNo;
     //Created Properties
     @ManyToOne
-    
+
     WebUser creater;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
-    
+
     private boolean retired;
     @ManyToOne
-    
+
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    
+
     Date retiredAt;
-    
+
     String retireComments;
-    
+
     Double dblValue;
-    
+
     Long longValue;
-    
+
     @ManyToOne
     Category parentCategory;
-    
+
     Double saleMargin = 0.0;
-    
+
     Double wholeSaleMargin = 0.0;
 
     private Double pointesForThousand;
-    
+
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     List<Item> items;
     String code;
@@ -81,7 +81,7 @@ public class Category implements Serializable {
 
     @Transient
     private String entityClass;
-    
+
     boolean filled;
     private double profitMargin;
     @ManyToOne
@@ -330,6 +330,6 @@ public class Category implements Serializable {
         this.pointesForThousand = pointesForThousand;
     }
 
-    
-    
+
+
 }

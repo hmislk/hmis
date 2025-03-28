@@ -1,7 +1,7 @@
 package com.divudi.data.lab;
 
 import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 
 /**
  *

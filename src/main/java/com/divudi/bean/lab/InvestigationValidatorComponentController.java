@@ -9,7 +9,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationValidator;
 import com.divudi.entity.lab.InvestigationValidaterComponent;
 import com.divudi.facade.InvestigationValidatorFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;

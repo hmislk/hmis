@@ -3,7 +3,7 @@ package com.divudi.bean.web;
 import com.divudi.data.web.ComponentDataType;
 import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.entity.web.DesignComponent;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.web.ComponentMappingType;
 import com.divudi.facade.web.DesignComponentFacade;
 import javax.inject.Named;

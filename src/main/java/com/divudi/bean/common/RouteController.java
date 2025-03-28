@@ -10,7 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.Route;
 import com.divudi.facade.RouteFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

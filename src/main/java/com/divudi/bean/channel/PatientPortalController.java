@@ -3,7 +3,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PaymentGatewayController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BillType;
 import com.divudi.data.MessageType;
@@ -36,7 +36,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import org.primefaces.model.ScheduleModel;
 
 /**

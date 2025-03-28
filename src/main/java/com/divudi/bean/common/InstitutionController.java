@@ -6,7 +6,7 @@ import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Institution;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.InstitutionFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;

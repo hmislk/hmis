@@ -1,12 +1,12 @@
 package com.divudi.data.lab;
 
 import com.divudi.entity.lab.PatientSample;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.util.Objects;
 
 /**
  * Represents a wrapper for PatientSample.
- * 
+ *
  * @version 1.0
  * @since 2024-07-27
  */

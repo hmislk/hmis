@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillClassType;
@@ -33,7 +33,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientRoomFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;

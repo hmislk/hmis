@@ -13,7 +13,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.entity.Institution;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.MembershipSchemeFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

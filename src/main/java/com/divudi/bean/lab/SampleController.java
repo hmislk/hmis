@@ -12,7 +12,7 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.entity.lab.Sample;
 import com.divudi.facade.SampleFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

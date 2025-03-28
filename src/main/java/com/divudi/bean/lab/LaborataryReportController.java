@@ -24,7 +24,7 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.lab.Investigation;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.service.BillService;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -54,13 +54,13 @@ public class LaborataryReportController implements Serializable {
     @Inject
     SessionController sessionController;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillService billService;
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -142,7 +142,7 @@ public class LaborataryReportController implements Serializable {
     private double totalServiceCharge;
 
 // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
@@ -166,7 +166,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public void resetAllFiltersExceptDateRange() {
         setViewTemplate(null);
@@ -323,13 +323,13 @@ public class LaborataryReportController implements Serializable {
 
     public void processLaboratorySummary() {
         System.out.println("processLaboratorySummary");
-        
+
         bundle = new IncomeBundle(bills);
 
     }
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;

@@ -29,7 +29,7 @@ import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.util.Date;
 import javax.persistence.Transient;
 

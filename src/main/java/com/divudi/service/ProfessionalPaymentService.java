@@ -9,7 +9,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.facade.BillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -61,7 +61,7 @@ public class ProfessionalPaymentService {
         double totalPaid = billFacade.findDoubleByJpql(jpql, parameters, null); // No TemporalType needed here
         return totalPaid > 0;
     }
-    
+
     public boolean isProfessionalFeePaid(Bill bill, BillItem billItem) {
         if (bill == null) {
             return false;

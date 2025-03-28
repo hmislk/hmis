@@ -9,7 +9,7 @@ import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.inward.Reservation;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.ReservationFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -54,7 +54,7 @@ public class InwardReservationController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
-    ////////////////////////    
+    ////////////////////////
     private PatientEncounter patientEncounter;
 
     Date fromDate;

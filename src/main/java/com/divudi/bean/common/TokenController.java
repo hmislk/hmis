@@ -17,7 +17,7 @@ import com.divudi.entity.Token;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.TokenFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.PaymentMethod;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;

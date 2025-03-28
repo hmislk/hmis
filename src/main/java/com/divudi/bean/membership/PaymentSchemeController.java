@@ -17,7 +17,7 @@ import com.divudi.entity.membership.AllowedPaymentMethod;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.PaymentSchemeFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

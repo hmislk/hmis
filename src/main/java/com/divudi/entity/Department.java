@@ -5,8 +5,8 @@
 package com.divudi.entity;
 
 import com.divudi.data.DepartmentType;
-import com.divudi.java.CommonFunctions;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.divudi.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -31,7 +31,7 @@ public class Department implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties   
+    //Main Properties
     Long id;
     String departmentCode;
     String name;

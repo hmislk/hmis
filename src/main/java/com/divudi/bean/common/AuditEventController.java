@@ -10,7 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.AuditEvent;
 import com.divudi.facade.AuditEventFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -132,7 +132,7 @@ public class AuditEventController implements Serializable {
         hm.put("td", toDate);
         items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
         for (AuditEvent ae : items) {
-            ae.calculateDifference();  
+            ae.calculateDifference();
         }
     }
 

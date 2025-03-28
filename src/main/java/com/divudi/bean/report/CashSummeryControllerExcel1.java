@@ -36,7 +36,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -435,7 +435,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
 
 //    public List<String2Value1> getInwardCollection(){
 //        for(AdmissionTypeBills adm:)
-//    
+//
 //    }
     public double getInwardProfTot(AdmissionType adt) {
 

@@ -1,4 +1,4 @@
-package com.divudi.java;
+package com.divudi.util;
 
 import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HapiContext;

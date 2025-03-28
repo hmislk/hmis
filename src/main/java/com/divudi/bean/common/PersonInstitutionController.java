@@ -5,7 +5,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Consultant;

@@ -13,7 +13,7 @@ import static com.divudi.data.WebContentType.ShortText;
 import com.divudi.entity.WebContent;
 import com.divudi.entity.WebLanguage;
 import com.divudi.facade.WebContentFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

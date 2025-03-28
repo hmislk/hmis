@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import com.divudi.data.TriggerType;
@@ -17,7 +17,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.Notification;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.NotificationFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;

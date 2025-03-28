@@ -16,7 +16,7 @@ import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.facade.FormFormatFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

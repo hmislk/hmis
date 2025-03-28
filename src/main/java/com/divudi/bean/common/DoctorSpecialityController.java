@@ -10,7 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.DoctorSpeciality;
 import com.divudi.facade.DoctorSpecialityFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

@@ -19,7 +19,7 @@ import com.divudi.entity.lab.ReportFormat;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.CommonReportItemFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;

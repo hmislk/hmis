@@ -1,6 +1,6 @@
 package com.divudi.service;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.HistoryType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;

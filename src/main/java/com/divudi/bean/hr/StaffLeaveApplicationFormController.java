@@ -25,8 +25,8 @@ import com.divudi.facade.LeaveFormFacade;
 import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.java.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.JsfUtil;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -409,7 +409,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         if (staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate()) != null) {
             SalaryCycle s = staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate());
             //System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
-            Date nowDate = com.divudi.java.CommonFunctions.getEndOfDay();
+            Date nowDate = com.divudi.util.CommonFunctions.getEndOfDay();
             if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
                 double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                 if (d > 3) {
@@ -974,7 +974,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -985,7 +985,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

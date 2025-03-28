@@ -12,7 +12,7 @@ import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -101,8 +101,8 @@ public class SessionInstance implements Serializable {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    //Retairing properties 
-//    
+    //Retairing properties
+//
     boolean retired;
     @ManyToOne
     WebUser retirer;
@@ -1606,7 +1606,7 @@ public class SessionInstance implements Serializable {
     public void setReserveNumbersForSubsequentVisits(String reserveNumbersForSubsequentVisits) {
         this.reserveNumbersForSubsequentVisits = reserveNumbersForSubsequentVisits;
     }
-    
-    
+
+
 
 }

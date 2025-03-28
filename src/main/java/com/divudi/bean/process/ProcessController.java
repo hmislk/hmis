@@ -1,7 +1,7 @@
 package com.divudi.bean.process;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.process.ProcessStepActionType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -10,7 +10,7 @@ import com.divudi.entity.process.ProcessInstance;
 import com.divudi.entity.process.ProcessStepActionDefinition;
 import com.divudi.entity.process.ProcessStepDefinition;
 import com.divudi.entity.process.ProcessStepInstance;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import com.divudi.service.ProcessService;
 import javax.inject.Named;
 import java.io.Serializable;

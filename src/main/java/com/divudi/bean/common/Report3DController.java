@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.hr.ReportKeyWord;
@@ -11,7 +11,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.ItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;

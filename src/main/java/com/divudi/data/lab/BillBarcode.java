@@ -1,19 +1,19 @@
 package com.divudi.data.lab;
 
 import com.divudi.entity.Bill;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * Represents a barcode associated with a bill and its related patient investigations and samples.
- * 
+ *
  * @version 1.0
  * @since 2024-07-27
  */
 public class BillBarcode {
-    private Bill bill;    
+    private Bill bill;
     private List<PatientInvestigationWrapper> patientInvestigationWrappers;
     private List<PatientSampleWrapper> patientSampleWrappers;
     private String uuid;

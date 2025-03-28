@@ -17,7 +17,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.WebUserRole;
 import com.divudi.entity.WebUserRolePrivilege;
 import com.divudi.facade.WebUserRolePrivilegeFacade;

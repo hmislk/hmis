@@ -12,7 +12,7 @@ import com.divudi.entity.Sms;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SmsFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;

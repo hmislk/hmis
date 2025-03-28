@@ -9,7 +9,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.*;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.entity.channel.SessionInstance;

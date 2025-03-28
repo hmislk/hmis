@@ -1,6 +1,6 @@
 package com.divudi.service;
 
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;

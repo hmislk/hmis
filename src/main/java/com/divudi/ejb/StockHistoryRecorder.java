@@ -28,7 +28,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.util.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -152,7 +152,7 @@ public class StockHistoryRecorder {
 ////        ////System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
 //    }
 
- 
+
 
     public List<Staff> staffs() {
         String sql;
@@ -169,7 +169,7 @@ public class StockHistoryRecorder {
         return consultants;
     }
 
-   
+
 
     public void checkDoctorArival(ServiceSession s) {
         s.setArival(findArrivals(s));

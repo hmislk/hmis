@@ -10,7 +10,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import com.divudi.entity.lab.Antibiotic;
 import com.divudi.facade.AntibioticFacade;
 import com.divudi.facade.SpecialityFacade;

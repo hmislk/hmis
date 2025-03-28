@@ -5,7 +5,7 @@
 package com.divudi.facade;
 
 import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.java.JsfUtil;
+import com.divudi.util.JsfUtil;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
