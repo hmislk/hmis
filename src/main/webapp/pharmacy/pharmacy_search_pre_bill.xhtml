@@ -141,13 +141,51 @@
 
                                     </p:column>
 
-                                    <p:column headerText="Accept" width="10%">
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="Accept Payment"
-                                            action="#{pharmacyPreSettleController.toSettle(bill)}"
-                                            disabled="#{bill.referenceBill ne null or bill.cancelled}">
-                                        </p:commandButton>
+                                    <p:column headerText="Actions" style="text-align: center" width="10%" class="align-item-center justify-content-center">
+
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-center align-items-center">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa-solid fa-phone"
+                                                    title="Call Customer"
+                                                    class="ui-button-warning"
+                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}">
+                                                    
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa-solid fa-phone-slash"
+                                                    class="ui-button-danger mx-2"
+                                                    title="Cancell Calling"
+                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}">
+
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="ui-button-success"
+                                                    title="Accept Payment"
+                                                    icon="fa-solid fa-money-bill"
+                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}">
+                                                </p:commandButton> 
+                                            </div>
+
+
+                                        </div>
+
+
+
+                                        <!--                                        <p:commandButton
+                                                                                    ajax="false"
+                                                                                    value="Accept Payment"
+                                                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}">
+                                                                                </p:commandButton>-->
                                     </p:column>
                                     <p:column width="35%">
                                         <p:dataTable value="#{bill.cashBillsPre}" var="rb">
