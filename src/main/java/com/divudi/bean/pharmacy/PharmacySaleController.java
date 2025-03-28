@@ -2062,7 +2062,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 false
         );
 
-        Patient pt=null;
+        Patient pt = null;
         if (patientRequiredForPharmacySale) {
             if (getPatient() == null
                     || getPatient().getPerson() == null
@@ -2094,6 +2094,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
                     settlePharmacyToken();
+                } else if (t != null) {
+                    markToken();
                 }
             }
 
@@ -2103,7 +2105,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             tokenFacade.edit(getCurrentToken());
         }
 
-        markToken();
         resetAll();
         billPreview = true;
     }
