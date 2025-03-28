@@ -1,19 +1,19 @@
 /*
- * 
+ *
  * (94) 71 5812399
  *
  */
 package com.divudi.bean.common;
-import com.divudi.entity.Item;
-import com.divudi.entity.MedicalPackage;
-import com.divudi.entity.MedicalPackageFee;
-import com.divudi.entity.MedicalPackageItem;
-import com.divudi.entity.Service;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.MedicalPackageFacade;
-import com.divudi.facade.MedicalPackageFeeFacade;
-import com.divudi.facade.MedicalPackageItemFacade;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.MedicalPackage;
+import com.divudi.core.entity.MedicalPackageFee;
+import com.divudi.core.entity.MedicalPackageItem;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.MedicalPackageFacade;
+import com.divudi.core.facade.MedicalPackageFeeFacade;
+import com.divudi.core.facade.MedicalPackageItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,11 +28,11 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * 
+ *
  */
 @Named
 @SessionScoped

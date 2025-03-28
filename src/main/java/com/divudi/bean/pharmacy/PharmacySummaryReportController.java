@@ -7,46 +7,41 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
 
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Staff;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.StockFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.StockFacade;
 import com.divudi.bean.opd.OpdBillController;
-import com.divudi.data.BillClassType;
-import static com.divudi.data.BillClassType.BilledBill;
-import static com.divudi.data.BillClassType.CancelledBill;
-import static com.divudi.data.BillClassType.OtherBill;
-import static com.divudi.data.BillClassType.PreBill;
-import static com.divudi.data.BillClassType.RefundBill;
+import com.divudi.core.data.BillClassType;
 
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.IncomeBundle;
-import com.divudi.data.IncomeRow;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.pharmacy.DailyStockBalanceReport;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Category;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.facade.DrawerFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.IncomeBundle;
+import com.divudi.core.data.IncomeRow;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import com.divudi.service.StockHistoryService;
 import java.io.Serializable;
@@ -259,7 +254,7 @@ public class PharmacySummaryReportController implements Serializable {
         bundleReport = new ReportTemplateRowBundle();
         Map<String, Object> params = new HashMap<>();
         List<BillTypeAtomic> btas = new ArrayList<>();
-        StringBuilder jpql = new StringBuilder("select new com.divudi.data.ReportTemplateRow("
+        StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.ReportTemplateRow("
                 + "b.billType, b.billClassType, b.billTypeAtomic, count(b), sum(b.total), sum(b.discount), sum(b.netTotal))"
                 + " from Bill b where b.retired=:ret ");
         params.put("ret", false);
@@ -360,19 +355,19 @@ public class PharmacySummaryReportController implements Serializable {
             switch (billClassType) {
                 case Bill:
                 case OtherBill:
-                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
                     break;
                 case BilledBill:
-                    params.put("billClassType", com.divudi.entity.BilledBill.class);
+                    params.put("billClassType", com.divudi.core.entity.BilledBill.class);
                     break;
                 case CancelledBill:
-                    params.put("billClassType", com.divudi.entity.CancelledBill.class);
+                    params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
                     break;
                 case PreBill:
-                    params.put("billClassType", com.divudi.entity.PreBill.class);
+                    params.put("billClassType", com.divudi.core.entity.PreBill.class);
                     break;
                 case RefundBill:
-                    params.put("billClassType", com.divudi.entity.RefundBill.class);
+                    params.put("billClassType", com.divudi.core.entity.RefundBill.class);
                     break;
 
             }

@@ -1,8 +1,8 @@
 /*
  * Open Hospital Management Information System
- * 
- * Dr M H B Ariyaratne 
- * Acting Consultant (Health Informatics) 
+ *
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
  * (94) 71 5812399
  * (94) 71 5812399
  */
@@ -10,11 +10,11 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.facade.PatientSampleFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -72,7 +72,7 @@ public class PatientSampleController implements Serializable {
         items = new ArrayList<>();
         return "/lab/patient_sample_print?faces-rediret=true;";
     }
-    
+
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -86,7 +86,7 @@ public class PatientSampleController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public void savePatientSample(PatientSample pts) {
         if(pts==null){
             return;
@@ -220,7 +220,7 @@ public class PatientSampleController implements Serializable {
         }
 
     }
-    
+
     public List<PatientSample> listPatientSamples(PatientInvestigation pi) {
         String jpql;
         jpql = "select s from "

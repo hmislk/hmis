@@ -6,34 +6,34 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PersonInstitutionType;
-import com.divudi.data.Title;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PersonInstitutionType;
+import com.divudi.core.data.Title;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.FinalVariables;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -338,7 +338,7 @@ public class BookingPastController implements Serializable {
 //        hh.put("ss", getSelectedServiceSession());
 //        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 //    }
-    
+
     public void fillBillSessions() {
         selectedBillSession = null;
 //        selectedServiceSession = ((ServiceSession) event.getObject());
@@ -478,7 +478,7 @@ public class BookingPastController implements Serializable {
         Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
         return dbl;
     }
-    
+
     public List<ServiceSession> fetchCreatedServiceSession(Staff s, Date d) {
         String sql;
         Map m = new HashMap();
@@ -493,13 +493,13 @@ public class BookingPastController implements Serializable {
         m.put("class", ServiceSession.class);
         return getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
-    
+
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
         setStaff(null);
         billSessions=null;
     }
-    
+
     public List<Staff> getSelectedConsultants() {
         String sql;
         Map m = new HashMap();
@@ -585,13 +585,13 @@ public class BookingPastController implements Serializable {
         return consultants;
     }
 
-    public Staff getStaff() {        
+    public Staff getStaff() {
         return staff;
     }
 
     public void setStaff(Staff staff) {
         this.staff = staff;
-        makeBillSessionNull();        
+        makeBillSessionNull();
     }
 
     public StaffFacade getStaffFacade() {
@@ -832,7 +832,7 @@ public class BookingPastController implements Serializable {
         return date;
     }
 
-    public void setDate(Date date) {        
+    public void setDate(Date date) {
         this.date = date;
         makeBillSessionNull();
         serviceSessions = new ArrayList<>();

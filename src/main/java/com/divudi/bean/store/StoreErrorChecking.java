@@ -5,17 +5,17 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.data.BillType;
+import com.divudi.core.data.BillType;
 import com.divudi.ejb.PharmacyErrorCheckingEjb;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.facade.BillFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.facade.BillFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

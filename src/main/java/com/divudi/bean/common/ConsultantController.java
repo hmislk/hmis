@@ -7,13 +7,13 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Person;
-import com.divudi.entity.Speciality;
-import com.divudi.facade.ConsultantFacade;
-import com.divudi.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.facade.ConsultantFacade;
+import com.divudi.core.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -250,7 +250,7 @@ public class ConsultantController implements Serializable {
         }
     }
 
-    
+
     public List<Doctor> completeConsultant(String query) {
         List<Doctor> suggestions;
         String sql;
@@ -267,7 +267,7 @@ public class ConsultantController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
@@ -301,7 +301,7 @@ public class ConsultantController implements Serializable {
         m.put("name", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
+
     // Method to find a consultant by Long ID
     public Consultant getConsultantById(Long id) {
         if (id == null) {
@@ -361,7 +361,7 @@ public class ConsultantController implements Serializable {
         }
         return items;
     }
-    
+
     @Deprecated
     public List<Consultant> completeConsultants() {
         if (items == null) {

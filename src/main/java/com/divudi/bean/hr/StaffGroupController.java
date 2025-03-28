@@ -6,10 +6,10 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Staff;
-import com.divudi.facade.RosterFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.RosterFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -23,8 +23,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class StaffGroupController implements Serializable {
-   
-    private Staff currentStaff;   
+
+    private Staff currentStaff;
     @EJB
     private StaffFacade staffFacade;
     @EJB
@@ -40,7 +40,7 @@ public class StaffGroupController implements Serializable {
         return s != null;
     }
 
-   
+
     public void add() {
         if (checkGroup()) {
             JsfUtil.addErrorMessage("This Staff allready in a Group");
@@ -57,7 +57,7 @@ public class StaffGroupController implements Serializable {
 //        }
 
        // getCurrentStaff().setStaffGroup(getCurrent());
-      
+
        // getStaffFacade().edit(getCurrentStaff());
 
 //        getCurrent().getRoster().getStaffGroupList().add(getCurrent());
@@ -66,14 +66,14 @@ public class StaffGroupController implements Serializable {
         currentStaff = null;
     }
 
- 
+
     public StaffGroupController() {
     }
 
     public void makeNull() {
-    
+
         currentStaff = null;
-      
+
 
     }
 
@@ -117,10 +117,10 @@ public class StaffGroupController implements Serializable {
 //
 //    }
 
-    
-  
-  
-   
+
+
+
+
 
     public SessionController getSessionController() {
         return sessionController;
@@ -154,5 +154,5 @@ public class StaffGroupController implements Serializable {
         this.rosterFacade = rosterFacade;
     }
 
-  
+
 }

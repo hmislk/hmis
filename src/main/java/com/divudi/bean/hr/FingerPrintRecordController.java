@@ -9,15 +9,15 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.FingerPrintRecordType;
-import com.divudi.data.hr.Times;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.FingerPrintRecord;
-import com.divudi.facade.FingerPrintRecordFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.hr.DayType;
+import com.divudi.core.data.hr.FingerPrintRecordType;
+import com.divudi.core.data.hr.Times;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.FingerPrintRecord;
+import com.divudi.core.facade.FingerPrintRecordFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

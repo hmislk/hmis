@@ -1,8 +1,8 @@
 /*
  * Open Hospital Management Information System
- * 
- * Dr M H B Ariyaratne 
- * Acting Consultant (Health Informatics) 
+ *
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
  * (94) 71 5812399
  * (94) 71 5812399
  */
@@ -10,9 +10,9 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.lab.Sample;
-import com.divudi.facade.SampleFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.lab.Sample;
+import com.divudi.core.facade.SampleFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -74,7 +74,7 @@ public class SampleController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public Sample findAndCreateSampleByName(String qry) {
         Sample s;
         String jpql;
@@ -141,7 +141,7 @@ public class SampleController implements Serializable {
         prepareAdd();
         return "/admin/lims/manage_specimens?faces-redirect=true";
     }
-    
+
     public String navigateToListItems() {
         return "/admin/lims/speciman_list?faces-redirect=true";
     }
@@ -169,7 +169,7 @@ public class SampleController implements Serializable {
         }
         return items;
     }
-    
+
     public Sample getSpecimen(String name) {
         for (Sample specimen : getItems()) {
             if (specimen.getName().equalsIgnoreCase(name)) {

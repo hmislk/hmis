@@ -5,14 +5,14 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.BillType;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
+import com.divudi.core.data.BillType;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -100,7 +100,7 @@ public class PharmacyErrorCheckingEjb {
 //                + " and type(i.bill)=:class"
 //                 + "  and i.bill.referenceBill.billType=:refType and "
 //                 + " i.bill.referenceBill.cancelled=false"
-//                + " and i.item=:itm and i.bill.billType=:btp ";        
+//                + " and i.item=:itm and i.bill.billType=:btp ";
 
         String sql = "Select p from BillItem p where"
                 + "  type(p.bill)=:class and  "

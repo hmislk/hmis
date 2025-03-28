@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 
 /**
  *
@@ -11,5 +11,5 @@ public interface ControllerWithMultiplePayments {
     public void recieveRemainAmountAutomatically();
     public void setPaymentMethodData(PaymentMethodData paymentMethodData);
     public PaymentMethodData getPaymentMethodData();
-    
+
 }

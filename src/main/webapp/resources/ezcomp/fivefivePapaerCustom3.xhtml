@@ -10,11 +10,11 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="ref" type="java.lang.Boolean" />
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>/>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData"/>/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -27,8 +27,8 @@
             <!-- Header Section -->
             <div class="hospital-name">
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <!-- Separator Line -->
@@ -298,7 +298,7 @@
                         <h:outputLabel value="#{cc.attrs.bill.deptId}"></h:outputLabel>
                     </td>
                 </tr>
-                
+
                  <tr>
                     <td>
                         <h:outputLabel value="Payment" ></h:outputLabel>
@@ -357,7 +357,7 @@
                         <p:spacer height="1" width="10" ></p:spacer>
                         <h:outputLabel value="#{sessionController.currentDate}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                        </h:outputLabel>     
+                        </h:outputLabel>
                     </td>
                 </tr>
 

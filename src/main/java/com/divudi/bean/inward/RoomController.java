@@ -9,9 +9,9 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.inward.Room;
-import com.divudi.facade.RoomFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.inward.Room;
+import com.divudi.core.facade.RoomFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
