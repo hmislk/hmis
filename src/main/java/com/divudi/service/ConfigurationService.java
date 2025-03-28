@@ -1,9 +1,9 @@
 package com.divudi.service;
 
-import com.divudi.data.OptionScope;
-import com.divudi.data.OptionValueType;
-import com.divudi.entity.ConfigOption;
-import com.divudi.facade.ConfigOptionFacade;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
+import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.facade.ConfigOptionFacade;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

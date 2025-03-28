@@ -17,9 +17,9 @@
                         <p:panel>
                             <f:facet name="header">
                                 <h:outputLabel value="Add new adjustment"  class="mt-2"/>
-                                <p:commandButton 
-                                    id="btnAdd" 
-                                    value="Add" 
+                                <p:commandButton
+                                    id="btnAdd"
+                                    value="Add"
                                     class="ui-button-success"
                                     icon="fa fa-plus"
                                     style="float: right;"
@@ -36,14 +36,14 @@
                                         <h:outputLabel value="Department " class="mt-1"/>
                                     </div>
                                     <div class="col-10">
-                                        <p:autoComplete 
-                                            value="#{inwardPriceAdjustmntController.department}" 
+                                        <p:autoComplete
+                                            value="#{inwardPriceAdjustmntController.department}"
                                             forceSelection="true"
-                                            completeMethod="#{departmentController.completeDept}" 
-                                            var="dep" 
+                                            completeMethod="#{departmentController.completeDept}"
+                                            var="dep"
                                             inputStyleClass="form-control"
                                             class="w-100"
-                                            itemLabel="#{dep.name}" 
+                                            itemLabel="#{dep.name}"
                                             itemValue="#{dep}" >
                                             <p:column>
                                                 <h:outputLabel value="#{dep.name}"/>
@@ -60,21 +60,21 @@
                                         <h:outputLabel value="Category/Subcategory" class="mt-2"></h:outputLabel>
                                     </div>
                                     <div class="col-10">
-                                        <p:autoComplete 
+                                        <p:autoComplete
                                             inputStyleClass="form-control"
                                             class="w-100 "
-                                            value="#{inwardPriceAdjustmntController.category}" 
+                                            value="#{inwardPriceAdjustmntController.category}"
                                             forceSelection="true"
                                             completeMethod="#{categoryController.completeCategoryService}"
-                                            var="cat" 
-                                            itemLabel="#{cat.name} #{cat.parentCategory}" 
+                                            var="cat"
+                                            itemLabel="#{cat.name} #{cat.parentCategory}"
                                             itemValue="#{cat}" >
                                             <p:column headerText="Category">
                                                 <h:outputLabel value="#{cat.name}"/>
                                             </p:column>
                                             <p:column headerText="Parent Category">
                                                 <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                            </p:column> 
+                                            </p:column>
                                         </p:autoComplete>
                                     </div>
                                 </div>
@@ -84,12 +84,12 @@
                                         <h:outputLabel value="BHT Type" class="mt-2"/>
                                     </div>
                                     <div class="col-4">
-                                        <p:selectOneMenu 
+                                        <p:selectOneMenu
                                             class="w-100"
-                                            id="cmbPs" 
+                                            id="cmbPs"
                                             value="#{inwardPriceAdjustmntController.paymentMethod}"  >
-                                            <f:selectItem itemLabel="Select" />                           
-                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                                    
+                                            <f:selectItem itemLabel="Select" />
+                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
@@ -99,9 +99,9 @@
                                         <h:outputLabel value="From" class="mt-2"></h:outputLabel>
                                     </div>
                                     <div class="col-4">
-                                        <p:inputText 
+                                        <p:inputText
                                             class="w-100"
-                                            autocomplete="off" 
+                                            autocomplete="off"
                                             value="#{inwardPriceAdjustmntController.fromPrice}" />
                                     </div>
                                 </div>
@@ -111,9 +111,9 @@
                                         <h:outputLabel value="To" class="mt-2"></h:outputLabel>
                                     </div>
                                     <div class="col-4">
-                                        <p:inputText 
+                                        <p:inputText
                                             class="w-100"
-                                            autocomplete="off" 
+                                            autocomplete="off"
                                             value="#{inwardPriceAdjustmntController.toPrice}" />
                                     </div>
                                 </div>
@@ -123,9 +123,9 @@
                                         <h:outputLabel value="Margin" class="mt-2"></h:outputLabel>
                                     </div>
                                     <div class="col-4">
-                                        <p:inputText 
+                                        <p:inputText
                                             class="w-100"
-                                            autocomplete="off" 
+                                            autocomplete="off"
                                             value="#{inwardPriceAdjustmntController.margin}" />
                                     </div>
                                 </div>
@@ -138,63 +138,63 @@
                                 <h:outputLabel value="Price Matrix"  class="mt-2"/>
                                 <div class="d-flex" style="float: right">
                                     <p:commandButton
-                                        ajax="false" 
+                                        ajax="false"
                                         icon="fa fa-fill"
                                         class="ui-button-warning"
-                                        value="Fill" 
+                                        value="Fill"
                                         action="#{inwardPriceAdjustmntController.createCategroyService()}">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="ui-button-success mx-2" 
-                                        actionListener="#{inwardPriceAdjustmntController.createCategroyService()}" 
-                                        ajax="false" 
-                                        value="Excel" 
+                                    <p:commandButton
+                                        class="ui-button-success mx-2"
+                                        actionListener="#{inwardPriceAdjustmntController.createCategroyService()}"
+                                        ajax="false"
+                                        value="Excel"
                                         icon="fa-solid fa-file-excel"
                                         >
-                                        <p:dataExporter 
-                                            type="xlsx" 
-                                            target="inwd" 
+                                        <p:dataExporter
+                                            type="xlsx"
+                                            target="inwd"
                                             fileName="Price_metrix_service"  />
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="w-100 ui-button-info" 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        class="w-100 ui-button-info"
+                                        ajax="false"
                                         icon="fa fa-print"
-                                        value="Print" 
-                                        >                                         
+                                        value="Print"
+                                        >
                                         <p:printer target="priceMatrixDataPreview"/>
                                     </p:commandButton>
                                 </div>
 
                             </f:facet>
 
-                            <p:dataTable 
-                                id="inwd" 
+                            <p:dataTable
+                                id="inwd"
                                 value="#{inwardPriceAdjustmntController.items}"
                                 filteredValue="#{inwardPriceAdjustmntController.filterItems}"
-                                var="a" 
-                                editable="true" 
+                                var="a"
+                                editable="true"
                                 scrollable="true">
 
                                 <p:column headerText="ID" style="width: 2em;">
                                     #{a.id}
                                 </p:column>
 
-                                <p:column 
-                                    filterBy="#{a.department.name}" 
-                                    filterMatchMode="contains" 
-                                    headerText="Department Name" 
+                                <p:column
+                                    filterBy="#{a.department.name}"
+                                    filterMatchMode="contains"
+                                    headerText="Department Name"
                                     exportable="false">
-                                    <p:autoComplete  
+                                    <p:autoComplete
                                         inputStyleClass="form-control"
                                         class="w-100 "
-                                        forceSelection="true" 
-                                        value="#{a.department}" 
-                                        completeMethod="#{departmentController.completeDept}" 
-                                        var="dep" 
-                                        itemLabel="#{dep.name}" 
+                                        forceSelection="true"
+                                        value="#{a.department}"
+                                        completeMethod="#{departmentController.completeDept}"
+                                        var="dep"
+                                        itemLabel="#{dep.name}"
                                         itemValue="#{dep}" >
                                         <p:column>
                                             <h:outputLabel value="#{dep.name}"/>
@@ -206,7 +206,7 @@
                                     <p:outputLabel value="#{a.department.name}"/>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     headerText="Payment Method"
                                     width="10%"
                                     filterMatchMode="contains"
@@ -215,35 +215,35 @@
                                     <p:outputLabel value="#{a.paymentMethod}"/>
                                 </p:column>
 
-                                <p:column 
-                                    filterBy="#{a.category.name}" 
-                                    filterMatchMode="contains" 
-                                    headerText="Category Name" 
+                                <p:column
+                                    filterBy="#{a.category.name}"
+                                    filterMatchMode="contains"
+                                    headerText="Category Name"
 
                                     exportable="false">
-                                    <p:autoComplete 
+                                    <p:autoComplete
                                         inputStyleClass="form-control"
                                         class="w-100 "
-                                        forceSelection="true" 
-                                        value="#{a.category}" 
-                                        completeMethod="#{categoryController.completeCategoryService}" 
-                                        var="cat" 
-                                        itemLabel="#{cat.name} #{cat.parentCategory}" 
+                                        forceSelection="true"
+                                        value="#{a.category}"
+                                        completeMethod="#{categoryController.completeCategoryService}"
+                                        var="cat"
+                                        itemLabel="#{cat.name} #{cat.parentCategory}"
                                         itemValue="#{cat}" >
                                         <p:column>
                                             <h:outputLabel value="#{cat.name}"/>
                                         </p:column>
                                         <p:column>
                                             <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                        </p:column> 
+                                        </p:column>
                                         <p:column headerText="TYPE">
-                                            <h:outputLabel value="Parent Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                            <h:outputLabel value="Child Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
-                                            <h:outputLabel value="Investigation Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.InventoryCategory'}"/>
-                                        </p:column> 
+                                            <h:outputLabel value="Parent Category"
+                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
+                                            <h:outputLabel value="Child Category"
+                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
+                                            <h:outputLabel value="Investigation Category"
+                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.InventoryCategory'}"/>
+                                        </p:column>
 
                                     </p:autoComplete>
                                     <p:outputLabel value="#{a.category.name}"/>
@@ -266,20 +266,20 @@
                                 </p:column>
                                 <p:column headerText="Action" width="12%" >
                                     <div class="d-flex">
-                                        <p:commandButton 
+                                        <p:commandButton
                                             id="edit"
-                                            ajax="false" 
+                                            ajax="false"
                                             icon="fa fa-pencil"
                                             class="ui-button-success mx-1"
                                             action="#{inwardPriceAdjustmntController.onEdit(a)}" >
-                                        </p:commandButton> 
-                                        <p:commandButton 
+                                        </p:commandButton>
+                                        <p:commandButton
                                             id="delete"
                                             class="ui-button-danger"
                                             icon=" fa-solid fa-trash"
                                             action="#{inwardPriceAdjustmntController.delete}" >
                                             <f:setPropertyActionListener value="#{a}" target="#{inwardPriceAdjustmntController.current}"/>
-                                        </p:commandButton> 
+                                        </p:commandButton>
                                     </div>
 
 

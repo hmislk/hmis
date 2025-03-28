@@ -1,6 +1,6 @@
 package com.divudi.bean.pharmacy;
 
-import com.divudi.entity.Category;
+import com.divudi.core.entity.Category;
 import java.io.Serializable;
 import javax.persistence.Entity;
 
@@ -17,6 +17,6 @@ import javax.persistence.Entity;
 @Entity
 public class RouteOfAdministration extends Category implements Serializable {
 
-    
-    
+
+
 }

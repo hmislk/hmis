@@ -1,12 +1,12 @@
 package com.divudi.ws.lims;
 
 import com.divudi.bean.common.SecurityController;
-import com.divudi.data.lab.Analyzer;
+import com.divudi.core.data.lab.Analyzer;
 import java.util.ArrayList;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.facade.PatientSampleFacade;
-import com.divudi.facade.WebUserFacade;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.facade.WebUserFacade;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Consumes;

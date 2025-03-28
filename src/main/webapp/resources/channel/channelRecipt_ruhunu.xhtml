@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" class="com.divudi.entity.Bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" class="com.divudi.core.entity.Bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup" />
     </cc:interface>
 
@@ -41,11 +41,11 @@
                     </div>
                     <p:spacer height="15"/>
                     <div style="font-weight: bold; text-align: center;">
-                        <h:outputLabel value="Channel Receipt"   style="text-align: center;"/>    
-                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/> 
-                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="text-align: center;"/> 
+                        <h:outputLabel value="Channel Receipt"   style="text-align: center;"/>
+                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/>
+                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="text-align: center;"/>
                         <br></br>
-                        <!--<h:outputLabel value="(Customer Copy)"   style="text-align: center;"/>--> 
+                        <!--<h:outputLabel value="(Customer Copy)"   style="text-align: center;"/>-->
                     </div>
                     <div style="text-align: center;">
                         <h:outputLabel value="--------------------------" style="text-align: center;"></h:outputLabel>
@@ -237,7 +237,7 @@
                                     </td>
 
                                 </tr>
-                                
+
                                 <tr>
                                     <td>
                                         <b>
@@ -303,7 +303,7 @@
                                     </td>
 
                                 </tr>
-                                
+
                                 <tr>
                                     <td>
                                         <h:outputLabel value="Debiter Code" rendered="#{cc.attrs.bill.creditCompany ne null or cc.attrs.bill.toStaff ne null}"></h:outputLabel>
@@ -366,7 +366,7 @@
                                         <h:outputLabel value="#{sessionController.loggedUser.code}" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
                                     </td>
                                 </tr>
-                                
+
                             </table>
                         </div>
                     </div>

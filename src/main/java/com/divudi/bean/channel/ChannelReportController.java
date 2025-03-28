@@ -7,50 +7,50 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.hr.StaffController;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.MessageType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.channel.DateEnum;
-import com.divudi.data.channel.PaymentEnum;
-import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.dataStructure.ChannelDoctor;
-import com.divudi.data.dataStructure.WebUserBillsTotal;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.table.String1Value1;
-import com.divudi.data.table.String1Value3;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.channel.DateEnum;
+import com.divudi.core.data.channel.PaymentEnum;
+import com.divudi.core.data.dataStructure.BillsTotals;
+import com.divudi.core.data.dataStructure.ChannelDoctor;
+import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.table.String1Value1;
+import com.divudi.core.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Sms;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SmsFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Speciality;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -388,7 +388,7 @@ public class ChannelReportController implements Serializable {
 
 //        Bill b = new Bill();
 //        b.setNetTotal(netTotal);
-//        
+//
         rows = new ArrayList<>();
 
         ChannelReportColumnModel br;
@@ -2098,7 +2098,7 @@ public class ChannelReportController implements Serializable {
 //                + " and type(bf.bill)=:class "
 //                + " and bf.fee.feeType =:ft"
 //                + " and bf.bill.createdAt between :fd and :td ";
-//        
+//
 //        m.put("fd", getFromDate());
 //        m.put("td", getToDate());
 //        m.put("ft", FeeType.Service);
@@ -2839,7 +2839,7 @@ public class ChannelReportController implements Serializable {
     public List<Staff> getStaffbyClassType(List<BillType> bts, Date fd, Date td) {
         HashMap hm = new HashMap();
 //        String sql = "select p from Staff p where p.retired=false ";
-//        
+//
 //        if(st!=null){
 //            //System.out.println("1");
 //            sql+=" and type(p)=:class ";

@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" class="com.divudi.entity.Bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" class="com.divudi.core.entity.Bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup" />
         <cc:attribute name="hos" />
         <cc:attribute name="doc" />
@@ -28,7 +28,7 @@
                 <h:panelGroup id="panelAddedBillPrint">
 
                     <div style="position: absolute!important;
-                         left: 60%!important; 
+                         left: 60%!important;
                          font-weight: bold!important;
                          top: 0%!important;
                          text-decoration: underline!important;">
@@ -40,8 +40,8 @@
                          left: 40%!important;
                          top: 8%!important;
                          font-size: 8px!important;">
-                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
-                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" />
+                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
                     </div>
                     <div>
                         <div style="position: absolute!important; top: 12%!important;">
@@ -290,7 +290,7 @@
 
                                 </tr>
 
-                                
+
 
                                 <tr>
                                     <td>
@@ -357,7 +357,7 @@
                                 <!--                                <tr>
                                                                     <td colspan="4">
                                                                         <P>
-                                                                            <sup>*</sup>Note : Above bill inclusive of Hospital Charges, Professional fee &amp; Government Taxes.  
+                                                                            <sup>*</sup>Note : Above bill inclusive of Hospital Charges, Professional fee &amp; Government Taxes.
                                                                         </P>
                                                                     </td>
                                                                 </tr>-->
@@ -366,10 +366,10 @@
                         </div>
                     </div>
                     <div style="position: absolute!important;
-                         left: 5%!important; 
+                         left: 5%!important;
                          top: 45%!important;"
                           >
-                        <h:outputLabel value="&quot;Collected for and on behalf of the Doctor&quot;" 
+                        <h:outputLabel value="&quot;Collected for and on behalf of the Doctor&quot;"
                                        rendered="#{cc.attrs.hos ne true}"
                                        style="font-size: 9px!important;" />
                     </div>

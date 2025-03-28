@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="controller" ></cc:attribute>
@@ -18,7 +18,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
+
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: always" >
             <div class="billline">
@@ -37,20 +37,20 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="Email : #{cc.attrs.bill.department.email}"/> 
+                    <h:outputLabel value="Email : #{cc.attrs.bill.department.email}"/>
                     <h:outputLabel value=" | " style="width: 10px;"/>
-                    <h:outputLabel value="Web : #{cc.attrs.bill.institution.web}"/>   
+                    <h:outputLabel value="Web : #{cc.attrs.bill.institution.web}"/>
                 </div>
             </div>
-            
+
             <div class="billline">
                 <p:spacer height="5px" />
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Agent Receipt"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="Agent Receipt"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
@@ -135,7 +135,7 @@
                     </div>
                     <div class="col-3"><h:outputLabel value="#{cc.attrs.bill.fromInstitution.phone}"/></div>
                 </div>
-            </div>   
+            </div>
 
             <div class="billline">
                 <p:spacer height="5px" />
@@ -156,17 +156,17 @@
                             </td>
                         </tr>
 
-                    </th> 
+                    </th>
                     <tbody>
                         <tr class="billDetailsFiveFive">
                             <td  style="width:30%!important; font-weight: 300;" >
-                                <h:outputLabel value="1" style="font-size:  10pt!important;"  /> 
+                                <h:outputLabel value="1" style="font-size:  10pt!important;"  />
                             </td>
                             <td  style="width:30%!important;  font-weight: 300;" >
                                 <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" style="font-size:  10pt!important;"  />
                             </td>
                             <td  style="width:20%!important;  font-weight: 300;" >
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size:  10pt!important;"> 
+                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size:  10pt!important;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>

@@ -1,12 +1,12 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.HistoryType;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Institution;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;

@@ -5,20 +5,20 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.pharmacy.StockVarientBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockVarientBillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.pharmacy.StockVarientBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockVarientBillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -93,7 +93,7 @@ public class VariantAdjustment implements Serializable {
         stockVarientBillItems = tmp;
     }
 
-    
+
     public void clearList() {
         printPreview = false;
 //        billItems = null;
@@ -174,7 +174,7 @@ public class VariantAdjustment implements Serializable {
         for (StockVarientBillItem i : tmp) {
             StockVarientBillItem bi = new StockVarientBillItem();
             bi.clone(i);
-            
+
             getStockVarientBillItems().add(i);
         }
 
@@ -278,7 +278,7 @@ public class VariantAdjustment implements Serializable {
     }
 
     public void makeListNull() {
-//        pharmaceuticalBillItems = null;   
+//        pharmaceuticalBillItems = null;
         searchBills = null;
 
     }

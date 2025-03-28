@@ -5,9 +5,9 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Bill;
-import com.divudi.facade.BillFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.facade.BillFacade;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;

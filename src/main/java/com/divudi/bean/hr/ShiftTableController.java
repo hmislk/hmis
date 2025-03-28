@@ -6,21 +6,21 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.dataStructure.ShiftTable;
-import com.divudi.data.hr.DayType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.dataStructure.ShiftTable;
+import com.divudi.core.data.hr.DayType;
 
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.Roster;
-import com.divudi.entity.hr.Shift;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.hr.StaffShiftExtra;
-import com.divudi.entity.hr.StaffShiftHistory;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.Shift;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.entity.hr.StaffShiftExtra;
+import com.divudi.core.entity.hr.StaffShiftHistory;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.facade.StaffShiftHistoryFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

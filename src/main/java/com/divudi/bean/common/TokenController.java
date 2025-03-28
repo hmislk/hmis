@@ -3,22 +3,22 @@ package com.divudi.bean.common;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.BillType;
-import com.divudi.data.TokenType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.Token;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.TokenFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Token;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.TokenFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -47,7 +47,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
-    // </editor-fold> 
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -61,7 +61,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
 
-    // </editor-fold> 
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
 
@@ -79,7 +79,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     private boolean patientDetailsEditable;
 
-    // </editor-fold> 
+    // </editor-fold>
     public TokenController() {
 
     }
@@ -466,7 +466,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    // </editor-fold> 
+    // </editor-fold>
     public Token getCurrentToken() {
         return currentToken;
     }
