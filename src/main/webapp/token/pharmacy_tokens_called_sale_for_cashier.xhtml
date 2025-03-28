@@ -188,12 +188,12 @@
                                         <div class="col-3">
                                             <div class="">
                                                 <h:panelGroup rendered="#{token.bill ne null}" >
-                                                    <h:panelGroup rendered="#{token.inProgress}" >
+                                                    <h:panelGroup rendered="#{token.isCalled()}" >
                                                         <img width="250px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
                                                     </h:panelGroup>
-                                                    <h:panelGroup rendered="#{!token.inProgress}" >
-                                                        <img width="250px"  src="https://assets.materialup.com/uploads/355a438c-4e7b-4412-a74d-1c4c1dd444fa/preview.gif"/>
-                                                    </h:panelGroup>
+<!--                                                    <h:panelGroup rendered="#{token.inProgress}" >
+                                                        <img width="250px"  src="../../resources/image/checkout_at_cashier.svg"/>                
+                                                    </h:panelGroup>-->
                                                 </h:panelGroup>
             
                                             </div>

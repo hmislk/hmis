@@ -84,13 +84,14 @@
                                     class="ui-button-secondary w-100 my-4"
                                     icon="fa-solid fa-desktop"
                                     value=" View In Display"
+                                    action="/token/pharmacy_tokens_called_sale_for_cashier?faces-redirect=true"
                                     actionListener="#{tokenController.fillSaleForCashierBillsTokens()}"
                                     style="font-size: 20px; font-weight: bold"
-                                    onclick="openFullScreen(); return false;">
+                                    >
                                         
                                 </p:commandButton>
 
-                                <h:outputScript>
+<!--                                <h:outputScript>
                                     function openFullScreen() {
                                         var url = "#{request.contextPath}/faces/token/pharmacy_tokens_called_sale_for_cashier.xhtml";
                                         var newWindow = window.open(url, '_blank', 'toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,fullscreen=yes');
@@ -99,7 +100,7 @@
                                             newWindow.resizeTo(screen.width, screen.height);
                                         }
                                     }
-                                </h:outputScript>
+                                </h:outputScript>-->
 
 
 
@@ -195,7 +196,6 @@
                                                     title="Accept Payment"
                                                     icon="fa-solid fa-money-bill"
                                                     action="#{pharmacyPreSettleController.toSettle(bill)}"
-                                                    actionListener="#{pharmacyPreSettleController.markInProgress(bill)}"
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
                                                 </p:commandButton> 
                                             </div>

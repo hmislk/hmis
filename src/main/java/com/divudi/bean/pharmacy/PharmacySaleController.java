@@ -2094,6 +2094,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
                     settlePharmacyToken();
+                    markInprogress();
                 } else if (t != null) {
                     markToken();
                 }
@@ -2107,6 +2108,19 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         resetAll();
         billPreview = true;
+    }
+    
+    public void markInprogress() {
+        Token t = getToken();
+        if (t == null) {
+            return;
+        }
+        t.setBill(getPreBill());
+        t.setCalled(false);
+        t.setCalledAt(null));
+        t.setInProgress(true);
+        t.setCompleted(false);
+        tokenController.save(t);
     }
 
     public void markToken() {

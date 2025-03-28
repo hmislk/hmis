@@ -66,6 +66,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
+import com.divudi.facade.TokenFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
@@ -1089,22 +1090,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
     
     public Token findTokenFromBill(Bill bill){
-        return tokenController.findPharmacyTokens(getPreBill());
+        return tokenController.findPharmacyTokens(bill);
     }
     
-     public void markInProgress(Bill bill){
-        System.out.println("start unmark");
-        Token t = findTokenFromBill(bill);
-        if(t == null){
-            return;
-        }
-        t.setInProgress(true);
-        t.setCompleted(false);
-        tokenController.save(t);
-        System.out.println("end unmark");
-        
-    }
-     
      public void markComplete(Bill bill){
         System.out.println("start unmark");
         Token t = findTokenFromBill(bill);
@@ -1130,9 +1118,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         t.setInProgress(false);
         t.setCompleted(false);
         tokenController.save(t);
+        tokenFacade.flush();
         System.out.println("end unmark");
         
     }
+    
+    @EJB
+    private TokenFacade tokenFacade;
 
     public void markToken(Bill bill) {
         System.out.println("start mark");
@@ -1145,6 +1137,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         t.setInProgress(false);
         t.setCompleted(false);
         tokenController.save(t);
+        tokenFacade.flush();
+        
         System.out.println("end mark");
     }
 
