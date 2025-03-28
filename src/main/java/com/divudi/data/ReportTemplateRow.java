@@ -29,11 +29,9 @@ public class ReportTemplateRow implements Serializable {
     private BillFee billFee;
     private Payment payment;
 
-
     private BillType billType;
     private BillClassType billClassType;
     BillTypeAtomic billTypeAtomic;
-
 
     private boolean selected;
 
@@ -139,7 +137,7 @@ public class ReportTemplateRow implements Serializable {
     private Institution collectingCentre;
     private Double totalHospitalFee;
     private Double qty;
-    
+
     private PatientInvestigation patientInvestigation;
 
     private long duration;
@@ -161,14 +159,11 @@ public class ReportTemplateRow implements Serializable {
         this.institution = institution;
     }
 
-
     public ReportTemplateRow(Institution institution, Double itemTotal) {
         this.itemTotal = itemTotal;
         this.institution = institution;
     }
 
-    
-    
     public ReportTemplateRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
         this.itemCount = itemCount;
         this.itemHospitalFee = itemHospitalFee;
@@ -227,8 +222,6 @@ public class ReportTemplateRow implements Serializable {
         this.patientInvestigation = patientInvestigation;
     }
 
-    
-    
     public ReportTemplateRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
     }
@@ -239,11 +232,11 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public ReportTemplateRow(Department department, Date date,
-                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
-                             double staffValue, double creditValue, double staffWelfareValue,
-                             double voucherValue, double iouValue, double agentValue,
-                             double chequeValue, double slipValue, double eWalletValue,
-                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
         this.department = department;
         this.date = date;
         this.cashValue = cashValue;
@@ -264,11 +257,11 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public ReportTemplateRow(Department department, BillTypeAtomic billTypeAtomic,
-                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
-                             double staffValue, double creditValue, double staffWelfareValue,
-                             double voucherValue, double iouValue, double agentValue,
-                             double chequeValue, double slipValue, double eWalletValue,
-                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
         this.department = department;
         this.billTypeAtomic = billTypeAtomic;
         this.cashValue = cashValue;
@@ -289,11 +282,11 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public ReportTemplateRow(Bill bill,
-                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
-                             double staffValue, double creditValue, double staffWelfareValue,
-                             double voucherValue, double iouValue, double agentValue,
-                             double chequeValue, double slipValue, double eWalletValue,
-                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
         this.bill = bill;
         this.cashValue = cashValue;
         this.cardValue = cardValue;
@@ -336,11 +329,11 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public ReportTemplateRow(Department department, Date date, WebUser user,
-                             double cashValue, double cardValue, double multiplePaymentMethodsValue,
-                             double staffValue, double creditValue, double staffWelfareValue,
-                             double voucherValue, double iouValue, double agentValue,
-                             double chequeValue, double slipValue, double eWalletValue,
-                             double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
         this.department = department;
         this.date = date;
         this.cashValue = cashValue;
@@ -438,6 +431,9 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public Double getRowValue() {
+        if (rowValue == null) {
+            rowValue = 0.00;
+        }
         return rowValue;
     }
 
@@ -1259,7 +1255,6 @@ public class ReportTemplateRow implements Serializable {
         this.agentHistory = agentHistory;
     }
 
-
     public Double getGrossTotal() {
         return grossTotal;
     }
@@ -1371,6 +1366,5 @@ public class ReportTemplateRow implements Serializable {
     public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
         this.patientInvestigation = patientInvestigation;
     }
-    
-    
+
 }
