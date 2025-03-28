@@ -1090,6 +1090,18 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public Token findTokenFromBill(Bill bill){
         return tokenController.findPharmacyTokens(getPreBill());
     }
+    
+    public void unmarkToken(Bill bill){
+        Token t = findTokenFromBill(bill);
+        if(t == null){
+            return;
+        }
+        t.setCalled(true);
+        t.setCalledAt(null);
+        t.setInProgress(false);
+        t.setCompleted(false);
+        tokenController.save(t);
+    }
 
     public void markToken(Bill bill) {
         Token t = findTokenFromBill(bill);

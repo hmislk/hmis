@@ -143,16 +143,18 @@
 
                                     <p:column headerText="Actions" style="text-align: center" width="10%" class="align-item-center justify-content-center">
 
-                                        <div class="row">
+                                        <div id="actionRow" class="row">
                                             <div class="col-12 d-flex justify-content-center align-items-center">
                                                 <p:commandButton
                                                     ajax="true"
                                                     icon="fa-solid fa-phone"
                                                     title="Call Customer"
                                                     class="ui-button-warning"
+                                                    process="@this"
+                                                    update="actionRow"
                                                     action="#{pharmacyPreSettleController.markToken(bill)}"                                   
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or pharmacyPreSettleController.findTokenFromBill(bill).isCalled() }">
-                                                                  
+                                                              
                                                 </p:commandButton>
 
                                                 <p:commandButton
@@ -160,8 +162,10 @@
                                                     icon="fa-solid fa-phone-slash"
                                                     class="ui-button-danger mx-2"
                                                     title="Cancell Calling"
-                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
-                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}">
+                                                    process="@this"
+                                                    update="actionRow"
+                                                    action="#{pharmacyPreSettleController.unmarkToken(bill)}"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
 
                                                 </p:commandButton>
 
@@ -171,7 +175,7 @@
                                                     title="Accept Payment"
                                                     icon="fa-solid fa-money-bill"
                                                     action="#{pharmacyPreSettleController.toSettle(bill)}"
-                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}">
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
                                                 </p:commandButton> 
                                             </div>
 
