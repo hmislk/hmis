@@ -2788,11 +2788,13 @@ public class SearchController implements Serializable {
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
         m.put("ldep", getSessionController().getLoggedUser().getDepartment());
+        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         String sql;
 
         sql = "Select b from PreBill b where "
                 + " b.createdAt between :fd and :td "
                 + " and b.billType=:bt"
+                + " and b.billTypeAtomic <> :bta"
                 + " and b.billedBill is null "
                 + " and b.institution=:ins "
                 + " and b.department=:ldep";
