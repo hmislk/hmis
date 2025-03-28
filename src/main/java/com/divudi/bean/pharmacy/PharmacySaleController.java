@@ -2117,7 +2117,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         t.setBill(getPreBill());
         t.setCalled(false);
-        t.setCalledAt(null));
+        t.setCalledAt(null);
         t.setInProgress(true);
         t.setCompleted(false);
         tokenController.save(t);
