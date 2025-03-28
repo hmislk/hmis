@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -53,12 +52,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonReport commonReport;
-    @Inject
-    CommonController commonController;
-    @EJB
-    private CommonFunctions commonFunctions;
+
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -132,7 +126,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -143,7 +137,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance().getTime());
+            toDate = CommonFunctions.getEndOfDay(Calendar.getInstance().getTime());
         }
         return toDate;
     }
@@ -158,14 +152,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     private Institution collectingIns;
@@ -354,7 +340,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //            if (bobj.length < 3) {
 //                continue;
 //            }
-//            
+//
 //            ItemInstitutionCollectingCentreCountRow r = new ItemInstitutionCollectingCentreCountRow();
 //            r.setItem((Item) bobj[0]);
 //            r.setCount((Long) bobj[1]);
@@ -434,7 +420,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //
 //        countTotal = billed - (refunded + cancelled);
 
-        
+
     }
 
     public List<InvestigationSummeryData> getItems3() {
@@ -1198,7 +1184,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         }
 
-        
+
 
     }
 
@@ -1287,7 +1273,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             investigationCountWithMachines.add(tempMac);
         }
 
-        
+
     }
 
     public void createLabServiceWithCountAndValueByMachineAndBillType() {
@@ -1358,7 +1344,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         total += (totalOpd + totalcc + totalInward);
         investigationCountWithMachines.add(row);
 
-        
+
     }
 
     public void createLabServiceWithCountAndValueByMachineInvestigationAndBillType() {
@@ -1529,7 +1515,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         investigationCountWithMachines.add(row);
 
-        
+
     }
 
     public List<Item> getInvestigationItems() {
@@ -1965,14 +1951,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             this.count = count;
         }
 
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

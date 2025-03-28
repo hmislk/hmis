@@ -38,8 +38,6 @@ public class ExcelController {
 
     @Inject
     SearchController searchController;
-    @Inject
-    CommonController commonController;
 
     /**
      * Creates a new instance of ExcelController

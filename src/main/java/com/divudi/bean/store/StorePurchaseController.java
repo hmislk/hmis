@@ -6,7 +6,6 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.BillItemController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.BillClassType;
@@ -88,9 +87,7 @@ public class StorePurchaseController implements Serializable {
     ApplicationController applicationController;
     @Inject
     BillItemController billItemController;
-    @Inject
-    CommonController commonController;
-    
+
 
     public BillItemController getBillItemController() {
         return billItemController;
@@ -318,7 +315,7 @@ public class StorePurchaseController implements Serializable {
         for (BillItem i : getBillItems()) {
             i.setId(null);
         }
-        
+
         for (BillItem i : getBillItems()) {
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
@@ -384,10 +381,10 @@ public class StorePurchaseController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Billed");
         printPreview = true;
 
-        
-        
+
+
     }
-    
+
     public Payment createPayment(Bill bill) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -541,7 +538,7 @@ public class StorePurchaseController implements Serializable {
         getCurrentBillItem().setSearialNo(getBillItems().size() + 1);
         //getCurrentBillItem().setId(getCurrentBillItem().getSearialNoInteger().longValue());
 
-//        billItem.setSearialNo(getBillItems().size() + 1);        
+//        billItem.setSearialNo(getBillItems().size() + 1);
         getBillItems().add(getCurrentBillItem());
 
         getBillItemController().setItems(getBillItems());
@@ -557,7 +554,7 @@ public class StorePurchaseController implements Serializable {
         calTotal();
 
     }
-    
+
     public void addItemWithLastRate() {
         if (getCurrentBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("Please select and item from the list");
@@ -606,7 +603,7 @@ public class StorePurchaseController implements Serializable {
         currentExpense = null;
         calTotal();
     }
-    
+
     public void removeExpense(BillItem removeExpences) {
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().remove(removeExpences);
@@ -688,7 +685,7 @@ public class StorePurchaseController implements Serializable {
         getBill().setNetTotal(tot + exp);
 
     }
-    
+
     public void calNetTotal() {
         double grossTotal = 0.0;
         if (getBill().getDiscount() > 0 || getBill().getTax()>0) {
@@ -869,14 +866,6 @@ public class StorePurchaseController implements Serializable {
         return commonFunctions;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
     }
@@ -900,5 +889,5 @@ public class StorePurchaseController implements Serializable {
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
     }
- 
+
 }

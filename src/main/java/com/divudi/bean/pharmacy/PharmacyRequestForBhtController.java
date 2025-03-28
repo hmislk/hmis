@@ -6,7 +6,6 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -78,8 +77,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     PharmacyCalculation pharmacyCalculation;
 
@@ -1599,14 +1596,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Department getDepartment() {

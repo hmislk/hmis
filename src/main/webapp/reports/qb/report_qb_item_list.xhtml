@@ -10,19 +10,19 @@
     <ui:define name="subcontent">
 
         <h:form id="panelPrint">
-   
-            
+
+
             <h:panelGrid layout="tabular" columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                 <h:panelGroup layout="block" styleClass="form-group">
                     <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                     <h:outputLabel value="From" for="fromDate" class="mx-3"/>
                 </h:panelGroup>
-                <p:calendar 
-                    styleClass="w-100" 
-                    inputStyleClass="w-100 form-control" 
-                    id="fromDate" 
-                    value="#{quickBookReportController.fromDate}" 
-                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                <p:calendar
+                    styleClass="w-100"
+                    inputStyleClass="w-100 form-control"
+                    id="fromDate"
+                    value="#{quickBookReportController.fromDate}"
+                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     />
 
                 <p:spacer width="50" ></p:spacer>
@@ -31,13 +31,13 @@
                     <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
                     <h:outputLabel value="To" for="toDate" class="mx-3"/>
                 </h:panelGroup>
-                <p:calendar 
-                    styleClass="w-100" 
-                    inputStyleClass="w-100 form-control" 
-                    id="toDate" 
-                    value="#{quickBookReportController.toDate}" 
-                    navigator="false" 
-                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                <p:calendar
+                    styleClass="w-100"
+                    inputStyleClass="w-100 form-control"
+                    id="toDate"
+                    value="#{quickBookReportController.toDate}"
+                    navigator="false"
+                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                     />
 
                 <p:spacer width="50" ></p:spacer>
@@ -51,8 +51,8 @@
                 </h:panelGroup>
                 <p:selectOneMenu
                     id="cmbIns"
-                    styleClass="w-100 form-control" 
-                    value="#{quickBookReportController.institution}" 
+                    styleClass="w-100 form-control"
+                    value="#{quickBookReportController.institution}"
                     filter="true">
                     <f:selectItem itemLabel="All Institutions" />
                     <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -69,8 +69,8 @@
                 </h:panelGroup>
                 <p:selectOneMenu
                     id="siteMenu"
-                    styleClass="w-100 form-control"  
-                    value="#{searchController.site}" 
+                    styleClass="w-100 form-control"
+                    value="#{searchController.site}"
                     filter="true">
                     <f:selectItem itemLabel="All Sites" />
                     <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -86,8 +86,8 @@
                 </h:panelGroup>
                 <p:selectOneMenu
                     id="cmbDept"
-                    styleClass="w-100 form-control"  
-                    value="#{searchController.department}" 
+                    styleClass="w-100 form-control"
+                    value="#{searchController.department}"
                     filter="true">
                     <f:selectItem itemLabel="All Departments" />
                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
@@ -137,12 +137,12 @@
                             <p:column headerText="ACCNT" />
                             <p:column headerText="ItemFullName" />
                         </p:row>
-                    </p:columnGroup> 
+                    </p:columnGroup>
                     <p:column>
                         <p:outputLabel value="INVITEM" />
                     </p:column>
                     <p:column >
-                        <p:outputLabel value="#{i.category}:#{i.transName}"  style="#{commonController.dateBeforeThreeMonthsCurrentDateTime lt i.createdAt ?'color: red;':''}" />
+                        <p:outputLabel value="#{i.category}:#{i.transName}"  style="#{commonFunctionsProxy.dateBeforeThreeMonthsCurrentDateTime lt i.createdAt ?'color: red;':''}" />
                     </p:column>
                     <p:column>
                         <p:outputLabel value="" />
@@ -160,7 +160,7 @@
                         <p:outputLabel value="#{i.category.description}" />
                     </p:column>
                     <p:column >
-                        <p:outputLabel value="#{i.category}:#{i.name}"  style="#{commonController.dateBeforeThreeMonthsCurrentDateTime lt i.createdAt ?'color: red;':''}" />
+                        <p:outputLabel value="#{i.category}:#{i.name}"  style="#{commonFunctionsProxy.dateBeforeThreeMonthsCurrentDateTime lt i.createdAt ?'color: red;':''}" />
                     </p:column>
                 </p:dataTable>
             </p:panel>

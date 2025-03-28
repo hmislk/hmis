@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.hr.LeaveType;
@@ -59,11 +58,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
     SessionController sessionController;
     @Inject
     StaffAdditionalFormController staffAdditionalFormController;
-    @Inject
-    CommonController commonController;
 
-    @EJB
-    CommonFunctions commonFunctions;
     List<LeaveForm> leaveForms;
     Staff approvedStaff;
     Staff staff;
@@ -251,7 +246,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         return stf;
 
-        //Need to Add toLogicTo Date  
+        //Need to Add toLogicTo Date
     }
 
     public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType, Date frm) {
@@ -270,7 +265,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         return stf;
 
-        //Need to Add toLogicTo Date  
+        //Need to Add toLogicTo Date
     }
 
     public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType) {
@@ -287,7 +282,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         return stf;
 
-        //Need to Add toLogicTo Date  
+        //Need to Add toLogicTo Date
     }
 
     public void calLeaveCount() {
@@ -424,7 +419,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 }
             }
         }
-        
+
         if (staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate()) != null) {
             StaffSalary s=humanResourceBean.getStaffSalary(currentLeaveForm.getStaff(), staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate()));
             if (s.getId()!=null) {
@@ -449,7 +444,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 return true;
             }
 
-            Long datRang = commonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
+            Long datRang = CommonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
 
 //            if (datRang != 1) {
 //                JsfUtil.addErrorMessage("Date range should be 1");
@@ -629,7 +624,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public void createStaffleaveTable() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -675,8 +670,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("td", toDate);
 
         staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-        
-        
+
+
 
     }
 
@@ -710,7 +705,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 //    }
     public void createStaffleaveTablebyLeaveDate() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -756,8 +751,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("td", toDate);
 
         staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-        
-        
+
+
 
     }
 
@@ -961,14 +956,6 @@ public class StaffLeaveApplicationFormController implements Serializable {
         this.leaveFormFacade = leaveFormFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public Staff getApprovedStaff() {
         return approvedStaff;
     }
@@ -1046,14 +1033,4 @@ public class StaffLeaveApplicationFormController implements Serializable {
     public void setWithOutretRierd(boolean withOutretRierd) {
         this.withOutretRierd = withOutretRierd;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
-    
 }
