@@ -2062,7 +2062,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 false
         );
 
-        Patient pt=null;
+        Patient pt = null;
         if (patientRequiredForPharmacySale) {
             if (getPatient() == null
                     || getPatient().getPerson() == null
@@ -2332,6 +2332,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (getPreBill().getBillItems().isEmpty()) {
             billSettlingStarted = false;
             JsfUtil.addErrorMessage("Please add items to the bill.");
+            return;
+        }
+        if ((getPatient().getMobileNumberStringTransient() == null
+                || getPatient().getMobileNumberStringTransient().trim().isEmpty())
+                && configOptionApplicationController.getBooleanValueByKey("Patient details are required for retail sale")) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Please enter pateint details to the bill.");
             return;
         }
 
