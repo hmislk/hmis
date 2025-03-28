@@ -1,6 +1,5 @@
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
@@ -67,8 +66,6 @@ public class ReorderController implements Serializable {
     ItemController itemController;
     @Inject
     PurchaseOrderRequestController purchaseOrderRequestController;
-    @Inject
-    CommonController commonController;
 
 //    EJBs
     @EJB
@@ -1401,14 +1398,6 @@ public class ReorderController implements Serializable {
             }
         }
 
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

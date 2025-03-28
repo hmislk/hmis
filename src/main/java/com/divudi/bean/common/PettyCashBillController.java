@@ -6,8 +6,6 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Title;
@@ -50,8 +48,6 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class PettyCashBillController implements Serializable {
 
-    @Inject
-    CommonController commonController;
     @Inject
     BillController billController;
     @Inject
@@ -342,7 +338,7 @@ public class PettyCashBillController implements Serializable {
             JsfUtil.addErrorMessage(massage);
             return "";
         }
-        
+
         if (maximumRefundedAmount > 0.0) {
             System.out.println("current = " + current);
             if (getCurrent() != null && getCurrent().getId() != null && getCurrent().getId() != 0) {
@@ -602,14 +598,6 @@ public class PettyCashBillController implements Serializable {
 
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public double getReturnAmount() {

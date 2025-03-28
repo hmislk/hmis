@@ -8,7 +8,6 @@ package com.divudi.ws.channel;
 import com.divudi.bean.channel.AgentReferenceBookController;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConsultantController;
 import com.divudi.data.BillClassType;
@@ -141,8 +140,6 @@ public class ChannelApi {
 
     @Inject
     private BillBeanController billBeanController;
-    @Inject
-    private CommonController commonController;
     @Inject
     AgentReferenceBookController AgentReferenceBookController;
     @Inject
@@ -3914,14 +3911,6 @@ public class ChannelApi {
 
     public void setBillBeanController(BillBeanController billBeanController) {
         this.billBeanController = billBeanController;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public AgentReferenceBookController getAgentReferenceBookController() {

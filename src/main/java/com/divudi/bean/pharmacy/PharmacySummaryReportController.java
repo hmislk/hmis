@@ -106,8 +106,6 @@ public class PharmacySummaryReportController implements Serializable {
     @Inject
     private TransferController transferController;
     @Inject
-    private CommonController commonController;
-    @Inject
     private PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     private WebUserController webUserController;
@@ -660,20 +658,6 @@ public class PharmacySummaryReportController implements Serializable {
      */
     public void setTransferController(TransferController transferController) {
         this.transferController = transferController;
-    }
-
-    /**
-     * @return the commonController
-     */
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    /**
-     * @param commonController the commonController to set
-     */
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     /**

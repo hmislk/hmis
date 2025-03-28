@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
@@ -43,18 +42,15 @@ public class InstitutionLabSumeryController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    
-    @Inject
-     private CommonController commonController;       
-    
+
     String txtSearch;
-    
+
     Date fromDate;
     Date toDate;
-    
-  
+
+
     CommonFunctions commonFunctions;
-    
+
     List<Bill> labBills;
     List<Bill> billedBills;
     List<Bill> billBills;
@@ -92,12 +88,12 @@ public class InstitutionLabSumeryController implements Serializable {
 
     List<PatientInvestigation> searchedPatientInvestigations;
 
-    
-    
+
+
     public void createDailyFeeTypeSummery(){
-        
+
     }
-    
+
     public List<PatientInvestigation> getSearchedPatientInvestigations() {
         return searchedPatientInvestigations;
     }
@@ -583,7 +579,7 @@ public class InstitutionLabSumeryController implements Serializable {
 
     public void createTableCashCreditBills() {
         Date startTime = new Date();
-        
+
         if (paymentMethod == null) {
             JsfUtil.addErrorMessage("Payment Methord...!");
             return;
@@ -603,8 +599,8 @@ public class InstitutionLabSumeryController implements Serializable {
         ////// // System.out.println("canBills = " + canBills);
         ////// // System.out.println("refBills = " + refBills);
 
-        
-        
+
+
     }
 
     public PaymentMethod[] getPaymentMethord() {
@@ -890,8 +886,8 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("toIns", getInstitution());
 
         labBilleds = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
-        
-        
+
+
 
     }
 
@@ -902,7 +898,7 @@ public class InstitutionLabSumeryController implements Serializable {
 //            bhtTotal += billsOwn.get;
 //        }
 //        return bhtTotal;
-//    } 
+//    }
     public List<Bill> getLabBilleds() {
         return labBilleds;
     }
@@ -929,8 +925,8 @@ public class InstitutionLabSumeryController implements Serializable {
 //        String sql;
 //        Map tm;
 //
-//        
-//        
+//
+//
 //        sql = "select f from Bill f where "
 //                + " f.retired=false "
 //                + " and f.billType = :billType"
@@ -977,7 +973,7 @@ public class InstitutionLabSumeryController implements Serializable {
                 + " and f.institution=:ins "
                 + " and f.toInstitution=:toIns "
                 + " and f.createdAt  between :fromDate and :toDate";
-                
+
 
         tm = new HashMap();
         tm.put("fromDate", fromDate);
@@ -1012,8 +1008,8 @@ public class InstitutionLabSumeryController implements Serializable {
         }
 
         setString1Value1Table();
-        
-        
+
+
 
     }
 
@@ -1459,14 +1455,6 @@ public class InstitutionLabSumeryController implements Serializable {
 
     public void setBilledBills(List<Bill> billedBills) {
         this.billedBills = billedBills;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

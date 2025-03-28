@@ -5,7 +5,6 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.AuditEventApplicationController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 
@@ -69,8 +68,6 @@ public class CashierReportController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    private CommonController commonController;
 
     private CommonFunctions commonFunction;
     @EJB
@@ -131,7 +128,7 @@ public class CashierReportController implements Serializable {
     }
 
 
-  
+
     public void init() {
         // Set the current cashier to the logged-in user
         currentCashier = sessionController.getLoggedUser();
@@ -2877,14 +2874,6 @@ public class CashierReportController implements Serializable {
 
     public void setToReciptNo(String toReciptNo) {
         this.toReciptNo = toReciptNo;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public String getHeader() {

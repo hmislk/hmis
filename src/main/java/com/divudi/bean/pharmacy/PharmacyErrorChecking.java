@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillType;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyErrorCheckingEjb;
@@ -39,8 +38,6 @@ public class PharmacyErrorChecking implements Serializable {
     @EJB
     PharmacyErrorCheckingEjb ejb;
 
-    @Inject
-    CommonController commonController;
     @Inject
     StockHistoryController stockHistoryController;
 
@@ -501,14 +498,6 @@ public class PharmacyErrorChecking implements Serializable {
 
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<StockHistory> getStockHistories() {

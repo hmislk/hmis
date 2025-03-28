@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.util.JsfUtil;
@@ -72,8 +71,6 @@ public class SalaryCycleController implements Serializable {
     @Inject
     StaffSalaryController staffSalaryController;
     @Inject
-    CommonController commonController;
-    @Inject
     HrReportController hrReportController;
     List<SalaryCycle> salaryCycles;
     List<String> headersAdd;
@@ -135,7 +132,7 @@ public class SalaryCycleController implements Serializable {
                 + " order by c.id desc";
         salaryCycles = getFacade().findByJpql(sql);
 
-        
+
     }
 
     double brVal = 0.0;
@@ -253,7 +250,7 @@ public class SalaryCycleController implements Serializable {
             return true;
         }
 
-        //Check Salry Date        
+        //Check Salry Date
         if (humanResourceBean.checkSalaryCycleDate(current, DateType.SalaryDate, current.getSalaryFromDate(), current.getSalaryToDate())) {
             JsfUtil.addErrorMessage("Salary Date Already Exist");
             return true;
@@ -641,7 +638,7 @@ public class SalaryCycleController implements Serializable {
 //
 //        for (Staff s : staffes) {
 //            StaffAndSalarySalaryComponent sc = new StaffAndSalarySalaryComponent();
-//            sc.setStaff(s);          
+//            sc.setStaff(s);
 //            for (PaysheetComponent psc : paysheetComponents) {
 //                jpql = "select spc from StaffSalaryComponant spc "
 //                        + " where spc.staffSalary.staff=:st"
@@ -806,7 +803,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(false);
 
-        
+
     }
 
     public void fillStaffPayRollNew() {
@@ -816,7 +813,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollNew(false);
 
-        
+
     }
 
     public void fillStaffPayRollSelectedStaff() {
@@ -826,7 +823,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(false, staffController.getSelectedList());
 
-        
+
     }
 
     public void fillStaffPayRollDepartmentWise() {
@@ -840,7 +837,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollRos(false, fetchSalaryRosters());
 
-        
+
     }
 
     public void fillStaffPayRollBlocked() {
@@ -850,7 +847,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(true);
 
-        
+
     }
 
     public void fillStaffPayRollBlockedNew() {
@@ -860,7 +857,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollNew(true);
 
-        
+
     }
 
     public void fillStaffPayRollBlockedSelectedStaff() {
@@ -870,7 +867,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(true, staffController.getSelectedList());
 
-        
+
     }
 
     public void fillStaffPayRollBlockedDepartmentWise() {
@@ -884,7 +881,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollRos(true, fetchSalaryRosters());
 
-        
+
     }
 
     public void fillStaffPayRoll(boolean blocked) {
@@ -1728,7 +1725,7 @@ public class SalaryCycleController implements Serializable {
         staffSalary = staffSalaryFacade.findByJpql(jpql, m);
         allStaffSalaryTotal(staffSalary);
 
-        
+
     }
 
     public List<Department> fetchSalaryDepartment() {
@@ -1989,7 +1986,7 @@ public class SalaryCycleController implements Serializable {
         }
         allStaffSalaryByDepartmentTotal(salaryByDepartments);
 
-        
+
     }
 
     public Object[] fillStaffSalaryByDepartment(Department d) {
@@ -2440,7 +2437,7 @@ public class SalaryCycleController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             SalaryCycleController controller = (SalaryCycleController) facesContext.getApplication().getELResolver().
@@ -2453,7 +2450,7 @@ public class SalaryCycleController implements Serializable {
             try {
                 key = Long.valueOf(value);
             } catch (NumberFormatException exception) {
-                key = 0l;
+                key = 0L;
             }
             return key;
         }
@@ -2478,14 +2475,4 @@ public class SalaryCycleController implements Serializable {
             }
         }
     }
-
-   
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }
