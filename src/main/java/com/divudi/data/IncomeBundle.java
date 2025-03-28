@@ -479,6 +479,236 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
 
+    public void generatePaymentDetailsForBillsAndBatchBillsByDate() {
+        if (getRows() == null || getRows().isEmpty()) {
+            return;
+        }
+
+        // This map will accumulate totals keyed by the date portion of bill.getCreatedAt().
+        Map<Date, IncomeRow> dailySummaries = new HashMap<>();
+
+        for (IncomeRow originalRow : getRows()) {
+            Bill bill = originalRow.getBill();
+            if (bill == null) {
+                continue;
+            }
+
+            // Extract only the date portion from bill.getCreatedAt().
+            // Adjust as needed if you use LocalDate or a different date-handling approach.
+            Date billDate = truncateToDateOnly(bill.getCreatedAt());
+
+            // Fetch or create the summary row for this date.
+            IncomeRow dailyRow = dailySummaries.get(billDate);
+            if (dailyRow == null) {
+                dailyRow = new IncomeRow();
+                dailyRow.setDate(billDate);
+                // If your IncomeRow has a date property, set it here.
+                // dailyRow.setSomeDateField(billDate);
+                dailySummaries.put(billDate, dailyRow);
+            }
+
+            // Calculate main totals (gross, net, discount, etc.).
+            dailyRow.setGrossTotal(dailyRow.getGrossTotal() + bill.getTotal());
+            dailyRow.setNetTotal(dailyRow.getNetTotal() + bill.getNetTotal());
+            dailyRow.setDiscount(dailyRow.getDiscount() + bill.getDiscount());
+            dailyRow.setServiceCharge(dailyRow.getServiceCharge() + bill.getMargin());
+            dailyRow.setActualTotal(dailyRow.getActualTotal() + (bill.getTotal() - bill.getServiceCharge()));
+
+            // Determine the payment method to guide how values are added.
+            PaymentMethod pm = originalRow.getBatchBill() != null
+                    ? originalRow.getBatchBill().getPaymentMethod()
+                    : bill.getPaymentMethod();
+
+            if (pm == null) {
+                // Credit-like scenario with no explicit payment method.
+                dailyRow.setCreditValue(dailyRow.getCreditValue() + bill.getNetTotal());
+                if (bill.getPatientEncounter() != null) {
+                    dailyRow.setInpatientCreditValue(dailyRow.getInpatientCreditValue() + bill.getNetTotal());
+                } else {
+                    // Depending on your domain, decide how to handle OPD vs. None here.
+                    dailyRow.setNoneValue(dailyRow.getNoneValue() + bill.getNetTotal());
+                }
+            } else {
+                switch (pm) {
+                    case Agent:
+                        dailyRow.setAgentValue(dailyRow.getAgentValue() + bill.getNetTotal());
+                        break;
+                    case Card:
+                        dailyRow.setCardValue(dailyRow.getCardValue() + bill.getNetTotal());
+                        break;
+                    case Cash:
+                        dailyRow.setCashValue(dailyRow.getCashValue() + bill.getNetTotal());
+                        break;
+                    case Cheque:
+                        dailyRow.setChequeValue(dailyRow.getChequeValue() + bill.getNetTotal());
+                        break;
+                    case IOU:
+                        dailyRow.setIouValue(dailyRow.getIouValue() + bill.getNetTotal());
+                        break;
+                    case OnCall:
+                        dailyRow.setOnCallValue(dailyRow.getOnCallValue() + bill.getNetTotal());
+                        break;
+                    case Credit:
+                        dailyRow.setCreditValue(dailyRow.getCreditValue() + bill.getNetTotal());
+                        if (bill.getPatientEncounter() != null) {
+                            dailyRow.setInpatientCreditValue(dailyRow.getInpatientCreditValue() + bill.getNetTotal());
+                        } else {
+                            dailyRow.setOpdCreditValue(dailyRow.getOpdCreditValue() + bill.getNetTotal());
+                        }
+                        break;
+                    case MultiplePaymentMethods:
+                        // For multiple payment methods, handle ratio allocation:
+                        // Summation by date happens inside the helper method.
+                        calculateBillAndBatchBillPaymentValuesFromPaymentsByDate(originalRow, dailyRow);
+                        break;
+                    case OnlineSettlement:
+                        dailyRow.setOnlineSettlementValue(dailyRow.getOnlineSettlementValue() + bill.getNetTotal());
+                        break;
+                    case PatientDeposit:
+                        dailyRow.setPatientDepositValue(dailyRow.getPatientDepositValue() + bill.getNetTotal());
+                        break;
+                    case PatientPoints:
+                        dailyRow.setPatientPointsValue(dailyRow.getPatientPointsValue() + bill.getNetTotal());
+                        break;
+                    case Slip:
+                        dailyRow.setSlipValue(dailyRow.getSlipValue() + bill.getNetTotal());
+                        break;
+                    case Staff:
+                        dailyRow.setStaffValue(dailyRow.getStaffValue() + bill.getNetTotal());
+                        break;
+                    case Staff_Welfare:
+                        dailyRow.setStaffWelfareValue(dailyRow.getStaffWelfareValue() + bill.getNetTotal());
+                        break;
+                    case Voucher:
+                        dailyRow.setVoucherValue(dailyRow.getVoucherValue() + bill.getNetTotal());
+                        break;
+                    case ewallet:
+                        dailyRow.setEwalletValue(dailyRow.getEwalletValue() + bill.getNetTotal());
+                        break;
+                    default:
+                        // YouOweMe, None, etc. fall back to None usage.
+                        dailyRow.setNoneValue(dailyRow.getNoneValue() + bill.getNetTotal());
+                }
+            }
+        }
+
+        // Replace the original rows with our date-based summaries.
+        List<IncomeRow> summarizedRows = new ArrayList<>(dailySummaries.values());
+        summarizedRows.sort(Comparator.comparing(IncomeRow::getDate));
+
+        setRows(summarizedRows);
+        // If you need additional overall calculations across all dates:
+        populateSummaryRow();
+    }
+
+    /**
+     * Helper method to allocate multiple-payment totals into the daily summary
+     * row.
+     */
+    private void calculateBillAndBatchBillPaymentValuesFromPaymentsByDate(IncomeRow originalRow, IncomeRow dailyRow) {
+        Bill batchBill = originalRow.getBatchBill();
+        Bill individualBill = originalRow.getBill();
+        if (individualBill == null
+                || individualBill.getPaymentMethod() == null
+                || individualBill.getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
+            return;
+        }
+
+        // Ratio for distributing from the batch bill to the individual bill.
+        double netTotalOfBatchBill = batchBill != null ? batchBill.getNetTotal() : 0.0;
+        double netTotalOfIndividualBill = individualBill.getNetTotal();
+        double ratio = (batchBill != null && netTotalOfBatchBill != 0.0)
+                ? (netTotalOfIndividualBill / netTotalOfBatchBill)
+                : 1.0;
+
+        List<Payment> payments = originalRow.getPayments();
+        if (payments == null || payments.isEmpty()) {
+            return;
+        }
+
+        for (Payment p : payments) {
+            double allocatedValue = p.getPaidValue() * ratio;
+            PaymentMethod pm = p.getPaymentMethod();
+
+            if (pm == null) {
+                dailyRow.setNoneValue(dailyRow.getNoneValue() + allocatedValue);
+            } else {
+                switch (pm) {
+                    case Agent:
+                        dailyRow.setAgentValue(dailyRow.getAgentValue() + allocatedValue);
+                        break;
+                    case Card:
+                        dailyRow.setCardValue(dailyRow.getCardValue() + allocatedValue);
+                        break;
+                    case Cash:
+                        dailyRow.setCashValue(dailyRow.getCashValue() + allocatedValue);
+                        break;
+                    case Cheque:
+                        dailyRow.setChequeValue(dailyRow.getChequeValue() + allocatedValue);
+                        break;
+                    case Credit:
+                        dailyRow.setCreditValue(dailyRow.getCreditValue() + allocatedValue);
+                        if (individualBill.getPatientEncounter() != null) {
+                            dailyRow.setInpatientCreditValue(dailyRow.getInpatientCreditValue() + allocatedValue);
+                        } else {
+                            dailyRow.setOpdCreditValue(dailyRow.getOpdCreditValue() + allocatedValue);
+                        }
+                        break;
+                    case IOU:
+                        dailyRow.setIouValue(dailyRow.getIouValue() + allocatedValue);
+                        break;
+                    case OnCall:
+                        dailyRow.setOnCallValue(dailyRow.getOnCallValue() + allocatedValue);
+                        break;
+                    case OnlineSettlement:
+                        dailyRow.setOnlineSettlementValue(dailyRow.getOnlineSettlementValue() + allocatedValue);
+                        break;
+                    case PatientDeposit:
+                        dailyRow.setPatientDepositValue(dailyRow.getPatientDepositValue() + allocatedValue);
+                        break;
+                    case PatientPoints:
+                        dailyRow.setPatientPointsValue(dailyRow.getPatientPointsValue() + allocatedValue);
+                        break;
+                    case Slip:
+                        dailyRow.setSlipValue(dailyRow.getSlipValue() + allocatedValue);
+                        break;
+                    case Staff:
+                        dailyRow.setStaffValue(dailyRow.getStaffValue() + allocatedValue);
+                        break;
+                    case Staff_Welfare:
+                        dailyRow.setStaffWelfareValue(dailyRow.getStaffWelfareValue() + allocatedValue);
+                        break;
+                    case Voucher:
+                        dailyRow.setVoucherValue(dailyRow.getVoucherValue() + allocatedValue);
+                        break;
+                    case ewallet:
+                        dailyRow.setEwalletValue(dailyRow.getEwalletValue() + allocatedValue);
+                        break;
+                    default:
+                        // YouOweMe, None, MultiplePaymentMethods (again), etc.
+                        dailyRow.setNoneValue(dailyRow.getNoneValue() + allocatedValue);
+                }
+            }
+        }
+    }
+
+    /**
+     * Example utility to truncate a Date to just its date part. Adjust the
+     * implementation if you use LocalDate or other date classes.
+     */
+    private Date truncateToDateOnly(Date date) {
+        if (date == null) {
+            return null;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
     private void calculateBillPaymentValuesFromPayments(IncomeRow r) {
         if (r == null || r.getBill() == null || r.getBill().getPaymentMethod() == null
                 || r.getBill().getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {

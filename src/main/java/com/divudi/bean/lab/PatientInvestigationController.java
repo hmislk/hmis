@@ -1,12 +1,6 @@
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.ItemController;
-import com.divudi.bean.common.ItemForItemController;
-import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.SmsController;
+import com.divudi.bean.common.*;
 
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.InvestigationItemType;
@@ -20,6 +14,7 @@ import com.divudi.data.lab.SysMexOld;
 import com.divudi.data.lab.SysMexAdf1;
 import com.divudi.data.lab.SysMexAdf2;
 
+import com.divudi.data.reports.LaboratoryReport;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -272,6 +267,7 @@ public class PatientInvestigationController implements Serializable {
     public void increment() {
         number++;
     }
+    private ReportTimerController reportTimerController;
 
     public String sampleComponentNames(PatientSample ps) {
         List<PatientSampleComponant> pscList = getPatientSampleComponentsByPatientSample(ps);
@@ -2977,6 +2973,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void listBillItemsForCcs() {
+        reportTimerController.trackReportExecution(() -> {
         String jpql;
         Map<String, Object> params = new HashMap<>();
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -3126,6 +3123,7 @@ public class PatientInvestigationController implements Serializable {
                 netTotal += billItem.getNetValue();
             }
         }
+        }, LaboratoryReport.INVESTIGATION_MONTH_END_SUMMARY, sessionController.getLoggedUser());
     }
 
     public void listBillItemsForLabs() {

@@ -1,7 +1,8 @@
 package com.divudi.data.reports;
 
 public enum LaboratoryReport implements IReportType {
-    SAMPLE_CARRIER_REPORT("Sample Carrier Report");
+    SAMPLE_CARRIER_REPORT("Sample Carrier Report"),
+    INVESTIGATION_MONTH_END_SUMMARY("Investigation Month End Summary");
 
     private final String displayName;
 
