@@ -331,8 +331,7 @@ public class PharmacyBean {
                 + " and s.staff=:stf";
         hm.put("batch", batch);
         hm.put("stf", staff);
-        double vl = getStockFacade().findAggregateDbl(sql);
-        return vl;
+        return getStockFacade().findAggregateDbl(sql);
     }
 
     public double getStockQty(ItemBatch batch, Institution institution) {
@@ -1161,7 +1160,7 @@ public class PharmacyBean {
     }
 
     public PharmaceuticalItemCategory getPharmaceuticalCategoryByName(String name, boolean createNew) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         }
         name = name.trim();
@@ -1181,7 +1180,7 @@ public class PharmacyBean {
             return null;
         }
 
-        if (cat == null && createNew == true) {
+        if (cat == null && createNew) {
             cat = new PharmaceuticalItemCategory();
             cat.setRetired(false);
             cat.setName(name);
@@ -1202,7 +1201,7 @@ public class PharmacyBean {
     PharmaceuticalItemTypeFacade pharmaceuticalItemTypeFacade;
 
     public PharmaceuticalItemType getPharmaceuticalItemTypeByName(String name, boolean createNew) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         }
         name = name.trim();
@@ -1217,7 +1216,7 @@ public class PharmacyBean {
             return null;
         }
 
-        if (cat == null && createNew == true) {
+        if (cat == null && createNew) {
             cat = new PharmaceuticalItemType();
             cat.setName(name);
             pharmaceuticalItemTypeFacade.create(cat);
@@ -1234,13 +1233,13 @@ public class PharmacyBean {
     }
 
     public StoreItemCategory getStoreItemCategoryByName(String name, boolean createNew) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         }
         name = name.trim();
         StoreItemCategory cat;
         cat = getStoreItemCategoryFacade().findFirstByJpql("SELECT c FROM StoreItemCategory c Where (c.name) = '" + name.toUpperCase() + "' ");
-        if (cat == null && createNew == true) {
+        if (cat == null && createNew) {
             cat = new StoreItemCategory();
             cat.setName(name);
             getStoreItemCategoryFacade().create(cat);
@@ -1261,7 +1260,7 @@ public class PharmacyBean {
     }
 
     public MeasurementUnit getUnitByName(String name, boolean createNew) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         }
         MeasurementUnit m;
@@ -1271,7 +1270,7 @@ public class PharmacyBean {
         sql = "SELECT c FROM MeasurementUnit c Where (c.name) =:n ";
         map.put("n", name.toUpperCase());
         m = getMeasurementUnitFacade().findFirstByJpql(sql, map);
-        if (m == null && createNew == true) {
+        if (m == null && createNew) {
             m = new MeasurementUnit();
             m.setName(name);
             getMeasurementUnitFacade().create(m);
@@ -1342,7 +1341,7 @@ public class PharmacyBean {
             vmpp.setName(vmp.getName() + " " + vmp.getCategory().getName() + " (" + issueUnitsPerPack + " " + packUnit.getName() + ")");
             vmpp.setPackUnit(packUnit);
             vmpp.setCreatedAt(Calendar.getInstance().getTime());
-            vmpp.setDblValue((double) issueUnitsPerPack);
+            vmpp.setDblValue(issueUnitsPerPack);
             getVmppFacade().create(vmpp);
         } else {
             vmpp.setRetired(false);
@@ -1369,7 +1368,7 @@ public class PharmacyBean {
             ampp = new Ampp();
             ampp.setAmp(amp);
             ampp.setName(amp.getName() + " " + issueUnitsPerPack + amp.getMeasurementUnit() + unit.getName());
-            ampp.setDblValue((double) issueUnitsPerPack);
+            ampp.setDblValue(issueUnitsPerPack);
             ampp.setMeasurementUnit(unit);
             ampp.setVmpp(vmpp);
             getAmppFacade().create(ampp);
@@ -1424,7 +1423,7 @@ public class PharmacyBean {
     }
 
     public Vtm getVtmByName(String name, boolean createNew) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         }
         name = name.trim();

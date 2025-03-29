@@ -367,7 +367,7 @@ public class BillEjb implements Serializable {
                 r.setSaleValueTotal(r.getSaleValueTotal() + b.getSaleValue());
             }
         } else {
-            r.setBills(new ArrayList<Bill>());
+            r.setBills(new ArrayList<>());
             r.setDiscount(null);
             r.setNetTotal(null);
             r.setGrossTotal(null);

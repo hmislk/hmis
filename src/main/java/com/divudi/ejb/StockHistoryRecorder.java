@@ -24,7 +24,6 @@ import com.divudi.core.facade.FingerPrintRecordFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemFeeFacade;
 import com.divudi.core.facade.PharmaceuticalItemFacade;
-import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
@@ -63,18 +62,9 @@ public class StockHistoryRecorder {
     @EJB
     ItemFeeFacade itemFeeFacade;
     @EJB
-    ServiceSessionFacade serviceSessionFacade;
-    @EJB
-    ChannelBean channelBean;
-    @EJB
     StaffFacade staffFacade;
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
-    @EJB
-    FinalVariables finalVariables;
-
-
-    CommonFunctions commonFunctions;
 
 //    @SuppressWarnings("unused")
 //    @Schedule(minute = "1", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "1", persistent = false)
@@ -256,7 +246,7 @@ public class StockHistoryRecorder {
                 + " fc.retired=false "
                 + " and fc.validFrom=:ed "
                 + " and fc.done!=true ";
-        m.put("ed", getCommonFunctions().getEndOfDay(new Date()));
+        m.put("ed", CommonFunctions.getEndOfDay(new Date()));
         List<FeeChange> changes = getFeeChangeFacade().findByJpql(sql, m, TemporalType.DATE);
         return changes;
     }
@@ -344,14 +334,6 @@ public class StockHistoryRecorder {
 
     public void setFeeChangeFacade(FeeChangeFacade feeChangeFacade) {
         this.feeChangeFacade = feeChangeFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public ItemFeeFacade getItemFeeFacade() {
