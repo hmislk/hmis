@@ -7541,14 +7541,36 @@ public class SearchController implements Serializable {
                 + " and token.tokenAt between :fromDate and :toDate "
                 + " and token.retired = false "
                 + " and token.department = :dept "
-                + " and token.institution = :ins "
-                + " order by token.tokenAt desc";
+                + " and token.institution = :ins ";
+                
 //
         parameters.put("type", TokenType.PHARMACY_TOKEN);
         parameters.put("fromDate", getFromDate());
         parameters.put("toDate", getToDate());
         parameters.put("dept", sessionController.getDepartment());
         parameters.put("ins", sessionController.getInstitution());
+        
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((token.bill.patient.person.name) like :patientName )";
+            parameters.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((token.bill.deptId) like :billNo )";
+            parameters.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((token.bill.netTotal) like :netTotal )";
+            parameters.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((token.bill.total) like :total )";
+            parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+        
+        sql += " order by token.tokenAt desc";
 
         List<Token> tokenList = tokenFacade.findByJpqlWithoutCache(sql, parameters, TemporalType.TIMESTAMP, 25);
         bills = tokenList.stream().map(t ->  t.getBill()).collect(Collectors.toList());
