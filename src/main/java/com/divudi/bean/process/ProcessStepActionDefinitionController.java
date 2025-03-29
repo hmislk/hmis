@@ -1,10 +1,10 @@
 package com.divudi.bean.process;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.process.ProcessDefinition;
-import com.divudi.entity.process.ProcessStepActionDefinition;
-import com.divudi.entity.process.ProcessStepDefinition;
-import com.divudi.facade.ProcessStepActionDefinitionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.process.ProcessDefinition;
+import com.divudi.core.entity.process.ProcessStepActionDefinition;
+import com.divudi.core.entity.process.ProcessStepDefinition;
+import com.divudi.core.facade.ProcessStepActionDefinitionFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -16,7 +16,6 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**

@@ -4,22 +4,22 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.DealerDueDetailRow;
-import com.divudi.data.dataStructure.InstitutionBills;
-import com.divudi.data.dataStructure.InstitutionEncounters;
-import com.divudi.data.table.String1Value5;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.DealerDueDetailRow;
+import com.divudi.core.data.dataStructure.InstitutionBills;
+import com.divudi.core.data.dataStructure.InstitutionEncounters;
+import com.divudi.core.data.table.String1Value5;
 
 import com.divudi.ejb.CreditBean;
-import com.divudi.entity.*;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.facade.AdmissionFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.util.CommonFunctions;
 
 import java.io.OutputStream;
 
@@ -28,14 +28,11 @@ import java.util.*;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -69,8 +66,6 @@ public class CreditCompanyDueController implements Serializable {
     private CommonFunctions commonFunctions;
     @EJB
     AdmissionFacade admissionFacade;
-    @Inject
-    CommonController commonController;
 
     double finalTotal;
     double finalPaidTotal;
@@ -81,6 +76,16 @@ public class CreditCompanyDueController implements Serializable {
     private Institution institutionOfDepartment;
     private Department department;
     private Institution site;
+
+    private List<Bill> bills = new ArrayList<>();
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -466,7 +471,7 @@ public class CreditCompanyDueController implements Serializable {
 
             String1Value5 newRow = new String1Value5();
             newRow.setString(ins.getName());
-            setInwardValuesAccess(ins, newRow, PaymentMethod.Credit);
+            setInwardValuesAccessForExcess(ins, newRow, PaymentMethod.Credit);
 
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
@@ -676,12 +681,32 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
+    private void setInwardValuesAccessForExcess(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
+        List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, false, paymentMethod);
+        for (PatientEncounter b : lst) {
+
+            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+
+            double finalValue = (Math.abs(b.getFinalBill().getNetTotal()) - Math.abs(b.getFinalBill().getPaidAmount()));
+
+            if (dayCount < 30) {
+                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+            } else if (dayCount < 60) {
+                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+            } else if (dayCount < 90) {
+                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+            } else {
+                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+            }
+        }
+    }
+
     public CreditCompanyDueController() {
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1156,21 +1181,21 @@ public class CreditCompanyDueController implements Serializable {
             for (PatientEncounter b : lst) {
 //                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
-                b.getFinalBill().setNetTotal(com.divudi.java.CommonFunctions.round(b.getFinalBill().getNetTotal()));
+                b.getFinalBill().setNetTotal(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
                 b.setCreditPaidAmount(Math.abs(b.getCreditPaidAmount()));
-                b.setCreditPaidAmount(com.divudi.java.CommonFunctions.round(b.getCreditPaidAmount()));
-                b.getFinalBill().setPaidAmount(com.divudi.java.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
+                b.setCreditPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getCreditPaidAmount()));
+                b.getFinalBill().setPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
                 b.setTransPaid(b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
                 //// // System.out.println("b.getTransPaid() = " + b.getTransPaid());
-                b.setTransPaid(com.divudi.java.CommonFunctions.round(b.getTransPaid()));
+                b.setTransPaid(com.divudi.core.util.CommonFunctions.round(b.getTransPaid()));
 
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getTransPaid());
 
             }
-            newIns.setTotal(com.divudi.java.CommonFunctions.round(newIns.getTotal()));
-            newIns.setPaidTotal(com.divudi.java.CommonFunctions.round(newIns.getPaidTotal()));
+            newIns.setTotal(com.divudi.core.util.CommonFunctions.round(newIns.getTotal()));
+            newIns.setPaidTotal(com.divudi.core.util.CommonFunctions.round(newIns.getPaidTotal()));
             institutionEncounters.add(newIns);
         }
 
@@ -1193,21 +1218,21 @@ public class CreditCompanyDueController implements Serializable {
             for (PatientEncounter b : lst) {
 //                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
-                b.getFinalBill().setNetTotal(com.divudi.java.CommonFunctions.round(b.getFinalBill().getNetTotal()));
+                b.getFinalBill().setNetTotal(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
                 b.setCreditPaidAmount(Math.abs(b.getCreditPaidAmount()));
-                b.setCreditPaidAmount(com.divudi.java.CommonFunctions.round(b.getCreditPaidAmount()));
-                b.getFinalBill().setPaidAmount(com.divudi.java.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
+                b.setCreditPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getCreditPaidAmount()));
+                b.getFinalBill().setPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
                 b.setTransPaid(b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
                 //// // System.out.println("b.getTransPaid() = " + b.getTransPaid());
-                b.setTransPaid(com.divudi.java.CommonFunctions.round(b.getTransPaid()));
+                b.setTransPaid(com.divudi.core.util.CommonFunctions.round(b.getTransPaid()));
 
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getTransPaid());
 
             }
-            newIns.setTotal(com.divudi.java.CommonFunctions.round(newIns.getTotal()));
-            newIns.setPaidTotal(com.divudi.java.CommonFunctions.round(newIns.getPaidTotal()));
+            newIns.setTotal(com.divudi.core.util.CommonFunctions.round(newIns.getTotal()));
+            newIns.setPaidTotal(com.divudi.core.util.CommonFunctions.round(newIns.getPaidTotal()));
             institutionEncounters.add(newIns);
         }
     }
@@ -1254,6 +1279,39 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             institutionEncounters.add(newIns);
+        }
+    }
+
+    public void createInwardPaymentBills() {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BilledBill b where"
+                + " b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  "
+                + " and (b.forwardReferenceBill.netTotal - b.forwardReferenceBill.paidAmount) < 0";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        if (institutionOfDepartment != null) {
+            temMap.put("ins", institutionOfDepartment);
+            sql += " and b.department.institution = :ins ";
+        }
+
+        sql += " order by b.deptId desc  ";
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+        finalPaidTotal = 0;
+        finalTotal = 0;
+        finalTransPaidTotal = 0;
+
+        for (Bill bill : bills) {
+            finalTransPaidTotal += bill.getForwardReferenceBill().getNetTotal();
+            finalPaidTotal += bill.getForwardReferenceBill().getPaidAmount();
+            finalTotal += bill.getForwardReferenceBill().getNetTotal() - bill.getForwardReferenceBill().getPaidAmount();
         }
     }
 
@@ -1512,14 +1570,6 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setFinalTransPaidTotalPatient(double finalTransPaidTotalPatient) {
         this.finalTransPaidTotalPatient = finalTransPaidTotalPatient;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public int getManageInwardDueAndAccessIndex() {

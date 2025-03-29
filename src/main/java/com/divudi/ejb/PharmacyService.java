@@ -1,15 +1,15 @@
 package com.divudi.ejb;
 
-import com.divudi.data.clinical.ClinicalFindingValueType;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.ClinicalFindingValueFacade;
+import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.ClinicalFindingValueFacade;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

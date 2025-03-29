@@ -8,17 +8,16 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.FingerPrintRecordType;
-import com.divudi.data.hr.Times;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.FingerPrintRecord;
-import com.divudi.facade.FingerPrintRecordFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.hr.DayType;
+import com.divudi.core.data.hr.FingerPrintRecordType;
+import com.divudi.core.data.hr.Times;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.FingerPrintRecord;
+import com.divudi.core.facade.FingerPrintRecordFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,8 +47,6 @@ public class FingerPrintRecordController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @EJB
     private FingerPrintRecordFacade ejbFacade;
     List<FingerPrintRecord> selectedItems;
@@ -63,7 +60,7 @@ public class FingerPrintRecordController implements Serializable {
     Date toDate;
     Staff staff;
     Department department;
-    Institution institution; 
+    Institution institution;
     List<FingerPrintRecord> fingerPrintRecords;
     FingerPrintRecord fingerPrintRecord;
 
@@ -83,12 +80,12 @@ public class FingerPrintRecordController implements Serializable {
             sql += " and (f.staff.workingDepartment=:dep or f.roster.department=:dep) ";
             m.put("dep", department);
         }
-        
+
         if (institution != null) {
             sql += " and (f.staff.workingDepartment.institution=:ins or f.roster.department.institution=:ins) ";
             m.put("ins", institution);
         }
-        
+
         if (staff != null) {
             sql += " and f.staff=:staff ";
             m.put("staff", staff);
@@ -102,18 +99,18 @@ public class FingerPrintRecordController implements Serializable {
 
     public void createFingerPrintRecordTableCreatedAt() {
         Date startTime = new Date();
-        
+
         createFingerPrintRecordTable(true);
-        
-        
+
+
     }
 
     public void createFingerPrintRecordTableSiftDate() {
          Date startTime = new Date();
-        
+
         createFingerPrintRecordTable(false);
-        
-         
+
+
     }
 
     public void viewStaffFinger(FingerPrintRecord fpr) {
@@ -139,9 +136,9 @@ public class FingerPrintRecordController implements Serializable {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
-    
-    
+
+
+
     public void saveStaffFinger(){
         if (fingerPrintRecord!=null) {
             getFacade().create(fingerPrintRecord);
@@ -195,7 +192,7 @@ public class FingerPrintRecordController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public void save(FingerPrintRecord r) {
         if (r.getId() != null) {
             getFacade().edit(r);
@@ -325,7 +322,7 @@ public class FingerPrintRecordController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             FingerPrintRecordController controller = (FingerPrintRecordController) facesContext.getApplication().getELResolver().
@@ -334,20 +331,18 @@ public class FingerPrintRecordController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key = 0l;
+            java.lang.Long key;
             try {
                 key = Long.valueOf(value);
             } catch (NumberFormatException e) {
-                key = 0l;
+                key = 0L;
             }
 
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -364,16 +359,4 @@ public class FingerPrintRecordController implements Serializable {
             }
         }
     }
-
-
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
-    
 }

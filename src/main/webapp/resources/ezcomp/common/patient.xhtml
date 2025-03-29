@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="patient" type="com.divudi.entity.Patient"  />
+        <cc:attribute name="patient" type="com.divudi.core.entity.Patient"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -27,10 +27,10 @@
                         <p:outputLabel value="#{cc.attrs.patient.person.sex}" rendered="#{not empty cc.attrs.patient.person.sex}" style="margin-left: 20px;"/>
 
                         <i class="fa fa-globe fa-fw" style="color: #58e7e9;" title="Status" rendered="#{not empty cc.attrs.patient.person.foreigner}"></i>
-                        <p:badge 
+                        <p:badge
                             style="margin-left: 20px;"
-                            value="#{cc.attrs.patient.person.foreigner eq false or cc.attrs.patient.person.foreigner eq null?'Patient is Local':'Patient is Forigner'}" 
-                            severity="#{cc.attrs.patient.person.foreigner?'warning':'success'}" 
+                            value="#{cc.attrs.patient.person.foreigner eq false or cc.attrs.patient.person.foreigner eq null?'Patient is Local':'Patient is Forigner'}"
+                            severity="#{cc.attrs.patient.person.foreigner?'warning':'success'}"
                             styleClass="mr-2">
                         </p:badge>
 
@@ -51,7 +51,7 @@
                         <i class="fa fa-home fa-fw" style="color: #fd7e14;" title="Address" rendered="#{not empty cc.attrs.patient.person.address}"></i>
                         <p:outputLabel value="#{cc.attrs.patient.person.address}" rendered="#{not empty cc.attrs.patient.person.address}" style="margin-left: 20px;"/>
                         <p:outputLabel value="No Address" rendered="#{ empty cc.attrs.patient.person.address}" style="margin-left: 20px;"/>
-                    </h:panelGrid>   
+                    </h:panelGrid>
                 </div>
 
                 <div class="mx-4" style="margin-left: 20px;box-sizing: border-box;border-left: 2px solid black">

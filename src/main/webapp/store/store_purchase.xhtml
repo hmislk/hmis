@@ -14,10 +14,10 @@
         <h:form id="bill">
             <p:panel rendered="#{!storePurchaseController.printPreview}">
                 <p:growl id="msg"/>
-                <f:facet name="header" > 
-                    <f:facet name="header" > 
+                <f:facet name="header" >
+                    <f:facet name="header" >
                         <h:outputText styleClass="fas fa-shop"/>
-                        <h:outputText  class="mx-4" value="Store Purchase" />  
+                        <h:outputText  class="mx-4" value="Store Purchase" />
                     </f:facet>
 
                 </f:facet>
@@ -31,12 +31,12 @@
                             </f:facet>
                             <h:panelGrid columns="2" class="w-100">
                                 <p:outputLabel value="Select Supplier"/>
-                                <p:autoComplete class=" w-100" inputStyleClass="w-100" converter="deal" value="#{storePurchaseController.bill.fromInstitution}" 
+                                <p:autoComplete class=" w-100" inputStyleClass="w-100" converter="deal" value="#{storePurchaseController.bill.fromInstitution}"
                                                 forceSelection="true"
                                                 completeMethod="#{dealerController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                                 <h:outputLabel value="Purchasing Institution"/>
                                 <p:autoComplete class=" w-100" inputStyleClass="w-100" value="#{storePurchaseController.bill.referenceInstitution}"
-                                                completeMethod="#{institutionController.completeCompany}" 
+                                                completeMethod="#{institutionController.completeCompany}"
                                                 forceSelection="true"
                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
@@ -45,16 +45,16 @@
                     </div>
                     <div class="col-6">
                         <p:panel header="Payment Details">
-                            <f:facet name="header" > 
+                            <f:facet name="header" >
                                 <h:outputText styleClass="fa fa-money-bill-wave"/>
-                                <h:outputText  class="mx-4" value="Payment Details" />  
+                                <h:outputText  class="mx-4" value="Payment Details" />
                             </f:facet>
 
                             <div class="row">
                                 <div class="col-6">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Payment Method"/>
-                                        <p:selectOneMenu class="mx-4"  id="cmbPs" value="#{storePurchaseController.bill.paymentMethod}">       
+                                        <p:selectOneMenu class="mx-4"  id="cmbPs" value="#{storePurchaseController.bill.paymentMethod}">
                                             <f:selectItem itemLabel="Select Payment Method" />
                                             <f:selectItems value="#{enumController.paymentMethodsForPo}" />
                                         </p:selectOneMenu>
@@ -63,7 +63,7 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="d-flex align-items-center justify-content-end">
-                                        <p:commandButton  value="Settle" 
+                                        <p:commandButton  value="Settle"
                                                           action="#{storePurchaseController.settle}"
                                                           class="mx-2 ui-button-success"
                                                           ajax="false"
@@ -85,22 +85,22 @@
 
                 <p:commandButton id="nullButton" value="No Action" action="#" style="display: none;" ></p:commandButton>
 
-                <p:defaultCommand  target="btnAdd" />  
+                <p:defaultCommand  target="btnAdd" />
 
                 <div class="row w-100">
                     <div class="col-12">
                         <p:panel id="itemselectgrid" class="my-1 w-100" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Store Direct Purchase With Last Sale Rate',false)}" header="Add Item">
-                            <f:facet name="header" > 
+                            <f:facet name="header" >
                                 <h:outputText styleClass="fa-solid fa-circle-plus" />
-                                <h:outputText  class="mx-4" value="Add Items" />  
+                                <h:outputText  class="mx-4" value="Add Items" />
                             </f:facet>
                             <p:focus id="focusItem" for="acItem" ></p:focus>
                             <div class="row w-100 d-flex align-items-center">
                                 <div class="col-4">
                                     <h:outputLabel value="Select Item"/><br/>
-                                    <p:autoComplete id="acItem"   value="#{storePurchaseController.currentBillItem.item}" 
+                                    <p:autoComplete id="acItem"   value="#{storePurchaseController.currentBillItem.item}"
                                                     forceSelection="true"
-                                                    completeMethod="#{itemController.completeStoreItem}" 
+                                                    completeMethod="#{itemController.completeStoreItem}"
                                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                         <p:column headerText="Item" >
                                             <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -113,68 +113,68 @@
                                 </div>
                                 <div class="col-1">
                                     <h:outputLabel value="Qty"/><br/>
-                                    <p:inputText  
+                                    <p:inputText
                                         autocomplete="off"
                                         onfocus="this.select()"
-                                        id="txtQty" 
+                                        id="txtQty"
                                         styleClass="numericTxt"
                                         value="#{storePurchaseController.currentBillItem.tmpQty}"
-                                        style="width:100%" />  
+                                        style="width:100%" />
                                 </div>
                                 <div class="col-1">
                                     <h:outputLabel value="Free"/><br/>
-                                    <p:inputText autocomplete="off" 
-                                                 id="txtFreeQty" 
+                                    <p:inputText autocomplete="off"
+                                                 id="txtFreeQty"
                                                  onfocus="this.select()"
-                                                 styleClass="numericTxt" 
-                                                 value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" 
-                                                 style="width:100%" /> 
+                                                 styleClass="numericTxt"
+                                                 value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}"
+                                                 style="width:100%" />
                                 </div>
                                 <div class="col-1">
                                     <h:outputLabel value="Purchase Rate"></h:outputLabel><br/>
-                                    <p:inputText autocomplete="off" 
-                                                 id="txtPrate"  
+                                    <p:inputText autocomplete="off"
+                                                 id="txtPrate"
                                                  onfocus="this.select()"
-                                                 styleClass="numericTxt" 
+                                                 styleClass="numericTxt"
                                                  value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
                                         <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{storePurchaseController.purchaseRateListener(storePurchaseController.currentBillItem.pharmaceuticalBillItem)}"></f:ajax>
                                     </p:inputText>
                                 </div>
                                 <div class="col-1">
                                     <h:outputLabel value="Sale Price"></h:outputLabel>
-                                    <p:inputText autocomplete="off" 
-                                                 id="tmpRetail" 
+                                    <p:inputText autocomplete="off"
+                                                 id="tmpRetail"
                                                  onfocus="this.select()"
-                                                 styleClass="numericTxt" 
+                                                 styleClass="numericTxt"
                                                  value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:inputText>  
+                                    </p:inputText>
                                 </div>
                                 <div class="col-2">
                                     <h:outputLabel value="DOE(DD MM YY)"/>
                                     <p:calendar navigator="true"
                                                 class="my-1"
-                                                inputStyleClass="my-1" 
+                                                inputStyleClass="my-1"
                                                 id="calDoe"
-                                                pattern="dd MM yy" 
+                                                pattern="dd MM yy"
                                                 value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
                                         <f:ajax event="dateSelect" execute="@this tmp" render="tmp" listener="#{storePurchaseController.setBatch()}"/>
-                                    </p:calendar> 
+                                    </p:calendar>
                                 </div>
                                 <div class="col-1">
                                     <h:outputLabel value="Batch No"/>
-                                    <p:inputText autocomplete="off" 
-                                                 styleClass="numericTxt" 
+                                    <p:inputText autocomplete="off"
+                                                 styleClass="numericTxt"
                                                  id="tmp"
-                                                 value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  /> 
+                                                 value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />
                                 </div>
                                 <div class="col-1">
-                                    <p:commandButton 
-                                        id="btnAdd" 
-                                        value="Add" 
+                                    <p:commandButton
+                                        id="btnAdd"
+                                        value="Add"
                                         class="ui-button-success"
                                         icon="fas fa-plus"
-                                        action="#{storePurchaseController.addItem}" 
+                                        action="#{storePurchaseController.addItem}"
 
                                         process="itemselectgrid" update="itemList itemselectgrid :#{p:resolveFirstComponentWithId('tot',view).clientId} focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} msg"/>
 
@@ -185,9 +185,9 @@
                     <div class="my-2" >
                         <p:panel id="PnlAdd" header="Add Item" rendered="#{configOptionApplicationController.getBooleanValueByKey('Store Direct Purchase With Last Sale Rate')}">
                             <h:panelGrid columns="2" style="width: 100%">
-                                <p:autoComplete id="exItem"  value="#{storePurchaseController.currentBillItem.item}" 
+                                <p:autoComplete id="exItem"  value="#{storePurchaseController.currentBillItem.item}"
                                                 forceSelection="true"
-                                                completeMethod="#{itemController.completeStoreItem}" 
+                                                completeMethod="#{itemController.completeStoreItem}"
                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" >
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -208,86 +208,86 @@
                     </div>
                 </div>
 
-                <p:dataTable styleClass="noBorder" var="ph" value="#{storePurchaseController.billItems}" id="itemList" 
-                             rowKey="#{ph.searialNo}">  
-                    <f:facet name="header">  
-                    </f:facet>  
+                <p:dataTable styleClass="noBorder" var="ph" value="#{storePurchaseController.billItems}" id="itemList"
+                             rowKey="#{ph.searialNo}">
+                    <f:facet name="header">
+                    </f:facet>
 
-                    <p:column headerText="Serial No" style="width:30%">  
+                    <p:column headerText="Serial No" style="width:30%">
                         <h:outputLabel id="serialNo" value="#{ph.searialNo}" style="width:100%">
                         </h:outputLabel>
-                    </p:column>  
+                    </p:column>
 
-                    <p:column headerText="Item Name" style="width:30%">  
+                    <p:column headerText="Item Name" style="width:30%">
                         <h:outputLabel id="item" value="#{ph.item.name} - #{ph.item.code}" style="width:100%">
                         </h:outputLabel>
-                    </p:column>  
+                    </p:column>
 
-                    <p:column headerText="Parent Item Name" style="width:30%">  
+                    <p:column headerText="Parent Item Name" style="width:30%">
 
                         <h:outputLabel id="parentitem" value="#{ph.parentBillItem.item.name} - #{ph.parentBillItem.item.code}" style="width:100%">
                         </h:outputLabel>
 
                     </p:column>
 
-                    <!--                    <p:column headerText="Qty" style="width:20%" >                     
+                    <!--                    <p:column headerText="Qty" style="width:20%" >
                                             <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}"  >
                                                 <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:resolveFirstComponentWithId('tot',view).clientId}"
-                                                        execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
+                                                        execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax>
                                             </p:inputText>
-                                        </p:column>  
+                                        </p:column>
                     -->
-                    <p:column headerText="Qty" style="width:8em; padding: 0px;">                     
+                    <p:column headerText="Qty" style="width:8em; padding: 0px;">
                         <p:inputText autocomplete="off" id="qty" onfocus="this.select()" value="#{ph.tmpQty}" style="width: 80px; text-align: right;"  >
                             <f:ajax event="blur" render="item qty freeQty purchase retail total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"
-                                    execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
+                                    execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax>
                         </p:inputText>
-                    </p:column>  
+                    </p:column>
 
-                    <p:column headerText="Free" style="width:20%">       
+                    <p:column headerText="Free" style="width:20%">
                         <p:inputText autocomplete="off" id="freeQty" onfocus="this.select()" value="#{ph.pharmaceuticalBillItem.freeQty}" style="width:100%" >
                             <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:resolveFirstComponentWithId('tot',view).clientId}"
-                                    execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
+                                    execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax>
                         </p:inputText>
-                    </p:column> 
+                    </p:column>
 
-                    <!--                    <p:column headerText="Free" style="width:20%">       
+                    <!--                    <p:column headerText="Free" style="width:20%">
                                             <h:outputLabel id="freeQty" value="#{ph.pharmaceuticalBillItem.freeQty}" style="width:100%" />
-                    
+
                                         </p:column> -->
 
-                    <p:column headerText="P. Rate" style="width:24% ;">                     
+                    <p:column headerText="P. Rate" style="width:24% ;">
                         <p:inputText autocomplete="off" id="purchase" onfocus="this.select()" value="#{ph.pharmaceuticalBillItem.purchaseRate}" style="width: 70px; text-align: right;" >
-                            <f:ajax event="blur" render="profMargin @this retail total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{storePurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
+                            <f:ajax event="blur" render="profMargin @this retail total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{storePurchaseController.onEditPurchaseRate(ph)}" ></f:ajax>
                         </p:inputText>
-                        <p:outputLabel value=" X #{ph.item.dblValue}" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                                                
-                    </p:column>              
+                        <p:outputLabel value=" X #{ph.item.dblValue}" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
+                    </p:column>
 
-                    <!--                    <p:column headerText="P. Rate" style="width:24% ;">                     
+                    <!--                    <p:column headerText="P. Rate" style="width:24% ;">
                                             <h:outputLabel id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}"/>
                                         </p:column>         -->
 
-                    <p:column headerText="S. Rate" style="width:24%">                   
+                    <p:column headerText="S. Rate" style="width:24%">
                         <p:inputText autocomplete="off" id="totalSaleValue" onfocus="this.select()" style="width: 70px; text-align: right;" value="#{ph.pharmaceuticalBillItem.retailRate}"  label="Price">
-                            <f:ajax event="blur" render="profMargin @this total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
+                            <f:ajax event="blur" render="profMargin @this total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax>
                         </p:inputText>
-                        <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                    
-                    </p:column>  
+                        <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
+                    </p:column>
 
 
 
-                    <p:column headerText="Value" style="width:20%;font-weight: bold;">  
-                        <h:outputText id="total" value=" #{ph.pharmaceuticalBillItem.purchaseRate*ph.pharmaceuticalBillItem.qty}" />  
+                    <p:column headerText="Value" style="width:20%;font-weight: bold;">
+                        <h:outputText id="total" value=" #{ph.pharmaceuticalBillItem.purchaseRate*ph.pharmaceuticalBillItem.qty}" />
 
-                    </p:column>  
+                    </p:column>
 
-                    <p:column headerText="Batch" style="width:8em; padding: 0px;">                   
+                    <p:column headerText="Batch" style="width:8em; padding: 0px;">
                         <p:inputText autocomplete="off" id="txtBatch" onfocus="this.select()" value="#{ph.pharmaceuticalBillItem.stringValue}" style="width: 70px; text-align: right;" >
-                            <f:ajax event="blur" render="total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
+                            <f:ajax event="blur" render="total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax>
                         </p:inputText>
-                    </p:column>  
+                    </p:column>
 
-                    <p:column headerText="DOE" style="width:10em; padding: 0px;">                    
+                    <p:column headerText="DOE" style="width:10em; padding: 0px;">
                         <p:calendar  value="#{ph.pharmaceuticalBillItem.doe}" style="width: 5em;" inputStyleClass="w-75"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                             <f:ajax event="dateSelect" execute="@this" render="txtBatch" listener="#{pharmacyPurchaseController.setBatch(ph)}"
                                     />
@@ -298,16 +298,16 @@
                         <p:commandButton process="itemList cmdRemove"  update="itemList" id="cmdRemove" icon="fas fa-trash" class="ui-button-Danger" action="#{storePurchaseController.remove(ph)}">
                         </p:commandButton>
                     </p:column>
-                </p:dataTable> 
+                </p:dataTable>
 
                 <p:panelGrid columns="2">
                     <p:panelGrid columns="2">
                         <p:outputLabel value="Invoice No : "/>
                         <p:inputText autocomplete="off" value="#{storePurchaseController.bill.invoiceNumber}" />
                         <p:outputLabel value="Invoice Date"/>
-                        <p:calendar  value="#{storePurchaseController.bill.invoiceDate}"   navigator="true" pattern="dd/MM/yy hh:mm:ss" /> 
+                        <p:calendar  value="#{storePurchaseController.bill.invoiceDate}"   navigator="true" pattern="dd/MM/yy hh:mm:ss" />
                         <h:outputLabel value="Qutation Number"/>
-                        <p:inputText value="#{storePurchaseController.bill.qutationNumber}"/>                    
+                        <p:inputText value="#{storePurchaseController.bill.qutationNumber}"/>
                     </p:panelGrid>
 
 
@@ -317,21 +317,21 @@
                             <h:outputLabel value="Value"/>
                             <h:outputLabel value="Descreption"/>
                             <h:outputLabel ></h:outputLabel>
-                            <p:autoComplete id="acExpense"   value="#{storePurchaseController.currentExpense.item}" 
+                            <p:autoComplete id="acExpense"   value="#{storePurchaseController.currentExpense.item}"
                                             forceSelection="true"
-                                            completeMethod="#{itemController.completeExpenseItem}" 
+                                            completeMethod="#{itemController.completeExpenseItem}"
                                             var="ex" itemLabel="#{ex.name}" itemValue="#{ex}" >
                             </p:autoComplete>
                             <p:inputText autocomplete="off" id="txtExpense"
                                          onfocus="this.select()"
-                                         styleClass="numericTxt" 
-                                         value="#{storePurchaseController.currentExpense.rate}" style="width:100%" />  
+                                         styleClass="numericTxt"
+                                         value="#{storePurchaseController.currentExpense.rate}" style="width:100%" />
                             <p:inputText maxlength="250" value="#{storePurchaseController.currentExpense.descreption}" ></p:inputText>
-                            <p:commandButton id="btnAddExpense" value="Add Expense" 
+                            <p:commandButton id="btnAddExpense" value="Add Expense"
                                              icon="fas fa-plus"
                                              class="ui-button-Warning"
-                                             action="#{storePurchaseController.addExpense()}" 
-                                             process="billExpenseGrid" 
+                                             action="#{storePurchaseController.addExpense()}"
+                                             process="billExpenseGrid"
                                              update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('net',view).clientId} :#{p:resolveFirstComponentWithId('lblBillExpenses',view).clientId}"/>
                         </h:panelGrid>
                         <p:dataTable id="tblExpenses" value="#{storePurchaseController.billExpenses}" var="be"
@@ -348,13 +348,13 @@
                                 <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="Action" >
-                                <p:commandButton 
-                                    id="btnRemoveExpense" 
-                                    title="Remove Expense" 
+                                <p:commandButton
+                                    id="btnRemoveExpense"
+                                    title="Remove Expense"
                                     icon="fas fa-trash"
                                     class="ui-button-danger"
-                                    action="#{storePurchaseController.removeExpense(be)}" 
-                                    process="btnRemoveExpense" 
+                                    action="#{storePurchaseController.removeExpense(be)}"
+                                    process="btnRemoveExpense"
                                     update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('net',view).clientId} :#{p:resolveFirstComponentWithId('lblBillExpenses',view).clientId}">
                                 </p:commandButton>
                             </p:column>
@@ -365,22 +365,22 @@
                 <p:panel>
                     <p:panelGrid columns="2" id="tot" style="min-width: 100%">
                         <p:outputLabel value="Gross Total"/>
-                        <p:outputLabel id="gro"  value="#{storePurchaseController.bill.total}" /> 
+                        <p:outputLabel id="gro"  value="#{storePurchaseController.bill.total}" />
                         <p:outputLabel value="Tax"/>
-                        <p:inputText autocomplete="off" id="tx" value="#{storePurchaseController.bill.tax}" > 
+                        <p:inputText autocomplete="off" id="tx" value="#{storePurchaseController.bill.tax}" >
                             <p:ajax process="gro tx dis" update="net" event="keyup" listener ="#{storePurchaseController.calNetTotal()}"/>
                         </p:inputText>
                         <p:outputLabel value="Expenses"/>
-                        <p:outputLabel id="lblBillExpenses" 
-                                       value="#{storePurchaseController.bill.expenseTotal}" > 
+                        <p:outputLabel id="lblBillExpenses"
+                                       value="#{storePurchaseController.bill.expenseTotal}" >
                         </p:outputLabel>
                         <p:outputLabel value="Discount"/>
                         <p:inputText autocomplete="off" id="dis" value="#{storePurchaseController.bill.discount}" >
                             <p:ajax process="gro tx dis" update="net" event="keyup" listener ="#{storePurchaseController.calNetTotal()}"/>
                         </p:inputText>
                         <p:outputLabel value="Net Total"/>
-                        <h:outputLabel id="net"  value="#{storePurchaseController.bill.netTotal}" > 
-                            <f:convertNumber pattern="#,##0.00"/> 
+                        <h:outputLabel id="net"  value="#{storePurchaseController.bill.netTotal}" >
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:panelGrid>
                 </p:panel>
@@ -395,11 +395,11 @@
                             <h:outputLabel value="Direct Purchase Order" class="mx-4"></h:outputLabel>
                         </div>
                         <div>
-                            <p:commandButton ajax="false" 
+                            <p:commandButton ajax="false"
                                              class="ui-button-success"
                                              icon="fa fa-plus"
-                                             action="#{storePurchaseController.makeNull()}" value="New Bill"/>                    
-                            <p:commandButton value="Print" ajax="false" action="#" 
+                                             action="#{storePurchaseController.makeNull()}" value="New Bill"/>
+                            <p:commandButton value="Print" ajax="false" action="#"
                                              class="ui-button-info mx-2"
                                              icon="fas fa-print">
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -413,6 +413,6 @@
 
             </p:panel>
         </h:form>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>

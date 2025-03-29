@@ -8,32 +8,32 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="">
-            <p:commandButton 
-                class="ui-button-success mx-2" 
-                icon="fas fa-file-excel" 
-                id="btnExcel" 
-                ajax="false" 
+            <p:commandButton
+                class="ui-button-success mx-2"
+                icon="fas fa-file-excel"
+                id="btnExcel"
+                ajax="false"
                 value="Excel" >
-                <p:dataExporter 
-                    fileName="Item Category Report" 
-                    type="xlsx" 
+                <p:dataExporter
+                    fileName="Item Category Report"
+                    type="xlsx"
                     target="tbl" >
                 </p:dataExporter>
             </p:commandButton>
 
-            <p:commandButton 
-                class="ui-button-info " 
-                icon="fas fa-print" 
-                id="btnprint" 
-                ajax="false" 
+            <p:commandButton
+                class="ui-button-info "
+                icon="fas fa-print"
+                id="btnprint"
+                ajax="false"
                 value="Print" >
-                <p:printer 
+                <p:printer
                     target="tbl" >
                 </p:printer>
             </p:commandButton>

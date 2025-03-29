@@ -14,7 +14,7 @@
 
     <h:body>
         <cc:interface>
-            <cc:attribute name="bill" required="true" type="com.divudi.entity.Bill"/>
+            <cc:attribute name="bill" required="true" type="com.divudi.core.entity.Bill"/>
         </cc:interface>
 
         <!-- Composite Component Implementation -->
@@ -24,7 +24,7 @@
                 <!-- Header Section -->
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
-                    <h:outputLabel value="*Cancellation Bill" /> 
+                    <h:outputLabel value="*Cancellation Bill" />
                 </div>
 
                 <!-- Separator Line -->
@@ -220,7 +220,7 @@
                             </table>
                         </td>
                     </tr>
-                </table> 
+                </table>
 
                 <h:panelGroup rendered="#{cc.attrs.duplicate eq true}" >
                     <table >
@@ -236,7 +236,7 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                    </table> 
+                    </table>
                 </h:panelGroup>
 
             </div>

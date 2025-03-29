@@ -8,15 +8,15 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="value" type="com.divudi.entity.Item"/>
+        <cc:attribute name="value" type="com.divudi.core.entity.Item"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete id="acItem" 
-                        value="#{cc.attrs.value}" 
+        <p:autoComplete id="acItem"
+                        value="#{cc.attrs.value}"
                         forceSelection="true"
-                        completeMethod="#{itemController.completeMedicine}" 
+                        completeMethod="#{itemController.completeMedicine}"
                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
             <p:column headerText="Item" >
                 <h:outputLabel value="#{vt.name}"></h:outputLabel>

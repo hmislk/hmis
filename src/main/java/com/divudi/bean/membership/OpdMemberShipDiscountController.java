@@ -8,29 +8,28 @@
  */
 package com.divudi.bean.membership;
 
-import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.ServiceCategory;
-import com.divudi.entity.ServiceSubCategory;
-import com.divudi.entity.lab.InvestigationCategory;
-import com.divudi.entity.membership.ChannellingMemberShipDiscount;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.entity.membership.OpdMemberShipDiscount;
-import com.divudi.entity.membership.PaymentSchemeDiscount;
-import com.divudi.entity.membership.PharmacyMemberShipDiscount;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.facade.PaymentSchemeDiscountFacade;
-import com.divudi.facade.PriceMatrixFacade;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.ServiceCategory;
+import com.divudi.core.entity.ServiceSubCategory;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.entity.membership.ChannellingMemberShipDiscount;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.membership.OpdMemberShipDiscount;
+import com.divudi.core.entity.membership.PaymentSchemeDiscount;
+import com.divudi.core.entity.membership.PharmacyMemberShipDiscount;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.facade.PaymentSchemeDiscountFacade;
+import com.divudi.core.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -443,7 +442,7 @@ public class OpdMemberShipDiscountController implements Serializable {
             }
         }
     }
-    
+
     public void savePharmacyCategoryPaymentSchemeForAllCategoriesAndSelectedPaymentMethod() {
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Please select a Payment Scheme");

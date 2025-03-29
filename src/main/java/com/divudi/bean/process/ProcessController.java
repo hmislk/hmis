@@ -1,19 +1,18 @@
 package com.divudi.bean.process;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.process.ProcessStepActionType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.process.ProcessDefinition;
-import com.divudi.entity.process.ProcessInstance;
-import com.divudi.entity.process.ProcessStepActionDefinition;
-import com.divudi.entity.process.ProcessStepDefinition;
-import com.divudi.entity.process.ProcessStepInstance;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.process.ProcessStepActionType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.process.ProcessDefinition;
+import com.divudi.core.entity.process.ProcessInstance;
+import com.divudi.core.entity.process.ProcessStepActionDefinition;
+import com.divudi.core.entity.process.ProcessStepDefinition;
+import com.divudi.core.entity.process.ProcessStepInstance;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.ProcessService;
 import javax.inject.Named;
-import javax.faces.view.ViewScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -83,22 +82,22 @@ public class ProcessController implements Serializable {
         processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, true, null, null, null);
         return null;
     }
-    
+
     public String listCancelledProcessInstances() {
         processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, null, true, null, null);
         return null;
     }
-    
+
     public String listRejectedProcessInstances() {
         processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, null, true, true, null);
         return null;
     }
-    
+
     public String listPausedProcessInstances() {
         processInstances = processService.fetchProcessInstances(fromDate, toDate, institution, site, department, null, true, null, null);
         return null;
     }
-    
+
 
     public String navigateToViewProcessInstance() {
         if (processInstance == null) {
@@ -109,7 +108,7 @@ public class ProcessController implements Serializable {
         stage = "view_process";
         return null;
     }
-    
+
     public String navigateToManageProcessInstance(ProcessInstance pi) {
         System.out.println("navigateToManageProcessInstance");
         System.out.println("pi = " + pi);

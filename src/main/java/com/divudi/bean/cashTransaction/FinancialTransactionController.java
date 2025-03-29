@@ -7,34 +7,34 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.*;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Payment;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.analytics.ReportTemplateType;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.*;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.analytics.ReportTemplateType;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PaymentHandoverItem;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.CashBook;
-import com.divudi.entity.cashTransaction.CashBookEntry;
-import com.divudi.entity.cashTransaction.DenominationTransaction;
-import com.divudi.entity.cashTransaction.DetailedFinancialBill;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.DrawerFacade;
-import com.divudi.facade.PaymentHandoverItemFacade;
-import com.divudi.facade.PaymentMethodValueFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PaymentHandoverItem;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.CashBook;
+import com.divudi.core.entity.cashTransaction.CashBookEntry;
+import com.divudi.core.entity.cashTransaction.DenominationTransaction;
+import com.divudi.core.entity.cashTransaction.DetailedFinancialBill;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.PaymentHandoverItemFacade;
+import com.divudi.core.facade.PaymentMethodValueFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -2838,7 +2838,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillShifts(Integer count, Boolean completed, Date fromDate, Date toDate, WebUser paramUser) {
         bundle = new ReportTemplateRowBundle();
-        String jpql = "Select new com.divudi.data.ReportTemplateRow(b) "
+        String jpql = "Select new com.divudi.core.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic=:bta ";
@@ -3619,6 +3619,8 @@ public class FinancialTransactionController implements Serializable {
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_INCREASE));
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CHANGE));
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.BANK_OUT));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.BANK_IN));
 
         Map<String, Object> m = new HashMap<>();
 
@@ -5262,7 +5264,6 @@ public class FinancialTransactionController implements Serializable {
                 p.setCashbookEntry(findCashbookEntry(p, cbEntries));
                 p.setCashbookEntryCompleted(true);
 
-
                 p.setCurrentHolder(sessionController.getLoggedUser());
                 p.setHandingOverCompleted(true);
                 p.setHandingOverStarted(false);
@@ -5715,10 +5716,23 @@ public class FinancialTransactionController implements Serializable {
         Double netTotal = currentBill.getNetTotal();
         System.out.println("netTotal = " + netTotal);
         System.out.println("getLoggedUserDrawer().getCashInHandValue() = " + getLoggedUserDrawer().getCashInHandValue());
-        if (getLoggedUserDrawer().getCashInHandValue() < netTotal) {
-            JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
-            return "";
+
+        boolean drawerManagementIsEnabled = configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true);
+
+        if (drawerManagementIsEnabled) {
+            double drawerBalance = getLoggedUserDrawer().getCashInHandValue();
+            double totalPaymentCash = 0.0;
+            for (Payment p : getCurrentBillPayments()) {
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    totalPaymentCash += p.getPaidValue();
+                }
+            }
+            if (drawerBalance < totalPaymentCash) {
+                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                return "";
+            }
         }
+
         currentBill.setNetTotal(0 - Math.abs(netTotal));
         currentBill.setTotal(0 - Math.abs(netTotal));
         billController.save(currentBill);

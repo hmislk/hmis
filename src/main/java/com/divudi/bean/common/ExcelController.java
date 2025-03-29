@@ -1,7 +1,7 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+
+import com.divudi.core.util.CommonFunctions;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -36,8 +38,6 @@ public class ExcelController {
 
     @Inject
     SearchController searchController;
-    @Inject
-    CommonController commonController;
 
     /**
      * Creates a new instance of ExcelController
@@ -60,7 +60,7 @@ public class ExcelController {
 
         Row titleRow = dataSheet.createRow(0);
         Cell headerCell = titleRow.createCell(0);
-        headerCell.setCellValue("Daily Return  -  " + commonController.getDateTimeFormat24(searchController.getFromDate()) + " to " + commonController.getDateTimeFormat24(searchController.getToDate()));
+        headerCell.setCellValue("Daily Return  -  " + CommonFunctions.getDateTimeFormat24(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat24(searchController.getToDate()));
         headerCell.setCellStyle(style);
         dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
@@ -183,7 +183,7 @@ public class ExcelController {
 
         return startRow;
     }
-    
+
     private int addDataToExcelForTitleBundle(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
         // Row above for visual separation (mimicking <hr/>)
         Row upperSeparatorRow = dataSheet.createRow(startRow++);
@@ -789,7 +789,7 @@ public class ExcelController {
         return startRow;
     }
 
-    
-    
-    
+
+
+
 }

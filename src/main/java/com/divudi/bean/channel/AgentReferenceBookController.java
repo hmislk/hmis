@@ -7,19 +7,19 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.channel.ReferenceBookEnum;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.channel.ReferenceBookEnum;
 
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Institution;
-import com.divudi.entity.channel.AgentReferenceBook;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.AgentReferenceBookFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.AgentReferenceBookFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -467,7 +467,7 @@ public class AgentReferenceBookController implements Serializable {
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            frmDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }

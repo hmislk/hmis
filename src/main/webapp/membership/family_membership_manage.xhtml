@@ -34,13 +34,35 @@
                                         rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
                                         value="Save Family" 
                                         action="#{patientController.saveFamily()}" 
-                                        ajax="false" class="ui-button-warning mx-1" 
-                                        icon="fas fa-save"></p:commandButton>
+                                        ajax="false" 
+                                        styleClass="ui-button-success mx-1" 
+                                        icon="pi pi-save" />
+
                                     <p:commandButton 
                                         rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
-                                        value="Save &amp; Clear for a new Family" 
-                                        action="#{patientController.saveAndClearForNewFamilyMembership() }" class="ui-button-danger" icon="fas fa-eraser" ajax="false"></p:commandButton>
+                                        value="Save &amp; Clear for New Family" 
+                                        action="#{patientController.saveAndClearForNewFamilyMembership()}" 
+                                        ajax="false" 
+                                        styleClass="ui-button-secondary mx-1" 
+                                        icon="pi pi-refresh" />
+
+                                    <p:commandButton 
+                                        value="Delete Family" 
+                                        icon="pi pi-trash" 
+                                        styleClass="ui-button-warning mx-1" 
+                                        ajax="false" 
+                                        action="#{patientController.deleteFamilyMembership()}" 
+                                        onclick="return confirm('Are you sure you want to delete this family?');" />
+
+                                    <p:commandButton 
+                                        value="Delete Family &amp; Members" 
+                                        icon="pi pi-users" 
+                                        styleClass="ui-button-danger mx-1" 
+                                        ajax="false" 
+                                        action="#{patientController.deleteFamilyMembershipAndMembers()}" 
+                                        onclick="return confirm('Are you sure you want to delete this family and all its members?');" />
                                 </div>
+
                             </f:facet>
                             <div class="row">
                                 <div class="col-6">
@@ -86,23 +108,26 @@
                                             </p:selectOneMenu>
 
                                             <p:spacer ></p:spacer>
-                                            <h:panelGroup >
+                                            <h:panelGroup>
                                                 <p:commandButton 
                                                     ajax="false"
                                                     value="Clear" 
                                                     action="#{patientController.clearPatientToAddNewMemberToFamily()}" 
-                                                    class="ui-button-danger m-1"  
-                                                    icon="fas fa-eraser">
-                                                </p:commandButton>
-                                                <p:commandButton 
-                                                    ajax="false" 
-                                                    value="Add as a Family Member"
-                                                    action="#{patientController.addNewMemberToFamily()}" 
-                                                    class="ui-button-success m-1"  
-                                                    icon="fas fa-plus">
+                                                    styleClass="ui-button-secondary m-1"  
+                                                    icon="pi pi-times">
                                                 </p:commandButton>
 
+                                                <p:commandButton 
+                                                    ajax="false" 
+                                                    value="Add as Family Member"
+                                                    action="#{patientController.addNewMemberToFamily()}" 
+                                                    styleClass="ui-button-success m-1"  
+                                                    icon="pi pi-user-plus">
+                                                </p:commandButton>
+
+
                                             </h:panelGroup>
+
 
                                         </p:panelGrid>
 
@@ -122,6 +147,10 @@
                                 style="table-layout: auto;">
                                 <p:column headerText="Name">
                                     <p:outputLabel value="#{fm.patient.person.nameWithTitle}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Phone">
+                                    <p:outputLabel value="#{fm.patient.person.mobile}" rendered="#{not empty fm.patient.person.mobile}" class="mx-1" />
+                                    <p:outputLabel value="#{fm.patient.person.phone}" rendered="#{not empty fm.patient.person.phone}" class="mx-1" />
                                 </p:column>
                                 <p:column headerText="Relation to CHH">
                                     <p:outputLabel value="#{fm.relationToChh.name}" ></p:outputLabel>

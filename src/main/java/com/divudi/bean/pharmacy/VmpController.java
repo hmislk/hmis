@@ -9,22 +9,23 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticType;
-import com.divudi.entity.Category;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,7 +105,7 @@ public class VmpController implements Serializable {
         if (vmp == null) {
             vmp = new Vmp();
             vmp.setName(vmpName);
-            String vmpCode = CommonController.nameToCode("vmp_" + vmpName);
+            String vmpCode = CommonFunctions.nameToCode("vmp_" + vmpName);
             vmp.setSymanticType(SymanticType.Pharmacologic_Substance);
             getFacade().create(vmp);
         }
@@ -291,7 +292,7 @@ public class VmpController implements Serializable {
         }
         v = new Vmp();
         v.setName(vmpName);
-        v.setCode("vmp_" + CommonController.nameToCode(vmpName));
+        v.setCode("vmp_" + CommonFunctions.nameToCode(vmpName));
         v.setVtm(vtm);
         v.setDosageForm(dosageForm);
         v.setStrengthOfAnIssueUnit(strengthOfAnIssueUnit);
@@ -321,7 +322,7 @@ public class VmpController implements Serializable {
         }
         v = new Vmp();
         v.setName(vmpName);
-        v.setCode("vmp_" + CommonController.nameToCode(vmpName));
+        v.setCode("vmp_" + CommonFunctions.nameToCode(vmpName));
         v.setVtm(vtm);
         v.setDosageForm(dosageForm);
         v.setStrengthUnit(strengthUnit);

@@ -5,19 +5,19 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.*;
-import com.divudi.data.analytics.ReportTemplateColumn;
-import com.divudi.data.analytics.ReportTemplateFilter;
-import com.divudi.data.hr.*;
-import com.divudi.data.inward.AdmissionStatus;
-import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.inward.PatientEncounterComponentType;
-import com.divudi.data.lab.PatientInvestigationStatus;
-import com.divudi.data.lab.Priority;
-import com.divudi.data.lab.SearchDateType;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
+import com.divudi.core.data.*;
+import com.divudi.core.data.analytics.ReportTemplateColumn;
+import com.divudi.core.data.analytics.ReportTemplateFilter;
+import com.divudi.core.data.hr.*;
+import com.divudi.core.data.inward.AdmissionStatus;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.inward.PatientEncounterComponentType;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.Priority;
+import com.divudi.core.data.lab.SearchDateType;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Person;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -819,6 +819,7 @@ public class EnumController implements Serializable {
         return p;
     }
 
+    @Deprecated // Use getPaymentMethodsForPharmacyBilling
     public PaymentMethod[] PaymentMethodsForPharmacyRetailSale() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,

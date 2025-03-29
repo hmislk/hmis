@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -33,7 +33,7 @@
                          value="#{cc.attrs.bundle.reportTemplateRows}"
                          var="row"
                          paginator="true"
-                         paginatorAlwaysVisible="false" 
+                         paginatorAlwaysVisible="false"
                          rows="10"
                          rowIndexVar="n"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

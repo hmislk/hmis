@@ -1,31 +1,31 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.TokenType;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillNumber;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Staff;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillNumberFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientFacade;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.TokenType;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillNumber;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillNumberFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientFacade;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -37,7 +37,6 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.persistence.TemporalType;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 import javax.inject.Inject;
 
 /**
@@ -69,7 +68,7 @@ public class BillNumberGenerator {
     private String getLockKey(Institution institution, Department toDepartment, BillType billType) {
         return institution.getId() + "-" + toDepartment.getId() + "-" + billType.name();
     }
-    
+
     private String getLockKey(Institution institution, Department toDepartment, BillTypeAtomic billType, PaymentMethod paymentMethod) {
         return institution.getId() + "-" + toDepartment.getId() + "-" + billType.name() + "-" + paymentMethod.getLabel();
     }
@@ -125,7 +124,7 @@ public class BillNumberGenerator {
             // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
         }
     }
-    
+
     public BillNumber fetchLastBillNumberForYear(Institution institution, Department toDepartment, BillTypeAtomic billType, PaymentMethod paymentMethod) {
         String lockKey = getLockKey(institution, toDepartment, billType, paymentMethod);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
@@ -344,7 +343,7 @@ public class BillNumberGenerator {
             hm.put("endOfYear", endOfYear.getTime());
             hm.put("paymentMethod", paymentMethod);
 
-            
+
 
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
             if (dd == null) {
@@ -427,7 +426,7 @@ public class BillNumberGenerator {
 
         return billNumber;
     }
-    
+
     public PatientFacade getPatientFacade() {
         return patientFacade;
     }

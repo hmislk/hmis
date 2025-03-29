@@ -9,26 +9,12 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.ejb.BillEjb;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentHandoverItem;
-import com.divudi.entity.hr.BankAccount;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PaymentHandoverItemFacade;
-import com.divudi.java.CommonFunctions;
-import com.divudi.service.PaymentService;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentHandoverItem;
+import com.divudi.core.facade.PaymentHandoverItemFacade;
+
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -37,7 +23,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 
 /**
  *

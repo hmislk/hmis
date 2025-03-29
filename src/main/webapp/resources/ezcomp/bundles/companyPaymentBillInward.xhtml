@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -116,10 +116,10 @@
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Card Ref.Number" />
-                </f:facet>                
+                </f:facet>
                 <ui:repeat value="#{row.payment.bill.payments}" var="ps">
                     <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                        <h:outputText 
+                        <h:outputText
                             value="#{ps.creditCardRefNo}"/>
                     </h:panelGroup>
                 </ui:repeat>
@@ -127,10 +127,10 @@
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Card Ref.Number" />
-                </f:facet>                
+                </f:facet>
                 <ui:repeat value="#{row.payment.bill.payments}" var="ps">
                     <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                        <h:outputText 
+                        <h:outputText
                             value="#{ps}"/>
                     </h:panelGroup>
                 </ui:repeat>
@@ -138,10 +138,10 @@
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Bank Code" />
-                </f:facet>                
+                </f:facet>
                 <ui:repeat value="#{row.payment.bill.payments}" var="ps">
                     <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                        <h:outputText 
+                        <h:outputText
                             value="#{ps.bank.code}"/>
                     </h:panelGroup>
                 </ui:repeat>
@@ -154,15 +154,15 @@
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </h:outputText>
             </p:column>
-            <p:columnGroup type="footer">  
-                <p:row>    
+            <p:columnGroup type="footer">
+                <p:row>
                     <p:column style=" text-align: left">
                         <f:facet name="footer">
                             <h:outputLabel value="Total"/>
 
                         </f:facet>
                     </p:column>
-                    <p:column colspan="4" style=" text-align: left;font">  
+                    <p:column colspan="4" style=" text-align: left;font">
                         <f:facet name="footer">
                             <h:outputLabel value="00.00">
                                 <f:convertNumber pattern="#,##0.00"/>
@@ -170,8 +170,8 @@
                         </f:facet>
                     </p:column>
 
-                </p:row>  
-            </p:columnGroup>  
+                </p:row>
+            </p:columnGroup>
 
         </p:dataTable>
 -->

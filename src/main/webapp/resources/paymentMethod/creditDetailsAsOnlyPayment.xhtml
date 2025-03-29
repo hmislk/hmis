@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
@@ -16,45 +16,45 @@
     <cc:implementation>
         <h:panelGrid columns="2" class="w-100" >
             <p:outputLabel value="Credit Company" ></p:outputLabel>
-            <p:autoComplete 
-                id="creditCompany" 
+            <p:autoComplete
+                id="creditCompany"
                 class="w-100 -mx-2"
                 inputStyleClass="form-control"
                 forceSelection="true"
-                value="#{cc.attrs.paymentMethodData.credit.institution}"  
-                completeMethod="#{creditCompanyController.completeCredit}" 
+                value="#{cc.attrs.paymentMethodData.credit.institution}"
+                completeMethod="#{creditCompanyController.completeCredit}"
                 var="ix"
                 minQueryLength="4"
                 placeholder="Company (Type at least 4 letters to search)"
-                itemLabel="#{ix.name}" 
-                itemValue="#{ix}" 
+                itemLabel="#{ix.name}"
+                itemValue="#{ix}"
                 size="10"  >
                 <p:ajax process="@this" ></p:ajax>
             </p:autoComplete>
 
             <p:outputLabel value="Policy Number" ></p:outputLabel>
-            <p:inputText 
-                id="polNo" 
+            <p:inputText
+                id="polNo"
                 class="w-100"
-                value="#{cc.attrs.paymentMethodData.credit.referralNo}" 
+                value="#{cc.attrs.paymentMethodData.credit.referralNo}"
                 placeholder="Policy NO" >
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>
 
             <p:outputLabel value="Referance No" ></p:outputLabel>
-            <p:inputText 
-                id="refNo" 
+            <p:inputText
+                id="refNo"
                 class="w-100"
-                value="#{cc.attrs.paymentMethodData.credit.referenceNo}" 
+                value="#{cc.attrs.paymentMethodData.credit.referenceNo}"
                 placeholder="Reference NO" >
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>
 
             <p:outputLabel value="Comments" ></p:outputLabel>
-            <p:inputTextarea 
-                id="memo" 
+            <p:inputTextarea
+                id="memo"
                 class="w-100"
-                value="#{cc.attrs.paymentMethodData.credit.comment}" 
+                value="#{cc.attrs.paymentMethodData.credit.comment}"
                 placeholder="Memo" >
                 <p:ajax process="@this" ></p:ajax>
             </p:inputTextarea>

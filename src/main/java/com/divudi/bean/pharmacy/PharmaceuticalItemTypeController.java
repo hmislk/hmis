@@ -9,9 +9,9 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.PharmaceuticalItemType;
-import com.divudi.facade.PharmaceuticalItemTypeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
+import com.divudi.core.facade.PharmaceuticalItemTypeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
