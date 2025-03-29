@@ -2089,7 +2089,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
-        if (configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier")) {
+        if (configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier") || configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
             if (getPatient() != null) {
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
@@ -2101,6 +2101,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
 
         }
+        
         if (getCurrentToken() != null) {
             getCurrentToken().setBill(getPreBill());
             tokenFacade.edit(getCurrentToken());

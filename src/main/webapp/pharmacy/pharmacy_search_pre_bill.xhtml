@@ -83,6 +83,7 @@
                                     ajax="false"
                                     class="ui-button-secondary w-100 my-4"
                                     icon="fa-solid fa-desktop"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)}"
                                     value=" View In Display"
                                     action="/token/pharmacy_tokens_called_sale_for_cashier?faces-redirect=true"
                                     actionListener="#{tokenController.fillSaleForCashierCalledBillsTokens()}"
@@ -158,6 +159,11 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
+                                    <p:column headerText="Token Number" rendered="#{!configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)}">
+                                        <p:tag class="px-3" style="font-size: 15px" value="#{pharmacyPreSettleController.findTokenFromBill(bill).tokenNumber}" severity="success"></p:tag>                                        
+
+                                    </p:column>
+                                    
                                     <p:column headerText="Net Value" >
 
                                         <h:outputLabel value="#{bill.netTotal}" >
@@ -165,8 +171,17 @@
                                         </h:outputLabel>
 
                                     </p:column>
+                                    
+                                    <p:column headerText="Accept" width="10%" rendered="#{!configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Accept Payment"
+                                            action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                            disabled="#{bill.referenceBill ne null or bill.cancelled}">
+                                        </p:commandButton>
+                                    </p:column>
 
-                                    <p:column headerText="Actions" style="text-align: center" width="10%" class="align-item-center justify-content-center">
+                                    <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)}" headerText="Actions" style="text-align: center" width="10%" class="align-item-center justify-content-center">
 
                                         <div class="row">
                                             <div class="col-12 d-flex justify-content-center align-items-center">
