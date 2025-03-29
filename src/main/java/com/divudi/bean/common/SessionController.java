@@ -15,7 +15,6 @@ import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.Privileges;
-import com.divudi.ejb.ApplicationEjb;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
@@ -86,8 +85,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     private CashTransactionBean cashTransactionBean;
     @EJB
     private DepartmentFacade departmentFacade;
-    @EJB
-    private ApplicationEjb applicationEjb;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -762,7 +759,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean login() {
-        getApplicationEjb().recordAppStart();
+        getApplicationController().recordStart();
         if (userName.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a username");
             return false;
@@ -1606,14 +1603,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("cc", InstitutionType.CollectingCentre);
         m.put("lds", loggableDepartments);
         return institutionFacade.findByJpql(jpql, m);
-    }
-
-    public ApplicationEjb getApplicationEjb() {
-        return applicationEjb;
-    }
-
-    public void setApplicationEjb(ApplicationEjb applicationEjb) {
-        this.applicationEjb = applicationEjb;
     }
 
     public ApplicationController getApplicationController() {
