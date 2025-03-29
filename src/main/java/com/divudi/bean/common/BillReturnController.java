@@ -26,6 +26,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -448,7 +449,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
         newlyReturnedBill.setReferenceBill(originalBillToReturn);
-        newlyReturnedBill.invertValueOfThisBill();
+        newlyReturnedBill.setBillDate(new Date());
+        newlyReturnedBill.setBillTime(new Date());
+//        newlyReturnedBill.invertValueOfThisBill();
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_BILL_REFUND);
         newlyReturnedBill.setDeptId(deptId);
@@ -514,29 +517,50 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             }
         }
 
-        newlyReturnedBill.setGrantTotal(0 - returningTotal);
-        newlyReturnedBill.setNetTotal(0 - returningNetTotal);
-        newlyReturnedBill.setTotal(0 - returningTotal);
-        newlyReturnedBill.setHospitalFee(0 - returningHospitalTotal);
-        newlyReturnedBill.setCollctingCentreFee(0 - returningCCTotal);
-        newlyReturnedBill.setProfessionalFee(0 - returningStaffTotal);
-        newlyReturnedBill.setDiscount(0 - returningDiscount);
+// Print the original values
+        System.out.println("Original returningTotal: " + returningTotal);
+        System.out.println("Original returningNetTotal: " + returningNetTotal);
+        System.out.println("Original returningHospitalTotal: " + returningHospitalTotal);
+        System.out.println("Original returningCCTotal: " + returningCCTotal);
+        System.out.println("Original returningStaffTotal: " + returningStaffTotal);
+        System.out.println("Original returningDiscount: " + returningDiscount);
 
-        newlyReturnedBill.setTotalHospitalFee(0 - returningHospitalTotal);
-        newlyReturnedBill.setTotalCenterFee(0 - returningCCTotal);
-        newlyReturnedBill.setTotalStaffFee(0 - returningStaffTotal);
+// Convert all values to negative absolute amounts
+        returningTotal = -Math.abs(returningTotal);
+        returningNetTotal = -Math.abs(returningNetTotal);
+        returningHospitalTotal = -Math.abs(returningHospitalTotal);
+        returningCCTotal = -Math.abs(returningCCTotal);
+        returningStaffTotal = -Math.abs(returningStaffTotal);
+        returningDiscount = -Math.abs(returningDiscount);
+
+// Print the adjusted values
+        System.out.println("Adjusted returningTotal: " + returningTotal);
+        System.out.println("Adjusted returningNetTotal: " + returningNetTotal);
+        System.out.println("Adjusted returningHospitalTotal: " + returningHospitalTotal);
+        System.out.println("Adjusted returningCCTotal: " + returningCCTotal);
+        System.out.println("Adjusted returningStaffTotal: " + returningStaffTotal);
+        System.out.println("Adjusted returningDiscount: " + returningDiscount);
+
+// Assign the adjusted values to newlyReturnedBill
+        newlyReturnedBill.setGrantTotal(returningTotal);
+        newlyReturnedBill.setNetTotal(returningNetTotal);
+        newlyReturnedBill.setTotal(returningTotal);
+        newlyReturnedBill.setHospitalFee(returningHospitalTotal);
+        newlyReturnedBill.setCollctingCentreFee(returningCCTotal);
+        newlyReturnedBill.setProfessionalFee(returningStaffTotal);
+        newlyReturnedBill.setDiscount(returningDiscount);
+
+// Print the values before setting
+        System.out.println("Setting TotalHospitalFee: " + returningHospitalTotal);
+        System.out.println("Setting TotalCenterFee: " + returningCCTotal);
+        System.out.println("Setting TotalStaffFee: " + returningStaffTotal);
+
+// Assign the values
+        newlyReturnedBill.setTotalHospitalFee(returningHospitalTotal);
+        newlyReturnedBill.setTotalCenterFee(returningCCTotal);
+        newlyReturnedBill.setTotalStaffFee(returningStaffTotal);
 
         billController.save(newlyReturnedBill);
-
-        System.out.println("CC Balance Update ");
-        //Update Centre Balanace
-//        System.out.println("Institution = " + originalBillToReturn.getCollectingCentre());
-//        System.out.println("Hospital Fee = " + newlyReturnedBill.getHospitalFee());
-//        System.out.println("CollctingCentre Fee = " + newlyReturnedBill.getCollctingCentreFee());
-//        System.out.println("Professional Fee = " + newlyReturnedBill.getProfessionalFee());
-//        System.out.println("Net Total = " + newlyReturnedBill.getNetTotal());
-//        System.out.println("History Type = " + HistoryType.CollectingCentreBillingRefund);
-//        System.out.println("Bill = " + newlyReturnedBill);
 
         agentAndCcApplicationController.updateCcBalance(
                 originalBillToReturn.getCollectingCentre(),
@@ -547,8 +571,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                 HistoryType.CollectingCentreBillingRefund,
                 newlyReturnedBill);
 
-        // drawer Update (No Need Update Drawer)
-//      drawerController.updateDrawerForOuts(returningPayment);
         returningStarted = false;
         return "/collecting_centre/cc_bill_return_print?faces-redirect=true";
 

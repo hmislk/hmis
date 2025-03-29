@@ -297,23 +297,6 @@ th.align-right-header .ui-column-title {
     width: 58%;
 }
 
-.compact-info {
-    display: flex;
-    align-items: center;
-    margin: 0.2em 0;
-    gap: 0.6em;
-}
-
-.compact-info i {
-    flex-shrink: 0;
-}
-
-.compact-label {
-    font-weight: normal;
-    font-size: 1em;
-}
-
-
 .compact-panelgrid.ui-panelgrid,
 .compact-panelgrid.ui-panelgrid tr,
 .compact-panelgrid.ui-panelgrid td,
