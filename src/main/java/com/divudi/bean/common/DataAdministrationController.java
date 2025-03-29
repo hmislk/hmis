@@ -277,6 +277,7 @@ public class DataAdministrationController implements Serializable {
     private int manageCheckEnteredDataIndex;
     private String errors;
     private String suggestedSql;
+    private String allCreateStetements;
     private String createdSql;
     private String alterSql;
     private String executionFeedback;
@@ -288,6 +289,7 @@ public class DataAdministrationController implements Serializable {
     private String code;
 
     private int tabIndex;
+    private int tabIndexMissingFields;
 
     private int progress;
     private String progressMessage;
@@ -646,6 +648,11 @@ public class DataAdministrationController implements Serializable {
     }
 
     public String navigateToCheckMissingFields() {
+        allCreateStetements ="";
+        executionFeedback="";
+        errors="";
+        createdSql="";
+        suggestedSql="";
         return "/dataAdmin/missing_database_fields?faces-redirect=true";
     }
 
@@ -862,6 +869,86 @@ public class DataAdministrationController implements Serializable {
     private String generateAlterConstraintStatement(String tableName, String constraintDef) {
         // Handle constraints such as PRIMARY KEY, FOREIGN KEY, UNIQUE, etc.
         return String.format("ALTER TABLE %s ADD %s;", tableName, constraintDef);
+    }
+
+    public void createTablesAndFieldsForAllCreateStatements() {
+        StringBuilder executionResults = new StringBuilder();
+
+        System.out.println("===== Starting CREATE TABLE parsing and ALTER execution =====");
+
+        // Split by CREATE TABLE, keeping it in the output
+        String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
+        int counter = 0;
+
+        for (String part : rawParts) {
+            part = part.trim();
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            String createStatement = "CREATE TABLE " + part;
+            System.out.println("\n[INFO] Processing statement #" + (++counter));
+            System.out.println("Create SQL:\n" + createStatement);
+
+            try {
+                String tableName = extractTableName(createStatement);
+                if (tableName == null || tableName.isEmpty()) {
+                    System.out.println("[WARNING] Skipping statement — table name not found.");
+                    executionResults.append("<br/>Skipped malformed CREATE TABLE statement.");
+                    continue;
+                }
+
+                System.out.println("[INFO] Extracted table name: " + tableName);
+
+                String alterSql = generateAlterStatements(createStatement);
+                System.out.println("[INFO] Generated ALTER statements:\n" + alterSql);
+
+                String[] sqlStatements = alterSql.split(";");
+                for (String sql : sqlStatements) {
+                    sql = sql.trim();
+                    if (sql.isEmpty()) {
+                        continue;
+                    }
+
+                    try {
+                        if (isValidSqlStatement(sql)) {
+                            System.out.println("[EXEC] Running SQL: " + sql);
+                            itemFacade.executeNativeSql(sql);
+                            executionResults.append("<br/>Successfully executed: ").append(sql);
+                        } else {
+                            System.out.println("[ERROR] Potentially harmful SQL rejected: " + sql);
+                            executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("[ERROR] SQL failed: " + sql);
+                        System.out.println("[ERROR] Exception: " + e.getMessage());
+                        executionResults.append("<br/>Failed to execute: ").append(sql);
+                        executionResults.append("<br/>Error: ").append(e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("[ERROR] Unexpected error while processing create statement.");
+                e.printStackTrace();
+                executionResults.append("<br/>Error processing create statement: ").append(e.getMessage());
+            }
+        }
+
+        executionFeedback = executionResults.toString();
+
+        System.out.println("===== All CREATE TABLE processing complete =====");
+    }
+    
+    // Add this method to validate SQL statements
+    private boolean isValidSqlStatement(String sql) {
+        sql = sql.trim().toLowerCase();
+        // Only allow CREATE TABLE, ALTER TABLE statements, and setting foreign key checks
+        return (sql.startsWith("create table") || 
+                sql.startsWith("alter table") ||
+                sql.startsWith("set foreign_key_checks")) &&
+               !sql.contains("drop") &&
+               !sql.contains("truncate") &&
+               !sql.contains("delete") &&
+               !sql.contains("update");
     }
 
     public void runSqlToCreateFields() {
@@ -2267,6 +2354,24 @@ public class DataAdministrationController implements Serializable {
     public void setProgressMessage(String progressMessage) {
         this.progressMessage = progressMessage;
     }
+
+    public String getAllCreateStetements() {
+        return allCreateStetements;
+    }
+
+    public void setAllCreateStetements(String allCreateStetements) {
+        this.allCreateStetements = allCreateStetements;
+    }
+
+    public int getTabIndexMissingFields() {
+        return tabIndexMissingFields;
+    }
+
+    public void setTabIndexMissingFields(int tabIndexMissingFields) {
+        this.tabIndexMissingFields = tabIndexMissingFields;
+    }
+    
+    
 
     public class EntityFieldError {
 
