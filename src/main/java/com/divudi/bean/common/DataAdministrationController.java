@@ -911,9 +911,14 @@ public class DataAdministrationController implements Serializable {
                     }
 
                     try {
-                        System.out.println("[EXEC] Running SQL: " + sql);
-                        itemFacade.executeNativeSql(sql);
-                        executionResults.append("<br/>Successfully executed: ").append(sql);
+                        if (isValidSqlStatement(sql)) {
+                            System.out.println("[EXEC] Running SQL: " + sql);
+                            itemFacade.executeNativeSql(sql);
+                            executionResults.append("<br/>Successfully executed: ").append(sql);
+                        } else {
+                            System.out.println("[ERROR] Potentially harmful SQL rejected: " + sql);
+                            executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
+                        }
                     } catch (Exception e) {
                         System.out.println("[ERROR] SQL failed: " + sql);
                         System.out.println("[ERROR] Exception: " + e.getMessage());
@@ -931,6 +936,19 @@ public class DataAdministrationController implements Serializable {
         executionFeedback = executionResults.toString();
 
         System.out.println("===== All CREATE TABLE processing complete =====");
+    }
+    
+    // Add this method to validate SQL statements
+    private boolean isValidSqlStatement(String sql) {
+        sql = sql.trim().toLowerCase();
+        // Only allow CREATE TABLE, ALTER TABLE statements, and setting foreign key checks
+        return (sql.startsWith("create table") || 
+                sql.startsWith("alter table") ||
+                sql.startsWith("set foreign_key_checks")) &&
+               !sql.contains("drop") &&
+               !sql.contains("truncate") &&
+               !sql.contains("delete") &&
+               !sql.contains("update");
     }
 
     public void runSqlToCreateFields() {
