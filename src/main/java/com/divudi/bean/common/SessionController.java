@@ -763,7 +763,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     private boolean login() {
         getApplicationEjb().recordAppStart();
-        if (userName.trim().equals("")) {
+        if (userName.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a username");
             return false;
         }
@@ -842,7 +842,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void changePassword() {
         WebUser user = getLoggedUser();
-        if (!getSecurityController().matchPassword(oldPassword, user.getWebUserPassword())) {
+        if (!SecurityController.matchPassword(oldPassword, user.getWebUserPassword())) {
             JsfUtil.addErrorMessage("The old password you entered is incorrect");
             return;
         }
@@ -883,11 +883,12 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public Boolean userNameAvailable(String userName) {
-        Boolean available = true;
+        boolean available = true;
         List<WebUser> allUsers = getFacede().findAll();
         for (WebUser w : allUsers) {
-            if (userName.toLowerCase().equals(w.getName().toLowerCase())) {
+            if (userName.equalsIgnoreCase(w.getName())) {
                 available = false;
+                break;
             }
         }
         return available;
@@ -913,7 +914,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         List<WebUser> allUsers = getFacede().findByJpql(temSQL);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
-                if (getSecurityController().matchPassword(password, u.getWebUserPassword())) {
+                if (SecurityController.matchPassword(password, u.getWebUserPassword())) {
                     if (!canLogToDept(u, department)) {
                         JsfUtil.addErrorMessage("No privilage to Login This Department");
                         return false;
@@ -1042,7 +1043,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             return false;
         }
 
-        if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
+        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
 
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
@@ -1085,7 +1086,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             return false;
         }
 
-        if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
+        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
 //            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
@@ -1792,7 +1793,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         defLocale = "en";
         if (getLoggedUser() != null) {
             if (getLoggedUser().getDefLocale() != null) {
-                if (!getLoggedUser().getDefLocale().equals("")) {
+                if (!getLoggedUser().getDefLocale().isEmpty()) {
                     return getLoggedUser().getDefLocale();
                 }
             }
@@ -1805,12 +1806,12 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String getPrimeTheme() {
-        if (primeTheme == null || primeTheme.equals("")) {
+        if (primeTheme == null || primeTheme.isEmpty()) {
             primeTheme = "material-light-outlined";
         }
         if (getLoggedUser() != null) {
             if (getLoggedUser().getPrimeTheme() != null) {
-                if (!getLoggedUser().getPrimeTheme().equals("")) {
+                if (!getLoggedUser().getPrimeTheme().isEmpty()) {
                     return getLoggedUser().getPrimeTheme();
                 }
             }
@@ -1839,7 +1840,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public List<Privileges> getPrivilegeses() {
-        if (privilegeses == null || privilegeses.isEmpty()) {
+        if (privilegeses != null && privilegeses.isEmpty()) {
             privilegeses.addAll(Arrays.asList(Privileges.values()));
         }
         return privilegeses;
