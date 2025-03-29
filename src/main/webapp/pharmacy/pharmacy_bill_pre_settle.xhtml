@@ -345,12 +345,15 @@
                     <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
+                                
                                 <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
                                     <p:printer target="gpBillPreview" />
                                 </p:commandButton>
                             </div>
                             <div>
+                                <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning mx-2" value="Sale for cashier bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill">
+                                    <f:actionListener binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashier()}"></f:actionListener>
+                                </p:commandButton>
                                 <p:commandButton 
                                     value="New Pharmacy Token"
                                     ajax="false" 
