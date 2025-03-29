@@ -331,7 +331,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacySaleController.setToken(currentToken);
         return pharmacySaleController.navigateToPharmacyBillForCashierWholeSale();
     }
-
+    
     public String navigateToSaleForCashier() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
@@ -366,6 +366,43 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacySaleController.setPreBill((PreBill) tmp);
         currentToken.getBill().setCancelled(true);
         return "/pharmacy/pharmacy_bill_retail_sale_for_cashier";
+
+    }
+
+    public String navigateToSaleForCashierToEditBillWithToken(Token token) {
+        if (token == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+        if (token.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        if (token.getBill().getBillType() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return "";
+        }
+
+        if (!token.getBill().getBillType().equals(BillType.PharmacyPre)) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return "";
+        }
+        Bill tmp = billFacade.find(token.getBill().getId());
+        if (tmp.getBillItems() == null) {
+            tmp.setBillItems(loadPharmacyBillItems(tmp));
+        }
+
+        pharmacyPreSettleController.setPreBill(tmp);
+        pharmacyPreSettleController.setBillPreview(false);
+        pharmacyPreSettleController.setToken(token);
+        pharmacySaleController.setBillSettlingStarted(false);
+        tmp.setComments("Editing pharmacy token bill");
+        pharmacyBillSearch.pharmacyRetailCancelBillWithStock(tmp);
+        pharmacySaleController.resetAll();
+        pharmacySaleController.setPatient(token.getPatient());
+        pharmacySaleController.setPreBill((PreBill) tmp);
+        token.getBill().setCancelled(true);
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
 
     }
 
