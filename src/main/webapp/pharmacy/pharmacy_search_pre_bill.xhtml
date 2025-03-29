@@ -62,7 +62,8 @@
                                     class="ui-button-success w-100 mt-3"
                                     icon="fas fa-search"
                                     ajax="false"
-                                    value="Search All"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    value="Search Normal Bills"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashier}"/>
                                 
                                 <p:commandButton
@@ -70,6 +71,7 @@
                                     class="ui-button-success w-100 mt-3"
                                     icon="fas fa-search"
                                     ajax="false"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     value="Search Token Bills"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"/>
 
@@ -167,7 +169,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Token Number" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+                                    <p:column width="8em" headerText="Token Number" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
                                         <p:tag class="px-3" style="font-size: 15px" value="#{pharmacyPreSettleController.findTokenFromBill(bill).tokenNumber}" severity="success"></p:tag>                                        
 
                                     </p:column>

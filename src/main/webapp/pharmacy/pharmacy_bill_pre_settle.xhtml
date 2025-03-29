@@ -266,12 +266,19 @@
                                         </h:panelGroup>
                                         
                                         <h:panelGrid rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" columns="3" style="width: 100%">
-                                            <h:outputLabel value="Token Number " ></h:outputLabel>
+                                            <h:outputLabel value="Token" ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenNumber}" ></h:outputLabel>
-                                            <h:outputLabel value="Token Created at " ></h:outputLabel>
+                                            <h:outputLabel value="Token Date" ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenAt}" ></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Token Time" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
                                         </h:panelGrid>
                                     </div>
                                 </p:panel>

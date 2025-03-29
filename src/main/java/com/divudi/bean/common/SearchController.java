@@ -7576,6 +7576,24 @@ public class SearchController implements Serializable {
         bills = tokenList.stream().map(t ->  t.getBill()).collect(Collectors.toList());
 
     }
+    
+    @Inject
+    private TokenController tokenController;
+    
+    public Token findBillFromToken(Bill bill){
+        return tokenController.findPharmacyTokens(bill);
+    }
+    
+    public List<Bill> filterNomarlBillsOnly(List<Bill> billList){
+        List<Bill> normalBills = new ArrayList<>();
+        for(Bill bill : billList){
+            if(findBillFromToken(bill) == null){
+                normalBills.add(bill);
+            }
+        }
+        
+        return normalBills;
+    }
 
     public void fillPharmacyPreBillsToAcceptAtCashier() {
         bills = null;
@@ -7589,7 +7607,7 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate"
                 + " and b.retired=false "
                 + " and b.deptId is not null "
-                + " and b.cancelled=false";
+                + " and b.cancelled=false";       
 
         sql += createPharmacyPayKeyword(temMap);
         sql += " order by b.createdAt desc  ";
@@ -7600,7 +7618,8 @@ public class SearchController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
 
         //System.err.println("Sql " + sql);
-        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+        List<Bill> allBills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+        bills = filterNomarlBillsOnly(allBills);
     }
 
     public void createPharmacyPreTable() {
