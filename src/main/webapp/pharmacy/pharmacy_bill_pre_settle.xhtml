@@ -237,12 +237,12 @@
                                             <h:outputLabel value="Bill No " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.deptId}" ></h:outputLabel>
-                                            <h:outputLabel value="Bill Date " ></h:outputLabel>
+                                            <h:outputLabel value="Billed Date " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
-                                            <h:outputLabel value="Bill Time " ></h:outputLabel>
+                                            <h:outputLabel value="Billed Time " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
@@ -256,10 +256,22 @@
                                             <h:outputLabel value="Comments " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.comments}" ></h:outputLabel>
+                                            
+                                        </h:panelGrid>
+                                        
+                                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
                                             <div style="height: 105px">
 
                                             </div>
-
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGrid rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" columns="3" style="width: 100%">
+                                            <h:outputLabel value="Token Number " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenNumber}" ></h:outputLabel>
+                                            <h:outputLabel value="Token Created at " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).createdAt}" ></h:outputLabel>
                                         </h:panelGrid>
                                     </div>
                                 </p:panel>
