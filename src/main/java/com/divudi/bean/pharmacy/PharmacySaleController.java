@@ -2093,15 +2093,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             if (getPatient() != null) {
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
-                    settlePharmacyToken();
-                    markInprogress();
+                    if (configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
+                        settlePharmacyToken();
+                        markInprogress();
+                    }
+
                 } else if (t != null) {
                     markToken();
                 }
             }
 
         }
-        
+
         if (getCurrentToken() != null) {
             getCurrentToken().setBill(getPreBill());
             tokenFacade.edit(getCurrentToken());
@@ -2110,7 +2113,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         resetAll();
         billPreview = true;
     }
-    
+
     public void markInprogress() {
         Token t = getToken();
         if (t == null) {
