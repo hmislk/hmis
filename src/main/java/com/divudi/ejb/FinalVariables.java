@@ -8,9 +8,7 @@ import com.divudi.bean.channel.ChannelScheduleController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.ApplicationInstitution;
 import com.divudi.core.entity.ServiceSession;
-import com.divudi.core.facade.ServiceSessionFacade;
 import java.util.List;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
@@ -25,8 +23,7 @@ public class FinalVariables {
     ChannelScheduleController sheduleController;
     @Inject
     SessionController sessionController;
-    @EJB
-    ServiceSessionFacade serviceSessionFacade;
+
 //    public double getMaximumWorkingHourPerWeek() {
 //        return 45;
 //    }
