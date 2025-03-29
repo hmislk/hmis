@@ -148,7 +148,7 @@ public class SmsManagerEjb {
         List<SessionInstance> upcomingSessions = sessions.stream()
                 .filter(session -> {
                     Date sessionStartDateTime = getSessionStartDateTime(session);
-                    return sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
+                    return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
                 })
                 .collect(Collectors.toList());
 
