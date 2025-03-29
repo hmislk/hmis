@@ -41,7 +41,6 @@ public class ServiceSessionBean {
 
     @EJB
     BillSessionFacade billSessionFacade;
-    BillSession billSession;
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
@@ -127,7 +126,6 @@ public class ServiceSessionBean {
     }
 
     List<BillSession> billSessions;
-    Long countLong;
 
     public List<BillSession> getBillSessionsByCat(Category c, Date d) {
         if (c == null || c.getId() == null) {
@@ -308,7 +306,7 @@ public class ServiceSessionBean {
             }
 //            //// // System.out.println("i = " + i);
 //            //// // System.out.println("numberGiven = " + numberGiven);
-            if (numberGiven == false) {
+            if (!numberGiven) {
                 return i;
             }
         }
@@ -350,8 +348,8 @@ public class ServiceSessionBean {
         // Assuming serial numbers start from 1 and increment by 1
         int nextAvailableNumber = 1;
         if (si.getOriginatingSession().getSessionStartingNumber()!=null) {
-            if (!si.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
-             nextAvailableNumber=Integer.valueOf(si.getOriginatingSession().getSessionStartingNumber());
+            if (!si.getOriginatingSession().getSessionStartingNumber().trim().isEmpty()) {
+             nextAvailableNumber=Integer.parseInt(si.getOriginatingSession().getSessionStartingNumber());
             }
         }
 
@@ -392,7 +390,7 @@ public class ServiceSessionBean {
         // Convert reservedNumbers to a Set for efficient search
         Set<Integer> reservedNumbersSet = new HashSet<>(reservedNumbers);
         // Remove all booked numbers from the reservedNumbers set
-        reservedNumbersSet.removeAll(bookedNumbers);
+        bookedNumbers.forEach(reservedNumbersSet::remove);
 
         // First, check if selectedReservedBookingNumber is available and not booked
         if (selectedReservedBookingNumber != null && reservedNumbersSet.contains(selectedReservedBookingNumber)) {
@@ -416,8 +414,8 @@ public class ServiceSessionBean {
 
     public List<Integer> stringNumbersToInts(String str, ServiceSession ss) {
         int maxNo = 100;
-        List<Integer> nits = new ArrayList();
-        if (str == null || str.trim().equals("")) {
+        List<Integer> nits = new ArrayList<>();
+        if (str == null || str.trim().isEmpty()) {
             if (ss.getStartingNo() > 0) {
                 addToIntList(ss.getStartingNo(), maxNo, nits);
             } else {
@@ -432,14 +430,14 @@ public class ServiceSessionBean {
             String strs[] = str.split(" ");
             for (String s : strs) {
                 ////// // System.out.println("s = " + s);
-                if (s.trim().equals("")) {
+                if (s.trim().isEmpty()) {
                     continue;
                 }
                 if (isNumeric(s)) {
                     ////// // System.out.println("is numeric");
-                    Integer i;
+                    int i;
                     try {
-                        i = Integer.valueOf(s);
+                        i = Integer.parseInt(s);
                         ////// // System.out.println("i = " + i);
                     } catch (Exception e) {
                         i = 1;
@@ -453,20 +451,20 @@ public class ServiceSessionBean {
         if (str.contains("-")) {
             ////// // System.out.println("contains - ");
             str = str.replace("-", " ");
-            String strs[] = str.split(" ");
+            String[] strs = str.split(" ");
             Integer fromNo = null;
             Integer toNo = null;
             for (String s : strs) {
                 ////// // System.out.println("s = " + s);
-                if (s.trim().equals("")) {
+                if (s.trim().isEmpty()) {
                     continue;
                 }
                 if (isNumeric(s)) {
                     ////// // System.out.println("is numeric");
-                    Integer i;
+                    int i;
 
                     try {
-                        i = Integer.valueOf(s);
+                        i = Integer.parseInt(s);
                         ////// // System.out.println("i = " + i);
                     } catch (Exception e) {
                         ////// // System.out.println("e = " + e);
