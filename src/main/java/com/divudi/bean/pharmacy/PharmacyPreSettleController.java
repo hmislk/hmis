@@ -1115,7 +1115,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
         t.setCalled(false);
         t.setCalledAt(null);
-        t.setInProgress(false);
+        t.setInProgress(true);
         t.setCompleted(false);
         tokenController.save(t);
         tokenFacade.flush();
