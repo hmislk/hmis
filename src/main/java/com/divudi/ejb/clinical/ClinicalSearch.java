@@ -63,12 +63,4 @@ public class ClinicalSearch {
         this.m = m;
     }
 
-
-
-
-
-
-
-
-
 }

@@ -272,14 +272,14 @@ public class ChannelBean {
                         //////System.out.println("Specific Count : " + sessionDayCount);
                         serviceSessions.add(newSs);
 
-                        if (tmp != ss.getSessionWeekday()) {
+                        if (!tmp.equals(ss.getSessionWeekday())) {
                             sessionDayCount++;
                         }
                     }
                 }
             }
 
-            if (hasSpecificDateSession == false) {
+            if (!hasSpecificDateSession) {
                 for (ServiceSession ss : sessions) {
                     Calendar wdc = Calendar.getInstance();
                     wdc.setTime(nowDate);
@@ -299,7 +299,7 @@ public class ChannelBean {
 
                         serviceSessions.add(newSs);
 
-                        if (tmp != ss.getSessionWeekday()) {
+                        if (!tmp.equals(ss.getSessionWeekday())) {
                             sessionDayCount++;
                         }
                     }
@@ -326,11 +326,7 @@ public class ChannelBean {
         hm.put("st", staff);
         ServiceSessionLeave tmp = getServiceSessionLeaveFacade().findFirstByJpql(slq, hm, TemporalType.DATE);
 
-        if (tmp != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return tmp != null;
     }
 
 //
@@ -783,7 +779,7 @@ public class ChannelBean {
     }
 
     public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
-        List<SessionInstance> sessionInstances = new ArrayList<>();
+        List<SessionInstance> sessionInstances;
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate=:sd");
 
         // Initializing the parameters map
@@ -991,7 +987,7 @@ public class ChannelBean {
 
     public void createDocLeaveSession(List<ServiceSession> createdSessions, Date nDate, int rIndex) {
         ServiceSession newSs = new ServiceSession();
-        newSs.setId(1l);
+        newSs.setId(1L);
         newSs.setName("Leave");
         newSs.setSessionAt(nDate);
         newSs.setMaxNo(0);
