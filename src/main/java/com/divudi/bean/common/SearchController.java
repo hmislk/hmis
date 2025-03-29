@@ -68,6 +68,7 @@ import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ServiceType;
+import com.divudi.core.data.TokenType;
 import com.divudi.core.data.analytics.ReportTemplateType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Payment;
@@ -120,6 +121,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 // </editor-fold>
 
 /**
@@ -7525,6 +7527,32 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+    }
+    
+    public void fillPharmacyPreBillsToAcceptAtCashierInTokenSystem() {
+        bills = null;
+        String sql;
+        Map parameters = new HashMap();
+//        Token t = new Token();
+
+        sql = "select token from Token token "
+                + " where token.tokenType = :type "
+                + " and token.bill is not null "
+                + " and token.tokenAt between :fromDate and :toDate "
+                + " and token.retired = false "
+                + " and token.department = :dept "
+                + " and token.institution = :ins "
+                + " order by token.tokenAt desc";
+//
+        parameters.put("type", TokenType.PHARMACY_TOKEN);
+        parameters.put("fromDate", getFromDate());
+        parameters.put("toDate", getToDate());
+        parameters.put("dept", sessionController.getDepartment());
+        parameters.put("ins", sessionController.getInstitution());
+
+        List<Token> tokenList = tokenFacade.findByJpqlWithoutCache(sql, parameters, TemporalType.TIMESTAMP, 25);
+        bills = tokenList.stream().map(t ->  t.getBill()).collect(Collectors.toList());
+
     }
 
     public void fillPharmacyPreBillsToAcceptAtCashier() {
