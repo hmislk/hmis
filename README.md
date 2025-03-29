@@ -168,3 +168,5 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 
 ## License
 AGPL License details are attached as the LICENSE.md
+
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/hmislk/hmis?utm_source=oss&utm_medium=github&utm_campaign=hmislk%2Fhmis&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
