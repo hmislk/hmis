@@ -14,8 +14,6 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
-
-import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
@@ -28,9 +26,6 @@ import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.InwardChargeType;
-import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
@@ -59,6 +54,11 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.TokenFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.ejb.CashTransactionBean;
+import com.divudi.ejb.PharmacyBean;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -915,13 +915,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-
+            
             if(paymentMethodData.getStaffCredit().getToStaff()!=null && getPreBill().getToStaff()==null){
                 getPreBill().setToStaff(paymentMethodData.getStaffCredit().getToStaff());
             }else if(paymentMethodData.getStaffCredit().getToStaff()==null && getPreBill().getToStaff()!=null){
                 paymentMethodData.getStaffCredit().setToStaff(getPreBill().getToStaff());
             }
-
+            
             if (getPreBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
                 return true;
@@ -978,7 +978,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public double checkAndUpdateBalance() {
         if (getPreBill().getPaymentMethod() != null) {
             switch (getPreBill().getPaymentMethod()) {
-                case Cash:
+                case Cash:                   
                     balance = getPreBill().getNetTotal() - cashPaid;
                     break;
                 case Card:
@@ -1003,7 +1003,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     break;
             }
         }
-
+       
         updateTotals();
         return balance;
     }
@@ -1055,7 +1055,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return;
         }
-
+        
         saveSaleBill();
 //        saveSaleBillItems();
 
@@ -1073,14 +1073,68 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         paymentService.updateBalances(payments);
 
+        markComplete(getPreBill());
 //        markToken();
 //        makeNull();
         //    removeSettledToken();
         billPreview = true;
     }
+    
+    public Token findTokenFromBill(Bill bill){
+        return tokenController.findPharmacyTokens(bill);
+    }
+    
+     public void markInProgress(Bill bill){
+        System.out.println("start unmark");
+        Token t = findTokenFromBill(bill);
+        if(t == null){
+            return;
+        }
+        t.setCalled(false);
+        t.setCalledAt(null);
+        t.setInProgress(true);
+        t.setCompleted(false);
+        tokenController.save(t);
+        System.out.println("end unmark");
+        
+    }
+     
+     public void markComplete(Bill bill){
+        System.out.println("start unmark");
+        Token t = findTokenFromBill(bill);
+        if(t == null){
+            return;
+        }
+        t.setInProgress(false);
+        t.setCompleted(true);
+        tokenController.save(t);
+        System.out.println("end unmark");
+        
+    }
+    
+    
+    public void unmarkToken(Bill bill){
+        System.out.println("start unmark");
+        Token t = findTokenFromBill(bill);
+        if(t == null){
+            return;
+        }
+        t.setCalled(false);
+        t.setCalledAt(null);
+        t.setInProgress(false);
+        t.setCompleted(false);
+        tokenController.save(t);
+        tokenFacade.flush();
+        System.out.println("end unmark");
+        
+    }
+    
+    @EJB
+    private TokenFacade tokenFacade;
 
-    public void markToken() {
-        Token t = tokenController.findPharmacyTokens(getPreBill());
+    public void markToken(Bill bill) {
+        System.out.println("start mark");
+        Token t = findTokenFromBill(bill);
         if (t == null) {
             return;
         }
@@ -1089,6 +1143,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         t.setInProgress(false);
         t.setCompleted(false);
         tokenController.save(t);
+        tokenFacade.flush();
+        
+        System.out.println("end mark");
     }
 
 //    public void removeSettledToken() {
