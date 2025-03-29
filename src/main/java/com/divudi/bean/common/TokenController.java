@@ -196,7 +196,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.bill.billTypeAtomic = :bta"
                 + " and t.called=:cal "
                 + " and t.tokenType=:ty"
-                + " and t.completed=:com";
+                + " and t.completed=:com"
+                + " and t.retired = false";
         
         Bill b = new Bill();
         b.getBillTypeAtomic();
@@ -220,7 +221,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.called=:cal "
                 + " and t.tokenType=:ty"
                 + " and t.inProgress=:prog "
-                + " and t.completed=:com";
+                + " and t.completed=:com "
+                + " and t.retired = false";
         
         Bill b = new Bill();
         b.getBillTypeAtomic();

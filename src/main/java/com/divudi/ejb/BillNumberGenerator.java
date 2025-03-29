@@ -1032,7 +1032,8 @@ public class BillNumberGenerator {
         String sql = "SELECT count(b) "
                 + " FROM Token b "
                 + " where b.tokenType=:tt "
-                + " and b.tokenDate=:bd ";
+                + " and b.tokenDate=:bd "
+                + " and b.retired = false";
         HashMap hm = new HashMap();
 
         if (department != null) {

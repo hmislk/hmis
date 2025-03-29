@@ -371,7 +371,8 @@
                             </div>
                             <div>
                                 <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning mx-2" value="Sale for cashier bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill">
-                                    <f:actionListener binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashier()}"></f:actionListener>
+                                    <f:actionListener rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashier()}"></f:actionListener>
+                                    <f:actionListener rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"></f:actionListener>
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="New Pharmacy Token"
