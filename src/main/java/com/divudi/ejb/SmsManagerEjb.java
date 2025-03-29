@@ -148,7 +148,7 @@ public class SmsManagerEjb {
         List<SessionInstance> upcomingSessions = sessions.stream()
                 .filter(session -> {
                     Date sessionStartDateTime = getSessionStartDateTime(session);
-                    return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
+                    return sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
                 })
                 .collect(Collectors.toList());
 
@@ -549,7 +549,7 @@ public class SmsManagerEjb {
             URL url = new URL(smsGatewayUrl);
 
             String accessToken = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Access Token");
-            if (accessToken == null || accessToken.trim().equals("")) {
+            if (accessToken == null || accessToken.trim().isEmpty()) {
                 accessToken = getNewAccessToken(userName, password, loginUrl);
             }
 

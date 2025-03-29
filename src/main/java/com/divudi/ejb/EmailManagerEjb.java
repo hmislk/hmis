@@ -20,7 +20,6 @@ import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.mail.BodyPart;
 import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -117,8 +116,6 @@ public class EmailManagerEjb {
             Transport.send(message);
             return true;
 
-        } catch (MessagingException e) {
-            return false;
         } catch (Exception e) {
             return false;
         }
