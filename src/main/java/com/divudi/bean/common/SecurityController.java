@@ -174,8 +174,7 @@ public class SecurityController implements Serializable {
 
     public static boolean matchPassword(String planePassword, String encryptedPassword) {
         BasicPasswordEncryptor en = new BasicPasswordEncryptor();
-        boolean mathingAccess =en.checkPassword(planePassword, encryptedPassword);
-        return  mathingAccess;
+        return en.checkPassword(planePassword, encryptedPassword);
     }
 
     public static boolean matchPassword(String planePassword, String encryptedPassword, boolean fake) {
