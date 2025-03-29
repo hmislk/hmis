@@ -6,22 +6,22 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.report.CashierReportController;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.BillsTotals;
+import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

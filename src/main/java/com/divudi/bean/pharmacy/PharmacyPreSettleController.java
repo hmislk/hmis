@@ -15,59 +15,50 @@ import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.BooleanMessage;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.BooleanMessage;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Token;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.TokenFacade;
-import com.divudi.service.BillService;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Token;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -924,13 +915,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-            
+
             if(paymentMethodData.getStaffCredit().getToStaff()!=null && getPreBill().getToStaff()==null){
                 getPreBill().setToStaff(paymentMethodData.getStaffCredit().getToStaff());
             }else if(paymentMethodData.getStaffCredit().getToStaff()==null && getPreBill().getToStaff()!=null){
                 paymentMethodData.getStaffCredit().setToStaff(getPreBill().getToStaff());
             }
-            
+
             if (getPreBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
                 return true;
@@ -987,7 +978,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public double checkAndUpdateBalance() {
         if (getPreBill().getPaymentMethod() != null) {
             switch (getPreBill().getPaymentMethod()) {
-                case Cash:                   
+                case Cash:
                     balance = getPreBill().getNetTotal() - cashPaid;
                     break;
                 case Card:
@@ -1012,7 +1003,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     break;
             }
         }
-       
+
         updateTotals();
         return balance;
     }
@@ -1064,7 +1055,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return;
         }
-        
+
         saveSaleBill();
 //        saveSaleBillItems();
 
@@ -1082,53 +1073,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         paymentService.updateBalances(payments);
 
-        markComplete(getPreBill());
 //        markToken();
 //        makeNull();
         //    removeSettledToken();
         billPreview = true;
     }
-    
-    public Token findTokenFromBill(Bill bill){
-        return tokenController.findPharmacyTokens(bill);
-    }
-    
-     public void markComplete(Bill bill){
-        System.out.println("start unmark");
-        Token t = findTokenFromBill(bill);
-        if(t == null){
-            return;
-        }
-        t.setInProgress(false);
-        t.setCompleted(true);
-        tokenController.save(t);
-        System.out.println("end unmark");
-        
-    }
-    
-    
-    public void unmarkToken(Bill bill){
-        System.out.println("start unmark");
-        Token t = findTokenFromBill(bill);
-        if(t == null){
-            return;
-        }
-        t.setCalled(false);
-        t.setCalledAt(null);
-        t.setInProgress(true);
-        t.setCompleted(false);
-        tokenController.save(t);
-        tokenFacade.flush();
-        System.out.println("end unmark");
-        
-    }
-    
-    @EJB
-    private TokenFacade tokenFacade;
 
-    public void markToken(Bill bill) {
-        System.out.println("start mark");
-        Token t = findTokenFromBill(bill);
+    public void markToken() {
+        Token t = tokenController.findPharmacyTokens(getPreBill());
         if (t == null) {
             return;
         }
@@ -1137,9 +1089,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         t.setInProgress(false);
         t.setCompleted(false);
         tokenController.save(t);
-        tokenFacade.flush();
-        
-        System.out.println("end mark");
     }
 
 //    public void removeSettledToken() {

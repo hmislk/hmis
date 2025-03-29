@@ -4,8 +4,8 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.WebUser;
-import com.divudi.facade.WebUserFacade;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.WebUserFacade;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Named;
@@ -29,11 +29,11 @@ public class AuthenticateController {
      */
     public AuthenticateController() {
     }
-    
+
     public SecurityController getSecurityController() {
         return securityController;
     }
-    
+
     public boolean userAuthenticated(String inputUserName, String inputPassword) {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
@@ -47,9 +47,9 @@ public class AuthenticateController {
         }
         return false;
     }
-    
+
     private WebUserFacade getFacede() {
         return uFacade;
     }
-    
+
 }

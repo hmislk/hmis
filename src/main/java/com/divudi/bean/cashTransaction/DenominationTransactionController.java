@@ -7,12 +7,11 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.PaymentMethod;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Payment;
-import com.divudi.entity.cashTransaction.DenominationTransaction;
-import com.divudi.facade.DenominationTransactionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.cashTransaction.DenominationTransaction;
+import com.divudi.core.facade.DenominationTransactionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,11 +81,11 @@ public class DenominationTransactionController implements Serializable {
             denominationTransactionFacade.edit(transaction);
         }
     }
-    
+
     public List<DenominationTransaction> createDefaultDenominationTransaction() {
         List<DenominationTransaction> dts = new ArrayList<>();
-        List<com.divudi.entity.cashTransaction.Denomination> denominations = denominationController.getDenominations();
-        for (com.divudi.entity.cashTransaction.Denomination d : denominations) {
+        List<com.divudi.core.entity.cashTransaction.Denomination> denominations = denominationController.getDenominations();
+        for (com.divudi.core.entity.cashTransaction.Denomination d : denominations) {
             DenominationTransaction dt = new DenominationTransaction();
             dt.setDenomination(d);
             dt.setPaymentMethod(PaymentMethod.Cash);

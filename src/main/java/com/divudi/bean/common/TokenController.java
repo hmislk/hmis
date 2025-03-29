@@ -3,23 +3,22 @@ package com.divudi.bean.common;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.BillType;
-import com.divudi.data.TokenType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.Token;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.TokenFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Token;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.TokenFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -48,7 +47,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
-    // </editor-fold> 
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -62,14 +61,14 @@ public class TokenController implements Serializable, ControllerWithPatient {
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
 
-    // </editor-fold> 
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
 
     private PaymentMethod paymentMethod;
 
     private Token removeingToken;
-    private List<Token> inprogressTokens;
+
     private List<Token> currentTokens;
     private List<Token> currentTokensCounterWise;
     private Department department;
@@ -80,7 +79,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     private boolean patientDetailsEditable;
 
-    // </editor-fold> 
+    // </editor-fold>
     public TokenController() {
 
     }
@@ -184,56 +183,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     public String navigateToManagePharmacyTokensCalledByCounter() {
         return "/token/pharmacy_tokens_called_counter_wise"; // Adjust the navigation string as per your page structure
-    }
-    
-    public void fillSaleForCashierBillsTokens(){
-        Map m = new HashMap();
-        String j = "Select t "
-                + " from Token t"
-                + " where t.department=:dep"
-                + " and t.tokenDate=:date "
-                + " and t.bill.billTypeAtomic = :bta"
-                + " and t.called=:cal "
-                + " and t.tokenType=:ty"
-                + " and t.inProgress=:prog "
-                + " and t.completed=:com";
-        
-        Bill b = new Bill();
-        b.getBillTypeAtomic();
-        m.put("dep", sessionController.getDepartment());
-        m.put("date", new Date());
-        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
-        m.put("cal", true); // Tokens that are called
-        m.put("prog", false); // Tokens that are not in progress
-        m.put("com", false); // Tokens that are not completed
-        m.put("ty", TokenType.PHARMACY_TOKEN);
-        j += " order by t.id";
-        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
-    }
-    
-    public void fillInprogressSaleForCashierBillsTokens(){
-        Map m = new HashMap();
-        String j = "Select t "
-                + " from Token t"
-                + " where t.department=:dep"
-                + " and t.tokenDate=:date "
-                + " and t.bill.billTypeAtomic = :bta"
-                + " and t.called=:cal "
-                + " and t.tokenType=:ty"
-                + " and t.inProgress=:prog "
-                + " and t.completed=:com";
-        
-        Bill b = new Bill();
-        b.getBillTypeAtomic();
-        m.put("dep", sessionController.getDepartment());
-        m.put("date", new Date());
-        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
-        m.put("cal", false); // Tokens that are called
-        m.put("prog", true); // Tokens that are not in progress
-        m.put("com", false); // Tokens that are not completed
-        m.put("ty", TokenType.PHARMACY_TOKEN);
-        j += " order by t.id";
-        inprogressTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
 
     public void fillPharmacyTokensCalled() {
@@ -517,7 +466,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    // </editor-fold> 
+    // </editor-fold>
     public Token getCurrentToken() {
         return currentToken;
     }
@@ -627,14 +576,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
-    }
-
-    public List<Token> getInprogressTokens() {
-        return inprogressTokens;
-    }
-
-    public void setInprogressTokens(List<Token> inprogressTokens) {
-        this.inprogressTokens = inprogressTokens;
     }
 
 }

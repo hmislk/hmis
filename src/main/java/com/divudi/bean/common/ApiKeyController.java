@@ -8,10 +8,10 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.ApiKeyType;
-import com.divudi.entity.ApiKey;
-import com.divudi.facade.ApiKeyFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.ApiKeyType;
+import com.divudi.core.entity.ApiKey;
+import com.divudi.core.facade.ApiKeyFacade;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;

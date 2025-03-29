@@ -6,57 +6,57 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.DoctorDayChannelCount;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PersonInstitutionType;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.WeekdayDisplay;
-import com.divudi.data.channel.DateEnum;
-import com.divudi.data.channel.PaymentEnum;
-import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.dataStructure.ChannelDoctor;
-import com.divudi.data.dataStructure.WebUserBillsTotal;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.table.String1Value1;
-import com.divudi.data.table.String1Value3;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.ApplicationInstitution;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DoctorDayChannelCount;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PersonInstitutionType;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.WeekdayDisplay;
+import com.divudi.core.data.channel.DateEnum;
+import com.divudi.core.data.channel.PaymentEnum;
+import com.divudi.core.data.dataStructure.BillsTotals;
+import com.divudi.core.data.dataStructure.ChannelDoctor;
+import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.table.String1Value1;
+import com.divudi.core.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Area;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.channel.ArrivalRecord;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.ArrivalRecordFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Area;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.channel.ArrivalRecord;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.ArrivalRecordFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -586,7 +586,7 @@ public class ChannelReportTemplateController implements Serializable {
         Map m = new HashMap();
         rows = new ArrayList<>();
 
-        j = "select new com.divudi.data.ReportTemplateRow(si) "
+        j = "select new com.divudi.core.data.ReportTemplateRow(si) "
                 + " from SessionInstance si "
                 + " where si.retired=false "
                 + " and si.sessionDate between :fd and :td ";
@@ -766,7 +766,7 @@ public class ChannelReportTemplateController implements Serializable {
         rows = new ArrayList<>();
 
         System.out.println("Preparing JPQL query...");
-        j = "select new com.divudi.data.ReportTemplateRow(si) "
+        j = "select new com.divudi.core.data.ReportTemplateRow(si) "
                 + " from SessionInstance si "
                 + " where si.retired=false "
                 + " and si.sessionDate between :fd and :td ";
@@ -855,7 +855,7 @@ public class ChannelReportTemplateController implements Serializable {
         Map m = new HashMap();
         rows = new ArrayList<>();
 
-        j = "select new com.divudi.data.ReportTemplateRow(si) "
+        j = "select new com.divudi.core.data.ReportTemplateRow(si) "
                 + " from SessionInstance si "
                 + " where si.retired=false "
                 + " and si.sessionDate between :fd and :td ";
@@ -924,7 +924,7 @@ public class ChannelReportTemplateController implements Serializable {
             }
         }
 
-        j = "select new com.divudi.data.ReportTemplateRow(bs) "
+        j = "select new com.divudi.core.data.ReportTemplateRow(bs) "
                 + " from BillSession bs "
                 + " where bs.retired = false "
                 + " and bs.bill.creditCompany is not null "
@@ -1022,7 +1022,7 @@ public class ChannelReportTemplateController implements Serializable {
         Map m = new HashMap();
         rows = new ArrayList<>();
 
-        j = "select new com.divudi.data.ReportTemplateRow(si.originatingSession.staff, "
+        j = "select new com.divudi.core.data.ReportTemplateRow(si.originatingSession.staff, "
                 + "sum(si.bookedPatientCount), "
                 + "sum(si.paidPatientCount),"
                 + "sum(si.completedPatientCount),"
@@ -5217,7 +5217,7 @@ public class ChannelReportTemplateController implements Serializable {
     public void createDailyDoctorAnalysis() {
         HashMap m = new HashMap();
         String sql;
-        sql = "Select new com.divudi.data.DoctorDayChannelCount(bs.bill.staff, bs.sessionDate , count(bs) )"
+        sql = "Select new com.divudi.core.data.DoctorDayChannelCount(bs.bill.staff, bs.sessionDate , count(bs) )"
                 + " From BillSession bs "
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
@@ -5231,7 +5231,7 @@ public class ChannelReportTemplateController implements Serializable {
     public void createDailyDoctorAnalysisDisplay() {
         HashMap m = new HashMap();
         String sql;
-        sql = "Select new com.divudi.data.DoctorDayChannelCount(bs.bill.staff, bs.sessionDate , count(bs) )"
+        sql = "Select new com.divudi.core.data.DoctorDayChannelCount(bs.bill.staff, bs.sessionDate , count(bs) )"
                 + " From BillSession bs "
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "

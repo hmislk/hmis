@@ -8,39 +8,39 @@ import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.table.String1Value1;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.BillsTotals;
+import com.divudi.core.data.table.String1Value1;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Service;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PriceMatrixFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.ServiceType;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PriceMatrixFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -5711,7 +5711,7 @@ public class CommonReport implements Serializable {
         m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.OPD));
 
         // First Query: For referredBy condition
-        String jpql1 = "select new com.divudi.data.ReportTemplateRow("
+        String jpql1 = "select new com.divudi.core.data.ReportTemplateRow("
                 + "rf, count(b), sum(b.netTotal))"
                 + " from Bill b "
                 + " left join b.referredBy rf "
@@ -5722,7 +5722,7 @@ public class CommonReport implements Serializable {
                 + " group by rf";
 
         // Second Query: For referredByInstitution condition
-        String jpql2 = "select new com.divudi.data.ReportTemplateRow("
+        String jpql2 = "select new com.divudi.core.data.ReportTemplateRow("
                 + "ri, count(b), sum(b.netTotal))"
                 + " from Bill b "
                 + " left join b.referredByInstitution ri "
@@ -5767,7 +5767,7 @@ public class CommonReport implements Serializable {
         m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
 
         // First Query: For referredBy condition
-        String jpql1 = "select new com.divudi.data.ReportTemplateRow("
+        String jpql1 = "select new com.divudi.core.data.ReportTemplateRow("
                 + "rf, count(b), sum(b.netTotal))"
                 + " from Bill b "
                 + " left join b.referredBy rf "
@@ -5778,7 +5778,7 @@ public class CommonReport implements Serializable {
                 + " group by rf";
 
         // Second Query: For referredByInstitution condition
-        String jpql2 = "select new com.divudi.data.ReportTemplateRow("
+        String jpql2 = "select new com.divudi.core.data.ReportTemplateRow("
                 + "ri, count(b), sum(b.netTotal))"
                 + " from Bill b "
                 + " left join b.referredByInstitution ri "
@@ -5823,7 +5823,7 @@ public class CommonReport implements Serializable {
         m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.INWARD));
 
         // First Query: For referredBy condition
-        String jpql1 = "select new com.divudi.data.ReportTemplateRow("
+        String jpql1 = "select new com.divudi.core.data.ReportTemplateRow("
                 + "rf, count(b), sum(b.netTotal))"
                 + " from Bill b "
                 + " left join b.referredBy rf "
@@ -5834,7 +5834,7 @@ public class CommonReport implements Serializable {
                 + " group by rf";
 
         // Second Query: For referredByInstitution condition
-        String jpql2 = "select new com.divudi.data.ReportTemplateRow("
+        String jpql2 = "select new com.divudi.core.data.ReportTemplateRow("
                 + "ri, count(b), sum(b.netTotal))"
                 + " from Bill b "
                 + " left join b.referredByInstitution ri "

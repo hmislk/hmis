@@ -18,14 +18,14 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Error Detection" ></h:outputLabel>
                     <h:panelGrid columns="2">
-                        <h:outputLabel value="From Date"/>                             
+                        <h:outputLabel value="From Date"/>
                         <p:calendar value="#{storeErrorChecking.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" placeholder="From Date" ></p:calendar>
                         <h:outputLabel value="To Date" />
                         <p:calendar value="#{storeErrorChecking.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" placeholder="To Date" ></p:calendar>
                         <h:outputLabel value="Department" />
                         <p:autoComplete value="#{storeErrorChecking.department}"  placeholder="Department"
-                                        completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
-                                        forceSelection="true" rendered="true" 
+                                        completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}"
+                                        forceSelection="true" rendered="true"
                                         requiredMessage="You must select a department" >
                             <p:column headerText="Department">
                                 <h:outputLabel value="#{dept.name}"/>
@@ -36,8 +36,8 @@
                         </p:autoComplete>
                         <h:outputLabel value="Item" />
                         <p:autoComplete value="#{storeErrorChecking.item}"  placeholder="Item"
-                                        completeMethod="#{itemController.completeStoreItem}" 
-                                        var="item" itemValue="#{item}" itemLabel="#{item.name}" 
+                                        completeMethod="#{itemController.completeStoreItem}"
+                                        var="item" itemValue="#{item}" itemLabel="#{item.name}"
                                         forceSelection="true"  >
                             <p:column headerText="Item">
                                 <h:outputLabel value="#{item.name}"/>
@@ -66,24 +66,24 @@
                                                 <br/>-->
 
 
-                        <p:dataTable styleClass="noBorder summeryBorder" 
+                        <p:dataTable styleClass="noBorder summeryBorder"
                                      value="#{storeErrorChecking.billItems}" var="pb"  rowIndexVar="i"
-                                     rowStyleClass="#{(pb.retired eq true or pb.bill.retired eq true) ?'greenText' : ''} 
-                                     #{((pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'StorePurchase' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'StoreGrnBill' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'StoreGrnReturn' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'StorePurchaseReturn' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.PreBill' and pb.bill.billType eq 'StorePre' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'StoreTransferIssue' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'StoreTransferReceive' )
+                                     rowStyleClass="#{(pb.retired eq true or pb.bill.retired eq true) ?'greenText' : ''}
+                                     #{((pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'StorePurchase' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'StoreGrnBill' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'StoreGrnReturn' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'StorePurchaseReturn' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.PreBill' and pb.bill.billType eq 'StorePre' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'StoreTransferIssue' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'StoreTransferReceive' )
                                        )? 'redText' : ''}
-                                     #{((pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'StorePurchase' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'StoreGrnBill' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'StoreGrnReturn' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'StorePurchaseReturn' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.RefundBill' and pb.bill.billType eq 'StorePre' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'StoreTransferIssue' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'StoreTransferReceive' and pb.bill.createdAt ne null )
+                                     #{((pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'StorePurchase' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'StoreGrnBill' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'StoreGrnReturn' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'StorePurchaseReturn' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.RefundBill' and pb.bill.billType eq 'StorePre' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'StoreTransferIssue' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'StoreTransferReceive' and pb.bill.createdAt ne null )
                                        )? 'greenText' : ''}"
                                      >
 
@@ -107,16 +107,16 @@
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
                             <p:column styleClass="noPrintButton" >
-                                <p:commandButton action="#{storeBillSearch.viewBill}" value="View Bill">                                    
+                                <p:commandButton action="#{storeBillSearch.viewBill}" value="View Bill">
                                     <f:setPropertyActionListener value="#{pb.bill}" target="#{storeBillSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>
 
-                            <p:column headerText="Bill No" >                              
+                            <p:column headerText="Bill No" >
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Dept Id"/>
                                     <h:outputLabel value="#{pb.bill.deptId}" >
-                                    </h:outputLabel>                               
+                                    </h:outputLabel>
                                     <h:outputLabel value="Ins Id"/>
                                     <h:outputLabel value="#{pb.bill.insId}" >
                                     </h:outputLabel>
@@ -144,7 +144,7 @@
                                     <h:outputLabel value="#{pb.pharmaceuticalBillItem.itemBatch.batchNo}" >
                                     </h:outputLabel>
                                 </h:panelGrid>
-                                <h:panelGrid columns="2">                                   
+                                <h:panelGrid columns="2">
                                     <h:outputLabel value="Before "/>
                                     <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty}"  />
                                 </h:panelGrid>
