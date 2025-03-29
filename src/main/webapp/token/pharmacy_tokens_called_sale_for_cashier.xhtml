@@ -218,14 +218,15 @@
                             <div class="col-3">
                                 <div class="">
                                     <h:panelGroup rendered="#{token.bill ne null}" >
-                                        <h:panelGroup class="d-flex justify-content-center align-items-center" rendered="#{token.isCalled()}" >
+                                        <h:panelGroup class="d-flex justify-content-center align-items-center" rendered="#{token.isCalled() and !token.inProgress}" >
                                             <img width="250px" src="../../resources/image/checkout_at_cashier.svg"/>
                                         </h:panelGroup>
-                                        <h:panelGroup class="d-flex justify-content-center align-items-center" rendered="#{token.isCalled() && token.inProgress}" >
+                                        <h:panelGroup class="d-flex justify-content-center align-items-center" rendered="#{token.isCalled() and token.inProgress}" >
                                             <img width="250px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
                                         </h:panelGroup>
 
-                                        <p:tag style="font-size: 20px;" class="m-1 d-flex justify-content-center align-items-center" severity="success" value="Order Completed" rounded="true"></p:tag>
+                                        <p:tag rendered="#{token.isCalled() and token.inProgress}" style="font-size: 20px;" class="m-1 d-flex justify-content-center align-items-center" severity="success" value="Payment Processing" rounded="true"></p:tag>
+                                        <p:tag rendered="#{token.isCalled() and !token.inProgress}" style="font-size: 20px;" class="m-1 d-flex justify-content-center align-items-center" severity="success" value="Processed Order" rounded="true"></p:tag>
 <!--                                                    <h:panelGroup rendered="#{token.inProgress}" >
                                             <img width="250px"  src="../../resources/image/checkout_at_cashier.svg"/>                
                                         </h:panelGroup>-->
