@@ -1100,21 +1100,34 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
      
      public void markComplete(Bill bill){
-        System.out.println("start unmark");
         Token t = findTokenFromBill(bill);
         if(t == null){
             return;
         }
         t.setInProgress(false);
+        t.setInProgress(false);
         t.setCompleted(true);
+        t.setCompletedAt(new Date());
         tokenController.save(t);
-        System.out.println("end unmark");
+        
+    }
+     
+      public void paymentOngoingToken(Bill bill){;
+        Token t = findTokenFromBill(bill);
+        if(t == null){
+            return;
+        }
+        t.setCalled(true);
+        t.setCalledAt(null);
+        t.setInProgress(true);
+        t.setCompleted(false);
+        tokenController.save(t);
+        tokenFacade.flush();
         
     }
     
     
     public void unmarkToken(Bill bill){
-        System.out.println("start unmark");
         Token t = findTokenFromBill(bill);
         if(t == null){
             return;
@@ -1125,7 +1138,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         t.setCompleted(false);
         tokenController.save(t);
         tokenFacade.flush();
-        System.out.println("end unmark");
         
     }
     
@@ -1133,7 +1145,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     private TokenFacade tokenFacade;
 
     public void markToken(Bill bill) {
-        System.out.println("start mark");
         Token t = findTokenFromBill(bill);
         if (t == null) {
             return;
@@ -1145,7 +1156,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         tokenController.save(t);
         tokenFacade.flush();
         
-        System.out.println("end mark");
     }
 
 //    public void removeSettledToken() {

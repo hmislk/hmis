@@ -196,7 +196,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.bill.billTypeAtomic = :bta"
                 + " and t.called=:cal "
                 + " and t.tokenType=:ty"
-                + " and t.inProgress=:prog "
                 + " and t.completed=:com";
         
         Bill b = new Bill();
@@ -205,7 +204,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("date", new Date());
         m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         m.put("cal", true); // Tokens that are called
-        m.put("prog", false); // Tokens that are not in progress
         m.put("com", false); // Tokens that are not completed
         m.put("ty", TokenType.PHARMACY_TOKEN);
         j += " order by t.id";

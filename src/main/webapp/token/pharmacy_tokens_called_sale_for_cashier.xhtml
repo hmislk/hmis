@@ -138,7 +138,7 @@
                 background-color: #6c5ce7;
 
             }
-          
+
             .dynamic-border {
                 border: 2px solid #2d3436; /* Initial border */
                 animation: borderAnimation 2s infinite alternate; /* Change border color every 2s */
@@ -219,10 +219,12 @@
                                 <div class="">
                                     <h:panelGroup rendered="#{token.bill ne null}" >
                                         <h:panelGroup class="d-flex justify-content-center align-items-center" rendered="#{token.isCalled()}" >
-                                            <!--                                            <img width="250px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>-->
                                             <img width="250px" src="../../resources/image/checkout_at_cashier.svg"/>
                                         </h:panelGroup>
-                                        
+                                        <h:panelGroup class="d-flex justify-content-center align-items-center" rendered="#{token.isCalled() && token.inProgress}" >
+                                            <img width="250px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
+                                        </h:panelGroup>
+
                                         <p:tag style="font-size: 20px;" class="m-1 d-flex justify-content-center align-items-center" severity="success" value="Order Completed" rounded="true"></p:tag>
 <!--                                                    <h:panelGroup rendered="#{token.inProgress}" >
                                             <img width="250px"  src="../../resources/image/checkout_at_cashier.svg"/>                
@@ -287,25 +289,25 @@
             <p:poll interval="5" listener="#{tokenController.fillSaleForCashierCalledBillsTokens()}" update="@form" />
             <p:poll interval="5" listener="#{tokenController.fillInprogressSaleForCashierBillsTokens()}" update="@form" />
         </h:form>
-        
+
         <script>
-                function animateDots() {
-                    let dots = ["", ".", "..", "..."];
-                    let index = 0;
-                    setInterval(() => {
-                        let tagElement = document.querySelectorAll(".progress-tag");
+            function animateDots() {
+                let dots = ["", ".", "..", "..."];
+                let index = 0;
+                setInterval(() => {
+                    let tagElement = document.querySelectorAll(".progress-tag");
                     if (tagElement) {
-                        tagElement.forEach(e=>{
-                            e.innerText = "Order Processing "+dots[index];
+                        tagElement.forEach(e => {
+                            e.innerText = "Order Processing " + dots[index];
                         })
-                        index = (index+1)% dots.length;
+                        index = (index + 1) % dots.length;
                     }
                 }, 500); // Change dots every 500ms
             }
 
             // Start animation when the page loads
-                window.onload = animateDots;
-            </script>
+            window.onload = animateDots;
+        </script>
 
         <script>
             function updateTime() {
