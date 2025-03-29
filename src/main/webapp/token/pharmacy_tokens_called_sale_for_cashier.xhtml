@@ -192,7 +192,7 @@
 
             <div class="container-fluid" style="margin-top: 180px">
 
-                <ui:repeat var="token" value="#{tokenController.currentTokens}" >
+                <ui:repeat var="token" value="#{tokenController.currentTokensSaleForCashier}" >
                     <div class="card dynamic-border shadow mb-2 p-2">
                         <div class="row d-flex align-items-center" >
                             <!--                            <div class="col-3">
@@ -243,7 +243,7 @@
                     </div>
                 </ui:repeat>
 
-                <ui:repeat var="inprogressToken" value="#{tokenController.inprogressTokens}">
+                <ui:repeat var="inprogressToken" value="#{tokenController.inprogressTokensSaleForCashier}">
                     <div class="card shadow my-1" style="border: solid #012e4b 1px">
                         <div class="row d-flex align-items-center" >
                             <!--                            <div class="col-3">
@@ -282,14 +282,9 @@
 
                 </ui:repeat>
             </div>
-            
-            
-
-            
-
 
             <!-- Automatic Process Every 5 Seconds -->
-            <p:poll interval="5" listener="#{tokenController.fillSaleForCashierBillsTokens()}" update="@form" />
+            <p:poll interval="5" listener="#{tokenController.fillSaleForCashierCalledBillsTokens()}" update="@form" />
             <p:poll interval="5" listener="#{tokenController.fillInprogressSaleForCashierBillsTokens()}" update="@form" />
         </h:form>
         

@@ -4,6 +4,7 @@ import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Bill;
@@ -68,7 +69,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
     private PaymentMethod paymentMethod;
 
     private Token removeingToken;
-
+    private List<Token> inprogressTokensSaleForCashier;
+     private List<Token> currentTokensSaleForCashier;
     private List<Token> currentTokens;
     private List<Token> currentTokensCounterWise;
     private Department department;
@@ -183,6 +185,56 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     public String navigateToManagePharmacyTokensCalledByCounter() {
         return "/token/pharmacy_tokens_called_counter_wise"; // Adjust the navigation string as per your page structure
+    }
+
+    public void fillSaleForCashierCalledBillsTokens(){
+        Map m = new HashMap();
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.bill.billTypeAtomic = :bta"
+                + " and t.called=:cal "
+                + " and t.tokenType=:ty"
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com";
+        
+        Bill b = new Bill();
+        b.getBillTypeAtomic();
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        m.put("cal", true); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("com", false); // Tokens that are not completed
+        m.put("ty", TokenType.PHARMACY_TOKEN);
+        j += " order by t.id";
+        currentTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+    }
+    
+    public void fillInprogressSaleForCashierBillsTokens(){
+        Map m = new HashMap();
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.bill.billTypeAtomic = :bta"
+                + " and t.called=:cal "
+                + " and t.tokenType=:ty"
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com";
+        
+        Bill b = new Bill();
+        b.getBillTypeAtomic();
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        m.put("cal", false); // Tokens that are called
+        m.put("prog", true); // Tokens that are not in progress
+        m.put("com", false); // Tokens that are not completed
+        m.put("ty", TokenType.PHARMACY_TOKEN);
+        j += " order by t.id";
+        inprogressTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
 
     public void fillPharmacyTokensCalled() {
@@ -576,6 +628,22 @@ public class TokenController implements Serializable, ControllerWithPatient {
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+
+    public List<Token> getInprogressTokensSaleForCashier() {
+        return inprogressTokensSaleForCashier;
+    }
+
+    public void setInprogressTokensSaleForCashier(List<Token> inprogressTokensSaleForCashier) {
+        this.inprogressTokensSaleForCashier = inprogressTokensSaleForCashier;
+    }
+
+    public List<Token> getCurrentTokensSaleForCashier() {
+        return currentTokensSaleForCashier;
+    }
+
+    public void setCurrentTokensSaleForCashier(List<Token> currentTokensSaleForCashier) {
+        this.currentTokensSaleForCashier = currentTokensSaleForCashier;
     }
 
 }
