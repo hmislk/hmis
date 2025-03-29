@@ -66,6 +66,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ConfigOptionFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
@@ -2018,8 +2019,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         tokenFacade.edit(currentToken);
         setToken(currentToken);
     }
+    
+    @EJB
+    private ConfigOptionFacade configOptionFacade;
 
     public void settlePreBill() {
+        configOptionFacade.flush();
         editingQty = null;
 
         if (getPreBill().getBillItems().isEmpty()) {
@@ -3020,6 +3025,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         errorMessage = "";
         comment = null;
         token = null;
+        currentToken = null;
 
     }
 
