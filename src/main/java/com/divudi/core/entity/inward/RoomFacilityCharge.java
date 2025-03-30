@@ -4,7 +4,6 @@
  */
 package com.divudi.core.entity.inward;
 
-import com.divudi.core.data.inward.RoomFacility;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PaymentScheme;
