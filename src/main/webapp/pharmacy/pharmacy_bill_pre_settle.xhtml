@@ -237,12 +237,12 @@
                                             <h:outputLabel value="Bill No " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.deptId}" ></h:outputLabel>
-                                            <h:outputLabel value="Bill Date " ></h:outputLabel>
+                                            <h:outputLabel value="Billed Date " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
-                                            <h:outputLabel value="Bill Time " ></h:outputLabel>
+                                            <h:outputLabel value="Billed Time " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
@@ -256,10 +256,29 @@
                                             <h:outputLabel value="Comments " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.comments}" ></h:outputLabel>
+                                            
+                                        </h:panelGrid>
+                                        
+                                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
                                             <div style="height: 105px">
 
                                             </div>
-
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGrid rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" columns="3" style="width: 100%">
+                                            <h:outputLabel value="Token" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenNumber}" ></h:outputLabel>
+                                            <h:outputLabel value="Token Date" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Token Time" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
                                         </h:panelGrid>
                                     </div>
                                 </p:panel>
@@ -345,12 +364,16 @@
                     <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
+                                
                                 <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
                                     <p:printer target="gpBillPreview" />
                                 </p:commandButton>
                             </div>
                             <div>
+                                <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning mx-2" value="Sale for cashier bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill">
+                                    <f:actionListener rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashier()}"></f:actionListener>
+                                    <f:actionListener rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"></f:actionListener>
+                                </p:commandButton>
                                 <p:commandButton 
                                     value="New Pharmacy Token"
                                     ajax="false" 

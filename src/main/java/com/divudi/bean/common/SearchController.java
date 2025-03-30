@@ -3,7 +3,6 @@ package com.divudi.bean.common;
 // <editor-fold defaultstate="collapsed" desc="Template">
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Importa">
-
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
@@ -68,6 +67,7 @@ import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ServiceType;
+import com.divudi.core.data.TokenType;
 import com.divudi.core.data.analytics.ReportTemplateType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Payment;
@@ -120,6 +120,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 // </editor-fold>
 
 /**
@@ -160,6 +161,9 @@ public class SearchController implements Serializable {
     BillService billService;
     @EJB
     PatientInvestigationService patientInvestigationService;
+    @EJB
+    private ReportTimerController reportTimerController;
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -202,8 +206,6 @@ public class SearchController implements Serializable {
     DrawerController drawerController;
     @Inject
     EnumController enumController;
-    @Inject
-    private ReportTimerController reportTimerController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String visitType;
@@ -6252,9 +6254,9 @@ public class SearchController implements Serializable {
         Row headerRow = sheet.createRow(rowIdx++);
         // Expanding the headers to include all necessary fields
         String[] headers = {
-                "Bill ID", "Insitution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
-                "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value",
-                "Fee Name", "Fee Type", "Fee Value", "Institution Name", "Department Name", "Staff Name"
+            "Bill ID", "Insitution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value",
+            "Fee Name", "Fee Type", "Fee Value", "Institution Name", "Department Name", "Staff Name"
         };
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
@@ -7527,6 +7529,72 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
     }
 
+    public void fillPharmacyPreBillsToAcceptAtCashierInTokenSystem() {
+        bills = null;
+        String sql;
+        Map parameters = new HashMap();
+//        Token t = new Token();
+
+        sql = "select token from Token token "
+                + " where token.tokenType = :type "
+                + " and token.bill is not null "
+                + " and token.tokenAt between :fromDate and :toDate "
+                + " and token.retired = false "
+                + " and token.department = :dept "
+                + " and token.institution = :ins ";
+
+//
+        parameters.put("type", TokenType.PHARMACY_TOKEN);
+        parameters.put("fromDate", getFromDate());
+        parameters.put("toDate", getToDate());
+        parameters.put("dept", sessionController.getDepartment());
+        parameters.put("ins", sessionController.getInstitution());
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((token.bill.patient.person.name) like :patientName )";
+            parameters.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((token.bill.deptId) like :billNo )";
+            parameters.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((token.bill.netTotal) like :netTotal )";
+            parameters.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((token.bill.total) like :total )";
+            parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by token.tokenAt desc";
+
+        List<Token> tokenList = tokenFacade.findByJpqlWithoutCache(sql, parameters, TemporalType.TIMESTAMP, 25);
+        bills = tokenList.stream().map(t -> t.getBill()).collect(Collectors.toList());
+
+    }
+
+    @Inject
+    private TokenController tokenController;
+
+    public Token findBillFromToken(Bill bill) {
+        return tokenController.findPharmacyTokens(bill);
+    }
+
+    public List<Bill> filterNomarlBillsOnly(List<Bill> billList) {
+        List<Bill> normalBills = new ArrayList<>();
+        for (Bill bill : billList) {
+            if (findBillFromToken(bill) == null) {
+                normalBills.add(bill);
+            }
+        }
+
+        return normalBills;
+    }
+
     public void fillPharmacyPreBillsToAcceptAtCashier() {
         bills = null;
         String sql;
@@ -7550,7 +7618,8 @@ public class SearchController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
 
         //System.err.println("Sql " + sql);
-        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+        List<Bill> allBills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+        bills = filterNomarlBillsOnly(allBills);
     }
 
     public void createPharmacyPreTable() {
@@ -8586,9 +8655,9 @@ public class SearchController implements Serializable {
     }
 
     public void listBills(BillType billType, Class billClass, Boolean onlyCancelledBills, Boolean onlyReturnedBills,
-                          Institution fromInstitution, Department fromDepartment,
-                          Institution toInstitution, Department toDepartment,
-                          Doctor referredDoctor, Institution referredInstitution) {
+            Institution fromInstitution, Department fromDepartment,
+            Institution toInstitution, Department toDepartment,
+            Doctor referredDoctor, Institution referredInstitution) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -8838,21 +8907,21 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBills(List<BillTypeAtomic> billTypesAtomics,
-                                                                 Institution ins, Department dep,
-                                                                 Institution fromIns,
-                                                                 Department fromDep,
-                                                                 Institution toIns,
-                                                                 Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         return billService.createBundleByKeywordForBills(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null, fromDate, toDate, searchKeyword);
     }
 
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
-                                                        Institution ins,
-                                                        Department dep,
-                                                        Institution fromIns,
-                                                        Department fromDep,
-                                                        Institution toIns,
-                                                        Department toDep) {
+            Institution ins,
+            Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         return createBundleForBills(
                 billTypesAtomics,
                 ins,
@@ -8868,15 +8937,15 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
-                                                        Institution ins,
-                                                        Department dep,
-                                                        Institution site,
-                                                        Institution fromIns,
-                                                        Department fromDep,
-                                                        Institution toIns,
-                                                        Department toDep,
-                                                        Speciality paramSpeciality,
-                                                        Staff paramStaff) {
+            Institution ins,
+            Department dep,
+            Institution site,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Speciality paramSpeciality,
+            Staff paramStaff) {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         bills = null;
@@ -8949,11 +9018,11 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeyword(List<BillTypeAtomic> billTypesAtomics,
-                                     Institution ins, Department dep,
-                                     Institution fromIns,
-                                     Department fromDep,
-                                     Institution toIns,
-                                     Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -9030,13 +9099,13 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForChannelBills(List<BillTypeAtomic> billTypesAtomics,
-                                                    Institution ins, Department dep,
-                                                    Institution fromIns,
-                                                    Department fromDep,
-                                                    Institution toIns,
-                                                    Department toDep,
-                                                    Staff consultant,
-                                                    Speciality speciality
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff consultant,
+            Speciality speciality
     ) {
         bills = null;
         String sql;
@@ -9124,12 +9193,12 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywords(List<BillTypeAtomic> billTypesAtomics,
-                                      Institution ins, Department dep,
-                                      Institution fromIns,
-                                      Department fromDep,
-                                      Institution toIns,
-                                      Department toDep,
-                                      Staff stf) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -9186,21 +9255,21 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
-                                                Institution ins, Department dep,
-                                                Institution fromIns,
-                                                Department fromDep,
-                                                Institution toIns,
-                                                Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         createTableByKeywordForBillFees(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null);
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
-                                                                    Institution ins, Department dep,
-                                                                    Institution fromIns,
-                                                                    Department fromDep,
-                                                                    Institution toIns,
-                                                                    Department toDep,
-                                                                    Category cat) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Category cat) {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         String sql;
@@ -9289,12 +9358,12 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
-                                                Institution ins, Department dep,
-                                                Institution fromIns,
-                                                Department fromDep,
-                                                Institution toIns,
-                                                Department toDep,
-                                                Category cat) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Category cat) {
 
         String sql;
         Map temMap = new HashMap();
@@ -9376,22 +9445,22 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillFee(List<BillTypeAtomic> billTypesAtomics,
-                                               Institution ins, Department dep,
-                                               Institution fromIns,
-                                               Department fromDep,
-                                               Institution toIns,
-                                               Department toDep,
-                                               Staff stf) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
         createTableByKeywordBillFee(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, stf);
     }
 
     public void createTableByKeywordBillFee(List<BillTypeAtomic> billTypesAtomics,
-                                            Institution ins, Department dep,
-                                            Institution fromIns,
-                                            Department fromDep,
-                                            Institution toIns,
-                                            Department toDep,
-                                            Staff stf) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
 
         String sql;
         Map temMap = new HashMap();
@@ -9448,11 +9517,11 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillsWithoutToStaff(List<BillTypeAtomic> billTypesAtomics,
-                                                           Institution ins, Department dep,
-                                                           Institution fromIns,
-                                                           Department fromDep,
-                                                           Institution toIns,
-                                                           Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -9530,11 +9599,11 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeyword(BillType billType,
-                                     Institution ins, Department dep,
-                                     Institution fromIns,
-                                     Department fromDep,
-                                     Institution toIns,
-                                     Department toDep) {
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -11613,11 +11682,11 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
 
         BillType[] bt = {
-                BillType.ChannelOnCall,
-                BillType.ChannelCash,
-                BillType.ChannelAgent,
-                BillType.ChannelStaff,
-                BillType.ChannelCredit,};
+            BillType.ChannelOnCall,
+            BillType.ChannelCash,
+            BillType.ChannelAgent,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,};
 
         List<BillType> bts = Arrays.asList(bt);
 
@@ -11682,12 +11751,12 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
 
         BillType[] bt = {
-                BillType.ChannelOnCall,
-                BillType.ChannelCash,
-                BillType.ChannelAgent,
-                BillType.ChannelStaff,
-                BillType.ChannelPaid,
-                BillType.ChannelCredit,};
+            BillType.ChannelOnCall,
+            BillType.ChannelCash,
+            BillType.ChannelAgent,
+            BillType.ChannelStaff,
+            BillType.ChannelPaid,
+            BillType.ChannelCredit,};
 
         List<BillType> bts = Arrays.asList(bt);
 
@@ -13730,7 +13799,6 @@ public class SearchController implements Serializable {
         generateCashierDetailed();
         return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
     }
-
 
     public void generateCashierSummary() {
         bundle = new ReportTemplateRowBundle();
@@ -18345,8 +18413,8 @@ public class SearchController implements Serializable {
         Row headerRow = sheet.createRow(rowIdx++);
         // Headers for both bills and bill items
         String[] headers = {
-                "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "User", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
-                "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
+            "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "User", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
         };
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
