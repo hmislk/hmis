@@ -98,6 +98,8 @@ public class ReportController implements Serializable {
     PatientDepositHistoryFacade patientDepositHistoryFacade;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
+    @EJB
+    private ReportTimerController reportTimerController;
 
     @Inject
     private InstitutionController institutionController;
@@ -117,6 +119,8 @@ public class ReportController implements Serializable {
     PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private SessionController sessionController;
 
     private int reportIndex;
     private Institution institution;
@@ -227,10 +231,7 @@ public class ReportController implements Serializable {
     private String reportType;
     private Speciality speciality;
     private String reportTemplateFileIndexName;
-    @Named
-    @Inject
-    private SessionController sessionController;
-    private ReportTimerController reportTimerController;
+
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -1832,7 +1833,7 @@ public class ReportController implements Serializable {
                 m.put("inv", invoiceNumber);
             }
             agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT,sessionController.getLoggedUser());
+        }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
 
     public void processCollectingCentreStatementReport() {
@@ -3332,11 +3333,11 @@ public class ReportController implements Serializable {
         // Fetch results for OpdBill
         List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         // Now fetch results for OpdBillCancel (use a list for single bType)
-        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION,BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
         List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Now fetch results for OpdBillRefund (use a list for single bType)
-        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND,BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND, BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
 
         List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
@@ -3378,7 +3379,7 @@ public class ReportController implements Serializable {
 
         List<TestWiseCountReport> tempTestWiseCounts = new ArrayList<>(resultMap.values());
 
-        testWiseCounts = new  ArrayList<>();
+        testWiseCounts = new ArrayList<>();
 
         totalCount = 0.0;
         totalHosFee = 0.0;
