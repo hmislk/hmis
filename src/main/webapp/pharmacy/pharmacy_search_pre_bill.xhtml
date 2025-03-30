@@ -62,8 +62,18 @@
                                     class="ui-button-success w-100 mt-3"
                                     icon="fas fa-search"
                                     ajax="false"
-                                    value="Search All"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    value="Search Normal Bills"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashier}"/>
+
+                                <p:commandButton
+
+                                    class="ui-button-success w-100 mt-3"
+                                    icon="fas fa-search"
+                                    ajax="false"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    value="Search Token Bills"
+                                    action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"/>
 
                                 <p:commandButton
                                     ajax="false"
@@ -78,6 +88,32 @@
                                     value="Search Paid Only"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierGetPaid()}"/>
                                 <h:outputLabel/>
+
+                                <p:commandButton
+                                    ajax="false"            
+                                    class="ui-button-secondary w-100 my-4"
+                                    icon="fa-solid fa-desktop"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    value=" View In Display"
+                                    action="/token/pharmacy_tokens_called_sale_for_cashier?faces-redirect=true"
+                                    actionListener="#{tokenController.fillSaleForCashierCalledBillsTokens()}"
+                                    style="font-size: 20px; font-weight: bold"
+                                    >
+
+                                </p:commandButton>
+
+                                <!--                                <h:outputScript>
+                                                                    function openFullScreen() {
+                                                                        var url = "#{request.contextPath}/faces/token/pharmacy_tokens_called_sale_for_cashier.xhtml";
+                                                                        var newWindow = window.open(url, '_blank', 'toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,fullscreen=yes');
+                                                                        if (newWindow) {
+                                                                            newWindow.moveTo(0, 0);
+                                                                            newWindow.resizeTo(screen.width, screen.height);
+                                                                        }
+                                                                    }
+                                                                </h:outputScript>-->
+
+
 
                                 <p:defaultCommand target="btnSearch"/>
 
@@ -133,6 +169,11 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
+                                    <p:column width="8em" headerText="Token Number" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+                                        <p:tag class="px-3" style="font-size: 15px" value="#{pharmacyPreSettleController.findTokenFromBill(bill).tokenNumber}" severity="success"></p:tag>                                        
+
+                                    </p:column>
+
                                     <p:column headerText="Net Value" >
 
                                         <h:outputLabel value="#{bill.netTotal}" >
@@ -141,13 +182,72 @@
 
                                     </p:column>
 
-                                    <p:column headerText="Accept" width="10%">
+                                    <p:column headerText="Accept" width="10%" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
                                         <p:commandButton
                                             ajax="false"
                                             value="Accept Payment"
                                             action="#{pharmacyPreSettleController.toSettle(bill)}"
                                             disabled="#{bill.referenceBill ne null or bill.cancelled}">
                                         </p:commandButton>
+                                    </p:column>
+
+                                    <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" headerText="Actions" style="text-align: center" width="10%" class="align-item-center justify-content-center">
+
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-center align-items-center">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa-solid fa-phone"
+                                                    title="Call Customer"
+                                                    class="ui-button-warning"
+                                                    action="#{pharmacyPreSettleController.markToken(bill)}"                                   
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or pharmacyPreSettleController.findTokenFromBill(bill).isCalled() }">
+
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa-solid fa-phone-slash"
+                                                    class="ui-button-danger mx-2"
+                                                    title="Cancel Calling"
+                                                    action="#{pharmacyPreSettleController.unmarkToken(bill)}"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
+
+                                                </p:commandButton>
+
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    class="ui-button-warning"
+                                                    icon="fas fa-pen" 
+                                                    disabled="#{bill.referenceBill ne null || bill.cancelled eq true}"
+                                                    rendered="#{bill ne null}"
+                                                    title="Edit Bill" 
+                                                    action="#{tokenController.navigateToSaleForCashierToEditBillWithToken(pharmacyPreSettleController.findTokenFromBill(bill))}">
+                                                    
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="ui-button-success mx-2"
+                                                    title="Accept Payment"
+                                                    icon="fa-solid fa-money-bill"
+                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                                    actionListener="#{pharmacyPreSettleController.paymentOngoingToken(bill)}"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
+                                                </p:commandButton> 
+                                            </div>
+
+
+                                        </div>
+
+
+
+                                        <!--                                        <p:commandButton
+                                                                                    ajax="false"
+                                                                                    value="Accept Payment"
+                                                                                    action="#{pharmacyPreSettleController.toSettle(bill)}"
+                                                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}">
+                                                                                </p:commandButton>-->
                                     </p:column>
                                     <p:column width="35%">
                                         <p:dataTable value="#{bill.cashBillsPre}" var="rb">
