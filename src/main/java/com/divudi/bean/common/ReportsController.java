@@ -1819,7 +1819,6 @@ public class ReportsController implements Serializable {
 //            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
 //            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
 //        }
-
         System.out.println("bill items");
 
         bundle.setName("Bill Items");
@@ -2608,7 +2607,6 @@ public class ReportsController implements Serializable {
 //        bundle.setBundleType("billList");
 //
 //        bundle = generateDebtorBalanceReportBills(opdBts, paymentMethods, onlyDueBills);
-
         if (visitType.equalsIgnoreCase("IP")) {
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
             opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
@@ -2659,8 +2657,8 @@ public class ReportsController implements Serializable {
                         removeList.add(row);
                     }
                 } else {
-                    if (bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient() -
-                            bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() == 0) {
+                    if (bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() == 0) {
                         removeList.add(row);
                     }
                 }
@@ -2679,7 +2677,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -2776,7 +2774,6 @@ public class ReportsController implements Serializable {
             bundle = generateReportBillItems(opdBts, null);
             bundle.calculateTotalByReferenceBills(visitType.equalsIgnoreCase("OP"));
         }
-
 
     }
 
@@ -2884,7 +2881,6 @@ public class ReportsController implements Serializable {
 //            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
 //            parameters.put("category", roomCategory);
 //        }
-
         if (institution != null) {
             jpql += "AND bill.department.institution = :ins ";
             parameters.put("ins", institution);
@@ -3033,6 +3029,73 @@ public class ReportsController implements Serializable {
             bundle.calculateTotalHospitalFeeByBillItems();
             bundle.calculateTotalByBillItems();
             bundle.calculateTotalStaffFeeByBillItems();
+        }
+    }
+
+    /**
+     * This method is a temporary fix for incorrectly assigned Department and
+     * Institution fields on Bills. Previously, there was an error in the
+     * workflow that assigned the wrong Department and Institution values. That
+     * workflow has been corrected, but older records remain invalid. This
+     * method corrects those records for a given ReportBundle (bundle).
+     *
+     * Usage Notes: 1. The method iterates over the groupedBillItems map (key:
+     * String, value: List of BillItem). 2. For each map entry, we only look at
+     * the first BillItem in the list to fix that Bill. 3. We derive the correct
+     * Department and Institution from bill.getCreater() (the user who created
+     * the bill). 4. The 'retireComments' field is set to log the update that
+     * occurred, referencing the old Department details. 5. The Bill is then
+     * persisted via billFacade.edit(bill). 6. Once all records are corrected,
+     * this method should be removed from the codebase.
+     *
+     * Limitations: - Assumes that the first BillItem in each list (entry.value)
+     * is sufficient for determining which Bill to fix. - Only updates the Bill
+     * at index 0; if there are multiple BillItems, they presumably share the
+     * same Bill object anyway.
+     */
+    public void fixBillingDepartmentInCollectionCenterBillWiseDetailReport() {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("No bundle");
+            return;
+        }
+        if (bundle.getGroupedBillItems() == null) {
+            JsfUtil.addErrorMessage("Grouped Bill Items NULL");
+            return;
+        }
+        if (bundle.getGroupedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Grouped Bill Items is empty");
+            return;
+        }
+
+        // Iterate over each entry in the map. The map key is a String (often a grouping identifier),
+        // and the map value is a list of BillItems. We only need the first BillItem per entry
+        // because it references the Bill we want to fix.
+        for (Map.Entry<String, List<BillItem>> entry : bundle.getGroupedBillItems().entrySet()) {
+            String key = entry.getKey();
+            List<BillItem> billItems = entry.getValue();
+
+            // Skip any entry that doesn't have actual BillItems.
+            if (billItems == null || billItems.isEmpty()) {
+                continue;
+            }
+
+            // Retrieve the Bill from the first BillItem in the list.
+            Bill bill = billItems.get(0).getBill();
+            if (bill != null) {
+                // Assign the correct Department and Institution from the Bill's creator.
+                Department oldDept = bill.getDepartment();
+                bill.setDepartment(bill.getCreater().getDepartment());
+                bill.setInstitution(bill.getCreater().getInstitution());
+
+                // Log the update in retireComments for future reference.
+                bill.setRetireComments("Bill's Department changed from "
+                        + (oldDept != null ? oldDept.toString() : "Unknown Dept")
+                        + " to " + bill.getDepartment()
+                        + " (Dept ID was " + (oldDept != null ? oldDept.getId() : "null") + ").");
+
+                // Persist the changes in the database.
+                billFacade.edit(bill);
+            }
         }
     }
 
@@ -3778,7 +3841,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -4001,7 +4064,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "BHT No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -4346,8 +4409,8 @@ public class ReportsController implements Serializable {
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
                     if (bill1.getPatientEncounter() != null && bill1.getPatientEncounter().getFinalBill() != null) {
-                        if ((bill1.getPatientEncounter().getFinalBill().getNetTotal() - bill1.getPatientEncounter().getFinalBill().getSettledAmountByPatient() -
-                                bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) != 0) {
+                        if ((bill1.getPatientEncounter().getFinalBill().getNetTotal() - bill1.getPatientEncounter().getFinalBill().getSettledAmountByPatient()
+                                - bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) != 0) {
                             continue;
                         }
                     } else {
@@ -4359,8 +4422,8 @@ public class ReportsController implements Serializable {
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
                     if (bill1.getPatientEncounter() != null && bill1.getPatientEncounter().getFinalBill() != null) {
-                        if ((bill1.getPatientEncounter().getFinalBill().getNetTotal() - bill1.getPatientEncounter().getFinalBill().getSettledAmountByPatient() -
-                                bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) == 0) {
+                        if ((bill1.getPatientEncounter().getFinalBill().getNetTotal() - bill1.getPatientEncounter().getFinalBill().getSettledAmountByPatient()
+                                - bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) == 0) {
                             continue;
                         }
                     } else {
@@ -4774,7 +4837,6 @@ public class ReportsController implements Serializable {
 //                + "JOIN billItem.bill bill "
 //                + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "
 //                + "AND billItem.bill.paymentScheme is not null ";
-
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
@@ -5273,8 +5335,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
@@ -5754,8 +5816,8 @@ public class ReportsController implements Serializable {
 
         for (Bill bill : bills) {
             if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
-                balance += bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() -
-                        bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+                balance += bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
+                        - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
 
             } else {
                 balance += bill.getNetTotal() - bill.getSettledAmountBySponsor() - bill.getSettledAmountByPatient();
