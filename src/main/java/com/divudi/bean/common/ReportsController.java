@@ -82,7 +82,8 @@ public class ReportsController implements Serializable {
     private DrawerFacade drawerFacade;
     @EJB
     PatientEncounterFacade peFacade;
-    List<PatientEncounter> patientEncounters;
+    @EJB
+    private ReportTimerController reportTimerController;
 
     /**
      * Inject
@@ -93,12 +94,11 @@ public class ReportsController implements Serializable {
     TransferController transferController;
     @Inject
     private DepartmentController departmentController;
-    @Inject
-    private ReportTimerController reportTimerController;
 
     /**
      * Properties
      */
+    private List<PatientEncounter> patientEncounters;
     private String visitType;
     private String methodType;
 
