@@ -4,7 +4,6 @@
  */
 package com.divudi.core.entity.inward;
 
-import com.divudi.core.data.inward.RoomFacility;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PaymentScheme;
@@ -26,6 +25,7 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class RoomFacilityCharge implements Serializable {
+
     @OneToMany(mappedBy = "roomFacilityCharge")
     private List<PatientRoom> patientRooms;
 
@@ -39,39 +39,38 @@ public class RoomFacilityCharge implements Serializable {
     private Double nursingCharge = 0.0;
     private Double moCharge = 0.0;
     private Double moChargeForAfterDuration = 0.0;
-    double adminstrationCharge;
-    double medicalCareCharge;
+    private double adminstrationCharge;
+    private double medicalCareCharge;
 //Main Properties
-    String name;
+    private String name;
     private String tName;
     private String sName;
-    String description;
-    int orderNo;
+    private String description;
+    private int orderNo;
     //Created Properties
     @ManyToOne
-    WebUser creater;
+    private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date createdAt;
+    private Date createdAt;
     //Retairing properties
     boolean retired;
     @ManyToOne
-    WebUser retirer;
+    private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date retiredAt;
-    String retireComments;
+    private Date retiredAt;
+    private String retireComments;
     @ManyToOne
-    Room room;
+    private Room room;
     @ManyToOne
-    PaymentScheme paymentScheme;
+    private PaymentScheme paymentScheme;
     @ManyToOne
-    Institution company;
+    private Institution company;
     @ManyToOne
     private Department department;
-    List<RoomFacility> roomFacilities;
     @ManyToOne
     private TimedItemFee timedItemFee;
     @ManyToOne
-    RoomCategory roomCategory;
+    private RoomCategory roomCategory;
 
     public RoomCategory getRoomCategory() {
         return roomCategory;
@@ -81,10 +80,6 @@ public class RoomFacilityCharge implements Serializable {
         this.roomCategory = roomCategory;
     }
 
-
-
-
-
     public List<PatientRoom> getPatientRooms() {
         return patientRooms;
     }
@@ -92,8 +87,6 @@ public class RoomFacilityCharge implements Serializable {
     public void setPatientRooms(List<PatientRoom> patientRooms) {
         this.patientRooms = patientRooms;
     }
-
-
 
     public double getAdminstrationCharge() {
         return adminstrationCharge;
@@ -110,8 +103,6 @@ public class RoomFacilityCharge implements Serializable {
     public void setMedicalCareCharge(double medicalCareCharge) {
         this.medicalCareCharge = medicalCareCharge;
     }
-
-
 
     public String getName() {
         return name;
@@ -223,14 +214,6 @@ public class RoomFacilityCharge implements Serializable {
 
     public void setCompany(Institution company) {
         this.company = company;
-    }
-
-    public List<RoomFacility> getRoomFacilities() {
-        return roomFacilities;
-    }
-
-    public void setRoomFacilities(List<RoomFacility> roomFacilities) {
-        this.roomFacilities = roomFacilities;
     }
 
     public Long getId() {
