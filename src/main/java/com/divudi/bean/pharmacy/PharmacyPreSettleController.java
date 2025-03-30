@@ -1111,7 +1111,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         
     }
      
-      public void paymentOngoingToken(Bill bill){;
+      public void paymentOngoingToken(Bill bill){
         Token t = findTokenFromBill(bill);
         if(t == null){
             return;
