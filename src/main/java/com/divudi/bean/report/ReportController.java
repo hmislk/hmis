@@ -232,7 +232,6 @@ public class ReportController implements Serializable {
     private Speciality speciality;
     private String reportTemplateFileIndexName;
 
-
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
             return ""; // Default style or no style
@@ -3182,7 +3181,7 @@ public class ReportController implements Serializable {
     public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
-                + "count(bi.item.name), "
+                + "count(bi), "
                 + "sum(bi.hospitalFee) , "
                 + "sum(bi.collectingCentreFee), "
                 + "sum(bi.staffFee), "
@@ -3191,11 +3190,13 @@ public class ReportController implements Serializable {
                 + " from BillItem bi "
                 + " where bi.retired=:ret"
                 + " and bi.bill.cancelled=:can"
-                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.refunded=:returned"
+                + " and bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
+         m.put("returned", false);
         m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -3253,7 +3254,7 @@ public class ReportController implements Serializable {
 
         jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
 
-        testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+        testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         totalCount = 0.0;
         totalHosFee = 0.0;
