@@ -7538,6 +7538,7 @@ public class SearchController implements Serializable {
         sql = "select token from Token token "
                 + " where token.tokenType = :type "
                 + " and token.bill is not null "
+                + " and token.bill.retired = false"
                 + " and token.tokenAt between :fromDate and :toDate "
                 + " and token.retired = false "
                 + " and token.department = :dept "

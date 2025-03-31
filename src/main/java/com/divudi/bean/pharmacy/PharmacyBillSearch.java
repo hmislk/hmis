@@ -2014,6 +2014,7 @@ public class PharmacyBillSearch implements Serializable {
             getBillFacade().edit(getBill());
 
             if (getBill().getReferenceBill() != null) {
+                getBill().getReferenceBill().setCancelled(true);
                 getBill().getReferenceBill().setReferenceBill(null);
                 getBillFacade().edit(getBill().getReferenceBill());
             }

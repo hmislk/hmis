@@ -233,7 +233,7 @@
                                                     icon="fa-solid fa-money-bill"
                                                     action="#{pharmacyPreSettleController.toSettle(bill)}"
                                                     actionListener="#{pharmacyPreSettleController.paymentOngoingToken(bill)}"
-                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or bill.referenceBill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
                                                 </p:commandButton> 
                                                 
                                                 <p:commandButton
@@ -243,6 +243,7 @@
                                                     style="background-color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? '#74b9ff' : '#ff7675'};"
                                                     icon="#{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'fa fa-eye': 'fa fa-eye-slash'}"
                                                     iconPos="center"
+                                                    disabled="#{bill.referenceBill ne null}"
                                                     action="#{pharmacyPreSettleController.tokenDisplayToggle(bill)}"
                                                     >
 
@@ -299,7 +300,7 @@
                                                 <p:commandButton
                                                     ajax="false"
                                                     value="View Payment Bill"
-                                                    action="pharmacy_reprint_bill_sale_cashier"
+                                                    action="pharmacy_reprint_bill_sale_cashier?faces-redirect=true"
                                                     disabled="#{bill.referenceBill eq null}">
                                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
                                                 </p:commandButton>
