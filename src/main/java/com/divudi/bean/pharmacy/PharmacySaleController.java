@@ -2366,8 +2366,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         if (getPaymentMethod() == PaymentMethod.Card) {
-            if ((getPaymentMethodData().getCreditCard().getNo() == null
-                    || getPaymentMethodData().getCreditCard().getNo().trim().isEmpty())
+            String cardNumber = getPaymentMethodData().getCreditCard().getNo();
+            if ((cardNumber == null || cardNumber.trim().isEmpty()
+                    || cardNumber.trim().length() != 4)
                     && configOptionApplicationController.getBooleanValueByKey("Pharmacy retail sale CreditCard last digits is Mandatory")) {
                 billSettlingStarted = false;
                 JsfUtil.addErrorMessage("Please enter a Credit Card last 4 digits");
