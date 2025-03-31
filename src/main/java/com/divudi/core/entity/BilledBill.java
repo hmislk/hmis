@@ -14,13 +14,9 @@ import javax.persistence.Entity;
  */
 @Entity
 public class BilledBill extends Bill implements Serializable {
-//     static final long serialVersionUID = 1L;
-//
-//    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @OrderBy("inwardChargeType, searialNo")
-//    List<BillItem> billItems;
 
     public BilledBill() {
+        super();
         billClassType = BillClassType.BilledBill;
         qty = 1;
     }

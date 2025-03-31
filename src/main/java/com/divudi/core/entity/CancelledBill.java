@@ -16,6 +16,7 @@ import javax.persistence.Entity;
 public class CancelledBill extends Bill implements Serializable {
 
     public CancelledBill() {
+        super();
         billClassType = BillClassType.CancelledBill;
         qty = 0 - 1;
     }
