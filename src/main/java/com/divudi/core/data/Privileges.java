@@ -25,6 +25,15 @@ public enum Privileges {
     CashTransaction("Cash Transaction"),
     //</editor-fold>
 
+    //cashier menu in opd module
+    Cashier("OPD cashier"),
+    ScanBillsFromCashier("Scan Bills From Cashier"),
+    AcceptPaymentForOpdBatchBills("Accept Payment for opd Batch Bills"),
+    RefundFromCashier("Refund in cashier"),
+    RefundOpdBillsFromCashier("Refund opd Bills From Cashier"),
+    RefundPharmacyBillsFromCashier("Rufund Pharmacy Bills From Cashier"),
+    AcceptPaymentForPharmacyBills("Accept payment For Pharmacy Bill(Cashier)"),
+    
     //<editor-fold defaultstate="collapsed" desc="OPD">
     // Submenu Privileges
     OpdBilling("OPD Billing"),
@@ -210,7 +219,6 @@ public enum Privileges {
     // Wholesale
     PharmacyPurchaseWh("Pharmacy Purchase Wholesale"),
     PharmacyTokenManagement("Pharmacy Token Management"),
-    AcceptPaymentForPharmacyBills("Accept payment For Pharmacy Bill(Cashier)"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Theatre">
@@ -576,7 +584,6 @@ public enum Privileges {
     MyFinanacialTransactionManager("My Finanacial Transaction Manager"),
     //</editor-fold>
 
-
     //<editor-fold defaultstate="collapsed" desc="Admin">
     SearchGrand("Search Grand"),
     AdminManagingUsers("Admin Managing Users"),
@@ -591,7 +598,6 @@ public enum Privileges {
     Developers("Developers"),
     // Administration
     SearchAll("Search All"),
-
     SendBulkSMS("Send Bulk SMS"),
     SuperAdmin("Supper Admin"),
     Reactivate("Reactivate"),
