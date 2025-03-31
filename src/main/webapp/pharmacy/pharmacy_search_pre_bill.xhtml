@@ -235,6 +235,17 @@
                                                     actionListener="#{pharmacyPreSettleController.paymentOngoingToken(bill)}"
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
                                                 </p:commandButton> 
+                                                
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    class="ui-button-success"
+                                                    title="Display Token"
+                                                    icon="fa fa-times"
+                                                    action="#{pharmacyPreSettleController.tokenDisplayToggle(bill)}"
+                                                    >
+    
+
+                                                </p:commandButton> 
                                             </div>
 
 

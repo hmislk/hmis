@@ -1125,6 +1125,19 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         
     }
     
+      public void tokenDisplayToggle(Bill bill){
+          Token t = findTokenFromBill(bill);
+          if(t == null){
+              return;
+          }
+          
+          if(t.isDisplayToken() == null){
+              t.setDisplayToken(true);
+          }else{
+              t.setDisplayToken(!t.isDisplayToken());
+          }
+       
+      }
     
     public void unmarkToken(Bill bill){
         Token t = findTokenFromBill(bill);
