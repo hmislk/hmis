@@ -814,7 +814,6 @@ public class ReportController implements Serializable {
             combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
             ReportTemplateRow existingRow = combinedResults.get(institution);
 
-
             existingRow.setItemCount(existingRow.getItemCount() + row.getItemCount());
             existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() + row.getItemHospitalFee());
             existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() + row.getItemCollectingCentreFee());
@@ -830,7 +829,6 @@ public class ReportController implements Serializable {
             Institution institution = row.getInstitution();
             combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
             ReportTemplateRow existingRow = combinedResults.get(institution);
-
 
             existingRow.setItemCount(existingRow.getItemCount() - row.getItemCount());  // Subtract the count
             existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() - Math.abs(row.getItemHospitalFee()));  // Subtract the absolute value
@@ -852,7 +850,6 @@ public class ReportController implements Serializable {
         double totalCCFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemCollectingCentreFee).sum();
         double totalProfessionalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemProfessionalFee).sum();
         double totalNet = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemNetTotal).sum();
-
 
         combinedBundle.setCount(totalCount);
         combinedBundle.setTotal(totalNet);
@@ -1816,7 +1813,6 @@ public class ReportController implements Serializable {
             jpql += " ORDER BY i.id DESC";
 
             params.put("ret", false);
-
 
             patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         }, CollectionCenterReport.COLLECTION_CENTER_REPORTS_PRINT, sessionController.getLoggedUser());
@@ -3196,6 +3192,10 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectingCentreTestWiseCountReport() {
+        // Updated to use null-safe Boolean checks.
+// Original comparisons like bi.retired = :ret excluded rows with NULLs.
+// Now using (is null or = false) to include records where flags are either false or null.
+
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi), "
