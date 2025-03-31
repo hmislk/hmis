@@ -7,14 +7,11 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body class="w-100 border">
-
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
                 <h:form class="w-100">
                     <p:panel header="INWARD CASH DUE" class="w-100">
                         <h:panelGrid columns="8" class="w-100 ">
-
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <p:outputLabel for="fromDate" value="From Date"  class="m-3">
@@ -28,9 +25,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-
-                            <p:spacer width="20"></p:spacer>
-
+                            <p:spacer width="20" />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
@@ -46,7 +41,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20" />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf15b;" styleClass="fa mr-2" />
@@ -178,10 +173,10 @@
                             <p:selectOneMenu class="w-100" id="admissionType" value="#{creditCompanyDueController.admissionType}">
                                 <f:selectItem itemLabel="All Admission Type"/>
                                 <f:selectItems value="#{admissionTypeController.items}" var="myItem"
-                                               itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                                               itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20" />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
@@ -192,7 +187,7 @@
                                             completeMethod="#{creditCompanyController.completeCredit}"
                                             var="ix" itemLabel="#{ix.name}"
                                             itemValue="#{ix}" >
-                                <f:ajax event="itemSelect" execute="@this"></f:ajax>
+                                <f:ajax event="itemSelect" execute="@this" />
                             </p:autoComplete>
 
                         </h:panelGrid>
@@ -236,7 +231,7 @@
                             ajax="false" 
                             value="PDF"
                             actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}">
-                            <p:dataExporter type="pdf" target="lstDue"  fileName="inward_due_age_credit_company_detail" ></p:dataExporter>
+                            <p:dataExporter type="pdf" target="lstDue"  fileName="inward_due_age_credit_company_detail" />
                         </p:commandButton>
 
                         <p:dataTable 
@@ -285,7 +280,7 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Paid By Company"  style="text-align: right;">
-                                <h:outputLabel value="#{p.paidByCreditCompany}">
+                                <h:outputLabel value="#{p.finalBill.settledAmountBySponsor}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>                            
                                 <f:facet name="footer">
@@ -296,8 +291,7 @@
                             </p:column>
 
                             <p:column headerText="Due"  style="text-align: right;" >
-
-                                <h:outputLabel value="#{(p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.paidByCreditCompany)) gt 0? (p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.paidByCreditCompany)):0.00}">
+                                <h:outputLabel value="#{(p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.finalBill.settledAmountBySponsor)) gt 0? (p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.finalBill.settledAmountBySponsor)):0.00}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
@@ -307,11 +301,9 @@
                                 </f:facet>
                             </p:column>
                         </p:dataTable>
-
                     </p:panel>
                 </h:form>
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>

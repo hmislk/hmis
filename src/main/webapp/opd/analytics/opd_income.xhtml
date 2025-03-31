@@ -14,26 +14,26 @@
 
                         <h:panelGrid columns="2" class="mb-2">
                             <h:outputLabel value="From"/>
-                            <p:calendar id="fromDate" 
-                                        value="#{opdBillController.fromDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                        class="mt-1 mx-2 w-100" 
+                            <p:calendar id="fromDate"
+                                        value="#{opdBillController.fromDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        class="mt-1 mx-2 w-100"
                                         inputStyleClass="w-100"
-                                        maxdate="#{commonController.currentDateTime}">      
+                                        maxdate="#{commonFunctionsProxy.currentDateTime}">
                             </p:calendar>
                             <h:outputLabel value="To"/>
                             <p:calendar id="toDate"
                                         value="#{opdBillController.toDate}"
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         class="mt-1 mx-2 w-100"
-                                        inputStyleClass="w-100">                                                                              
+                                        inputStyleClass="w-100">
                             </p:calendar>
                             <p:outputLabel value="Billing Department" ></p:outputLabel>
-                            <p:selectOneMenu 
+                            <p:selectOneMenu
                                 id="cmdFromDepartment"
-                                value="#{opdBillController.fromDepartment}" 
+                                value="#{opdBillController.fromDepartment}"
                                 class="w-100 mx-2"
                                 filter="true">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -44,19 +44,19 @@
                             </p:selectOneMenu>
                         </h:panelGrid>
 
-                        <p:commandButton 
+                        <p:commandButton
                             icon="fas fa-cogs"
-                            id="btnSearch" 
-                            ajax="false" 
-                            value="Process" 
+                            id="btnSearch"
+                            ajax="false"
+                            value="Process"
                             class="ui-button-warning my-2"
                             action="#{opdBillController.fillOpdBillItems}" />
 
                         <p:defaultCommand target="btnSearch" />
-                        
-                        <p:dataTable rowIndexVar="i" 
-                                     id="tblBills" 
-                                     value="#{opdBillController.lstBillItems}" 
+
+                        <p:dataTable rowIndexVar="i"
+                                     id="tblBills"
+                                     value="#{opdBillController.lstBillItems}"
                                      var="billItem"
                                      style="min-width: 100%;"
                                      class="mt-1"
@@ -71,7 +71,7 @@
                                       styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{billItem.bill.id}"/>
                             </p:column>
-                            <p:column headerText="Date">                                
+                            <p:column headerText="Date">
                                 <h:outputLabel value="#{billItem.createdAt}"/>
                             </p:column>
                             <p:column headerText="Department">
@@ -82,18 +82,18 @@
                             </p:column>
 
                             <p:column headerText="Invoice" >
-                                <p:outputLabel id="paymentTime" value="#{billItem.bill.id}"/>      
+                                <p:outputLabel id="paymentTime" value="#{billItem.bill.id}"/>
                             </p:column>
-                            <p:column headerText="Patient"   >                              
+                            <p:column headerText="Patient"   >
                                 <h:outputLabel value="#{billItem.bill.patient.person.name}"/>
                             </p:column>
-                            <p:column headerText="Ref Doctor">                                
+                            <p:column headerText="Ref Doctor">
                                 <h:outputLabel value="#{billItem.bill.referredBy.person.nameWithTitle}" />
                             </p:column>
-                            <p:column headerText="Doctor">                                
+                            <p:column headerText="Doctor">
                                 <h:outputLabel value="#{billItem.bill.fromStaff.person.nameWithTitle}" />
                             </p:column>
-                            <p:column headerText="OPD Fee">                                
+                            <p:column headerText="OPD Fee">
                                 <h:outputLabel value="#{billItem.totalHospitalFeeValueTransient}" />
                                 <f:facet name="footer" >
                                     <h:outputText value="#{opdBillController.totalHospitalFee}" >
@@ -101,7 +101,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Doctor Fee">                                
+                            <p:column headerText="Doctor Fee">
                                 <h:outputLabel value="#{billItem.totalDoctorFeeValueTransient}" />
                                 <f:facet name="footer" >
                                     <h:outputText value="#{opdBillController.totalSaffFee}" >
@@ -109,10 +109,10 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Procedure Fee">                                
+                            <p:column headerText="Procedure Fee">
                                 <h:outputLabel value="#{billItem.netValue}" />
                             </p:column>
-                            <p:column headerText="Total">                                
+                            <p:column headerText="Total">
                                 <h:outputLabel value="#{billItem.netValue}" />
                             </p:column>
                         </p:dataTable>

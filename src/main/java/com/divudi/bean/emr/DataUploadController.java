@@ -14,14 +14,12 @@ import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.AgencyController;
 import com.divudi.bean.common.AreaController;
 import com.divudi.bean.common.CategoryController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConsultantController;
 import com.divudi.bean.common.CreditCompanyController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.EnumController;
-import com.divudi.bean.common.FeeController;
 import com.divudi.bean.common.FeeValueController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
@@ -45,74 +43,70 @@ import com.divudi.bean.pharmacy.AtmController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
-import com.divudi.data.CollectingCentrePaymentMethod;
-import com.divudi.data.EncounterType;
-import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.entity.Area;
-import com.divudi.entity.Category;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Department;
-import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Fee;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Route;
-import com.divudi.entity.Service;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationTube;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.Sample;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Atm;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.VtmFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.membership.MembershipController;
+import com.divudi.core.data.CollectingCentrePaymentMethod;
+import com.divudi.core.data.EncounterType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.Area;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.DoctorSpeciality;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Route;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.Sample;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.pharmacy.PharmacyPurchaseController;
-import com.divudi.data.SymanticHyrachi;
-import com.divudi.data.SymanticType;
-import com.divudi.data.dataStructure.PharmacyImportCol;
+import com.divudi.core.data.SymanticHyrachi;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.data.dataStructure.PharmacyImportCol;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Family;
-import com.divudi.entity.FamilyMember;
-import com.divudi.entity.Person;
-import com.divudi.entity.Relation;
-import com.divudi.entity.inward.InwardService;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.entity.pharmacy.PharmaceuticalItemType;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.AmppFacade;
-import com.divudi.facade.AtmFacade;
-import com.divudi.facade.FamilyFacade;
-import com.divudi.facade.FamilyMemberFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VmppFacade;
-import com.divudi.java.CommonFunctions;
-import com.mysql.cj.jdbc.interceptors.SessionAssociationInterceptor;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Family;
+import com.divudi.core.entity.FamilyMember;
+import com.divudi.core.entity.Relation;
+import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.AtmFacade;
+import com.divudi.core.facade.FamilyFacade;
+import com.divudi.core.facade.FamilyMemberFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VmppFacade;
+import com.divudi.core.util.CommonFunctions;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.inject.Named;
@@ -141,24 +135,10 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.xssf.usermodel.XSSFTable;
-import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
-
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.poi.ss.SpreadsheetVersion;
 
 @Named
 @ViewScoped
@@ -5859,7 +5839,7 @@ public class DataUploadController implements Serializable {
                 if (idCell.getCellType() == CellType.STRING) {
                     idStr = idCell.getStringCellValue();
 
-                    id = CommonFunctions.convertStringToLong(idStr);
+                    id = CommonFunctions.convertStringToLongOrNull(idStr);
 
                 } else if (idCell.getCellType() == CellType.NUMERIC) {
                     Double tmp;
@@ -5885,7 +5865,7 @@ public class DataUploadController implements Serializable {
                 }
             }
 
-            if (name == null || name.trim().equals("")) {
+            if (name == null || name.trim().isEmpty()) {
                 continue;
             }
 
@@ -6084,7 +6064,7 @@ public class DataUploadController implements Serializable {
             Cell nameCell = row.getCell(1);
             if (nameCell != null) {
                 vtm.setName(nameCell.getStringCellValue());
-                vtm.setCode(CommonController.nameToCode("vtm_" + vtm.getName()));
+                vtm.setCode(CommonFunctions.nameToCode("vtm_" + vtm.getName()));
             }
             vtm.setCreatedAt(new Date());
             vtm.setCreater(sessionController.getLoggedUser());
@@ -6118,7 +6098,7 @@ public class DataUploadController implements Serializable {
             Cell nameCell = row.getCell(1);
             if (nameCell != null) {
                 atm.setName(nameCell.getStringCellValue());
-                atm.setCode(CommonController.nameToCode("atm_" + atm.getName()));
+                atm.setCode(CommonFunctions.nameToCode("atm_" + atm.getName()));
             }
             Cell vtmCell = row.getCell(2);
             if (vtmCell != null) {
@@ -6543,7 +6523,7 @@ public class DataUploadController implements Serializable {
 
 //            amp = new Amp();
             amp.setName(ampName);
-            amp.setCode("amp_" + CommonController.nameToCode(ampName));
+            amp.setCode("amp_" + CommonFunctions.nameToCode(ampName));
 
             if (vmp != null) {
                 amp.setVmp(vmp);

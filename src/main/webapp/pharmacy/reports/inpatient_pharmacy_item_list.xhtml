@@ -19,7 +19,7 @@
                     <h:panelGroup>
                         <p:panel >
                             <f:facet name="header">
-                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
                                 <p:outputLabel value="Patient Details" class="m-2"/>
                             </f:facet>
                             <div>
@@ -91,6 +91,14 @@
                         style="float: right;"
                         class="ui-button-secondary m-1"
                         rendered="false"
+                        icon="fa fa-arrow-circle-left">
+                    </p:commandButton>
+                    
+                    <p:commandButton 
+                        value="New Search" 
+                        action="#{inwardReportControllerBht.madeNull()}" 
+                        style="float: right;"
+                        class="ui-button-warning m-1"
                         icon="fa fa-arrow-circle-left">
                     </p:commandButton>
 
@@ -319,7 +327,7 @@
 
                                 </f:facet>
 
-                                <p:column width="2em" style="padding: 2px" styleClass="#{bip.referanceBillItem ne null and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}" >
+                                <p:column width="2em" style="padding: 2px" styleClass="#{bip.referanceBillItem ne null and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="No" />
                                     </f:facet>

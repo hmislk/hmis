@@ -11,7 +11,6 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeManager;
@@ -19,47 +18,47 @@ import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Fee;
-import com.divudi.entity.Institution;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.EncounterComponentFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PriceMatrixFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Fee;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PriceMatrixFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.PatientInvestigationController;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.ItemLight;
-import com.divudi.data.lab.InvestigationTubeSticker;
-import com.divudi.entity.UserPreference;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.lab.InvestigationTubeSticker;
+import com.divudi.core.entity.UserPreference;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -86,8 +85,6 @@ public class BillBhtController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     ItemController itemController;
     @Inject
@@ -170,13 +167,13 @@ public class BillBhtController implements Serializable {
         stickers = convertJsonToList(json);
         return "/inward/inward_bill_service_investigation_label_print?faces-redirect=true";
     }
-    
+
     public String navigateToSampleManegmentFromInward() {
         patientInvestigationController.setBills(bills);
         patientInvestigationController.searchBillsWithoutSampleId();
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
-    
+
     public String navigateToSampleManegmentFromInwardIntrimBill(Bill b) {
         List<Bill> newBills = new ArrayList<>();
         newBills.add(b);
@@ -572,7 +569,7 @@ public class BillBhtController implements Serializable {
         //getCurrent().setCashPaid(cashPaid);
         temp.setBillType(BillType.InwardBill);
         temp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BILL);
-
+        temp.setIpOpOrCc("IP");
         getBillBean().setSurgeryData(temp, getBatchBill(), SurgeryBillType.Service);
 
         temp.setDepartment(getSessionController().getLoggedUser().getDepartment());

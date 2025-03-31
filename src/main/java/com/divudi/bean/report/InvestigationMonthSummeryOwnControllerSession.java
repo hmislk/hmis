@@ -4,37 +4,35 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.lab.InvestigationController;
-import com.divudi.bean.lab.PatientInvestigationController;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.InvestigationSummeryData;
-import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.InvestigationSummeryData;
+import com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 import com.divudi.ejb.BillEjb;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.ReportItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.ReportItemFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,15 +59,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
      */
     @Inject
     private SessionController sessionController;
-    @Inject
-    PatientInvestigationController patientInvestigationController;
-    @Inject
-    CommonController commonController;
+
     /**
      * EJBs
      */
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -651,14 +645,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.billFacade = billFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public Institution getReportedInstitution() {
         return reportedInstitution;
     }
@@ -725,7 +711,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         Map m;
         m = new HashMap();
 
-        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
+        jpql = "Select new com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
                 + " from BillItem bi "
                 + " join bi.bill b "
                 + " join b.institution ins "
@@ -764,7 +750,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
 
         m = new HashMap();
-        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution) "
+        jpql = "Select new com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution) "
                 + " from BillItem bi "
                 + " join bi.bill b "
                 + " join b.institution ins "
@@ -809,7 +795,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         Map m;
         m = new HashMap();
 
-        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
+        jpql = "Select new com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
                 + " from BillItem bi "
                 + " join bi.bill b "
                 + " left join b.institution ins "
@@ -843,7 +829,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         m.put("ixbt", Investigation.class);
         insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
 
-        
+
     }
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {
@@ -901,7 +887,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 //            if (bobj.length < 3) {
 //                continue;
 //            }
-//            
+//
 //            ItemInstitutionCollectingCentreCountRow r = new ItemInstitutionCollectingCentreCountRow();
 //            r.setItem((Item) bobj[0]);
 //            r.setCount((Long) bobj[1]);
@@ -1018,7 +1004,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("ins", getSessionController().getInstitution());
 
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
         List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         double tot = 0.0;
@@ -1403,7 +1389,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("pm1", PaymentMethod.Cash);
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
         investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -1460,9 +1446,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         return investigations;
     }
-    
-    
-    
+
+
+
     public List<Item> getBillItemsFromCollectingCentres(BillType[] bts) {
         Map temMap = new HashMap();
         String sql = "select distinct ix from BillItem bi join bi.item ix "
@@ -1487,7 +1473,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         return investigations;
     }
-    
+
 
     public List<Item> getInvestigations3(BillType[] bts) {
         Map temMap = new HashMap();
@@ -1876,14 +1862,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public void setItemsLab(List<InvestigationSummeryData> itemsLab) {
         this.itemsLab = itemsLab;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<Bill> getBilledBills() {

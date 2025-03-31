@@ -4,26 +4,25 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.NotificationController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -46,8 +45,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -66,7 +64,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     private BillItem currentBillItem;
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
-    //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
+    //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     @Inject
     StoreCalculation storeCalculation;
     private boolean printPreview;
@@ -267,7 +265,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
         notificationController.createNotification(getCurrentBill());
 
     }
-    
+
     public List<BillItem> generateBillItems(Bill bill) {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -359,8 +357,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void request() {
-        
-        
+
+
 
         if (getCurrentBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
@@ -538,14 +536,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void setStoreBeen(StoreBean storeBeen) {
         this.storeBeen = storeBeen;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public boolean isPrintPreview() {

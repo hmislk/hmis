@@ -78,11 +78,14 @@
                                             layout="block" 
                                             id="cheque" 
                                             rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
+                                            <p:outputLabel
+                                                    class="m-1"
+                                                    value="Cheque Details" ></p:outputLabel>
                                             <div class="d-flex m-1">
                                                 <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
                                                     <p:ajax process="@this" ></p:ajax>
                                                 </p:inputText>
-                                                <p:inputText autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
+                                                <p:inputText placeholder="Cheue Reference No" autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
                                                     <p:ajax process="@this" ></p:ajax>
                                                 </p:inputText>
 
@@ -92,7 +95,7 @@
                                                     <p:ajax process="@this" ></p:ajax>
                                                 </p:selectOneMenu>
 
-                                                <p:calendar value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
+                                                <p:calendar placeholder="Cheque Date" value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">
                                                     <p:ajax process="@this" ></p:ajax>
                                                 </p:calendar>
 
@@ -124,14 +127,24 @@
                                             class="row my-1"
                                             layout="block" 
                                             id="card"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >
-                                            <p:outputLabel value="Value" ></p:outputLabel>
-                                            <p:inputText 
-                                                class="mx-2"
+                                            <p:outputLabel class="m-1" value="Value" ></p:outputLabel>
+                                            <p:inputText
+                                                class="m-1 text-end"
                                                 id="txtValueCard" 
                                                 value="#{financialTransactionController.currentPayment.paidValue}" >
                                             </p:inputText>
                                         </h:panelGroup>
 
+                                        <h:panelGroup class="row" layout="block" id="credit" rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Credit'}">
+                                            <p:outputLabel class="m-1" value="Credit Amount"></p:outputLabel>
+                                            <p:inputText class="m-1 text-end" id="txtValueCredit" value="#{financialTransactionController.currentPayment.paidValue}">
+                                            </p:inputText>
+                                        </h:panelGroup>
+                                        <h:panelGroup class="row" layout="block" id="slip" rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Slip'}">
+                                            <p:outputLabel class="m-1" value="Slip Amount"></p:outputLabel>
+                                            <p:inputText class="m-1 text-end" id="txtValueSlip" value="#{financialTransactionController.currentPayment.paidValue}">
+                                            </p:inputText>
+                                        </h:panelGroup>
                                     </h:panelGroup>
 
 
@@ -147,7 +160,7 @@
                                 <div class="col-md-2">
                                     <p:commandButton
                                         id="btnAdd"
-                                        style="float: right;"
+                                        style="float: right; margin-top: 25px"
                                         value="Add"
                                         icon="fa fa-plus"
                                         class="ui-button-success"

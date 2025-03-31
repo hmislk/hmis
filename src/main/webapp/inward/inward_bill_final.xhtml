@@ -36,14 +36,27 @@
                                 <h:outputLabel value="Inward Final Bill" class="mx-2"/>
                             </div>
                             <div>
-                                <p:commandButton update="dList tot @all settle" 
+                                <p:commandButton update="dList tot @all settle"
                                                  value="Process"
                                                  actionListener="#{bhtSummeryController.updateTotal()}"
                                                  process="@this"
-                                                 class="ui-button-warning mx-1" 
+                                                 class="ui-button-warning mx-1"
                                                  icon="fas fa-cog"
                                                  style="width: 150px; padding: 1px; margin: auto;"/>
-                                <p:commandButton value="Settle" 
+                                <p:commandButton class="ui-button-warning mx-2"
+                                                 icon="fas fa-cogs"
+                                                 value="Process Bill"
+                                                 process="@this"
+                                                 update="@all"
+                                                 action="#{bhtSummeryController.createTempBill()}"
+                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}" />
+                                <p:commandButton class="ui-button-info"
+                                                 icon="fas fa-print"
+                                                 value="Check Final Bill"
+                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Print Button For Intermediate Bill on Final Bill Edit',false)}">
+                                    <p:printer target="printTempBill" />
+                                </p:commandButton>
+                                <p:commandButton value="Settle"
                                                  action="#{bhtSummeryController.settle}"
                                                  id="settle"
                                                  ajax="false"
@@ -189,7 +202,7 @@
                                                                                       or c.inwardChargeType eq 'MedicalCareICU'
                                                                                       or c.inwardChargeType eq 'AdministrationCharge'
                                                                                       or c.inwardChargeType eq 'ProfessionalCharge'
-                                                                                      or c.inwardChargeType eq 'MedicalCare' 
+                                                                                      or c.inwardChargeType eq 'MedicalCare'
                                                                                       or c.total eq 0}">
                                 <f:convertNumber pattern="#,##0.00"/>
                                 <p:ajax process="@this"
@@ -208,7 +221,7 @@
                         </p:column>
                         <p:column>
                             <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedTotal}"
-                                         disabled="#{c.inwardChargeType eq 'RoomCharges' 
+                                         disabled="#{c.inwardChargeType eq 'RoomCharges'
                                                      or c.inwardChargeType eq 'MOCharges'
                                                      or c.inwardChargeType eq 'MaintainCharges'
                                                      or c.inwardChargeType eq 'NursingCharges'
@@ -556,9 +569,9 @@
                     </p:tabView>
 
                     <p:dataTable value="#{bhtSummeryController.profesionallFee}" var="pf"
-                                 rowStyleClass="#{pf.feeValue ne 0 
+                                 rowStyleClass="#{pf.feeValue ne 0
                                                   and pf.bill.cancelled eq false
-                                                  and pf.bill.billClass eq 'class com.divudi.entity.BilledBill' ? '':'noDisplayRow'}">
+                                                  and pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
                         <p:column headerText="Name">
                             #{pf.staff.person.nameWithTitle}
                         </p:column>
@@ -580,6 +593,12 @@
                         </p:column>
 
                     </p:dataTable>
+
+                    <h:panelGroup id="printTempBill">
+                        <bi:finalBill
+                            bill="#{bhtSummeryController.tempBill}"
+                                        hosCopy="true"/>
+                    </h:panelGroup>
 
                 </p:panel>
 

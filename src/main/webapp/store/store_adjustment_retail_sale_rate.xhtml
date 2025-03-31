@@ -22,7 +22,7 @@
                                     </f:facet>
                                     <p:panelGrid columns="1" class="w-100">
                                         <h:outputLabel value="Item" ></h:outputLabel>
-                                        <p:autoComplete 
+                                        <p:autoComplete
                                             id="acAmp"
                                             class="w-100"
                                             inputStyleClass="w-100"
@@ -33,8 +33,8 @@
                                             value="#{storeAdjustmentController.selectedItem}"
                                             maxResults="15"
                                             >
-                                            <p:ajax 
-                                                process="acAmp" 
+                                            <p:ajax
+                                                process="acAmp"
                                                 listener="#{storeAdjustmentController.fillselectedItemStocks}"
                                                 update="tblStocks" ></p:ajax>
                                             <p:column headerText="Item"  style="padding: 3px;" >
@@ -49,7 +49,7 @@
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Batches" ></h:outputLabel>
-                                        <p:dataTable 
+                                        <p:dataTable
                                             id="tblStocks"
                                             value="#{storeAdjustmentController.selectedItemStock}"
                                             var="i"
@@ -58,31 +58,31 @@
                                             rowKey="#{i.id}"
                                             selection="#{storeAdjustmentController.stock}">
 
-                                            <p:column 
-                                                headerText="Sale Rate" 
+                                            <p:column
+                                                headerText="Sale Rate"
                                                 style="padding: 10px;"
                                                 sortBy="#{i.itemBatch.retailsaleRate}"
-                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputText value="#{i.itemBatch.retailsaleRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
 
-                                            <p:column 
+                                            <p:column
                                                 sortBy="#{i.stock}"
                                                 style="padding: 10px;"
-                                                headerText="Stocks" 
-                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                headerText="Stocks"
+                                                styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputText value="#{i.stock}" >
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
 
                                             <p:column
-                                                headerText="Expiry" 
+                                                headerText="Expiry"
                                                 style="padding: 10px;"
                                                 sortBy="#{i.itemBatch.dateOfExpire}"
-                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputText value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                                 </h:outputText>
@@ -165,10 +165,10 @@
                                                 <h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                                     &nbsp;
-                                                    <p:tag 
-                                                        rendered="#{commonController.currentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired ': 
-                                                                    commonController.dateAfterThreeMonthsCurrentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                        severity="#{commonController.currentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'warning':''}" >
+                                                    <p:tag
+                                                        rendered="#{commonFunctionsProxy.currentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired ':
+                                                                    commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                        severity="#{commonFunctionsProxy.currentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > storeAdjustmentController.stock.itemBatch.dateOfExpire ?'warning':''}" >
                                                     </p:tag>
                                                 </h:outputLabel>
                                             </div>
@@ -186,11 +186,11 @@
                                     <h:outputLabel value="Comment" ></h:outputLabel>
                                     <p:inputTextarea value="#{storeAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
-                                    <p:commandButton 
-                                        id="btnAdjust" 
-                                        value="Make Adjustment" 
-                                        ajax="false"  
-                                        class="mt-2 ui-button-warning" 
+                                    <p:commandButton
+                                        id="btnAdjust"
+                                        value="Make Adjustment"
+                                        ajax="false"
+                                        class="mt-2 ui-button-warning"
                                         icon="fa-solid fa-sliders"
                                         action="#{storeAdjustmentController.adjustRetailRate()}" >
                                     </p:commandButton>
@@ -205,18 +205,18 @@
                             <div class="d-flex justify-content-between">
                                 <h:outputLabel value="Print View" class="mt-2"></h:outputLabel>
                                 <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        ajax="false"
                                         icon="fa fa-plus"
                                         class="ui-button-success"
-                                        action="#{storeAdjustmentController.makeNull()}" 
+                                        action="#{storeAdjustmentController.makeNull()}"
                                         value="New Adjustment">
                                     </p:commandButton>
 
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="ui-button-info"
                                         icon="fa fa-print"
-                                        ajax="false" 
+                                        ajax="false"
                                         value="Print">
                                         <p:printer target="print"/>
                                     </p:commandButton>
@@ -231,7 +231,7 @@
                         </h:panelGroup>
 
                     </p:panel>
-                    
+
                 </h:form>
             </ui:define>
         </ui:composition>

@@ -5,15 +5,15 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.BillsTotals;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.dataStructure.BillsTotals;
 
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,12 +67,6 @@ public class RevinewReportController implements Serializable {
 
     @Inject
     OpdPreBillReportController opdPreBillReportController;
-    
-    @Inject
-    CommonController commonController;
-
-
-    CommonFunctions commonFunctions;
 
     public RevinewReportController() {
     }
@@ -103,7 +97,7 @@ public class RevinewReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -114,7 +108,7 @@ public class RevinewReportController implements Serializable {
 
     public Date getToDate() {
         if(toDate==null){
-            toDate=getCommonFunctions().getEndOfDay(new Date());
+            toDate=CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -261,14 +255,6 @@ public class RevinewReportController implements Serializable {
         this.reNewReportFinalTotal = reNewReportFinalTotal;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public void makNull() {
         webUser = null;
         department = null;
@@ -353,8 +339,8 @@ public class RevinewReportController implements Serializable {
         userRefundedBillsPharmacyList.add(createReNewTotal(userRefundedBillsPharmacyList, null));
         reNewReportFinalTotal.add(createReNewTotal(reNewReportFinalTotal, null));
 
-        
-        
+
+
     }
 
     public BillsTotals createReNewTotal(List<BillsTotals> bts, Department dep) {
@@ -387,13 +373,4 @@ public class RevinewReportController implements Serializable {
         bt.setCredit(credit);
         return bt;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
 }

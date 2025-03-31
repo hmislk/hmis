@@ -8,54 +8,52 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.dataStructure.DepartmentSale;
-import com.divudi.data.dataStructure.DepartmentStock;
-import com.divudi.data.dataStructure.InstitutionSale;
-import com.divudi.data.dataStructure.InstitutionStock;
-import com.divudi.data.dataStructure.ItemQuantityAndValues;
-import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
-import com.divudi.data.dataStructure.StockAverage;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.dataStructure.DepartmentSale;
+import com.divudi.core.data.dataStructure.DepartmentStock;
+import com.divudi.core.data.dataStructure.InstitutionSale;
+import com.divudi.core.data.dataStructure.InstitutionStock;
+import com.divudi.core.data.dataStructure.ItemQuantityAndValues;
+import com.divudi.core.data.dataStructure.ItemTransactionSummeryRow;
+import com.divudi.core.data.dataStructure.StockAverage;
 
-import com.divudi.entity.*;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.Atm;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.AmppFacade;
-import com.divudi.facade.AtmFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.PharmaceuticalItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VmppFacade;
-import com.divudi.facade.VtmFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.DepartmentCategoryWiseItems;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.CategoryWithItem;
-import com.divudi.data.DepartmentWiseBill;
-import com.divudi.data.dataStructure.PharmacySummery;
-import com.divudi.data.table.String1Value1;
-import com.divudi.java.CommonFunctions;
-import com.divudi.light.pharmacy.PharmaceuticalItemLight;
+import com.divudi.core.entity.*;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.AtmFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.PharmaceuticalItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VmppFacade;
+import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentCategoryWiseItems;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.CategoryWithItem;
+import com.divudi.core.data.DepartmentWiseBill;
+import com.divudi.core.data.dataStructure.PharmacySummery;
+import com.divudi.core.data.table.String1Value1;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.light.pharmacy.PharmaceuticalItemLight;
 import com.divudi.service.BillService;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -70,7 +68,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -97,8 +94,6 @@ public class PharmacyController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     private AmpController ampController;
     @Inject
@@ -285,7 +280,7 @@ public class PharmacyController implements Serializable {
         }
     }
 
-    // </editor-fold> 
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
     public String navigateToBinCard() {
         return "/pharmacy/bin_card?faces-redirect=true";
@@ -1308,7 +1303,7 @@ public class PharmacyController implements Serializable {
         qty = 0.0;
 
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.DepartmentCategoryWiseItems("
+        String jpql = "SELECT new com.divudi.core.data.DepartmentCategoryWiseItems("
                 + "bi.bill.department, "
                 + "bi.bill.toDepartment, "
                 + "bi.item, "
@@ -1573,7 +1568,7 @@ public class PharmacyController implements Serializable {
             workbook.write(out);
             context.responseComplete();
         } catch (Exception e) {
-            e.printStackTrace();
+            e.getMessage();
         }
     }
 
@@ -2252,18 +2247,25 @@ public class PharmacyController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
 
         if (transferType != null && qty >= 0.0) {
-            if ("equal".equals(transferType)) {
-                sql.append(" AND s.stock = :st ");
-            } else if ("notEqual".equals(transferType)) {
-                sql.append(" AND s.stock <> :st ");
-            } else if ("gThan".equals(transferType)) {
-                sql.append(" AND s.stock > :st ");
-            } else if ("lThan".equals(transferType)) {
-                sql.append(" AND s.stock < :st ");
-            } else if ("gThanOrEqual".equals(transferType)) {
-                sql.append(" AND s.stock >= :st ");
-            } else if ("lThanOrEqual".equals(transferType)) {
-                sql.append(" AND s.stock <= :st ");
+            switch (transferType) {
+                case "equal":
+                    sql.append(" AND s.stock = :st ");
+                    break;
+                case "notEqual":
+                    sql.append(" AND s.stock <> :st ");
+                    break;
+                case "gThan":
+                    sql.append(" AND s.stock > :st ");
+                    break;
+                case "lThan":
+                    sql.append(" AND s.stock < :st ");
+                    break;
+                case "gThanOrEqual":
+                    sql.append(" AND s.stock >= :st ");
+                    break;
+                case "lThanOrEqual":
+                    sql.append(" AND s.stock <= :st ");
+                    break;
             }
             parameters.put("st", qty);
         }
@@ -2304,11 +2306,11 @@ public class PharmacyController implements Serializable {
     }
 
     public void fillPharmaceuticalLights() {
+//        String jpql = "select new com.divudi.bean.pharmacy.PharmaceuticalItemLight(p.id, p.name, p.clazz) "
+//                + " from PharmaceuticalItem p "
+//                + " where p.retired != true "
+//                + " order by p.name";
         String jpql = "select new com.divudi.bean.pharmacy.PharmaceuticalItemLight(p.id, p.name, p.clazz) "
-                + " from PharmaceuticalItem p "
-                + " where p.retired != true "
-                + " order by p.name";
-        jpql = "select new com.divudi.bean.pharmacy.PharmaceuticalItemLight(p.id, p.name, p.clazz) "
                 + " from PharmaceuticalItem p ";
 //        Map m = new HashMap();
 //        m.put("ret", Boolean.TRUE);
@@ -2350,7 +2352,7 @@ public class PharmacyController implements Serializable {
     }
 
     public List<Item> completeAllStockItems(String qry) {
-        List<Item> items = null;
+        List<Item> items;
         String sql;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
@@ -2561,17 +2563,17 @@ public class PharmacyController implements Serializable {
                                                                                 BillType[] billTypes,
                                                                                 BillType[] referenceBillTypes) {
 
-        if (false) {
-            BillItem bi = new BillItem();
-            bi.getNetValue();
-            bi.getPharmaceuticalBillItem().getQty();
-        }
+//        if (false) {
+//            BillItem bi = new BillItem();
+//            bi.getNetValue();
+//            bi.getPharmaceuticalBillItem().getQty();
+//        }
 
         String sql;
         Map m = new HashMap();
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        sql = "select new com.divudi.data.dataStructure.ItemQuantityAndValues(i.item, "
+        sql = "select new com.divudi.core.data.dataStructure.ItemQuantityAndValues(i.item, "
                 + "sum(i.pharmaceuticalBillItem.qty), "
                 + "sum(i.netValue)) "
                 + " from BillItem i "
@@ -2619,7 +2621,7 @@ public class PharmacyController implements Serializable {
         long lValue = to.getTimeInMillis() - frm.getTimeInMillis();
         double dayCount = 0;
         if (lValue != 0) {
-            dayCount = lValue / (1000 * 60 * 60 * 24);
+            dayCount = (double) lValue / (1000 * 60 * 60 * 24);
         }
 
         //System.err.println("Day Count " + dayCount);
@@ -2708,7 +2710,7 @@ public class PharmacyController implements Serializable {
         long lValue = to.getTimeInMillis() - frm.getTimeInMillis();
         double monthCount = 0;
         if (lValue != 0) {
-            monthCount = lValue / (1000 * 60 * 60 * 24 * 30);
+            monthCount = (double) lValue / (1000 * 60 * 60 * 24 * 30);
         }
 
         //System.err.println("Month Count " + monthCount);
@@ -3035,9 +3037,9 @@ public class PharmacyController implements Serializable {
 
     public double findAllOutTransactions(Item item) {
         if (item instanceof Amp) {
-            return findAllOutTransactions((Amp) amp);
+            return findAllOutTransactions(amp);
         } else if (item instanceof Vmp) {
-            List<Amp> amps = vmpController.ampsOfVmp((Vmp) item);
+            List<Amp> amps = vmpController.ampsOfVmp(item);
             return findAllOutTransactions(amps);
         } else {
             return 0.0;
@@ -3112,7 +3114,7 @@ public class PharmacyController implements Serializable {
         } else {
             item = pharmacyItem;
         }
-        String sql;
+//        String sql;
 
 //        sql = "select i "
 //                + " from BillItem i "
@@ -3131,7 +3133,7 @@ public class PharmacyController implements Serializable {
         m.put("to", getToDate());
         m.put("btp", BillType.PharmacyPre);
         m.put("refType", BillType.PharmacySale);
-//        
+//
 //        List<BillItem> billItems=getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //        if (billItems!=null) {
 //            grns.addAll(billItems);
@@ -3145,17 +3147,17 @@ public class PharmacyController implements Serializable {
 //            //System.out.println("bi.getDeptId() = " + bi.getDeptId());
 //            //System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
 //        }
-        sql = "select i.bill.department,"
-                + " sum(i.netValue),"
-                + " sum(i.pharmaceuticalBillItem.qty) "
-                + " from BillItem i "
-                + " where i.bill.department.institution=:ins"
-                + " and i.bill.referenceBill.billType=:refType "
-                + " and i.bill.referenceBill.cancelled=false "
-                + " and i.item=:itm "
-                + " and i.bill.billType=:btp "
-                + " and i.createdAt between :frm and :to  "
-                + " group by i.bill.department";
+//        sql = "select i.bill.department,"
+//                + " sum(i.netValue),"
+//                + " sum(i.pharmaceuticalBillItem.qty) "
+//                + " from BillItem i "
+//                + " where i.bill.department.institution=:ins"
+//                + " and i.bill.referenceBill.billType=:refType "
+//                + " and i.bill.referenceBill.cancelled=false "
+//                + " and i.item=:itm "
+//                + " and i.bill.billType=:btp "
+//                + " and i.createdAt between :frm and :to  "
+//                + " group by i.bill.department";
 
         return 0.0;
 
@@ -3189,7 +3191,7 @@ public class PharmacyController implements Serializable {
         m.put("to", getToDate());
         m.put("btp", BillType.PharmacyPre);
         m.put("refType", BillType.PharmacySale);
-//        
+//
 //        List<BillItem> billItems=getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //        if (billItems!=null) {
 //            grns.addAll(billItems);
@@ -3326,7 +3328,7 @@ public class PharmacyController implements Serializable {
         long lValue = to.getTimeInMillis() - frm.getTimeInMillis();
         double monthCount = 0;
         if (lValue != 0) {
-            monthCount = lValue / (1000 * 60 * 60 * 24 * 30);
+            monthCount = (double) lValue / (1000 * 60 * 60 * 24 * 30);
         }
 
         createStockAverage(Math.abs(monthCount));
@@ -4580,14 +4582,6 @@ public class PharmacyController implements Serializable {
 
     public void setHasTransferIn(boolean hasTransferIn) {
         this.hasTransferIn = hasTransferIn;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public ItemFacade getItemFacade() {

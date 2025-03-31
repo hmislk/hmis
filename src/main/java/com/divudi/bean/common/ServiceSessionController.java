@@ -7,8 +7,8 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.entity.ServiceSession;
-import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.facade.ServiceSessionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,7 +21,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -208,8 +208,8 @@ public class ServiceSessionController implements Serializable {
             }
         }
     }
-    
-    
+
+
     @FacesConverter(forClass = ServiceSession.class)
     public static class ServiceSessionConverter implements Converter {
 
@@ -251,5 +251,5 @@ public class ServiceSessionController implements Serializable {
         }
     }
 
-    
+
 }

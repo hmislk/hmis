@@ -251,47 +251,109 @@
                         </p:commandButton>
                     </div>
 
-                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                    <!--                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}">-->
+                    <!--                        <h5 class="mt-3">Department Summary</h5>-->
+                    <!--                        <p:dataTable id="tbl1" value="#{pharmacyController.departmentTotals.entrySet()}"-->
+                    <!--                                     var="map"-->
+                    <!--                                     rowIndexVar="n"-->
+                    <!--                                     rowKey="#{map.key}"-->
+                    <!--                                     rows="10"-->
+                    <!--                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"-->
+                    <!--                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">-->
+                    <!--                            <p:columnGroup type="header">-->
+                    <!--                                <p:row>-->
+                    <!--                                    <p:column headerText="Department"/>-->
+                    <!--                                    <p:column headerText="Net Total" style="font-weight: bold; text-align: right"/>-->
+                    <!--                                </p:row>-->
+                    <!--                            </p:columnGroup>-->
+                    <!--                            <p:subTable value="#{map.value.entrySet()}" var="entry">-->
+                    <!--                                <f:facet name="header">-->
+                    <!--                                    <h:outputLabel value="#{map.key}"/>-->
+                    <!--                                </f:facet>-->
+                    <!--                                <p:column>-->
+                    <!--                                    <h:outputLabel value="#{entry.key}"/>-->
+                    <!--                                </p:column>-->
+                    <!--                                <p:column style="text-align: right">-->
+                    <!--                                    <h:outputLabel value="#{entry.value}">-->
+                    <!--                                        <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                    </h:outputLabel>-->
+                    <!--                                    <f:facet name="footer">-->
+                    <!--                                        <h:outputLabel value="#{pharmacyController.totalSaleValue}"-->
+                    <!--                                                       style="font-weight: bold;">-->
+                    <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                        </h:outputLabel>-->
+                    <!--                                    </f:facet>-->
+                    <!--                                </p:column>-->
+                    <!--                                <p:columnGroup type="footer">-->
+                    <!--                                    <p:row>-->
+                    <!--                                        <p:column>-->
+                    <!--                                            <f:facet name="footer">-->
+                    <!--                                                <h:outputLabel value="Total" style="font-weight: bold;"/>-->
+                    <!--                                            </f:facet>-->
+                    <!--                                        </p:column>-->
+                    <!--                                        <p:column style="font-weight: bold; text-align: right">-->
+                    <!--                                            <f:facet name="footer">-->
+                    <!--                                                <h:outputLabel-->
+                    <!--                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)}">-->
+                    <!--                                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                                </h:outputLabel>-->
+                    <!--                                            </f:facet>-->
+                    <!--                                        </p:column>-->
+                    <!--                                    </p:row>-->
+                    <!--                                </p:columnGroup>-->
+                    <!--                            </p:subTable>-->
+                    <!--                            <p:columnGroup type="footer">-->
+                    <!--                                <p:row>-->
+                    <!--                                    <p:column>-->
+                    <!--                                        <f:facet name="footer">-->
+                    <!--                                            <h:outputLabel value="Total" style="font-weight: bold;"/>-->
+                    <!--                                        </f:facet>-->
+                    <!--                                    </p:column>-->
+                    <!--                                    <p:column style="font-weight: bold; text-align: right">-->
+                    <!--                                        <f:facet name="footer">-->
+                    <!--                                            <h:outputLabel value="#{pharmacyController.totalSaleValue}">-->
+                    <!--                                                <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                            </h:outputLabel>-->
+                    <!--                                        </f:facet>-->
+                    <!--                                    </p:column>-->
+                    <!--                                </p:row>-->
+                    <!--                            </p:columnGroup>-->
+                    <!--                        </p:dataTable>-->
+                    <!--                    </h:panelGroup>-->
+
+                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}" id="tbl1">
                         <h5 class="mt-3">Department Summary</h5>
-                        <p:dataTable id="tbl1" value="#{pharmacyController.departmentTotals.entrySet()}"
-                                     var="map"
-                                     rowIndexVar="n"
-                                     rowKey="#{map.key}"
-                                     rows="10"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
-                            <p:columnGroup type="header">
-                                <p:row>
-                                    <p:column headerText="Department"/>
-                                    <p:column headerText="Net Total" style="font-weight: bold; text-align: right"/>
-                                </p:row>
-                            </p:columnGroup>
-                            <p:subTable value="#{map.value.entrySet()}" var="entry">
+
+                        <ui:repeat value="#{pharmacyController.departmentTotals.entrySet()}" var="map"
+                                   varStatus="status">
+                            <p:dataTable id="tbl5" value="#{map.value.entrySet()}" var="entry"
+                                         rowIndexVar="n" rowKey="#{entry.key}" rows="10"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
+
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{map.key}"/>
+                                    <h:outputLabel value="Department" rendered="#{status.first}"/>
                                 </f:facet>
-                                <p:column>
+
+                                <p:column headerText="#{map.key}"
+                                          filterBy="#{entry.key}"
+                                          filterMatchMode="contains">
                                     <h:outputLabel value="#{entry.key}"/>
                                 </p:column>
-                                <p:column style="text-align: right">
+
+                                <p:column headerText="Net Total" style="text-align: right">
                                     <h:outputLabel value="#{entry.value}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyController.totalSaleValue}"
-                                                       style="font-weight: bold;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </f:facet>
                                 </p:column>
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column>
+                                        <p:column colspan="1">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="Total" style="font-weight: bold;"/>
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="font-weight: bold; text-align: right">
+                                        <p:column style="text-align: right; font-weight: bold;">
                                             <f:facet name="footer">
                                                 <h:outputLabel
                                                         value="#{pharmacyController.pharmacyTotals.get(map.key)}">
@@ -300,25 +362,24 @@
                                             </f:facet>
                                         </p:column>
                                     </p:row>
+
+                                    <p:row rendered="#{status.last}">
+                                        <p:column colspan="1">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Total" style="font-weight: bold;"/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right; font-weight: bold;">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{pharmacyController.totalSaleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
                                 </p:columnGroup>
-                            </p:subTable>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="Total" style="font-weight: bold;"/>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column style="font-weight: bold; text-align: right">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{pharmacyController.totalSaleValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:dataTable>
+                            </p:dataTable>
+                        </ui:repeat>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBill'}">
@@ -540,18 +601,24 @@
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
                                 <p:columnGroup type="header">
-                                    <p:row style="background: #e5e9ec">
+                                    <p:row style="background: #e5e9ec" rendered="#{status.first}">
                                         <p:column headerText="Department Unit"
                                                   style="font-weight: bold; background: #e5e9ec" colspan="4"/>
                                     </p:row>
-                                    <p:row>
-                                        <p:column headerText="#{map.key}" style="font-weight: bold;" colspan="3"/>
+                                    <p:row style="background: #70a4ca">
+                                        <p:column headerText="#{map.key}" style="font-weight: bold; background: #70a4ca"
+                                                  colspan="3"/>
                                         <p:column
                                                 headerText="#{pharmacyController.getDepartmentTotalForConsumptionReport(map.key)}"
-                                                style="font-weight: bold;"/>
+                                                style="font-weight: bold; background: #70a4ca"/>
                                     </p:row>
                                     <p:row>
                                         <p:column headerText="Category" style="font-weight: bold;"/>
+                                        <p:column headerText="Issues" style="font-weight: bold;"/>
+                                        <p:column headerText="" style="font-weight: bold;" colspan="2"/>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column headerText="" style="font-weight: bold;"/>
                                         <p:column headerText="Rate" style="font-weight: bold;"/>
                                         <p:column headerText="Qty" style="font-weight: bold;"/>
                                         <p:column headerText="Value" style="font-weight: bold;"/>

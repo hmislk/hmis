@@ -14,17 +14,17 @@
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100" inputStyleClass="form-control" maxdate="#{commonController.endOfDayOnCurrentDate}">      
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100" inputStyleClass="form-control" maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100" inputStyleClass="form-control" maxdate="#{commonController.endOfDayOnCurrentDate}">                                                                              
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100" inputStyleClass="form-control" maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
                                 </p:calendar>
                                 <p:spacer height="10"/>
                                 <div class="d-grid gap-2">
                                     <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-search" ajax="false" value="Search" action="#{searchController.createTableByKeywordToPayBills()}"/>
-                               
+
                                 </div>
-                                
+
 
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100" />
@@ -35,7 +35,7 @@
                                 <h:outputLabel value="Total"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" class="w-100"/>
                                 <h:outputLabel value="Net Total"/>
-                               
+
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
 
 
@@ -59,13 +59,13 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{billController.opdBill}"/>
                                         </p:commandButton>
                                     </p:column>
-                                    <p:column headerText="Bill No" >                                
+                                    <p:column headerText="Bill No" >
                                         <h:outputLabel   value="#{bill.deptId}"/>
-                                    </p:column>          
-                                    <p:column headerText="Bill Type" >                                
+                                    </p:column>
+                                    <p:column headerText="Bill Type" >
                                         <h:outputLabel   value="#{bill.billType}"/>
-                                    </p:column>  
-                                    <p:column headerText="Billed For"  >                                
+                                    </p:column>
+                                    <p:column headerText="Billed For"  >
                                         <h:outputLabel value="#{bill.toInstitution.name} - #{bill.toDepartment.name}" />
                                     </p:column>
                                     <p:column headerText="Billed At"  >
@@ -85,14 +85,14 @@
                                                 <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                    </p:column>  
+                                    </p:column>
                                     <p:column headerText="Billed By" >
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{bill.refunded}" >
@@ -100,17 +100,17 @@
                                             <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                    </p:column>    
-                                    <p:column headerText="Client">                               
-                                        <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />                                   
+                                    </p:column>
+                                    <p:column headerText="Client">
+                                        <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />
                                         <h:commandLink value="(edit)" action="#{patientController.navigateToOpdPatientEdit()}" >
                                             <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
-                                        </h:commandLink>                                
+                                        </h:commandLink>
                                     </p:column>
-                                    <p:column headerText="Client Phone No">                              
+                                    <p:column headerText="Client Phone No">
                                         <h:outputLabel value="#{bill.patient.person.phone}" />
                                     </p:column>
-                                    <p:column headerText="Payment Method" >                                
+                                    <p:column headerText="Payment Method" >
                                         <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                         <h:outputLabel value="#{bill.paymentScheme.name}" />
                                     </p:column>
@@ -128,7 +128,7 @@
                                         <h:outputLabel value="#{bill.total - bill.balance}" >
                                             <f:convertNumber pattern="#,#00.00"/>
                                         </h:outputLabel>
-                                    </p:column>                         
+                                    </p:column>
                                 </p:dataTable>
                             </div>
                         </div>

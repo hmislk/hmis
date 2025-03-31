@@ -46,6 +46,18 @@
                                         </div>
                                     </p:tab>
 
+                                    <p:tab title="Manage">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Adjust Staff Welfare Eligibility" 
+                                                icon="fa fa-user-check" 
+                                                action="#{staffController.navigateToStaffWelfareEligibilityAdjustmentList}" />
+
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Setup">
                                         <div class="d-grid gap-2">
                                             <p:commandButton  class="w-100" ajax="false" value="Upload Consultants" action="#{dataUploadController.navigateToUploadConsultants()}"/>

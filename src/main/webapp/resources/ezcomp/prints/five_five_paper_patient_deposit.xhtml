@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
     </cc:interface>
@@ -42,10 +42,10 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Deposit Receive "   />    
-                <h:outputLabel value="&nbsp;**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="&nbsp;**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
-                <h:outputLabel value=" &nbsp;Receipt"   /> 
+                <h:outputLabel value="Deposit Receive "   />
+                <h:outputLabel value="&nbsp;**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="&nbsp;**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+                <h:outputLabel value=" &nbsp;Receipt"   />
             </div>
 
             <div class="billline">
@@ -207,7 +207,7 @@
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>
                     </div>
-                    
+
                     <!-- comment -->
                     <div class=" gap-2">
                         <h:outputLabel value="Settle By : #{cc.attrs.bill.creater.staff.code}"/><br/>
