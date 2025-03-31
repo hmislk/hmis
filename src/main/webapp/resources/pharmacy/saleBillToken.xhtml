@@ -17,7 +17,7 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacytoken.css" ></h:outputStylesheet>
-        <div class="posbill" style="page-break-after:always!important;">
+        <div class="posbill">
 
             <div class="institutionName" style="text-align: center!important;
                  font-weight: bold!important;
@@ -148,12 +148,11 @@
             </div>
 
             <div class="footer">
-                <br/>
                 THANK YOU !
-                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
+<!--                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
                     <br/>
                 </h:panelGroup>
-                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
+                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>-->
             </div>
 
         </div>
