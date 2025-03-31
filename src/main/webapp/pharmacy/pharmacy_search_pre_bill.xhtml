@@ -199,7 +199,7 @@
                                                     ajax="false"
                                                     icon="fa-solid fa-phone"
                                                     title="Call Customer"
-                                                    class="ui-button-warning"
+                                                    class="ui-button-warning mx-1"
                                                     action="#{pharmacyPreSettleController.markToken(bill)}"                                   
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or pharmacyPreSettleController.findTokenFromBill(bill).isCalled() }">
 
@@ -208,7 +208,7 @@
                                                 <p:commandButton
                                                     ajax="false"
                                                     icon="fa-solid fa-phone-slash"
-                                                    class="ui-button-danger mx-2"
+                                                    class="ui-button-danger mx-1"
                                                     title="Cancel Calling"
                                                     action="#{pharmacyPreSettleController.unmarkToken(bill)}"
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
@@ -217,10 +217,10 @@
 
                                                 <p:commandButton 
                                                     ajax="false"
-                                                    class="ui-button-warning"
+                                                    class="ui-button-warning mx-1"
                                                     icon="fas fa-pen" 
                                                     disabled="#{bill.referenceBill ne null || bill.cancelled eq true}"
-                                                    rendered="#{bill ne null}"
+                                                    rendered="#{bill ne null and configOptionApplicationController.getBooleanValueByKey('Enable bill edit in sale for cashier token management system', false)}"
                                                     title="Edit Bill" 
                                                     action="#{tokenController.navigateToSaleForCashierToEditBillWithToken(pharmacyPreSettleController.findTokenFromBill(bill))}">
                                                     
@@ -228,7 +228,7 @@
 
                                                 <p:commandButton
                                                     ajax="false"
-                                                    class="ui-button-success mx-2"
+                                                    class="ui-button-success mx-1"
                                                     title="Accept Payment"
                                                     icon="fa-solid fa-money-bill"
                                                     action="#{pharmacyPreSettleController.toSettle(bill)}"
@@ -239,7 +239,7 @@
                                                 <p:commandButton
                                                     ajax="false"               
                                                     title="Display Token"
-                                                    class="d-flex justify-content-center align-item-center"
+                                                    class="d-flex justify-content-center align-item-center mx-1"
                                                     style="background-color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? '#74b9ff' : '#ff7675'};"
                                                     icon="#{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'fa fa-eye': 'fa fa-eye-slash'}"
                                                     iconPos="center"
