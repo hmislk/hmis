@@ -2101,6 +2101,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     if (configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
                         settlePharmacyToken();
                         markInprogress();
+                        getToken().setTokenType(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
                     }
 
                 } else if (t != null) {

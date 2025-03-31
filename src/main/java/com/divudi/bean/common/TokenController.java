@@ -193,10 +193,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " from Token t"
                 + " where t.department=:dep"
                 + " and t.tokenDate=:date "
+                + " amd t.bill.cancelled = false"
                 + " and t.bill.billTypeAtomic = :bta"
                 + " and t.called=:cal "
                 + " and t.tokenType=:ty"
                 + " and t.completed=:com"
+                + " and t.displayToken = true"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -206,7 +208,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         m.put("cal", true); // Tokens that are called
         m.put("com", false); // Tokens that are not completed
-        m.put("ty", TokenType.PHARMACY_TOKEN);
+        m.put("ty", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
         j += " order by t.id";
         currentTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -217,11 +219,13 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " from Token t"
                 + " where t.department=:dep"
                 + " and t.tokenDate=:date "
+                + " and t.bill.cancelled = false"
                 + " and t.bill.billTypeAtomic = :bta"
                 + " and t.called=:cal "
                 + " and t.tokenType=:ty"
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com "
+                + " and t.displayToken = true"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -232,7 +236,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("cal", false); // Tokens that are called
         m.put("prog", true); // Tokens that are not in progress
         m.put("com", false); // Tokens that are not completed
-        m.put("ty", TokenType.PHARMACY_TOKEN);
+        m.put("ty", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
         j += " order by t.id";
         inprogressTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
