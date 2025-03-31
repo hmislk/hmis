@@ -194,7 +194,7 @@
                             <h:panelGroup rendered="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill.referenceBill) ne null}">
                                 <h:outputLabel value="Settled By :"/>
                                 <h:outputLabel value="#{cc.attrs.bill.creater.name}"/><br></br>
-                                <h:outputLabel value="Prepeared By :"/>
+                                <h:outputLabel value="Prepared By :"/>
                                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill.referenceBill) eq null}">
