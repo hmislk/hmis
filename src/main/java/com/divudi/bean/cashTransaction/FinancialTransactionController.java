@@ -5360,6 +5360,40 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
+    public void addMissingBillTimeData() {
+        String jpql;
+        Map m = new HashMap();
+        List<Bill> billsWithoutBillDateAndBillTime;
+        jpql = "Select b "
+                + "from Bill b "
+                + " where b.retired=:ret "
+                + " and (b.billDate is null or b.billTime is null) "
+                + " and b.createdAt is not null";
+        m.put("ret", false);
+        billsWithoutBillDateAndBillTime = billFacade.findByJpql(jpql, m);
+        for (Bill billWIthoutBillDateAndBillTime : billsWithoutBillDateAndBillTime) {
+            billWIthoutBillDateAndBillTime.getBillTime();// Fixed in the getter
+            billWIthoutBillDateAndBillTime.getBillDate();// Fixed in the getter
+            billFacade.edit(billWIthoutBillDateAndBillTime);
+        }
+
+        m = new HashMap();
+        List<Bill> billsWithoutCreatedAt;
+        jpql = "Select b "
+                + "from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billDate is not null "
+                + " and b.createdAt is null";
+        m.put("ret", false);
+        billsWithoutCreatedAt = billFacade.findByJpql(jpql, m);
+
+        for (Bill billWithoutCreaetedAt : billsWithoutCreatedAt) {
+            billWithoutCreaetedAt.getCreatedAt(); // Fixed in the getter
+            billFacade.edit(billWithoutCreaetedAt);
+        }
+
+    }
+
     private CashBookEntry findCashbookEntry(Payment p, List<CashBookEntry> cbEntries) {
         if (p == null) {
             return null;
