@@ -1123,7 +1123,7 @@ public class CreditCompanyDueController implements Serializable {
         for (PatientEncounter p : patientEncounters) {
             billed += p.getFinalBill().getNetTotal();
             paidByPatient += p.getFinalBill().getSettledAmountByPatient();
-            paidByCompany += p.getFinalBill().getSettledAmountByPatient();
+            paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
         }
     }
 
