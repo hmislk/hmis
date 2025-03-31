@@ -2019,7 +2019,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         tokenFacade.edit(currentToken);
         setToken(currentToken);
     }
-    
+
     @EJB
     private ConfigOptionFacade configOptionFacade;
 
@@ -2365,12 +2365,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please enter pateint details to the bill.");
             return;
         }
-        if (getPaymentMethod() == PaymentMethod.Card
-                && (getPaymentMethodData().getCreditCard().getNo() == null
-                || getPaymentMethodData().getCreditCard().getNo().trim().isEmpty())
-                && configOptionApplicationController.getBooleanValueByKey("Pharmacy retail sale CreditCard last digits is Mandatory")) {
-            JsfUtil.addErrorMessage("Please enter a Credit Card last 4 digits");
-            return;
+        if (getPaymentMethod() == PaymentMethod.Card) {
+            String cardNumber = getPaymentMethodData().getCreditCard().getNo();
+            if ((cardNumber == null || cardNumber.trim().isEmpty()
+                    || cardNumber.trim().length() != 4)
+                    && configOptionApplicationController.getBooleanValueByKey("Pharmacy retail sale CreditCard last digits is Mandatory")) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter a Credit Card last 4 digits");
+                return;
+            }
         }
 
         BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme, getPaymentMethodData());
