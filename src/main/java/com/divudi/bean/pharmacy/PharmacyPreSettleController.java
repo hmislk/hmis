@@ -1131,10 +1131,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
               return;
           }
           
-          if(t.isDisplayToken() == null){
+          if(t.getDisplayToken() == null){
               t.setDisplayToken(true);
           }else{
-              t.setDisplayToken(!t.isDisplayToken());
+              t.setDisplayToken(!t.getDisplayToken());
           }
           tokenFacade.edit(t);
        

@@ -237,11 +237,12 @@
                                                 </p:commandButton> 
                                                 
                                                 <p:commandButton
-                                                    ajax="false"
-                                                    
+                                                    ajax="false"               
                                                     title="Display Token"
-                                                    style="color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'red' : 'blue'}}}"
-                                                    icon="#{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'fa fa-times': 'fa fa-television'}"
+                                                    class="d-flex justify-content-center align-item-center"
+                                                    style="background-color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? '#74b9ff' : '#ff7675'};"
+                                                    icon="#{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'fa fa-eye-slash': 'fa fa-eye'}"
+                                                    iconPos="center"
                                                     action="#{pharmacyPreSettleController.tokenDisplayToggle(bill)}"
                                                     >
 

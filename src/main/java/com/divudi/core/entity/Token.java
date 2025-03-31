@@ -409,7 +409,7 @@ public class Token implements Serializable {
         this.referaToken = referaToken;
     }
 
-    public Boolean isDisplayToken() {
+    public Boolean getDisplayToken() {
         displayToken = displayToken == null ? true : displayToken;
         return displayToken;
     }
