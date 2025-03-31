@@ -186,6 +186,11 @@ public class InwardReportControllerBht implements Serializable {
         //department = null;
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
+    
+    public String madeNull() {
+        patientEncounter = null;
+        return "/pharmacy/reports/inpatient_pharmacy_item_list.xhtml?faces-redirect=true";
+    }
 
     public String navigateToInpatientLabItemList() {
         System.out.println("navigateToInpatientLabItemList");

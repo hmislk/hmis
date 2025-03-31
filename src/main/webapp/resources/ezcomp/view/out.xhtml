@@ -31,6 +31,16 @@
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                     </p:outputLabel>
 
+                    <p:outputLabel value="Bill Date" ></p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.bill.billDate}" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Bill Time" ></p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.bill.billTime}" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                    </p:outputLabel>
+
 
                     <p:outputLabel value="User" ></p:outputLabel>
                     <p:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></p:outputLabel>
@@ -230,6 +240,27 @@
                                 itemLabel="#{d.name}"
                                 itemValue="#{d}" />
                         </p:selectOneMenu>
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Collecting Centre" ></p:outputLabel>
+                    <h:panelGroup >
+                        <p:outputLabel
+                            value="#{cc.attrs.bill.collectingCentre.name}"
+                            rendered="#{not webUserController.hasPrivilege('Developers')}">
+                        </p:outputLabel>
+                        <p:autoComplete
+                            id="acCc"
+                            rendered="#{webUserController.hasPrivilege('Developers')}"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            completeMethod="#{institutionController.completeCollectingCenter}"
+                            var="pta"
+                            itemLabel="#{pta.name}"
+                            itemValue="#{pta}"
+                            forceSelection="true"
+                            value="#{cc.attrs.bill.institution}" >
+                            <p:ajax process="acIns" update="cmbDept"/>
+                        </p:autoComplete>
                     </h:panelGroup>
 
 
