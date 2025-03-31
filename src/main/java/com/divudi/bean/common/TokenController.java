@@ -282,6 +282,20 @@ public class TokenController implements Serializable, ControllerWithPatient {
         j += " order by t.id";
         currentTokensCounterWise = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
+    
+    public Token findPharmacyTokenSaleForCashier(Bill bill, TokenType tokenType) {
+        if (bill == null) {
+            return new Token();
+        }
+        String j = "Select t "
+                + " from Token t"
+                + " where t.bill=:bill"
+                + " and t.tokenType=:ty"; // Add conditions to filter out tokens that are in progress or completed
+        Map<String, Object> m = new HashMap<>();
+        m.put("bill", bill);
+        m.put("ty", tokenType);
+        return tokenFacade.findFirstByJpql(j, m);
+    }
 
     public Token findPharmacyTokens(Bill bill) {
         if (bill == null) {

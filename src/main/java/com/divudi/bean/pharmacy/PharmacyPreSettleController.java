@@ -22,6 +22,7 @@ import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
+import com.divudi.core.data.TokenType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
@@ -1081,7 +1082,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
     
     public Token findTokenFromBill(Bill bill){
-        return  tokenController.findPharmacyTokens(bill);     
+        return  tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);     
     }
     
      public void markInProgress(Bill bill){
