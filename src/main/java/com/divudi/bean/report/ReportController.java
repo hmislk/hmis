@@ -3223,11 +3223,10 @@ public class ReportController implements Serializable {
         m.put("td", toDate);
         m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
 
-        if (route != null) {
-            jpql += " and bi.bill.fromInstitution.route = :route ";
-            m.put("route", route);
-        }
-
+//        if (route != null) {
+//            jpql += " and bi.bill.fromInstitution.route = :route ";
+//            m.put("route", route);
+//        }
         if (institution != null) {
             jpql += " and bi.bill.institution = :ins ";
             m.put("ins", institution);
@@ -3244,35 +3243,31 @@ public class ReportController implements Serializable {
         }
 
         if (collectingCentre != null) {
-            jpql += " and bi.bill.fromInstitution = :cc ";
-            m.put("cc", collectingCentre);
+            jpql += " and bi.bill.collectingCentre.id = :ccId ";
+            m.put("ccId", collectingCentre.getId());
         }
 
-        if (phn != null && !phn.isEmpty()) {
-            jpql += " and bi.bill.patient.phn = :phn ";
-            m.put("phn", phn);
-        }
-
-        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " and bi.bill.deptId = :inv ";
-            m.put("inv", invoiceNumber);
-        }
-
-        if (itemLight != null) {
-            jpql += " and bi.item.id = :item ";
-            m.put("item", itemLight.getId());
-        }
-
-        if (doctor != null) {
-            jpql += " and bi.bill.referredBy = :refDoc ";
-            m.put("refDoc", doctor);
-        }
-
-        if (status != null) {
-            jpql += " and bi.billItemStatus = :status ";
-            m.put("status", status);
-        }
-
+//        if (phn != null && !phn.isEmpty()) {
+//            jpql += " and bi.bill.patient.phn = :phn ";
+//            m.put("phn", phn);
+//        }
+//
+//        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+//            jpql += " and bi.bill.deptId = :inv ";
+//            m.put("inv", invoiceNumber);
+//        }
+//        if (itemLight != null) {
+//            jpql += " and bi.item.id = :item ";
+//            m.put("item", itemLight.getId());
+//        }
+//        if (doctor != null) {
+//            jpql += " and bi.bill.referredBy = :refDoc ";
+//            m.put("refDoc", doctor);
+//        }
+//        if (status != null) {
+//            jpql += " and bi.billItemStatus = :status ";
+//            m.put("status", status);
+//        }
         jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
 
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
@@ -3293,6 +3288,56 @@ public class ReportController implements Serializable {
 
             }
         }
+    }
+
+    public void processCollectingCentreTestWiseCountReportTestWithBillItems() {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired <> :ret"
+                + " and bi.bill.cancelled <> :can"
+                + " and bi.refunded <> :returned"
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", true);
+        m.put("returned", true);
+        m.put("can", true);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
+
+//        if (route != null) {
+//            jpql += " and bi.bill.fromInstitution.route = :route ";
+//            m.put("route", route);
+//        }
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and bi.bill.department.site = :site ";
+            m.put("site", site);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and bi.bill.collectingCentre.id = :ccId ";
+            m.put("ccId", collectingCentre.getId());
+        }
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+
+        billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("billItems = " + billItems);
+
     }
 
     public void processLabTestWiseCountReport() {
