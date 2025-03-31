@@ -97,6 +97,18 @@ public class PharmacyBean {
     BillNumberGenerator billNumberBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;
+    @EJB
+    private VtmFacade VtmFacade;
+    @EJB
+    private MeasurementUnitFacade measurementUnitFacade;
+    @EJB
+    AmppFacade amppFacade;
+    @EJB
+    VmpFacade vmpFacade;
+    @EJB
+    VirtualProductIngredientFacade virtualProductIngredientFacade;
+    @EJB
+    PharmaceuticalItemTypeFacade pharmaceuticalItemTypeFacade;
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
@@ -180,12 +192,10 @@ public class PharmacyBean {
 
         List<BillItem> billItems = new ArrayList<>();
 
-        //@Safrin
         if (bill == null) {
             return billItems;
         }
 
-        //@Safrin
         if (bill.getBillItems() == null) {
             return billItems;
         }
@@ -215,7 +225,6 @@ public class PharmacyBean {
             newBillItem.setPharmaceuticalBillItem(ph);
             getBillItemFacade().edit(newBillItem);
 
-            //System.err.println("QTY " + bItem.getQty());
             double qty = 0;
             if (bItem.getQty() != null) {
                 qty = Math.abs(bItem.getQty());
@@ -231,11 +240,6 @@ public class PharmacyBean {
     }
 
     public Bill reAddToStock(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
-
-//        if (bill.getBillItems().isEmpty() || bill.isCancelled()) {
-//            return null;
-//        }
-        //@Safrin
         if (bill.isCancelled()) {
             JsfUtil.addErrorMessage("Bill Already Cancelled");
             return null;
@@ -310,11 +314,7 @@ public class PharmacyBean {
         this.stockFacade = stockFacade;
     }
 
-    // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method")
     public double getStockQty(ItemBatch batch, Department department) {
-        //    //System.err.println("Item Batch "+batch);
-        //     //System.err.println("Deprtment "+department);
         String sql;
         HashMap hm = new HashMap();
         sql = "select sum(s.stock) from Stock s where s.itemBatch=:batch "
@@ -575,7 +575,6 @@ public class PharmacyBean {
         List<Stock> stocks = getStockFacade().findByJpqlWithoutCache(sql, m);
         List<ItemBatchQty> dl = new ArrayList<>();
         double toAddQty = qty;
-        //System.err.println("QTY 1 : " + toAddQty);
         for (Stock s : stocks) {
             if (s.getStock() >= toAddQty) {
                 deductFromStock(s.getItemBatch(), toAddQty, department);
@@ -592,36 +591,33 @@ public class PharmacyBean {
     }
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
-//        if (qty <= 0) {
-//            return new ArrayList<>();
-//        }
-        String sql = "";
-        Map m = new HashMap();
+        String jpql = "";
+        Map params = new HashMap();
 
-        m.put("d", department);
-        m.put("q", 1.0);
+        params.put("d", department);
+        params.put("q", 1.0);
         if (item instanceof Amp) {
-            sql = "select s "
+            jpql = "select s "
                     + " from Stock s "
                     + " where s.itemBatch.item=:amp "
                     + " and s.department=:d and s.stock >=:q "
                     + " and s.itemBatch.dateOfExpire > :doe "
                     + " order by s.itemBatch.dateOfExpire ";
-            m.put("amp", item);
-            m.put("doe", new Date());
+            params.put("amp", item);
+            params.put("doe", new Date());
         } else if (item instanceof Vmp) {
             List<Amp> amps = findAmpsForVmp((Vmp) item);
-            sql = "select s "
+            jpql = "select s "
                     + " from Stock s "
                     + " where s.itemBatch.item in :amps "
                     + " and s.itemBatch.dateOfExpire > :doe"
                     + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
-            m.put("amps", amps);
+            params.put("amps", amps);
         } else {
             JsfUtil.addErrorMessage("Not supported yet");
             return new ArrayList<>();
         }
-        List<Stock> stocks = getStockFacade().findByJpqlWithoutCache(sql, m);
+        List<Stock> stocks = getStockFacade().findByJpqlWithoutCache(jpql, params);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
         for (Stock s : stocks) {
@@ -692,7 +688,6 @@ public class PharmacyBean {
     }
 
     public boolean deductFromStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
-        System.out.println("deductFromStock");
         if (stock == null) {
             return false;
         }
@@ -705,11 +700,8 @@ public class PharmacyBean {
             return false;
         }
         stock = getStockFacade().findWithoutCache(stock.getId());
-        System.out.println("Before Saving - stock.getStock() = " + stock.getStock());
-        System.out.println("qty = " + qty);
         stock.setStock(stock.getStock() - qty);
         getStockFacade().editAndCommit(stock);
-        System.out.println("After Saving - stock.getStock() = " + stock.getStock());
         addToStockHistory(pbi, stock, d);
         return true;
     }
@@ -733,8 +725,6 @@ public class PharmacyBean {
     }
 
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Department d) {
-        System.out.println("addToStockHistory");
-        System.out.println("d = " + d);
         if (phItem == null) {
             return;
         }
@@ -758,17 +748,14 @@ public class PharmacyBean {
         sh.setInstitution(d.getInstitution());
 
         Stock fetchedStock = getStockFacade().findWithoutCache(stock.getId());
-        System.out.println("fetchedStock.getStock() = " + fetchedStock.getStock());
         sh.setStockQty(fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
         sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
-        System.out.println("sh.getItemStock() = " + sh.getItemStock());
         sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
         sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
-        System.out.println("sh.getTotalItemStock() = " + sh.getTotalItemStock());
         if (sh.getId() == null) {
-            getStockHistoryFacade().createAndFlush(sh); // Creating does not gurantee writing to the database. If we call reading from database without cache, it gives a null pointer
+            getStockHistoryFacade().createAndFlush(sh);
         } else {
             getStockHistoryFacade().editAndCommit(sh);
         }
@@ -855,45 +842,6 @@ public class PharmacyBean {
         return true;
     }
 
-    //hhhh
-//    public List<ItemBatchQty> deductFromStock(Item item, double qty, Staff staff, PharmaceuticalBillItem pbi, Department d) {
-//        if (item instanceof Ampp) {
-//            item = ((Ampp) item).getAmp();
-//        }
-//
-//        String sql;
-//        sql = "select s from Stock s where s.itemBatch.item.id = " + item.getId() + " and s.staff.id = " + staff.getId() + " order by s.itemBatch.dateOfExpire desc";
-//        List<Stock> stocks = getStockFacade().findByJpql(sql);
-//        List<ItemBatchQty> dl = new ArrayList<>();
-//        double toAddQty = qty;
-//        for (Stock s : stocks) {
-//            if (toAddQty <= 0) {
-//                break;
-//            }
-//            if (s.getStock() >= toAddQty) {
-//                deductFromStock(s.getItemBatch(), toAddQty, staff);
-//                dl.add(new ItemBatchQty(s.getItemBatch(), toAddQty));
-//                break;
-//            } else {
-//                toAddQty = toAddQty - s.getStock();
-//                dl.add(new ItemBatchQty(s.getItemBatch(), s.getStock()));
-//                deductFromStock(s.getItemBatch(), s.getStock(), staff);
-//            }
-//        }
-//        return dl;
-//    }
-//    public double getRetailRate(Item item, Department department) {
-//
-//        //////System.out.println("getting Retail rate");
-//        double rate = getLastRetailRate(item, department);
-//        if (item instanceof Ampp) {
-//            return rate * item.getDblValue();
-//        } else if (item instanceof Amp) {
-//            return rate;
-//        } else {
-//            return 0.0;
-//        }
-//    }
     public double getWholesaleRate(Item item, Department department) {
         return 0.0;
     }
@@ -902,16 +850,6 @@ public class PharmacyBean {
         return 0.0;
     }
 
-//    public double getRetailRate(Stock stock, PaymentScheme paymentScheme) {
-//        if (stock == null) {
-//            return 0.0;
-//        }
-//        if (paymentScheme == null) {
-//            return stock.getItemBatch().getRetailsaleRate();
-//        } else {
-//            return stock.getItemBatch().getRetailsaleRate() * (1 + ((paymentScheme.getDiscountPercentForPharmacy()) / 100));
-//        }
-//    }
     public double getSaleRate(ItemBatch batch, Department department) {
         return 0.0;
     }
@@ -934,18 +872,6 @@ public class PharmacyBean {
         }
     }
 
-//    public double getPurchaseRate(Item item, Department department) {
-//        //////System.out.println("getting purchase rate");
-//        double rate = getLastPurchaseRate(item, department);
-//        if (item instanceof Ampp) {
-//            return rate * item.getDblValue();
-//        } else if (item instanceof Amp) {
-//            return rate;
-//        } else {
-//            return 0.0;
-//        }
-//
-//    }
     public void reSetPurchaseRate(ItemBatch batch, Department department) {
     }
 
@@ -1176,9 +1102,6 @@ public class PharmacyBean {
         return cat;
     }
 
-    @EJB
-    PharmaceuticalItemTypeFacade pharmaceuticalItemTypeFacade;
-
     public PharmaceuticalItemType getPharmaceuticalItemTypeByName(String name, boolean createNew) {
         if (name == null || name.trim().isEmpty()) {
             return null;
@@ -1265,11 +1188,6 @@ public class PharmacyBean {
         return getUnitByName(name, true);
     }
 
-    @EJB
-    VmpFacade vmpFacade;
-    @EJB
-    VirtualProductIngredientFacade virtualProductIngredientFacade;
-
     public VirtualProductIngredientFacade getVirtualProductIngredientFacade() {
         return virtualProductIngredientFacade;
     }
@@ -1285,9 +1203,6 @@ public class PharmacyBean {
     public void setVmpFacade(VmpFacade vmpFacade) {
         this.vmpFacade = vmpFacade;
     }
-
-    @EJB
-    AmppFacade amppFacade;
 
     public AmppFacade getAmppFacade() {
         return amppFacade;
@@ -1426,11 +1341,6 @@ public class PharmacyBean {
         return getVtmByName(name, true);
     }
 
-    @EJB
-    private VtmFacade VtmFacade;
-    @EJB
-    private MeasurementUnitFacade measurementUnitFacade;
-
     public MeasurementUnitFacade getMeasurementUnitFacade() {
         return measurementUnitFacade;
     }
@@ -1447,16 +1357,7 @@ public class PharmacyBean {
         this.VtmFacade = VtmFacade;
     }
 
-//    public double getLastPurchaseRate(Item item) {
-//        Map m = new HashMap();
-//        String sql;
-//        sql = "Select bi.pharmaceuticalBillItem.purchaseRate from BillItem bi where bi.retired=false and bi.bill.cancelled=false and bi.pharmaceuticalBillItem.itemBatch.item=:i and bi.bill.billType=:t order by bi.id desc";
-//        m.put("i", item);
-//        m.put("t", BillType.PharmacyGrnBill);
-//        return getBillItemFacade().findDoubleByJpql(sql, m);
-//    }
     public double getLastPurchaseRate(Item item, Department dept) {
-        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1472,7 +1373,6 @@ public class PharmacyBean {
         m.put("t", BillType.PharmacyGrnBill);
         m.put("t1", BillType.PharmacyPurchaseBill);
         ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
-        // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return (double) ii.getPurcahseRate();
         } else {
@@ -1482,7 +1382,6 @@ public class PharmacyBean {
     }
 
     public double getLastPurchaseRate(Item item, Institution ins) {
-        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1521,7 +1420,6 @@ public class PharmacyBean {
     }
 
     public double getLastPurchaseRate(Item item) {
-        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1537,7 +1435,6 @@ public class PharmacyBean {
         m.put("t", BillType.PharmacyGrnBill);
         m.put("t1", BillType.PharmacyPurchaseBill);
         ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
-        // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return ii.getPurcahseRate();
         } else {
@@ -1547,7 +1444,6 @@ public class PharmacyBean {
     }
 
     public double getLastRetailRate(Item item, Institution ins) {
-        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1563,7 +1459,6 @@ public class PharmacyBean {
         m.put("t", BillType.PharmacyGrnBill);
         m.put("t1", BillType.PharmacyPurchaseBill);
         ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
-        // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return ii.getRetailsaleRate();
         } else {
@@ -1573,7 +1468,6 @@ public class PharmacyBean {
     }
 
     public double getLastRetailRate(Item item) {
-        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1588,7 +1482,6 @@ public class PharmacyBean {
         m.put("t", BillType.PharmacyGrnBill);
         m.put("t1", BillType.PharmacyPurchaseBill);
         ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
-        // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return ii.getRetailsaleRate();
         } else {
@@ -1598,7 +1491,6 @@ public class PharmacyBean {
     }
 
     public double getLastRetailRate(Item item, Department dept) {
-        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
