@@ -126,6 +126,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_pre_bill?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"  
+                            rendered="#{webUserController.hasPrivilege('AcceptPaymentForPharmacyBills')}"
                             value="Accept Payments for Pharmacy Bills"
                             icon="fa fa-prescription-bottle"></p:menuitem>
                         <p:menuitem  

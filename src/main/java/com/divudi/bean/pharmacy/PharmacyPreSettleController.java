@@ -22,6 +22,7 @@ import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
+import com.divudi.core.data.TokenType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
@@ -932,6 +933,12 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
 
         }
+        if(getPreBill().getPaymentMethod() == PaymentMethod.Card){
+            if(getPaymentMethodData().getCreditCard().getNo() == null || getPaymentMethodData().getCreditCard().getNo().isEmpty()){
+                JsfUtil.addErrorMessage("Card last 4 digits are missing");
+                return true;
+            }
+        }
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             if (getPaymentMethodData() == null) {
@@ -1081,7 +1088,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
     
     public Token findTokenFromBill(Bill bill){
-        return tokenController.findPharmacyTokens(bill);
+        return  tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);     
     }
     
      public void markInProgress(Bill bill){
@@ -1125,6 +1132,20 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         
     }
     
+      public void tokenDisplayToggle(Bill bill){
+          Token t = findTokenFromBill(bill);
+          if(t == null){
+              return;
+          }
+          
+          if(t.getDisplayToken() == null){
+              t.setDisplayToken(true);
+          }else{
+              t.setDisplayToken(!t.getDisplayToken());
+          }
+          tokenFacade.edit(t);
+       
+      }
     
     public void unmarkToken(Bill bill){
         Token t = findTokenFromBill(bill);
