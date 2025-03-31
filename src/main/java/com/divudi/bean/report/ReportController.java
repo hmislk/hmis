@@ -801,16 +801,19 @@ public class ReportController implements Serializable {
         combinedBundle.setDescription("From : to :");
 
         Map<Institution, ReportTemplateRow> combinedResults = new HashMap<>();
-
         // Process the billed bundle
-        System.out.println("Processing billedBundle...");
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
         for (ReportTemplateRow row : billedBundle.getReportTemplateRows()) {
             Institution institution = row.getInstitution();
             combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
             ReportTemplateRow existingRow = combinedResults.get(institution);
 
-            System.out.println("Billed row for Institution: " + institution.getName());
-            System.out.println("Before update: " + existingRow);
 
             existingRow.setItemCount(existingRow.getItemCount() + row.getItemCount());
             existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() + row.getItemHospitalFee());
@@ -818,18 +821,16 @@ public class ReportController implements Serializable {
             existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());
             existingRow.setItemNetTotal(existingRow.getItemNetTotal() + row.getItemNetTotal());
 
-            System.out.println("After update: " + existingRow);
         }
-
         // Process the CR bundle and adjust by taking absolute values and subtracting
-        System.out.println("Processing crBundle...");
+        // Process the CR bundle and adjust by taking absolute values and subtracting
+        // Process the CR bundle and adjust by taking absolute values and subtracting
+        // Process the CR bundle and adjust by taking absolute values and subtracting
         for (ReportTemplateRow row : crBundle.getReportTemplateRows()) {
             Institution institution = row.getInstitution();
             combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
             ReportTemplateRow existingRow = combinedResults.get(institution);
 
-            System.out.println("CR row for Institution: " + institution.getName());
-            System.out.println("Before update (subtracting): " + existingRow);
 
             existingRow.setItemCount(existingRow.getItemCount() - row.getItemCount());  // Subtract the count
             existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() - Math.abs(row.getItemHospitalFee()));  // Subtract the absolute value
@@ -837,24 +838,21 @@ public class ReportController implements Serializable {
             existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());  // Assuming this is correctly negative
             existingRow.setItemNetTotal(existingRow.getItemNetTotal() - Math.abs(row.getItemNetTotal()));
 
-            System.out.println("After update (subtracting): " + existingRow);
         }
 
         combinedBundle.setReportTemplateRows(new ArrayList<>(combinedResults.values()));
-
         // Debug output for totals
-        System.out.println("Calculating totals...");
+        // Debug output for totals
+        // Debug output for totals
+        // Debug output for totals
+        // Debug output for totals
+        // Debug output for totals
         long totalCount = combinedResults.values().stream().mapToLong(ReportTemplateRow::getItemCount).sum();
         double totalHospitalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemHospitalFee).sum();
         double totalCCFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemCollectingCentreFee).sum();
         double totalProfessionalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemProfessionalFee).sum();
         double totalNet = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemNetTotal).sum();
 
-        System.out.println("Total Count: " + totalCount);
-        System.out.println("Total Hospital Fee: " + totalHospitalFee);
-        System.out.println("Total Collecting Centre Fee: " + totalCCFee);
-        System.out.println("Total Professional Fee: " + totalProfessionalFee);
-        System.out.println("Total Net: " + totalNet);
 
         combinedBundle.setCount(totalCount);
         combinedBundle.setTotal(totalNet);
@@ -1819,8 +1817,6 @@ public class ReportController implements Serializable {
 
             params.put("ret", false);
 
-            System.out.println("params = " + params);
-            System.out.println("jpql = " + jpql);
 
             patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         }, CollectionCenterReport.COLLECTION_CENTER_REPORTS_PRINT, sessionController.getLoggedUser());
@@ -3209,24 +3205,17 @@ public class ReportController implements Serializable {
                 + "sum(bi.netValue)"
                 + ") "
                 + " from BillItem bi "
-                + " where bi.retired=:ret"
-                + " and bi.bill.cancelled=:can"
-                + " and bi.refunded=:returned"
+                + " where (bi.retired is null or bi.retired = false) "
+                + " and (bi.bill.cancelled is null or bi.bill.cancelled = false) "
+                + " and (bi.refunded is null or bi.refunded = false) "
                 + " and bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
 
         Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        m.put("returned", false);
-        m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
 
-//        if (route != null) {
-//            jpql += " and bi.bill.fromInstitution.route = :route ";
-//            m.put("route", route);
-//        }
         if (institution != null) {
             jpql += " and bi.bill.institution = :ins ";
             m.put("ins", institution);
@@ -3246,38 +3235,13 @@ public class ReportController implements Serializable {
             jpql += " and bi.bill.collectingCentre.id = :ccId ";
             m.put("ccId", collectingCentre.getId());
         }
-
-//        if (phn != null && !phn.isEmpty()) {
-//            jpql += " and bi.bill.patient.phn = :phn ";
-//            m.put("phn", phn);
-//        }
-//
-//        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-//            jpql += " and bi.bill.deptId = :inv ";
-//            m.put("inv", invoiceNumber);
-//        }
-//        if (itemLight != null) {
-//            jpql += " and bi.item.id = :item ";
-//            m.put("item", itemLight.getId());
-//        }
-//        if (doctor != null) {
-//            jpql += " and bi.bill.referredBy = :refDoc ";
-//            m.put("refDoc", doctor);
-//        }
-//        if (status != null) {
-//            jpql += " and bi.billItemStatus = :status ";
-//            m.put("status", status);
-//        }
         jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
-
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-
         totalCount = 0.0;
         totalHosFee = 0.0;
         totalCCFee = 0.0;
         totalProFee = 0.0;
         totalNetTotal = 0.0;
-
         if (testWiseCounts != null) {
             for (TestWiseCountReport report : testWiseCounts) {
                 totalCount += report.getCount();
@@ -3288,56 +3252,6 @@ public class ReportController implements Serializable {
 
             }
         }
-    }
-
-    public void processCollectingCentreTestWiseCountReportTestWithBillItems() {
-        String jpql = "select bi "
-                + " from BillItem bi "
-                + " where bi.retired <> :ret"
-                + " and bi.bill.cancelled <> :can"
-                + " and bi.refunded <> :returned"
-                + " and bi.bill.createdAt between :fd and :td "
-                + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
-
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", true);
-        m.put("returned", true);
-        m.put("can", true);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
-
-//        if (route != null) {
-//            jpql += " and bi.bill.fromInstitution.route = :route ";
-//            m.put("route", route);
-//        }
-        if (institution != null) {
-            jpql += " and bi.bill.institution = :ins ";
-            m.put("ins", institution);
-        }
-
-        if (department != null) {
-            jpql += " and bi.bill.department = :dep ";
-            m.put("dep", department);
-        }
-
-        if (site != null) {
-            jpql += " and bi.bill.department.site = :site ";
-            m.put("site", site);
-        }
-
-        if (collectingCentre != null) {
-            jpql += " and bi.bill.collectingCentre.id = :ccId ";
-            m.put("ccId", collectingCentre.getId());
-        }
-
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
-
-        billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-
-        System.out.println("billItems = " + billItems);
-
     }
 
     public void processLabTestWiseCountReport() {
