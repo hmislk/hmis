@@ -140,7 +140,7 @@ public class TransferReceiveController implements Serializable {
             BillItem bItem = new BillItem();
             bItem.setReferanceBillItem(i.getBillItem());
             bItem.copy(i.getBillItem());
-            bItem.setTmpQty(Math.max(Math.abs(i.getQtyInUnit()), Math.abs(i.getStaffStock().getStock())));
+            bItem.setTmpQty(Math.abs(i.getQty()));
 
             bItem.setSearialNo(getBillItems().size());
 
