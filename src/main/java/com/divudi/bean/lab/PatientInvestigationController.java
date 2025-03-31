@@ -126,6 +126,8 @@ public class PatientInvestigationController implements Serializable {
     private PatientReportItemValueFacade patientReportItemValueFacade;
     @EJB
     PatientReportFacade patientReportFacade;
+    @EJB
+    private ReportTimerController reportTimerController;
     /*
      * Controllers
      */
@@ -267,7 +269,7 @@ public class PatientInvestigationController implements Serializable {
     public void increment() {
         number++;
     }
-    private ReportTimerController reportTimerController;
+    
 
     public String sampleComponentNames(PatientSample ps) {
         List<PatientSampleComponant> pscList = getPatientSampleComponentsByPatientSample(ps);

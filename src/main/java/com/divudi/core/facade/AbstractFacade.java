@@ -220,7 +220,11 @@ public abstract class AbstractFacade<T> {
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
         qry.setMaxResults(1);
-        qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+        if (withoutCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+
         while (it.hasNext()) {
             Map.Entry m = (Map.Entry) it.next();
             String pPara = (String) m.getKey();
@@ -321,7 +325,7 @@ public abstract class AbstractFacade<T> {
         return getEntityManager().find(entityClass, id);
     }
 
-   public T findWithoutCache(Object id) {
+    public T findWithoutCache(Object id) {
         Map<String, Object> props = new HashMap<>();
         props.put("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS);
         props.put("javax.persistence.cache.storeMode", CacheStoreMode.REFRESH);
@@ -493,6 +497,7 @@ public abstract class AbstractFacade<T> {
         Query qry = getEntityManager().createQuery(jpql);
 
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+        qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
 
         Set<Map.Entry<String, Object>> entries = parameters.entrySet();
 
@@ -891,8 +896,9 @@ public abstract class AbstractFacade<T> {
             }
 //            //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
         }
-        qry.setMaxResults(maxRecords);
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+        qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+
         return qry.getResultList();
     }
 
@@ -914,6 +920,8 @@ public abstract class AbstractFacade<T> {
         }
 //        qry.setMaxResults(maxRecords);
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+        qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+
         return qry.getResultList();
     }
 
@@ -934,6 +942,7 @@ public abstract class AbstractFacade<T> {
 //            //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
         }
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+        qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
         return qry.getResultList();
     }
 
@@ -1363,6 +1372,10 @@ public abstract class AbstractFacade<T> {
     }
 
     public Double findAggregateDbl(String jpql, Map<String, Date> parameters) {
+        return findAggregateDbl(jpql, parameters, false);
+    }
+
+    public Double findAggregateDbl(String jpql, Map<String, Date> parameters, boolean withoutCache) {
         Query qry = getEntityManager().createQuery(jpql);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
@@ -1372,6 +1385,13 @@ public abstract class AbstractFacade<T> {
             if (m.getValue() instanceof Date) {
                 Date pVal = (Date) m.getValue();
                 Date pDate = (Date) pVal;
+
+                // If noCache is requested, set hints to bypass cache
+                if (withoutCache) {
+                    qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+                    qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+                }
+
                 qry.setParameter(pPara, pDate, TemporalType.DATE);
             } else {
                 qry.setParameter(pPara, m.getValue());

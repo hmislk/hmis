@@ -94,7 +94,7 @@ public class PatientReportBean {
             ii = getIxItemFacade().findByJpql(sql);
         }
         if (ii == null) {
-            ii = new ArrayList<InvestigationItem>();
+            ii = new ArrayList<>();
         }
         return ii;
     }
@@ -116,7 +116,7 @@ public class PatientReportBean {
             //////// // System.out.println("ii is " + ii + " and the cou");
         }
         if (ii == null) {
-            ii = new ArrayList<InvestigationItem>();
+            ii = new ArrayList<>();
         }
         return ii;
     }
@@ -166,7 +166,6 @@ public class PatientReportBean {
                         val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                     } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
                         val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    } else {
                     }
                     val.setInvestigationItem((InvestigationItem) ii);
                     val.setPatient(ptReport.getPatientInvestigation().getPatient());
@@ -193,7 +192,6 @@ public class PatientReportBean {
                             val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                         } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
                             val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                        } else {
                         }
                         val.setInvestigationItem((InvestigationItem) ii);
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
@@ -205,7 +203,7 @@ public class PatientReportBean {
                     }
 
                 }
-            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && ii.isRetired() == false) {
+            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && !ii.isRetired()) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
 
                     val = new PatientReportItemValue();
@@ -256,7 +254,7 @@ public class PatientReportBean {
             System.out.println("ii.getName = " + ii.getName());
             System.out.println("ii.getIxItemType() = " + ii.getIxItemType());
             PatientReportItemValue val = null;
-            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Image  || ii.getIxItemType() == InvestigationItemType.ReportImage || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Html || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
+            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Image  || ii.getIxItemType() == InvestigationItemType.ReportImage || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Html || ii.getIxItemType() == InvestigationItemType.Template) && !ii.isRetired()) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
                     System.out.println("val = " + val);
 
@@ -269,7 +267,6 @@ public class PatientReportBean {
                         val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                     } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
                         val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    } else {
                     }
                     val.setInvestigationItem((InvestigationItem) ii);
                     val.setPatient(ptReport.getPatientInvestigation().getPatient());
@@ -296,7 +293,6 @@ public class PatientReportBean {
                             val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                         } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
                             val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                        } else {
                         }
                         val.setInvestigationItem((InvestigationItem) ii);
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
@@ -308,7 +304,7 @@ public class PatientReportBean {
                     }
 
                 }
-            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && ii.isRetired() == false) {
+            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && !ii.isRetired()) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
 
                     val = new PatientReportItemValue();
@@ -407,7 +403,7 @@ public class PatientReportBean {
             if (val == null) {
                 val = new PatientReportItemValue();
                 val.setStrValue("");
-                val.setInvestigationItem((InvestigationItem) ii);
+                val.setInvestigationItem(ii);
                 val.setPatient(ptReport.getPatientInvestigation().getPatient());
                 val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                 val.setPatientReport(ptReport);
@@ -444,7 +440,7 @@ public class PatientReportBean {
             ii = new InvestigationItem();
             try {
                 getIiFacade().create(ii);
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
             ii.setName(a.getName());
             ii.setItem(i);
@@ -456,7 +452,6 @@ public class PatientReportBean {
             i.getReportItems().add(ii);
             getIxFacade().edit(i);
 
-        } else {
         }
         return ii;
     }
@@ -480,9 +475,6 @@ public class PatientReportBean {
         this.antibioticFacade = antibioticFacade;
     }
 
-
-    CommonFunctions commonFunctions;
-
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 
@@ -498,7 +490,7 @@ public class PatientReportBean {
         String dl;
         String sql;
         dl = ii.getName();
-        long ageInDays = commonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
+        long ageInDays = CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
         sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
         List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {
