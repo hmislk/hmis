@@ -259,6 +259,44 @@ public class CreditBean {
         return (List<PatientEncounter>) getPatientEncounterFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
+    public List<PatientEncounter> getCreditPatientEncounterWithFinalizedPayments(Institution institution, Date fromDate, Date toDate, PaymentMethod paymentMethod,
+                                                                                 Institution institutionOfDepartment, Department department, Institution site) {
+        String sql;
+        HashMap hm = new HashMap();
+
+        sql = "Select b From PatientEncounter b "
+                + " JOIN b.finalBill fb "
+                + " where b.retired=false "
+                + " and b.paymentFinalized=true ";
+
+        if (institutionOfDepartment != null) {
+            sql += " and fb.institution = :insd ";
+            hm.put("insd", institutionOfDepartment);
+        }
+
+        if (department != null) {
+            sql += " and fb.department = :dep ";
+            hm.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += " and fb.department.site = :site ";
+            hm.put("site", site);
+        }
+
+        sql += " and b.dateOfDischarge between :frm and :to "
+                + " and b.discharged = true "
+                + " and b.paymentMethod= :pm "
+                + " and b.creditCompany=:ins  ";
+
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("pm", paymentMethod);
+        hm.put("ins", institution);
+
+        return (List<PatientEncounter>) getPatientEncounterFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
     public List<Institution> getCreditCompanyFromBht(boolean lessThan, PaymentMethod paymentMethod) {
         String sql;
         HashMap hm;
@@ -398,6 +436,44 @@ public class CreditBean {
         hm.put("to", toDate);
         hm.put("pm", paymentMethod);
         hm.put("val", 0.01);
+
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public List<Institution> getCreditInstitutionByPatientEncounterWithFinalizedPayments(Date fromDate, Date toDate, PaymentMethod paymentMethod,
+                                                                                         Institution institution, Department department, Institution site) {
+        String sql;
+        HashMap<String, Object> hm = new HashMap<>();
+        sql = "Select distinct(b.creditCompany)"
+                + " From PatientEncounter b "
+                + " JOIN b.finalBill fb "
+                + " where b.retired=false "
+                + " and b.paymentFinalized=true ";
+
+        sql += " and b.dateOfDischarge between :frm and :to "
+                + " and b.discharged = true "
+                + " and b.paymentMethod = :pm ";
+
+        if (institution != null) {
+            sql += " and fb.institution = :insd ";
+            hm.put("insd", institution);
+        }
+
+        if (department != null) {
+            sql += " and fb.department = :dep ";
+            hm.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += " and fb.department.site = :site ";
+            hm.put("site", site);
+        }
+
+        sql += " order by b.creditCompany.name";
+
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("pm", paymentMethod);
 
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }

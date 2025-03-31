@@ -858,8 +858,8 @@ public class CreditCompanyDueController implements Serializable {
     public void createInwardCreditDueWithAdditionalFilters() {
         Date startTime = new Date();
 
-        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(),
-                PaymentMethod.Credit, true, institutionOfDepartment, department, site);
+        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounterWithFinalizedPayments(getFromDate(), getToDate(),
+                PaymentMethod.Credit, institutionOfDepartment, department, site);
         institutionEncounters = new ArrayList<>();
         finalTotal = 0.0;
         finalPaidTotal = 0.0;
@@ -867,44 +867,31 @@ public class CreditCompanyDueController implements Serializable {
         finalTransPaidTotal = 0.0;
         finalTransPaidTotalPatient = 0.0;
         for (Institution ins : setIns) {
-            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(),
-                    PaymentMethod.Credit, true, institutionOfDepartment, department, site);
+            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounterWithFinalizedPayments(ins, getFromDate(), getToDate(),
+                    PaymentMethod.Credit, institutionOfDepartment, department, site);
+
+            updateSettledAmountsForIP(lst);
+
+            if (withOutDueUpdate){
+                removeSettledBills(lst);
+            }
 
             InstitutionEncounters newIns = new InstitutionEncounters();
             newIns.setInstitution(ins);
             newIns.setPatientEncounters(lst);
 
-            // Use an iterator to safely remove items from the list while iterating
-            Iterator<PatientEncounter> iterator = lst.iterator();
-            while (iterator.hasNext()) {
-                PatientEncounter b = iterator.next();
+            for (PatientEncounter b : lst) {
+//                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
+//                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
 
-                if (withOutDueUpdate) {
-                    if (isDue(b)) {
-                        // Safe removal with iterator
-                        iterator.remove();
-                        continue;
-                    }
-                }
-
-                // Set payment totals for each PatientEncounter
-                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
-                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
-
-                // Update totals for newIns
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
                 newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getSettledAmountByPatient());
-                newIns.setTransPaidTotalPatient(newIns.getTransPaidTotalPatient() + b.getTransPaidByPatient());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidByCreditCompany());
-                newIns.setTransPaidTotal(newIns.getTransPaidTotal() + b.getTransPaidByCompany());
+                newIns.setPaidTotal(newIns.getPaidTotal() + b.getFinalBill().getSettledAmountBySponsor());
             }
 
-            // Update the final totals
             finalTotal += newIns.getTotal();
             finalPaidTotal += newIns.getPaidTotal();
             finalPaidTotalPatient += newIns.getPaidTotalPatient();
-            finalTransPaidTotal += newIns.getTransPaidTotal();
-            finalTransPaidTotalPatient += newIns.getTransPaidTotalPatient();
 
             if (newIns.getPatientEncounters().isEmpty()) {
                 continue;
@@ -912,10 +899,6 @@ public class CreditCompanyDueController implements Serializable {
 
             institutionEncounters.add(newIns);
         }
-    }
-
-    private boolean isDue(final PatientEncounter pe) {
-        return pe.getFinalBill().getNetTotal() - (Math.abs(pe.getFinalBill().getPaidAmount()) + Math.abs(pe.getCreditPaidAmount())) > 0;
     }
 
     public double createInwardPaymentTotal(PatientEncounter pe, Date fd, Date td, BillType bt) {
