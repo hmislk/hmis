@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 public class PreBill extends Bill implements Serializable {
 
     public PreBill() {
+        super();
         billClassType = BillClassType.PreBill;
         qty = 1;
     }
