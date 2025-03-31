@@ -1081,7 +1081,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
     
     public Token findTokenFromBill(Bill bill){
-        return tokenController.findPharmacyTokens(bill);
+        return  tokenController.findPharmacyTokens(bill);     
     }
     
      public void markInProgress(Bill bill){
@@ -1136,6 +1136,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
           }else{
               t.setDisplayToken(!t.isDisplayToken());
           }
+          tokenFacade.edit(t);
        
       }
     

@@ -238,12 +238,12 @@
                                                 
                                                 <p:commandButton
                                                     ajax="false"
-                                                    class="ui-button-success"
+                                                    
                                                     title="Display Token"
-                                                    icon="fa fa-times"
+                                                    style="color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'red' : 'blue'}}}"
+                                                    icon="#{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'fa fa-times': 'fa fa-television'}"
                                                     action="#{pharmacyPreSettleController.tokenDisplayToggle(bill)}"
                                                     >
-    
 
                                                 </p:commandButton> 
                                             </div>

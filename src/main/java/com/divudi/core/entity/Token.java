@@ -88,7 +88,7 @@ public class Token implements Serializable {
     @ManyToOne
     private Token referaToken;
     private boolean restartTokenServices;
-    private Boolean displayToken;
+    private Boolean displayToken = true;
 
 
 // </editor-fold>
@@ -410,6 +410,7 @@ public class Token implements Serializable {
     }
 
     public Boolean isDisplayToken() {
+        displayToken = displayToken == null ? true : displayToken;
         return displayToken;
     }
 
