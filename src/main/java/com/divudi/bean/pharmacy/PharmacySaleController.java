@@ -1970,9 +1970,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
-    public void settlePharmacyToken() {
+    public void settlePharmacyToken(TokenType tokenType) {
         currentToken = new Token();
-        currentToken.setTokenType(TokenType.PHARMACY_TOKEN);
+        currentToken.setTokenType(tokenType);
         currentToken.setDepartment(sessionController.getDepartment());
         currentToken.setFromDepartment(sessionController.getDepartment());
         currentToken.setPatient(getPatient());
@@ -2011,7 +2011,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             currentToken.setToInstitution(sessionController.getInstitution());
         }
         tokenFacade.create(currentToken);
-        currentToken.setTokenNumber(billNumberBean.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.PHARMACY_TOKEN));
+        currentToken.setTokenNumber(billNumberBean.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, tokenType));
         currentToken.setCounter(counter);
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
@@ -2099,9 +2099,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
                     if (configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
-                        settlePharmacyToken();
-                        markInprogress();
-                        getToken().setTokenType(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+                        settlePharmacyToken(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+                        markInprogress();                       
                     }
 
                 } else if (t != null) {

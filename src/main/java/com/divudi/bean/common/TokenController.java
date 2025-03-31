@@ -192,8 +192,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         String j = "Select t "
                 + " from Token t"
                 + " where t.department=:dep"
-                + " and t.tokenDate=:date "
-                + " amd t.bill.cancelled = false"
+                + " and t.bill.cancelled = false"
                 + " and t.bill.billTypeAtomic = :bta"
                 + " and t.called=:cal "
                 + " and t.tokenType=:ty"
@@ -204,7 +203,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
         Bill b = new Bill();
         b.getBillTypeAtomic();
         m.put("dep", sessionController.getDepartment());
-        m.put("date", new Date());
         m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         m.put("cal", true); // Tokens that are called
         m.put("com", false); // Tokens that are not completed

@@ -7544,7 +7544,7 @@ public class SearchController implements Serializable {
                 + " and token.institution = :ins ";
 
 //
-        parameters.put("type", TokenType.PHARMACY_TOKEN);
+        parameters.put("type", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
         parameters.put("fromDate", getFromDate());
         parameters.put("toDate", getToDate());
         parameters.put("dept", sessionController.getDepartment());
