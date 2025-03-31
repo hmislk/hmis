@@ -933,6 +933,12 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
 
         }
+        if(getPreBill().getPaymentMethod() == PaymentMethod.Card){
+            if(getPaymentMethodData().getCreditCard().getNo() == null || getPaymentMethodData().getCreditCard().getNo().isEmpty()){
+                JsfUtil.addErrorMessage("Card last 4 digits are missing");
+                return true;
+            }
+        }
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             if (getPaymentMethodData() == null) {

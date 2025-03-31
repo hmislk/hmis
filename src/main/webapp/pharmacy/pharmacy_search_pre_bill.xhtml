@@ -233,7 +233,7 @@
                                                     icon="fa-solid fa-money-bill"
                                                     action="#{pharmacyPreSettleController.toSettle(bill)}"
                                                     actionListener="#{pharmacyPreSettleController.paymentOngoingToken(bill)}"
-                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or bill.referenceBill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
                                                 </p:commandButton> 
                                                 
                                                 <p:commandButton
@@ -243,7 +243,7 @@
                                                     style="background-color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? '#74b9ff' : '#ff7675'};"
                                                     icon="#{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'fa fa-eye': 'fa fa-eye-slash'}"
                                                     iconPos="center"
-                                                    disabled="#{bill.referenceBill ne null}"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}"
                                                     action="#{pharmacyPreSettleController.tokenDisplayToggle(bill)}"
                                                     >
 
