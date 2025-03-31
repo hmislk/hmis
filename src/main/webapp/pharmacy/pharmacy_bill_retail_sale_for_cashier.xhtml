@@ -714,15 +714,15 @@
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>-->
-<!--                                <h:panelGroup id="gpBillPreviewFiveFiveToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
+                                <h:panelGroup id="gpBillPreviewFiveFiveToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                             <phi:saleBill_five_five_token id="saleBillTokenFiveFive" bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five_token>
                                         </h:panelGroup>
                                     </div>
-                                </h:panelGroup>-->
+                                </h:panelGroup>
 
-                                 <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',false) or
+                                 <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Token Bill is Pos paper',false) or
                                                                                             sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
