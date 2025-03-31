@@ -873,7 +873,7 @@ public class CreditCompanyDueController implements Serializable {
             updateSettledAmountsForIP(lst);
 
             if (withOutDueUpdate){
-                removeSettledBills(lst);
+                removeSettledAndExcessBills(lst);
             }
 
             InstitutionEncounters newIns = new InstitutionEncounters();
@@ -1115,7 +1115,7 @@ public class CreditCompanyDueController implements Serializable {
         }
 
         updateSettledAmountsForIP(patientEncounters);
-        removeSettledBills(patientEncounters);
+        removeSettledAndExcessBills(patientEncounters);
 
         billed = 0;
         paidByPatient = 0;
@@ -1127,7 +1127,7 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    private void removeSettledBills(List<PatientEncounter> patientEncounters) {
+    private void removeSettledAndExcessBills(List<PatientEncounter> patientEncounters) {
         patientEncounters.removeIf(p -> p.getFinalBill().getNetTotal() - (Math.abs(p.getFinalBill().getPaidAmount()) + Math.abs(p.getCreditPaidAmount())) <= 0);
     }
 
