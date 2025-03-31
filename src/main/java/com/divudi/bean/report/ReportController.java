@@ -803,40 +803,61 @@ public class ReportController implements Serializable {
         Map<Institution, ReportTemplateRow> combinedResults = new HashMap<>();
 
         // Process the billed bundle
+        System.out.println("Processing billedBundle...");
         for (ReportTemplateRow row : billedBundle.getReportTemplateRows()) {
             Institution institution = row.getInstitution();
             combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
             ReportTemplateRow existingRow = combinedResults.get(institution);
+
+            System.out.println("Billed row for Institution: " + institution.getName());
+            System.out.println("Before update: " + existingRow);
+
             existingRow.setItemCount(existingRow.getItemCount() + row.getItemCount());
             existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() + row.getItemHospitalFee());
             existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() + row.getItemCollectingCentreFee());
             existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());
             existingRow.setItemNetTotal(existingRow.getItemNetTotal() + row.getItemNetTotal());
+
+            System.out.println("After update: " + existingRow);
         }
 
         // Process the CR bundle and adjust by taking absolute values and subtracting
+        System.out.println("Processing crBundle...");
         for (ReportTemplateRow row : crBundle.getReportTemplateRows()) {
             Institution institution = row.getInstitution();
             combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
             ReportTemplateRow existingRow = combinedResults.get(institution);
+
+            System.out.println("CR row for Institution: " + institution.getName());
+            System.out.println("Before update (subtracting): " + existingRow);
+
             existingRow.setItemCount(existingRow.getItemCount() - row.getItemCount());  // Subtract the count
             existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() - Math.abs(row.getItemHospitalFee()));  // Subtract the absolute value
             existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() - Math.abs(row.getItemCollectingCentreFee()));
             existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());  // Assuming this is correctly negative
             existingRow.setItemNetTotal(existingRow.getItemNetTotal() - Math.abs(row.getItemNetTotal()));
+
+            System.out.println("After update (subtracting): " + existingRow);
         }
 
         combinedBundle.setReportTemplateRows(new ArrayList<>(combinedResults.values()));
 
+        // Debug output for totals
+        System.out.println("Calculating totals...");
         long totalCount = combinedResults.values().stream().mapToLong(ReportTemplateRow::getItemCount).sum();
         double totalHospitalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemHospitalFee).sum();
         double totalCCFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemCollectingCentreFee).sum();
         double totalProfessionalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemProfessionalFee).sum();
         double totalNet = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemNetTotal).sum();
 
+        System.out.println("Total Count: " + totalCount);
+        System.out.println("Total Hospital Fee: " + totalHospitalFee);
+        System.out.println("Total Collecting Centre Fee: " + totalCCFee);
+        System.out.println("Total Professional Fee: " + totalProfessionalFee);
+        System.out.println("Total Net: " + totalNet);
+
         combinedBundle.setCount(totalCount);
         combinedBundle.setTotal(totalNet);
-
         combinedBundle.setHospitalTotal(totalHospitalFee);
         combinedBundle.setCcTotal(totalCCFee);
         combinedBundle.setStaffTotal(totalProfessionalFee);
@@ -3196,7 +3217,7 @@ public class ReportController implements Serializable {
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-         m.put("returned", false);
+        m.put("returned", false);
         m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
