@@ -275,6 +275,7 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
+        collectingCentreFee=billItem.getCollectingCentreFee();
         //  referanceBillItem=billItem.getReferanceBillItem();
     }
 

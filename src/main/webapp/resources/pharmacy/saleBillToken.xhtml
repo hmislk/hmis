@@ -17,17 +17,18 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacytoken.css" ></h:outputStylesheet>
-        <div class="posbill" style="page-break-after:always!important;">
+        <div class="posbill">
 
-            <div class="institutionName mb-3" style="text-align: center!important;
+            <div class="institutionName" style="text-align: center!important;
                  font-weight: bold!important;
                  font-size: 15px!important;
                  font-weight: bold;">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
 
-            <div class="headingBill mt-2">
-                <h:outputLabel value="Pharmacy Token"   />
+            <div class="headingBill mt-0">
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"   />
+                <h:outputLabel value="&nbsp;Token"   />
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
@@ -36,9 +37,17 @@
                 <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
-            <h:panelGroup rendered="#{not empty tokenController.findPharmacyTokens(cc.attrs.bill)}">
+            <h:panelGroup rendered="#{not empty pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill)}">
                 <div class="billline">
-                    <h:outputLabel value="#{tokenController.findPharmacyTokens(cc.attrs.bill).tokenNumber}" style="font-size: 30px;"/>
+                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill).tokenNumber}" style="font-size: 30px;
+                                   display: inline-block;
+                                   width: 60px;
+                                   height: 60px;
+                                   text-align: center;
+                                   line-height: 60px;
+                                   border-radius: 50%;
+                                   border: solid 2px;
+                                   color: black;"/>
                 </div>
             </h:panelGroup>
 
@@ -54,13 +63,13 @@
                         </td>
                         <td>:</td>
                         <td style="width: 30%" >
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" >
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
 
                         <td style="width: 30%" >
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -69,7 +78,7 @@
 
                     <tr>
                         <td style="width: 30% ;text-align: right;" >
-                            <h:outputLabel value="Inv.No" class="billDetails"></h:outputLabel>
+                            <h:outputLabel value="Inv.No" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
@@ -84,18 +93,33 @@
                         </td>
                     </tr>
 
-                    <tr>
-                        <td style="width: 30% ;text-align: right;" >
-                            <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
-                        </td>
-                        <td>:</td>
-                        <td style="width: 30%;" >
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  class="billDetails">
-                            </h:outputLabel>
-                        </td>
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total Amount On Pharmacy Token')}">
+                        <tr>
+                            <td style="width: 30% ;text-align: right;" >
+                                <h:outputLabel value="Total" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.netTotal}"  class="billDetails">
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
-                        <td style="width: 30%" ></td>
-                    </tr>
+
+
+                    <!--                    <tr>
+                                            <td style="width: 30% ;text-align: right;" >
+                                                <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
+                                            </td>
+                                            <td>:</td>
+                                            <td style="width: 30%;" >
+                                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  class="billDetails">
+                                                </h:outputLabel>
+                                            </td>
+                    
+                                            <td style="width: 30%" ></td>
+                                        </tr>-->
 
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
@@ -119,48 +143,16 @@
                 <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
-            <div class="billline m-1">
+            <div class="billline">
                 <p:barcode value="#{cc.attrs.bill.idStr}" cache="false" type="code128" ></p:barcode>
             </div>
 
-
-            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total Ammount On Pharmacy Token')}">
-
-                <div class="billline">
-                    <h:outputLabel value="-----------------------------------------------"   />
-                </div>
-
-                <div class="mx-5" >
-                    <table style="width: 100%;">
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                <h:outputLabel value="Total" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class="billline">
-                    <h:outputLabel value="-----------------------------------------------"   />
-                </div>
-            </h:panelGroup>
-
-
-
-
-
             <div class="footer">
-                <br/>
                 THANK YOU !
-                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
+<!--                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
                     <br/>
                 </h:panelGroup>
-                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
+                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>-->
             </div>
 
         </div>

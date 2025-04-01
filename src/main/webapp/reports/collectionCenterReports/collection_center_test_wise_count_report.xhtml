@@ -18,20 +18,24 @@
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From Date"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          class="w-100"
-                                          inputStyleClass="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:datePicker 
+                                value="#{reportController.fromDate}" 
+                                showTime="true"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
 
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="To Date"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          class="w-100"
-                                          inputStyleClass="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:datePicker 
+                                value="#{reportController.toDate}"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -168,9 +172,7 @@
                                 icon="fas fa-cogs"
                                 class="mx-2 ui-button-warning"
                                 action="#{reportController.processCollectingCentreTestWiseCountReport()}" >
-
                             </p:commandButton>
-
                             <p:commandButton 
                                 icon="fa-solid fa-print"
                                 class="mx-2 ui-button-info"

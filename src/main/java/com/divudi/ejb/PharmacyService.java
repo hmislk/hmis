@@ -110,7 +110,7 @@ public class PharmacyService {
             allergyMsg.append("This patient should be allergy of ");
 
             for (Item i : allergyItems) {
-                allergyMsg.append(i.getName() + " , ");
+                allergyMsg.append(i.getName()).append(" , ");
             }
 
             if (allergyMsg.length() > 0) {

@@ -144,7 +144,7 @@ public class PharmacyCalculation implements Serializable {
 
         double retailPrice = ph.getPurchaseRate() + (ph.getPurchaseRate() * (margin / 100));
 
-        return (double) retailPrice;
+        return retailPrice;
     }
 
     public double getTotalQty(BillItem b, BillType billType, Bill bill) {
@@ -157,10 +157,8 @@ public class PharmacyCalculation implements Serializable {
         hm.put("btp", billType);
         hm.put("class", bill.getClass());
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
         //System.err.println("GETTING TOTAL QTY " + value);
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getTotalQtyWithFreeQty(BillItem b, BillType billType, Bill bill) {
@@ -173,10 +171,8 @@ public class PharmacyCalculation implements Serializable {
         hm.put("btp", billType);
         hm.put("class", bill.getClass());
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
         //System.err.println("GETTING TOTAL QTY " + value);
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getTotalFreeQty(BillItem b, BillType billType, Bill bill) {
@@ -189,10 +185,8 @@ public class PharmacyCalculation implements Serializable {
         hm.put("btp", billType);
         hm.put("class", bill.getClass());
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
         //System.err.println("GETTING TOTAL QTY " + value);
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getTotalQty(BillItem b, BillType billType) {
@@ -204,10 +198,8 @@ public class PharmacyCalculation implements Serializable {
         hm.put("bt", b);
         hm.put("btp", billType);
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
         //System.err.println("GETTING TOTAL QTY " + value);
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getTotalFreeQty(BillItem b, BillType billType) {
@@ -219,10 +211,8 @@ public class PharmacyCalculation implements Serializable {
         hm.put("bt", b);
         hm.put("btp", billType);
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
         //System.err.println("GETTING TOTAL QTY " + value);
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getBilledIssuedByRequestedItem(BillItem b, BillType billType) {
@@ -235,9 +225,7 @@ public class PharmacyCalculation implements Serializable {
         hm.put("class", BilledBill.class);
         hm.put("btp", billType);
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getBilledIssuedByRequestedItemBatch(BillItem b, BillType billType, ItemBatch batch) {
@@ -255,9 +243,7 @@ public class PharmacyCalculation implements Serializable {
         hm.put("class", BilledBill.class);
         hm.put("btp", billType);
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getBilledInwardPharmacyRequest(BillItem b, BillType billType) {
@@ -270,9 +256,7 @@ public class PharmacyCalculation implements Serializable {
         hm.put("class", PreBill.class);
         hm.put("btp", billType);
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getCancelledIssuedByRequestedItem(BillItem b, BillType billType) {
@@ -285,9 +269,7 @@ public class PharmacyCalculation implements Serializable {
         hm.put("class", CancelledBill.class);
         hm.put("btp", billType);
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getCancelledIssuedByRequestedItemBatch(BillItem b, BillType billType, ItemBatch batch) {
@@ -302,9 +284,7 @@ public class PharmacyCalculation implements Serializable {
         hm.put("class", CancelledBill.class);
         hm.put("btp", billType);
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getCancelledInwardPharmacyRequest(BillItem b, BillType billType) {
@@ -320,9 +300,7 @@ public class PharmacyCalculation implements Serializable {
         hm.put("class", PreBill.class);
         hm.put("btp", billType);
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getRefundedInwardPharmacyRequest(BillItem b, BillType billType) {
@@ -335,9 +313,7 @@ public class PharmacyCalculation implements Serializable {
         hm.put("class", RefundBill.class);
         hm.put("btp", billType);
 
-        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-
-        return value;
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public double getTotalQty(BillItem b, BillType billType, Bill refund, Bill cancel) {
@@ -480,9 +456,7 @@ public class PharmacyCalculation implements Serializable {
         double grns = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill);
         double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn);
 
-        double netQty = grns - grnReturn;
-
-        return netQty;
+        return grns - grnReturn;
     }
 
     public double calFreeQtyInTwoSql(PharmaceuticalBillItem po) {
@@ -490,9 +464,7 @@ public class PharmacyCalculation implements Serializable {
         double grnsFree = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill);
         double grnReturnFree = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn);
 
-        double netFreeQty = grnsFree - grnReturnFree;
-
-        return netFreeQty;
+        return grnsFree - grnReturnFree;
     }
 
     public double calQty2(BillItem bil) {
@@ -621,11 +593,7 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("poQty : " + poQty);
         //System.err.println("grnQty : " + grnQty);
         //System.err.println("remain : " + remains);
-        if (remains < grnQty) {
-            return true;
-        } else {
-            return false;
-        }
+        return remains < grnQty;
 
     }
 
@@ -643,11 +611,7 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("New Pur Price : " + newPrice);
         //System.err.println("MAX Price : " + max);
 
-        if (max < newPrice) {
-            return true;
-        } else {
-            return false;
-        }
+        return max < newPrice;
     }
 
 //    public boolean checkRetailPrice(PharmaceuticalBillItem i) {
@@ -680,11 +644,7 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("Purchase Price : " + i.getPurchaseRate());
         //System.err.println("Retail Price : " + i.getRetailRate());
         //System.err.println("MAX Price : " + max);
-        if (max < i.getRetailRate()) {
-            return true;
-        } else {
-            return false;
-        }
+        return max < i.getRetailRate();
     }
 
     public ItemBatch saveItemBatch(BillItem tmp) {
@@ -720,7 +680,7 @@ public class PharmacyCalculation implements Serializable {
         hash.put("pur", itemBatch.getPurcahseRate());
         List<ItemBatch> i = getItemBatchFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
         //System.err.println("Size " + i.size());
-        if (i.size() > 0) {
+        if (!i.isEmpty()) {
 //            //System.err.println("Edit");
 //            i.get(0).setBatchNo(i.get(0).getBatchNo());
 //            i.get(0).setDateOfExpire(i.get(0).getDateOfExpire());
@@ -752,9 +712,7 @@ public class PharmacyCalculation implements Serializable {
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
         List<Item> amppList = getItemFacade().findByJpql(sql);
-        for (Item i : amppList) {
-            items.add(i);
-        }
+        items.addAll(amppList);
 
         return items;
     }
@@ -782,9 +740,7 @@ public class PharmacyCalculation implements Serializable {
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getAmp().getVmp().getId() + ")";
         List<Item> amppList = getItemFacade().findByJpql(sql);
-        for (Item i : amppList) {
-            items.add(i);
-        }
+        items.addAll(amppList);
         return items;
     }
 
@@ -798,9 +754,7 @@ public class PharmacyCalculation implements Serializable {
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getId() + ")";
         List<Item> amppList = getItemFacade().findByJpql(sql);
-        for (Item i : amppList) {
-            items.add(i);
-        }
+        items.addAll(amppList);
         return items;
     }
 
@@ -814,9 +768,7 @@ public class PharmacyCalculation implements Serializable {
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
         List<Item> amppList = getItemFacade().findByJpql(sql);
-        for (Item i : amppList) {
-            items.add(i);
-        }
+        items.addAll(amppList);
         return items;
     }
 
@@ -850,7 +802,7 @@ public class PharmacyCalculation implements Serializable {
     public String errorCheck(Bill b, List<BillItem> billItems) {
         String msg = "";
 
-        if (b.getInvoiceNumber() == null || "".equals(b.getInvoiceNumber().trim())) {
+        if (b.getInvoiceNumber() == null || b.getInvoiceNumber().trim().isEmpty()) {
             msg = "Please Fill invoice number";
         }
 
@@ -902,7 +854,7 @@ public class PharmacyCalculation implements Serializable {
 
         for (BillItem i : list) {
             if (i.getPharmaceuticalBillItem().getQty() != 0.0) {
-                if (i.getPharmaceuticalBillItem().getDoe() == null || i.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+                if (i.getPharmaceuticalBillItem().getDoe() == null || i.getPharmaceuticalBillItem().getStringValue().trim().isEmpty()) {
                     return true;
                 }
                 if (i.getPharmaceuticalBillItem().getPurchaseRate() > i.getPharmaceuticalBillItem().getRetailRate()) {

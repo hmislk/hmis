@@ -16,6 +16,7 @@ import javax.persistence.Entity;
 public class RefundBill extends Bill implements Serializable {
 
     public RefundBill() {
+        super();
         billClassType = BillClassType.RefundBill;
         qty = 0 - 1;
     }
