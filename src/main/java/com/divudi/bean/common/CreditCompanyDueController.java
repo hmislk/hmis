@@ -23,7 +23,10 @@ import com.divudi.core.util.CommonFunctions;
 import java.io.OutputStream;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -33,6 +36,10 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -284,7 +291,7 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    public void exportCreditCompanyDueToExcel() {
+    public void exportCreditCompanyDueAgeDetailToExcel() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -958,7 +965,7 @@ public class CreditCompanyDueController implements Serializable {
 
             updateSettledAmountsForIP(lst);
 
-            if (withOutDueUpdate){
+            if (withOutDueUpdate) {
                 removeSettledAndExcessBills(lst);
             }
 
@@ -984,6 +991,162 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             institutionEncounters.add(newIns);
+        }
+    }
+
+    public void exportDueSearchCreditCompanyToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Due_Search_Credit_Company.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Institution Encounters Report");
+            int rowIndex = 0;
+
+            XSSFCellStyle boldStyle = workbook.createCellStyle();
+            XSSFFont boldFont = workbook.createFont();
+            boldFont.setBold(true);
+            boldStyle.setFont(boldFont);
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            XSSFCellStyle mergedStyle = workbook.createCellStyle();
+            mergedStyle.cloneStyleFrom(amountStyle);
+            mergedStyle.setFont(boldFont);
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Billed Amount", "Paid By Patient", "Paid By Company", "Net Amount"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            for (InstitutionEncounters i : getInstitutionEncounters()) {
+                Row institutionRow = sheet.createRow(rowIndex++);
+                Cell institutionCell = institutionRow.createCell(0);
+                institutionCell.setCellValue(i.getInstitution().getName());
+                institutionCell.setCellStyle(boldStyle);
+
+                for (PatientEncounter b : i.getPatientEncounters()) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    dataRow.createCell(0).setCellValue(b.getBhtNo());
+                    dataRow.createCell(1).setCellValue(b.getDateOfDischarge().toString());
+                    dataRow.createCell(2).setCellValue(b.getPatient().getPerson().getNameWithTitle());
+                    dataRow.createCell(3).setCellValue(b.getFinalBill().getNetTotal());
+                    dataRow.createCell(4).setCellValue(b.getFinalBill().getSettledAmountByPatient());
+                    dataRow.createCell(5).setCellValue(b.getFinalBill().getSettledAmountBySponsor());
+                    dataRow.createCell(6).setCellValue(b.getFinalBill().getNetTotal() - (b.getFinalBill().getSettledAmountByPatient() + b.getFinalBill().getSettledAmountBySponsor()));
+
+                    for (int j = 3; j <= 6; j++) {
+                        dataRow.getCell(j).setCellStyle(amountStyle);
+                    }
+                }
+                Row institutionFooterRow = sheet.createRow(rowIndex++);
+                institutionFooterRow.createCell(3).setCellValue(i.getTotal());
+                institutionFooterRow.createCell(4).setCellValue(i.getPaidTotalPatient());
+                institutionFooterRow.createCell(5).setCellValue(i.getPaidTotal());
+                institutionFooterRow.createCell(6).setCellValue(i.getTotal() - (i.getPaidTotal() + i.getPaidTotalPatient()));
+
+                for (int j = 3; j <= 6; j++) {
+                    institutionFooterRow.getCell(j).setCellStyle(mergedStyle);
+                }
+            }
+
+            Row footerRow = sheet.createRow(rowIndex++);
+            footerRow.createCell(3).setCellValue(finalTotal);
+            footerRow.createCell(4).setCellValue(finalPaidTotalPatient);
+            footerRow.createCell(5).setCellValue(finalPaidTotal);
+            footerRow.createCell(6).setCellValue(finalTotal - (finalPaidTotal + finalPaidTotalPatient));
+
+            for (int j = 3; j <= 6; j++) {
+                footerRow.getCell(j).setCellStyle(mergedStyle);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportDueSearchCreditCompanyToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Due_Search_Credit_Company.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Institution Encounters Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            PdfPTable table = new PdfPTable(7);
+            table.setWidthPercentage(100);
+            float[] columnWidths = {1.5f, 2.5f, 3.0f, 2.5f, 2.5f, 2.5f, 2.5f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Billed Amount", "Paid By Patient", "Paid By Company", "Net Amount"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+
+            for (InstitutionEncounters i : getInstitutionEncounters()) {
+                PdfPCell institutionCell = new PdfPCell(new Phrase(i.getInstitution().getName(), boldFont));
+                institutionCell.setColspan(7);
+                table.addCell(institutionCell);
+
+                for (PatientEncounter b : i.getPatientEncounters()) {
+                    table.addCell(new PdfPCell(new Phrase(b.getBhtNo(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(dateFormatter.format(b.getDateOfDischarge()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(b.getPatient().getPerson().getNameWithTitle(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getFinalBill().getNetTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getFinalBill().getSettledAmountByPatient()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getFinalBill().getSettledAmountBySponsor()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(
+                            b.getFinalBill().getNetTotal() - (b.getFinalBill().getSettledAmountByPatient() + b.getFinalBill().getSettledAmountBySponsor())), normalFont)));
+                }
+
+                PdfPCell subtotalLabel = new PdfPCell(new Phrase("Sub Total", boldFont));
+                subtotalLabel.setColspan(3);
+                table.addCell(subtotalLabel);
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(i.getTotal()), boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(i.getPaidTotalPatient()), boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(i.getPaidTotal()), boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(i.getTotal() - (i.getPaidTotal() + i.getPaidTotalPatient())), boldFont)));
+            }
+
+            PdfPCell netTotalLabel = new PdfPCell(new Phrase("Net Total", boldFont));
+            netTotalLabel.setColspan(3);
+            table.addCell(netTotalLabel);
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(finalTotal), boldFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(finalPaidTotalPatient), boldFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(finalPaidTotal), boldFont)));
+            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(finalTotal - (finalPaidTotal + finalPaidTotalPatient)), boldFont)));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
         }
     }
 
