@@ -189,7 +189,7 @@
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Payment Method">
+                                    <p:column headerText="Payment Method" filterBy="#{bill.paymentMethod} #{bill.paymentScheme.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                         <h:outputLabel value="#{bill.paymentScheme.name}" />
                                     </p:column>
