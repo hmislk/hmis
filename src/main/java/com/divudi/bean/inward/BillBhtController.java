@@ -443,16 +443,54 @@ public class BillBhtController implements Serializable {
     public List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser, Department matrixDepartment, PaymentMethod paymentMethod) {
         List<BillItem> list = new ArrayList<>();
         for (BillEntry e : billEntries) {
+            double staffFee = 0.0;
+            double collectingCentreFee = 0.0;
+            double hospitalFee = 0.0;
+            double reagentFee = 0.0;
+            double otherFee = 0.0;
 
             BillItem billItem = saveBillItems(bill, e.getBillItem(), e, e.getLstBillFees(), webUser, matrixDepartment);
             billItem.setSearialNo(list.size());
+
+            System.out.println("billItem = " + billItem);
+            System.out.println("billItemFee = " + billItem.getBillFees());
+
             for (BillFee bf : billItem.getBillFees()) {
                 PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix);
                 getBillFeeFacade().edit(bf);
+
+                if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                    collectingCentreFee += bf.getFeeValue();
+                } else if (bf.getFee().getFeeType() == FeeType.Staff) {
+                    staffFee += bf.getFeeValue();
+                } else {
+                    hospitalFee += bf.getFeeValue();
+                }
+
+                if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                    reagentFee += bf.getFeeValue();
+                } else if (bf.getFee().getFeeType() == FeeType.Additional) {
+                    otherFee += bf.getFeeValue();
+                }
             }
 
+            System.out.println("collectingCentreFee = " + collectingCentreFee);
+            System.out.println("staffFee = " + staffFee);
+            System.out.println("hospitalFee = " + hospitalFee);
+            System.out.println("reagentFee = " + reagentFee);
+            System.out.println("otherFee = " + otherFee);
+
+            billItem.setHospitalFee(hospitalFee);
+            billItem.setCollectingCentreFee(collectingCentreFee);
+            billItem.setReagentFee(reagentFee);
+            billItem.setOtherFee(otherFee);
+            billItem.setStaffFee(staffFee);
+
+            billItemFacade.editAndCommit(billItem);
+
             list.add(billItem);
+
         }
 
         getBillBean().updateBillByBillFee(bill);
@@ -697,11 +735,13 @@ public class BillBhtController implements Serializable {
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             JsfUtil.addErrorMessage("Please set To Department to This item");
             return true;
+
         }
 
         if (!getSessionController().getApplicationPreference().isInwardAddServiceBillTimeCheck()) {
             if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
-                if (getCurrentBillItem().getBillTime() == null) {
+                if (getCurrentBillItem()
+                        .getBillTime() == null) {
                     JsfUtil.addErrorMessage("Please set Time To This Investigation");
                     return true;
                 }
@@ -923,19 +963,18 @@ public class BillBhtController implements Serializable {
 
         //TODO: Need to add Logic
         //////// // System.out.println(getIndex());
-     //   if (getIndex() != null) {
-            boolean remove;
-      //      BillEntry temp = getLstBillEntries().get(getIndex());
-            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
-       //     recreateList(temp);
-            // remove = getLstBillEntries().remove(getIndex());
+        //   if (getIndex() != null) {
+        boolean remove;
+        //      BillEntry temp = getLstBillEntries().get(getIndex());
+        //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+        //     recreateList(temp);
+        // remove = getLstBillEntries().remove(getIndex());
 
-            //  getLstBillEntries().remove(index);
-            ////////// // System.out.println("Is Removed:" + remove);
-      //      calTotals();
-
-      //  }
-        if(bi == null){
+        //  getLstBillEntries().remove(index);
+        ////////// // System.out.println("Is Removed:" + remove);
+        //      calTotals();
+        //  }
+        if (bi == null) {
             JsfUtil.addErrorMessage("Error! Please Try Again");
             return;
         }
