@@ -43,13 +43,12 @@
                                     <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill>
                                 </div>
                             </h:panelGroup> 
-                            
-                        </h:panelGroup>
 
-                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
-                            <div>
-                                <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
-                            </div>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                </div>
+                            </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
 
