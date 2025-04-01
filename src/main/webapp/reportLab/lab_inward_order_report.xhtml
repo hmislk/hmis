@@ -22,8 +22,8 @@
                                 inputStyleClass="w-100 form-control" 
                                 id="fromDate" 
                                 value="#{laborataryReportController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                />
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:calendar>
 
                             <p:spacer width="50" ></p:spacer>
 
@@ -37,8 +37,7 @@
                                 id="toDate"
                                 value="#{laborataryReportController.toDate}" 
                                 navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                >
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                             </p:calendar>
 
                             <p:spacer width="50" ></p:spacer>

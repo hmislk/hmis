@@ -443,16 +443,49 @@ public class BillBhtController implements Serializable {
     public List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser, Department matrixDepartment, PaymentMethod paymentMethod) {
         List<BillItem> list = new ArrayList<>();
         for (BillEntry e : billEntries) {
+            double staffFee = 0.0;
+            double collectingCentreFee = 0.0;
+            double hospitalFee = 0.0;
+            double reagentFee = 0.0;
+            double otherFee = 0.0;
+            double marginFee = 0.0;
 
             BillItem billItem = saveBillItems(bill, e.getBillItem(), e, e.getLstBillFees(), webUser, matrixDepartment);
             billItem.setSearialNo(list.size());
+
             for (BillFee bf : billItem.getBillFees()) {
                 PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix);
                 getBillFeeFacade().edit(bf);
+
+                if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                    collectingCentreFee += bf.getFeeValue();
+                } else if (bf.getFee().getFeeType() == FeeType.Staff) {
+                    staffFee += bf.getFeeValue();
+                } else {
+                    hospitalFee += bf.getFeeValue();
+                }
+
+                if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                    reagentFee += bf.getFeeValue();
+                } else if (bf.getFee().getFeeType() == FeeType.Additional) {
+                    otherFee += bf.getFeeValue();
+                }
+                
+                marginFee += bf.getFeeMargin();
             }
 
+            billItem.setHospitalFee(hospitalFee);
+            billItem.setCollectingCentreFee(collectingCentreFee);
+            billItem.setReagentFee(reagentFee);
+            billItem.setOtherFee(otherFee);
+            billItem.setStaffFee(staffFee);
+            billItem.setMarginValue(marginFee);
+
+            billItemFacade.editAndCommit(billItem);
+
             list.add(billItem);
+
         }
 
         getBillBean().updateBillByBillFee(bill);
@@ -488,9 +521,7 @@ public class BillBhtController implements Serializable {
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);
             billFacade.edit(b);
-            //System.err.println("4");
             getBillBean().calculateBillItems(b, getLstBillEntries());
-            //System.err.println("5");
             getBills().add(b);
         } else {
             putToBills(matrixDepartment);
@@ -697,11 +728,13 @@ public class BillBhtController implements Serializable {
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             JsfUtil.addErrorMessage("Please set To Department to This item");
             return true;
+
         }
 
         if (!getSessionController().getApplicationPreference().isInwardAddServiceBillTimeCheck()) {
             if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
-                if (getCurrentBillItem().getBillTime() == null) {
+                if (getCurrentBillItem()
+                        .getBillTime() == null) {
                     JsfUtil.addErrorMessage("Please set Time To This Investigation");
                     return true;
                 }
@@ -921,25 +954,21 @@ public class BillBhtController implements Serializable {
 
     public void removeBillItem(BillEntry bi) {
 
-        //TODO: Need to add Logic
-        //////// // System.out.println(getIndex());
-     //   if (getIndex() != null) {
-            boolean remove;
-      //      BillEntry temp = getLstBillEntries().get(getIndex());
-            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
-       //     recreateList(temp);
-            // remove = getLstBillEntries().remove(getIndex());
-
-            //  getLstBillEntries().remove(index);
-            ////////// // System.out.println("Is Removed:" + remove);
-      //      calTotals();
-
-      //  }
-        if(bi == null){
+        if (bi == null) {
             JsfUtil.addErrorMessage("Error! Please Try Again");
             return;
         }
+        
         lstBillEntries.remove(bi);
+        
+        System.out.println("Before Bill Components = " + lstBillComponents.size());
+        System.out.println("Before Bill Fees = " + lstBillFees.size());
+        
+        recreateList(bi);
+        
+        System.out.println("After Bill Components = " + lstBillComponents.size());
+        System.out.println("After Bill Fees = " + lstBillFees.size());
+        
         JsfUtil.addSuccessMessage("Successfully Removed");
         calTotals();
 
