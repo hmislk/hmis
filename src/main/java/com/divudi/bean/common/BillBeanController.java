@@ -3612,6 +3612,7 @@ public class BillBeanController implements Serializable {
         double dis = 0;
         double net = 0;
         double vat = 0.0;
+        double magin = 0.0;
 
         for (BillEntry e : billEntrys) {
             for (BillFee bf : e.getLstBillFees()) {
@@ -3620,6 +3621,7 @@ public class BillBeanController implements Serializable {
                 net += bf.getFeeValue();
                 dis += bf.getFeeDiscount();
                 vat += bf.getFeeVat();
+                magin += bf.getFeeMargin();
 
                 if (bf.getFee().getFeeType() != FeeType.Staff) {
                     ins += bf.getFeeValue();
@@ -3637,6 +3639,8 @@ public class BillBeanController implements Serializable {
 
         bill.setStaffFee(staff);
         bill.setPerformInstitutionFee(ins);
+        bill.setMargin(magin);
+        bill.setServiceCharge(magin);
 
 //        bill.setTotal(tot);
 //        bill.setNetTotal(net);

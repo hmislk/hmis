@@ -448,6 +448,7 @@ public class BillBhtController implements Serializable {
             double hospitalFee = 0.0;
             double reagentFee = 0.0;
             double otherFee = 0.0;
+            double marginFee = 0.0;
 
             BillItem billItem = saveBillItems(bill, e.getBillItem(), e, e.getLstBillFees(), webUser, matrixDepartment);
             billItem.setSearialNo(list.size());
@@ -470,14 +471,16 @@ public class BillBhtController implements Serializable {
                 } else if (bf.getFee().getFeeType() == FeeType.Additional) {
                     otherFee += bf.getFeeValue();
                 }
+                
+                marginFee += bf.getFeeMargin();
             }
-
 
             billItem.setHospitalFee(hospitalFee);
             billItem.setCollectingCentreFee(collectingCentreFee);
             billItem.setReagentFee(reagentFee);
             billItem.setOtherFee(otherFee);
             billItem.setStaffFee(staffFee);
+            billItem.setMarginValue(marginFee);
 
             billItemFacade.editAndCommit(billItem);
 
@@ -518,9 +521,7 @@ public class BillBhtController implements Serializable {
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);
             billFacade.edit(b);
-            //System.err.println("4");
             getBillBean().calculateBillItems(b, getLstBillEntries());
-            //System.err.println("5");
             getBills().add(b);
         } else {
             putToBills(matrixDepartment);
