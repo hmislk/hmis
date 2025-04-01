@@ -13,7 +13,9 @@ public enum TokenType {
     PRIORITY_TOKEN("Priority Token"),
     OPD_TOKEN("OPD Token"),
     SPECIAL_CLINIC_TOKEN("Special Clinic Token"),
-    COUNTER_TOKEN("Counter Token");
+    COUNTER_TOKEN("Counter Token"),
+    PHARMACY_TOKEN_SALE_FOR_CASHIER("Pharmacy Token to sale for cashier"); //add another type to serve sale for cashier token system separately
+    
 
     private final String label;
 

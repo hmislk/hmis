@@ -7538,13 +7538,14 @@ public class SearchController implements Serializable {
         sql = "select token from Token token "
                 + " where token.tokenType = :type "
                 + " and token.bill is not null "
+                + " and token.bill.retired = false"
                 + " and token.tokenAt between :fromDate and :toDate "
                 + " and token.retired = false "
                 + " and token.department = :dept "
                 + " and token.institution = :ins ";
 
 //
-        parameters.put("type", TokenType.PHARMACY_TOKEN);
+        parameters.put("type", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
         parameters.put("fromDate", getFromDate());
         parameters.put("toDate", getToDate());
         parameters.put("dept", sessionController.getDepartment());

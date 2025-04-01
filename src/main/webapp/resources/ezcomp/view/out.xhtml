@@ -242,7 +242,7 @@
                         </p:selectOneMenu>
                     </h:panelGroup>
 
-                    <p:outputLabel value="Collecting Centreෆෆ" ></p:outputLabel>
+                    <p:outputLabel value="Collecting Centre" ></p:outputLabel>
                     <h:panelGroup >
                         <p:outputLabel
                             value="#{cc.attrs.bill.collectingCentre.name}"
@@ -253,7 +253,7 @@
                             rendered="#{webUserController.hasPrivilege('Developers')}"
                             class="w-100"
                             inputStyleClass="w-100"
-                            completeMethod="#{institutionController.completeCompany}"
+                            completeMethod="#{institutionController.completeCollectingCenter}"
                             var="pta"
                             itemLabel="#{pta.name}"
                             itemValue="#{pta}"

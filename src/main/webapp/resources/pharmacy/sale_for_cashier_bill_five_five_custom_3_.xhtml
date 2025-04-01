@@ -188,11 +188,20 @@
 
                 </table>
 
-                <table  style="font-size: 8pt;">
+                <table  style="font-size: 9pt;">
                     <tr>
-                        <td style="width: 4cm; vertical-align: top;">
-                            <h:outputLabel value="Billed By :"/>
-                            <h:outputLabel value="#{cc.attrs.bill.creater.name}"/>
+                        <td style="width: 8cm; vertical-align: top;">
+                            <h:panelGroup rendered="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill.referenceBill) ne null}">
+                                <h:outputLabel value="Settled By :"/>
+                                <h:outputLabel value="#{cc.attrs.bill.creater.name}"/><br></br>
+                                <h:outputLabel value="Prepared By :"/>
+                                <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill.referenceBill) eq null}">
+                                <h:outputLabel value="Billed By :"/>
+                                <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}"/>
+                            </h:panelGroup>
+
                         </td>
                         <td style="width: 2cm;"></td>
                         <td style=" vertical-align: top;">
