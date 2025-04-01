@@ -24,6 +24,7 @@ import java.io.OutputStream;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -36,6 +37,9 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
@@ -279,6 +283,84 @@ public class CreditCompanyDueController implements Serializable {
             }
         }
     }
+
+    public void exportCreditCompanyDueToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Credit_Company_Due.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Credit Company Due Report");
+            int rowIndex = 0;
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            XSSFCellStyle boldStyle = workbook.createCellStyle();
+            XSSFFont boldFont = workbook.createFont();
+            boldFont.setBold(true);
+            boldStyle.setFont(boldFont);
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("Credit Company");
+            headerRow.createCell(1).setCellValue("0-30 Days");
+            headerRow.createCell(2).setCellValue("30-60 Days");
+            headerRow.createCell(3).setCellValue("60-90 Days");
+            headerRow.createCell(4).setCellValue("90+ Days");
+
+            for (int i = 0; i <= 4; i++) {
+                headerRow.getCell(i).setCellStyle(boldStyle);
+            }
+
+            for (String1Value5 i : getCreditCompanyAge()) {
+                Row row = sheet.createRow(rowIndex++);
+                row.createCell(0).setCellValue(i.getInstitution().getName());
+                row.createCell(1).setCellValue(i.getValue1());
+                row.createCell(2).setCellValue(i.getValue2());
+                row.createCell(3).setCellValue(i.getValue3());
+                row.createCell(4).setCellValue(i.getValue4());
+
+                XSSFCellStyle mergedStyle = workbook.createCellStyle();
+                mergedStyle.cloneStyleFrom(amountStyle);
+                mergedStyle.setFont(boldFont);
+
+                for (int j = 0; j <= 4; j++) {
+                    row.getCell(j).setCellStyle(mergedStyle);
+                }
+
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue1PatientEncounters(), "0-30 Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue2PatientEncounters(), "30-60 Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue3PatientEncounters(), "60-90 Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue4PatientEncounters(), "90+ Days");
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
+        }
+    }
+
+    private int exportInnerDataTable(XSSFSheet sheet, int rowIndex, List<PatientEncounter> encounters, String period) {
+        for (PatientEncounter p1 : encounters) {
+            Row dataRow = sheet.createRow(rowIndex++);
+            dataRow.createCell(0).setCellValue(" ");
+            dataRow.createCell(1).setCellValue(period);
+            dataRow.createCell(2).setCellValue(p1.getBhtNo());
+            dataRow.createCell(3).setCellValue(p1.getPatient().getPerson().getName());
+            dataRow.createCell(4).setCellValue(p1.getDateOfAdmission().toString());
+            dataRow.createCell(5).setCellValue(p1.getDateOfDischarge().toString());
+            dataRow.createCell(6).setCellValue(p1.getCreditUsedAmount() + p1.getCreditPaidAmount());
+
+            XSSFCellStyle amountStyle = sheet.getWorkbook().createCellStyle();
+            amountStyle.setDataFormat(sheet.getWorkbook().createDataFormat().getFormat("#,##0.00"));
+            dataRow.getCell(6).setCellStyle(amountStyle);
+        }
+        return rowIndex;
+    }
+
 
     List<DealerDueDetailRow> dealerDueDetailRows;
 
@@ -643,6 +725,10 @@ public class CreditCompanyDueController implements Serializable {
             b.setTransDayCount(dayCount);
 //            double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
             double finalValue = b.getCreditUsedAmount() + b.getCreditPaidAmount();
+
+            if (finalValue == 0) {
+                continue;
+            }
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
