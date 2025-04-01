@@ -93,8 +93,7 @@
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel"
-                            actionListener="#{creditCompanyDueController.createInwardCreditDueWithAdditionalFilters()}">
-                        <p:dataExporter target="lst" fileName="Due Search (Credit Company)" type="xlsx"/>
+                            action="#{creditCompanyDueController.exportDueSearchCreditCompanyToExcel()}">
                     </p:commandButton>
 
                     <p:commandButton
@@ -103,8 +102,7 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             value="PDF"
-                            actionListener="#{creditCompanyDueController.createInwardCreditDueWithAdditionalFilters()}">
-                        <p:dataExporter target="lst" fileName="Due Search (Credit Company)" type="pdf"/>
+                            action="#{creditCompanyDueController.exportDueSearchCreditCompanyToPdf()}">
                     </p:commandButton>
 
                     <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
