@@ -138,7 +138,10 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  style="padding: 4px; width: 5em;" rendered="#{cc.attrs.ShowRetailValue}">
+                    <p:column  
+                        style="padding: 4px; width: 5em;" 
+                        class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }"
+                        rendered="#{cc.attrs.ShowRetailValue}">
                         <f:facet name="header" >Re. Value</f:facet>
 
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate*(bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.freeQty )}">
@@ -169,7 +172,7 @@
                             <p:column style="padding: 4px; width: 6em;" ></p:column>
                             <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.saleValue}" rendered="#{cc.attrs.ShowRetailValue}">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{cc.attrs.bill.saleValue}">
+                                    <h:outputLabel value="#{cc.attrs.bill.saleValue}" class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
