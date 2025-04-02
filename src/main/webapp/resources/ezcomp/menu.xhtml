@@ -99,14 +99,14 @@
                     </p:submenu>
                     <p:submenu 
                         label="Cashier"
-                        id="smOpdCashier"
-                        rendered="#{webUserController.hasPrivilege('Opd')}"
+                        id="smOpdCashier"                      
                         icon="fa fa-cash-register">
 
                         <p:menuitem 
                             ajax="false" 
                             action="#{opdPreSettleController.navigateToScanBills()}" 
                             value="Scan Bills"
+                            rendered="#{webUserController.hasPrivilege('ScanBillsFromCashier')}"
                             icon="fas fa-money-bill"></p:menuitem>
 
                         <p:menuitem 
@@ -114,6 +114,7 @@
                             action="#{opdPreSettleController.navigateToSettleOpdPreBills()}" 
                             actionListener="#{searchController.makeListNull}"  
                             value="Accept Payments for OPD Batch Bills"
+                            rendered="#{webUserController.hasPrivilege('AcceptPaymentForOpdBatchBills')}"
                             icon="fa fa-money-bill-alt"></p:menuitem>
                         <p:menuitem
                             ajax="false" 
@@ -126,24 +127,28 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_pre_bill?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"  
+                            rendered="#{webUserController.hasPrivilege('AcceptPaymentForPharmacyBills')}"
                             value="Accept Payments for Pharmacy Bills"
                             icon="fa fa-prescription-bottle"></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
-                            actionListener="#{searchController.makeListNull}"   
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('RefundFromCashier')}"
                             value="Refunds"
                             icon="fa fa-undo"></p:menuitem>   
                         <p:menuitem  
                             ajax="false" 
                             action="/opd/opd_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
-                            actionListener="#{searchController.makeListNull}"   
+                            actionListener="#{searchController.makeListNull}" 
+                            rendered="#{webUserController.hasPrivilege('RefundOpdBillsFromCashier')}"
                             value="Refunds for OPD Bills"
                             icon="fa fa-undo"></p:menuitem>    
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
+                            rendered="#{webUserController.hasPrivilege('RefundPharmacyBillsFromCashier')}"
                             value="Refunds for Pharmacy Bills"
                             icon="fa fa-undo"></p:menuitem>                                        
                     </p:submenu>

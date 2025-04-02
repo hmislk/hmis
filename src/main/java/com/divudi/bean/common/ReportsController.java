@@ -1574,7 +1574,6 @@ public class ReportsController implements Serializable {
 
     public void generateSampleCarrierReport() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("generateSampleCarrierReport = " + this);
             bundle = new ReportTemplateRowBundle();
 
             List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -1597,7 +1596,6 @@ public class ReportsController implements Serializable {
                 opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
             }
 
-            System.out.println("bill items");
 
             bundle.setName("Sample Carrier Bill Items");
             bundle.setBundleType("billItemList");
@@ -1662,8 +1660,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY pi";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -1687,7 +1683,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generatePackageReport() {
-        System.out.println("generatePackageReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -1698,7 +1693,6 @@ public class ReportsController implements Serializable {
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
 
-        System.out.println("bill items");
 
         bundle.setName("Package Bill Items");
         bundle.setBundleType("billItemList");
@@ -1765,8 +1759,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY billItem";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -1778,7 +1770,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateOPDWeeklyReport() {
-        System.out.println("generateOPDWeeklyReport = " + this);
 
         if (month == null) {
             JsfUtil.addErrorMessage("Please select a month");
@@ -1813,13 +1804,12 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
             opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
         }
-
 //        if (visitType == null) {
 //            opdBts.add(BillTypeAtomic.CC_BILL);
 //            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
 //            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
 //        }
-        System.out.println("bill items");
+
 
         bundle.setName("Bill Items");
         bundle.setBundleType("billItemList");
@@ -2106,8 +2096,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY billItem";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -2119,7 +2107,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateInvoiceAndReportSerialWiseReport() {
-        System.out.println("generateInvoiceAndReportSerialWiseReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<PaymentMethod> paymentMethods = new ArrayList<>();
@@ -2221,8 +2208,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY bill";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -2235,7 +2220,6 @@ public class ReportsController implements Serializable {
 
     public void generateRouteAnalysisReport() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("generateRouteAnalysisReport = " + this);
             bundle = new ReportTemplateRowBundle();
 
             List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2244,7 +2228,6 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
             opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
 
-            System.out.println("bill items");
 
             bundle.setName("Route Analysis Bill Items");
             bundle.setBundleType("billItemList");
@@ -2491,7 +2474,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterWiseInvoiceListReport() {
-        System.out.println("generateCollectionCenterWiseInvoiceListReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2500,8 +2482,6 @@ public class ReportsController implements Serializable {
         opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
         opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         // If transaction add other CC types
-
-        System.out.println("bills");
 
         bundle.setName("Package Bills");
         bundle.setBundleType("billList");
@@ -2573,7 +2553,6 @@ public class ReportsController implements Serializable {
             addAllPaymentMethods(paymentMethods);
         }
 
-        System.out.println("generateDebtorBalanceReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2750,7 +2729,6 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        System.out.println("generatePaymentSettlementReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2930,7 +2908,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterBookWiseDetailReport() {
-        System.out.println("generateCollectionCenterBookWiseDetailReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -3001,7 +2978,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterBillWiseDetailReport() {
-        System.out.println("generateCollectionCenterBillWiseDetailReport = " + this);
 
         if (collectingCentre == null) {
             JsfUtil.addErrorMessage("Please select an Agent");
@@ -3016,7 +2992,6 @@ public class ReportsController implements Serializable {
         opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
         opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
 
-        System.out.println("bill items");
 
         bundle.setName("Route Analysis Bill Items");
         bundle.setBundleType("billItemList");
@@ -3242,7 +3217,6 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        System.out.println("generateCreditInvoiceDispatchReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -3356,7 +3330,6 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        System.out.println("generateCreditInvoiceDispatchReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -3513,8 +3486,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY billItem";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
         removeCancelledNonInvestigationBills(rs);
@@ -3621,8 +3592,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY billItem";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         removeCancelledNonInvestigationBills(rs);
@@ -4638,7 +4607,6 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        System.out.println("generateDiscountReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();

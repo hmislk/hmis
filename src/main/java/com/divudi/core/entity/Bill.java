@@ -446,6 +446,9 @@ public class Bill implements Serializable, RetirableEntity {
         reactivated = false;
         refunded = false;
         cancelled = false;
+        billDate = new Date();
+        billTime = new Date();
+        createdAt = new Date();
     }
 
     private void generateBillPrintFromBillTemplate() {
@@ -1172,6 +1175,9 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public Date getBillDate() {
+        if (billDate == null) {
+            billDate = createdAt;
+        }
         return billDate;
     }
 
@@ -1180,6 +1186,9 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public Date getBillTime() {
+        if (billTime == null) {
+            billTime = createdAt;
+        }
         return billTime;
     }
 
@@ -1354,6 +1363,24 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public Date getCreatedAt() {
+        if (createdAt == null) {
+            if (billDate != null && billTime != null) {
+                Calendar dateCal = Calendar.getInstance();
+                dateCal.setTime(billDate);
+
+                Calendar timeCal = Calendar.getInstance();
+                timeCal.setTime(billTime);
+
+                dateCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
+                dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
+                dateCal.set(Calendar.SECOND, timeCal.get(Calendar.SECOND));
+                dateCal.set(Calendar.MILLISECOND, timeCal.get(Calendar.MILLISECOND));
+
+                createdAt = dateCal.getTime();
+            } else {
+                createdAt = new Date();
+            }
+        }
         return createdAt;
     }
 

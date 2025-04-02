@@ -19,25 +19,25 @@
                         <div class="d-flex justify-content-between">
                             <h:outputLabel value="CREDIT COMPANY PAYMENTS FOR INPATIENTS" class="mt-2 font-weight-bold" style="font-size:1.2rem;"/>
                             <div class="d-flex gap-2">
-                                <p:commandButton
-                                        id="btnSettle"
-                                        value="Settle"
-                                        action="#{cashRecieveBillController.settleBillBht}"
-                                        ajax="false"
-                                        style="border: 1px solid ; margin: auto;"
-                                        class="ui-button-success"
-                                        icon="fa fa-check"
-                                        title="Finalize and save this payment">
-                                    <p:ajaxStatus onstart="PF('statusDialog').show()" oncomplete="PF('statusDialog').hide()"/>
+
+                                <p:commandButton 
+                                    id="btnSettle" 
+                                    value="Settle" 
+                                    action="#{cashRecieveBillController.settleBillBht}"
+                                    ajax="true"
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" 
+                                    class="ui-button-success"
+                                    icon="fa fa-check">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
-                                <p:commandButton
-                                        value="New Bill"
-                                        ajax="false"
-                                        action="#{cashRecieveBillController.prepareNewBill()}"
-                                        icon="fa fa-plus"
-                                        class="ui-button-warning"
-                                        title="Start a new payment bill">
+                                <p:commandButton 
+                                    value="New Bill" 
+                                    ajax="true"
+                                    action="#{cashRecieveBillController.prepareNewBill()}"  
+                                    icon="fa fa-plus"
+                                    class="ui-button-warning">
+
+                                
                                 </p:commandButton>
                             </div>
                         </div>
@@ -53,14 +53,15 @@
                                             <h:outputText value="Select Bills To Pay" class="mx-4" style="font-weight: bold"></h:outputText>
                                         </div>
                                         <div class="d-flex justify-content-end">
-                                            <p:commandButton
-                                                    id="btnAddIx"
-                                                    value="Add"
-                                                    action="#{cashRecieveBillController.addToBht()}"
-                                                    ajax="false"
-                                                    icon="fa fa-plus"
-                                                    class="ui-button-success"
-                                                    title="Add selected bill to payment list"/>
+
+                                            <p:commandButton 
+                                                id="btnAddIx" 
+                                                value="Add" 
+                                                action="#{cashRecieveBillController.addToBht()}" 
+                                                ajax="true"
+                                                icon="fa fa-plus"
+                                                class=" ui-button-success"/>
+
                                         </div>
                                     </div>
                                 </f:facet>

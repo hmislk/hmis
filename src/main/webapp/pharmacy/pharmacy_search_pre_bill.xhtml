@@ -196,19 +196,23 @@
                                         <div class="row">
                                             <div class="col-12 d-flex justify-content-center align-items-center">
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
                                                     icon="fa-solid fa-phone"
                                                     title="Call Customer"
-                                                    class="ui-button-warning"
+                                                    class="ui-button-warning mx-1"
                                                     action="#{pharmacyPreSettleController.markToken(bill)}"                                   
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or pharmacyPreSettleController.findTokenFromBill(bill).isCalled() }">
 
                                                 </p:commandButton>
 
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
                                                     icon="fa-solid fa-phone-slash"
-                                                    class="ui-button-danger mx-2"
+                                                    class="ui-button-danger mx-1"
                                                     title="Cancel Calling"
                                                     action="#{pharmacyPreSettleController.unmarkToken(bill)}"
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
@@ -217,23 +221,40 @@
 
                                                 <p:commandButton 
                                                     ajax="false"
-                                                    class="ui-button-warning"
+                                                    class="ui-button-warning mx-1"
                                                     icon="fas fa-pen" 
                                                     disabled="#{bill.referenceBill ne null || bill.cancelled eq true}"
-                                                    rendered="#{bill ne null}"
+                                                    rendered="#{bill ne null and configOptionApplicationController.getBooleanValueByKey('Enable bill edit in sale for cashier token management system', false)}"
                                                     title="Edit Bill" 
                                                     action="#{tokenController.navigateToSaleForCashierToEditBillWithToken(pharmacyPreSettleController.findTokenFromBill(bill))}">
                                                     
                                                 </p:commandButton>
 
                                                 <p:commandButton
-                                                    ajax="false"
-                                                    class="ui-button-success mx-2"
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
+                                                    class="ui-button-success mx-1"
                                                     title="Accept Payment"
                                                     icon="fa-solid fa-money-bill"
                                                     action="#{pharmacyPreSettleController.toSettle(bill)}"
                                                     actionListener="#{pharmacyPreSettleController.paymentOngoingToken(bill)}"
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
+                                                </p:commandButton> 
+                                                
+                                                <p:commandButton
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"               
+                                                    title="Display Token"
+                                                    class="d-flex justify-content-center align-item-center mx-1"
+                                                    style="background-color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? '#74b9ff' : '#ff7675'};"
+                                                    icon="#{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? 'fa fa-eye': 'fa fa-eye-slash'}"
+                                                    iconPos="center"
+                                                    disabled="#{bill.referenceBill ne null or bill.cancelled}"
+                                                    action="#{pharmacyPreSettleController.tokenDisplayToggle(bill)}"
+                                                    >
+
                                                 </p:commandButton> 
                                             </div>
 
@@ -287,7 +308,7 @@
                                                 <p:commandButton
                                                     ajax="false"
                                                     value="View Payment Bill"
-                                                    action="pharmacy_reprint_bill_sale_cashier"
+                                                    action="pharmacy_reprint_bill_sale_cashier?faces-redirect=true"
                                                     disabled="#{bill.referenceBill eq null}">
                                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
                                                 </p:commandButton>

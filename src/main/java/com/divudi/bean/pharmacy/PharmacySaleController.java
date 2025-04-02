@@ -1970,9 +1970,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
-    public void settlePharmacyToken() {
+    public void settlePharmacyToken(TokenType tokenType) {
         currentToken = new Token();
-        currentToken.setTokenType(TokenType.PHARMACY_TOKEN);
+        currentToken.setTokenType(tokenType);
         currentToken.setDepartment(sessionController.getDepartment());
         currentToken.setFromDepartment(sessionController.getDepartment());
         currentToken.setPatient(getPatient());
@@ -2011,7 +2011,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             currentToken.setToInstitution(sessionController.getInstitution());
         }
         tokenFacade.create(currentToken);
-        currentToken.setTokenNumber(billNumberBean.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.PHARMACY_TOKEN));
+        currentToken.setTokenNumber(billNumberBean.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, tokenType));
         currentToken.setCounter(counter);
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
@@ -2019,7 +2019,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         tokenFacade.edit(currentToken);
         setToken(currentToken);
     }
-    
+
     @EJB
     private ConfigOptionFacade configOptionFacade;
 
@@ -2099,7 +2099,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
                     if (configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
-                        settlePharmacyToken();
+                        Token saleForCashierToken = tokenController.findPharmacyTokenSaleForCashier(getPreBill(), TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+                        if (saleForCashierToken == null) {
+                            settlePharmacyToken(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+                        }
                         markInprogress();
                     }
 
@@ -2365,12 +2368,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please enter pateint details to the bill.");
             return;
         }
-        if (getPaymentMethod() == PaymentMethod.Card
-                && (getPaymentMethodData().getCreditCard().getNo() == null
-                || getPaymentMethodData().getCreditCard().getNo().trim().isEmpty())
-                && configOptionApplicationController.getBooleanValueByKey("Pharmacy retail sale CreditCard last digits is Mandatory")) {
-            JsfUtil.addErrorMessage("Please enter a Credit Card last 4 digits");
-            return;
+        if (getPaymentMethod() == PaymentMethod.Card) {
+            String cardNumber = getPaymentMethodData().getCreditCard().getNo();
+            if ((cardNumber == null || cardNumber.trim().isEmpty()
+                    || cardNumber.trim().length() != 4)
+                    && configOptionApplicationController.getBooleanValueByKey("Pharmacy retail sale CreditCard last digits is Mandatory")) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter a Credit Card last 4 digits");
+                return;
+            }
         }
 
         BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme, getPaymentMethodData());
