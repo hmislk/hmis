@@ -14,6 +14,7 @@ import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.AgencyController;
 import com.divudi.bean.common.AreaController;
 import com.divudi.bean.common.CategoryController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConsultantController;
 import com.divudi.bean.common.CreditCompanyController;
 import com.divudi.bean.common.DepartmentController;
@@ -218,6 +219,8 @@ public class DataUploadController implements Serializable {
     FeeValueController feeValueController;
     @Inject
     private PharmacyPurchaseController pharmacyPurchaseController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @EJB
     private PharmacyBean pharmacyBean;
@@ -1214,7 +1217,6 @@ public class DataUploadController implements Serializable {
             }
 
 //            Item masterItem = itemController.findMasterItemByName(name);
-
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
                 printingName = printingNameCell.getStringCellValue();
@@ -1549,7 +1551,6 @@ public class DataUploadController implements Serializable {
             }
 
 //            Item masterItem = itemController.findMasterItemByName(name);
-
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
                 printingName = printingNameCell.getStringCellValue();
@@ -2517,9 +2518,8 @@ public class DataUploadController implements Serializable {
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
 
-        // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
-            rowIterator.next();
+            rowIterator.next(); // Skip header row
         }
 
         while (rowIterator.hasNext()) {
@@ -2528,6 +2528,7 @@ public class DataUploadController implements Serializable {
             Staff staff;
             Title title;
 
+            String code = null;
             String epfNo = null;
             String titleString = null;
             String name = null;
@@ -2548,7 +2549,12 @@ public class DataUploadController implements Serializable {
             Institution bank = null;
             Sex gender = null;
 
-            Cell epfNoCell = row.getCell(0);
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+
+            Cell epfNoCell = row.getCell(1);
             if (epfNoCell != null) {
                 if (epfNoCell.getCellType() == CellType.NUMERIC) {
                     epfNo = String.valueOf((int) epfNoCell.getNumericCellValue());
@@ -2557,82 +2563,82 @@ public class DataUploadController implements Serializable {
                 }
             }
 
-            Cell titleCell = row.getCell(1);
+            Cell titleCell = row.getCell(2);
             if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
                 titleString = titleCell.getStringCellValue();
             }
 
-            Cell nameCell = row.getCell(2);
+            Cell nameCell = row.getCell(3);
             if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 name = nameCell.getStringCellValue();
             }
 
-            Cell fullNameCell = row.getCell(3);
+            Cell fullNameCell = row.getCell(4);
             if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
                 fullName = fullNameCell.getStringCellValue();
             }
 
-            Cell nameWithInitialsCell = row.getCell(4);
+            Cell nameWithInitialsCell = row.getCell(5);
             if (nameWithInitialsCell != null && nameWithInitialsCell.getCellType() == CellType.STRING) {
                 nameWithInitials = nameWithInitialsCell.getStringCellValue();
             }
 
-            Cell addressCell = row.getCell(5);
+            Cell addressCell = row.getCell(6);
             if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
                 address = addressCell.getStringCellValue();
             }
 
-            Cell sexCell = row.getCell(6);
+            Cell sexCell = row.getCell(7);
             if (sexCell != null && sexCell.getCellType() == CellType.STRING) {
                 sex = sexCell.getStringCellValue();
-                gender = Sex.valueOf(sex);
+                try {
+                    gender = Sex.valueOf(sex);
+                } catch (IllegalArgumentException e) {
+                    gender = null;
+                }
             }
 
-            Cell nicNoCell = row.getCell(7);
+            Cell nicNoCell = row.getCell(8);
             if (nicNoCell != null && nicNoCell.getCellType() == CellType.STRING) {
                 nicNo = nicNoCell.getStringCellValue();
             }
 
-            Cell dobCell = row.getCell(8);
-
+            Cell dobCell = row.getCell(9);
             if (dobCell != null) {
                 if (dobCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dobCell)) {
                     dob = dobCell.getDateCellValue();
                 } else if (dobCell.getCellType() == CellType.STRING) {
                     String dobString = dobCell.getStringCellValue();
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // Adjust the date format as needed
                     try {
-                        dob = dateFormat.parse(dobString);
-                    } catch (ParseException e) {
-                        dob = null;
+                        String uploadDateFormat = configOptionApplicationController.getShortTextValueByKey("Date format for Uploads", "yyyy-MM-dd");
+                        dob = new SimpleDateFormat(uploadDateFormat).parse(dobString);
+                    } catch (ParseException ignored) {
                     }
                 }
             }
 
-            Cell retiredCell = row.getCell(9);
+            Cell retiredCell = row.getCell(10);
             if (retiredCell != null) {
                 if (retiredCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(retiredCell)) {
                     retired = retiredCell.getDateCellValue();
                 } else if (retiredCell.getCellType() == CellType.STRING) {
                     String retiredString = retiredCell.getStringCellValue();
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     try {
-                        retired = dateFormat.parse(retiredString);
-                    } catch (ParseException e) {
-                        retired = null;
+                        retired = new SimpleDateFormat("yyyy-MM-dd").parse(retiredString);
+                    } catch (ParseException ignored) {
                     }
                 }
             }
 
-            Cell departmentCell = row.getCell(10);
+            Cell departmentCell = row.getCell(11);
             if (departmentCell != null && departmentCell.getCellType() == CellType.STRING) {
                 departmentName = departmentCell.getStringCellValue();
             }
             if (departmentName != null) {
-                department = departmentController.findAndSaveDepartmentByName(name);
+                department = departmentController.findAndSaveDepartmentByName(departmentName);
             }
 
-            Cell branchCell = row.getCell(11);
+            Cell branchCell = row.getCell(12);
             if (branchCell != null && branchCell.getCellType() == CellType.STRING) {
                 branchName = branchCell.getStringCellValue();
             }
@@ -2640,19 +2646,21 @@ public class DataUploadController implements Serializable {
                 institution = institutionController.findAndSaveInstitutionByName(branchName);
             }
 
-            Cell acNoCell = row.getCell(12);
+            Cell acNoCell = row.getCell(13);
             if (acNoCell != null && acNoCell.getCellType() == CellType.STRING) {
                 acNo = acNoCell.getStringCellValue();
             }
 
-            Cell bankCell = row.getCell(13);
+            Cell bankCell = row.getCell(14);
             if (bankCell != null && bankCell.getCellType() == CellType.STRING) {
                 bankName = bankCell.getStringCellValue();
             }
-            if (bank != null) {
+            if (bankName != null) {
                 bank = institutionController.findAndSaveInstitutionByName(bankName);
-                bank.setInstitutionType(InstitutionType.Bank);
-                institutionController.save(bank);
+                if (bank != null) {
+                    bank.setInstitutionType(InstitutionType.Bank);
+                    institutionController.save(bank);
+                }
             }
 
             if (name == null || name.trim().isEmpty()) {
@@ -2668,11 +2676,13 @@ public class DataUploadController implements Serializable {
             if (staff == null) {
                 staff = new Staff();
             }
+
+            staff.setCode(code);
             staff.setEpfNo(epfNo);
             staff.getPerson().setName(name);
             staff.getPerson().setTitle(title);
-            staff.getPerson().setNameWithInitials(nameWithInitials);
             staff.getPerson().setFullName(fullName);
+            staff.getPerson().setNameWithInitials(nameWithInitials);
             staff.getPerson().setAddress(address);
             staff.getPerson().setSex(gender);
             staff.getPerson().setNic(nicNo);
@@ -2682,6 +2692,7 @@ public class DataUploadController implements Serializable {
             staff.setInstitution(institution);
             staff.setAccountNo(acNo);
             staff.setBankBranch(bank);
+
             stf.add(staff);
         }
 
