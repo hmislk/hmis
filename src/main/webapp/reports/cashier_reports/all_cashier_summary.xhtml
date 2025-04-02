@@ -163,18 +163,27 @@
                             <p:commandButton  
                                 value="Print" 
                                 ajax="false"
-                                class="ui-button-info mx-1" icon="fas fa-print">
+                                class="ui-button-info mx-1" 
+                                icon="fas fa-print">
                                 <p:printer target="printdata" />
                             </p:commandButton>
 
-                            <p:commandLink  
+                            <p:commandButton  
                                 value="Preview" 
                                 ajax="false"
-                                target="_blank"
-                                action="all_cashier_summary_preview"
-                                class="ui-button ui-button-danger mx-1">
-                                <i class="fas fa-file-pdf" ></i>
-                            </p:commandLink>
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-eye"
+                                onclick="window.open('#{request.contextPath}/all_cashier_summary_preview.xhtml', '_blank'); return false;" />
+
+
+                            <p:commandButton  
+                                value="Preview" 
+                                ajax="false"
+                                icon="fas fa-eye"
+                                class="ui-button-danger mx-1"
+                                onclick="window.open('#{request.contextPath}/faces/reports/cashier_reports/all_cashier_summary_preview.xhtml', '_blank'); return false;" />
+
+
 
                             <p:commandButton  
                                 value="Excel" 
