@@ -1265,7 +1265,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillItem() == null) {
                     continue;
                 }
-                double amount = row.getBillItem().getBill().getTotalHospitalFee();
+                double amount = row.getBillItem().getHospitalFee();
                 hospitalTotal += amount;
             }
         }
