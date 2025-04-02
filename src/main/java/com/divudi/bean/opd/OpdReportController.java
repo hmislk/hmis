@@ -35,10 +35,12 @@ import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -48,8 +50,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -458,11 +462,11 @@ public class OpdReportController implements Serializable {
             if (r.getBill() == null) {
                 continue;
             }
-            if(r.getBill().getBillTypeAtomic()==null){
+            if (r.getBill().getBillTypeAtomic() == null) {
                 continue;
             }
             Bill batchBill = null;
-            switch(r.getBill().getBillTypeAtomic()){
+            switch (r.getBill().getBillTypeAtomic()) {
                 case OPD_BILL_WITH_PAYMENT:
                     batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
                     r.setBatchBill(batchBill);
@@ -473,7 +477,6 @@ public class OpdReportController implements Serializable {
                 case OPD_BILL_CANCELLATION:
                 case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
                 case OPD_BILL_REFUND:
-
 
             }
 
@@ -491,13 +494,34 @@ public class OpdReportController implements Serializable {
     public void processOpdIncomeSummaryByDate() {
         System.out.println("processOpdIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        //Add All OPD BillTypes
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
 
-        List<Bill> bills = billService.fetchBillsWithToInstitution(
+        //Add All Inward BillTypes
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        //Add All Package BillTypes
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+
+        //Add All CC BillTypes
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
+
+        List<Bill> tempBills = billService.fetchBillsWithToInstitution(
                 fromDate,
                 toDate,
                 institution,
@@ -511,17 +535,31 @@ public class OpdReportController implements Serializable {
                 admissionType,
                 paymentScheme
         );
+        List<BillItem> billItems = new ArrayList<>();
+        for (Bill b : tempBills) {
+            billItems.addAll(billBean.fillBillItems(b));
+        }
 
-        bundle = new IncomeBundle(bills);
+        List<Bill> bills = new ArrayList<>();
+        for (BillItem bi : billItems) {
+            if (bi.getItem() instanceof Investigation) {
+                bills.add(bi.getBill());
+            }
+        }
+
+        Set<Bill> uniqueBills = new HashSet<>(bills);
+        List<Bill> BillResult = new ArrayList<>(uniqueBills);
+
+        bundle = new IncomeBundle(BillResult);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {
                 continue;
             }
-            if(r.getBill().getBillTypeAtomic()==null){
+            if (r.getBill().getBillTypeAtomic() == null) {
                 continue;
             }
             Bill batchBill = null;
-            switch(r.getBill().getBillTypeAtomic()){
+            switch (r.getBill().getBillTypeAtomic()) {
                 case OPD_BILL_WITH_PAYMENT:
                     batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
                     r.setBatchBill(batchBill);
@@ -532,7 +570,6 @@ public class OpdReportController implements Serializable {
                 case OPD_BILL_CANCELLATION:
                 case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
                 case OPD_BILL_REFUND:
-
 
             }
 
