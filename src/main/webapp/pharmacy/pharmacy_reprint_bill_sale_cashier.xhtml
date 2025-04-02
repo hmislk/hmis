@@ -25,15 +25,24 @@
                                 ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
+
                             <p:commandButton 
-                                ajax="false" 
-                                value="Cancel" 
+                                ajax="false"
+                                value="Back" 
                                 style="float: right;"
-                                class="ui-button-danger"
-                                icon="fa fa-cancel"
-                                action="pharmacy_cancel_bill_retail_cash" 
-                                disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                            </p:commandButton>
+                                class="ui-button-warning mx-2"
+                                icon="fa fa-arrow-left"
+                                action="pharmacy_search_pre_bill?faces-redirect=true" >
+                            </p:commandButton>   
+                            <!--                            <p:commandButton 
+                                                            ajax="false" 
+                                                            value="Cancel" 
+                                                            style="float: right;"
+                                                            class="ui-button-danger"
+                                                            icon="fa fa-cancel"
+                                                            action="pharmacy_cancel_bill_retail_cash" 
+                                                            disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                                                        </p:commandButton>-->
 
                         </f:facet>
 
