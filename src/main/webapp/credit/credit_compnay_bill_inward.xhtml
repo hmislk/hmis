@@ -21,7 +21,7 @@
                                     id="btnSettle" 
                                     value="Settle" 
                                     action="#{cashRecieveBillController.settleBillBht}"
-                                    ajax="false"  
+                                    ajax="true"
                                     style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" 
                                     class="ui-button-success"
                                     icon="fa fa-check">
@@ -29,7 +29,7 @@
                                 <p:defaultCommand target="btnSettle"/>
                                 <p:commandButton 
                                     value="New Bill" 
-                                    ajax="false" 
+                                    ajax="true"
                                     action="#{cashRecieveBillController.prepareNewBill()}"  
                                     icon="fa fa-plus"
                                     class="ui-button-warning">
@@ -52,7 +52,7 @@
                                                 id="btnAddIx" 
                                                 value="Add" 
                                                 action="#{cashRecieveBillController.addToBht()}" 
-                                                ajax="false" 
+                                                ajax="true"
                                                 icon="fa fa-plus"
                                                 class=" ui-button-success"/>
                                         </div>
