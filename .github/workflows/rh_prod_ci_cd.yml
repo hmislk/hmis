@@ -1,4 +1,4 @@
-name: RH-PROD Build & Deployment Pipeline
+name: RH-PROD Shared Build & Deployment Pipeline
 
 on:
   push:
