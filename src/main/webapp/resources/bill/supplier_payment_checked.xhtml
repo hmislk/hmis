@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html  xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+       xmlns:h="http://xmlns.jcp.org/jsf/html"
+       xmlns:p="http://primefaces.org/ui"
+       xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="billController" type="com.divudi.bean.pharmacy.DealorPaymentBillSearch" />
+        <cc:attribute name="dup" type="java.lang.Boolean" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+
+        <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Checking Header CSS')}" >
+            <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Checking Header Text')}" escape="false" ></h:outputText>
+        </div>
+
+        <div  >
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+            </div>
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+            </div>
+
+            <div>
+                <h4 style="color: #000000; text-align: center " >
+                    <h:outputLabel value="Supplier Payment Checking" style="text-decoration: underline;"/>
+                </h4>
+            </div>
+
+            <div class="row" >
+                <div class="col-md-4 p-1" >
+                    <h:panelGrid columns="2" columnClasses="text-start, text-end" >
+                        <h:outputLabel value="Payee : " />
+                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
+                        <h:outputLabel value="Payment Method : " />
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod.label}"/>
+                        <h:outputLabel value="Payment No : " />
+                        <h:outputLabel value="#{cc.attrs.bill.insId}"/>
+                        <h:outputLabel value="Total : " />
+                        <h:outputLabel value="#{cc.attrs.bill.total}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputLabel>
+                        <h:outputLabel value="Discount : " />
+                        <h:outputLabel value="#{cc.attrs.bill.discount}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputLabel>
+                        <h:outputLabel value="Net : " />
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </div>
+                <div class="col-md-4 p-1" >
+                    <h:panelGrid columns="2" columnClasses="text-start, text-end" >
+                        <h:outputLabel value="Prepaired By : " />
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="Comments : " />
+                        <h:outputLabel value="#{cc.attrs.bill.paymentGenerationComments}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="Prepaired at :"  />
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}"  >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </div>
+
+
+                <div class="col-md-4 p-1" >
+                    <h:panelGrid columns="2" columnClasses="text-start, text-end" >
+                        <h:outputLabel value="Checked By : " />
+                        <h:outputLabel value="#{cc.attrs.bill.completedBy.webUserPerson.name}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="Comments : " />
+                        <h:outputLabel value="#{cc.attrs.bill.comments}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="Checked at :"  />
+                        <h:outputLabel value="#{cc.attrs.bill.completedAt}"  >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </div>
+            </div>
+
+
+
+
+            <p:dataTable
+                value="#{cc.attrs.bill.billItems}"
+                var="b"
+                id="itms"
+                styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                rowIndexVar="n"
+                rowKey="#{b.searialNo}" >
+                <p:column width="3em">
+                    <f:facet name="header">
+                        <h:outputLabel value="No"/>
+                    </f:facet>
+                    <p:outputLabel value="#{n+1}"/>
+                </p:column>
+                <p:column  >
+                    <f:facet name="header">
+                        <h:outputLabel value="GRN No"/>
+                    </f:facet>
+                    <p:outputLabel value="#{b.referenceBill.deptId}"/>
+                </p:column>
+                <p:column  >
+                    <f:facet name="header">
+                        <h:outputLabel value="Invoice No"/>
+                    </f:facet>
+                    <p:outputLabel value="#{b.referenceBill.invoiceNumber}"></p:outputLabel>
+                </p:column>
+                <p:column headerText="GRN Amount" class="text-end">
+                    <p:outputLabel value="#{b.referenceBill.netTotal}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                </p:column>
+                <p:column headerText="GRN Return Amount" class="text-end">
+                    <p:outputLabel value="#{b.referenceBill.refundAmount}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                </p:column>
+                <p:column headerText="Paying Amount" class="text-end">
+                    <p:outputLabel
+                        value="#{b.netValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                </p:column>
+            </p:dataTable>
+
+
+        </div>
+
+        <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Checking Footer CSS')}" >
+            <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Checking Footer Text')}" escape="false" ></h:outputText>
+        </div>
+
+
+    </cc:implementation>
+</html>

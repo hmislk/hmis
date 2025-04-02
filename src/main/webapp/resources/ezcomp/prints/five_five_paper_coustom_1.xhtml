@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" type="java.lang.Integer"></cc:attribute>
@@ -20,7 +20,7 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: always" >
-            
+
             <div class="institutionName">
                 <h:outputLabel style="font-size: 14pt" value="#{cc.attrs.bill.department.printingName}" />
             </div>
@@ -43,15 +43,6 @@
                 <div class="d-flex align-items-center justify-content-center">
                     <h:panelGroup >
                         <h:outputLabel value="OPD" />
-                    </h:panelGroup>
-                    <h:panelGroup  rendered="#{cc.attrs.bill.refunded}" >
-                        <h:outputLabel value="&nbsp;&nbsp;" />
-                        <h:outputLabel value="Refuned" />
-                    </h:panelGroup>
-
-                    <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
-                        <h:outputLabel value="&nbsp;&nbsp;" />
-                        <h:outputLabel value="Cancelled" />
                     </h:panelGroup>
 
                     <h:panelGroup>
@@ -147,10 +138,10 @@
                         </td>
                     </tr>
 
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="billItem"   >
+                    <ui:repeat value="#{billController.billItemsOfBill(cc.attrs.bill)}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td  style="width:80%!important;">
-                                <h:outputLabel value="#{billItem.item.printName}"></h:outputLabel> 
+                                <h:outputLabel value="#{billItem.item.printName}"></h:outputLabel>
                                 <h:outputLabel value="&nbsp;X #{billItem.qty}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Quantity on OPD Bills') and billItem.item.requestForQuentity}">
                                     <f:convertNumber pattern="0" />
                                 </h:outputLabel>
@@ -257,7 +248,7 @@
                     </div>
                 </ui:repeat>
             </h:panelGroup>
-          
+
             <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 4px;font-size: 8pt;margin-left: 5%">
                 <h:panelGroup rendered="#{cc.attrs.payments eq 1}">
                     <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod.label}"/>

@@ -276,7 +276,7 @@
                                 <p:outputLabel 
                                     for="exItem" 
                                     class="form-label w-100"
-                                    value="Select An Item and Add" ></p:outputLabel>
+                                    value="Select Any Item and Add" ></p:outputLabel>
                                 <p:autoComplete 
                                     id="exItem"
                                     value="#{purchaseOrderRequestController.currentBillItem.item}"
@@ -388,6 +388,10 @@
                                         <h:outputLabel value="Supplier Address" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.address}" />
+                                        
+                                         <h:outputLabel value="Payment Method" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.paymentMethod}" />
                                     </h:panelGrid>
                                 </div>
 
@@ -459,7 +463,7 @@
                                     <div>
                                         <h:outputLabel value="Order Finalized By"/>
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                        #{purchaseOrderRequestController.currentBill.checkedBy}
+                                        #{purchaseOrderRequestController.currentBill.checkedBy.name}
                                     </div>
                                     <div>
                                         <h:outputLabel value="Order Finalized At"/>

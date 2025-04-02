@@ -1,9 +1,9 @@
 package com.divudi.bean.pharmacy;
 
-import com.divudi.entity.pharmacy.ConsumableCategory;
-import com.divudi.facade.ConsumableCategoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.common.util.JsfUtil.PersistAction;
+import com.divudi.core.entity.pharmacy.ConsumableCategory;
+import com.divudi.core.facade.ConsumableCategoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.JsfUtil.PersistAction;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +60,7 @@ public class ConsumableCategoryController implements Serializable {
             return;
         }
         persist(PersistAction.CREATE, "ConsumableCategoryCreated");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
@@ -74,7 +74,7 @@ public class ConsumableCategoryController implements Serializable {
 
     public void destroy() {
         persist(PersistAction.DELETE, "ConsumableCategoryDeleted");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             selected = null; // Remove selection
             items = null;    // Invalidate list of items to trigger re-query.
         }
@@ -181,7 +181,7 @@ public class ConsumableCategoryController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ConsumableCategoryController controller = (ConsumableCategoryController) facesContext.getApplication().getELResolver().
@@ -190,15 +190,13 @@ public class ConsumableCategoryController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -220,5 +218,5 @@ public class ConsumableCategoryController implements Serializable {
     /**
      *
      */
-   
+
 }

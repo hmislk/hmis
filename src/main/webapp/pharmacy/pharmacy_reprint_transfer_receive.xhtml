@@ -16,7 +16,6 @@
                     <p:panel >
                         <f:facet name="header" >
                             <h:outputLabel value="Transfer Recieve Reprint" ></h:outputLabel>
-                            <hr/>
                             <p:commandButton 
                                 value="Reprint" 
                                 icon="fas fa-print"
@@ -26,31 +25,34 @@
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false" 
-                                value="Cancel" 
+                                value="To Cancel" 
                                 icon="fas fa-cancel"
                                 class="ui-button-danger mx-2 mb-2"
                                 action="pharmacy_cancel_transfer_receive" 
                                 disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                            </p:commandButton>     
+                            </p:commandButton>    
+                            <p:commandButton
+                                value="Back"
+                                icon="fas fa-arrow-left"
+                                onclick="window.history.back(); return false"
+                                class="ui-button-danger mb-2"
+                                >
+                            </p:commandButton>
                         </f:facet>
 
+                        <h:panelGroup id="gpBillPreview" >
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                                <ph:transferReceive bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                                <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
                     </p:panel>
 
 
 
-                    <h:panelGroup id="gpBillPreview" >
-<!--                        <ph:transferReceive bill="#{pharmacyBillSearch.bill}" />-->
-                        <center>
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                                <ph:transferReceive bill="#{pharmacyBillSearch.bill}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                                <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
-                            </h:panelGroup>
-                        </center>
-                    </h:panelGroup>
 
 
                 </h:form>

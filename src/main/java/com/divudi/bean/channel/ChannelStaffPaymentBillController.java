@@ -2,42 +2,41 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.FeeType;
-import com.divudi.data.MessageType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PersonInstitutionType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PersonInstitutionType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.Sms;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Payment;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SmsFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,8 +91,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController;
-    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     FinancialTransactionController financialTransactionController;
@@ -110,7 +107,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private List<BillFee> billFees;
     private List<ServiceSession> serviceSessions;
     private List<ServiceSession> serviceSessionList;
-    /////////////////////    
+    /////////////////////
     private Date fromDate;
     private Date toDate;
     private Date date;
@@ -160,7 +157,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         dueBillFees = null;
         payingBillFees = null;
         billFees = null;
-        /////////////////////    
+        /////////////////////
         fromDate = null;
         toDate = null;
         current = null;
@@ -183,7 +180,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         dueBillFees = null;
         payingBillFees = null;
         billFees = null;
-        /////////////////////    
+        /////////////////////
         fromDate = null;
         toDate = null;
         current = null;
@@ -475,6 +472,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
             hm.put("ss", getSelectedServiceSession());
         }
 
+        sql += " and b.bill.singleBillSession.completed=true";
+
 //        sql += " and b.bill.singleBillSession.absent=false "
 //                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
 //                + " b.bill.singleBillSession.serviceSession.sessionTime,"
@@ -553,12 +552,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
 //                + " and abs(abs(b.feeValue) - abs(b.paidValue)) > 1 "
 //                + " and b.bill.billType in :bt "
 //                + " and b.bill.singleBillSession.sessionInstance=:si"
-//        
+//
 //        if(configOptionApplicationController.getBooleanValueByKey("Only Show Completed Channel Bookings On Doctor Payments")) {
 //            sql +=" and b.bill.singleBillSession.completed=:com";
 //            hm.put("com", true);
 //        }
-//        
+//
 //        sql += " order by b.bill.singleBillSession.serialNo ";
 //        hm.put("si", getSessionInstance());
 //        hm.put("bt", bts);
@@ -1045,10 +1044,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
         if (paymentMethod == PaymentMethod.Cash) {
             double drawerBalance = financialTransactionController.getLoggedUserDrawer().getCashInHandValue();
             double paymentAmount = totalPaying;
-
-            if (drawerBalance < paymentAmount) {
-                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                return;
+            if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                if (drawerBalance < paymentAmount) {
+                    JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                    return;
+                }
             }
         }
         calculateTotalPay();
@@ -1159,10 +1159,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private String generateDoctorPaymentSms(Bill b) {
         String s;
         String template;
-        String date = CommonController.getDateFormat(b.getBillDate(),
+        String date = CommonFunctions.getDateFormat(b.getBillDate(),
                 "dd MMM");
         //System.out.println("date = " + date);
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 b.getBillTime(),
                 "hh:mm a");
         //System.out.println("time = " + time);
@@ -1172,7 +1172,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         }
         if (ss != null && ss.getStartingTime() != null) {
-            time = CommonController.getDateFormat(
+            time = CommonFunctions.getDateFormat(
                     ss.getStartingTime(),
                     "hh:mm a");
         } else {
@@ -1207,16 +1207,16 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private String generateSessionPaymentSms(Bill b, SessionInstance si) {
         String s;
         String template;
-        String date = CommonController.getDateFormat(si.getSessionDate(),
+        String date = CommonFunctions.getDateFormat(si.getSessionDate(),
                 "dd MMM");
         //System.out.println("date = " + date);
         String time = "";
         if (si.getSessionTime() != null) {
-            time = CommonController.getDateFormat(
+            time = CommonFunctions.getDateFormat(
                     si.getSessionTime(),
                     "hh:mm a");
         } else if (si.getOriginatingSession().getStartingTime() != null) {
-            time = CommonController.getDateFormat(
+            time = CommonFunctions.getDateFormat(
                     si.getOriginatingSession().getStartingTime(),
                     "hh:mm a");
         }
@@ -1247,11 +1247,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
         SessionInstance si = b.getSingleBillSession().getSessionInstance();
         ServiceSession oss = si.getOriginatingSession();
 
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 oss.getStartingTime(),
                 sessionController.getApplicationPreference().getShortTimeFormat());
 
-        String date = CommonController.getDateFormat(si.getSessionDate(),
+        String date = CommonFunctions.getDateFormat(si.getSessionDate(),
                 "dd MMM");
 
         String doc = b.getStaff().getPerson().getNameWithTitle();
@@ -1284,11 +1284,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
         SessionInstance si = sii;
         ServiceSession oss = si.getOriginatingSession();
 
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 oss.getStartingTime(),
                 sessionController.getApplicationPreference().getShortTimeFormat());
 
-        String date = CommonController.getDateFormat(si.getSessionDate(),
+        String date = CommonFunctions.getDateFormat(si.getSessionDate(),
                 "dd MMM");
 
         String doc = b.getStaff().getPerson().getNameWithTitle();
@@ -1638,7 +1638,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ChannelStaffPaymentBillController controller = (ChannelStaffPaymentBillController) facesContext.getApplication().getELResolver().
@@ -1673,13 +1673,4 @@ public class ChannelStaffPaymentBillController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

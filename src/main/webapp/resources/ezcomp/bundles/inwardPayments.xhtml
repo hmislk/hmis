@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -83,7 +83,13 @@
                     </h:outputText>
                 </p:column>
 
-
+                <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Type in Inward Payments on Cashier Reports',false)}">
+                    <f:facet name="header">
+                        <h:outputText value="Payment Type" />
+                    </f:facet>
+                    <h:outputText value="#{empty row.bill.comments ? 'N/A' : row.bill.comments}">
+                    </h:outputText>
+                </p:column>
 
                 <p:column class="text-end">
                     <f:facet name="header">

@@ -5,29 +5,29 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.InwardPriceAdjustment;
-import com.divudi.entity.inward.RoomCategory;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.membership.ChannellingMemberShipDiscount;
-import com.divudi.entity.membership.InwardMemberShipDiscount;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.entity.membership.OpdMemberShipDiscount;
-import com.divudi.entity.membership.PaymentSchemeDiscount;
-import com.divudi.entity.membership.PharmacyMemberShipDiscount;
-import com.divudi.facade.PaymentSchemeDiscountFacade;
-import com.divudi.facade.PriceMatrixFacade;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.InwardPriceAdjustment;
+import com.divudi.core.entity.inward.RoomCategory;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.membership.ChannellingMemberShipDiscount;
+import com.divudi.core.entity.membership.InwardMemberShipDiscount;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.membership.OpdMemberShipDiscount;
+import com.divudi.core.entity.membership.PaymentSchemeDiscount;
+import com.divudi.core.entity.membership.PharmacyMemberShipDiscount;
+import com.divudi.core.facade.PaymentSchemeDiscountFacade;
+import com.divudi.core.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,23 +49,26 @@ public class PriceMatrixController implements Serializable {
     PriceMatrixFacade priceMatrixFacade;
     @EJB
     PaymentSchemeDiscountFacade paymentSchemeDiscountFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department, PaymentMethod paymentMethod) {
-
         PriceMatrix inwardPriceAdjustment;
         Category category;
         if (billItem.getItem() instanceof Investigation) {
-            category = ((Investigation) billItem.getItem()).getInvestigationCategory();
+            if(configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")){
+                category = ((Investigation) billItem.getItem()).getCategory();
+            }else{
+                category = ((Investigation) billItem.getItem()).getInvestigationCategory();
+            }
         } else {
             category = billItem.getItem().getCategory();
         }
-
         if (sessionController.getApplicationPreference() != null && sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
         }
-
         if (inwardPriceAdjustment == null && category != null) {
             if (sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), paymentMethod);
@@ -73,11 +76,9 @@ public class PriceMatrixController implements Serializable {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
             }
         }
-
-        if (inwardPriceAdjustment == null) {
-            return null;
-        }
-
+//        if (inwardPriceAdjustment == null) {
+//            return null;
+//        }
         return inwardPriceAdjustment;
 
     }
@@ -300,7 +301,7 @@ public class PriceMatrixController implements Serializable {
     public OpdMemberShipDiscount getOpdMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
         OpdMemberShipDiscount opdMemberShipDiscount = null;
 
-        //Get Discount From Parent Category    
+        //Get Discount From Parent Category
         if (opdMemberShipDiscount == null && category != null && category.getParentCategory() != null) {
             opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category.getParentCategory());
         }
@@ -340,7 +341,7 @@ public class PriceMatrixController implements Serializable {
         OpdMemberShipDiscount opdMemberShipDiscount = null;
         //Get Discount From Parent Category
         //Get Discount From Parent Category
-        //Get Discount From Parent Category    
+        //Get Discount From Parent Category
 
         //Get Discount From Department
         if (opdMemberShipDiscount == null) {
@@ -351,11 +352,6 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PaymentSchemeDiscount getPaymentSchemeDiscount(PaymentMethod paymentMethod, PaymentScheme paymentScheme, Department department, Item item) {
-        System.out.println("getPaymentSchemeDiscount");
-        System.out.println("paymentMethod = " + paymentMethod);
-        System.out.println("paymentScheme = " + paymentScheme);
-        System.out.println("department = " + department);
-        System.out.println("item = " + item);
         PaymentSchemeDiscount paymentSchemeDiscount = null;
         Category category = null;
 
@@ -363,11 +359,9 @@ public class PriceMatrixController implements Serializable {
             category = item.getCategory();
         }
 
-        //Get Discount From Item        
+        //Get Discount From Item
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, item);
-        System.out.println("paymentSchemeDiscount = " + paymentSchemeDiscount);
-        
-        //Get Discount From Category        
+        //Get Discount From Category
         if (paymentSchemeDiscount == null) {
             paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, category);
         }
@@ -382,8 +376,6 @@ public class PriceMatrixController implements Serializable {
         if (paymentSchemeDiscount == null) {
             paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, department);
         }
-        System.out.println("paymentSchemeDiscount = " + paymentSchemeDiscount);
-
         return paymentSchemeDiscount;
     }
 
@@ -397,10 +389,10 @@ public class PriceMatrixController implements Serializable {
         // System.err.println(paymentScheme);
         // System.err.println(paymentScheme);
 
-        //Get Discount From Item        
+        //Get Discount From Item
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentMethod, item);
 
-        //Get Discount From Category        
+        //Get Discount From Category
         if (paymentSchemeDiscount == null) {
             paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentMethod, category);
         }
@@ -436,7 +428,6 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod, Category category) {
-        System.out.println("fetchPaymentSchemeDiscount = ");
         String sql;
         HashMap hm = new HashMap();
         hm.put("p", paymentMethod);
@@ -447,8 +438,6 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.category=:cat ";
-        System.out.println("hm = " + hm);
-        System.out.println("sql = " + sql);
         return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }

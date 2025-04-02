@@ -7,10 +7,10 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.Institution;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -68,7 +68,7 @@ public class InstitutionBranchController implements Serializable {
 
 //    public List<Institution> completeCompany(String qry) {
 //        String sql;
-//        sql = "select c from Institution c where c.retired=false and c.institutionType=com.divudi.data.InstitutionType.Company and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+//        sql = "select c from Institution c where c.retired=false and c.institutionType=com.divudi.core.data.InstitutionType.Company and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
 //        return getFacade().findByJpql(sql);
 //    }
 
@@ -78,7 +78,7 @@ public class InstitutionBranchController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and (p.name) like '%" + query.toUpperCase() + "%' order by p.name";
+            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.core.data.InstitutionType.CreditCompany and (p.name) like '%" + query.toUpperCase() + "%' order by p.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql);
         }

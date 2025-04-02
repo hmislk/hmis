@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" default="true"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:panelGrid columns="2" class="w-100">
+            <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
+                <h:outputLabel value="Value" ></h:outputLabel>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
+                <p:inputText
+                    autocomplete="off"
+                    onfocus="this.select();"
+                    value="#{cc.attrs.paymentMethodData.slip.totalValue}"
+                    style="width: 6em;"
+                    id="txtVal" >
+                    <p:ajax process="@this" ></p:ajax>
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:inputText>
+            </h:panelGroup>
+            <h:outputLabel value="Staff" ></h:outputLabel>
+            <p:autoComplete  forceSelection="true" id="staff"
+                             value="#{cc.attrs.paymentMethodData.iou.toStaff}"
+                             completeMethod="#{staffController.completeStaff}"
+                             var="mys" class="w-100" inputStyleClass="w-100"
+                             itemLabel="#{mys.person.nameWithTitle}"
+                             itemValue="#{mys}"
+                             >
+            </p:autoComplete>
+
+            <h:outputLabel value="Date" ></h:outputLabel>
+            <p:calendar
+                value="#{cc.attrs.paymentMethodData.iou.date}"
+                placeholder="Select date" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date">
+                <p:ajax process="@this" ></p:ajax>
+            </p:calendar>
+
+            <h:outputLabel value="Referance" ></h:outputLabel>
+            <p:inputText value="#{cc.attrs.paymentMethodData.iou.referenceNo}"
+                         placeholder="Referance No" class="w-100" ></p:inputText>
+
+            <h:outputLabel value="Comments" ></h:outputLabel>
+            <p:inputTextarea value="#{cc.attrs.paymentMethodData.iou.comment}" placeholder="Comments" class="w-100" ></p:inputTextarea>
+
+        </h:panelGrid>
+
+
+    </cc:implementation>
+</html>

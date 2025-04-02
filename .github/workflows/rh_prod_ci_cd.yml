@@ -31,7 +31,7 @@ jobs:
         run: |
           sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
           sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunuAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-      
+
       - name: Verify JDBC Data Sources in persistence.xml
         run: |
           grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml

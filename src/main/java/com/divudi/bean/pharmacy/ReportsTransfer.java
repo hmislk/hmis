@@ -7,33 +7,33 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.StockReportRecord;
-import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.data.table.String1Value3;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.dataStructure.StockReportRecord;
+import com.divudi.core.data.inward.SurgeryBillType;
+import com.divudi.core.data.table.String1Value3;
 
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,93 +56,141 @@ import org.joda.time.LocalDate;
  *
  * @author Buddhika
  */
-@Named(value = "reportsTransfer")
+@Named
 @SessionScoped
 public class ReportsTransfer implements Serializable {
 
-    /**
-     * Bean Variables
-     */
-    Department fromDepartment;
-    Department toDepartment;
-    Department department;
-    Date fromDate;
-    Date toDate;
-    BillType[] billTypes;
-
-    Institution institution;
-    List<Stock> stocks;
-    List<ItemCount> itemCounts;
-    List<ItemCountWithOutMargin> itemCountWithOutMargins;
-    double saleValue;
-    double purchaseValue;
-    double totalsValue;
-    double discountsValue;
-    double marginValue;
-    double netTotalValues;
-    double retailValue;
-    Category category;
-
-    List<BillItem> transferItems;
-    List<Bill> transferBills;
-    private List<ItemBHTIssueCountTrancerReciveCount> itemBHTIssueCountTrancerReciveCounts;
-
-    List<StockReportRecord> movementRecords;
-    List<StockReportRecord> movementRecordsQty;
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    private StockFacade stockFacade;
+    @EJB
+    private BillItemFacade billItemFacade;
+    @EJB
+    private BillFacade BillFacade;
+    @EJB
+    private PharmacyBean pharmacyBean;
+    @EJB
+    private ItemFacade itemFacade;
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
-    BillBeanController billBeanController;
-
-    double stockPurchaseValue;
-    double stockSaleValue;
-    double valueOfQOH;
-    double qoh;
-    double totalIssueQty;
-    double totalBHTIssueQty;
-    double totalIssueValue;
-    double totalBHTIssueValue;
-
-    /**
-     * EJBs
-     */
-    @EJB
-    StockFacade stockFacade;
-    @EJB
-    BillItemFacade billItemFacade;
-    @EJB
-    BillFacade BillFacade;
-    @EJB
-    PharmacyBean pharmacyBean;
-    @EJB
-    ItemFacade itemFacade;
-
-    CommonFunctions commonFunctions;
-
-    ////////////
+    private BillBeanController billBeanController;
     @Inject
-    CommonController commonController;
-
+    private PharmacyController pharmacyController;
     @Inject
-    AuditEventApplicationController auditEventApplicationController;
+    private AuditEventApplicationController auditEventApplicationController;
     @Inject
     private SessionController sessionController;
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private Department fromDepartment;
+    private Department toDepartment;
+    private Department department;
+    private Date fromDate;
+    private Date toDate;
+    private BillType[] billTypes;
+
+    private Institution institution;
+    private List<Stock> stocks;
+    private List<ItemCount> itemCounts;
+    private List<ItemCountWithOutMargin> itemCountWithOutMargins;
+    private double saleValue;
+    private double purchaseValue;
+    private double totalsValue;
+    private double discountsValue;
+    private double marginValue;
+    private double netTotalValues;
+    private double retailValue;
+    private Category category;
+
+    private List<BillItem> transferItems;
+    private List<Bill> transferBills;
+    private List<ItemBHTIssueCountTrancerReciveCount> itemBHTIssueCountTrancerReciveCounts;
+
+    private List<StockReportRecord> movementRecords;
+    private List<StockReportRecord> movementRecordsQty;
+    private double stockPurchaseValue;
+    private double stockSaleValue;
+    private double valueOfQOH;
+    private double qoh;
+    private double totalIssueQty;
+    private double totalBHTIssueQty;
+    private double totalIssueValue;
+    private double totalBHTIssueValue;
+    private int pharmacyDisbursementReportIndex = 8;
+    private AdmissionType admissionType;
+    private Bill previewBill;
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Constructions">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Functions">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    // </editor-fold>
+    public String navigateToTransferIssueByBillItem() {
+        transferBills = null;
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
+        return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_item?faces-redirect=true";
+    }
+
+    public String navigateToTransferReceiveByBillItem() {
+        transferBills = null;
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
+        return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_item?faces-redirect=true";
+    }
+
+    public String navigateToTransferIssueByBill() {
+        transferBills = null;
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
+        return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill?faces-redirect=true";
+    }
+
+    public String navigateBackToTransferIssueByBill() {
+        return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill?faces-redirect=true";
+    }
+
+    public String navigateToTransferReceiveByBill() {
+        transferBills = null;
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
+        return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill?faces-redirect=true";
+    }
+
+    public String navigateToTransferIssueByBillSummary() {
+        transferBills = null;
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
+        return "/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_summery?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyTransferReports() {
+        transferBills = null;
+        pharmacyController.setManagePharamcyReportIndex(pharmacyDisbursementReportIndex);
+        return pharmacyController.navigateToPharmacyAnalytics();
+    }
+
+    public String navigateToBillPreview(Bill b) {
+        previewBill = b;
+        return "/inward/pharmacy_reprint_bill_sale_bht_bill?faces-redirect=true";
+    }
+
+    public String navigateBackFromBillPreview() {
+        previewBill = null;
+        return "/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true";
+    }
 
     /**
      * Methods
      */
     public void fillFastMoving() {
-        Date startTime = new Date();
-
         fillMoving(true);
         fillMovingQty(true);
-
     }
 
     public void fillSlowMoving() {
-        Date startTime = new Date();
-
         fillMoving(false);
         fillMovingQty(false);
-
     }
 
     public BillBeanController getBillBeanController() {
@@ -186,7 +234,7 @@ public class ReportsTransfer implements Serializable {
             r.setQty((Double) obj[1]);
             Days daysBetween = Days.daysBetween(LocalDate.fromDateFields(fromDate), LocalDate.fromDateFields(toDate));
             int ds = daysBetween.getDays();
-            r.setPurchaseValue((Double) (r.getQty() / ds));
+            r.setPurchaseValue(r.getQty() / ds);
 //            r.setRetailsaleValue((Double) obj[2]);
             r.setStockQty(getPharmacyBean().getStockQty(r.getItem(), institution));
             movementRecordsQty.add(r);
@@ -354,7 +402,7 @@ public class ReportsTransfer implements Serializable {
     }
 
     public List<BillItem> fetchBillItems(BillType bt) {
-        List<BillItem> billItems = new ArrayList<>();
+        List<BillItem> billItems;
 
         Map m = new HashMap();
         String sql;
@@ -398,43 +446,46 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersIssueByBill() {
-        Date startTime = new Date();
-
-        Map m = new HashMap();
-        String sql;
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
+        Map params = new HashMap();
+        String jpql;
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("bt", BillType.PharmacyTransferIssue);
         if (fromDepartment != null && toDepartment != null) {
-            m.put("fdept", fromDepartment);
-            m.put("tdept", toDepartment);
-            sql = "select b from Bill b where b.department=:fdept"
+            params.put("fdept", fromDepartment);
+            params.put("tdept", toDepartment);
+            jpql = "select b from Bill b where b.department=:fdept"
                     + " and b.toDepartment=:tdept "
                     + " and b.createdAt between :fd "
                     + " and :td and b.billType=:bt "
                     + " and b.retired=false "
                     + " order by b.id";
         } else if (fromDepartment == null && toDepartment != null) {
-            m.put("tdept", toDepartment);
-            sql = "select b from Bill b where"
+            params.put("tdept", toDepartment);
+            jpql = "select b from Bill b where"
                     + " b.toDepartment=:tdept and b.createdAt "
                     + " between :fd and :td "
                     + " and b.retired=false "
                     + " b.billType=:bt order by b.id";
-        } else if (fromDepartment != null && toDepartment == null) {
-            m.put("fdept", fromDepartment);
-            sql = "select b from Bill b where "
+        } else if (fromDepartment != null) {
+            params.put("fdept", fromDepartment);
+            jpql = "select b from Bill b where "
                     + " b.department=:fdept and b.createdAt "
                     + " between :fd and :td "
                     + " and b.retired=false "
                     + "  b.billType=:bt order by b.id";
         } else {
-            sql = "select b from Bill b where b.createdAt "
+            jpql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt "
                     + " and b.retired=false "
                     + " order by b.id";
         }
-        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        System.out.println("getBillFacade() = " + getBillFacade());
+
+        transferBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -448,6 +499,9 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void calculatePurachaseValuesOfBillItemsInBill(List<Bill> billList) {
+        if (billList == null) {
+            return;
+        }
         for (Bill b : billList) {
             double saleValue = 0.0;
             double purchaseValue = 0.0;
@@ -498,8 +552,15 @@ public class ReportsTransfer implements Serializable {
         m.put("fdept", fromDepartment);
         sql = "select b from Bill b "
                 + " where b.department=:fdept "
-                + " and b.createdAt  between :fd and :td "
-                + " and b.billType=:bt order by b.id";
+                + " and b.createdAt  between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += "  and b.patientEncounter.admissionType=:at ";
+            m.put("at", admissionType);
+        }
+
+        sql += " and b.billType=:bt order by b.id";
+
         transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
@@ -1632,43 +1693,33 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
-        Date startTime = new Date();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where b.createdAt between :fd and :td and b.billType=:bt");
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("bt", BillType.PharmacyTransferReceive);
 
-        Map m = new HashMap();
-        String sql;
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferReceive);
-        if (fromDepartment != null && toDepartment != null) {
-            m.put("fdept", fromDepartment);
-            m.put("tdept", toDepartment);
-            sql = "select b from Bill b where b.fromDepartment=:fdept"
-                    + " and b.department=:tdept and b.createdAt between :fd "
-                    + "and :td and b.billType=:bt order by b.id";
-        } else if (fromDepartment == null && toDepartment != null) {
-            m.put("tdept", toDepartment);
-            sql = "select b from Bill b where b.department=:tdept and b.createdAt "
-                    + " between :fd and :td and b.billType=:bt order by b.id";
-        } else if (fromDepartment != null && toDepartment == null) {
-            m.put("fdept", fromDepartment);
-            sql = "select b from Bill b where b.fromDepartment=:fdept and b.createdAt "
-                    + " between :fd and :td and b.billType=:bt order by b.id";
-        } else {
-            sql = "select b from Bill b where b.createdAt "
-                    + " between :fd and :td and b.billType=:bt order by b.id";
+        if (fromDepartment != null) {
+            jpql.append(" and b.fromDepartment=:fdept");
+            params.put("fdept", fromDepartment);
         }
-        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+        if (toDepartment != null) {
+            jpql.append(" and b.department=:tdept");
+            params.put("tdept", toDepartment);
+        }
+
+        jpql.append(" order by b.id");
+        transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
         for (Bill b : transferBills) {
-//            totalsValue = totalsValue + (b.getTotal());
+
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-        
         calculatePurachaseValuesOfBillItemsInBill(transferBills);
-
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
@@ -1817,6 +1868,22 @@ public class ReportsTransfer implements Serializable {
 
     public void setItemBHTIssueCountTrancerReciveCounts(List<ItemBHTIssueCountTrancerReciveCount> itemBHTIssueCountTrancerReciveCounts) {
         this.itemBHTIssueCountTrancerReciveCounts = itemBHTIssueCountTrancerReciveCounts;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public Bill getPreviewBill() {
+        return previewBill;
+    }
+
+    public void setPreviewBill(Bill previewBill) {
+        this.previewBill = previewBill;
     }
 
     public class ItemBHTIssueCountTrancerReciveCount {
@@ -2282,14 +2349,6 @@ public class ReportsTransfer implements Serializable {
 
     public void setTotalBHTIssueValue(double totalBHTIssueValue) {
         this.totalBHTIssueValue = totalBHTIssueValue;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

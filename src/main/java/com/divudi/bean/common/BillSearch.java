@@ -11,99 +11,64 @@ import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillSummery;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillSummery;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
 
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.CashTransaction;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.EmailFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.CashTransaction;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.EmailFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
-import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.CC_BILL;
-import static com.divudi.data.BillTypeAtomic.CC_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.CC_BILL_REFUND;
-import static com.divudi.data.BillTypeAtomic.CC_CREDIT_NOTE;
-import static com.divudi.data.BillTypeAtomic.CC_CREDIT_NOTE_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.CC_DEBIT_NOTE;
-import static com.divudi.data.BillTypeAtomic.CC_DEBIT_NOTE_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
-import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
-import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL;
-import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL;
-import static com.divudi.data.BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL;
-import static com.divudi.data.BillTypeAtomic.CHANNEL_REFUND;
-import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
-import static com.divudi.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL;
-import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES;
-import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN;
-import static com.divudi.data.BillTypeAtomic.SUPPLEMENTARY_INCOME;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.OptionScope;
-import com.divudi.data.lab.PatientInvestigationStatus;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.java.CommonFunctions;
-import com.divudi.light.common.BillLight;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -113,8 +78,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -124,7 +87,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.beanutils.BeanUtils;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
 
@@ -201,8 +163,6 @@ public class BillSearch implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
-    private CommonController commonController;
-    @Inject
     private WebUserController webUserController;
     @Inject
     private PharmacyPreSettleController pharmacyPreSettleController;
@@ -222,8 +182,6 @@ public class BillSearch implements Serializable {
     ConfigOptionController configOptionController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
-    @Inject
-    CommonFunctionsController commonFunctionsController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
@@ -319,6 +277,7 @@ public class BillSearch implements Serializable {
     private Bill viewingBill;
     private List<Bill> viewingIndividualBillsOfBatchBill;
     private List<Bill> viewingRefundBills;
+    private List<Bill> viewingReferanceBills;
     private List<BillItem> viewingBillItems;
     private List<BillFee> viewingBillFees;
     private List<BillComponent> viewingBillComponents;
@@ -328,6 +287,10 @@ public class BillSearch implements Serializable {
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
+    }
+
+    public String navigateToInwardSearchService() {
+        return "/inward/inward_reprint_bill_service?faces-redirect=true";
     }
 
     public List<Payment> fetchBillPayments(Bill bill) {
@@ -400,12 +363,12 @@ public class BillSearch implements Serializable {
         Map m = new HashMap();
         String j;
         if (billClassType == null) {
-            j = "select new com.divudi.data.BillSummery(b.paymentMethod, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
+            j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
                     + " from Bill b "
                     + " where b.retired=false "
                     + " and b.billTime between :fd and :td ";
         } else {
-            j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
+            j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
                     + " from Bill b "
                     + " where b.retired=false "
                     + " and b.billTime between :fd and :td ";
@@ -493,12 +456,12 @@ public class BillSearch implements Serializable {
         Map m = new HashMap();
         String j;
         if (billClassType == null) {
-            j = "select new com.divudi.data.BillSummery(b.paymentMethod, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
+            j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
                     + " from Bill b "
                     + " where b.retired=false "
                     + " and b.billTime between :fd and :td ";
         } else {
-            j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
+            j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
                     + " from Bill b "
                     + " where b.retired=false "
                     + " and b.billTime between :fd and :td ";
@@ -594,7 +557,7 @@ public class BillSearch implements Serializable {
 
         Map m = new HashMap();
         String j;
-        j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billTypeAtomic, b.billType, b.creater) "
+        j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billTypeAtomic, b.billType, b.creater) "
                 + " from Bill b "
                 + " where b.retired=false "
                 + " and b.billTime between :fd and :td ";
@@ -662,7 +625,7 @@ public class BillSearch implements Serializable {
 
         Map m = new HashMap();
         String j;
-        j = "select new com.divudi.data.BillSummery(Function('DATE',(b.createdAt)),sum(b.netTotal), count(b)) "
+        j = "select new com.divudi.core.data.BillSummery(Function('DATE',(b.createdAt)),sum(b.netTotal), count(b)) "
                 + " from Bill b "
                 + " where b.retired=false "
                 + " and b.billTime between :fd and :td ";
@@ -807,7 +770,7 @@ public class BillSearch implements Serializable {
 
     public List<BillSummery> generateBillSummaries(Institution ins, Department dep, WebUser u, List<BillType> bts, BillClassType bct, Date fd, Date td) {
         Map<String, Object> parameters = new HashMap<>();
-        StringBuilder queryString = new StringBuilder("select new com.divudi.data.BillSummery(b.paymentMethod, ");
+        StringBuilder queryString = new StringBuilder("select new com.divudi.core.data.BillSummery(b.paymentMethod, ");
 //        if (bct != null) {
 //            queryString.append("b.billClassType, ");
 //        }
@@ -983,12 +946,12 @@ public class BillSearch implements Serializable {
         Map m = new HashMap();
         String j;
         if (billClassType == null) {
-            j = "select new com.divudi.data.BillSummery(b.paymentMethod, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
+            j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
                     + " from BillFee bf inner join bf.bill b "
                     + " where b.retired=false "
                     + " and b.billTime between :fd and :td ";
         } else {
-            j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
+            j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, b.billClassType, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
                     + " from BillFee bf inner join bf.bill b "
                     + " where b.retired=false "
                     + " and b.billTime between :fd and :td ";
@@ -1115,6 +1078,7 @@ public class BillSearch implements Serializable {
 
     public void updateValue() {
 
+        // Round off and persist updates to BillFee objects
         for (BillFee bf : billFeesList) {
             bf.setFeeGrossValue(roundOff(bf.getFeeGrossValue(), 2));
             bf.setFeeDiscount(roundOff(bf.getFeeDiscount(), 2));
@@ -1122,49 +1086,72 @@ public class BillSearch implements Serializable {
             billFeeFacade.edit(bf);
         }
 
+        // Update BillItem calculations
         for (BillItem bt : billItemList) {
-            String sql = "select sum(b.feeGrossValue)  "
-                    + " from BillFee b "
-                    + " where b.retired=false"
-                    + " and b.billItem.id=" + bt.getId();
-            bt.setGrossValue(billItemFacade.findDoubleByJpql(sql));
 
-            sql = "select sum(b.feeDiscount)  "
+            // feeGrossValue
+            String jpql = "select sum(b.feeGrossValue) "
                     + " from BillFee b "
-                    + " where b.retired=false"
-                    + " and b.billItem.id=" + bt.getId();
+                    + " where b.retired = :ret "
+                    + " and b.billItem.id = :bid";
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("bid", bt.getId());
+            bt.setGrossValue(billItemFacade.findDoubleByJpql(jpql, params));
 
-            bt.setDiscount(billItemFacade.findDoubleByJpql(sql));
-
-            sql = "select sum(b.feeValue)  "
+            // feeDiscount
+            jpql = "select sum(b.feeDiscount) "
                     + " from BillFee b "
-                    + " where b.retired=false"
-                    + " and b.billItem.id=" + bt.getId();
-            bt.setNetValue(billItemFacade.findDoubleByJpql(sql));
+                    + " where b.retired = :ret "
+                    + " and b.billItem.id = :bid";
+            params = new HashMap<>();
+            params.put("ret", false);
+            params.put("bid", bt.getId());
+            bt.setDiscount(billItemFacade.findDoubleByJpql(jpql, params));
+
+            // feeValue
+            jpql = "select sum(b.feeValue) "
+                    + " from BillFee b "
+                    + " where b.retired = :ret "
+                    + " and b.billItem.id = :bid";
+            params = new HashMap<>();
+            params.put("ret", false);
+            params.put("bid", bt.getId());
+            bt.setNetValue(billItemFacade.findDoubleByJpql(jpql, params));
         }
 
-        String sql = "select sum(b.grossValue)  "
+        // Summaries for Bill object
+        String jpql = "select sum(b.grossValue) "
                 + " from BillItem b "
-                + " where b.retired=false"
-                + " and b.bill.id=" + bill.getId();
-        bill.setTotal(billItemFacade.findDoubleByJpql(sql));
+                + " where b.retired = :ret "
+                + " and b.bill.id = :bid";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", bill.getId());
+        bill.setTotal(billItemFacade.findDoubleByJpql(jpql, params));
 
-        sql = "select sum(b.discount)  "
+        jpql = "select sum(b.discount) "
                 + " from BillItem b "
-                + " where b.retired=false"
-                + " and b.bill.id=" + bill.getId();
+                + " where b.retired = :ret "
+                + " and b.bill.id = :bid";
+        params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", bill.getId());
+        bill.setDiscount(billItemFacade.findDoubleByJpql(jpql, params));
 
-        bill.setDiscount(billItemFacade.findDoubleByJpql(sql));
-
-        sql = "select sum(b.netValue)  "
+        jpql = "select sum(b.netValue) "
                 + " from BillItem b "
-                + " where b.retired=false"
-                + " and b.bill.id=" + bill.getId();
-        bill.setNetTotal(billItemFacade.findDoubleByJpql(sql));
+                + " where b.retired = :ret "
+                + " and b.bill.id = :bid";
+        params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", bill.getId());
+        bill.setNetTotal(billItemFacade.findDoubleByJpql(jpql, params));
+
+        // Persist final updates to Bill
         billFacade.edit(bill);
 
-        JsfUtil.addSuccessMessage("Bill Upadted");
-
+        JsfUtil.addSuccessMessage("Bill Updated");
     }
 
     public void updateBillFeeRetierd(BillFee bf) {
@@ -1394,9 +1381,6 @@ public class BillSearch implements Serializable {
 
             double refundingValue = 0;
             for (BillFee refundingBillFees : refundingBillItem.getBillFees()) {
-                System.out.println("rbf.getFeeValue() name = " + refundingBillFees.getFee().getName());
-                System.out.println("rbf.getFeeValue() = " + refundingBillFees.getFeeValue());
-                System.out.println("rbf.getFeeValue() fee = " + refundingBillFees.getFee().getFee());
                 refundingValue += refundingBillFees.getFeeValue();
             }
             refundingBillItem.setNetValue(refundingValue);
@@ -1691,7 +1675,7 @@ public class BillSearch implements Serializable {
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-//        
+//
         collectingCentreApplicationController.updateCcBalance(
                 getBill().getInstitution(),
                 rb.getTotalHospitalFee(),
@@ -1732,12 +1716,14 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
             return "";
         }
-
-        if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < refundingBill.getNetTotal()) {
-            JsfUtil.addErrorMessage("Not enough cash in the Drawer");
-            return "";
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            if (refundingBill.getPaymentMethod() != null && refundingBill.getPaymentMethod() == PaymentMethod.Cash) {
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < refundingBill.getNetTotal()) {
+                    JsfUtil.addErrorMessage("Not enough cash in the Drawer");
+                    return "";
+                }
+            }
         }
-
         if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
             if (configOptionApplicationController.getBooleanValueByKey("Immediate Refund Request for OPO Bills of Any Status", true)) {
                 if (sampleHasBeenCollected(refundingBill)) {
@@ -1773,11 +1759,8 @@ public class BillSearch implements Serializable {
         }
 
         if (refundingBill.getBillItems() != null) {
-            System.out.println("refundingBill = " + refundingBill);
             for (BillItem refundingBillItemTmp : refundingBill.getBillItems()) {
-                System.out.println("refundingBillItemTmp = " + refundingBillItemTmp);
                 for (BillFee refundingBillFeeTmp : refundingBillItemTmp.getBillFees()) {
-                    System.out.println("refundingBillFeeTmp = " + refundingBillFeeTmp);
                     if (refundingBillFeeTmp.getReferenceBillFee().getFeeValue() < refundingBillFeeTmp.getFeeValue()) {
                         JsfUtil.addErrorMessage("Pleace Enter Correct Value");
                         return "";
@@ -1902,8 +1885,6 @@ public class BillSearch implements Serializable {
         rb.setDeptId(deptId);
         rb.setReferenceBill(bill);
         rb.setBilledBill(bill);
-
-
 
         // Step 3: Persist the Bill last
         billController.save(rb);
@@ -2076,15 +2057,8 @@ public class BillSearch implements Serializable {
             getBillItemFacede().createAndFlush(rbi);
             originalBillItem.setRefunded(true);
             originalBillItem.setBillItemRefunded(true);
-            System.out.println("bi = " + originalBillItem);
-            System.out.println("1 bi Refunded= " + originalBillItem.isRefunded());
-            System.out.println("1 billItemRefunded= " + originalBillItem.isBillItemRefunded());
             getBillItemFacede().editAndFlush(originalBillItem);
-            System.out.println("2 bi Refunded= " + originalBillItem.isRefunded());
-            System.out.println("2 billItemRefunded= " + originalBillItem.isBillItemRefunded());
             originalBillItem = billItemFacade.find(bi.getId());
-            System.out.println("3 bi Refunded= " + originalBillItem.isRefunded());
-            System.out.println("3 billItemRefunded= " + originalBillItem.isBillItemRefunded());
             String sql = "Select bf From BillFee bf where "
                     + " bf.retired=false and bf.billItem.id=" + originalBillItem.getId();
             List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
@@ -2628,7 +2602,6 @@ public class BillSearch implements Serializable {
     }
 
     private void returnBillFee(Bill rb, BillItem bt, List<BillFee> tmp) {
-        System.out.println("returnBillFee");
         for (BillFee nB : tmp) {
             BillFee bf = new BillFee();
             bf.copy(nB);
@@ -2855,6 +2828,8 @@ public class BillSearch implements Serializable {
             b.setHospitalFee(0 - nB.getHospitalFee());
             b.setCollectingCentreFee(0 - nB.getCollectingCentreFee());
             b.setStaffFee(0 - nB.getStaffFee());
+            b.setReagentFee(0 - nB.getReagentFee());
+            b.setOtherFee(0 - nB.getOtherFee());
 
             b.setNetValue(0 - nB.getNetValue());
             b.setGrossValue(0 - nB.getGrossValue());
@@ -2949,7 +2924,6 @@ public class BillSearch implements Serializable {
             List<BillFee> originalProfessionalPaymentFeesForBillItem) {
         for (BillFee originalProfessionalPaymentFeeForBillItem : originalProfessionalPaymentFeesForBillItem) {
             BillFee newCancellingBillFee = new BillFee();
-            System.out.println("addind new fee under cancelBillFee ");
             newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
             newCancellingBillFee.setPatienEncounter(originalProfessionalPaymentFeeForBillItem.getPatienEncounter());
             newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getPatient());
@@ -3184,13 +3158,7 @@ public class BillSearch implements Serializable {
     }
 
     public boolean chackRefundORCancelBill(Bill bill) {
-        boolean result = false;
-        if (commonFunctionsController.dateAfter24Hours(bill.getCreatedAt()).after(new Date())) {
-            result = true;
-        } else {
-            result = false;
-        }
-        return result;
+        return CommonFunctions.dateAfter24Hours(bill.getCreatedAt()).after(new Date());
     }
 
     public String navigateToViewSingleOpdBill() {
@@ -3210,6 +3178,7 @@ public class BillSearch implements Serializable {
         } else {
             opdBillRefundAllowedSameDay = true;
         }
+        findRefuendedBills(bill);
         paymentMethod = bill.getPaymentMethod();
         printPreview = false;
         return "/opd/bill_reprint?faces-redirect=true;";
@@ -3222,7 +3191,6 @@ public class BillSearch implements Serializable {
     private List<Bill> refuendedBills = new ArrayList();
 
     public void findRefuendedBills(Bill bill) {
-        System.out.println("findRefuendedBills");
         refuendedBills = new ArrayList<>();
         Map p = new HashMap();
         String jpql = "SELECT b"
@@ -3234,7 +3202,6 @@ public class BillSearch implements Serializable {
         p.put("refBill", bill);
 
         refuendedBills = billFacade.findByJpql(jpql, p);
-        System.out.println("refuendedBills = " + refuendedBills);
     }
 
     public List<Bill> getRefuendedBills() {
@@ -3607,8 +3574,6 @@ public class BillSearch implements Serializable {
         }
         cashRecieveBillController.setPrintPreview(true);
         cashRecieveBillController.setCurrent(getBill());
-        System.out.println("Preview = " + cashRecieveBillController.isPrintPreview());
-        System.out.println("Bill = " + cashRecieveBillController.getCurrent());
         return "/credit/credit_compnay_bill_opd?faces-redirect=true;";
     }
 
@@ -3750,6 +3715,7 @@ public class BillSearch implements Serializable {
             return null;
         }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
+        System.out.println("billTypeAtomic = " + billTypeAtomic);
         loadBillDetails(bill);
         switch (billTypeAtomic) {
             case OPD_BILL_REFUND:
@@ -3810,16 +3776,29 @@ public class BillSearch implements Serializable {
 
             case CHANNEL_REFUND:
                 return "";
+
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
+                return navigateToViewChannelingProfessionalPaymentBill();
+
+            case DIRECT_ISSUE_INWARD_MEDICINE:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill();
+
+            case PHARMACY_RETAIL_SALE_PRE:
+            case PHARMACY_RETAIL_SALE:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
+
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyRetailCancellationBill();
+
             case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
-            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
-                return navigateToViewChannelingProfessionalPaymentBill();
 
-            case PHARMACY_RETAIL_SALE_PRE:
-            case PHARMACY_RETAIL_SALE:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
             case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
@@ -3835,6 +3814,7 @@ public class BillSearch implements Serializable {
             case PHARMACY_WHOLESALE_PRE:
             case PHARMACY_WHOLESALE_CANCELLED:
             case PHARMACY_WHOLESALE_REFUND:
+            case PHARMACY_DIRECT_ISSUE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyBill();
 
@@ -3867,13 +3847,12 @@ public class BillSearch implements Serializable {
             case PHARMACY_TRANSFER_REQUEST_CANCELLED:
             case PHARMACY_ISSUE:
             case PHARMACY_ISSUE_CANCELLED:
-            case PHARMACY_DIRECT_ISSUE:
+
             case PHARMACY_DIRECT_ISSUE_CANCELLED:
             case PHARMACY_RECEIVE_PRE:
             case PHARMACY_RECEIVE_CANCELLED:
             case MULTIPLE_PHARMACY_ORDER_CANCELLED_BILL:
             case PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION:
-            case PHARMACY_RETAIL_SALE_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case SUPPLEMENTARY_INCOME:
@@ -3905,13 +3884,10 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToManageBillByAtomicBillType() {
-        System.out.println("navigateToManageBillByAtomicBillType");
-        System.out.println("bill");
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
         }
-        System.out.println("bill.getBillTypeAtomic() = " + bill.getBillTypeAtomic());
         if (bill.getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("No Bill type");
             return null;
@@ -4245,7 +4221,6 @@ public class BillSearch implements Serializable {
         List<BillItem> billedBillItems = billController.billItemsOfBill(bill);
 
         for (BillItem originalBillItem : billedBillItems) {
-            System.out.println("bi = " + originalBillItem);
             BillItem newlyCreatedRefundingBillItem = new BillItem();
             newlyCreatedRefundingBillItem.copyWithoutFinancialData(originalBillItem);
             newlyCreatedRefundingBillItem.setBill(refundingBill);
@@ -4255,7 +4230,6 @@ public class BillSearch implements Serializable {
 
             List<BillFee> originalBillFeesOfBillItem = billController.billFeesOfBillItem(originalBillItem);
             for (BillFee originalBillFeeOfBillItem : originalBillFeesOfBillItem) {
-                System.out.println("bf = " + originalBillFeeOfBillItem);
 
                 BillFee newlyCreatedRefundingBillFeeOfBillItem = new BillFee();
                 newlyCreatedRefundingBillFeeOfBillItem.copyWithoutFinancialData(originalBillFeeOfBillItem);
@@ -4923,14 +4897,6 @@ public class BillSearch implements Serializable {
         this.opdPreSettleController = opdPreSettleController;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public List<BillSummery> getBillSummeries() {
         return billSummeries;
     }
@@ -5288,6 +5254,7 @@ public class BillSearch implements Serializable {
 //        System.out.println("viewingBillFees = " + viewingBillFees);
         viewingBillComponents = billBean.fetchBillComponents(bill);
         viewingBillPayments = billBean.fetchBillPayments(bill);
+        viewingReferanceBills = billService.fetchAllReferanceBills(bill);
     }
 
     public Bill getViewingBill() {
@@ -5368,6 +5335,14 @@ public class BillSearch implements Serializable {
 
     public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public List<Bill> getViewingReferanceBills() {
+        return viewingReferanceBills;
+    }
+
+    public void setViewingReferanceBills(List<Bill> viewingReferanceBills) {
+        this.viewingReferanceBills = viewingReferanceBills;
     }
 
     public class PaymentSummary {
@@ -5560,7 +5535,6 @@ public class BillSearch implements Serializable {
     }
 
     public String findOriginalBillFromCancelledBill(Bill cancelBill) {
-        System.out.println("findOriginalBillFromCancelledBill");
         Bill bill = null;
         String jpql = "SELECT b FROM Bill b "
                 + " WHERE b.cancelledBill=:bi "

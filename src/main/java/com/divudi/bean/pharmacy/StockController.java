@@ -9,19 +9,19 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.store.StoreBean;
-import com.divudi.data.DepartmentType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.StockFacade;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.StockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -99,10 +99,7 @@ public class StockController implements Serializable {
     }
 
     public void listStocksOfSelectedItem(Item item) {
-        selectedItemStocks = null;
-        if (selectedItemStocks == null) {
-            selectedItemStocks = new ArrayList<>();
-        }
+        selectedItemStocks = new ArrayList<>();
         selectedItem = item;
         if (item == null) {
             return;
@@ -349,7 +346,7 @@ public class StockController implements Serializable {
     }
 
     public double findStock(Institution institution, List<Amp> amps) {
-        Double stock = null;
+        Double stock;
         String jpql;
         Map m = new HashMap();
 
@@ -372,7 +369,7 @@ public class StockController implements Serializable {
     }
 
     public double findStock(Department department, List<Amp> amps) {
-        Double stock = null;
+        Double stock;
         String jpql;
         Map m = new HashMap();
 
@@ -420,7 +417,7 @@ public class StockController implements Serializable {
         if (amps.isEmpty()) {
             return 0.0;
         }
-        Double stock = null;
+        double stock;
         String jpql;
         Map m = new HashMap();
         Amp tamp = amps.get(0);
@@ -575,7 +572,7 @@ public class StockController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
     }
-    
+
     public void saveSilantly(Stock s) {
         if (s == null) {
             return;
@@ -740,24 +737,32 @@ public class StockController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.trim().isEmpty()) {
                 return null;
             }
-            StockController controller = (StockController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "stockController");
-            return controller.getEjbFacade().find(getKey(value));
+            try {
+                StockController controller = (StockController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "stockController");
+                return controller.getEjbFacade().find(getKey(value));
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+        Long getKey(String value) {
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                // Rethrow the exception to handle it in getAsObject
+                throw e;
+            }
         }
 
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+        String getStringKey(Long value) {
+            if (value == null) {
+                return null;
+            }
+            return value.toString();
         }
 
         @Override
@@ -766,8 +771,8 @@ public class StockController implements Serializable {
                 return null;
             }
             if (object instanceof Stock) {
-                Stock o = (Stock) object;
-                return getStringKey(o.getId());
+                Stock stock = (Stock) object;
+                return getStringKey(stock.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + Stock.class.getName());

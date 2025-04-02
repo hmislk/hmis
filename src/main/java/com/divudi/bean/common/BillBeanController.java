@@ -4,86 +4,73 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
-import com.divudi.data.BillFeeBundleEntry;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.OpdBillingStrategy;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.PaymentType;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.BillFeeBundleEntry;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.OpdBillingStrategy;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentType;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.inward.SurgeryBillType;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Fee;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.PackageFee;
-import com.divudi.entity.PackageItem;
-import com.divudi.entity.Packege;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.EncounterComponent;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.membership.AllowedPaymentMethod;
-import com.divudi.entity.membership.PaymentSchemeDiscount;
-import com.divudi.facade.AllowedPaymentMethodFacade;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.EncounterComponentFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PackageFeeFacade;
-import com.divudi.facade.PackageItemFacade;
-import com.divudi.facade.PackegeFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PaymentFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Fee;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.PackageFee;
+import com.divudi.core.entity.PackageItem;
+import com.divudi.core.entity.Packege;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.membership.AllowedPaymentMethod;
+import com.divudi.core.entity.membership.PaymentSchemeDiscount;
+import com.divudi.core.facade.AllowedPaymentMethodFacade;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PackageFeeFacade;
+import com.divudi.core.facade.PackageItemFacade;
+import com.divudi.core.facade.PackegeFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -493,8 +480,8 @@ public class BillBeanController implements Serializable {
 //                + " and bi.item.department.institution=:ins"
 //                + " and bi.bill.createdAt between :fromDate and :toDate "
 //                + " and bi.bill.paymentMethod in :pms";
-//        
-//        
+//
+//
 //        HashMap temMap = new HashMap();
 //
 //        temMap.put("toDate", toDate);
@@ -929,7 +916,7 @@ public class BillBeanController implements Serializable {
 //        return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 //
 //    }
-//    
+//
     public double calDoctorPaymentInward(Date fromDate, Date toDate, Institution institution) {
         String sql = "Select sum(b.netValue) "
                 + " FROM BillItem b "
@@ -2260,17 +2247,21 @@ public class BillBeanController implements Serializable {
             if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null) {
                 bill.setForwardReferenceBill(patientEncounter.getFinalBill());
                 getBillFacade().edit(bill);
-                patientEncounter.getFinalBill().getBackwardReferenceBills().add(bill);
-                if(patientEncounter.getFinalBill().getBalance() <= 0){
-                     patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getNetTotal());
-                }
-                patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
-                patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
-                
-                if(bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT){   
-                    patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
-                }else if(bill.getBillTypeAtomic()== BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED){
-                    patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor()+ bill.getNetTotal());
+                if (!patientEncounter.getFinalBill().getBackwardReferenceBills().contains(bill)) {
+                    patientEncounter.getFinalBill().getBackwardReferenceBills().add(bill);
+                    if (patientEncounter.getFinalBill().getBalance() <= 0) {
+                        patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getNetTotal());
+                    }
+                    patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
+                    patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
+
+                    if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
+                        patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
+                    } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
+                        patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() + bill.getNetTotal());
+                    } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION) {
+                        patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() - Math.abs(bill.getNetTotal()));
+                    }
                 }
                 getBillFacade().edit(patientEncounter.getFinalBill());
             }
@@ -2470,12 +2461,17 @@ public class BillBeanController implements Serializable {
 //        hm.put("nm", FeeType.Matrix);
 //        return getFeeFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
 //    }
-    public BillFee createBillFee(BillItem billItem, Fee i) {
+    public BillFee createBillFee(BillItem billItem, Fee i, PatientEncounter patientEncounter) {
         BillFee f;
         f = new BillFee();
         f.setFee(i);
-        f.setFeeValue(i.getFee());
-        f.setFeeGrossValue(i.getFee());
+        if (patientEncounter.isForiegner()) {
+            f.setFeeValue(i.getFfee());
+            f.setFeeGrossValue(i.getFfee());
+        } else {
+            f.setFeeValue(i.getFee());
+            f.setFeeGrossValue(i.getFee());
+        }
         f.setDepartment(billItem.getItem().getDepartment());
         f.setBillItem(billItem);
 
@@ -3171,7 +3167,7 @@ public class BillBeanController implements Serializable {
         }
         return lstBills;
     }
-    
+
     public List<Bill> billsForTheDayNotPaid(BillType type, Department department, Date fromDate, Date toDate) {
         List<Bill> lstBills;
         String sql;
@@ -3186,13 +3182,12 @@ public class BillBeanController implements Serializable {
                 + " and b.retired=false "
                 + " and b.netTotal!=0 ";
 
-        
-        if(fromDate != null && toDate !=null){
+        if (fromDate != null && toDate != null) {
             sql += " and b.createdAt between :fromDate and :toDate ";
             temMap.put("fromDate", fromDate);
             temMap.put("toDate", toDate);
         }
-        
+
         sql += " order by b.id desc";
 
         temMap.put("billType", type);
@@ -3617,6 +3612,7 @@ public class BillBeanController implements Serializable {
         double dis = 0;
         double net = 0;
         double vat = 0.0;
+        double margin = 0.0;
 
         for (BillEntry e : billEntrys) {
             for (BillFee bf : e.getLstBillFees()) {
@@ -3625,6 +3621,7 @@ public class BillBeanController implements Serializable {
                 net += bf.getFeeValue();
                 dis += bf.getFeeDiscount();
                 vat += bf.getFeeVat();
+                margin += bf.getFeeMargin();
 
                 if (bf.getFee().getFeeType() != FeeType.Staff) {
                     ins += bf.getFeeValue();
@@ -3642,6 +3639,8 @@ public class BillBeanController implements Serializable {
 
         bill.setStaffFee(staff);
         bill.setPerformInstitutionFee(ins);
+        bill.setMargin(margin);
+        bill.setServiceCharge(margin);
 
 //        bill.setTotal(tot);
 //        bill.setNetTotal(net);
@@ -3869,7 +3868,7 @@ public class BillBeanController implements Serializable {
         saveBillComponent(e, b, wu);
         saveBillFee(e, b, wu);
 //            if (b.getBillType() != BillType.InwardBill && e.getBillItem() != null) {
-//                
+//
 //                e.getBillItem().setBillSession(getServiceSessionBean().saveBillSession(e.getBillItem()));
 //            }
         getBillItemFacade().edit(e.getBillItem());
@@ -3926,10 +3925,11 @@ public class BillBeanController implements Serializable {
         List<BillFee> list = new ArrayList<>();
         double ccfee = 0.0;
         double woccfee = 0.0;
-        double staffFee;
-        double collectingCentreFee;
-        double hospitalFee;
-        double otherFee;
+        double staffFee = 0.0;
+        double collectingCentreFee = 0.0;
+        double hospitalFee = 0.0;
+        double reagentFee = 0.0;
+        double otherFee = 0.0;
         for (BillFee bf : e.getLstBillFees()) {
             bf.setCreatedAt(Calendar.getInstance().getTime());
             bf.setCreater(wu);
@@ -3949,9 +3949,28 @@ public class BillBeanController implements Serializable {
             }
             list.add(bf);
 
+            if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                collectingCentreFee += bf.getFeeValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Staff) {
+                staffFee += bf.getFeeValue();
+            } else {
+                hospitalFee += bf.getFeeValue();
+            }
+
+            if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                reagentFee += bf.getFeeValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Additional) {
+                otherFee += bf.getFeeValue();
+            }
         }
         e.getBillItem().setTransCCFee(ccfee);
         e.getBillItem().setTransWithOutCCFee(woccfee);
+
+        e.getBillItem().setHospitalFee(hospitalFee);
+        e.getBillItem().setCollectingCentreFee(collectingCentreFee);
+        e.getBillItem().setStaffFee(staffFee);
+        e.getBillItem().setReagentFee(reagentFee);
+        e.getBillItem().setOtherFee(otherFee);
 
         return list;
     }

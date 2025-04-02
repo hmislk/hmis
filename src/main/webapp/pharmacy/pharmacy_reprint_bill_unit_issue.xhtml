@@ -32,7 +32,7 @@
                                         value="To Return" 
                                         class="mx-2 ui-button-warning"
                                         icon="fa fa-money-bill-wave"
-                                        action="pharmacy_bill_return_issue"   
+                                        action="pharmacy_bill_return_issue?faces-redirect=true"   
                                         disabled="#{pharmacyBillSearch.bill.cancelled eq true}"  >                                
                                         <f:setPropertyActionListener 
                                             value="#{pharmacyBillSearch.bill}" 
@@ -52,7 +52,7 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:issue bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                            <ph:consumptionIssue bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                         </h:panelGroup>
 
                     </p:panel>

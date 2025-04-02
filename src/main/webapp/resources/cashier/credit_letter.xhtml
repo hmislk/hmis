@@ -20,11 +20,11 @@
         <div style="position: relative!important;
              /*padding-left: 0.5%!important;*/
              height:95%!important;
-             width:95%!important; 
+             width:95%!important;
              /*             overflow:hidden!important; */
-             font-family: Times New Roman!important; 
-             font-size: 10px!important; 
-             margin:2px!important; 
+             font-family: Times New Roman!important;
+             font-size: 10px!important;
+             margin:2px!important;
              padding: 5px!important;
              /*             background-size: 100% auto!important;*/
              letter-spacing: 0px;
@@ -39,7 +39,7 @@
             <div style="font-size: 9px!important; font-family: Times New Roman!important;
                  letter-spacing: 0px; position: absolute!important; padding-left: 5%; padding-top: 5%;">
                 <table >
-                    
+
                     <tr>
                         <td>
                             <!--<h:outputLabel value="Date : " />-->
@@ -48,17 +48,17 @@
                         <td></td>
                         <td></td>
                     </tr>
-                    
+
                     <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
-                    
+
                     <tr>
                         <td>
                             <!--<h:outputLabel value="Date : " />-->
-                            <h:outputLabel value="#{commonController.currentDateTime}">
+                            <h:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
                                 <f:convertDateTime pattern="dd-MMM-yy" />
                             </h:outputLabel>
                         </td>
@@ -128,13 +128,13 @@
                             </center>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
-                    
+
                     <tr>
                         <td colspan="2">
                             <h:outputLabel value="Period : " />
@@ -158,7 +158,7 @@
                     <tr>
                         <td colspan="3" width="100%">
                             <p:panel>
-                                <p:dataTable id="safrin" value="#{cc.attrs.bills}" var="b" rowIndexVar="i" >  
+                                <p:dataTable id="safrin" value="#{cc.attrs.bills}" var="b" rowIndexVar="i" >
                                     <p:column>
                                         <f:facet name="header">
                                             <p:outputLabel value="No" style="float: left;"/>
@@ -177,7 +177,7 @@
                                         </f:facet>
                                         <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
                                     </p:column>
-                                    <p:column style="text-align: right;"> 
+                                    <p:column style="text-align: right;">
                                         <f:facet name="header">
                                             <p:outputLabel value="Value" />
                                         </f:facet>
@@ -193,7 +193,7 @@
                                                                                     </f:facet>
                                                                                 </p:column>
                                                                                 <p:column footerText="#{cc.attrs.con.total}" style=" text-align: right">
-                                    
+
                                                                                 </p:column>
                                                                             </p:row>
                                                                         </p:columnGroup>-->
@@ -203,7 +203,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Total : 
+                                                   Total :
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -249,7 +249,7 @@
                     <tr>
                         <td colspan="3">
                             <p>
-                                * Please note that prevailing bank overdraft interest rate will be applied for all 
+                                * Please note that prevailing bank overdraft interest rate will be applied for all
                                 overdue debts.
                             </p>
                         </td>
@@ -260,16 +260,16 @@
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
-                    
+
                     <tr>
                         <td colspan="3">
                             <p>
-                                If you have any Questions about this invoice, please contact 
+                                If you have any Questions about this invoice, please contact
                                 #{sessionController.loggedUser.staff.person.nameWithTitle} (Tel : 091-7212897).
                             </p>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>
@@ -335,7 +335,7 @@
                                 <tr>
                                     <td colspan="3">
 
-                                        <p:outputLabel value="Above all Requisition for CT Scan 
+                                        <p:outputLabel value="Above all Requisition for CT Scan
                                                        Diagnostic Examination (2 F 6 S. &amp; E.)" rendered="#{cc.attrs.con.withFooter}"/>
                                         <br></br>
                                         <p:outputLabel value="8/64 with serial ( Serial No : 1 To " rendered="#{cc.attrs.con.withFooter}"/>

@@ -13,9 +13,6 @@
                 <h:form class="w-100">
                     <p:panel header="Channel Income" class="w-100">
 
-
-
-
                         <div class="row">
                             <div class="col-md-12">
                                 <h:panelGrid columns="5" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -45,7 +42,6 @@
                                         navigator="false" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                         />
-
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -77,7 +73,6 @@
                                             <f:selectItem itemLabel="All Departments" />
                                             <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                         </p:selectOneMenu>
-
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf2b9;" styleClass="fa mr-2" /> 
@@ -112,10 +107,7 @@
                                             itemLabel="#{staff.person.nameWithTitle}" 
                                             itemValue="#{staff}" />
                                     </p:selectOneMenu>
-                                    
-                                    
-
-                                    
+                               
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText styleClass="fas fa-user mr-2" />
                                         <h:outputLabel value="User" class="mx-3"/>
@@ -128,9 +120,22 @@
                                         <f:selectItem itemLabel="Select a user"/>
                                         <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}" itemValue="#{st}"/>
                                     </p:selectOneMenu>
-
-                                   
-
+                                    
+                                     <p:spacer width="50" ></p:spacer>
+                                    
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText styleClass="fas fa-user mr-2" />
+                                        <h:outputLabel value="Booking Type" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu 
+                                        class="w-100"
+                                        styleClass="w-100 form-control"   
+                                        value="#{searchController.bookingType}">
+                                        <f:selectItem itemLabel="All Bookings" itemValue="All Bookings" />
+                                        <f:selectItem itemLabel="Online Bookings" itemValue="Online Bookings" />
+                                        <f:selectItem itemLabel="System Bookings (With Agent Bookings)" itemValue="System Bookings" />
+                                        <f:selectItem itemLabel="Agent Bookings" itemValue="Agent Bookings" />
+                                    </p:selectOneMenu>
 
                                 </h:panelGrid>
 
@@ -177,7 +182,7 @@
                             rows="10"
                             rowIndexVar="n"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="5,10,20"
+                            rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
                             rowKey="#{row.id}">
 
                             <p:column width="2em">
@@ -186,7 +191,6 @@
                                 </f:facet>
                                 <h:outputText value="#{n+1}" />
                             </p:column>
-
 
                             <p:column>
                                 <f:facet name="header">
@@ -225,11 +229,11 @@
                                 <f:facet name="header">
                                     <h:outputText value="Hospital Fee" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.hospitalFee}">
+                                <h:outputText styleClass="hosValue" value="#{row.bill.hospitalFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.hospitalTotal}">
+                                    <h:outputText styleClass="totalHosValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -239,11 +243,11 @@
                                 <f:facet name="header">
                                     <h:outputText value="Staff Fee" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.staffFee}">
+                                <h:outputText styleClass="staffValue" value="#{row.bill.staffFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.staffTotal}">
+                                    <h:outputText styleClass="totalStaffValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -251,13 +255,13 @@
 
                             <p:column class="text-end">
                                 <f:facet name="header">
-                                    <h:outputText value="Net Total" />
+                                    <h:outputText value="Gross Total" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.total}">
+                                <h:outputText styleClass="grossValue" value="#{row.bill.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.grossTotal}">
+                                    <h:outputText styleClass="totalGrossValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -270,22 +274,22 @@
                                 <h:outputText value="#{row.bill.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer">
+<!--                                <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                </f:facet>
+                                </f:facet>-->
                             </p:column>
 
                             <p:column class="text-end">
                                 <f:facet name="header">
                                     <h:outputText value="Net Total" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.netTotal}">
+                                <h:outputText styleClass="netValue" value="#{row.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.total}">
+                                    <h:outputText styleClass="totalNetValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -295,22 +299,22 @@
                                 <f:facet name="header">
                                     <h:outputText value="Cash" />
                                 </f:facet>
-                                <h:outputText value="#{row.cashValue}">
+                                <h:outputText styleClass="cashValue" value="#{row.cashValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.cashValue}">
+                                    <h:outputText styleClass="totalCashValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
                             <p:column  class="text-end"  headerText="Card" sortBy="#{row.cardValue}" filterBy="#{row.cardValue}"  rendered="#{searchController.bundle.hasCardTransaction}" >
-                                <h:outputText value="#{row.cardValue}" >
+                                <h:outputText styleClass="cardValue" value="#{row.cardValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.cardValue}">
+                                    <h:outputText styleClass="totalCardValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -362,11 +366,11 @@
                             </p:column>
 
                             <p:column  class="text-end"  headerText="Agent" sortBy="#{row.agentValue}" filterBy="#{row.agentValue}"  rendered="#{searchController.bundle.hasAgentTransaction}" >
-                                <h:outputText value="#{row.agentValue}" >
+                                <h:outputText styleClass="agentValue" value="#{row.agentValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.agentValue}">
+                                    <h:outputText styleClass="totalAgentValue" value="0.00">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -437,8 +441,42 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            
+                            <p:ajax event="filter" oncomplete="updateTotals();"></p:ajax>
+                            <p:ajax event="page" oncomplete="updateTotals();"></p:ajax>
 
                         </p:dataTable>
+                        
+                        <script>
+                                function calculateTotals(selector, targeter){
+                                    const values = Array.from(document.querySelectorAll(selector));
+                                    const totalValue = values
+                                        .map(value => {
+                                            const cleanValue = value.innerText.replace(/,/g ,"");
+                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);                                           
+                                        })
+                                        .reduce((total, value) => total + value, 0);
+                                
+                                    const targetElement = document.querySelector(targeter);
+                                    if(targetElement){
+                                        targetElement.innerText = totalValue.toFixed(2);
+                                    }
+                                    
+                                }
+                                
+                                function updateTotals(){
+                                    calculateTotals('.grossValue', '.totalGrossValue');
+                                    calculateTotals('.hosValue', '.totalHosValue');
+                                    calculateTotals('.staffValue', '.totalStaffValue');
+                                    calculateTotals('.netValue', '.totalNetValue');
+                                    calculateTotals('.cashValue', '.totalCashValue');
+                                    calculateTotals('.cardValue', '.totalCardValue');
+                                    calculateTotals('.agentValue', '.totalAgentValue');
+                                }
+                                
+                                setTimeout(updateTotals, 100);
+
+                            </script>
 
                     </p:panel>
                 </h:form>

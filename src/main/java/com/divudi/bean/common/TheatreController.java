@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.DepartmentType;
-import com.divudi.entity.Department;
-import com.divudi.facade.DepartmentFacade;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.facade.DepartmentFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -18,7 +18,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -39,7 +39,7 @@ public class TheatreController implements Serializable {
     String selectText = "";
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Theatre and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.core.data.DepartmentType.Theatre and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -134,7 +134,7 @@ public class TheatreController implements Serializable {
 
     public List<Department> getItems() {
         if (items == null) {
-            String sql = "SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Theatre order by i.name";
+            String sql = "SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.core.data.DepartmentType.Theatre order by i.name";
             items = getEjbFacade().findByJpql(sql);
         }
         return items;

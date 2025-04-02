@@ -11,19 +11,19 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.entity.Patient;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.GuardianRoom;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.entity.inward.RoomFacilityCharge;
-import com.divudi.facade.AdmissionFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.RoomFacade;
-import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.GuardianRoom;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.RoomFacade;
+import com.divudi.core.facade.RoomFacilityChargeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -238,6 +238,12 @@ public class RoomChangeController implements Serializable {
 
     public void change() {
         if (getCurrent().getCurrentPatientRoom() == null) {
+            JsfUtil.addErrorMessage("Can't Change Room Without a Room.");
+            return;
+        }
+
+        if (newRoomFacilityCharge == null){
+            JsfUtil.addErrorMessage("There is No Room Selected");
             return;
         }
 
@@ -278,6 +284,10 @@ public class RoomChangeController implements Serializable {
 
         PatientRoom newPatientRoom = new PatientRoom();
         newPatientRoom = getInwardBean().savePatientRoom(newPatientRoom, getNewRoomFacilityCharge(), current, changeAt, getSessionController().getLoggedUser());
+        if(newPatientRoom == null){
+            JsfUtil.addErrorMessage("Selected a Room to Add");
+            return;
+        }
         getCurrent().setCurrentPatientRoom(newPatientRoom);
         getEjbFacade().edit(getCurrent());
 

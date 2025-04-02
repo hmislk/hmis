@@ -9,17 +9,17 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillEjb;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Payment;
-import com.divudi.entity.hr.BankAccount;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.hr.BankAccount;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.Date;
@@ -416,8 +416,8 @@ public class PaymentController implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
     }
-    
-    
+
+
 
     /**
      *

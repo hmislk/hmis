@@ -32,49 +32,54 @@
                                 </p:calendar>
 
                                 <p:commandButton 
-                                    value="List Pharmacy Credit Bills to Settle" 
+                                    value="Pharmacy Credit Bills to Settle" 
                                     action="#{supplierPaymentController.fillUnsettledCreditPharmacyBills}" 
                                     ajax="false"  
                                     icon="fas fa-prescription-bottle-alt" 
-                                    class="my-1 w-100 ui-button-info" />
+                                    class="my-1 w-100 ui-button-warning" />
 
                                 <p:commandButton 
-                                    value="List Store Credit Bills to Settle" 
+                                    value="Store Credit Bills to Settle" 
                                     action="#{supplierPaymentController.fillUnsettledCreditStoreBills()}" 
                                     ajax="false"  
                                     icon="fas fa-store-alt" 
                                     class="my-1 w-100  ui-button-warning" />
 
                                 <p:commandButton 
-                                    value="List All Credit Bills to Settle"
+                                    value="All Credit Bills to Settle"
                                     action="#{supplierPaymentController.fillUnsettledCreditBills()}"
                                     ajax="false"
                                     icon="fas fa-file-invoice-dollar"
-                                    class="my-1 w-100  ui-button-danger" />
+                                    class="my-1 w-100  ui-button-warning" />
+
+
+
+                                <!--                                <p:separator ></p:separator>
                                 
-                                 <p:commandButton 
-                                    value="List All Paid &amp; Missing Pharmacy Bills"
-                                    action="#{supplierPaymentController.fillAllCreditBills()}"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Missing Supplier Payment Search is enabled')}"
-                                    ajax="false"
-                                    icon="fas fa-file-invoice-dollar"
-                                    class="my-1 w-100  ui-button-success" />
-                                 
-                                 <p:commandButton 
-                                    value="List All Canceled Returned Supplier Payments"
-                                    action="#{supplierPaymentController.fillAllCanceledReturnedSupplierPayments()}"
-                                    ajax="false"
-                                    icon="fas fa-file-invoice-dollar"
-                                    class="my-1 w-100  ui-button-danger" />
-                                 
+                                                                
+                                                                <p:commandButton 
+                                                                    value="List All Paid &amp; Missing Pharmacy Bills"
+                                                                    action="#{supplierPaymentController.fillAllCreditBills()}"
+                                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Missing Supplier Payment Search is enabled')}"
+                                                                    ajax="false"
+                                                                    icon="fas fa-file-invoice-dollar"
+                                                                    class="my-1 w-100  ui-button-success" />
+                                
+                                                                <p:commandButton 
+                                                                    value="List All Canceled Returned Supplier Payments"
+                                                                    action="#{supplierPaymentController.fillAllCanceledReturnedSupplierPayments()}"
+                                                                    ajax="false"
+                                                                    icon="fas fa-file-invoice-dollar"
+                                                                    class="my-1 w-100  ui-button-danger" />-->
+
                                 <p:separator></p:separator>
 
                                 <p:commandButton 
-                                    value="Navigate to Settle Selected Bills" 
+                                    value="Settle Selected Bills" 
                                     action="#{supplierPaymentController.navigateToStartSupplierPaymentOfSelectedBills()}" 
                                     ajax="false" 
                                     icon="fas fa-hand-point-right" 
-                                    class="my-1 w-100  ui-button-primary" />
+                                    class="my-1 w-100  ui-button-success" />
 
                                 <p:separator></p:separator>
 
@@ -106,7 +111,7 @@
 
                                     </p:column>
 
-                                    <p:column headerText="Bill No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" filterMatchMode="contains">
+                                    <p:column headerText="GRN No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" filterMatchMode="contains">
                                         <h:outputText value="#{b.deptId}" />
                                     </p:column>
 
@@ -123,7 +128,7 @@
                                     <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}" filterMatchMode="contains">
                                         <h:outputText value="#{b.billTypeAtomic.label}" />
                                     </p:column>
-                                    
+
                                     <p:column headerText="Invoice No"
                                               filterMatchMode="contains"
                                               sortBy="#{b.invoiceNumber}" filterBy="#{b.invoiceNumber}">
@@ -174,13 +179,25 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column  headerText="Actions" >
-                                        <p:commandButton value="Pay" 
-                                                         update="@form" 
-                                                         action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
-                                                         ajax="false" 
-                                                         disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
+                                    <p:column  headerText="Actions"  >
+                                        <p:commandButton 
+                                            title="View" 
+                                            icon="fa fa-eye"
+                                            styleClass="ui-button-secondary mx-1"
+                                            action="#{supplierPaymentController.navigateToViewProcurementBill(b)}" 
+                                            ajax="false">
                                         </p:commandButton>
+                                        <p:commandButton
+                                            title="Pay" 
+                                            icon="fa fa-money-bill-wave"
+                                            styleClass="ui-button-success mx-1"
+                                            action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
+                                            ajax="false" 
+                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}">
+                                        </p:commandButton>
+
+
+
                                     </p:column>
                                 </p:dataTable>
 

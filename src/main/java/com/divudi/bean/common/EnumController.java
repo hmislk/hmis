@@ -5,56 +5,19 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillItemStatus;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.CalculationType;
-import com.divudi.data.CreditDuration;
-import com.divudi.data.CssFontStyle;
-import com.divudi.data.CssTextAlign;
-import com.divudi.data.CssTextDecoration;
-import com.divudi.data.CssVerticalAlign;
-import com.divudi.data.Dashboard;
-import com.divudi.data.DepartmentListMethod;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.DiscountType;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.InvestigationReportType;
-import com.divudi.data.ItemBarcodeGenerationStrategy;
-import com.divudi.data.ItemListingStrategy;
-import com.divudi.data.ItemType;
-import com.divudi.data.LoginPage;
-import com.divudi.data.PaperType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.ReportItemType;
-import com.divudi.data.SessionNumberType;
-import com.divudi.data.Sex;
-import com.divudi.data.MessageType;
-import com.divudi.data.PaymentContext;
-import com.divudi.data.PaymentType;
-import com.divudi.data.RestAuthenticationType;
-import com.divudi.data.SymanticType;
-import com.divudi.data.Title;
-import com.divudi.data.analytics.ReportTemplateColumn;
-import com.divudi.data.analytics.ReportTemplateFilter;
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.Times;
-import com.divudi.data.inward.AdmissionStatus;
-import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.inward.PatientEncounterComponentType;
-import com.divudi.data.lab.PatientInvestigationStatus;
-import com.divudi.data.lab.Priority;
-import com.divudi.data.lab.SearchDateType;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
+import com.divudi.core.data.*;
+import com.divudi.core.data.analytics.ReportTemplateColumn;
+import com.divudi.core.data.analytics.ReportTemplateFilter;
+import com.divudi.core.data.hr.*;
+import com.divudi.core.data.inward.AdmissionStatus;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.inward.PatientEncounterComponentType;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.Priority;
+import com.divudi.core.data.lab.SearchDateType;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Person;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +38,7 @@ public class EnumController implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    
+
     private PaymentScheme paymentScheme;
     private List<Class<? extends Enum<?>>> enumList;
     List<PaymentMethod> paymentMethodsForOpdBilling;
@@ -110,7 +73,7 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForOpdBilling;
     }
-    
+
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
             fillPaymentMethodsForPackageBilling();
@@ -154,7 +117,7 @@ public class EnumController implements Serializable {
             }
         }
     }
-    
+
     public void fillPaymentMethodsFoPharmacyPurchase() {
         paymentMethodsForPharmacyPurchase = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -220,6 +183,27 @@ public class EnumController implements Serializable {
             fillPaymentMethodsForPharmacyBilling();
         }
         return paymentMethodsForPharmacyBilling;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPharmacyBillCancellations() {
+        List<PaymentMethod> paymentMethodsForPharmacyBillCancellations = new ArrayList<>();
+        if (paymentMethodsForPharmacyBilling == null) {
+            fillPaymentMethodsForPharmacyBilling();
+        }
+        if (paymentMethodsForPharmacyBilling == null) {
+            paymentMethodsForPharmacyBilling = new ArrayList<>();
+        }
+        if (paymentMethodsForPharmacyBilling.isEmpty()) {
+            paymentMethodsForPharmacyBilling.add(PaymentMethod.Cash);
+            paymentMethodsForPharmacyBilling.add(PaymentMethod.Card);
+        }
+        paymentMethodsForPharmacyBillCancellations.addAll(paymentMethodsForPharmacyBilling);
+        try {
+            paymentMethodsForPharmacyBillCancellations.remove(PaymentMethod.MultiplePaymentMethods);
+        } catch (Exception e) {
+            System.err.println("e = " + e);
+        }
+        return paymentMethodsForPharmacyBillCancellations;
     }
 
     public void fillPaymentMethodsForPharmacyBilling() {
@@ -444,6 +428,21 @@ public class EnumController implements Serializable {
 
     public BillTypeAtomic[] getBillTypesAtomic() {
         return BillTypeAtomic.values();
+    }
+
+    public List<BillTypeAtomic> getBillTypesAtomicForLabTests() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.CC_BILL);
+        btas.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.CC_BILL_REFUND);
+        btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        return btas;
     }
 
     public List<BillTypeAtomic> getBillTypesAtomic(String query) {
@@ -691,6 +690,7 @@ public class EnumController implements Serializable {
             PaymentMethod.Slip,
             PaymentMethod.Credit,
             PaymentMethod.ewallet,
+            PaymentMethod.Staff_Welfare,
             PaymentMethod.PatientDeposit,
             PaymentMethod.MultiplePaymentMethods};
 
@@ -782,14 +782,24 @@ public class EnumController implements Serializable {
             PaymentMethod.ewallet};
         return p;
     }
-    
-     public PaymentMethod[] getPaymentMethodsForIwardDeposit() {
+
+    public PaymentMethod[] getPaymentMethodsForSupplierPayments() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.IOU};
+        return p;
+    }
+
+    public PaymentMethod[] getPaymentMethodsForIwardDeposit() {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Card,
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.ewallet,
-            PaymentMethod.PatientDeposit};
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.OnlineSettlement};
         return p;
     }
 
@@ -809,6 +819,7 @@ public class EnumController implements Serializable {
         return p;
     }
 
+    @Deprecated // Use getPaymentMethodsForPharmacyBilling
     public PaymentMethod[] PaymentMethodsForPharmacyRetailSale() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,
@@ -861,6 +872,10 @@ public class EnumController implements Serializable {
 
     public PaymentMethod[] getAllPaymentMethods() {
         return PaymentMethod.values();
+    }
+
+    public List<BankAccountType> getBankAccountTypes() {
+        return BankAccountType.getAllValues();
     }
 
     public List<PaymentMethod> getActivePaymentMethods() {
@@ -1052,7 +1067,7 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForPharmacyPurchase;
     }
-    
+
     public InvestigationItemType getInvestigationItemType(String name) {
         for (InvestigationItemType type : InvestigationItemType.values()) {
             if (type.toString().equalsIgnoreCase(name.trim())) {
@@ -1061,7 +1076,7 @@ public class EnumController implements Serializable {
         }
         return null;
     }
-    
+
     public InvestigationItemValueType getInvestigationItemValueType(String name) {
         for (InvestigationItemValueType type : InvestigationItemValueType.values()) {
             if (type.toString().equalsIgnoreCase(name)) {
@@ -1070,41 +1085,41 @@ public class EnumController implements Serializable {
         }
         return null;
     }
-    
+
     public CssVerticalAlign getCssVerticalAlign(String name) {
         for (CssVerticalAlign verAlign : CssVerticalAlign.values()) {
             if (verAlign.toString().equalsIgnoreCase(name)) {
                 return verAlign;
             }
         }
-        return null; 
+        return null;
     }
-    
+
     public CssTextDecoration getCssTextDecoration(String name) {
         for (CssTextDecoration txDeco : CssTextDecoration.values()) {
             if (txDeco.toString().equalsIgnoreCase(name)) {
                 return txDeco;
             }
         }
-        return null; 
+        return null;
     }
-    
+
     public CssFontStyle getCssFontStyle(String name) {
         for (CssFontStyle fontstyle : CssFontStyle.values()) {
             if (fontstyle.toString().equalsIgnoreCase(name)) {
                 return fontstyle;
             }
         }
-        return null; 
+        return null;
     }
-    
+
     public CssTextAlign getCssTextAlign(String name) {
         for (CssTextAlign txetAlign : CssTextAlign.values()) {
             if (txetAlign.toString().equalsIgnoreCase(name)) {
                 return txetAlign;
             }
         }
-        return null; 
+        return null;
     }
-    
+
 }

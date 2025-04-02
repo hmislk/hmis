@@ -16,33 +16,35 @@ import com.divudi.bean.common.OpdPreBillController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.opd.OpdBillController;
-import com.divudi.entity.hr.FingerPrintRecord;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.hr.WorkingTime;
-import com.divudi.facade.WorkingTimeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.hr.FingerPrintRecord;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.entity.hr.WorkingTime;
+import com.divudi.core.facade.WorkingTimeFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.AdmissionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Payment;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.inward.Admission;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -125,12 +127,16 @@ public class WorkingTimeController implements Serializable {
     private Double shiftPaymentValue;
     private Double admissionRate;
     private boolean printPreview;
-    Date fromDate;
-    Date toDate;
+    private Institution institution;
+    private Department department;
+    private Institution site;
+    private Date fromDate;
+    private Date toDate;
+
     private PaymentMethod paymentMethod;
-    
-    public void navigateBackToDoctorSelect(){
-        staff=null;
+
+    public void navigateBackToDoctorSelect() {
+        staff = null;
     }
 
     public List<WorkingTime> getSelectedItems() {
@@ -154,21 +160,21 @@ public class WorkingTimeController implements Serializable {
         staffAdmissionsForPayments = admissionController.findAdmissions(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
         boolean payDoctorAfterMarkingOut = configOptionApplicationController.getBooleanValueByKey("Pay Doctors only After Marking Out", false);
         boolean payDoctorAfterMarkingIn = configOptionApplicationController.getBooleanValueByKey("Pay Doctors only After Marking In", false);
-        Date startTime =null;
+        Date startTime = null;
         Date endTime = null;
-        
-        if(payDoctorAfterMarkingIn){
+
+        if (payDoctorAfterMarkingIn) {
             startTime = workingTimeForPayment.getStartRecord().getRecordTimeStamp();
         }
-        if(payDoctorAfterMarkingOut){
+        if (payDoctorAfterMarkingOut) {
             endTime = workingTimeForPayment.getEndRecord().getRecordTimeStamp();
         }
         staffBillFeesForPayment = billController.findBillFees(staff, startTime, endTime);
-        
+
         calculateStaffPayments();
         return "/opd/pay_doctor?faces-redirect=true";
     }
-    
+
     public String selectStaffForOpdPaymentForAll() {
         if (staff == null) {
             JsfUtil.addErrorMessage("Select staff");
@@ -209,7 +215,7 @@ public class WorkingTimeController implements Serializable {
     }
 
     public void settleStaffPayments() {
-        if(paymentMethod==null){
+        if (paymentMethod == null) {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
@@ -440,6 +446,8 @@ public class WorkingTimeController implements Serializable {
 
     public String navigateToMarkIn() {
         current = new WorkingTime();
+        current.setInstitution(sessionController.getInstitution());
+        current.setDepartment(sessionController.getDepartment());
         StaffShift staffShift = new StaffShift();
         current.setStaffShift(staffShift);
         FingerPrintRecord sr = new FingerPrintRecord();
@@ -478,14 +486,52 @@ public class WorkingTimeController implements Serializable {
         return navigateToListWorkTimes();
     }
 
+    public void resetFilters() {
+        fromDate = null;
+        toDate = null;
+        institution = null;
+        department = null;
+        site = null;
+        staff = null;
+    }
+
     public String navigateToViewWorkTime() {
+        resetFilters();
+        processWorkingTimes();
+        return "/opd/workTimes";
+    }
+
+    public String navigateToViewWorkTimeForSelectedStaff(Staff inputStaff) {
+        resetFilters();
+        staff = inputStaff;
+        processWorkingTimes();
+        return "/opd/workTimes";
+    }
+
+    public void processWorkingTimes() {
         String j = "select w "
                 + " from WorkingTime w "
                 + " where w.retired=:ret ";
         Map m = new HashMap();
+        j += " and w.startRecord.recordTimeStamp between :fromDate and :toDate ";
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
         m.put("ret", false);
-        items = getFacade().findByJpql(j, m);
-        return "/opd/workTimes";
+        if (institution != null) {
+            j += " and w.institution=:institution ";
+            m.put("institution", institution);
+        }
+        if (department != null) {
+            j += " and w.department=:department ";
+            m.put("department", department);
+        }
+        if (staff != null) {
+            j += " and w.staffShift.staff=:staff ";
+            m.put("staff", staff);
+        }
+        items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
+
     }
 
     public void saveWorkTime() {
@@ -550,6 +596,8 @@ public class WorkingTimeController implements Serializable {
 
     public void prepareAdd() {
         current = new WorkingTime();
+        current.setInstitution(sessionController.getInstitution());
+        current.setDepartment(sessionController.getDepartment());
     }
 
     public void setSelectedItems(List<WorkingTime> selectedItems) {
@@ -615,6 +663,8 @@ public class WorkingTimeController implements Serializable {
     public WorkingTime getCurrent() {
         if (current == null) {
             current = new WorkingTime();
+            current.setInstitution(sessionController.getInstitution());
+            current.setDepartment(sessionController.getDepartment());
         }
         return current;
     }
@@ -714,26 +764,26 @@ public class WorkingTimeController implements Serializable {
         return admissionFeeValue;
     }
 
-    public Date getFromDate() {
-        if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfMonth();
-        }
-        return fromDate;
-    }
-
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
     public Date getToDate() {
         if (toDate == null) {
-            toDate = CommonFunctions.getEndOfDay();
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
     }
 
     public void setAdmissionFeeValue(Double admissionFeeValue) {
@@ -832,8 +882,8 @@ public class WorkingTimeController implements Serializable {
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
     }
-    
-     public List<Doctor> getListOfDoctors() {
+
+    public List<Doctor> getListOfDoctors() {
         List<Doctor> suggestions;
         String sql;
         sql = " select p from Doctor p "
@@ -847,6 +897,30 @@ public class WorkingTimeController implements Serializable {
         sql += " order by p.person.name";
         suggestions = getFacade().findByJpql(sql, hm);
         return suggestions;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
     /**

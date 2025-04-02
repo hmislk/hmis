@@ -5,30 +5,29 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PersonInstitutionType;
-import com.divudi.entity.Department;
-import com.divudi.entity.FeeChange;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Staff;
-import com.divudi.entity.channel.ArrivalRecord;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FeeChangeFacade;
-import com.divudi.facade.FingerPrintRecordFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PharmaceuticalItemFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PersonInstitutionType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.FeeChange;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.channel.ArrivalRecord;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.FeeChangeFacade;
+import com.divudi.core.facade.FingerPrintRecordFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PharmaceuticalItemFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -63,18 +62,9 @@ public class StockHistoryRecorder {
     @EJB
     ItemFeeFacade itemFeeFacade;
     @EJB
-    ServiceSessionFacade serviceSessionFacade;
-    @EJB
-    ChannelBean channelBean;
-    @EJB
     StaffFacade staffFacade;
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
-    @EJB
-    FinalVariables finalVariables;
-
-
-    CommonFunctions commonFunctions;
 
 //    @SuppressWarnings("unused")
 //    @Schedule(minute = "1", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "1", persistent = false)
@@ -152,7 +142,7 @@ public class StockHistoryRecorder {
 ////        ////System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
 //    }
 
- 
+
 
     public List<Staff> staffs() {
         String sql;
@@ -169,7 +159,7 @@ public class StockHistoryRecorder {
         return consultants;
     }
 
-   
+
 
     public void checkDoctorArival(ServiceSession s) {
         s.setArival(findArrivals(s));
@@ -256,7 +246,7 @@ public class StockHistoryRecorder {
                 + " fc.retired=false "
                 + " and fc.validFrom=:ed "
                 + " and fc.done!=true ";
-        m.put("ed", getCommonFunctions().getEndOfDay(new Date()));
+        m.put("ed", CommonFunctions.getEndOfDay(new Date()));
         List<FeeChange> changes = getFeeChangeFacade().findByJpql(sql, m, TemporalType.DATE);
         return changes;
     }
@@ -344,14 +334,6 @@ public class StockHistoryRecorder {
 
     public void setFeeChangeFacade(FeeChangeFacade feeChangeFacade) {
         this.feeChangeFacade = feeChangeFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public ItemFeeFacade getItemFeeFacade() {

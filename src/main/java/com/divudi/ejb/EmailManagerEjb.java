@@ -5,8 +5,8 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.entity.AppEmail;
-import com.divudi.facade.EmailFacade;
+import com.divudi.core.entity.AppEmail;
+import com.divudi.core.facade.EmailFacade;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +20,6 @@ import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.mail.BodyPart;
 import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -117,8 +116,6 @@ public class EmailManagerEjb {
             Transport.send(message);
             return true;
 
-        } catch (MessagingException e) {
-            return false;
         } catch (Exception e) {
             return false;
         }

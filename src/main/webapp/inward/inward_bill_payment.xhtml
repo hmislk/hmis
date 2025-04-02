@@ -7,6 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
@@ -17,7 +18,7 @@
             <h:form>
                 <p:panel>
                     <f:facet name="header">
-                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
                         <p:outputLabel value="Patient Details" class="m-2"/>
                     </f:facet>
                     <h:outputLabel value="Type Patient Name or BHT : "/>
@@ -184,7 +185,7 @@
                                             <h:panelGroup id="slip" rendered="#{inwardPaymentController.current.paymentMethod eq 'Slip'}" >
                                                 <pa:slip paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
                                             </h:panelGroup>
-                                             <h:panelGroup 
+                                            <h:panelGroup 
                                                 class="row my-1"
                                                 layout="block" 
                                                 id="patientDeposit"  rendered="#{inwardPaymentController.current.paymentMethod eq 'PatientDeposit'}" >
@@ -194,14 +195,41 @@
                                     </div>
                                 </div>
 
-                                <div class="row my-1">
-                                    <div class="col-md-2">
-                                        <h:outputLabel value="Comments"/>
+                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Get Payment Type Instead of Comment',false)}">
+                                    <div class="row my-1">
+                                        <div class="col-md-2">
+                                            <h:outputLabel value="Comments"/>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p:inputText class="w-100"  value="#{inwardPaymentController.comment}" id="comment"/>
+                                        </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <p:inputText class="w-100"  value="#{inwardPaymentController.comment}" id="comment"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Get Payment Type Instead of Comment',false)}">
+                                    <div class="row my-1">
+                                        <div class="col-md-2">
+                                            <h:outputLabel value="Payment Type"/>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p:selectOneMenu 
+                                                id="commentsMenu" 
+                                                value="#{inwardPaymentController.comment}" 
+                                                editable="false" 
+                                                filter="true" 
+                                                placeholder="Select a Payment Type"
+                                                filterMatchMode="contains"  
+                                                class="w-100">
+                                                <f:selectItem itemLabel="Select Payment Type" itemValue="" noSelectionOption="true"/>
+                                                <f:selectItems 
+                                                    value="#{configOptionApplicationController.getListOfCustomOptions('Inward Deposit Payment Types')}" 
+                                                    var="option" 
+                                                    itemLabel="#{option}" 
+                                                    itemValue="#{option}"/>
+                                            </p:selectOneMenu>
+                                        </div>
                                     </div>
-                                </div>
+                                </h:panelGroup>
 
                                 <div class="d-flex w-50 my-2">
                                     <p:commandButton 
@@ -246,17 +274,13 @@
                                 action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton 
-                                value="Inpatient Dashboard"
+                            <p:commandButton
+                                ajax="false"
                                 icon="fas fa-id-card"
-                                class="ui-button-secondary " 
-                                ajax="false" 
-                                action="#{patientController.navigateToOpdPatientProfile()}" 
-                                > 
-                                <f:setPropertyActionListener 
-                                    value="#{inwardPaymentController.current.patientEncounter.patient}" 
-                                    target="#{patientController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
+                                value="Inpatient Dashboard"
+                                class="ui-button-secondary "
+                                action="#{inwardPaymentController.navigateToInpationDashbord()}"
+                                />
                         </div>
                     </f:facet>
 
@@ -283,9 +307,14 @@
                             <div class="d-flex justify-content-center">
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFivePaper'}" >
                                     <ui:repeat value="#{inwardPaymentController.current}" var="pp">
-                                        <bill:FiveFivePaymentBill bill="#{pp}" />                        
+                                        <bill:FiveFivePaymentBill bill="#{pp}" /> 
                                     </ui:repeat>
                                 </h:panelGroup> 
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFiveCustom3'}" >
+                                    <ui:repeat value="#{inwardPaymentController.current}" var="pp">
+                                        <prints:five_five_custom_3_inward_payments bill="#{pp}" />
+                                    </ui:repeat>
+                                </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4Paper'}" >
                                     <ui:repeat value="#{inwardPaymentController.current}" var="pp">
                                         <bill:A4PaperPaymentBill bill="#{pp}" />                        

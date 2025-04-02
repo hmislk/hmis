@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -26,7 +26,7 @@
                             <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>                          
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Employee : "/>
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
@@ -44,10 +44,10 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder">                     
-                            <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecords}" var="ss">   
+                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder">
+                            <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecords}" var="ss">
                                 <f:facet name="header">
-                                   
+
                                     <h:outputLabel value="Finger Print Record No Shift Setted"/>
                                     <br/>
                                     <h:outputLabel value="  From : "  />
@@ -56,10 +56,10 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{hrReportController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy "/>
-                                    </h:outputLabel><br/>   
+                                    </h:outputLabel><br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>
@@ -108,12 +108,12 @@
                                     </f:facet>
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
                                         <f:convertDateTime pattern="hh:mm:s a"/>
-                                    </h:outputLabel>                                    
-                                </p:column> 
+                                    </h:outputLabel>
+                                </p:column>
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

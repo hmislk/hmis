@@ -9,29 +9,27 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.common.util.JsfUtil;
-//import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.ItemSupplierPrices;
-import com.divudi.data.ItemType;
-import com.divudi.data.SymanticType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemSupplierPrices;
+import com.divudi.core.data.ItemType;
+import com.divudi.core.data.SymanticType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -67,8 +65,6 @@ public class AmpController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @EJB
     private AmpFacade ejbFacade;
     List<Amp> selectedItems;
@@ -436,7 +432,7 @@ public class AmpController implements Serializable {
     }
 
     public List<Amp> getSelectedItems() {
-        if (selectText.trim().equals("")) {
+        if (selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Amp c where c.retired=false order by c.name");
         } else {
             selectedItems = getFacade().findByJpql("select c from Amp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -485,7 +481,7 @@ public class AmpController implements Serializable {
     public Amp findAmpByName(String name) {
         Map m = new HashMap();
         m.put("n", name);
-        if (name == null || name.trim().equals("")) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         }
         String jpql = "select c "
@@ -567,7 +563,7 @@ public class AmpController implements Serializable {
     }
 
     public void listnerCategorySelect() {
-        if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().equals("")) {
+        if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().isEmpty()) {
             getCurrent().getCategory().setDescription(getCurrent().getName());
         }
 
@@ -586,12 +582,12 @@ public class AmpController implements Serializable {
         Amp amp = getFacade().findFirstByJpql(sql, m);
 
         DecimalFormat df = new DecimalFormat("0000");
-        if (amp != null && !amp.getCode().equals("")) {
+        if (amp != null && !amp.getCode().isEmpty()) {
             //// // System.out.println("amp.getCode() = " + amp.getCode());
 
             String s = amp.getCode().substring(2);
 
-            int i = Integer.valueOf(s);
+            int i = Integer.parseInt(s);
             i++;
             if (getCurrent().getId() != null) {
                 Amp selectedAmp = getFacade().find(getCurrent().getId());
@@ -635,13 +631,13 @@ public class AmpController implements Serializable {
             return true;
         }
 
-        if (getTabId().toString().equals("tabVmp")) {
+        if (getTabId().equals("tabVmp")) {
             if (getCurrent().getVmp() == null) {
                 JsfUtil.addErrorMessage("Please Select VMP");
                 return true;
             }
         }
-        if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
+        if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
             JsfUtil.addErrorMessage("Code Empty.You Can't Save Item without Code.");
             return true;
         }
@@ -685,7 +681,7 @@ public class AmpController implements Serializable {
     }
 
     public String createAmpName() {
-        if (getTabId().toString().equals("tabGen")) {
+        if (getTabId().equals("tabGen")) {
             return getCurrentVmp().getName();
         } else {
             return getCurrent().getVmp().getName();
@@ -693,7 +689,7 @@ public class AmpController implements Serializable {
     }
 
     private void saveVmp() {
-        if (currentVmp.getName() == null || currentVmp.getName().equals("")) {
+        if (currentVmp.getName() == null || currentVmp.getName().isEmpty()) {
             currentVmp.setName(createVmpName());
         }
 
@@ -710,23 +706,23 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("Nothuing selected");
             return;
         }
-        if (current.getName() == null || current.getName().equals("")) {
+        if (current.getName() == null || current.getName().isEmpty()) {
             JsfUtil.addErrorMessage("No Name");
             return;
         }
-        
+
         int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item","4"));
-        
+
         System.out.println("maxCodeLeanth = " + maxCodeLeanth);
         System.out.println("Current Code length = " + current.getCode().trim().length());
-        
+
         System.out.println(current.getCode().trim().length() < maxCodeLeanth);
-        
+
         if (current.getCode().trim().length() < maxCodeLeanth){
             JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
             return;
         }
-        
+
         if (checkItemCode(current.getCode(), current)) {
             JsfUtil.addErrorMessage("This Code has Already been Used.");
             return;
@@ -779,11 +775,7 @@ public class AmpController implements Serializable {
         }
         m.put("icode", code);
         Amp amp = getFacade().findFirstByJpql(jpql, m);
-        if (amp == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return amp != null;
     }
 
     public void saveSelected() {
@@ -807,7 +799,7 @@ public class AmpController implements Serializable {
 //            getCurrent().setVmp(currentVmp);
 //        }
 
-        if (current.getName() == null || current.getName().equals("")) {
+        if (current.getName() == null || current.getName().isEmpty()) {
             current.setName(createAmpName());
         }
 
@@ -1020,7 +1012,7 @@ public class AmpController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             AmpController controller = (AmpController) facesContext.getApplication().getELResolver().
@@ -1029,19 +1021,17 @@ public class AmpController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key = 0l;
+            long key;
             try {
-                key = Long.valueOf(value);
+                key = Long.parseLong(value);
             } catch (Exception e) {
-                key = 0l;
+                key = 0L;
             }
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -1058,13 +1048,4 @@ public class AmpController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

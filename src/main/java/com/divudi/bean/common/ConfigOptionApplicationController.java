@@ -1,14 +1,13 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.Denomination;
-import com.divudi.data.OptionScope;
-import com.divudi.data.OptionValueType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.ConfigOption;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.ConfigOptionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.ConfigOptionFacade;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -34,7 +33,7 @@ public class ConfigOptionApplicationController implements Serializable {
     private ConfigOptionFacade optionFacade;
 
     private List<ConfigOption> options;
-    private List<Denomination> denominations;
+//    private List<Denomination> denominations;
 
     /**
      * Creates a new instance of OptionController
@@ -50,18 +49,18 @@ public class ConfigOptionApplicationController implements Serializable {
 
     }
 
-    private void initializeDenominations() {
-        String denominationsStr = getLongTextValueByKey("Currency Denominations");
-        if (denominationsStr == null || !denominationsStr.trim().isEmpty()) {
-            denominationsStr = "1,2,5,10,20,50,100,500,1000,5000";
-        }
-        denominations = Arrays.stream(denominationsStr.split(","))
-                .map(String::trim) // Trim any extra spaces
-                .filter(s -> !s.isEmpty()) // Filter out empty strings
-                .map(Integer::parseInt)
-                .map(value -> new Denomination(value, 0))
-                .collect(Collectors.toList());
-    }
+//    private void initializeDenominations() {
+//        String denominationsStr = getLongTextValueByKey("Currency Denominations");
+//        if (denominationsStr == null || !denominationsStr.trim().isEmpty()) {
+//            denominationsStr = "1,2,5,10,20,50,100,500,1000,5000";
+//        }
+//        denominations = Arrays.stream(denominationsStr.split(","))
+//                .map(String::trim) // Trim any extra spaces
+//                .filter(s -> !s.isEmpty()) // Filter out empty strings
+//                .map(Integer::parseInt)
+//                .map(value -> new Denomination(value, 0))
+//                .collect(Collectors.toList());
+//    }
 
     public void loadApplicationOptions() {
         applicationOptions = new HashMap<>();
@@ -69,7 +68,7 @@ public class ConfigOptionApplicationController implements Serializable {
         for (ConfigOption option : options) {
             applicationOptions.put(option.getOptionKey(), option);
         }
-        initializeDenominations();
+//        initializeDenominations();
     }
 
     public ConfigOption getApplicationOption(String key) {
@@ -93,15 +92,15 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-    public List<Denomination> getDenominations() {
-        if (denominations == null) {
-            initializeDenominations();
-        }
-        for (Denomination d : denominations) {
-            d.setCount(0);
-        }
-        return denominations;
-    }
+//    public List<Denomination> getDenominations() {
+//        if (denominations == null) {
+//            initializeDenominations();
+//        }
+//        for (Denomination d : denominations) {
+//            d.setCount(0);
+//        }
+//        return denominations;
+//    }
 
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
@@ -291,7 +290,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
@@ -309,7 +308,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
     public String getColorValueByKey(String key, String defaultColorHashCode) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {

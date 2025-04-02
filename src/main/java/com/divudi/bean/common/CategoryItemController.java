@@ -8,11 +8,11 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Category;
-import com.divudi.entity.CategoryItem;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.CategoryItem;
 
-import com.divudi.facade.CategoryItemFacade;
+import com.divudi.core.facade.CategoryItemFacade;
 
 import java.io.Serializable;
 import java.util.Date;

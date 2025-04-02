@@ -5,13 +5,13 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.MessageType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.Sms;
-import com.divudi.facade.SmsFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 
 import java.util.List;
 import java.util.Map;
@@ -69,7 +69,7 @@ public class SmsController implements Serializable {
     public void setFaildsms(List<Sms> faildsms) {
         this.faildsms = faildsms;
     }
-    
+
     List<SmsSummeryRow> smsSummeryRows;
     ReportKeyWord reportKeyWord;
     private String number;
@@ -88,13 +88,27 @@ public class SmsController implements Serializable {
         if (doNotSendAnySms) {
             return false;
         }
-        Sms s = new Sms();
-        s.setReceipientNumber(number);
-        s.setSendingMessage(message);
-        return smsManager.sendSms(s);
+        selectedSms = new Sms();
+        selectedSms.setReceipientNumber(number);
+        selectedSms.setSendingMessage(message);
+        return smsManager.sendSms(selectedSms);
     }
 
     public void sendSms() {
+        if (doNotSendAnySms) {
+            return;
+        }
+        Sms s = new Sms();
+        s.setReceipientNumber(smsNumber);
+        s.setSendingMessage(smsMessage);
+        save(s);
+        boolean b = smsManager.sendSms(s);
+        selectedSms = s;
+    }
+
+    public void sendSmsFromWeb() {
+        System.out.println("sendSmsFromWeb");
+        System.out.println("doNotSendAnySms = " + doNotSendAnySms);
         if (doNotSendAnySms) {
             return;
         }

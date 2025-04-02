@@ -6,46 +6,31 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CreditBean;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Payment;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.Admission;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PaymentFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -58,7 +43,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 
 /**
  *
@@ -95,8 +79,6 @@ public class CashRecieveBillController implements Serializable {
     private BillController billController;
     @Inject
     private CashBookEntryController cashBookEntryController;
-    @Inject
-    CommonController commonController;
     @Inject
     private DrawerController drawerController;
     @Inject
@@ -208,7 +190,7 @@ public class CashRecieveBillController implements Serializable {
 //        }
 //        calTotal();
 //    }
-    
+
     public void selectInstitutionListenerBht() {
         Institution ins = institution;
         makeNull();
@@ -444,7 +426,12 @@ public class CashRecieveBillController implements Serializable {
         if (errorCheckForAdding()) {
             return;
         }
+        if (getCurrent().getCreditCompany() == null){
+            getCurrent().setCreditCompany(getCurrentBillItem().getReferenceBill().getCreditCompany());
+        }
         getCurrent().setFromInstitution(getCurrentBillItem().getReferenceBill().getCreditCompany());
+        getCurrentBillItem().setBill(getCurrentBillItem().getReferenceBill());
+        getCurrentBillItem().setPatientEncounter(getCurrentBillItem().getReferenceBill().getPatientEncounter());
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getSelectedBillItems().add(getCurrentBillItem());
         getBillItems().add(getCurrentBillItem());
@@ -545,6 +532,14 @@ public class CashRecieveBillController implements Serializable {
         getCurrent().setNetTotal(n);
     }
 
+    public void calulateTotalForSettlingCreditForInwardCreditCompanyPaymentBills() {
+        double n = 0.0;
+        for (BillItem b : selectedBillItems) {
+            n += b.getNetValue();
+        }
+        getCurrent().setNetTotal(n);
+    }
+
     public void calTotalForVoucher() {
         double n = 0.0;
 //        //// // System.out.println("getBillItems().size() = " + getBillItems().size());
@@ -563,10 +558,10 @@ public class CashRecieveBillController implements Serializable {
 //            return 0.0;
 //        }
 //
-//        String sql = "SELECT  sum(b.netTotal) FROM BilledBill b WHERE b.retired=false  and b.billType=com.divudi.data.BillType.InwardBill and b.cancelledBill is null and b.patientEncounter.id=" + getPatientEncounter().getId();
+//        String sql = "SELECT  sum(b.netTotal) FROM BilledBill b WHERE b.retired=false  and b.billType=com.divudi.core.data.BillType.InwardBill and b.cancelledBill is null and b.patientEncounter.id=" + getPatientEncounter().getId();
 //        Double tmp = getBillFacade().findAggregateDbl(sql);
 //
-//        sql = "SELECT  sum(b.netTotal) FROM BilledBill b WHERE b.retired=false  and b.billType=com.divudi.data.BillType.InwardPaymentBill and b.cancelledBill is null and b.patientEncounter.id=" + getPatientEncounter().getId();
+//        sql = "SELECT  sum(b.netTotal) FROM BilledBill b WHERE b.retired=false  and b.billType=com.divudi.core.data.BillType.InwardPaymentBill and b.cancelledBill is null and b.patientEncounter.id=" + getPatientEncounter().getId();
 //        tmp = tmp - getBillFacade().findAggregateDbl(sql);
 //
 //        return tmp;
@@ -875,6 +870,70 @@ public class CashRecieveBillController implements Serializable {
 
     }
 
+    public void settleCreditForInwardCreditCompanyPaymentBills() {
+        if (getSelectedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return;
+        }
+        if (getCurrent().getFromInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Credit Company");
+            return;
+        }
+        for (BillItem item : getBillItems()) {
+            if (!Objects.equals(item.getReferenceBill().getCreditCompany().getId(), getCurrent().getFromInstitution().getId())) {
+                JsfUtil.addErrorMessage("All Bills Settling Should be from a one single company.");
+                return;
+            }
+        }
+        if (getCurrent().getPaymentMethod() == null) {
+            return;
+        }
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return;
+        }
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        calulateTotalForSettlingCreditForInwardCreditCompanyPaymentBills();
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        getCurrent().setTotal(getCurrent().getNetTotal());
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(BillType.CashRecieveBill);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getCurrent().setComments(comment);
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+        if (getCurrent().getId() == null) {
+            getBillFacade().create(getCurrent());
+        } else {
+            getBillFacade().edit(getCurrent());
+        }
+
+       updateReferanceBills();
+
+        for (BillItem savingBillItem : getBillItems()) {
+            savingBillItem.setCreatedAt(new Date());
+            savingBillItem.setCreater(getSessionController().getLoggedUser());
+            savingBillItem.setBill(getCurrent());
+            savingBillItem.setGrossValue(savingBillItem.getNetValue());
+            getCurrent().getBillItems().add(savingBillItem);
+            if (savingBillItem.getId() == null) {
+                getBillItemFacade().create(savingBillItem);
+            } else {
+                getBillItemFacade().edit(savingBillItem);
+            }
+            getBillBean().updateInwardDipositList(savingBillItem.getPatientEncounter(), getCurrent());
+            updateReferenceBht(savingBillItem);
+        }
+        paymentService.createPayment(current, getPaymentMethodData());
+        JsfUtil.addSuccessMessage("Bill Saved");
+        printPreview = true;
+    }
+
     public void settleBillViaVoucher() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -1056,8 +1115,8 @@ public class CashRecieveBillController implements Serializable {
         saveBill(BillType.CashRecieveBill, BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         updateReferanceBills();
         saveBillItemBht();
-        
-        
+
+
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         //   savePayments();
@@ -1065,13 +1124,13 @@ public class CashRecieveBillController implements Serializable {
         printPreview = true;
 
     }
-    
+
     public void updateReferanceBills(){
-        for(BillItem b : getSelectedBillItems()){
-            b.getBill().setPaid(true);
-            b.getBill().setPaidAmount(b.getNetValue());
-            b.getBill().setPaidBill(getCurrent());
-            billFacade.edit(b.getBill());
+        for(BillItem b : getBillItems()){
+            b.getReferenceBill().setPaid(true);
+            b.getReferenceBill().setPaidAmount(b.getReferenceBill().getPaidAmount() + b.getNetValue());
+            b.getReferenceBill().setPaidBill(getCurrent());
+            billFacade.edit(b.getReferenceBill());
         }
     }
 
@@ -1332,8 +1391,8 @@ public class CashRecieveBillController implements Serializable {
     private void updateReferenceBht(BillItem tmp) {
         double dbl = getCreditBean().getPaidAmount(tmp.getPatientEncounter(), BillType.CashRecieveBill);
 
-        tmp.getPatientEncounter().setCreditPaidAmount(0 - dbl);
-        getPatientEncounterFacade().edit(tmp.getPatientEncounter());
+        tmp.getReferenceBill().getPatientEncounter().setCreditPaidAmount(0 - dbl);
+        getPatientEncounterFacade().edit(tmp.getReferenceBill().getPatientEncounter());
     }
 
 //    private void updateReferenceBill(BillItem tmp) {
@@ -1550,14 +1609,6 @@ public class CashRecieveBillController implements Serializable {
 
     public void setAdmissionController(AdmissionController admissionController) {
         this.admissionController = admissionController;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Bill getSelectedBill() {

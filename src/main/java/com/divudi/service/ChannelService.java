@@ -4,63 +4,54 @@ import com.divudi.bean.channel.BookingControllerViewScope;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.ApiKeyType;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
+import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.ApiKeyType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ServiceSessionBean;
-import com.divudi.entity.ApiKey;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.ApiKeyFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.ConsultantFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.ApiKey;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.ApiKeyFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.ConsultantFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -77,7 +68,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
-import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
@@ -113,6 +103,8 @@ public class ChannelService {
     private ConsultantFacade consultantFacade;
     @EJB
     private StaffFacade staffFacade;
+    @EJB
+    BillService billService;
 
     @Inject
     private BookingControllerViewScope bookingControllerViewScope;
@@ -397,7 +389,7 @@ public class ChannelService {
 //        fee.getFeeType();
 //        fee.getName();
     }
-    
+
      public Map getLocalFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss) {
 
         String sql = "Select fee From ItemFee fee "
@@ -426,7 +418,7 @@ public class ChannelService {
         fees.put("hosFee", hosFee);
 
         return fees;
-        
+
      }
 
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
@@ -493,7 +485,7 @@ public class ChannelService {
 //        } else if (savingBill.getBillType() == BillType.ChannelStaff) {
 //            savingBill.setBalance(0.0);
 //            savingBillSession.setPaidBillSession(savingBillSession);
-//        } 
+//        }
 //        if (referredBy != null) {
 //            savingBill.setReferredBy(referredBy);
 //        }
@@ -955,6 +947,7 @@ public class ChannelService {
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
+        cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
 
         // cb.setCreater(getSessionController().getLoggedUser());
         // cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -979,6 +972,8 @@ public class ChannelService {
         getBillFacade().create(cb);
         cb.setPaymentMethod(bill.getPaymentMethod());
 
+        createPaymentForCancellations(cb, cb.getPaymentMethod());
+
 //        if (bill.getPaymentMethod() == PaymentMethod.Agent) {
 //            cb.setPaymentMethod(cancelPaymentMethod);
 ////            if (cancelPaymentMethod == PaymentMethod.Agent) {
@@ -990,6 +985,116 @@ public class ChannelService {
         getBillFacade().edit(cb);
         return cb;
     }
+
+     public List<Payment> createPaymentForChannelAppoinmentCancellation(Bill cancellationBill, PaymentMethod cancelPaymentMethod,PaymentMethodData paymentMethodData, SessionController loggedSession) {
+        List<Payment> ps = new ArrayList<>();
+        if (cancelPaymentMethod == null) {
+            List<Payment> originalBillPayments = billService.fetchBillPayments(cancellationBill.getBilledBill());
+            if (originalBillPayments != null) {
+                for (Payment originalBillPayment : originalBillPayments) {
+                    Payment p = originalBillPayment.clonePaymentForNewBill();
+                    p.invertValues();
+                    p.setReferancePayment(originalBillPayment);
+                    p.setBill(cancellationBill);
+                    p.setInstitution(loggedSession.getInstitution());
+                    p.setDepartment(loggedSession.getDepartment());
+                    p.setCreatedAt(new Date());
+                    p.setCreater(loggedSession.getLoggedUser());
+                    paymentFacade.create(p);
+                    ps.add(p);
+                }
+            }
+        } else if (cancelPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(cancellationBill);
+                p.setInstitution(loggedSession.getInstitution());
+                p.setDepartment(loggedSession.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(loggedSession.getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCreditCard().getComment());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCheque().getComment());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCash().getComment());
+                        break;
+                    case ewallet:
+                        p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
+                        break;
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case Slip:
+                    case OnCall:
+                    case OnlineSettlement:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                }
+                p.setPaidValue(0 - Math.abs(p.getPaidValue()));
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(cancellationBill);
+            p.setInstitution(loggedSession.getInstitution());
+            p.setDepartment(loggedSession.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(loggedSession.getLoggedUser());
+            p.setPaymentMethod(cancelPaymentMethod);
+            p.setPaidValue(cancellationBill.getNetTotal());
+
+            switch (cancelPaymentMethod) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    p.setComments(paymentMethodData.getCreditCard().getComment());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    p.setComments(paymentMethodData.getCheque().getComment());
+                    break;
+                case Cash:
+                    p.setComments(paymentMethodData.getCash().getComment());
+                    break;
+                case ewallet:
+                    p.setComments(paymentMethodData.getEwallet().getComment());
+                    break;
+
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+                case Slip:
+                case OnCall:
+                case OnlineSettlement:
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+            }
+
+            p.setPaidValue(0 - Math.abs(p.getBill().getNetTotal()));
+            paymentFacade.create(p);
+            ps.add(p);
+        }
+        return ps;
+    }
+
 
     public List<Institution> findHospitals() {
         Map params = new HashMap();
@@ -1134,7 +1239,7 @@ public class ChannelService {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", new Date());
         }
-//         
+//
 //        if(fromDate != null){
 //            jpql.append(" and i.sessionDate >= :fd");
 //            m.put("fd", fromDate);
@@ -1229,7 +1334,7 @@ public class ChannelService {
             m.put("sd", sessionDate);
             // System.out.println(sessionDate);
         }
-//         
+//
 //        if(fromDate != null){
 //            jpql.append(" and i.sessionDate >= :fd");
 //            m.put("fd", fromDate);
@@ -1277,10 +1382,27 @@ public class ChannelService {
         paidBill.setSingleBillSession(paidBillSession);
         getBillFacade().editAndCommit(paidBill);
 
-        List<Payment> p = createPayment(paidBill, PaymentMethod.OnlineSettlement);
+        List<Payment> p = createPayment(paidBill, paidBill.getPaymentMethod());
         return paidBill;
         // drawerController.updateDrawerForIns(p);
     }
+
+    public Payment createPaymentForCancellations(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
+        p.setPaidValue(valueToSet);
+        p.setCreatedAt(new Date());
+        p.setPaymentMethod(pm);
+        if (pm == null) {
+            pm = bill.getPaymentMethod();
+        }
+        if(p.getId() == null){
+            paymentFacade.create(p);
+        }
+        return p;
+    }
+
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();

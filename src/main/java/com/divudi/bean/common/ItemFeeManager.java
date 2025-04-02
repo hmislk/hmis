@@ -5,20 +5,20 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.FeeType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Staff;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.ItemLight;
-import com.divudi.entity.Category;
-import com.divudi.entity.Institution;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Institution;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -36,13 +36,11 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
-import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
@@ -119,7 +117,7 @@ public class ItemFeeManager implements Serializable {
         itemFees = new ArrayList<>();
         return "/admin/pricing/download_base_item_fees?faces-redirect=true";
     }
-    
+
     public String navigateToUploadToReplaceSiteFeesByItemCode() {
         itemFees = new ArrayList<>();
         return "/admin/pricing/upload_to_replace_site_fees_by_item_code?faces-redirect=true";
@@ -136,7 +134,7 @@ public class ItemFeeManager implements Serializable {
     }
 
     public String navigateToUploadFeeListItemFees() {
-        return "";
+        return "/admin/pricing/feelist_item_fees_upload?faces-redirect=true";
     }
 
     public String navigateToDownloadItemFeesForLists() {
@@ -785,7 +783,7 @@ public class ItemFeeManager implements Serializable {
     public List<ItemLight> fillItemLightsForSite(Institution forInstitution) {
         System.out.println("fillFees");
         System.out.println("forInstitution = " + forInstitution);
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
                 + "f.item.name, "
@@ -820,7 +818,7 @@ public class ItemFeeManager implements Serializable {
     public List<ItemLight> fillItemLightsForCc(Institution cc) {
         System.out.println("fillFees");
         System.out.println("forInstitution = " + cc);
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
                 + "f.item.name, "

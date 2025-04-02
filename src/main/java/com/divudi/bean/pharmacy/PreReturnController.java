@@ -5,22 +5,22 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -157,7 +157,7 @@ public class PreReturnController implements Serializable {
 
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) i.getQty());
+            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
 
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
@@ -166,7 +166,7 @@ public class PreReturnController implements Serializable {
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty((double) i.getPharmaceuticalBillItem().getQty());
+            i.setQty(i.getPharmaceuticalBillItem().getQty());
 
             double value = i.getNetRate() * i.getQty();
             i.setGrossValue(0 - value);
@@ -207,7 +207,7 @@ public class PreReturnController implements Serializable {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
         }
-        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().equals("")) {
+        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
@@ -215,7 +215,7 @@ public class PreReturnController implements Serializable {
         saveReturnBill();
         saveComponent();
         getBill().getReturnPreBills().add(getReturnBill());
-
+        getReturnBill().setReferenceBill(getBill());
         getBillFacade().edit(getReturnBill());
 
 //        getBill().getReturnPreBills().add(getReturnBill());
@@ -237,7 +237,7 @@ public class PreReturnController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
-    
+
     public void fillReturningQty(){
         if(billItems == null || billItems.isEmpty()){
             JsfUtil.addErrorMessage("Please add bill items");
@@ -284,7 +284,7 @@ public class PreReturnController implements Serializable {
                 continue;
             }
 
-            tmp.setQtyInUnit((double) tmpQty);
+            tmp.setQtyInUnit(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 

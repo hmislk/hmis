@@ -1,37 +1,23 @@
 package com.divudi.service;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillValidation;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.PaymentType;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.Payment;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.CashBook;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.data.BillValidation;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentType;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.CashBook;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -248,6 +234,12 @@ public class PaymentService {
             case Staff:
                 payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
                 payment.setComments(paymentMethodData.getStaffCredit().getComment());
+                break;
+            case IOU:
+                payment.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
+                payment.setChequeDate(paymentMethodData.getIou().getDate());
+                payment.setToStaff(paymentMethodData.getIou().getToStaff());
+                payment.setComments(paymentMethodData.getIou().getComment());
                 break;
             default:
                 break;

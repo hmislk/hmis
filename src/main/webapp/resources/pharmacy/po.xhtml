@@ -61,7 +61,7 @@
                         <h:outputLabel value="P.O. No&nbsp;"/>
                         <h:outputLabel value=":&nbsp;"/>
                         <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
-                        <h:outputLabel value="Payment Type &nbsp;"/>
+                        <h:outputLabel value="Payment Method &nbsp;"/>
                         <h:outputLabel value=" :&nbsp;"/>
                         <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
                     </h:panelGrid>
@@ -140,6 +140,18 @@
                             </h:panelGroup>
                         </ui:repeat>
                     </tbody>
+                    <tfoot>
+                        <tr >
+                            <th></th>
+                            <th colspan="4" >Total</th>
+                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+
+                                <h:outputText value="#{cc.attrs.bill.netTotal}">
+                                    <f:convertNumber pattern="#,###.00" />
+                                </h:outputText>
+                            </th>
+                        </tr>
+                    </tfoot>
                 </table>
 
             </div>
@@ -150,8 +162,12 @@
             </div>
 
             <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
-                <h:outputLabel value="Authorized By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel value="Authorized By : #{cc.attrs.bill.referenceBill.checkedBy.webUserPerson.nameWithTitle}"/>
 
+            </div>
+
+            <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
+                <h:outputLabel value="Approved By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>       
             </div>
 
             <div>

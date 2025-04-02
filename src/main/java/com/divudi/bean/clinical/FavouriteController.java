@@ -3,12 +3,12 @@ package com.divudi.bean.clinical;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
-import com.divudi.data.clinical.PrescriptionTemplateType;
-import com.divudi.entity.Item;
-import com.divudi.entity.clinical.PrescriptionTemplate;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.facade.PrescriptionTemplateFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.clinical.PrescriptionTemplateType;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.clinical.PrescriptionTemplate;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.facade.PrescriptionTemplateFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,17 +59,17 @@ public class FavouriteController implements Serializable {
     }
 
     public String navigateToFavoriteMedicineByAge(){
-       return "/clinical/clinical_favourite_item_by_age?faces-redirect=true"; 
+       return "/clinical/clinical_favourite_item_by_age?faces-redirect=true";
     }
-    
+
     public String navigateToFavoriteMedicineByWeight(){
         return "/clinical/clinical_favourite_item_by_weight?faces-redirect=true";
     }
-    
+
     public String navigateToEmrIndex(){
         return "/emr/admin/index?faces-redirect=true";
     }
-    
+
     public void fillFavouriteDisgnosis() {
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
     }
@@ -99,11 +99,11 @@ public class FavouriteController implements Serializable {
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type, Double weight) {
         return listFavouriteItems(forItem, type, weight, null);
     }
-    
+
     public List<PrescriptionTemplate> listFavouriteItems( PrescriptionTemplateType type, Double weight, Long ageInDays) {
         return listFavouriteItems(null, type, weight, ageInDays);
     }
-    
+
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type, Double weight, Long ageInDays) {
         String j;
         Map m = new HashMap();
@@ -116,7 +116,7 @@ public class FavouriteController implements Serializable {
             m.put("t", type);
             j += " and i.type=:t ";
         }
-        
+
         if(forItem!=null){
             m.put("fi", forItem);
             j += " and i.forItem=:fi ";
@@ -212,7 +212,7 @@ public class FavouriteController implements Serializable {
     public void listMyFavouriteMedicines() {
 
     }
-    
+
     public void saveFavMedicine(){
         current.setType(PrescriptionTemplateType.FavouriteMedicine);
         current.setForItem(item);
@@ -389,11 +389,11 @@ public class FavouriteController implements Serializable {
     /**
      * Getters And Setters
      */
-    
-    
-    
+
+
+
     /**
-     * @return 
+     * @return
      */
     public Item getItem() {
         return item;
@@ -449,7 +449,7 @@ public class FavouriteController implements Serializable {
     public void setItemadd(boolean itemadd) {
         this.itemadd = itemadd;
     }
-    
-    
+
+
 
 }

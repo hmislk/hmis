@@ -1,0 +1,157 @@
+name: RH-PROD Build & Blue-Green Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - ruhunu-prod
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Cache Maven Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Archive Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: target/*.war
+          overwrite: true
+
+  deploy-green:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production-green
+    steps:
+      - name: Deploy to Green VM
+        env:
+          SERVER_IP: ${{ secrets.GREEN_SERVER_IP }}
+          SERVER_USER: ${{ secrets.GREEN_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.GREEN_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.GREEN_PAYARA_ADMIN_PASS }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          WAR_NAME="rh.war"
+          WAR_DIR="/home/appuser/app/latest"
+          APP_NAME="rh"
+          SUBDOMAIN="rh-green"
+          
+          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
+          
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo mv /tmp/$WAR_NAME $WAR_DIR/
+            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
+            sudo su - appuser
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.GREEN_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            rm /tmp/payara-admin-pass.txt
+          "
+      - name: Verify Green Application Deployment
+        run: |
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo su - appuser
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.GREEN_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            if /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
+              echo 'Application successfully deployed on Green VM.'
+            else
+              echo 'Application failed to deploy on Green VM.'
+              exit 1
+            fi
+            rm /tmp/payara-admin-pass.txt
+          "
+      - name: Validate Green Application Reachability
+        run: |
+          for i in {1..5}; do
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$APP_NAME/faces/index1.xhtml)
+            if [ "$RESPONSE_CODE" == "200" ]; then
+              echo "Application on Green VM is reachable."
+              break
+            elif [ "$i" == "5" ]; then
+              echo "Application on Green VM is not reachable. Exiting."
+              exit 1
+            fi
+            sleep 10
+          done
+      - name: Wait for Green VM Health Probe
+        run: |
+          az network lb probe wait \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --lb-name ${{ secrets.AZURE_LB_NAME }} \
+            --name ${{ secrets.GREEN_LB_PROBE_NAME }} \
+            --created
+
+  switch-to-green:
+    needs: deploy-green
+    runs-on: ubuntu-latest
+    steps:
+      - name: Switch Azure Load Balancer to Green
+        run: |
+          az network lb address-pool update \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --lb-name ${{ secrets.AZURE_LB_NAME }} \
+            --name ${{ secrets.AZURE_LB_POOL_NAME }} \
+            --backend-ip-configs '[{"id":"${{ secrets.GREEN_VM_NIC_ID }}"}]'
+
+  deploy-blue:
+    needs: switch-to-green
+    runs-on: ubuntu-latest
+    environment: production-blue
+    steps:
+      - name: Deploy to Blue VM
+        env:
+          SERVER_IP: ${{ secrets.BLUE_SERVER_IP }}
+          SERVER_USER: ${{ secrets.BLUE_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.BLUE_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.BLUE_PAYARA_ADMIN_PASS }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          WAR_NAME="rh.war"
+          WAR_DIR="/home/appuser/app/latest"
+          APP_NAME="rh"
+          
+          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
+          
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            sudo mv /tmp/$WAR_NAME $WAR_DIR/
+            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
+            sudo su - appuser
+            echo 'AS_ADMIN_PASSWORD=${{ secrets.BLUE_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
+            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            rm /tmp/payara-admin-pass.txt
+          "
+
+  switch-to-blue:
+    needs: deploy-blue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Switch Azure Load Balancer to Blue
+        run: |
+          az network lb address-pool update \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --lb-name ${{ secrets.AZURE_LB_NAME }} \
+            --name ${{ secrets.AZURE_LB_POOL_NAME }} \
+            --backend-ip-configs '[{"id":"${{ secrets.BLUE_VM_NIC_ID }}"}]'

@@ -95,12 +95,12 @@
                                 value="#{staffPaymentBillController.dueBillFees}"
                                 selection="#{staffPaymentBillController.payingBillFees}"
                                 class="w-100 m-1"
-                                rows="10"
                                 paginator="true"
+                                rows="10"
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                rowsPerPageTemplate="{ShowAll|'All'}"
+                                rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
                                 var="bf" 
                                 rowKey="#{bf.id}" >
 
@@ -116,33 +116,27 @@
                                 <p:column selectionBox="true" width="20"></p:column>
 
 
-                                <p:column headerText="Bill Id" width="18em;">
+                                <p:column headerText="Bill Id" width="9em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill ID"/>
                                     </f:facet>    
-                                    <h:outputLabel value="#{bf.bill.deptId}">
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Status"/>
-                                    </f:facet>   
+                                    <h:outputLabel value="#{bf.bill.deptId}"></h:outputLabel><br/>
                                     <p:badge value="Refunded" rendered="#{bf.billItem.refunded}" severity="warning"></p:badge>
                                 </p:column>
-                                <p:column headerText="Speciality" rendered="#{staffPaymentBillController.speciality eq null}">
+                                <p:column headerText="Speciality" width="7em" rendered="#{staffPaymentBillController.speciality eq null}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Doctor"/>
+                                        <h:outputLabel value="Speciality"/>
                                     </f:facet>   
                                     <p:outputLabel value="#{bf.staff.speciality.name}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Doctor" rendered="#{staffPaymentBillController.currentStaff eq null}">
+                                <p:column headerText="Doctor" width="8em" rendered="#{staffPaymentBillController.currentStaff eq null}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Doctor"/>
                                     </f:facet>   
                                     <p:outputLabel value="#{bf.staff.person.nameWithTitle}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Payment Methord">
+                                <p:column headerText="Payment Methord" width="3em">
                                     <f:facet name="header">
                                         <h:outputLabel value="Payment Method"/>
                                     </f:facet>    
@@ -150,7 +144,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Bill Date">
+                                <p:column headerText="Bill Date" width="4em">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill Date"/>
                                     </f:facet>    
@@ -159,7 +153,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Patient">
+                                <p:column headerText="Patient" width="5em">
                                     <f:facet name="header">
                                         <h:outputLabel value="Patient"/>
                                     </f:facet>    
@@ -167,21 +161,21 @@
                                     <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
                                 </p:column>
 
-                                <p:column headerText="Test" >
+                                <p:column headerText="Test" width="7em">
                                     <f:facet name="header">
                                         <h:outputLabel value="Test"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.billItem.item.name}" />
                                 </p:column>
 
-                                <p:column headerText="Charge" width="7em;">
+                                <p:column headerText="Charge" width="5em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge Type"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.fee.feeType}" />
                                 </p:column>
 
-                                <p:column headerText="Charge" width="7em;" class="text-end">
+                                <p:column headerText="Charge" width="6em;" class="text-end">
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge"/>
                                     </f:facet>    
@@ -315,7 +309,14 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
-                            <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
+                                <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is five five paper.')}">
+                                <bi:staff_payment_five_five_paper_with_headings controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" />
+                            </h:panelGroup>
+                            
                         </h:panelGroup>
 
                     </p:panel>

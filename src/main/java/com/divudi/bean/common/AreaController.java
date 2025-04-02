@@ -7,9 +7,9 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Area;
-import com.divudi.facade.AreaFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Area;
+import com.divudi.core.facade.AreaFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,7 +41,7 @@ public class AreaController implements Serializable {
     private AreaFacade ejbFacade;
     private Area current;
     private List<Area> items = null;
-    
+
       public void save(Area area) {
         if (area == null) {
             return;
@@ -56,9 +56,9 @@ public class AreaController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
     }
-    
+
      public Area findAreaByName(String name) {
-         
+
         if (name == null) {
             return null;
         }
@@ -220,7 +220,7 @@ public class AreaController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + AreaController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Area.class.getName());
             }
         }
     }

@@ -7,10 +7,10 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.Institution;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +39,7 @@ public class BankController implements Serializable {
     String selectText = "";
 
     public List<Institution> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Bank and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.core.data.InstitutionType.Bank and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -129,10 +129,10 @@ public class BankController implements Serializable {
 
     public List<Institution> getItems() {
         if (items == null) {
-            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Bank order by i.name";
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.core.data.InstitutionType.Bank order by i.name";
             items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }
-    
+
 }

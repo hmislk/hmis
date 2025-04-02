@@ -4,8 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:se="http://xmlns.jcp.org/jsf/composite/pharmacy/search">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
@@ -75,6 +74,14 @@
                                     <h:inputTextarea 
                                         id="txtDes" 
                                         value="#{vtmController.current.descreption}" 
+                                        required="false" 
+                                        class="form-control" ></h:inputTextarea>
+
+
+                                    <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
+                                    <h:inputTextarea 
+                                        id="txtIns" 
+                                        value="#{vtmController.current.instructions}" 
                                         required="false" 
                                         class="form-control" ></h:inputTextarea>
                                     <p:commandButton 

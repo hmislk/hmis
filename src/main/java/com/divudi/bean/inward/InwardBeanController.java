@@ -7,52 +7,51 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.DepartmentBillItems;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.DepartmentBillItems;
+import com.divudi.core.data.inward.InwardChargeType;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Department;
-import com.divudi.entity.Fee;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PatientItem;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.InwardFee;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.entity.inward.Room;
-import com.divudi.entity.inward.RoomFacilityCharge;
-import com.divudi.entity.inward.TimedItem;
-import com.divudi.entity.inward.TimedItemFee;
-import com.divudi.facade.AdmissionFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientItemFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.PriceMatrixFacade;
-import com.divudi.facade.RoomFacade;
-import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Fee;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.InwardFee;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.Room;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.entity.inward.TimedItem;
+import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientItemFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PriceMatrixFacade;
+import com.divudi.core.facade.RoomFacade;
+import com.divudi.core.facade.TimedItemFeeFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,13 +95,15 @@ public class InwardBeanController implements Serializable {
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
 
-    
+
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
     private PriceMatrixFacade priceMatrixFacade;
     @EJB
     private AdmissionFacade admissionFacade;
+    @EJB
+    private PatientEncounterFacade encounterFacade;
     @Inject
     BillBeanController billBean;
     @Inject
@@ -110,11 +111,9 @@ public class InwardBeanController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    private CommonFunctions commonFunctions;
-    
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
-        Map<String, String> replaceables = CommonFunctions.getReplaceables(b);
+        Map<String, String> replaceables = Bill.toMap(b);
         return CommonFunctions.replaceText(replaceables, template);
     }
 
@@ -308,9 +307,17 @@ public class InwardBeanController implements Serializable {
                 + " FROM PatientItem i where "
                 + " type(i.item)=:cls "
                 + " and i.retired=false "
-                + " and i.patientEncounter=:pe "
+                + " and i.patientEncounter IN :pe "
                 + " and i.item.inwardChargeType=:inw ";
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         hm.put("cls", TimedItem.class);
         hm.put("inw", inwardChargeType);
         double dbl = getPatientItemFacade().findDoubleByJpql(sql, hm);
@@ -338,9 +345,17 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT pr FROM PatientRoom pr "
                 + " where pr.retired=false"
-                + " and pr.patientEncounter=:pe "
+                + " and pr.patientEncounter in :pe "
                 + " order by pr.createdAt";
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         return getPatientRoomFacade().findByJpql(sql, hm);
 
     }
@@ -352,10 +367,41 @@ public class InwardBeanController implements Serializable {
                 + " FROM BillItem b "
                 + " WHERE b.retired=false "
                 + " and b.bill.billType=:btp "
-                + " and  b.bill.patientEncounter=:pe";
+                + " and  b.bill.patientEncounter IN :pe";
         hm = new HashMap();
         hm.put("btp", billType);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+
+    }
+
+    public double calCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas) {
+        String sql;
+        HashMap hm;
+        sql = "SELECT  sum(b.netTotal)"
+                + " FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billTypeAtomic IN :btp "
+                + " and  b.patientEncounter IN :pe";
+        hm = new HashMap();
+        hm.put("btp", btas);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         return getBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
@@ -365,11 +411,19 @@ public class InwardBeanController implements Serializable {
                 + " From BillItem s"
                 + " where s.retired=false "
                 + " and s.bill.billType=:btp "
-                + " and s.bill.patientEncounter=:pe"
+                + " and s.bill.patientEncounter IN :pe"
                 + " and s.item.inwardChargeType=:inw ";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         hm.put("inw", inwardChargeType);
 
         double dbl = getBillFeeFacade().findDoubleByJpql(sql, hm);
@@ -387,12 +441,20 @@ public class InwardBeanController implements Serializable {
                 + " and type(bt.staff)=:class "
                 + " and bt.fee.feeType=:ftp  "
                 + " and (bt.bill.billType=:btp2) "
-                + " and bt.bill.patientEncounter=:pe";
+                + " and bt.bill.patientEncounter IN :pe";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         //  hm.put("btp", BillType.InwardBill);
         hm.put("btp2", BillType.InwardProfessional);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         double val = getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIME);
 
@@ -459,11 +521,19 @@ public class InwardBeanController implements Serializable {
                 + " and type(bt.staff)!=:class "
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
-                + " and bt.bill.patientEncounter=:pe ";
+                + " and bt.bill.patientEncounter IN :pe ";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getBillFeeFacade().findByJpql(sql, hm, TemporalType.TIME);
 
@@ -476,12 +546,20 @@ public class InwardBeanController implements Serializable {
                 + " and type(bt.staff)=:class "
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
-                + " and bt.bill.patientEncounter=:pe "
+                + " and bt.bill.patientEncounter IN :pe "
                 + " order by bt.feeAdjusted desc ";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getBillFeeFacade().findByJpql(sql, hm, TemporalType.TIME);
         //////// // System.out.println("Size : " + profesionallFee.size());
@@ -515,11 +593,19 @@ public class InwardBeanController implements Serializable {
                 + " and type(bt.staff)=:class "
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
-                + " and bt.bill.patientEncounter=:pe ";
+                + " and bt.bill.patientEncounter in :pe ";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         List<BillFee> list = getBillFeeFacade().findByJpql(sql, hm);
 
@@ -539,12 +625,20 @@ public class InwardBeanController implements Serializable {
                 + " WHERE b.retired=false "
                 + " and b.billType=:btp "
                 + " and (b.billedBill is null )  "
-                + " and  b.patientEncounter=:pe"
+                + " and  b.patientEncounter IN :pe"
                 + " and (type(b)=:class) ";
         hm = new HashMap();
         hm.put("btp", billType);
         hm.put("class", PreBill.class);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         List<Bill> bills = getBillFacade().findByJpql(sql, hm);
 
@@ -553,13 +647,21 @@ public class InwardBeanController implements Serializable {
                 + " WHERE b.retired=false "
                 + " and b.billType=:btp"
                 + " and type(b.billedBill)=:billedClass "
-                + " and  b.patientEncounter=:pe"
+                + " and  b.patientEncounter IN :pe"
                 + " and (type(b)=:class) ";
         hm = new HashMap();
         hm.put("btp", billType);
         hm.put("class", RefundBill.class);
         hm.put("billedClass", PreBill.class);
-        hm.put("pe", patientEncounter);
+       List<PatientEncounter> pts1 = new ArrayList<>();
+        pts1.add(patientEncounter);
+        List<PatientEncounter> cpts1 = fetchChildPatientEncounter(patientEncounter);
+        if(cpts1.size() > 0){
+            for(PatientEncounter pt : cpts1){
+                pts1.add(pt);
+            }
+        }
+        hm.put("pe", pts1);
 
         List<Bill> bills2 = getBillFacade().findByJpql(sql, hm);
 
@@ -793,12 +895,20 @@ public class InwardBeanController implements Serializable {
                 + " and type(bt.staff)!=:class "
                 + " and bt.fee.feeType=:ftp  "
                 + " and (bt.bill.billType=:btp2) "
-                + " and bt.bill.patientEncounter=:pe";
+                + " and bt.bill.patientEncounter IN :pe";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         //     hm.put("btp", BillType.InwardBill);
         hm.put("btp2", BillType.InwardProfessional);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         double val = getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIME);
 
@@ -826,20 +936,54 @@ public class InwardBeanController implements Serializable {
         String sql = "select sum(p.calculatedRoomCharge) "
                 + " from PatientRoom p "
                 + " where p.retired=false "
-                + " and p.patientEncounter=:pe ";
+                + " and p.patientEncounter IN :pe ";
         HashMap hm = new HashMap();
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getPatientRoomFacade().findDoubleByJpql(sql, hm);
+    }
+
+    public double getAdmissionCharge(PatientEncounter patientEncounter) {
+        Double total = 0.0;
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+
+        for(PatientEncounter pt : pts){
+            total = total + pt.getAdmissionType().getAdmissionFee();
+        }
+
+        return total;
     }
 
     public double getMoCharge(PatientEncounter patientEncounter) {
         String sql = "select sum(p.calculatedMoCharge) "
                 + " from PatientRoom p "
                 + " where p.retired=false "
-                + " and p.patientEncounter=:pe ";
+                + " and p.patientEncounter IN :pe ";
         HashMap hm = new HashMap();
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getPatientRoomFacade().findDoubleByJpql(sql, hm);
     }
@@ -848,10 +992,18 @@ public class InwardBeanController implements Serializable {
         String sql = "select sum(p.feeAdjusted) "
                 + " from BillFee p "
                 + " where p.retired=false "
-                + " and p.bill.patientEncounter=:pe"
+                + " and p.bill.patientEncounter IN :pe"
                 + " and p.bill.billType=:bilTp ";
         HashMap hm = new HashMap();
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         hm.put("bilTp", BillType.InwardProfessional);
         return getBillFeeFacade().findDoubleByJpql(sql, hm);
     }
@@ -860,9 +1012,17 @@ public class InwardBeanController implements Serializable {
         String sql = "select sum(p.calculatedNursingCharge) "
                 + " from PatientRoom p "
                 + " where p.retired=false "
-                + " and p.patientEncounter=:pe ";
+                + " and p.patientEncounter IN :pe ";
         HashMap hm = new HashMap();
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getPatientRoomFacade().findDoubleByJpql(sql, hm);
     }
@@ -871,9 +1031,17 @@ public class InwardBeanController implements Serializable {
         String sql = "select sum(p.calculatedMaintainCharge) "
                 + " from PatientRoom p "
                 + " where p.retired=false "
-                + " and p.patientEncounter=:pe ";
+                + " and p.patientEncounter IN :pe ";
         HashMap hm = new HashMap();
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getPatientRoomFacade().findDoubleByJpql(sql, hm);
     }
@@ -882,9 +1050,17 @@ public class InwardBeanController implements Serializable {
         String sql = "select sum(p.calculatedMedicalCareCharge) "
                 + " from PatientRoom p "
                 + " where p.retired=false "
-                + " and p.patientEncounter=:pe ";
+                + " and p.patientEncounter IN :pe ";
         HashMap hm = new HashMap();
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getPatientRoomFacade().findDoubleByJpql(sql, hm);
     }
@@ -893,9 +1069,17 @@ public class InwardBeanController implements Serializable {
         String sql = "select sum(p.calculatedAdministrationCharge) "
                 + " from PatientRoom p "
                 + " where p.retired=false "
-                + " and p.patientEncounter=:pe ";
+                + " and p.patientEncounter IN :pe ";
         HashMap hm = new HashMap();
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getPatientRoomFacade().findDoubleByJpql(sql, hm);
     }
@@ -904,9 +1088,17 @@ public class InwardBeanController implements Serializable {
         String sql = "select sum(p.calculatedLinenCharge) "
                 + " from PatientRoom p "
                 + " where p.retired=false "
-                + " and p.patientEncounter=:pe ";
+                + " and p.patientEncounter IN :pe ";
         HashMap hm = new HashMap();
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getPatientRoomFacade().findDoubleByJpql(sql, hm);
     }
@@ -941,10 +1133,18 @@ public class InwardBeanController implements Serializable {
         }
 
         sql += " and Type(b.item)!=TimedItem "
-                + " and b.bill.patientEncounter=:pe ";
+                + " and b.bill.patientEncounter in :pe ";
 
         hm.put("btp", BillType.InwardBill);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
 
         return getDepartmentFacade().findByJpql(sql, hm, TemporalType.TIME);
     }
@@ -961,12 +1161,20 @@ public class InwardBeanController implements Serializable {
         }
 
         sql += " and Type(b.item)!=TimedItem"
-                + "  and b.bill.patientEncounter=:pe"
+                + "  and b.bill.patientEncounter IN :pe"
                 + " and b.bill.toDepartment=:dep "
                 + "  order by b.item.name ";
 
         hm.put("btp", BillType.InwardBill);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         hm.put("dep", department);
 
         return getItemFacade().findByJpql(sql, hm, TemporalType.TIME);
@@ -1062,12 +1270,20 @@ public class InwardBeanController implements Serializable {
             hm.put("fB", forwardBill);
         }
 
-        sql += " and b.bill.patientEncounter=:pe "
+        sql += " and b.bill.patientEncounter IN :pe "
                 + " and b.item=:itm "
                 + " and type(b.bill)=:cls";
 
         hm.put("btp", BillType.InwardBill);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         hm.put("itm", item);
         hm.put("cls", bill.getClass());
         double dbl = getBillItemFacade().countByJpql(sql, hm, TemporalType.TIME);
@@ -1101,11 +1317,19 @@ public class InwardBeanController implements Serializable {
         String sql = "Select i From BilledBill i "
                 + " where i.retired=false"
                 + "  and i.billType=:btp "
-                + " and i.patientEncounter=:pe ";
+                + " and i.patientEncounter in :pe ";
 
         HashMap m = new HashMap();
         m.put("btp", BillType.InwardOutSideBill);
-        m.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        m.put("pe", pts);
         return getBillFacade().findByJpql(sql, m, TemporalType.DATE);
 
         //return additionalChargeBill;
@@ -1132,15 +1356,37 @@ public class InwardBeanController implements Serializable {
                 + " From BillItem i "
                 + " where i.retired=false "
                 + " and i.bill.billType=:btp "
-                + "and i.bill.patientEncounter=:pe "
+                + "and i.bill.patientEncounter IN :pe "
                 + " and i.inwardChargeType=:inwCh ";
         HashMap m = new HashMap();
         m.put("btp", BillType.InwardOutSideBill);
-        m.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        m.put("pe", pts);
         m.put("inwCh", inwardChargeType);
         double val = getBillFacade().findDoubleByJpql(sql, m, TemporalType.DATE);
 
         return val;
+    }
+
+    public List<PatientEncounter> fetchChildPatientEncounter(PatientEncounter patientEncounter){
+        List<PatientEncounter> cpt = new ArrayList<>();
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT pe FROM PatientEncounter pe "
+                + " where pe.parentEncounter = :pe "
+                + " and pe.retired=false ";
+        hm.put("pe", patientEncounter);
+
+        cpt = encounterFacade.findByJpql(sql, hm);
+
+        return cpt;
     }
 
     public List<PatientItem> fetchPatientItem(PatientEncounter patientEncounter) {
@@ -1148,8 +1394,16 @@ public class InwardBeanController implements Serializable {
         String sql = "SELECT i FROM PatientItem i "
                 + " where Type(i.item)=TimedItem "
                 + " and i.retired=false "
-                + " and i.patientEncounter=:pe";
-        hm.put("pe", patientEncounter);
+                + " and i.patientEncounter in :pe";
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         return getPatientItemFacade().findByJpql(sql, hm);
     }
 
@@ -1159,9 +1413,17 @@ public class InwardBeanController implements Serializable {
         String sql = "SELECT  b FROM Bill b "
                 + " WHERE b.retired=false "
                 + " and b.billType=:btp "
-                + " and b.patientEncounter=:pe ";
+                + " and b.patientEncounter IN :pe ";
         hm.put("btp", BillType.InwardPaymentBill);
-        hm.put("pe", patientEncounter);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        List<PatientEncounter> cpts = fetchChildPatientEncounter(patientEncounter);
+        if(cpts.size() > 0){
+            for(PatientEncounter pt : cpts){
+                pts.add(pt);
+            }
+        }
+        hm.put("pe", pts);
         return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -1435,7 +1697,7 @@ public class InwardBeanController implements Serializable {
         return dbl;
 
     }
-    
+
     public double getPaidByPatientValue(PatientEncounter patientEncounter) {
 
         HashMap hm = new HashMap();
@@ -1452,7 +1714,7 @@ public class InwardBeanController implements Serializable {
         return dbl;
 
     }
-    
+
     public double getPaidByCompanyValue(PatientEncounter patientEncounter) {
 
         HashMap hm = new HashMap();
@@ -1542,6 +1804,9 @@ public class InwardBeanController implements Serializable {
 
 //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
         if (patientRoom == null) {
+            return null;
+        }
+        if(newRoomFacilityCharge == null){
             return null;
         }
 
@@ -1728,11 +1993,10 @@ public class InwardBeanController implements Serializable {
             return;
         }
 
-        if (billFee.getFee().getFeeType() != FeeType.Staff
-                && priceMatrix != null) {
-
+        if (billFee.getFee().getFeeType() != FeeType.Staff && priceMatrix != null) {
             margin = (billFee.getFeeGrossValue() * priceMatrix.getMargin()) / 100;
             billFee.setFeeMargin(margin);
+            billFeeFacade.edit(billFee);
         }
 
         double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();
@@ -1860,14 +2124,6 @@ public class InwardBeanController implements Serializable {
         this.timedItemFeeFacade = timedItemFeeFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public double calTotalLinen(PatientEncounter patientEncounter) {
 
         if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {
@@ -1876,7 +2132,7 @@ public class InwardBeanController implements Serializable {
 
         double linen = 0.0;
 
-        Long dayCount = getCommonFunctions().getDayCount(patientEncounter.getDateOfAdmission(), patientEncounter.getDateOfDischarge());
+        Long dayCount = CommonFunctions.getDayCount(patientEncounter.getDateOfAdmission(), patientEncounter.getDateOfDischarge());
 
         for (PatientRoom pr : getPatientRooms(patientEncounter)) {
             linen += pr.getAddedLinenCharge();
@@ -1897,7 +2153,7 @@ public class InwardBeanController implements Serializable {
 
         double duration = tif.getDurationHours() * 60;
         double consumeTimeM = 0L;
-        
+
         if(admittedAt==null){
             admittedAt = new Date();
         }
@@ -1905,9 +2161,9 @@ public class InwardBeanController implements Serializable {
         if(dischargedAt==null){
             dischargedAt=new Date();
         }
-        
-        
-        
+
+
+
         consumeTimeM = CommonFunctions.calculateDurationMin(admittedAt, dischargedAt);
 
         double count = 0;
@@ -1941,7 +2197,7 @@ public class InwardBeanController implements Serializable {
             dischargedDate = new Date();
         }
 
-        consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
+        consumeTime = CommonFunctions.calculateDurationMin(admittedDate, dischargedDate);
         if (consumeTime == 0) {
             return 0;
         }

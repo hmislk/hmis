@@ -5,20 +5,18 @@
  */
 package com.divudi.ws.lims;
 
-import ca.uhn.fhir.context.FhirContext;
 import com.divudi.bean.common.SecurityController;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PatientSampleComponantFacade;
-import com.divudi.facade.PatientSampleFacade;
-import com.divudi.facade.WebUserFacade;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.facade.WebUserFacade;
 import java.util.HashMap;
 import java.util.Map;
-import com.divudi.data.LoginRequest;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.LoginRequest;
+import com.divudi.core.util.JsfUtil;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
@@ -28,18 +26,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONObject;
-
 import ca.uhn.hl7v2.model.*;
-import com.divudi.bean.common.util.HL7Utils;
+import com.divudi.core.util.HL7Utils;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.ws.rs.HeaderParam;
 import ca.uhn.hl7v2.*;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.lab.Priority;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.entity.lab.PatientSampleComponant;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.lab.Priority;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,28 +44,25 @@ import ca.uhn.hl7v2.parser.Parser;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DepartmentMachineController;
 import com.divudi.bean.lab.MachineController;
-
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.lab.PatientInvestigationStatus;
-import com.divudi.data.lab.SysMex;
-import com.divudi.data.lab.SysMexTypeA;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.SysMex;
+import com.divudi.core.data.lab.SysMexTypeA;
 import com.divudi.ejb.PatientReportBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.lab.DepartmentMachine;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.facade.InvestigationItemValueFlagFacade;
-import com.divudi.facade.PatientReportFacade;
-import com.divudi.facade.PatientReportItemValueFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.lab.DepartmentMachine;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItemValueFlag;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.facade.InvestigationItemValueFlagFacade;
+import com.divudi.core.facade.PatientReportFacade;
+import com.divudi.core.facade.PatientReportItemValueFacade;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -96,8 +90,6 @@ public class LimsMiddlewareController {
     //FOR UNIT TESTING
 
     @EJB
-    InvestigationItemFacade investigationItemFacade;
-    @EJB
     PatientSampleComponantFacade patientSampleComponantFacade;
     @EJB
     PatientSampleFacade patientSampleFacade;
@@ -111,8 +103,7 @@ public class LimsMiddlewareController {
     WebUserFacade webUserFacade;
     @EJB
     ItemFacade itemFacade;
-    @EJB
-    private PatientReportItemValueFacade ptRivFacade;
+
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 
@@ -161,7 +152,6 @@ public class LimsMiddlewareController {
     }
 
     private Response processD10Observation(JSONObject observation) {
-        // Extract relevant fields from the JSON object using the exact names as sent by the client
         String sampleId = observation.optString("sampleId");
         String analyzerName = observation.optString("analyzerName");
         String analyzerId = observation.optString("analyzerId");
@@ -181,24 +171,11 @@ public class LimsMiddlewareController {
         try {
             observationValueDbl = Double.valueOf(observationValueStr);
         } catch (NumberFormatException e) {
-            System.out.println("Invalid observation value: " + observationValueStr);
+            // // System.out.println("Invalid observation value: " + observationValueStr);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Invalid observation value: " + observationValueStr)
                     .build();
         }
-
-        // Log the extracted values for debugging or further processing
-        System.out.println("sampleId: " + sampleId);
-        System.out.println("analyzerName: " + analyzerName);
-        System.out.println("analyzerId: " + analyzerId);
-        System.out.println("departmentId: " + departmentId);
-        System.out.println("departmentAnalyzerId: " + departmentAnalyzerId);
-        System.out.println("observationValueCodingSystem: " + observationValueCodingSystem);
-        System.out.println("observationValueCode: " + observationValueCode);
-        System.out.println("observationUnitCodingSystem: " + observationUnitCodingSystem);
-        System.out.println("observationUnitCode: " + observationUnitCode);
-        System.out.println("observationValue: " + observationValueStr);
-        System.out.println("issuedDate: " + issuedDate);
 
         Long sampleIdLong;
         Machine analyzer;
@@ -210,7 +187,7 @@ public class LimsMiddlewareController {
         // Find the user
         wu = findRequestSendingUser(username, password);
         if (wu == null) {
-            System.out.println("Cannot find the user: " + username);
+            // // System.out.println("Cannot find the user: " + username);
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity("User is not found for ID: " + username)
                     .build();
@@ -220,7 +197,7 @@ public class LimsMiddlewareController {
         try {
             sampleIdLong = Long.valueOf(sampleId);
         } catch (Exception e) {
-            System.out.println("Cannot convert sample ID to Long: " + sampleId);
+            // // System.out.println("Cannot convert sample ID to Long: " + sampleId);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Invalid sample ID: " + sampleId)
                     .build();
@@ -229,7 +206,7 @@ public class LimsMiddlewareController {
         // Find the department
         department = departmentController.findDepartment(departmentId);
         if (department == null) {
-            System.out.println("Cannot find the department: " + departmentId);
+            // // System.out.println("Cannot find the department: " + departmentId);
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Department not found for ID: " + departmentId)
                     .build();
@@ -238,7 +215,7 @@ public class LimsMiddlewareController {
         // Find the machine (analyzer)
         analyzer = machineController.findMachine(analyzerId);
         if (analyzer == null) {
-            System.out.println("Cannot find the machine (analyzer): " + analyzerId);
+            // // System.out.println("Cannot find the machine (analyzer): " + analyzerId);
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Machine (analyzer) not found for ID: " + analyzerId)
                     .build();
@@ -255,7 +232,7 @@ public class LimsMiddlewareController {
         // Find the patient sample
         PatientSample ps = patientSampleFromId(sampleIdLong);
         if (ps == null) {
-            System.out.println("Cannot find the patient sample: " + sampleId);
+            // // System.out.println("Cannot find the patient sample: " + sampleId);
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Patient sample not found for ID: " + sampleId)
                     .build();
@@ -264,7 +241,7 @@ public class LimsMiddlewareController {
         // Get patient sample components
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
         if (pscs == null || pscs.isEmpty()) {
-            System.out.println("Invalid Sample Components. Please inform developers. Resend results for sample ID: " + sampleIdLong);
+            // // System.out.println("Invalid Sample Components. Please inform developers. Resend results for sample ID: " + sampleIdLong);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Invalid sample components for sample ID: " + sampleIdLong)
                     .build();
@@ -273,23 +250,21 @@ public class LimsMiddlewareController {
         // Get patient investigations
         List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
         if (ptixs == null || ptixs.isEmpty()) {
-            System.out.println("Invalid Patient Investigations. Please inform developers. Resend results for sample ID: " + sampleIdLong);
+            // // System.out.println("Invalid Patient Investigations. Please inform developers. Resend results for sample ID: " + sampleIdLong);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Invalid patient investigations for sample ID: " + sampleIdLong)
                     .build();
         }
 
-        // Process the patient investigations and reports
-        System.out.println("Process the patient investigations and reports = ");
-        for (PatientInvestigation pi : ptixs) {
+        for (PatientInvestigation patientInvestigation : ptixs) {
 
             Investigation ix = null;
 
-            if (pi.getInvestigation() == null) {
+            if (patientInvestigation.getInvestigation() == null) {
                 continue;
             }
 
-            ix = pi.getInvestigation();
+            ix = patientInvestigation.getInvestigation();
 
             if (ix.getReportedAs() != null) {
                 if (ix.getReportedAs() instanceof Investigation) {
@@ -297,47 +272,47 @@ public class LimsMiddlewareController {
                 }
             }
 
-            System.out.println("pi = " + pi);
-            List<PatientReport> prs = new ArrayList<>();
+            // // System.out.println("Patient Investigation = " + patientInvestigation);
+            List<PatientReport> patientReports = new ArrayList<>();
 
-            System.out.println("ix = " + ix);
-
-            System.out.println("pi.getInvestigation().getMachine() = " + pi.getInvestigation().getMachine());
+            // // System.out.println("ix = " + ix);
+            // // System.out.println("pi.getInvestigation().getMachine() = " + patientInvestigation.getInvestigation().getMachine());
             if (ix.getMachine() != null && ix.getMachine().equals(analyzer)) {
-                System.out.println("Match Machine");
-                PatientReport tpr = getUnsavedPatientReport(pi);
-                System.out.println("tpr = " + tpr);
-                if (tpr == null) {
-                    tpr = createNewPatientReport(pi, ix, departmentAnalyzer, wu);
+                // // System.out.println("Match Machine");
+                PatientReport unsavedPatientReport = getUnsavedPatientReport(patientInvestigation);
+                // // System.out.println("unsavedPatientReport = " + unsavedPatientReport);
+                if (unsavedPatientReport == null) {
+                    unsavedPatientReport = createNewPatientReport(patientInvestigation, ix, departmentAnalyzer, wu);
                 }
-                System.out.println("tpr = " + tpr);
-                prs.add(tpr);
+                // // System.out.println("unsavedPatientReport = " + unsavedPatientReport);
+                patientReports.add(unsavedPatientReport);
             }
-            System.out.println("prs = " + prs);
-            if (prs.isEmpty()) {
+            // // System.out.println("patientReports = " + patientReports);
+
+            if (patientReports.isEmpty()) {
                 List<Item> temItems = getItemsForParentItem(ix);
                 for (Item ti : temItems) {
-                    System.out.println("ti = " + ti);
+                    // // System.out.println("ti = " + ti);
                     if (ti instanceof Investigation) {
                         Investigation tix = (Investigation) ti;
                         if (tix.getMachine() != null && tix.getMachine().equals(analyzer)) {
-                            PatientReport tprs = getUnsavedPatientReport(pi);
-                            System.out.println("tprs = " + tprs);
+                            PatientReport tprs = getUnsavedPatientReport(patientInvestigation);
                             if (tprs == null) {
-                                tprs = createNewPatientReport(pi, tix);
+                                tprs = createNewPatientReport(patientInvestigation, tix);
                             }
-                            prs.add(tprs);
+                            patientReports.add(tprs);
                         }
                     }
                 }
             }
 
-            System.out.println("prs = " + prs);
-            for (PatientReport tpr : prs) {
-                System.out.println("tpr = " + tpr);
+            // // System.out.println("prs = " + patientReports);
+            for (PatientReport tpr : patientReports) {
+                // // System.out.println("tpr = " + tpr);
+
                 for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
-                    System.out.println("priv = " + priv);
-                    System.out.println("priv.getInvestigationItem().getValueCodeSystem() = " + priv.getInvestigationItem());
+                    // // System.out.println("priv = " + priv);
+                    // // System.out.println("priv.getInvestigationItem().getValueCodeSystem() = " + priv.getInvestigationItem());
                     if (priv.getInvestigationItem() != null
                             && priv.getInvestigationItem().getValueCodeSystem() != null
                             && priv.getInvestigationItem().getValueCodeSystem().equals(observationValueCodingSystem)
@@ -531,7 +506,7 @@ public class LimsMiddlewareController {
             String resultMessage = "";
 
             String messageType = HL7Utils.findMessageType(receivedMessage);
-            System.out.println("messageType = " + messageType);
+            // // System.out.println("messageType = " + messageType);
 
             switch (messageType) {
                 case "OUL^R22^OUL_R22":
@@ -541,7 +516,7 @@ public class LimsMiddlewareController {
                 case "QBP^Q11^QBP_Q11":
 //                    resultMessage = generateRSP_K11ForQBP_Q11(receivedMessage);
                     String tempUnitId = generateUniqueIDForK11FromQ11(receivedMessage);
-                    System.out.println("tempUnitId = " + tempUnitId);
+                    // // System.out.println("tempUnitId = " + tempUnitId);
                     resultMessage = createK11FromQ11(receivedMessage,
                             tempUnitId,
                             "oHIMS",
@@ -566,8 +541,8 @@ public class LimsMiddlewareController {
             // Return the response message as a JSON
             JSONObject responseJson = new JSONObject();
             responseJson.put("result", base64EncodedResultMessage);
-            System.out.println("resultMessage = " + resultMessage);
-            System.out.println("responseJson = " + responseJson);
+            // // System.out.println("resultMessage = " + resultMessage);
+            // // System.out.println("responseJson = " + responseJson);
             return Response.ok(responseJson.toString()).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -581,26 +556,26 @@ public class LimsMiddlewareController {
 
     public static SysMex parseSysMexMessage(String message) {
 //        Correcte Method
-        System.out.println("parseSysMexMessage");
+        // // System.out.println("parseSysMexMessage");
         SysMex sysMex = new SysMex();
         // Normalize line endings to \n
         message = message.replaceAll("\r\n|\r|\n", "\n");
         // Then split
         String[] lines = message.split("\n(?=\\w\\|)");
-        System.out.println("lines.length = " + lines.length);
+        // // System.out.println("lines.length = " + lines.length);
         for (String line : lines) {
             if (line.startsWith("O|")) {
                 String[] parts = line.split("\\|");
                 if (parts.length > 3) {
                     // The sample ID part is in parts[3], we need to trim it and split by caret
                     String sampleIdPart = parts[3].trim();
-                    System.out.println("sampleIdPart = " + sampleIdPart);
+                    // // System.out.println("sampleIdPart = " + sampleIdPart);
                     String[] sampleIdParts = sampleIdPart.split("\\^");
-                    System.out.println("sampleIdParts = " + sampleIdParts);
+                    // // System.out.println("sampleIdParts = " + sampleIdParts);
                     // The actual sample ID is in the third position after splitting by "^"
                     if (sampleIdParts.length > 2) {
                         String sampleIdStr = sampleIdParts[2].trim();
-                        System.out.println("sampleIdStr = " + sampleIdStr);
+                        // // System.out.println("sampleIdStr = " + sampleIdStr);
                         try {
                             long sampleId = Long.parseLong(sampleIdStr);
                             sysMex.setSampleId(sampleIdStr);
@@ -610,18 +585,18 @@ public class LimsMiddlewareController {
                     }
                 }
             } else if (line.startsWith("R|")) {
-                System.out.println("line = " + line);
+                // // System.out.println("line = " + line);
                 String[] parts = line.split("\\|");
-                System.out.println("parts = " + parts);
+                // // System.out.println("parts = " + parts);
                 // Use a regex to match one or more '^' characters
                 String[] codeParts = parts[2].split("\\^+");
-                System.out.println("codeParts = " + codeParts);
+                // // System.out.println("codeParts = " + codeParts);
                 // The test code should be the second element after splitting, if it exists
                 String testCode = codeParts.length > 1 ? codeParts[1].trim() : "";
-                System.out.println("testCode = " + testCode);
+                // // System.out.println("testCode = " + testCode);
                 String value = parts[3].trim();
                 Double dblValue = 0.0;
-                System.out.println("value = " + value);
+                // // System.out.println("value = " + value);
                 try {
                     dblValue = Double.parseDouble(value);
                 } catch (Exception e) {
@@ -716,9 +691,9 @@ public class LimsMiddlewareController {
         SysMexTypeA a = new SysMexTypeA();
         a.setInputString(msg);
         Long sampleId = a.getSampleId();
-        System.out.println("sampleId = " + sampleId);
+        // // System.out.println("sampleId = " + sampleId);
         PatientSample ps = patientSampleFromId(sampleId);
-        System.out.println("ps = " + ps);
+        // // System.out.println("ps = " + ps);
         String temMsgs = "";
         if (ps == null) {
             return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
@@ -859,40 +834,38 @@ public class LimsMiddlewareController {
 
     public static String createK11FromQ11(String inputMessage, String messageControlID, String sendingApplication,
             String sendingFacility, String receivingApplication, String receivingFacility) {
-        System.out.println("Create K11 from Q11");
+        // // System.out.println("Create K11 from Q11");
 
         // Extract Message Control ID from input message
         int startIndex = inputMessage.indexOf("QBP^Q11^QBP_Q11");
-        System.out.println("startIndex = " + startIndex);
+        // // System.out.println("startIndex = " + startIndex);
         if (startIndex == -1) {
-            System.out.println("Couldn't find the string 'QBP^Q11^QBP_Q11' in the input message");
+            // // System.out.println("Couldn't find the string 'QBP^Q11^QBP_Q11' in the input message");
             return null;
         }
         int inputMessageControlIDIndex = inputMessage.indexOf("|", startIndex) + 1;
-        System.out.println("inputMessageControlIDIndex = " + inputMessageControlIDIndex);
+        // // System.out.println("inputMessageControlIDIndex = " + inputMessageControlIDIndex);
         int endIndex = inputMessage.indexOf("|", inputMessageControlIDIndex);
-        System.out.println("endIndex = " + endIndex);
+        // // System.out.println("endIndex = " + endIndex);
         String inputMessageControlID = inputMessage.substring(inputMessageControlIDIndex, endIndex);
-        System.out.println("inputMessageControlID = " + inputMessageControlID);
+        // // System.out.println("inputMessageControlID = " + inputMessageControlID);
 
         String responseMessageTemplate = "MSH|^~\\&|%s|%s|%s|%s||RSP^K11^RSP_K11|%s|P|2.5.1|||ER|NE||UNICODE UTF-8|||LAB27^IHE"
                 + "\nMSA|AA|%s"
                 + "\nQAK|%s|OK|WOS^Work Order Step^IHE_LABTF"
                 + "\nQPD|WOS^Work Order Step^IHE_LABTF|%s|SPM01";
 
-        System.out.println("responseMessageTemplate = " + responseMessageTemplate);
-
         return String.format(responseMessageTemplate, sendingApplication, sendingFacility, receivingApplication,
                 receivingFacility, messageControlID, inputMessageControlID, messageControlID, messageControlID);
     }
 
     public String sendACK_R22ForoulR22(String oulR22Message) {
-        System.out.println("Formulating a ACK_R22 For received oulR22");
+        // // System.out.println("Formulating a ACK_R22 For received oulR22");
         boolean success;
         List<MyTestResult> myResults = getResultsFromOUL_R22Message(oulR22Message);
-        System.out.println("Number of Results in the Message " + myResults.size());
+        // // System.out.println("Number of Results in the Message " + myResults.size());
         success = addResultsFromMyResults(myResults);
-        System.out.println("success = " + success);
+        // // System.out.println("success = " + success);
         HapiContext hapiContext = new DefaultHapiContext();
         try {
             Parser parser = hapiContext.getGenericParser();
@@ -924,9 +897,9 @@ public class LimsMiddlewareController {
     }
 
     private String generateRSP_K11ForQBP_Q11(String qbpMessage, List<MyPatient> patients) {
-        System.out.println("generateRSP_K11ForQBP_Q11");
-        System.out.println("patients = " + patients);
-        System.out.println("qbpMessage = " + qbpMessage);
+        // // System.out.println("generateRSP_K11ForQBP_Q11");
+        // // System.out.println("patients = " + patients);
+        // // System.out.println("qbpMessage = " + qbpMessage);
         String[] segments = qbpMessage.split("\\|");
 
         String msh1 = segments[0];
@@ -971,23 +944,23 @@ public class LimsMiddlewareController {
         }
 
         rspMessage += "ERR|||0|^^^^^^|200^No error^HL70357|\r";
-        System.out.println("rspMessage = " + rspMessage);
+        // // System.out.println("rspMessage = " + rspMessage);
         return rspMessage;
     }
 
     private String generateRSP_K11ForQBP_Q11(String qbpMessage) {
-        System.out.println("generateRSP_K11ForQBP_Q11");
+        // // System.out.println("generateRSP_K11ForQBP_Q11");
         List<MyPatient> mps = generateListOfPatientSpecimanTestDataFromQBPcQ11cQBP_Q11(qbpMessage);
         return generateRSP_K11ForQBP_Q11(qbpMessage, mps);
     }
 
     private boolean addResultsFromMyResults(List<MyTestResult> mrs) {
-        System.out.println("Adding Results extracted from Messge to LIMS");
+        // // System.out.println("Adding Results extracted from Messge to LIMS");
         boolean ok = true;
         for (MyTestResult mr : mrs) {
             boolean thisOk = addResultToReport(mr.getSampleId(), mr.getTestStr(), mr.getResult(), mr.getUnit(), mr.getError());
-            System.out.println("mr.getSampleId() = " + mr.getSampleId());
-            System.out.println("thisOk = " + thisOk);
+            // // System.out.println("mr.getSampleId() = " + mr.getSampleId());
+            // // System.out.println("thisOk = " + thisOk);
             if (!thisOk) {
                 ok = false;
             }
@@ -1006,25 +979,25 @@ public class LimsMiddlewareController {
         } catch (NumberFormatException e) {
             sid = 0l;
         }
-        System.out.println("Sample ID = " + sid);
+        // System.out.println("Sample ID = " + sid);
         PatientSample ps = patientSampleFromId(sid);
-        System.out.println("Patient Sample = " + ps);
+        // System.out.println("Patient Sample = " + ps);
         if (ps == null) {
             return temFlag;
         }
 
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        System.out.println("Patient Sample Component = " + pscs);
+        // // System.out.println("Patient Sample Component = " + pscs);
         if (pscs == null) {
             return temFlag;
         }
         List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
-        System.out.println("Patient Investigations = " + ptixs);
+        // // System.out.println("Patient Investigations = " + ptixs);
         if (ptixs == null || ptixs.isEmpty()) {
             return temFlag;
         }
         for (PatientInvestigation pi : ptixs) {
-            System.out.println("Patient Investigation = " + pi.getInvestigation());
+            // // System.out.println("Patient Investigation = " + pi.getInvestigation());
 
             Investigation ix = pi.getInvestigation();
 
@@ -1034,26 +1007,28 @@ public class LimsMiddlewareController {
                 }
             }
 
-            System.out.println("ix = " + ix.getName());
-
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
-            System.out.println("Previous Unapproved Report = " + tpr);
+            // // System.out.println("Previous Unapproved Report = " + tpr);
             if (tpr == null) {
                 tpr = createNewPatientReport(pi, ix);
-                System.out.println("new Report Created tpr = " + tpr);
+                // // System.out.println("new Report Created tpr = " + tpr);
             }
             prs.add(tpr);
 
             for (PatientReport rtpr : prs) {
                 boolean valueToSave = false;
-                System.out.println("Patient Report = " + rtpr);
+                // // System.out.println("Patient Report = " + rtpr);
                 for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
                     System.out.println("Patient Report Item Value = " + priv);
                     System.out.println("priv.getInvestigationItem()  = " + priv.getInvestigationItem());
+
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
-                            && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                            && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.ReportImage) {
+
+                        System.out.println("image found");
+
                         System.out.println("priv.getInvestigationItem().getTest() = " + priv.getInvestigationItem().getTest());
                         String testCodeFromDatabase;
                         testCodeFromDatabase = priv.getInvestigationItem().getResultCode();
@@ -1075,21 +1050,66 @@ public class LimsMiddlewareController {
                                         && investigationComponentFromPatientSampleComponant.equals(investigationComponentFromPatientReportItem)) {
 
                                     System.out.println("0 result = " + result);
+                                    priv.setLobValue(result);
+                                    priv.setBaImage(base64TextToByteArray(result));
+                                    priv.setFileName(testCodeFromDatabase + sid );
+                                    priv.setFileType("BMP");
+
+
+                                    if (priv.getId() == null) {
+                                        patientReportItemValueFacade.create(priv);
+                                    } else {
+                                        patientReportItemValueFacade.edit(priv);
+                                    }
+                                    temFlag = true;
+                                    valueToSave = true;
+                                }
+                            }
+
+
+
+                        }
+
+                    }
+
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
+                            && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                        // // System.out.println("priv.getInvestigationItem().getTest() = " + priv.getInvestigationItem().getTest());
+                        String testCodeFromDatabase;
+                        testCodeFromDatabase = priv.getInvestigationItem().getResultCode();
+                        // // System.out.println("Test Result Code from LIMS = " + testCodeFromDatabase);
+                        if (testCodeFromDatabase == null || testCodeFromDatabase.trim().equals("")) {
+                            testCodeFromDatabase = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                            // // System.out.println("Test Code from Test = " + testCodeFromDatabase);
+                        }
+                        // // System.out.println("Test Name from Data Bundle = " + testCodeFromUploadedDataBundle);
+                        if (testCodeFromDatabase.equalsIgnoreCase(testCodeFromUploadedDataBundle)) {
+                            // // System.out.println("data bundle and componant are the same");
+                            // // System.out.println("ps.getInvestigationComponant() = " + ps.getInvestigationComponant());
+                            // // System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
+                            for (PatientSampleComponant patientSampleComponant : pscs) {
+                                Item investigationComponentFromPatientSampleComponant = patientSampleComponant.getInvestigationComponant();
+                                Item investigationComponentFromPatientReportItem = priv.getInvestigationItem().getSampleComponent();
+                                if (investigationComponentFromPatientSampleComponant != null
+                                        && investigationComponentFromPatientReportItem != null
+                                        && investigationComponentFromPatientSampleComponant.equals(investigationComponentFromPatientReportItem)) {
+
+                                    // // System.out.println("0 result = " + result);
                                     priv.setStrValue(result);
 
                                     Double dbl = 0d;
                                     try {
                                         dbl = Double.parseDouble(result);
-                                        System.out.println("0 dbl = " + dbl);
+                                        // // System.out.println("0 dbl = " + dbl);
                                     } catch (Exception e) {
                                     }
                                     priv.setDoubleValue(dbl);
-                                    System.out.println("0 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                    // // System.out.println("0 priv.getDoubleValue() = " + priv.getDoubleValue());
                                     if (priv.getId() == null) {
-                                        System.out.println("0 new priv created = " + dbl);
+                                        // // System.out.println("0 new priv created = " + dbl);
                                         patientReportItemValueFacade.create(priv);
                                     } else {
-                                        System.out.println("0 new priv Updates = " + dbl);
+                                        // // System.out.println("0 new priv Updates = " + dbl);
                                         patientReportItemValueFacade.edit(priv);
                                     }
                                     temFlag = true;
@@ -1100,7 +1120,7 @@ public class LimsMiddlewareController {
 
                             if (valueToSave == false) {
                                 if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
-                                    System.out.println("1 result = " + result);
+                                    // // System.out.println("1 result = " + result);
                                     priv.setStrValue(result);
                                     Double dbl = 0d;
                                     try {
@@ -1108,57 +1128,57 @@ public class LimsMiddlewareController {
                                     } catch (Exception e) {
                                     }
                                     priv.setDoubleValue(dbl);
-                                    System.out.println("1 priv.getDoubleValue() = " + priv.getDoubleValue());
-                                    System.out.println("priv = " + priv.getId());
-                                    System.out.println("priv double value " + priv.getDoubleValue());
-                                    System.out.println("priv Str value = " + priv.getStrValue());
+                                    // // System.out.println("1 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                    // // System.out.println("priv = " + priv.getId());
+                                    // // System.out.println("priv double value " + priv.getDoubleValue());
+                                    // // System.out.println("priv Str value = " + priv.getStrValue());
                                     if (priv.getId() == null) {
                                         patientReportItemValueFacade.create(priv);
-                                        System.out.println("1 new priv created = " + dbl);
+                                        // // System.out.println("1 new priv created = " + dbl);
                                     } else {
-                                        System.out.println("1 new priv Updates = " + dbl);
+                                        // // System.out.println("1 new priv Updates = " + dbl);
                                         patientReportItemValueFacade.edit(priv);
                                     }
                                     valueToSave = true;
                                     temFlag = true;
                                 } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
-                                    System.out.println("2 result = " + result);
+                                    // // System.out.println("2 result = " + result);
                                     priv.setStrValue(result);
 
                                     Double dbl = 0d;
                                     try {
                                         dbl = Double.parseDouble(result);
-                                        System.out.println("2 dbl = " + dbl);
+                                        // // System.out.println("2 dbl = " + dbl);
                                     } catch (Exception e) {
                                     }
                                     priv.setDoubleValue(dbl);
-                                    System.out.println("2 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                    // // System.out.println("2 priv.getDoubleValue() = " + priv.getDoubleValue());
                                     if (priv.getId() == null) {
-                                        System.out.println("2 new priv created = " + dbl);
+                                        // // System.out.println("2 new priv created = " + dbl);
                                         patientReportItemValueFacade.create(priv);
                                     } else {
-                                        System.out.println("2 new priv Updates = " + dbl);
+                                        // // System.out.println("2 new priv Updates = " + dbl);
                                         patientReportItemValueFacade.edit(priv);
                                     }
                                     temFlag = true;
                                     valueToSave = true;
                                 } else {
-                                    System.out.println("3 result = " + result);
+                                    // // System.out.println("3 result = " + result);
                                     priv.setStrValue(result);
 
                                     Double dbl = 0d;
                                     try {
                                         dbl = Double.parseDouble(result);
-                                        System.out.println("3 dbl = " + dbl);
+                                        // // System.out.println("3 dbl = " + dbl);
                                     } catch (Exception e) {
                                     }
                                     priv.setDoubleValue(dbl);
-                                    System.out.println("3 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                    // // System.out.println("3 priv.getDoubleValue() = " + priv.getDoubleValue());
                                     if (priv.getId() == null) {
-                                        System.out.println("3 new priv created = " + dbl);
+                                        // // System.out.println("3 new priv created = " + dbl);
                                         patientReportItemValueFacade.create(priv);
                                     } else {
-                                        System.out.println("3 new priv Updates = " + dbl);
+                                        // // System.out.println("3 new priv Updates = " + dbl);
                                         patientReportItemValueFacade.edit(priv);
                                     }
                                     temFlag = true;
@@ -1200,10 +1220,18 @@ public class LimsMiddlewareController {
         return temFlag;
     }
 
+    public byte[] base64TextToByteArray(String base64Text) {
+        if (base64Text == null || base64Text.isEmpty()) {
+            return new byte[0];
+        }
+        String cleanedBase64 = base64Text.replaceFirst("^\\^Image\\^BMP\\^Base64\\^", "");
+        return java.util.Base64.getDecoder().decode(cleanedBase64);
+    }
+
     public boolean addResultToReportPrevious(String sampleId, String testStr, String result, String unit, String error) {
-        System.out.println("Adding Individual Result To Report");
-        System.out.println("testStr = " + testStr);
-        System.out.println("result = " + result);
+        // // System.out.println("Adding Individual Result To Report");
+        // // System.out.println("testStr = " + testStr);
+        // // System.out.println("result = " + result);
         boolean temFlag = false;
         Long sid;
         try {
@@ -1211,25 +1239,25 @@ public class LimsMiddlewareController {
         } catch (NumberFormatException e) {
             sid = 0l;
         }
-        System.out.println("Sample ID = " + sid);
+        // // System.out.println("Sample ID = " + sid);
         PatientSample ps = patientSampleFromId(sid);
-        System.out.println("Patient Sample = " + ps);
+        // // System.out.println("Patient Sample = " + ps);
         if (ps == null) {
             return temFlag;
         }
 
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        System.out.println("Patient Sample Component = " + pscs);
+        // // System.out.println("Patient Sample Component = " + pscs);
         if (pscs == null) {
             return temFlag;
         }
         List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
-        System.out.println("Patient Investigations = " + ptixs);
+        // // System.out.println("Patient Investigations = " + ptixs);
         if (ptixs == null || ptixs.isEmpty()) {
             return temFlag;
         }
         for (PatientInvestigation pi : ptixs) {
-            System.out.println("Patient Investigation = " + pi);
+            // // System.out.println("Patient Investigation = " + pi);
 
             Investigation ix = pi.getInvestigation();
 
@@ -1242,7 +1270,7 @@ public class LimsMiddlewareController {
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
-            System.out.println("Previous Unapproved Report = " + tpr);
+            // // System.out.println("Previous Unapproved Report = " + tpr);
             if (tpr == null) {
                 tpr = createNewPatientReport(pi, ix);
             }
@@ -1250,25 +1278,25 @@ public class LimsMiddlewareController {
 
             for (PatientReport rtpr : prs) {
                 boolean valueToSave = false;
-                System.out.println("Patient Report = " + rtpr);
+                // // System.out.println("Patient Report = " + rtpr);
                 for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
-                    System.out.println("Patient Report Item Value = " + priv);
+                    // // System.out.println("Patient Report Item Value = " + priv);
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
                             && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
                         String test;
                         test = priv.getInvestigationItem().getResultCode();
-                        System.out.println("Test Result Code from LIMS = " + test);
+                        // // System.out.println("Test Result Code from LIMS = " + test);
                         if (test == null || test.trim().equals("")) {
                             test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
-                            System.out.println("Test Code from Test = " + test);
+                            // // System.out.println("Test Code from Test = " + test);
                         }
-                        System.out.println("Test Name from LIMS = " + test);
-                        System.out.println("Test Name from HL7 Msg = " + testStr);
+                        // // System.out.println("Test Name from LIMS = " + test);
+                        // // System.out.println("Test Name from HL7 Msg = " + testStr);
                         if (test.equalsIgnoreCase(testStr)) {
-                            System.out.println("ps.getInvestigationComponant() = " + ps.getInvestigationComponant());
-                            System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
+                            // // System.out.println("ps.getInvestigationComponant() = " + ps.getInvestigationComponant());
+                            // // System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
                             if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
-                                System.out.println("1 result = " + result);
+                                // // System.out.println("1 result = " + result);
                                 priv.setStrValue(result);
                                 Double dbl = 0d;
                                 try {
@@ -1276,42 +1304,42 @@ public class LimsMiddlewareController {
                                 } catch (Exception e) {
                                 }
                                 priv.setDoubleValue(dbl);
-                                System.out.println("1 priv.getDoubleValue() = " + priv.getDoubleValue());
-                                System.out.println("priv = " + priv.getId());
-                                System.out.println("priv double value " + priv.getDoubleValue());
-                                System.out.println("priv Str value = " + priv.getStrValue());
+                                // // System.out.println("1 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                // // System.out.println("priv = " + priv.getId());
+                                // // System.out.println("priv double value " + priv.getDoubleValue());
+                                // // System.out.println("priv Str value = " + priv.getStrValue());
                                 if (priv.getId() == null) {
                                     patientReportItemValueFacade.create(priv);
-                                    System.out.println("1 new priv created = " + dbl);
+                                    // // System.out.println("1 new priv created = " + dbl);
                                 } else {
-                                    System.out.println("1 new priv Updates = " + dbl);
+                                    // // System.out.println("1 new priv Updates = " + dbl);
                                     patientReportItemValueFacade.edit(priv);
                                 }
                                 valueToSave = true;
                                 temFlag = true;
                             } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
-                                System.out.println("2 result = " + result);
+                                // // System.out.println("2 result = " + result);
                                 priv.setStrValue(result);
 
                                 Double dbl = 0d;
                                 try {
                                     dbl = Double.parseDouble(result);
-                                    System.out.println("2 dbl = " + dbl);
+                                    // // System.out.println("2 dbl = " + dbl);
                                 } catch (Exception e) {
                                 }
                                 priv.setDoubleValue(dbl);
-                                System.out.println("2 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                // // System.out.println("2 priv.getDoubleValue() = " + priv.getDoubleValue());
                                 if (priv.getId() == null) {
-                                    System.out.println("2 new priv created = " + dbl);
+                                    // // System.out.println("2 new priv created = " + dbl);
                                     patientReportItemValueFacade.create(priv);
                                 } else {
-                                    System.out.println("2 new priv Updates = " + dbl);
+                                    // // System.out.println("2 new priv Updates = " + dbl);
                                     patientReportItemValueFacade.edit(priv);
                                 }
                                 temFlag = true;
                                 valueToSave = true;
                             } else {
-                                System.out.println("Else");
+                                // // System.out.println("Else");
                             }
 
                         }
@@ -1335,13 +1363,13 @@ public class LimsMiddlewareController {
 
     public List<MyTestResult> getResultsFromOUL_R22Message(String message) {
         System.err.println("getResultsFromOUL_R22Message");
-//        System.out.println("message = " + message);
-//        System.out.println("message Length = " + message.length());
-//        System.out.println("message Type = " + HL7Utils.findMessageType(message));
+//        // // System.out.println("message = " + message);
+//        // // System.out.println("message Length = " + message.length());
+//        // // System.out.println("message Type = " + HL7Utils.findMessageType(message));
 
         List<MyTestResult> results = new ArrayList<>();
         String[] segments = message.split("\\r");
-//        System.out.println("segments Length = " + segments.length);
+//        // // System.out.println("segments Length = " + segments.length);
 
         String sampleId = null;
 
@@ -1350,22 +1378,22 @@ public class LimsMiddlewareController {
                 String[] fields = segments[i].split("\\|");
                 String temSampleId = fields[2];
                 sampleId = extractNumber(temSampleId);
-                System.out.println("Sample ID from HL7 Message = " + sampleId);
+                // // System.out.println("Sample ID from HL7 Message = " + sampleId);
             } else if (segments[i].startsWith("OBX")) {
                 String[] fields = segments[i].split("\\|");
 
                 if (fields.length > 14) { //Ensure there are enough fields before trying to access them
                     String[] testDetails = fields[3].split("\\^");
                     String testCode = testDetails[0];
-                    System.out.println("Test Code from HL7 Message = " + testCode);
+                    // // System.out.println("Test Code from HL7 Message = " + testCode);
                     String result = fields[5];
-                    System.out.println("Results extracted from HL7 Message = " + result);
+                    // // System.out.println("Results extracted from HL7 Message = " + result);
                     String unit = fields[6];
-                    System.out.println("Unit extracted from HL7 Message= " + unit);
+                    // // System.out.println("Unit extracted from HL7 Message= " + unit);
                     String error = null;
                     if (fields.length > 15) {
                         error = fields[15];
-                        System.out.println("Error in Extracing the message. Field Length is more than 15." + error);
+                        // // System.out.println("Error in Extracing the message. Field Length is more than 15." + error);
                     }
 
                     MyTestResult testResult = new MyTestResult(sampleId, testCode, result, unit, error);
@@ -1468,7 +1496,7 @@ public class LimsMiddlewareController {
     }
 
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix, DepartmentMachine deptAnalyzer, WebUser u) {
-        System.out.println("createNewPatientReport = ");
+//        // // System.out.println("createNewPatientReport = ");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
@@ -1540,7 +1568,7 @@ public class LimsMiddlewareController {
 //                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
 //                    val.setPatientReport(ptReport);
 //                    // ptReport.getPatientReportItemValues().add(val);
-//                    ////// // System.out.println("New value added to pr teport" + ptReport);
+//                    ////// // // // System.out.println("New value added to pr teport" + ptReport);
 //
 //                } else {
 //                    sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
@@ -1550,7 +1578,7 @@ public class LimsMiddlewareController {
 //                    hm.put("inv", ii);
 //                    val = ptRivFacade.findFirstByJpql(sql, hm);
 //                    if (val == null) {
-//                        ////// // System.out.println("val is null");
+//                        ////// // // // System.out.println("val is null");
 //                        val = new PatientReportItemValue();
 //                        if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
 //                            val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
@@ -1567,7 +1595,7 @@ public class LimsMiddlewareController {
 //                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
 //                        val.setPatientReport(ptReport);
 //                        //ptReport.getPatientReportItemValues().add(val);
-//                        ////// // System.out.println("value added to pr teport" + ptReport);
+//                        ////// // // // System.out.println("value added to pr teport" + ptReport);
 //
 //                    }
 //
@@ -1582,10 +1610,10 @@ public class LimsMiddlewareController {
 //                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
 //                    val.setPatientReport(ptReport);
 //                    // ptReport.getPatientReportItemValues().add(val);
-//                    ////// // System.out.println("New value added to pr teport" + ptReport);
+//                    ////// // // // System.out.println("New value added to pr teport" + ptReport);
 //
 //                } else {
-//                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
+//                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Value";
 //                    val = ptRivFacade.findFirstByJpql(sql);
 //                    if (val == null) {
 //                        val = new PatientReportItemValue();
@@ -1595,7 +1623,7 @@ public class LimsMiddlewareController {
 //                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
 //                        val.setPatientReport(ptReport);
 //                        // ptReport.getPatientReportItemValues().add(val);
-//                        ////// // System.out.println("value added to pr teport" + ptReport);
+//                        ////// // // // System.out.println("value added to pr teport" + ptReport);
 //
 //                    }
 //
@@ -1615,7 +1643,7 @@ public class LimsMiddlewareController {
         String sql;
         dl = ii.getName();
 
-        long ageInDays = com.divudi.java.CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
+        long ageInDays = com.divudi.core.util.CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
         sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
         List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {
@@ -1629,6 +1657,7 @@ public class LimsMiddlewareController {
     public PatientReport getUnapprovedPatientReport(PatientInvestigation pi) {
         String j = "select r from PatientReport r "
                 + " where r.patientInvestigation = :pi "
+                + " and r.retired != true "
                 + " and (r.approved = :a or r.approved is null) "
                 + " order by r.id desc";
 
@@ -1640,8 +1669,10 @@ public class LimsMiddlewareController {
     }
 
     public PatientReport getUnsavedPatientReport(PatientInvestigation pi) {
+        //Retired Reports are not excluded
         String j = "select r from PatientReport r "
-                + " where r.patientInvestigation = :pi "
+                + " where r.patientInvestigation = :pi"
+                + " and r.retired=false "
                 + " and (r.dataEntered = :a or r.dataEntered is null) "
                 + " order by r.id desc";
         Map m = new HashMap();
@@ -1661,26 +1692,23 @@ public class LimsMiddlewareController {
     }
 
     private List<MyPatient> generateListOfPatientSpecimanTestDataFromQBPcQ11cQBP_Q11(String qBPcQ11cQBP_Q11) {
-        System.out.println("generateListOfPatientSpecimanTestDataFromQBPcQ11cQBP_Q11");
         List<String> samplesIdentifiers = getSampleIdentifiersFromqBPcQ11cQBP_Q11(qBPcQ11cQBP_Q11);
-        System.out.println("samplesIdentifiers = " + samplesIdentifiers);
         List<MyPatient> mps = new ArrayList<>();
         for (String sid : samplesIdentifiers) {
 
             PatientSample ps = patientSampleFromId(sid);
             if (ps == null) {
-                System.out.println("No PS");
                 continue;
             }
 
             if (ps.getPatient() == null || ps.getPatient().getPerson() == null) {
-                System.out.println("No patient");
+                // // System.out.println("No patient");
                 continue;
             }
 
             List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
             if (pscs == null || pscs.isEmpty()) {
-                System.out.println("PSCS NULL OR EMPTY");
+                // // System.out.println("PSCS NULL OR EMPTY");
                 continue;
             }
 
@@ -1733,7 +1761,7 @@ public class LimsMiddlewareController {
             }
             mps.add(p);
         }
-        System.out.println("mps = " + mps.size());
+        // // System.out.println("mps = " + mps.size());
         return mps;
     }
 
@@ -1742,7 +1770,7 @@ public class LimsMiddlewareController {
         try {
             pid = Long.valueOf(id);
         } catch (NumberFormatException e) {
-            System.out.println("e = " + e);
+            // // System.out.println("e = " + e);
         }
         return patientSampleFacade.find(pid);
     }
@@ -1789,7 +1817,7 @@ public class LimsMiddlewareController {
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(LoginRequest request) {
-        System.out.println("login");
+        // // System.out.println("login");
         String username = request.getUsername();
         String password = request.getPassword();
 
@@ -1857,26 +1885,26 @@ public class LimsMiddlewareController {
     }
 
     public List<String> generateTestCodesForAnalyzer(String sampleId, String sendingAnalyzerName) {
-        System.out.println("sendingAnalyzerName = " + sendingAnalyzerName);
-        System.out.println("generateTestCodesForAnalyzer");
+        // // System.out.println("sendingAnalyzerName = " + sendingAnalyzerName);
+        // // System.out.println("generateTestCodesForAnalyzer");
         PatientSample ps = patientSampleFromId(sampleId);
-        System.out.println("ps = " + ps);
+        // // System.out.println("ps = " + ps);
         if (ps == null) {
-            System.out.println("No PS");
+            // // System.out.println("No PS");
             return null;
         }
 
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        System.out.println("pscs = " + pscs);
+        // // System.out.println("pscs = " + pscs);
         if (pscs == null || pscs.isEmpty()) {
-            System.out.println("PSCS NULL OR EMPTY");
+            // // System.out.println("PSCS NULL OR EMPTY");
             return null;
         }
 
         List<String> tests = new ArrayList<>();
 
         for (PatientSampleComponant c : pscs) {
-            System.out.println("c = " + c);
+            // // System.out.println("c = " + c);
             Investigation myIx = c.getPatientInvestigation().getInvestigation();
 
             if (myIx == null) {
@@ -1890,14 +1918,14 @@ public class LimsMiddlewareController {
             }
 
             for (InvestigationItem tii : myIx.getReportItems()) {
-//                System.out.println("tii = " + tii.getName());
+//                // // System.out.println("tii = " + tii.getName());
                 if (tii.getIxItemType() == InvestigationItemType.Value) {
-//                    System.out.println("value");
+//                    // // System.out.println("value");
                     String sampleTypeName;
                     String samplePriority;
 
                     if (tii.getItem() == null) {
-                        System.out.println("tii is NULL " + tii);
+                        // // System.out.println("tii is NULL " + tii);
                         continue;
                     }
 
@@ -1914,35 +1942,35 @@ public class LimsMiddlewareController {
                     MySpeciman ms = new MySpeciman();
                     ms.setSpecimanName(sampleTypeName);
                     if (tii.getItem().isHasMoreThanOneComponant()) {
-                        System.out.println("more than one componant");
-                        System.out.println("tii = " + tii.getName());
-                        System.out.println("tii.getTest() = " + tii.getTest());
+                        // // System.out.println("more than one componant");
+                        // // System.out.println("tii = " + tii.getName());
+                        // // System.out.println("tii.getTest() = " + tii.getTest());
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            System.out.println("tii.getSampleComponent() = " + tii.getSampleComponent());
-                            System.out.println("c.getInvestigationComponant() = " + c.getInvestigationComponant());
+                            // // System.out.println("tii.getSampleComponent() = " + tii.getSampleComponent());
+                            // // System.out.println("c.getInvestigationComponant() = " + c.getInvestigationComponant());
                             if (tii.getSampleComponent().equals(c.getInvestigationComponant())) {
-                                System.out.println("going to check analyzer equal");
+                                // // System.out.println("going to check analyzer equal");
                                 if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
-                                    System.out.println("tii.getTest().getCode() = " + tii.getTest().getCode());
-                                    System.out.println("c.getInvestigationComponant().getName() = " + c.getInvestigationComponant().getName());
+                                    // // System.out.println("tii.getTest().getCode() = " + tii.getTest().getCode());
+                                    // // System.out.println("c.getInvestigationComponant().getName() = " + c.getInvestigationComponant().getName());
                                     tests.add(tii.getTest().getCode());
                                     updateStatusToPeformed(c);
-                                    System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                                    // // System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                                 }
 //                                tests.add(tii.getTest().getName());
 
                             }
                         }
                     } else {
-                        System.out.println("one componant");
-                        System.out.println("tti = " + tii.getName());
-                        System.out.println("tii.getTest() = " + tii.getTest());
+                        // // System.out.println("one componant");
+                        // // System.out.println("tti = " + tii.getName());
+                        // // System.out.println("tii.getTest() = " + tii.getTest());
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            System.out.println("going to check analyzer equal");
+                            // // System.out.println("going to check analyzer equal");
                             if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
                                 tests.add(tii.getTest().getCode());
                                 updateStatusToPeformed(c);
-                                System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                                // // System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                             }
 
                         }
@@ -1950,7 +1978,7 @@ public class LimsMiddlewareController {
                 }
             }
         }
-        System.out.println("tests = " + tests);
+        // // System.out.println("tests = " + tests);
         Set<String> uniqueTests = new HashSet<>(tests);
         List<String> uniqueTestList = new ArrayList<>(uniqueTests);
         return uniqueTestList;
@@ -1993,25 +2021,25 @@ public class LimsMiddlewareController {
     }
 
     public List<String> generateTestCodesForAnalyzer(String sampleId) {
-        System.out.println("generateTestCodesForAnalyzer");
+        // // System.out.println("generateTestCodesForAnalyzer");
         PatientSample ps = patientSampleFromId(sampleId);
-        System.out.println("ps = " + ps);
+        // // System.out.println("ps = " + ps);
         if (ps == null) {
-            System.out.println("No PS");
+            // // System.out.println("No PS");
             return null;
         }
 
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        System.out.println("pscs = " + pscs);
+        // // System.out.println("pscs = " + pscs);
         if (pscs == null || pscs.isEmpty()) {
-            System.out.println("PSCS NULL OR EMPTY");
+            // // System.out.println("PSCS NULL OR EMPTY");
             return null;
         }
 
         List<String> tests = new ArrayList<>();
 
         for (PatientSampleComponant c : pscs) {
-            System.out.println("c = " + c);
+            // // System.out.println("c = " + c);
             Investigation myIx = c.getPatientInvestigation().getInvestigation();
 
             if (myIx == null) {
@@ -2025,7 +2053,7 @@ public class LimsMiddlewareController {
             }
 
             for (InvestigationItem tii : myIx.getReportItems()) {
-                System.out.println("tii = " + tii);
+                // // System.out.println("tii = " + tii);
                 if (tii.getIxItemType() == InvestigationItemType.Value) {
                     String sampleTypeName;
                     String samplePriority;
@@ -2042,12 +2070,12 @@ public class LimsMiddlewareController {
                     MySpeciman ms = new MySpeciman();
                     ms.setSpecimanName(sampleTypeName);
                     if (tii.getItem().isHasMoreThanOneComponant()) {
-                        System.out.println("tti = " + tii);
+                        // // System.out.println("tti = " + tii);
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
                             if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
 
                                 tests.add(tii.getTest().getCode());
-                                System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                                // // System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                                 tests.add(tii.getTest().getName());
 
                             }
@@ -2055,14 +2083,14 @@ public class LimsMiddlewareController {
                     } else {
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
                             tests.add(tii.getTest().getCode());
-                            System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                            // // System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
 
                         }
                     }
                 }
             }
         }
-        System.out.println("tests = " + tests);
+        // // System.out.println("tests = " + tests);
         return tests;
     }
 

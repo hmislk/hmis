@@ -7,56 +7,55 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.BillListWithTotals;
-import com.divudi.data.dataStructure.DatedBills;
-import com.divudi.data.dataStructure.PharmacyDetail;
-import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
-import com.divudi.data.dataStructure.PharmacySummery;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.table.String1Value3;
-import com.divudi.data.table.String1Value6;
-import com.divudi.data.table.String2Value4;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.BillListWithTotals;
+import com.divudi.core.data.dataStructure.DatedBills;
+import com.divudi.core.data.dataStructure.PharmacyDetail;
+import com.divudi.core.data.dataStructure.PharmacyPaymetMethodSummery;
+import com.divudi.core.data.dataStructure.PharmacySummery;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.table.String1Value3;
+import com.divudi.core.data.table.String1Value6;
+import com.divudi.core.data.table.String2Value4;
 import com.divudi.ejb.BillReportBean;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.ItemsDistributors;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.java.CommonFunctions;
-import com.divudi.light.common.BillLight;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.ItemsDistributors;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.light.common.BillLight;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -240,11 +239,11 @@ public class PharmacySaleReportController implements Serializable {
 
     /////
     @Inject
-    CommonController commonController;
-    @Inject
     AuditEventApplicationController auditEventApplicationController;
     @Inject
     BillController billController;
+    @Inject
+    CommonReport commonReport;
 
     private CommonFunctions commonFunctions;
     @EJB
@@ -329,7 +328,6 @@ public class PharmacySaleReportController implements Serializable {
         nonMovingItems = itemFacade.findByJpql(j, m);
         ////System.out.println("nonMovingItems = " + nonMovingItems);
 
-        
     }
 
     public void setCategory(Category category) {
@@ -355,7 +353,7 @@ public class PharmacySaleReportController implements Serializable {
         makeNull(); // Execute the logic initially in the actionListener
         return "/pharmacy/pharmacy_report_list_item_with_multiple_dealor?faces-redirect=true";
     }
-    
+
     public void makeNull() {
         fromDate = null;
         category = null;
@@ -471,7 +469,7 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
+
     }
 
     public double getFreeQtyByPurchaseRateTotal(List<BillItem> items) {
@@ -549,7 +547,7 @@ public class PharmacySaleReportController implements Serializable {
     }
 
     private List<Object[]> fetchSaleValueByDepartment() {
-        if(department==null){
+        if (department == null) {
             JsfUtil.addErrorMessage("Please select department");
             return new ArrayList<>();
         }
@@ -575,7 +573,7 @@ public class PharmacySaleReportController implements Serializable {
             sql += " and i.item.category=:cat";
             m.put("cat", category);
         }
-        
+
         if (user != null) {
             sql += " and i.creater=:wu ";
             m.put("wu", user);
@@ -872,6 +870,7 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
+        commonReport.setSupplier(null);
         return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
     }
 
@@ -1059,8 +1058,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml?faces-redirect=true";
     }
-    
-   
 
     public String navigatePharmacyReportPurchaseDetailBySupplier() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -2310,7 +2307,7 @@ public class PharmacySaleReportController implements Serializable {
 //                + " or f.paymentMethod=:pm4 )"
 //                + " and f.toInstitution=:ins "
 //                + " and f.institution=:billedIns ";
-//        
+//
         sql = "select sum(f.total - f.staffFee) "
                 + " from Bill f "
                 + " where f.retired=false "
@@ -3847,7 +3844,6 @@ public class PharmacySaleReportController implements Serializable {
 
         grantNetTotal = calGrantNetTotalByDepartment();
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -4160,7 +4156,6 @@ public class PharmacySaleReportController implements Serializable {
             totalMargineValue += r.getMarginValue();
         }
 
-        
     }
 
     public void createCategoryMovementReportNew() {
@@ -4303,7 +4298,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void createCategoryMovementReportByItemBatch() {
@@ -4601,7 +4595,6 @@ public class PharmacySaleReportController implements Serializable {
             totalMargineValue += r.getMarginValue();
         }
 
-        
     }
 
     public List<Object[]> fetchTransferIssueReciveBills() {
@@ -4731,7 +4724,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
 
     }
 
@@ -4777,7 +4769,6 @@ public class PharmacySaleReportController implements Serializable {
         billedSummery.setCancelledTotal(calGrantHandOverDiscount());
         billedSummery.setRefundedTotal(calGrantHandOverProf());
 
-        
     }
 
     public double calValueSale(BillType billType, PaymentMethod paymentMethod, Department department, Bill bill1, Bill bill2) {
@@ -4953,7 +4944,6 @@ public class PharmacySaleReportController implements Serializable {
         BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
 
-        
     }
 
     public void createDailyOpdFeeSummeryWithoutCounts() {
@@ -4962,7 +4952,6 @@ public class PharmacySaleReportController implements Serializable {
         BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
         createFeeSummeryWithoutCounts(btps);
 
-        
     }
 
     public void createDailyInwardFeeSummeryWithCounts() {
@@ -4971,7 +4960,6 @@ public class PharmacySaleReportController implements Serializable {
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
 
-        
     }
 
     public void createDailyInwardFeeSummeryWithoutCounts() {
@@ -4980,7 +4968,6 @@ public class PharmacySaleReportController implements Serializable {
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithoutCounts(btps);
 
-        
     }
 
     public void createLabSummeryInward() {
@@ -5013,7 +5000,7 @@ public class PharmacySaleReportController implements Serializable {
 
 //            //inward bills
 //            double hospitaFeeInward = calBillFee(nowDate, FeeType.OwnInstitution, BillType.InwardBill);
-//            //double 
+//            //double
             newRow.setValue1(hospitalFeeCash);
             newRow.setValue2(regentFeeCash);
             newRow.setValue3(proTotCash);
@@ -5132,8 +5119,6 @@ public class PharmacySaleReportController implements Serializable {
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
-
-        
 
     }
 
@@ -5859,7 +5844,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
 
     }
 
@@ -6140,7 +6124,6 @@ public class PharmacySaleReportController implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -6251,8 +6234,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
-        
 
     }
 
@@ -6474,8 +6455,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
-
     }
 
     public void createSaleReportByDateDetailPaymentScheme() {
@@ -6579,8 +6558,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
-        
 
     }
 
@@ -6718,8 +6695,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
-        
 
     }
 
@@ -7075,7 +7050,6 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void createSalePaymentMethodDetailBillItems() {
@@ -7190,7 +7164,6 @@ public class PharmacySaleReportController implements Serializable {
         amps.addAll(allAmps);
         ////System.out.println("amps = " + amps.size());
 
-        
     }
 
     public void createItemsDistributersWithDistributer() {
@@ -7212,7 +7185,6 @@ public class PharmacySaleReportController implements Serializable {
             }
         }
 
-        
     }
 
     public void createItemListOneItemHasGreterThanOneDistributor() {
@@ -7262,7 +7234,6 @@ public class PharmacySaleReportController implements Serializable {
         }
         ////System.out.println("items = " + items.size());
 
-        
     }
 
     public void createItemWithMultipleDistributor() {
@@ -7284,7 +7255,6 @@ public class PharmacySaleReportController implements Serializable {
 
         }
 
-        
     }
 
     public List<Amp> getAllPharmacyItems() {
@@ -7385,7 +7355,7 @@ public class PharmacySaleReportController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
 
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -7396,7 +7366,7 @@ public class PharmacySaleReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
@@ -8783,14 +8753,6 @@ public class PharmacySaleReportController implements Serializable {
         this.itemsWithDistributers = itemsWithDistributers;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public Vmp getVmp() {
         return vmp;
     }
@@ -8807,6 +8769,4 @@ public class PharmacySaleReportController implements Serializable {
         this.billLights = billLights;
     }
 
-    
-    
 }

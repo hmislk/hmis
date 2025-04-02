@@ -5,36 +5,35 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -64,8 +63,6 @@ public class PharmacyAdjustmentController implements Serializable {
 
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -160,7 +157,7 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public List<BillItem> fetchBillItems(BillType bt) {
-        List<BillItem> billItems = new ArrayList<>();
+        List<BillItem> billItems;
 
         Map m = new HashMap();
         String sql;
@@ -280,9 +277,28 @@ public class PharmacyAdjustmentController implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.stock !=:s and "
+                + "((i.itemBatch.item.code) like :n or "
+                + "(i.staff.person.name) like :n or "
+                + "(i.staff.code) like :n or "
+                + "(i.itemBatch.item.name) like :n ) "
+                + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire , i.stock desc";
+        items = getStockFacade().findByJpql(sql, m, 20);
+
+        return items;
+    }
+
+    public List<Stock> completeStaffStocksInStore(String qry) {
+        List<Stock> items;
+        String sql;
+        Map m = new HashMap();
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        sql = "select i from Stock i where i.stock !=:s and "
                 + "((i.staff.code) like :n or "
                 + "(i.staff.person.name) like :n or "
                 + "(i.itemBatch.item.name) like :n ) "
+                + " and i.itemBatch.item."
                 + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire , i.stock desc";
         items = getStockFacade().findByJpql(sql, m, 20);
 
@@ -500,7 +516,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentExpiryDate);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
-       
+
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -519,18 +535,17 @@ public class PharmacyAdjustmentController implements Serializable {
         billItem = null;
         BillItem tbi = getBillItem();
 
-        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
-
+//        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
         tbi.setPharmaceuticalBillItem(null);
-        ph.setStock(stock);
+        getBillItem().getPharmaceuticalBillItem().setStock(stock);
 
         tbi.setItem(getStock().getItemBatch().getItem());
-        tbi.setQty((double) qty);
+        tbi.setQty(qty);
 
         //pharmaceutical Bill Item
-        ph.setDoe(getStock().getItemBatch().getDateOfExpire());
-        ph.setFreeQty(0.0f);
-        ph.setItemBatch(getStock().getItemBatch());
+        getBillItem().getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
+        getBillItem().getPharmaceuticalBillItem().setFreeQty(0.0f);
+        getBillItem().getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
 
         Stock fetchedStock = getStockFacade().find(stock.getId());
         double stockQty = fetchedStock.getStock();
@@ -538,7 +553,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         changingQty = qty - stockQty;
 
-        ph.setQty(changingQty);
+        getBillItem().getPharmaceuticalBillItem().setQty(changingQty);
 
         //Rates
         //Values
@@ -551,28 +566,14 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
-
-        ph.setBillItem(null);
-
-        if (ph.getId() == null) {
-            getPharmaceuticalBillItemFacade().create(ph);
-        }
-
-        tbi.setPharmaceuticalBillItem(ph);
-
         if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        } else {
             getBillItemFacade().edit(tbi);
         }
-
-        ph.setBillItem(tbi);
-        getPharmaceuticalBillItemFacade().edit(ph);
-
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
-
         getBillFacade().edit(getDeptAdjustmentPreBill());
-
-        return ph;
-
+        return getBillItem().getPharmaceuticalBillItem();
     }
 
     private PharmaceuticalBillItem saveDeptAdjustmentBillItems(Stock s) {
@@ -925,7 +926,7 @@ public class PharmacyAdjustmentController implements Serializable {
             fromBi.setPharmaceuticalBillItem(null);
             fromPbi.setStock(s);
             fromBi.setItem(s.getItemBatch().getItem());
-            fromBi.setQty(0 - ((double) s.getStock()));
+            fromBi.setQty(0 - s.getStock());
             //pharmaceutical Bill Item
             fromPbi.setDoe(s.getItemBatch().getDateOfExpire());
             fromPbi.setFreeQty(0.0);
@@ -964,7 +965,7 @@ public class PharmacyAdjustmentController implements Serializable {
             toBi.setPharmaceuticalBillItem(null);
             toPbi.setStock(s);
             toBi.setItem(s.getItemBatch().getItem());
-            toBi.setQty(0 - ((double) s.getStock()));
+            toBi.setQty(0 - s.getStock());
             //pharmaceutical Bill Item
             toPbi.setDoe(s.getItemBatch().getDateOfExpire());
             toPbi.setFreeQty(0.0);
@@ -1017,7 +1018,7 @@ public class PharmacyAdjustmentController implements Serializable {
         toBi.setPharmaceuticalBillItem(null);
         toPbi.setStock(s);
         toBi.setItem(s.getItemBatch().getItem());
-        toBi.setQty(0 - ((double) s.getStock()));
+        toBi.setQty(0 - s.getStock());
         //pharmaceutical Bill Item
         toPbi.setDoe(s.getItemBatch().getDateOfExpire());
         toPbi.setFreeQty(0.0);
@@ -1054,10 +1055,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustDepartmentStock() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1074,10 +1071,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustStockForDepartment() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1087,7 +1080,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1107,20 +1100,14 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustStaffStock() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
-
         if (qty == null) {
             JsfUtil.addErrorMessage("Add Quantity..");
             return;
         }
-
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1188,10 +1175,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustPurchaseRate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1206,7 +1189,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1224,10 +1207,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustExDate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1237,7 +1216,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1256,10 +1235,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustRetailRate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1269,7 +1244,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1287,10 +1262,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustWholesaleRate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1300,7 +1271,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1601,14 +1572,6 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<Stock> getStocks() {

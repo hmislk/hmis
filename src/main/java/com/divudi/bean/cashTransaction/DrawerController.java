@@ -10,31 +10,14 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.IOU;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.None;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.PatientPoints;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import static com.divudi.data.PaymentMethod.Voucher;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.entity.Payment;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.cashTransaction.DrawerEntry;
-import com.divudi.facade.DrawerFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.cashTransaction.DrawerEntry;
+import com.divudi.core.facade.DrawerFacade;
 import com.divudi.service.DrawerService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -94,10 +77,19 @@ public class DrawerController implements Serializable {
         updateDrawer(payment, Math.abs(payment.getPaidValue()), webUser);
     }
 
+    public void updateDrawer(List<Payment> payments, WebUser webUser) {
+        if (payments == null || payments.isEmpty()) {
+            return;
+        }
+        for (Payment payment : payments) {
+            updateDrawer(payment, payment.getPaidValue(), webUser);
+        }
+    }
+
     public void updateDrawer(Payment payment, double paidValue, WebUser webUser) {
         System.out.println("paidValue = " + paidValue);
         System.out.println("payment = " + payment);
-        if (payment == null || payment.getCreater() == null) {
+        if (payment == null || webUser == null) {
             System.err.println("Payment or payment creator is null.");
             return;
         }
@@ -109,7 +101,7 @@ public class DrawerController implements Serializable {
         }
 
         //update Drover History
-        drawerEntryUpdate(payment, drawer);
+        drawerEntryUpdate(payment, drawer, webUser);
 
         synchronized (drawer) {
             switch (payment.getPaymentMethod()) {
@@ -194,7 +186,107 @@ public class DrawerController implements Serializable {
         }
     }
 
-    // </editor-fold>  
+    public void updateDrawer(Bill bill, double paidValue, PaymentMethod paymentMethod, WebUser webUser) {
+        System.out.println("paidValue = " + paidValue);
+        System.out.println("bill = " + bill);
+        System.out.println("webUser = " + webUser);
+        if (bill == null || webUser == null) {
+            System.err.println("Payment or payment creator is null.");
+            return;
+        }
+
+        Drawer drawer = getUsersDrawer(webUser);
+        if (drawer == null) {
+            System.err.println("No drawer found for the user.");
+            return;
+        }
+
+        //update Drover History
+        drawerEntryUpdate(bill, drawer, paymentMethod, webUser, paidValue);
+
+        synchronized (drawer) {
+            switch (paymentMethod) {
+                case OnCall:
+                    drawer.setOnCallInHandValue(safeAdd(drawer.getOnCallInHandValue(), paidValue));
+                    drawer.setOnCallBalance(safeAdd(drawer.getOnCallBalance(), paidValue));
+                    break;
+                case Cash:
+                    drawer.setCashInHandValue(safeAdd(drawer.getCashInHandValue(), paidValue));
+                    drawer.setCashBalance(safeAdd(drawer.getCashBalance(), paidValue));
+                    break;
+                case Card:
+                    drawer.setCardInHandValue(safeAdd(drawer.getCardInHandValue(), paidValue));
+                    drawer.setCardBalance(safeAdd(drawer.getCardBalance(), paidValue));
+                    break;
+                case MultiplePaymentMethods:
+                    drawer.setMultiplePaymentMethodsInHandValue(safeAdd(drawer.getMultiplePaymentMethodsInHandValue(), paidValue));
+                    drawer.setMultiplePaymentMethodsBalance(safeAdd(drawer.getMultiplePaymentMethodsBalance(), paidValue));
+                    break;
+                case Staff:
+                    drawer.setStaffInHandValue(safeAdd(drawer.getStaffInHandValue(), paidValue));
+                    drawer.setStaffBalance(safeAdd(drawer.getStaffBalance(), paidValue));
+                    break;
+                case Credit:
+                    drawer.setCreditInHandValue(safeAdd(drawer.getCreditInHandValue(), paidValue));
+                    drawer.setCreditBalance(safeAdd(drawer.getCreditBalance(), paidValue));
+                    break;
+                case Staff_Welfare:
+                    drawer.setStaffWelfareInHandValue(safeAdd(drawer.getStaffWelfareInHandValue(), paidValue));
+                    drawer.setStaffWelfareBalance(safeAdd(drawer.getStaffWelfareBalance(), paidValue));
+                    break;
+                case Voucher:
+                    drawer.setVoucherInHandValue(safeAdd(drawer.getVoucherInHandValue(), paidValue));
+                    drawer.setVoucherBalance(safeAdd(drawer.getVoucherBalance(), paidValue));
+                    break;
+                case IOU:
+                    drawer.setIouInHandValue(safeAdd(drawer.getIouInHandValue(), paidValue));
+                    drawer.setIouBalance(safeAdd(drawer.getIouBalance(), paidValue));
+                    break;
+                case Agent:
+                    drawer.setAgentInHandValue(safeAdd(drawer.getAgentInHandValue(), paidValue));
+                    drawer.setAgentBalance(safeAdd(drawer.getAgentBalance(), paidValue));
+                    break;
+                case Cheque:
+                    drawer.setChequeInHandValue(safeAdd(drawer.getChequeInHandValue(), paidValue));
+                    drawer.setChequeBalance(safeAdd(drawer.getChequeBalance(), paidValue));
+                    break;
+                case Slip:
+                    drawer.setSlipInHandValue(safeAdd(drawer.getSlipInHandValue(), paidValue));
+                    drawer.setSlipBalance(safeAdd(drawer.getSlipBalance(), paidValue));
+                    break;
+                case ewallet:
+                    drawer.setEwalletInHandValue(safeAdd(drawer.getEwalletInHandValue(), paidValue));
+                    drawer.setEwalletBalance(safeAdd(drawer.getEwalletBalance(), paidValue));
+                    break;
+                case PatientDeposit:
+                    drawer.setPatientDepositInHandValue(safeAdd(drawer.getPatientDepositInHandValue(), paidValue));
+                    drawer.setPatientDepositBalance(safeAdd(drawer.getPatientDepositBalance(), paidValue));
+                    break;
+                case PatientPoints:
+                    drawer.setPatientPointsInHandValue(safeAdd(drawer.getPatientPointsInHandValue(), paidValue));
+                    drawer.setPatientPointsBalance(safeAdd(drawer.getPatientPointsBalance(), paidValue));
+                    break;
+                case OnlineSettlement:
+                    drawer.setOnlineSettlementInHandValue(safeAdd(drawer.getOnlineSettlementInHandValue(), paidValue));
+                    drawer.setOnlineSettlementBalance(safeAdd(drawer.getOnlineSettlementBalance(), paidValue));
+                    break;
+                case None:
+                    drawer.setNoneInHandValue(safeAdd(drawer.getNoneInHandValue(), paidValue));
+                    drawer.setNoneBalance(safeAdd(drawer.getNoneBalance(), paidValue));
+                    break;
+                case YouOweMe:
+                    drawer.setYouOweMeInHandValue(safeAdd(drawer.getYouOweMeInHandValue(), paidValue));
+                    drawer.setYouOweMeBalance(safeAdd(drawer.getYouOweMeBalance(), paidValue));
+                    break;
+                default:
+                    break;
+            }
+
+            ejbFacade.editAndCommit(drawer);
+        }
+    }
+
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Down">
     public void updateDrawerForOuts(List<Payment> payments, WebUser webUser) {
         for (Payment payment : payments) {
@@ -206,7 +298,15 @@ public class DrawerController implements Serializable {
         updateDrawer(payment, -Math.abs(payment.getPaidValue()), webUser);
     }
 
-    // </editor-fold>  
+    public void updateDrawerForOuts(Bill bill, PaymentMethod paymentMethod, double value, WebUser webUser) {
+        updateDrawer(bill, -Math.abs(value), paymentMethod, webUser);
+    }
+
+    public void updateDrawerForIns(Bill bill, PaymentMethod paymentMethod, double value, WebUser webUser) {
+        updateDrawer(bill, Math.abs(value), paymentMethod, webUser);
+    }
+
+    // </editor-fold>
     public void updateDrawerForIns(List<Payment> payments) {
         if (payments == null) {
             return;
@@ -219,6 +319,14 @@ public class DrawerController implements Serializable {
 
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {
         drawerService.drawerEntryUpdate(payment, currentDrawer);
+    }
+
+    public void drawerEntryUpdate(Payment payment, Drawer currentDrawer, WebUser user) {
+        drawerService.drawerEntryUpdate(payment, currentDrawer, user);
+    }
+
+    public void drawerEntryUpdate(Bill bill, Drawer currentDrawer, PaymentMethod paymentMethod, WebUser user, Double value) {
+        drawerService.drawerEntryUpdate(bill, currentDrawer, paymentMethod, user, value);
     }
 
     public void updateDrawerForOuts(List<Payment> payments) {

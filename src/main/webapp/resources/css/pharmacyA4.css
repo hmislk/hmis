@@ -6,23 +6,95 @@
         Purpose of the stylesheet follows.
 */
 
-root { 
+root {
     display: block;
 }
 
 @media print {
-  .shadow, .shadow-sm, .shadow-lg {
-    box-shadow: none !important;
-  }
+    .no-border-table {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .no-border-table .ui-datatable-tablewrapper table {
+        border-collapse: collapse !important;
+        border: none !important;
+    }
+
+    .no-border-table .ui-state-default {
+        border: none !important;
+        background: none !important;
+    }
+
+    .no-border-table td,
+    .no-border-table th {
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .no-border-table .ui-datatable-data tr {
+        border: none !important;
+    }
+
+    .no-border-table .ui-datatable-footer {
+        border: none !important;
+    }
+
+    .no-border-table .ui-datatable-header {
+        border: none !important;
+    }
+}
+
+@media screen {
+    .no-border-table {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .no-border-table .ui-datatable-tablewrapper table {
+        border-collapse: collapse !important;
+        border: none !important;
+    }
+
+    .no-border-table .ui-state-default {
+        border: none !important;
+        background: none !important;
+    }
+
+    .no-border-table td,
+    .no-border-table th {
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .no-border-table .ui-datatable-data tr {
+        border: none !important;
+    }
+
+    .no-border-table .ui-datatable-footer {
+        border: none !important;
+    }
+
+    .no-border-table .ui-datatable-header {
+        border: none !important;
+    }
+}
+
+@media print {
+    .shadow, .shadow-sm, .shadow-lg {
+        box-shadow: none !important;
+    }
 }
 
 @media print{
     .posbill{
-        page-break-after:always!important; 
+        page-break-after:always!important;
         font-family:Arial, Helvetica, sans-serif!important;
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 1px!important; 
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 1px!important;
         padding: 1px!important;
         width: 100%!important;
         height: 100%!important;
@@ -30,28 +102,28 @@ root {
         font-size: 100%;
         border: none!important;
         line-height: 2!important;
-        /*font-family: sans-serif!important;*/ 
-         
+        /*font-family: sans-serif!important;*/
+
     }
-    
+
     .posbillA4{
-        page-break-after:always!important; 
+        page-break-after:always!important;
         font-family:Arial, Helvetica, sans-serif!important;
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 1px!important; 
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 1px!important;
         padding: 1px!important;
         width: 100%!important;
         height: 100%!important;
         /*padding-left:0.5%!important;*/
         font-size: 100%;
-/*        border: none!important;*/
+        /*        border: none!important;*/
         line-height: 2!important;
-        /*font-family: sans-serif!important;*/ 
-         
+        /*font-family: sans-serif!important;*/
+
     }
-    
-    
+
+
 }
 
 
@@ -60,35 +132,35 @@ root {
         position: relative!important;
         /*padding-left: 0.5%!important;*/
         height:800px!important;
-        width:1100px!important; 
-        overflow:scroll!important; 
-        font-family: monospace!important; 
-        font-size: 12px!important; 
-        margin:1px!important; 
+        width:1100px!important;
+        overflow:scroll!important;
+        font-family: monospace!important;
+        font-size: 12px!important;
+        margin:1px!important;
         padding: 1px!important;
-        background-size: 100% auto!important; 
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 100%;
         line-height: 2!important;
     }
-    
+
     .posbillA4{
         position: relative!important;
         /*padding-left: 0.5%!important;*/
         height:800px!important;
-        width:1100px!important; 
-/*         */
-        font-family: monospace!important; 
-        font-size: 12px!important; 
-        margin:1px!important; 
+        width:1100px!important;
+        /*         */
+        font-family: monospace!important;
+        font-size: 12px!important;
+        margin:1px!important;
         padding: 1px!important;
-        background-size: 100% auto!important; 
-/*        border: 1px solid!important;*/
+        background-size: 100% auto!important;
+        /*        border: 1px solid!important;*/
         font-size: 100%;
         line-height: 2!important;
     }
-    
-    
+
+
 
 }
 
@@ -99,8 +171,8 @@ root {
 
 }
 .institutionContact{
-    text-align: center!important;   
-    
+    text-align: center!important;
+
 }
 
 
