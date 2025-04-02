@@ -20,11 +20,11 @@
         <div style="position: relative!important;
              /*padding-left: 0.5%!important;*/
              height:95%!important;
-             width:95%!important; 
+             width:95%!important;
              /*             overflow:hidden!important; */
-             font-family: Times New Roman!important; 
-             font-size: 10px!important; 
-             margin:2px!important; 
+             font-family: Times New Roman!important;
+             font-size: 10px!important;
+             margin:2px!important;
              padding: 5px!important;
              /*             background-size: 100% auto!important;*/
              letter-spacing: 0px;
@@ -58,7 +58,7 @@
                     <tr>
                         <td>
                             <!--<h:outputLabel value="Date : " />-->
-                            <h:outputLabel value="#{commonController.currentDateTime}">
+                            <h:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
                                 <f:convertDateTime pattern="dd-MMM-yy" />
                             </h:outputLabel>
                         </td>
@@ -162,7 +162,7 @@
                     <tr>
                         <td colspan="3" width="100%">
                             <p:panel>
-                                <p:dataTable id="safrin" value="#{cc.attrs.bills}" var="b" rowIndexVar="i" >  
+                                <p:dataTable id="safrin" value="#{cc.attrs.bills}" var="b" rowIndexVar="i" >
                                     <p:column>
                                         <f:facet name="header">
                                             <p:outputLabel value="No" style="float: left;"/>
@@ -189,7 +189,7 @@
                                     </p:column>
                                     <p:column styleClass="averageNumericColumn">
                                         <f:facet name="header">
-                                            <h:outputLabel value="Hospital Charges"/>                        
+                                            <h:outputLabel value="Hospital Charges"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b.transTotalWithOutCCFee}">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -197,7 +197,7 @@
                                     </p:column>
                                     <p:column styleClass="averageNumericColumn">
                                         <f:facet name="header">
-                                            <h:outputLabel value="Vat Charges"/>                        
+                                            <h:outputLabel value="Vat Charges"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b.vat}">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -205,7 +205,7 @@
                                     </p:column>
                                     <p:column styleClass="averageNumericColumn">
                                         <f:facet name="header">
-                                            <h:outputLabel value="Total Charges"/>                        
+                                            <h:outputLabel value="Total Charges"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b.vat+b.transTotalWithOutCCFee}">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -217,7 +217,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Hospital Total : 
+                                                   Hospital Total :
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -234,7 +234,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   VAT Total : 
+                                                   VAT Total :
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;
@@ -253,7 +253,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Net Total : 
+                                                   Net Total :
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -300,7 +300,7 @@
                     <tr>
                         <td colspan="3">
                             <p>
-                                * Please note that prevailing bank overdraft interest rate will be applied for all 
+                                * Please note that prevailing bank overdraft interest rate will be applied for all
                                 overdue debts.
                             </p>
                         </td>
@@ -315,7 +315,7 @@
                     <tr>
                         <td colspan="3">
                             <p>
-                                If you have any Questions about this invoice, please contact 
+                                If you have any Questions about this invoice, please contact
                                 #{sessionController.loggedUser.staff.person.nameWithTitle} (Tel : 091-7212897).
                             </p>
                         </td>

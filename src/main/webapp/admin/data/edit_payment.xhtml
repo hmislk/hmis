@@ -23,12 +23,12 @@
                                     icon="fas fa-floppy-disk"
                                     ajax="false" 
                                     action="#{paymentController.save(billSearch.payment)}" ></p:commandButton>
-<!--                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Back" 
-                                    class="ui-button-warning"
-                                    icon="fas fa-arrow-left"
-                                    action="/opd/view/opd_batch_bill?faces-redirect=true"></p:commandButton>-->
+                                <!--                                <p:commandButton 
+                                                                    ajax="false" 
+                                                                    value="Back" 
+                                                                    class="ui-button-warning"
+                                                                    icon="fas fa-arrow-left"
+                                                                    action="/opd/view/opd_batch_bill?faces-redirect=true"></p:commandButton>-->
                             </div>
                         </f:facet>
 
@@ -48,8 +48,9 @@
                                 id="pay"
                                 value="#{billSearch.payment.paymentMethod}"
                                 >     
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
                                 <f:selectItems 
-                                    value="#{enumController.paymentMethodsForOpdBilling}"  
+                                    value="#{enumController.allPaymentMethods}"  
                                     var="pm"
                                     itemLabel="#{pm.label}"
                                     itemValue="#{pm}"/>
@@ -99,6 +100,36 @@
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
                                 </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <p:outputLabel value="User" ></p:outputLabel>
+                            <h:panelGroup id="cmbUser">
+                                <p:outputLabel 
+                                    rendered="#{not webUserController.hasPrivilege('Developers')}"
+                                    value="#{billSearch.payment.creater.webUserPerson.name}" >
+                                </p:outputLabel>
+                                <p:autoComplete 
+                                    value="#{billSearch.payment.creater}"
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    completeMethod="#{webUserController.completeUser}"
+                                    var="wu"
+                                    itemLabel="#{wu.webUserPerson.name}"
+                                    itemValue="#{wu}"
+                                    ></p:autoComplete>
+                            </h:panelGroup>
+                            
+                            <p:outputLabel value="Created at" ></p:outputLabel>
+                            <h:panelGroup id="gpCreatedAt">
+                                <p:outputLabel 
+                                    rendered="#{not webUserController.hasPrivilege('Developers')}"
+                                    value="#{billSearch.payment.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                                <p:calendar
+                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    value="#{billSearch.payment.createdAt}"
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    ></p:calendar>
                             </h:panelGroup>
 
                             <h:outputLabel></h:outputLabel>

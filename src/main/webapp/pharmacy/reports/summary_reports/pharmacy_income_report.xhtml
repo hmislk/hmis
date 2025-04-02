@@ -217,6 +217,11 @@
                         paginatorPosition="bottom">
                         <p:column headerText="Bill No" width="16em" style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.bill.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
+                            <f:facet name="footer" >
+                                <h:outputText value="Total Amounts" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                    
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
@@ -231,7 +236,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -241,7 +246,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cashValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cashValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -252,7 +257,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cardValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cardValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -263,7 +268,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.chequeValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.chequeValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -274,7 +279,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.inpatientCreditValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.inpatientCreditValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -285,7 +290,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.opdCreditValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.opdCreditValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -296,7 +301,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.staffValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.staffValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -307,7 +312,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.agentValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.agentValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -318,7 +323,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.grossTotal}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.grossTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -328,7 +333,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -339,7 +344,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.serviceCharge}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.serviceCharge}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -350,7 +355,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer" >
-                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -366,24 +371,24 @@
                                 <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                             </p:commandLink>
 
-<!--                            <p:commandLink 
-                                value="Manage" 
-                                style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
-                                class="mx-1"
-                                action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
-                                ajax="false">
-                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                            </p:commandLink>-->
+                            <!--                            <p:commandLink 
+                                                            value="Manage" 
+                                                            style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
+                                                            class="mx-1"
+                                                            action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                                                            ajax="false">
+                                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                                                        </p:commandLink>-->
 
-<!--                            <p:commandLink 
-                                value="Admin" 
-                                style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
-                                class="mx-1"
-                                action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                ajax="false" 
-                                rendered="#{webUserController.hasPrivilege('Developers')}">
-                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                            </p:commandLink>-->
+                            <!--                            <p:commandLink 
+                                                            value="Admin" 
+                                                            style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
+                                                            class="mx-1"
+                                                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                                            ajax="false" 
+                                                            rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                                                        </p:commandLink>-->
                         </p:column>
 
 

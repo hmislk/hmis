@@ -9,32 +9,46 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
+        <cc:attribute name="ShowProfit" type="java.lang.Boolean"/>
+        <cc:attribute name="ShowRetailValue" type="java.lang.Boolean"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:outputStylesheet library="css" name="pharmacypos.css"/>
+
         <!--        <div class="a4bill">-->
-        <div style="font-family: sans-serif!important;
-             font-size: 11px!important;
-             width: 297mm;
+        <div class="purhcaseBill"
+             style="font-family: sans-serif!important;
+             border: none!important;
              margin-top: 10px;
              height: 210mm;">
-            <div class="institutionName mt-3">
+            <div class=" mt-3" style="
+                 text-align: center!important;
+                 font-weight: bold!important;
+                 font-size: 23px!important;
+                 font-weight: bolder;
+                 font-family: monospace;
+                 text-transform: capitalize!important;">
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
             </div>
-            <div class="institutionContact" >
+            <div style="position: relative!important;
+                 text-align: center!important;
+                 font-size: 16px!important;
+                 font-family:monospace;" >
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
                 </div>
             </div>
 
-            <div class="headingBill">
+            <div style="text-align: center!important;
+                 font-weight: bold!important;
+                 font-size: 15px!important;
+                 font-weight: bold;">
                 <h:outputLabel value="PURCHASE BILL"   />                           
             </div>
 
-            <div style="margin-left: 2%; margin-right: 2%;">
-                <h:panelGrid columns="4" class="poDetail" style="font-size: 14px;">    
+            <div style="margin-left: 3%; margin-right: 3%; margin-top: 6px;">
+                <h:panelGrid columns="4" style="font-size: 16px; font-family: sans; min-width: 100%!important;">    
                     <h:outputLabel value="Purchase Date" class="billDetailsFiveFive"/>
                     <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
@@ -62,175 +76,180 @@
             </div>
 
             <p:spacer height="15px"/>
-            
             <div>
-                <p:dataTable rowIndexVar="rowIndex" value="#{cc.attrs.bill.billItems}" var="bip" style="font-size: 12px; margin-left: 2%; margin-right: 2%;">
-                    <p:column style="padding: 5px;">
+                <p:dataTable 
+                    rowIndexVar="rowIndex"
+                    value="#{cc.attrs.bill.billItems}" 
+                    var="bip"
+                    style="font-size: 16px; margin-left: 3%; margin-right: 3%;">
+                    <p:column style="padding: 4px;">
                         <f:facet name="header">Item</f:facet>
                         <h:outputText value="#{bip.item.name}" ></h:outputText>
                         <h:outputText value=" (#{bip.item.code})" ></h:outputText>
                     </p:column>
 
-                    <p:column  style="padding: 5px; width: 6em;">
+                    <p:column  style="padding: 4px; width: 5em;">
                         <f:facet name="header">Expiry</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputLabel>
                     </p:column>                                 
 
-                    <p:column style="padding: 5px; width: 6em;">
+                    <p:column style="padding: 4px; width: 3em;">
                         <f:facet name="header">QTY</f:facet>
-                            #{bip.pharmaceuticalBillItem.qty}
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputLabel>
                     </p:column>
 
-                    <p:column style="padding: 5px; width: 6em;">
+                    <p:column style="padding: 4px; width: 3em;">
                         <f:facet name="header">Free</f:facet>
-                            #{bip.pharmaceuticalBillItem.freeQty}
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}">
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputLabel>
+
                     </p:column>
 
-                    <p:column style="padding: 5px; width: 6em;">
+                    <p:column style="padding: 4px; width: 5em;">
                         <f:facet name="header">P. Rate</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="padding: 5px; width: 6em;" >
+                    <p:column style="padding: 4px; width: 5em;" >
                         <f:facet name="header">Last P.R.</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="padding: 5px; width: 6em;">
+                    <p:column style="padding: 4px; width: 5em;">
                         <f:facet name="header">P. Value</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="padding: 5px; width: 6em;">
+                    <p:column style="padding: 4px; width: 5em;">
                         <f:facet name="header">Re. Rate</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  style="padding: 5px; width: 6em;">
+                    <p:column  
+                        style="padding: 4px; width: 5em;" 
+                        class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }"
+                        rendered="#{cc.attrs.ShowRetailValue}">
                         <f:facet name="header" >Re. Value</f:facet>
+
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate*(bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.freeQty )}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  style="padding: 5px; width: 6em;">
+                    <p:column  
+                        rendered="#{cc.attrs.ShowProfit}"
+                        style="padding: 4px; width: 4em;" 
+                        class="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit' }">
                         <f:facet name="header">Profit %</f:facet>
                         <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
                             <f:convertNumber pattern="0.0" ></f:convertNumber>
                         </h:outputText>
                     </p:column>
 
-                    <p:column rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}"  style="padding: 5px; width: 6em;">
-                        <f:facet name="header">Whole S.P</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.wholesaleRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-
                     <p:columnGroup type="footer">
-                        <p:row style="padding: 5px; width: 8em;">
-                            <p:column style="padding: 5px; width: 6em;" colspan="6" footerText="Total"/>
-                            <p:column style="padding: 5px; width: 6em;" footerText="#{0-cc.attrs.bill.total}" >
+                        <p:row style="padding: 4px; width: 8em;">
+                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Total"/>
+                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.total}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 5px; width: 6em;" ></p:column>
-                            <p:column style="padding: 5px; width: 6em;" footerText="#{0-cc.attrs.bill.saleValue}">
+                            <p:column style="padding: 4px; width: 6em;" ></p:column>
+                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.saleValue}" rendered="#{cc.attrs.ShowRetailValue}">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{cc.attrs.bill.saleValue}">
+                                    <h:outputLabel value="#{cc.attrs.bill.saleValue}" class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 5px; width: 6em;" colspan="1"></p:column>
                         </p:row>
 
                         <p:row rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
-                            <p:column style="padding: 5px; width: 6em;" colspan="6" footerText="Expense Total"/>
-                            <p:column style="padding: 5px; width: 6em;" footerText="#{0-cc.attrs.bill.total}" >
+                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Expense Total"/>
+                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.total}" rendered="#{cc.attrs.ShowRetailValue}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 5px; width: 6em;" colspan="2"></p:column>
 
                         </p:row>
 
                         <p:row rendered="#{cc.attrs.bill.tax!=0}">
-                            <p:column  style="padding: 5px; width: 6em;" colspan="6" footerText="Tax"/>
-                            <p:column style="padding: 5px; width: 6em;" footerText="#{cc.attrs.bill.tax}">
+                            <p:column  style="padding: 4px; width: 6em;" colspan="6" footerText="Tax"/>
+                            <p:column style="padding: 4px; width: 6em;" footerText="#{cc.attrs.bill.tax}" rendered="#{cc.attrs.ShowRetailValue}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{cc.attrs.bill.tax}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 5px; width: 6em;" colspan="3"></p:column>
 
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.discount!=0}">
-                            <p:column style="padding: 5px; width: 6em;" colspan="6" footerText="Discount"/>
-                            <p:column style="padding: 5px; width: 6em;" footerText="#{0-cc.attrs.bill.discount}">
+                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Discount"/>
+                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.discount}" rendered="#{cc.attrs.ShowRetailValue}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 5px; width: 6em;"  colspan="3"></p:column>
 
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.total!=cc.attrs.bill.netTotal}">
-                            <p:column style="padding: 5px; width: 6em;" colspan="6" footerText="Net Total"/>
-                            <p:column style="padding: 5px; width: 6em;" footerText="#{0-cc.attrs.bill.netTotal}">
+                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Net Total"/>
+                            <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.netTotal}" rendered="#{cc.attrs.ShowRetailValue}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 5px; width: 6em;" colspan="3"></p:column>
-
                         </p:row>
                     </p:columnGroup>
                 </p:dataTable>
             </div>
             
             <p:spacer height="5px"/>
-            
-            <div class="preparedBy" style="margin-left: 2%; margin-right: 2%;">
+
+            <div class="preparedBy" style="margin-left: 3%; margin-right: 3%;">
                 <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
             </div>
 
-            <div style="margin-left: 2%; margin-right: 2%;">
+            <div style="margin-left: 3%; margin-right: 3%;">
                 <h:outputLabel value="Received By : "/>
             </div>
 
-            <hr/>
-            <div style="margin-left: 2%; margin-right: 2%;">
+            <hr style="font-size: 16px; margin-left: 3%; margin-right: 3%;"/>
+            <div style="margin-left: 3%; margin-right: 3%;font-size: 15px;">
                 <h4 style="color: #000000; text-align: center " >
                     <h:outputLabel value="Payment Voucher" style="text-decoration: underline;"/>
                 </h4>
 
-                <div>
-                    <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
-                    <h:outputLabel value="Payee : " style="text-align: right!important;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
+                <div class="d-flex justify-content-between">
+                    <div class="d-flex gap-2"> 
+                        <h:outputLabel value="Payee : " style="text-align: right!important;"/>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
+                    </div>
+
+                    <h:outputLabel value="Date :"  style="position: relative; margin-right: 30%!important;" />
                 </div>
                 <div>
                     <br></br>
@@ -247,9 +266,14 @@
                     <br></br>
                     <br></br>
 
-                    <h:outputLabel value="Cheque No :"/>
-                    <h:outputLabel value="...................................................................."/>
-                    <h:outputLabel value="Amount : Rs. ................" style="position: absolute; left: 70%;"/>
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex gap-2">
+                            <h:outputLabel value="Cheque No :"/>
+                            <h:outputLabel value="...................................................................."/>
+                        </div>
+                        <h:outputLabel value="Amount : Rs. ................" style="position: relative; margin-right: 19%!important;"/>
+                    </div>
+
                     <br></br>
                     <br></br>                    
                     <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. "/>

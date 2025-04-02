@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"    
+<html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
@@ -8,10 +8,10 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
-    <cc:interface> 	 
-        <cc:attribute name="bill" />  
+    <cc:interface>
+        <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
-        <cc:attribute name="hosCopy" />   	 
+        <cc:attribute name="hosCopy" />
         <cc:attribute name="showProfessional" />
     </cc:interface>
 
@@ -91,7 +91,7 @@
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel value="#{cc.attrs.bill.hospitalFee-cc.attrs.bill.discount}" >
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>  
+                                    </h:outputLabel>
 
                                 </td>
                             </tr>
@@ -113,7 +113,7 @@
                                         <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                             <h:outputLabel value="#{bip.netValue}" >
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>  
+                                            </h:outputLabel>
                                         </td>
                                     </h:panelGroup>
                                 </ui:repeat>
@@ -141,7 +141,7 @@
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
                                             <h:outputLabel value="#{bip.netValue+cc.attrs.bill.hospitalFee-cc.attrs.bill.discount}" >
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>  
+                                            </h:outputLabel>
                                         </h:panelGroup>
                                     </ui:repeat>
                                 </td>
@@ -162,18 +162,18 @@
                                 <td>
                                     <table>
                                         <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
-                                            <h:panelGroup  rendered="#{(b.netTotal ne 0 )                                                                  	 
-                                                                       and                                                                   	 
+                                            <h:panelGroup  rendered="#{(b.netTotal ne 0 )
+                                                                       and
                                                                        ((b.cancelled eq false
-                                                                       and b.billClass eq 'class com.divudi.entity.BilledBill')
+                                                                       and b.billClass eq 'class com.divudi.core.entity.BilledBill')
                                                                        or
                                                                        (b.cancelled eq false
                                                                        and b.refundedBill eq null
-                                                                       and b.billClass eq 'class com.divudi.entity.RefundBill'))}" >                                       	 
+                                                                       and b.billClass eq 'class com.divudi.core.entity.RefundBill'))}" >
                                                 <tr>
                                                     <td>
                                                         #{b.deptId}
-                                                    </td>                                              	 
+                                                    </td>
                                                     <td>
                                                         <h:outputLabel value="#{b.netTotal}">
                                                             <f:convertNumber pattern="#,##0.00" />
@@ -245,7 +245,7 @@
                 </div>
                 <!--            	<div style="position: absolute;
                                         left: 0%;
-                                        bottom:  3%;                                                         	 
+                                        bottom:  3%;
                                         font-size:10px!important;" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}" >
                                         <h:outputLabel value="#{cc.attrs.bill.netTotal-cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.creditPaidAmount}" >
                                         <f:convertNumber pattern="******0.00" />

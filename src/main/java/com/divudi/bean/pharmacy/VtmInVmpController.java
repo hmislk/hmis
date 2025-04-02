@@ -9,9 +9,9 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
 import java.io.Serializable;
 import java.util.List;
 import javax.ejb.EJB;

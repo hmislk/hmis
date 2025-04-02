@@ -5,7 +5,7 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                
+
                 >
 
     <ui:define name="subcontent">
@@ -16,18 +16,18 @@
                     <h:outputLabel value="Managing Director"/>
                 </f:facet>
 
-                <h:panelGrid columns="2" class="my-2" >                    
+                <h:panelGrid columns="2" class="my-2" >
                     <h:outputLabel value="From Date"/>
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.endOfDayOnCurrentDate}" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}" >
                         <f:ajax event="dateSelect"  listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.endOfDayOnCurrentDate}" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}" >
                         <f:ajax event="dateSelect"   listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
 
-                </h:panelGrid>   
+                </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2" >
                     <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" ajax="false" value="Process" />
                     <p:defaultCommand target="btnRefresh"/>
@@ -36,8 +36,8 @@
                     </p:commandButton>
                     <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
                         <p:dataExporter type="xlsx" target="tbl" fileName="Report_by_Bill_OPD_From_#{mdReportController.fromDate} To #{mdReportController.toDate}"
-                                       
-                                            
+
+
                                        />
                     </p:commandButton>
 
@@ -45,9 +45,9 @@
                 </h:panelGrid>
 
 
-                <p:dataTable id="tbl" value="#{mdReportController.bills}"  
-                             rowIndexVar="i" var="bill" 
-                             filteredValue="#{mdReportController.fillterBill}" 
+                <p:dataTable id="tbl" value="#{mdReportController.bills}"
+                             rowIndexVar="i" var="bill"
+                             filteredValue="#{mdReportController.fillterBill}"
                              paginator="false"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="5,10,15,20">
@@ -83,12 +83,12 @@
                         <h:outputLabel value="#{bill.paymentMethod}"/>
                     </p:column>
 
-                    <p:column headerText="Cancelled/Refunded" filterBy="#{bill.class}" filterMatchMode="contains" >                        
-                        <p:outputLabel value="Refunded" rendered="#{bill.class eq 'class com.divudi.entity.RefundBill'}"/>
-                        <p:outputLabel value="Cancelled" rendered="#{bill.class eq 'class com.divudi.entity.CancelledBill'}"/>
+                    <p:column headerText="Cancelled/Refunded" filterBy="#{bill.class}" filterMatchMode="contains" >
+                        <p:outputLabel value="Refunded" rendered="#{bill.class eq 'class com.divudi.core.entity.RefundBill'}"/>
+                        <p:outputLabel value="Cancelled" rendered="#{bill.class eq 'class com.divudi.core.entity.CancelledBill'}"/>
                     </p:column>
 
-                    <p:column headerText="Bill No" filterBy="#{bill.deptId}" filterMatchMode="contains" >                        
+                    <p:column headerText="Bill No" filterBy="#{bill.deptId}" filterMatchMode="contains" >
                         <h:outputLabel value="#{bill.deptId}"/>
                     </p:column>
 

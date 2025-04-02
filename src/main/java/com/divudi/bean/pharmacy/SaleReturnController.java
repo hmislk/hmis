@@ -6,29 +6,29 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -185,7 +185,8 @@ public class SaleReturnController implements Serializable {
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setTotal(0 - getReturnBill().getTotal());
-        getReturnBill().setNetTotal(getReturnBill().getTotal());
+        getReturnBill().setNetTotal(0 - getReturnBill().getNetTotal());
+        getReturnBill().setDiscount(0-getReturnBill().getDiscount());
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -213,7 +214,8 @@ public class SaleReturnController implements Serializable {
 
         refundBill.setReferenceBill(getReturnBill());
         refundBill.setTotal(getReturnBill().getTotal());
-        refundBill.setNetTotal(getReturnBill().getTotal());
+        refundBill.setNetTotal(getReturnBill().getNetTotal());
+        refundBill.setDiscount(getReturnBill().getDiscount());
 
         refundBill.setCreater(getSessionController().getLoggedUser());
         refundBill.setCreatedAt(Calendar.getInstance().getTime());
@@ -443,6 +445,8 @@ public class SaleReturnController implements Serializable {
 
         savePreReturnBill();
         savePreComponent();
+        getReturnBill().setTotal(getReturnBill().getNetTotal()+getReturnBill().getDiscount());
+
 
         getBill().getReturnPreBills().add(getReturnBill());
         getBillFacade().edit(getBill());
@@ -487,12 +491,14 @@ public class SaleReturnController implements Serializable {
 
     private void calTotal() {
         double grossTotal = 0.0;
+        double discount = 0;
 
         for (BillItem p : getBillItems()) {
             grossTotal += p.getNetRate() * p.getQty();
+            discount += p.getDiscountRate()*p.getQty();
 
         }
-
+        getReturnBill().setDiscount(discount);
         getReturnBill().setTotal(grossTotal);
         getReturnBill().setNetTotal(grossTotal);
 

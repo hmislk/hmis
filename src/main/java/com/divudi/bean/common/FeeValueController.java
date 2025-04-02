@@ -8,15 +8,14 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.FeeValue;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Service;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.FeeValueFacade;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.FeeValue;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.FeeValueFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,18 +39,18 @@ public class FeeValueController implements Serializable {
     SessionController sessionController;
     @EJB
     private FeeValueFacade ejbFacade;
-    
-    
+
+
     private List<FeeValue> items;
-    
-    
+
+
     public void fillItems(){
         items = getFacade().findAll();
     }
 
-    
-    
-    
+
+
+
     public void save(FeeValue feeValue) {
         if (feeValue == null) {
             return;
@@ -127,7 +126,7 @@ public class FeeValueController implements Serializable {
     }
 
     public FeeValue getCollectingCentreFeeValue(Long itemId, Institution collectingCentre) {
-        
+
 
         String jpql = "SELECT f "
                 + " FROM FeeValue f "
@@ -162,8 +161,8 @@ public class FeeValueController implements Serializable {
 
         return fv;
     }
-    
-    
+
+
     public FeeValue getSiteFeeValue(Long itemId, Institution site) {
 
         String jpql = "SELECT f "

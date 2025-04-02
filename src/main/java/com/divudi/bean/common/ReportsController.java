@@ -1,35 +1,26 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.cashTransaction.CashBookEntryController;
-import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.cashTransaction.DrawerEntryController;
-import com.divudi.bean.channel.ChannelSearchController;
-import com.divudi.bean.channel.analytics.ReportTemplateController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.opd.OpdBillController;
-import com.divudi.bean.pharmacy.PharmacyBillSearch;
-import com.divudi.bean.pharmacy.PharmacyPreSettleController;
-import com.divudi.bean.pharmacy.PharmacySaleBhtController;
-import com.divudi.data.*;
-import com.divudi.data.analytics.ReportTemplateType;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.*;
+import com.divudi.core.data.analytics.ReportTemplateType;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.reports.CollectionCenterReport;
+import com.divudi.core.data.reports.LaboratoryReport;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.*;
-import com.divudi.entity.cashTransaction.CashBookEntry;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.RoomCategory;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.facade.*;
-import com.divudi.java.CommonFunctions;
-import com.divudi.light.common.BillLight;
-import com.divudi.light.common.BillSummaryRow;
-import com.divudi.service.BillService;
-import com.divudi.service.PatientInvestigationService;
+import com.divudi.core.entity.*;
+import com.divudi.core.entity.cashTransaction.CashBookEntry;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.RoomCategory;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.facade.*;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.light.common.BillLight;
+import com.divudi.core.light.common.BillSummaryRow;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -42,7 +33,6 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
-
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
@@ -69,10 +59,7 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 public class ReportsController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    /**
-     * EJBs
-     */
-    private CommonFunctions commonFunctions;
+
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -86,80 +73,32 @@ public class ReportsController implements Serializable {
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
-    BillSessionFacade billSessionFacade;
-    @EJB
     StockFacade stockFacade;
     @EJB
     PatientReportFacade patientReportFacade;
     @EJB
     private PatientFacade patientFacade;
     @EJB
-    TokenFacade tokenFacade;
-    @EJB
     private DrawerFacade drawerFacade;
     @EJB
-    BillService billService;
-    @EJB
-    PatientInvestigationService patientInvestigationService;
-    @EJB
     PatientEncounterFacade peFacade;
-    List<PatientEncounter> patientEncounters;
+    @EJB
+    private ReportTimerController reportTimerController;
 
     /**
      * Inject
      */
     @Inject
-    private BillBeanController billBean;
-    @Inject
     private SessionController sessionController;
     @Inject
     TransferController transferController;
     @Inject
-    private CommonController commonController;
-    @Inject
-    PharmacySaleBhtController pharmacySaleBhtController;
-    @Inject
-    SmsController smsController;
-    @Inject
-    AuditEventApplicationController auditEventApplicationController;
-    @Inject
-    WebUserController webUserController;
-    @Inject
-    OpdPreSettleController opdPreSettleController;
-    @Inject
-    PharmacyPreSettleController pharmacyPreSettleController;
-    @Inject
-    TokenController tokenController;
-    @Inject
     private DepartmentController departmentController;
-    @Inject
-    BillSearch billSearch;
-    @Inject
-    PharmacyBillSearch pharmacyBillSearch;
-    @Inject
-    OpdBillController opdBillController;
-    @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    ChannelSearchController channelSearchController;
-    @Inject
-    ReportTemplateController reportTemplateController;
-    @Inject
-    CashBookEntryController cashBookEntryController;
-    @Inject
-    ExcelController excelController;
-    @Inject
-    PdfController pdfController;
-    @Inject
-    DrawerEntryController drawerEntryController;
-    @Inject
-    DrawerController drawerController;
-    @Inject
-    EnumController enumController;
 
     /**
      * Properties
      */
+    private List<PatientEncounter> patientEncounters;
     private String visitType;
     private String methodType;
 
@@ -339,6 +278,24 @@ public class ReportsController implements Serializable {
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1;
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
 
+    private int globalIndex;
+
+    public int getGlobalIndex() {
+        return globalIndex;
+    }
+
+    public void setGlobalIndex(int globalIndex) {
+        this.globalIndex = globalIndex;
+    }
+
+    public void resetGlobalIndex() {
+        globalIndex = 0;
+    }
+
+    public int getNextIndex() {
+        return ++globalIndex;
+    }
+
     private boolean showChart;
 
     public String getDischargedStatus() {
@@ -355,14 +312,6 @@ public class ReportsController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public UploadedFile getFile() {
@@ -690,7 +639,7 @@ public class ReportsController implements Serializable {
     }
 
     public Date getMaxDate() {
-        maxDate = commonFunctions.getEndOfDay(new Date());
+        maxDate = CommonFunctions.getEndOfDay(new Date());
         return maxDate;
     }
 
@@ -1624,41 +1573,41 @@ public class ReportsController implements Serializable {
     }
 
     public void generateSampleCarrierReport() {
-        System.out.println("generateSampleCarrierReport = " + this);
-        bundle = new ReportTemplateRowBundle();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
 
-        if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-        } else {
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-        }
+            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+            } else {
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+            }
 
-        System.out.println("bill items");
 
-        bundle.setName("Sample Carrier Bill Items");
-        bundle.setBundleType("billItemList");
+            bundle.setName("Sample Carrier Bill Items");
+            bundle.setBundleType("billItemList");
 
-        bundle = generateSampleCarrierBillItems(opdBts);
+            bundle = generateSampleCarrierBillItems(opdBts);
+        }, LaboratoryReport.SAMPLE_CARRIER_REPORT, sessionController.getLoggedUser());
     }
 
     private ReportTemplateRowBundle generateSampleCarrierBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(pi) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(pi) "
                 + "FROM PatientInvestigation pi "
                 + "JOIN pi.billItem billItem "
                 + "JOIN billItem.bill bill "
@@ -1711,8 +1660,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY pi";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -1736,7 +1683,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generatePackageReport() {
-        System.out.println("generatePackageReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -1747,7 +1693,6 @@ public class ReportsController implements Serializable {
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
 
-        System.out.println("bill items");
 
         bundle.setName("Package Bill Items");
         bundle.setBundleType("billItemList");
@@ -1757,7 +1702,7 @@ public class ReportsController implements Serializable {
 
     private ReportTemplateRowBundle generateBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -1814,8 +1759,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY billItem";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -1827,7 +1770,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateOPDWeeklyReport() {
-        System.out.println("generateOPDWeeklyReport = " + this);
 
         if (month == null) {
             JsfUtil.addErrorMessage("Please select a month");
@@ -1862,14 +1804,12 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
             opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
         }
-
 //        if (visitType == null) {
 //            opdBts.add(BillTypeAtomic.CC_BILL);
 //            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
 //            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
 //        }
 
-        System.out.println("bill items");
 
         bundle.setName("Bill Items");
         bundle.setBundleType("billItemList");
@@ -2101,7 +2041,7 @@ public class ReportsController implements Serializable {
 
     private ReportTemplateRowBundle generateWeeklyBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -2156,8 +2096,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY billItem";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -2169,7 +2107,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateInvoiceAndReportSerialWiseReport() {
-        System.out.println("generateInvoiceAndReportSerialWiseReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<PaymentMethod> paymentMethods = new ArrayList<>();
@@ -2211,7 +2148,7 @@ public class ReportsController implements Serializable {
 
     private ReportTemplateRowBundle generateBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -2271,8 +2208,6 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY bill";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -2284,27 +2219,27 @@ public class ReportsController implements Serializable {
     }
 
     public void generateRouteAnalysisReport() {
-        System.out.println("generateRouteAnalysisReport = " + this);
-        bundle = new ReportTemplateRowBundle();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
 
-        opdBts.add(BillTypeAtomic.CC_BILL);
-        opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-        opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.CC_BILL);
+            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
 
-        System.out.println("bill items");
 
-        bundle.setName("Route Analysis Bill Items");
-        bundle.setBundleType("billItemList");
+            bundle.setName("Route Analysis Bill Items");
+            bundle.setBundleType("billItemList");
 
-        bundle = generateCollectingCenterWiseBillItems(opdBts);
+            bundle = generateCollectingCenterWiseBillItems(opdBts);
 
-        if (reportType.equalsIgnoreCase("detail")) {
-            groupCollectingCenterWiseBillsMonthly();
-        } else {
-            groupRouteWiseBillsMonthly();
-        }
+            if (reportType.equalsIgnoreCase("detail")) {
+                groupCollectingCenterWiseBillsMonthly();
+            } else {
+                groupRouteWiseBillsMonthly();
+            }
+        }, CollectionCenterReport.ROUTE_ANALYSIS_REPORT, sessionController.getLoggedUser());
     }
 
     private void groupRouteWiseBillsMonthly() {
@@ -2486,7 +2421,7 @@ public class ReportsController implements Serializable {
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br ";
         parameters.put("br", true);
@@ -2539,7 +2474,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterWiseInvoiceListReport() {
-        System.out.println("generateCollectionCenterWiseInvoiceListReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2548,8 +2482,6 @@ public class ReportsController implements Serializable {
         opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
         opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         // If transaction add other CC types
-
-        System.out.println("bills");
 
         bundle.setName("Package Bills");
         bundle.setBundleType("billList");
@@ -2561,7 +2493,7 @@ public class ReportsController implements Serializable {
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br ";
         parameters.put("br", true);
@@ -2621,23 +2553,44 @@ public class ReportsController implements Serializable {
             addAllPaymentMethods(paymentMethods);
         }
 
-        System.out.println("generateDebtorBalanceReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
         bundle = new ReportTemplateRowBundle();
 
+//        if (visitType.equalsIgnoreCase("IP")) {
+////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+////            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+//            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+//            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+//            //TODO: Add other needed bill types
+//
+//        } else if (visitType.equalsIgnoreCase("OP")) {
+////            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//        }
+//
+//        bundle.setName("Bills");
+//        bundle.setBundleType("billList");
+//
+//        bundle = generateDebtorBalanceReportBills(opdBts, paymentMethods, onlyDueBills);
         if (visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-            //TODO: Add other needed bill types
-
+            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
         } else if (visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
@@ -2646,12 +2599,24 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
         }
 
         bundle.setName("Bills");
         bundle.setBundleType("billList");
 
-        bundle = generateDebtorBalanceReportBills(opdBts, paymentMethods, onlyDueBills);
+        bundle = generateOpdAndInwardDueBills(opdBts, paymentMethods);
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            updateSettledAmountsForIP();
+        } else if (visitType.equalsIgnoreCase("OP")) {
+            updateSettledAmountsForOP();
+        }
+
+        if (onlyDueBills) {
+            removeNonDues();
+        }
 
         bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
         bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
@@ -2659,10 +2624,41 @@ public class ReportsController implements Serializable {
         bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
     }
 
+    private void removeNonDues() {
+        List<ReportTemplateRow> removeList = new ArrayList<>();
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                Bill bill = row.getBill();
+
+                if (bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                    if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() == 0) {
+                        removeList.add(row);
+                    }
+                } else {
+                    if (bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() == 0) {
+                        removeList.add(row);
+                    }
+                }
+
+            }
+        } else if (visitType.equalsIgnoreCase("OP")) {
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                Bill bill = row.getBill();
+                if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() == 0) {
+                    removeList.add(row);
+                }
+            }
+        }
+
+        bundle.getReportTemplateRows().removeAll(removeList);
+    }
+
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br "
                 + "AND bill.creditCompany is not null ";
@@ -2733,7 +2729,6 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        System.out.println("generatePaymentSettlementReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2758,13 +2753,12 @@ public class ReportsController implements Serializable {
             bundle.calculateTotalByReferenceBills(visitType.equalsIgnoreCase("OP"));
         }
 
-
     }
 
     public ReportTemplateRowBundle generateReportBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -2829,7 +2823,7 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY billItem";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
@@ -2841,7 +2835,7 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateReportBill(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :bfr AND bill.retired <> :br ";
 
@@ -2865,7 +2859,6 @@ public class ReportsController implements Serializable {
 //            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
 //            parameters.put("category", roomCategory);
 //        }
-
         if (institution != null) {
             jpql += "AND bill.department.institution = :ins ";
             parameters.put("ins", institution);
@@ -2905,7 +2898,7 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY bill";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
@@ -2915,7 +2908,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterBookWiseDetailReport() {
-        System.out.println("generateCollectionCenterBookWiseDetailReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -2934,7 +2926,7 @@ public class ReportsController implements Serializable {
 
     public ReportTemplateRowBundle generateCollectionCenterBookWiseBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br ";
 
@@ -2986,7 +2978,6 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterBillWiseDetailReport() {
-        System.out.println("generateCollectionCenterBillWiseDetailReport = " + this);
 
         if (collectingCentre == null) {
             JsfUtil.addErrorMessage("Please select an Agent");
@@ -3001,7 +2992,6 @@ public class ReportsController implements Serializable {
         opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
         opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
 
-        System.out.println("bill items");
 
         bundle.setName("Route Analysis Bill Items");
         bundle.setBundleType("billItemList");
@@ -3014,6 +3004,73 @@ public class ReportsController implements Serializable {
             bundle.calculateTotalHospitalFeeByBillItems();
             bundle.calculateTotalByBillItems();
             bundle.calculateTotalStaffFeeByBillItems();
+        }
+    }
+
+    /**
+     * This method is a temporary fix for incorrectly assigned Department and
+     * Institution fields on Bills. Previously, there was an error in the
+     * workflow that assigned the wrong Department and Institution values. That
+     * workflow has been corrected, but older records remain invalid. This
+     * method corrects those records for a given ReportBundle (bundle).
+     *
+     * Usage Notes: 1. The method iterates over the groupedBillItems map (key:
+     * String, value: List of BillItem). 2. For each map entry, we only look at
+     * the first BillItem in the list to fix that Bill. 3. We derive the correct
+     * Department and Institution from bill.getCreater() (the user who created
+     * the bill). 4. The 'retireComments' field is set to log the update that
+     * occurred, referencing the old Department details. 5. The Bill is then
+     * persisted via billFacade.edit(bill). 6. Once all records are corrected,
+     * this method should be removed from the codebase.
+     *
+     * Limitations: - Assumes that the first BillItem in each list (entry.value)
+     * is sufficient for determining which Bill to fix. - Only updates the Bill
+     * at index 0; if there are multiple BillItems, they presumably share the
+     * same Bill object anyway.
+     */
+    public void fixBillingDepartmentInCollectionCenterBillWiseDetailReport() {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("No bundle");
+            return;
+        }
+        if (bundle.getGroupedBillItems() == null) {
+            JsfUtil.addErrorMessage("Grouped Bill Items NULL");
+            return;
+        }
+        if (bundle.getGroupedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Grouped Bill Items is empty");
+            return;
+        }
+
+        // Iterate over each entry in the map. The map key is a String (often a grouping identifier),
+        // and the map value is a list of BillItems. We only need the first BillItem per entry
+        // because it references the Bill we want to fix.
+        for (Map.Entry<String, List<BillItem>> entry : bundle.getGroupedBillItems().entrySet()) {
+            String key = entry.getKey();
+            List<BillItem> billItems = entry.getValue();
+
+            // Skip any entry that doesn't have actual BillItems.
+            if (billItems == null || billItems.isEmpty()) {
+                continue;
+            }
+
+            // Retrieve the Bill from the first BillItem in the list.
+            Bill bill = billItems.get(0).getBill();
+            if (bill != null) {
+                // Assign the correct Department and Institution from the Bill's creator.
+                Department oldDept = bill.getDepartment();
+                bill.setDepartment(bill.getCreater().getDepartment());
+                bill.setInstitution(bill.getCreater().getInstitution());
+
+                // Log the update in retireComments for future reference.
+                bill.setRetireComments("Bill's Department changed from "
+                        + (oldDept != null ? oldDept.toString() : "Unknown Dept")
+                        + " to " + bill.getDepartment()
+                        + " (Dept ID was " + (oldDept != null ? oldDept.getId() : "null") + ").");
+
+                // Persist the changes in the database.
+                billFacade.edit(bill);
+            }
         }
     }
 
@@ -3094,7 +3151,7 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateCollectingCenterBillWiseBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -3160,7 +3217,6 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        System.out.println("generateCreditInvoiceDispatchReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -3193,7 +3249,7 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateCreditInvoiceDispatchBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -3274,7 +3330,6 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        System.out.println("generateCreditInvoiceDispatchReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -3286,6 +3341,8 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
         }
         if (visitType != null && visitType.equalsIgnoreCase("OP")) {
             opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
@@ -3301,6 +3358,8 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
         }
         if (visitType != null && visitType.equalsIgnoreCase("CC")) {
             opdBts.add(BillTypeAtomic.CC_BILL);
@@ -3317,18 +3376,41 @@ public class ReportsController implements Serializable {
             bundle.calculateTotalByBillItemsNetTotal();
         } else {
             bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts);
+
+            bundle.calculateTotalByBillItemRowValues();
         }
+    }
+
+    private List<BillTypeAtomic> cancelAndRefundBillTypeAtomics() {
+        return Arrays.asList(
+                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN,
+                BillTypeAtomic.INWARD_SERVICE_BILL_REFUND,
+                BillTypeAtomic.OPD_BILL_CANCELLATION,
+                BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.OPD_BILL_REFUND,
+                BillTypeAtomic.PACKAGE_OPD_BILL_REFUND,
+                BillTypeAtomic.CC_BILL_CANCELLATION,
+                BillTypeAtomic.CC_BILL_REFUND
+        );
     }
 
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
-                + "WHERE bill.billTypeAtomic IN :bts ";
-//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+                + "WHERE bill.billTypeAtomic IN :bts "
+                + "AND billItem.item is not null "
+                + "AND (pi IS NOT NULL OR bill.billTypeAtomic IN :cancellableTypes)";
+//        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
 //                + "FROM PatientInvestigation pi "
 //                + "JOIN pi.billItem billItem "
 //                + "JOIN billItem.bill bill "
@@ -3337,17 +3419,8 @@ public class ReportsController implements Serializable {
 //                + " AND bill.retired=false "
 //                + " AND bill.billTypeAtomic in :bts ";
 
+        parameters.put("cancellableTypes", cancelAndRefundBillTypeAtomics());
         parameters.put("bts", bts);
-
-        if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
-                jpql += "AND bill.ipOpOrCc = :type ";
-                parameters.put("type", visitType);
-            } else if (visitType.equalsIgnoreCase("OP")) {
-                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
-                parameters.put("type", visitType);
-            }
-        }
 
         if (staff != null) {
             jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
@@ -3398,8 +3471,8 @@ public class ReportsController implements Serializable {
         }
 
         if (category != null) {
-            jpql += "AND billItem.item.department.id = :cat ";
-            parameters.put("cat", category.getId());
+            jpql += "AND billItem.item.category = :cat ";
+            parameters.put("cat", category);
         }
 
         if (investigation != null) {
@@ -3413,10 +3486,9 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY billItem";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
+        removeCancelledNonInvestigationBills(rs);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
@@ -3425,28 +3497,40 @@ public class ReportsController implements Serializable {
         return b;
     }
 
+    private void removeCancelledNonInvestigationBills(final List<ReportTemplateRow> rs) {
+        List<BillTypeAtomic> cancelAndRefundBillTypeAtomics = cancelAndRefundBillTypeAtomics();
+
+        Iterator<ReportTemplateRow> iterator = rs.iterator();
+
+        while (iterator.hasNext()) {
+            ReportTemplateRow row = iterator.next();
+            BillItem bi = row.getBillItem();
+            Bill b = bi.getBill();
+
+            if (cancelAndRefundBillTypeAtomics.contains(b.getBillTypeAtomic())) {
+                if (bi.getReferanceBillItem() == null || bi.getReferanceBillItem().getPatientInvestigation() == null) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadSummaryBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("bts", bts);
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty), billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem.item.name, SUM(billItem.qty), billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
-                + "AND bill.createdAt BETWEEN :fd AND :td ";
+                + "AND bill.createdAt BETWEEN :fd AND :td "
+                + "AND billItem.item is not null "
+                + "AND (pi IS NOT NULL OR bill.billTypeAtomic IN :cancellableTypes)";
 
-        if (visitType != null) {
-            if (visitType.equalsIgnoreCase("IP") || visitType.equalsIgnoreCase("CC")) {
-                jpql += "AND bill.ipOpOrCc = :type ";
-                parameters.put("type", visitType);
-            } else if (visitType.equalsIgnoreCase("OP")) {
-                jpql += "AND (bill.ipOpOrCc = :type OR bill.ipOpOrCc IS NULL) ";
-                parameters.put("type", visitType);
-            }
-        }
+        parameters.put("cancellableTypes", cancelAndRefundBillTypeAtomics());
 
         if (staff != null) {
             jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
@@ -3497,8 +3581,8 @@ public class ReportsController implements Serializable {
         }
 
         if (category != null) {
-            jpql += "AND billItem.patientInvestigation.investigation.category.id = :cat ";
-            parameters.put("cat", category.getId());
+            jpql += "AND billItem.item.category = :cat ";
+            parameters.put("cat", category);
         }
 
         if (investigationCode != null) {
@@ -3508,10 +3592,9 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY billItem";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        removeCancelledNonInvestigationBills(rs);
         createSummaryRows(rs);
         rs.removeIf(row -> row.getRowValue() == 0.0);
 
@@ -3552,7 +3635,6 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        System.out.println("generatePaymentSettlementReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -3563,8 +3645,10 @@ public class ReportsController implements Serializable {
 //            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
 //            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
 //            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+//            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
         } else if (visitType.equalsIgnoreCase("OP")) {
 //            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
 //            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -3573,15 +3657,23 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-//            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
         }
 
         bundle.setName("Bills");
         bundle.setBundleType("billList");
 
-        bundle = generateOpdAndInwardDueBills(opdBts);
+        bundle = generateOpdAndInwardDueBills(opdBts, null);
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            updateSettledAmountsForIP();
+        } else if (visitType.equalsIgnoreCase("OP")) {
+            updateSettledAmountsForOP();
+        }
 
         groupBills();
     }
@@ -3718,7 +3810,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -3941,7 +4033,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "BHT No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -4017,10 +4109,10 @@ public class ReportsController implements Serializable {
         }
     }
 
-    public ReportTemplateRowBundle generateOpdAndInwardDueBills(List<BillTypeAtomic> bts) {
+    public ReportTemplateRowBundle generateOpdAndInwardDueBills(List<BillTypeAtomic> bts, List<PaymentMethod> paymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br "
                 + "AND bill.creditCompany is not null ";
@@ -4036,6 +4128,11 @@ public class ReportsController implements Serializable {
 
             jpql += "AND bill.paymentMethod in :bpms ";
             parameters.put("bpms", billPaymentMethods);
+        }
+
+        if (paymentMethods != null) {
+            jpql += "AND bill.paymentMethod in :bpms ";
+            parameters.put("bpms", paymentMethods);
         }
 
         if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
@@ -4059,16 +4156,31 @@ public class ReportsController implements Serializable {
         }
 
         if (institution != null) {
-            jpql += "AND bill.department.institution = :ins ";
+            if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.department.institution = :ins ";
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.patientEncounter.department.institution = :ins ";
+            }
+
             parameters.put("ins", institution);
         }
 
         if (department != null) {
-            jpql += "AND bill.department = :dep ";
+            if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.department = :dep ";
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.patientEncounter.department = :dep ";
+            }
+
             parameters.put("dep", department);
         }
         if (site != null) {
-            jpql += "AND bill.department.site = :site ";
+            if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.department.site = :site ";
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.patientEncounter.department.site = :site ";
+            }
+
             parameters.put("site", site);
         }
         if (webUser != null) {
@@ -4101,6 +4213,138 @@ public class ReportsController implements Serializable {
         return b;
     }
 
+    private void updateSettledAmountsForIP() {
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Bill bill = row.getBill();
+
+            if (bill.isCancelled() || bill.isRefunded()) {
+                continue;
+            }
+
+            PatientEncounter patientEncounter = bill.getPatientEncounter();
+            Bill finalBill = patientEncounter.getFinalBill();
+
+            List<Bill> bills = calculateSettledPatientBillIP(finalBill);
+            double total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountByPatient(total);
+            }
+
+            bills = calculateSettledSponsorBillIP(finalBill);
+            total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountBySponsor(total);
+            }
+        }
+    }
+
+    private List<Bill> calculateSettledPatientBillIP(Bill bill) {
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            bts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            bts.add(BillTypeAtomic.INWARD_DEPOSIT);
+            bts.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        }
+
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br ";
+
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        jpql += "AND bill.forwardReferenceBill.id = :rb ";
+        parameters.put("rb", bill.getId());
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        return rs.stream().map(ReportTemplateRow::getBill).collect(Collectors.toList());
+    }
+
+    private List<Bill> calculateSettledSponsorBillIP(Bill bill) {
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        if (visitType.equalsIgnoreCase("IP")) {
+            bts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            bts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        }
+
+        parameters.put("br", true);
+        parameters.put("bts", bts);
+        parameters.put("rb", bill.getId());
+
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.billTypeAtomic in :bts "
+                + "AND bill.forwardReferenceBill.id = :rb ";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        List<Bill> bills = rs.stream().map(ReportTemplateRow::getBill).collect(Collectors.toList());
+
+        String sql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.billTypeAtomic in :bts "
+                + "AND bill.billedBill.forwardReferenceBill.id = :rb ";
+
+        rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(sql, parameters, TemporalType.TIMESTAMP);
+
+        bills.addAll(rs.stream().map(ReportTemplateRow::getBill).collect(Collectors.toList()));
+
+        return bills;
+    }
+
+    private void updateSettledAmountsForOP() {
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Bill bill = row.getBill();
+
+            if (bill.isCancelled() || bill.isRefunded()) {
+                continue;
+            }
+
+            List<Bill> bills = calculateSettledSponsorBillOP(bill);
+            total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (bill) {
+                bill.setSettledAmountBySponsor(total);
+            }
+        }
+    }
+
+    private List<Bill> calculateSettledSponsorBillOP(Bill bill) {
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        if (visitType.equalsIgnoreCase("OP")) {
+            bts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            bts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        }
+
+        parameters.put("br", true);
+        parameters.put("bts", bts);
+        parameters.put("rb", bill);
+
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "JOIN BillItem billItem ON bill.id = billItem.bill.id "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.billTypeAtomic in :bts "
+                + "AND billItem.referenceBill = :rb ";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        return rs.stream().map(ReportTemplateRow::getBill).collect(Collectors.toList());
+    }
+
     private void groupBills() {
         Map<Institution, List<Bill>> billMap = new HashMap<>();
 
@@ -4109,13 +4353,13 @@ public class ReportsController implements Serializable {
                 Bill bill1 = row.getBill();
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
-                    if ((bill1.getNetTotal() - bill1.getPaidAmount()) != 0) {
+                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) != 0) {
                         continue;
                     }
                 }
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
-                    if ((bill1.getNetTotal() - bill1.getPaidAmount()) == 0) {
+                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) == 0) {
                         continue;
                     }
                 }
@@ -4133,23 +4377,47 @@ public class ReportsController implements Serializable {
                 Bill bill1 = row.getBill();
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
-                    if (bill1.getPatientEncounter().getFinalBill().getBalance() != 0) {
-                        continue;
+                    if (bill1.getPatientEncounter() != null && bill1.getPatientEncounter().getFinalBill() != null) {
+                        if ((bill1.getPatientEncounter().getFinalBill().getNetTotal() - bill1.getPatientEncounter().getFinalBill().getSettledAmountByPatient()
+                                - bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) != 0) {
+                            continue;
+                        }
+                    } else {
+                        if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) != 0) {
+                            continue;
+                        }
                     }
                 }
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
-                    if (bill1.getPatientEncounter().getFinalBill().getBalance() == 0) {
-                        continue;
+                    if (bill1.getPatientEncounter() != null && bill1.getPatientEncounter().getFinalBill() != null) {
+                        if ((bill1.getPatientEncounter().getFinalBill().getNetTotal() - bill1.getPatientEncounter().getFinalBill().getSettledAmountByPatient()
+                                - bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) == 0) {
+                            continue;
+                        }
+                    } else {
+                        if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) == 0) {
+                            continue;
+                        }
                     }
                 }
 
-                if (billMap.containsKey(bill1.getPatientEncounter().getFinalBill().getCreditCompany())) {
-                    billMap.get(bill1.getPatientEncounter().getFinalBill().getCreditCompany()).add(bill1);
-                } else {
-                    List<Bill> bills = new ArrayList<>();
-                    bills.add(bill1);
-                    billMap.put(bill1.getPatientEncounter().getFinalBill().getCreditCompany(), bills);
+                if (bill1.getPatientEncounter() != null && bill1.getPatientEncounter().getFinalBill() != null) {
+                    if (billMap.containsKey(bill1.getPatientEncounter().getFinalBill().getCreditCompany())) {
+                        billMap.get(bill1.getPatientEncounter().getFinalBill().getCreditCompany()).add(bill1);
+                    } else {
+                        List<Bill> bills = new ArrayList<>();
+                        bills.add(bill1);
+                        billMap.put(bill1.getPatientEncounter().getFinalBill().getCreditCompany(), bills);
+                    }
+                } else if (bill1.getCreditCompany() != null) {
+                    if (billMap.containsKey(bill1.getCreditCompany())) {
+                        billMap.get(bill1.getCreditCompany()).add(bill1);
+                    } else {
+                        List<Bill> bills = new ArrayList<>();
+                        bills.add(bill1);
+                        billMap.put(bill1.getCreditCompany(), bills);
+                    }
                 }
             }
         }
@@ -4171,13 +4439,13 @@ public class ReportsController implements Serializable {
     }
 
     public Double calculateGrossAmountSubTotalByBills(List<Bill> bills) {
-        Double billTotal = 0.0;
+        Double total = 0.0;
 
         for (Bill bill : bills) {
-            billTotal += bill.getBillTotal();
+            total += bill.getTotal();
         }
 
-        return billTotal;
+        return total;
     }
 
     public Double calculatePatientShareSubTotalByBills(List<Bill> bills) {
@@ -4214,6 +4482,10 @@ public class ReportsController implements Serializable {
         double grossAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
+        if (billMap == null || billMap.isEmpty()) {
+            return 0.0;
+        }
+
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
@@ -4226,6 +4498,10 @@ public class ReportsController implements Serializable {
     public Double calculateDiscountNetTotal() {
         double discountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        if (billMap == null || billMap.isEmpty()) {
+            return 0.0;
+        }
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
@@ -4240,6 +4516,10 @@ public class ReportsController implements Serializable {
         double patientShareNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
+        if (billMap == null || billMap.isEmpty()) {
+            return 0.0;
+        }
+
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
@@ -4253,6 +4533,10 @@ public class ReportsController implements Serializable {
         double dueAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
+        if (billMap == null || billMap.isEmpty()) {
+            return 0.0;
+        }
+
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
@@ -4265,6 +4549,10 @@ public class ReportsController implements Serializable {
     public Double calculateSponsorShareNetTotal() {
         double sponsorShareNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        if (billMap == null || billMap.isEmpty()) {
+            return 0.0;
+        }
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
@@ -4300,6 +4588,10 @@ public class ReportsController implements Serializable {
         double netAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
+        if (billMap == null || billMap.isEmpty()) {
+            return 0.0;
+        }
+
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();
 
@@ -4315,7 +4607,6 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        System.out.println("generateDiscountReport = " + this);
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -4409,11 +4700,11 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateDiscountBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+//        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
 //                + "FROM Bill bill "
 //                + "WHERE bill.retired <> :br "
 //                + "AND bill.paymentScheme is not null ";
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(bill) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
                 + "WHERE bill.retired <> :br "
                 + "AND bill.discount > 0 ";
@@ -4509,13 +4800,12 @@ public class ReportsController implements Serializable {
     public ReportTemplateRowBundle generateDiscountBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-//        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+//        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
 //                + "FROM BillItem billItem "
 //                + "JOIN billItem.bill bill "
 //                + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "
 //                + "AND billItem.bill.paymentScheme is not null ";
-
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br "
@@ -5013,8 +5303,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
@@ -5423,7 +5713,11 @@ public class ReportsController implements Serializable {
         Double billTotal = 0.0;
 
         for (Bill bill : bills) {
-            billTotal += bill.getPatientEncounter().getFinalBill().getGrantTotal();
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                billTotal += bill.getPatientEncounter().getFinalBill().getGrantTotal();
+            } else {
+                billTotal += bill.getGrantTotal();
+            }
         }
 
         return billTotal;
@@ -5433,7 +5727,11 @@ public class ReportsController implements Serializable {
         Double discount = 0.0;
 
         for (Bill bill : bills) {
-            discount += bill.getPatientEncounter().getFinalBill().getDiscount();
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                discount += bill.getPatientEncounter().getFinalBill().getDiscount();
+            } else {
+                discount += bill.getDiscount();
+            }
         }
 
         return discount;
@@ -5443,7 +5741,11 @@ public class ReportsController implements Serializable {
         Double netTotal = 0.0;
 
         for (Bill bill : bills) {
-            netTotal += bill.getPatientEncounter().getFinalBill().getNetTotal();
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                netTotal += bill.getPatientEncounter().getFinalBill().getNetTotal();
+            } else {
+                netTotal += bill.getNetTotal();
+            }
         }
 
         return netTotal;
@@ -5453,7 +5755,11 @@ public class ReportsController implements Serializable {
         Double settledAmountByPatient = 0.0;
 
         for (Bill bill : bills) {
-            settledAmountByPatient += bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                settledAmountByPatient += bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+            } else {
+                settledAmountByPatient += bill.getSettledAmountByPatient();
+            }
         }
 
         return settledAmountByPatient;
@@ -5463,7 +5769,11 @@ public class ReportsController implements Serializable {
         Double settledAmountBySponsor = 0.0;
 
         for (Bill bill : bills) {
-            settledAmountBySponsor += bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                settledAmountBySponsor += bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
+            } else {
+                settledAmountBySponsor += bill.getSettledAmountBySponsor();
+            }
         }
 
         return settledAmountBySponsor;
@@ -5473,7 +5783,13 @@ public class ReportsController implements Serializable {
         Double balance = 0.0;
 
         for (Bill bill : bills) {
-            balance += bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+            if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null && !bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                balance += bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
+                        - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+
+            } else {
+                balance += bill.getNetTotal() - bill.getSettledAmountBySponsor() - bill.getSettledAmountByPatient();
+            }
         }
 
         return balance;
@@ -5482,6 +5798,10 @@ public class ReportsController implements Serializable {
     public Double calculateIpGrossAmountNetTotal() {
         double grossAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
+
+        if (billMap == null || billMap.isEmpty()) {
+            return grossAmountNetTotal;
+        }
 
         for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
             List<Bill> bills = entry.getValue();

@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Patient;
+import com.divudi.core.entity.Patient;
 import java.util.List;
 
 public interface ControllerWithPatientViewScope {
@@ -26,7 +26,7 @@ public interface ControllerWithPatientViewScope {
     public void saveSelectedPatient();
 
     public String getQuickSearchPhoneNumber();
-    
+
      public void setQuickSearchPhoneNumber(String quickSearchPhoneNumber);
 
     public void quickSearchPatientLongPhoneNumber();

@@ -18,49 +18,50 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.web.CaptureComponentController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.inward.PatientEncounterType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Family;
-import com.divudi.entity.FamilyMember;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
-import com.divudi.entity.Relation;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.FamilyFacade;
-import com.divudi.facade.FamilyMemberFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.java.CommonFunctions;
-import com.google.protobuf.Descriptors;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Family;
+import com.divudi.core.entity.FamilyMember;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Relation;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.FamilyFacade;
+import com.divudi.core.facade.FamilyMemberFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.MembershipService;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -138,6 +139,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private WebUserFacade webUserFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    MembershipService membershipService;
     /**
      *
      * Controllers
@@ -152,8 +155,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     PatientEncounterController patientEncounterController;
     @Inject
     OpticianSaleController opticianSaleController;
-    @Inject
-    private CommonController commonController;
     @Inject
     private SecurityController securityController;
     @Inject
@@ -794,6 +795,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         pharmacySaleController.setPatient(current);
+        pharmacySaleController.setBillSettlingStarted(false);
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
@@ -851,7 +853,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigatePatientAdmit() {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
         }
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
@@ -864,7 +866,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToConvertNonBhtToBht(Admission nonBhtAd) {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
         }
         ad.setPatient(nonBhtAd.getPatient());
         admissionController.setCurrentNonBht(nonBhtAd);
@@ -2165,8 +2167,40 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Family is Selected");
             return null;
         }
-        familyMembers = fetchFamilyMembers(currentFamily);
+        familyMembers = membershipService.fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
+    }
+
+    public String navigateToManageFamily(Family family) {
+        if (family == null) {
+            JsfUtil.addErrorMessage("No Family is Selected");
+            return null;
+        }
+        currentFamily=family;
+        familyMembers = membershipService.fetchFamilyMembers(currentFamily);
+        return "/membership/family_membership_manage?faces-redirect=true";
+    }
+
+    public String deleteFamilyMembership() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family is Selected");
+            return null;
+        }
+        membershipService.deleteFamily(currentFamily, sessionController.getLoggedUser());
+        families = null;
+        JsfUtil.addSuccessMessage("Family Deleted.");
+        return navigateToSearchFamilyMembership();
+    }
+
+    public String deleteFamilyMembershipAndMembers() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family is Selected");
+            return null ;
+        }
+        membershipService.deleteFamilyAndMembers(currentFamily, sessionController.getLoggedUser());
+        families = null;
+        JsfUtil.addSuccessMessage("Family and Members Deleted.");
+        return navigateToSearchFamilyMembership();
     }
 
     public String navigateToManageIndividualMembership() {
@@ -2252,7 +2286,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         String membershipNumberWithDigitsOnly = CommonFunctions.getDigitsOnlyByRemovingWhitespacesAndNonDigitCharacters(paramMembershipNumber);
-        Long membershipNumberLong = CommonFunctions.convertStringToLong(membershipNumberWithDigitsOnly);
+        Long membershipNumberLong = CommonFunctions.convertStringToLongOrNull(membershipNumberWithDigitsOnly);
         return fetchFamilyFromMembershipNumber(membershipNumberLong, paramMembershipScheme, phoneNumber);
     }
 
@@ -2728,7 +2762,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     @Deprecated
     public void dateChangeListen() {
-        getCurrent().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getCurrent().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
     }
 
     @Deprecated
@@ -3842,15 +3876,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.familyMember = familyMember;
     }
 
+    @Deprecated // Use membershipService.fetchFamilyMembers
     public List<FamilyMember> fetchFamilyMembers(Family family) {
-        String jpql = "select fm"
-                + " from FamilyMember fm"
-                + " where fm.retired=:ret "
-                + " and fm.family=:family";
-        Map params = new HashMap();
-        params.put("ret", false);
-        params.put("family", family);
-        return familyMemberFacade.findByJpql(jpql, params);
+        return membershipService.fetchFamilyMembers(currentFamily);
     }
 
     public List<FamilyMember> getFamilyMembers() {
@@ -3924,14 +3952,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setMembershipScheme(MembershipScheme membershipScheme) {
         this.membershipScheme = membershipScheme;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public String getPassword() {

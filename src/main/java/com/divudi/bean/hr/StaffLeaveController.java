@@ -6,13 +6,13 @@
 package com.divudi.bean.hr;
 
 
-import com.divudi.data.hr.LeaveType;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.hr.LeaveType;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.hr.Grade;
-import com.divudi.entity.hr.StaffLeave;
-import com.divudi.facade.StaffLeaveFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.hr.Grade;
+import com.divudi.core.entity.hr.StaffLeave;
+import com.divudi.core.facade.StaffLeaveFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -37,14 +37,13 @@ public class StaffLeaveController implements Serializable {
     @EJB
     private StaffLeaveFacade staffLeaveFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private HumanResourceBean humanResourceBean;
 
     public void createLeave() {
         staffLeaves = getHumanResourceBean().getStaffLeave(getCurrent().getStaff(),
-                getCommonFunctions().getFirstDayOfYear(new Date()),
-                getCommonFunctions().getLastDayOfYear(new Date()));
+                CommonFunctions.getFirstDayOfYear(new Date()),
+                CommonFunctions.getLastDayOfYear(new Date()));
     }
 
     public LeaveType[] getLeaveType() {
@@ -99,14 +98,6 @@ public class StaffLeaveController implements Serializable {
         this.staffLeaveFacade = staffLeaveFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public HumanResourceBean getHumanResourceBean() {
         return humanResourceBean;
     }
@@ -122,8 +113,8 @@ public class StaffLeaveController implements Serializable {
     public void setStaffLeaves(List<StaffLeave> staffLeaves) {
         this.staffLeaves = staffLeaves;
     }
-    
-    
+
+
 
     @FacesConverter(forClass = StaffLeave.class)
     public static class LeaveConverter implements Converter {

@@ -8,17 +8,17 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
-import com.divudi.data.OptionScope;
-import com.divudi.data.TriggerType;
-import com.divudi.data.TriggerTypeParent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Notification;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.facade.NotificationFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.TriggerType;
+import com.divudi.core.data.TriggerTypeParent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Notification;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.NotificationFacade;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -50,8 +50,6 @@ public class NotificationController implements Serializable {
     UserNotificationController userNotificationController;
     @Inject
     SecurityController securityController;
-    @Inject
-    CommonController commonController;
     @Inject
     ConfigOptionController configOptionController;
     @EJB
@@ -116,7 +114,7 @@ public class NotificationController implements Serializable {
                 throw new AssertionError();
         }
     }
-    
+
     public void createNotification(PatientRoom pr, String action) {
         if (pr == null) {
             return;
@@ -125,12 +123,12 @@ public class NotificationController implements Serializable {
             case "Discharge":
                 createInwardRoomDischargeNotifications(pr);
                 break;
-                
+
             default:
                 throw new AssertionError();
         }
     }
-    
+
     private void createInwardRoomDischargeNotifications(PatientRoom pr) {
         System.out.println("pr = " + pr);
         Date date = new Date();
@@ -146,7 +144,7 @@ public class NotificationController implements Serializable {
             userNotificationController.createUserNotifications(nn);
         }
     }
-    
+
     private void createPharmacyTransferRequestNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_REQUEST)) {
@@ -188,7 +186,7 @@ public class NotificationController implements Serializable {
             userNotificationController.createUserNotifications(nn);
         }
     }
-    
+
     private void createPharmacyPurcheseOrderApprovelNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.PURCHASE_ORDER_APPROVAL)) {
@@ -263,16 +261,16 @@ public class NotificationController implements Serializable {
         temId = securityController.encrypt(temId);
         try {
             temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException ignored) {
         }
 
-        String ed = CommonController.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
         ed = securityController.encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException ignored) {
         }
-        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -342,13 +340,13 @@ public class NotificationController implements Serializable {
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String ed = CommonController.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
         ed = securityController.encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException ignored) {
         }
-        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"

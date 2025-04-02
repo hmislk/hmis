@@ -272,7 +272,7 @@
 
 
 
-                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
+                <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" >
                     
                     <tr style="font-size: 14px;">
                         <td colspan="1">
@@ -336,8 +336,8 @@
                                 <h:outputLabel   value="Number of Items Count" />
                             </td>
                             <td  class="totalsBlock">
-                                <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                <h:outputLabel   value="#{billBeanController.fetchBillItems(cc.attrs.bill).size()}">
+                                    <f:convertNumber pattern="#,##0" />
                                 </h:outputLabel>
                             </td>
                         </tr>
