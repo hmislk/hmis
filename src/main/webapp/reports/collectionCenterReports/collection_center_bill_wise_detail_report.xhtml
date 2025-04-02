@@ -608,13 +608,9 @@
                                     </f:facet>
                                 </p:column>
                                 <f:facet name="footer">
-                                    <p>You are kindly requested to remit this cheque written in favour of "Ruhunu Hospital (Pvt) Ltd" with the last Possible.</p>
-                                    <p>* Please not that prevailing bank overdraft interest rate will be applied for all overdue debts.</p>
-                                    <p>If You have any Questions about this invoice , please contact Mr S T Dushan Maduranga (Tel : 091-7212897)</p>
-                                    <p>Thanking You,</p>
-                                    <p>Your's Faithfully,</p>
-                                    <p>Accountant</p>
-                                    <p>Ruhunu Hospital (Pvt) Ltd.</p>
+                                    <h:outputText 
+                                        value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report')}" 
+                                        escape="false" ></h:outputText>
                                     <h:outputLabel value="#{reportsController.currentDate}"
                                                    style="text-align: right; display: block;">
                                         <f:convertDateTime
