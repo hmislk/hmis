@@ -337,6 +337,7 @@ public class SearchController implements Serializable {
     private String searchType;
     private String reportType;
     private boolean withProfessionalFee;
+    private boolean showLoggedDepartmentOnly;
 
     private Drawer drawer;
 
@@ -2300,6 +2301,14 @@ public class SearchController implements Serializable {
 
     public void setBookingType(String bookingType) {
         this.bookingType = bookingType;
+    }
+
+    public boolean isShowLoggedDepartmentOnly() {
+        return showLoggedDepartmentOnly;
+    }
+
+    public void setShowLoggedDepartmentOnly(boolean showLoggedDepartmentOnly) {
+        this.showLoggedDepartmentOnly = showLoggedDepartmentOnly;
     }
 
     public class billsWithbill {
@@ -9036,7 +9045,12 @@ public class SearchController implements Serializable {
                 + " where b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
-
+   
+        if(showLoggedDepartmentOnly){
+            sql += " and b.department=:dept ";
+            temMap.put("dept", sessionController.getDepartment());
+        }
+        
         if (ins != null) {
             sql += " and b.institution=:ins ";
             temMap.put("ins", ins);
