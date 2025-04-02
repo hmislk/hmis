@@ -1,4 +1,4 @@
-name: RH-PROD Shared Build & Deployment Pipeline
+name: RH-PROD Build & Deployment Pipeline
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: Archive Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: target/*.war
