@@ -5,7 +5,11 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ReportTimerController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.reports.PharmacyReports;
+import com.divudi.core.data.reports.SummaryReports;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyErrorCheckingEjb;
 import com.divudi.core.entity.Bill;
@@ -43,6 +47,7 @@ public class PharmacyErrorChecking implements Serializable {
 
     List<BillItem> billItems;
     private List<StockHistory> stockHistories;
+    private ReportTimerController reportTimerController;
     Date fromDate;
     Date toDate;
     Item item;
@@ -54,6 +59,9 @@ public class PharmacyErrorChecking implements Serializable {
     double currentStock;
     double currentSaleValue;
     double currentPurchaseValue;
+    @Named
+    @Inject
+    private SessionController sessionController;
 
     public void listMismatchPreBills() {
         mismatchPreBills = getEjb().errPreBills(department);
@@ -90,7 +98,9 @@ public class PharmacyErrorChecking implements Serializable {
     }
 
     public void processBinCard() {
-        stockHistories  = stockHistoryController.findStockHistories(fromDate, toDate, null,department, item);
+        reportTimerController.trackReportExecution(() -> {
+            stockHistories  = stockHistoryController.findStockHistories(fromDate, toDate, null,department, item);
+        }, PharmacyReports.PHARMACY_BIN_CARD,sessionController.getLoggedUser());
     }
 
     public void listPharmacyMovementByDateRange() {

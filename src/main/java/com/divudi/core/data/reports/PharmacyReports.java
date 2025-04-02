@@ -1,7 +1,8 @@
 package com.divudi.core.data.reports;
 
 public enum PharmacyReports implements IReportType {
-    STOCK_REPORT_BY_BATCH("Stock Report by Batch");
+    STOCK_REPORT_BY_BATCH("Stock Report by Batch"),
+    PHARMACY_BIN_CARD("Pharmacy Bin Card");
 
     private final String displayName;
 
