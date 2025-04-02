@@ -15,10 +15,10 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
+
         <!--        <div class="a4bill">-->
         <div class="purhcaseBill"
-            style="font-family: sans-serif!important;
+             style="font-family: sans-serif!important;
              border: none!important;
              margin-top: 10px;
              height: 210mm;">
@@ -76,12 +76,11 @@
             </div>
 
             <p:spacer height="15px"/>
-
             <div>
                 <p:dataTable 
                     rowIndexVar="rowIndex"
                     value="#{cc.attrs.bill.billItems}" 
-                    var="bip" 
+                    var="bip"
                     style="font-size: 16px; margin-left: 3%; margin-right: 3%;">
                     <p:column style="padding: 4px;">
                         <f:facet name="header">Item</f:facet>
@@ -89,26 +88,26 @@
                         <h:outputText value=" (#{bip.item.code})" ></h:outputText>
                     </p:column>
 
-                    <p:column  style="padding: 4px; width: 6em;">
+                    <p:column  style="padding: 4px; width: 5em;">
                         <f:facet name="header">Expiry</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputLabel>
                     </p:column>                                 
 
-                    <p:column style="padding: 4px; width: 4em;">
+                    <p:column style="padding: 4px; width: 3em;">
                         <f:facet name="header">QTY</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#,##0" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="padding: 4px; width: 4em;">
+                    <p:column style="padding: 4px; width: 3em;">
                         <f:facet name="header">Free</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}">
                             <f:convertNumber pattern="#,##0" />
                         </h:outputLabel>
-                            
+
                     </p:column>
 
                     <p:column style="padding: 4px; width: 5em;">
@@ -139,14 +138,21 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  style="padding: 4px; width: 5em;" rendered="#{cc.attrs.ShowRetailValue}">
+                    <p:column  
+                        style="padding: 4px; width: 5em;" 
+                        class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }"
+                        rendered="#{cc.attrs.ShowRetailValue}">
                         <f:facet name="header" >Re. Value</f:facet>
+
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate*(bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.freeQty )}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  style="padding: 4px; width: 5em;" class="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit' }">
+                    <p:column  
+                        rendered="#{cc.attrs.ShowProfit}"
+                        style="padding: 4px; width: 4em;" 
+                        class="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit' }">
                         <f:facet name="header">Profit %</f:facet>
                         <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
                             <f:convertNumber pattern="0.0" ></f:convertNumber>
@@ -166,12 +172,11 @@
                             <p:column style="padding: 4px; width: 6em;" ></p:column>
                             <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.saleValue}" rendered="#{cc.attrs.ShowRetailValue}">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{cc.attrs.bill.saleValue}">
+                                    <h:outputLabel value="#{cc.attrs.bill.saleValue}" class="#{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 4px; width: 6em;" colspan="1" rendered="#{cc.attrs.ShowProfit}"></p:column>
                         </p:row>
 
                         <p:row rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
@@ -183,7 +188,6 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 4px; width: 6em;" colspan="2" rendered="#{cc.attrs.ShowProfit}"></p:column>
 
                         </p:row>
 
@@ -196,7 +200,6 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 4px; width: 6em;" colspan="3" rendered="#{cc.attrs.ShowProfit}"></p:column>
 
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.discount!=0}">
@@ -208,7 +211,6 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 4px; width: 6em;"  colspan="3" rendered="#{cc.attrs.ShowProfit}"></p:column>
 
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.total!=cc.attrs.bill.netTotal}">
@@ -220,13 +222,11 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column style="padding: 4px; width: 6em;" colspan="3" rendered="#{cc.attrs.ShowProfit}"></p:column>
-
                         </p:row>
                     </p:columnGroup>
                 </p:dataTable>
             </div>
-
+            
             <p:spacer height="5px"/>
 
             <div class="preparedBy" style="margin-left: 3%; margin-right: 3%;">
@@ -237,7 +237,7 @@
                 <h:outputLabel value="Received By : "/>
             </div>
 
-            <hr/>
+            <hr style="font-size: 16px; margin-left: 3%; margin-right: 3%;"/>
             <div style="margin-left: 3%; margin-right: 3%;font-size: 15px;">
                 <h4 style="color: #000000; text-align: center " >
                     <h:outputLabel value="Payment Voucher" style="text-decoration: underline;"/>
