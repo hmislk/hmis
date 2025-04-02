@@ -739,7 +739,7 @@ public class ChannelApi {
         response.put("data", sessionResults);
         response.put("detailMessage", "Succeess");
 
-        return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
 
     }
 
