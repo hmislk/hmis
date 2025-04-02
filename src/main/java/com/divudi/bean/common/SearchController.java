@@ -975,6 +975,7 @@ public class SearchController implements Serializable {
         patientInvestigations = null;
         searchKeyword = null;
         printPreview = false;
+        showLoggedDepartmentOnly = true;
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -6363,20 +6364,32 @@ public class SearchController implements Serializable {
     }
 
     public void createBillItemTableByKeyword() {
+        
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        
         Date startTime = new Date();
         String sql;
         Map m = new HashMap();
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
-        m.put("bType", BillType.OpdBill);
-        m.put("dep", getSessionController().getDepartment());
 
         sql = "select bi "
                 + " from BillItem bi "
-                + " where bi.bill.department=:dep "
-                + " and bi.bill.billType=:bType "
+                + " where  bi.bill.billTypeAtomic in :billTypesAtomics  "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
+        m.put("billTypesAtomics", billTypesAtomics);
+        
+        if (showLoggedDepartmentOnly) {
+            Department dept = sessionController.getDepartment();
+            if (dept != null) {
+                sql += " and bi.bill.department=:dept ";
+                m.put("dept", dept);
+            }
+        }
+        
         if (searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().equals("")) {
             sql += " and  ((bi.bill.patient.person.name) like :patientName )";
             m.put("patientName", "%" + searchKeyword.getPatientName().trim().toUpperCase() + "%");
@@ -6403,7 +6416,6 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by bi.id desc  ";
-        //System.err.println("Sql " + sql);
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
 
