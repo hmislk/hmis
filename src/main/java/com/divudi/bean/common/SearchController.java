@@ -337,6 +337,7 @@ public class SearchController implements Serializable {
     private String searchType;
     private String reportType;
     private boolean withProfessionalFee;
+    private boolean showLoggedDepartmentOnly;
 
     private Drawer drawer;
 
@@ -2302,6 +2303,14 @@ public class SearchController implements Serializable {
         this.bookingType = bookingType;
     }
 
+    public boolean isShowLoggedDepartmentOnly() {
+        return showLoggedDepartmentOnly;
+    }
+
+    public void setShowLoggedDepartmentOnly(boolean showLoggedDepartmentOnly) {
+        this.showLoggedDepartmentOnly = showLoggedDepartmentOnly;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -2954,7 +2963,7 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             sql += " and  ((b.department.name) like :dep )";
             temMap.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
-        }else if((getSearchKeyword().getDepartment() == null || getSearchKeyword().getDepartment().isEmpty()) && getSessionController().getDepartment() != null){
+        } else if ((getSearchKeyword().getDepartment() == null || getSearchKeyword().getDepartment().isEmpty()) && getSessionController().getDepartment() != null) {
             sql += " and  ((b.department.name) = :dep )";
             temMap.put("dep", getSessionController().getDepartment().getName());
         }
@@ -8065,10 +8074,9 @@ public class SearchController implements Serializable {
     public void searchOpdBills() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
-//        checkLabReportsApproved(bills);
+
     }
 
     public void searchOpdPackageBills() {
@@ -9036,6 +9044,14 @@ public class SearchController implements Serializable {
                 + " where b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
+
+        if (showLoggedDepartmentOnly) {
+            Department dept = sessionController.getDepartment();
+            if (dept != null) {
+                sql += " and b.department=:dept ";
+                temMap.put("dept", dept);
+            }
+        }
 
         if (ins != null) {
             sql += " and b.institution=:ins ";
