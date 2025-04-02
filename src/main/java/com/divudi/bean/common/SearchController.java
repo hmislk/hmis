@@ -2963,7 +2963,7 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             sql += " and  ((b.department.name) like :dep )";
             temMap.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
-        }else if((getSearchKeyword().getDepartment() == null || getSearchKeyword().getDepartment().isEmpty()) && getSessionController().getDepartment() != null){
+        } else if ((getSearchKeyword().getDepartment() == null || getSearchKeyword().getDepartment().isEmpty()) && getSessionController().getDepartment() != null) {
             sql += " and  ((b.department.name) = :dep )";
             temMap.put("dep", getSessionController().getDepartment().getName());
         }
@@ -9045,12 +9045,15 @@ public class SearchController implements Serializable {
                 + " where b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
-   
-        if(showLoggedDepartmentOnly){
-            sql += " and b.department=:dept ";
-            temMap.put("dept", sessionController.getDepartment());
+
+        if (showLoggedDepartmentOnly) {
+            Department dept = sessionController.getDepartment();
+            if (dept != null) {
+                sql += " and b.department=:dept ";
+                temMap.put("dept", dept);
+            }
         }
-        
+
         if (ins != null) {
             sql += " and b.institution=:ins ";
             temMap.put("ins", ins);
