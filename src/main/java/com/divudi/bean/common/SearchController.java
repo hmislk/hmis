@@ -2954,6 +2954,9 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             sql += " and  ((b.department.name) like :dep )";
             temMap.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }else if(getSearchKeyword().getDepartment() == null || getSearchKeyword().getDepartment().isEmpty()){
+            sql += " and  ((b.department.name) = :dep )";
+            temMap.put("dep", getSessionController().getDepartment().getName());
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
