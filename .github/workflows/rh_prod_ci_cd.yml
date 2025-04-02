@@ -31,7 +31,7 @@ jobs:
         run: |
           sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
           sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunuAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-      
+
       - name: Verify JDBC Data Sources in persistence.xml
         run: |
           grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
@@ -44,7 +44,6 @@ jobs:
         with:
           name: build-artifacts
           path: target/*.war
-          overwrite: true
 
       # - name: Run Tests
       #   run: mvn test
@@ -65,9 +64,9 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.RUHUNU_PROD_SERVER_IP }}
-          SERVER_USER: ${{ secrets.RUHUNU_PROD_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.RUHUNU_PROD_SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.RUHUNU_PROD_SHARED_SERVER_IP }}
+          SERVER_USER: ${{ secrets.RUHUNU_PROD_SHARED_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.RUHUNU_PROD_SHARED_SSH_PRIVATE_KEY }}
           PAYARA_ADMIN_PASS: ${{ secrets.RUHUNU_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
