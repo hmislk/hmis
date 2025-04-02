@@ -64,9 +64,9 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.RUHUNU_PROD_SERVER_IP }}
+          SERVER_IP: ${{ secrets.RUHUNU_PROD_SHARED_SERVER_IP }}
           SERVER_USER: ${{ secrets.RUHUNU_PROD_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.RUHUNU_PROD_SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.RUHUNU_PROD_SHARED_SSH_PRIVATE_KEY }}
           PAYARA_ADMIN_PASS: ${{ secrets.RUHUNU_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
