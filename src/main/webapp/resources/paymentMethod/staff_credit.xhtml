@@ -8,30 +8,30 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="col" >
-            <p:inputText 
-                autocomplete="off"   
-                value="#{cc.attrs.paymentMethodData.staffCredit.totalValue}" 
+            <p:inputText
+                autocomplete="off"
+                value="#{cc.attrs.paymentMethodData.staffCredit.totalValue}"
                 id="txtVal">
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>
-            <p:autoComplete  
+            <p:autoComplete
                 minQueryLength="2"
-                forceSelection="true" 
-                value="#{cc.attrs.paymentMethodData.staffCredit.toStaff}" 
+                forceSelection="true"
+                value="#{cc.attrs.paymentMethodData.staffCredit.toStaff}"
                 id="creditStaff"
-                completeMethod="#{staffController.completeStaff}" 
-                var="mys" 
+                completeMethod="#{staffController.completeStaff}"
+                var="mys"
                 class="w-100"
                 placeholder="Staff (Type at least 4 letters to search)"
                 inputStyleClass="form-control"
-                itemLabel="#{mys.person.name}" 
+                itemLabel="#{mys.person.name}"
                 itemValue="#{mys}"
                 size="10">
                 <p:column headerText="Name" style="padding: 2px;">

@@ -8,7 +8,7 @@
       xmlns:p="http://primefaces.org/ui">
 
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" type="java.lang.Integer"></cc:attribute>
@@ -53,7 +53,7 @@
                                                 <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>-->
                         </div>
                         <div >
-                            <h:outputLabel value="#{cc.attrs.bill.department.email}" />                                                
+                            <h:outputLabel value="#{cc.attrs.bill.department.email}" />
                         </div>
                     </div>
                     <div class="separator"></div>
@@ -62,8 +62,8 @@
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
                     <br/>
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
                 </div>
 
                 <!-- Separator Line -->
@@ -111,7 +111,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td style="padding: 2px;">Bill No:</td>
                         <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
@@ -153,7 +153,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="s">
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="s">
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
@@ -205,7 +205,7 @@
                     <tr>
                         <td >No of Items:</td>
                         <td style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.billItems.size()}">
+                            <h:outputLabel value="#{billBeanController.fetchBillItems(cc.attrs.bill).size()}">
                                 <f:convertNumber integerOnly="true" />
                             </h:outputLabel>
                         </td>
@@ -240,7 +240,7 @@
                             </table>
                         </td>
                     </tr>
-                </table> 
+                </table>
 
                 <h:panelGroup rendered="#{cc.attrs.duplicate eq true}" >
                     <table >
@@ -256,7 +256,7 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                    </table> 
+                    </table>
                 </h:panelGroup>
 
             </div>

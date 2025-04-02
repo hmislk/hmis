@@ -6,10 +6,10 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Institution;
-import com.divudi.entity.lab.Machine;
-import com.divudi.facade.MachineFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.facade.MachineFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

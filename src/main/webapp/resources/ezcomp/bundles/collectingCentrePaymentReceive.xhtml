@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -67,12 +67,12 @@
                     </f:facet>
                     <h:outputText value="#{row.bill.deptId}" />
 
-                    <p:commandButton 
-                        title="Admin" 
-                        icon="fa fa-shield-alt" 
-                        class="m-1 ui-button-danger" 
-                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                        ajax="false" 
+                    <p:commandButton
+                        title="Admin"
+                        icon="fa fa-shield-alt"
+                        class="m-1 ui-button-danger"
+                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}"
+                        ajax="false"
                         rendered="#{webUserController.hasPrivilege('Developers')}">
                         <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                     </p:commandButton>

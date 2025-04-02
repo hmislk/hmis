@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -29,7 +29,7 @@
         <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
 
 
-            <p:dataTable 
+            <p:dataTable
                 emptyMessage="No #{cc.attrs.bundle.name}"
                 var="row" value="#{cc.attrs.bundle.reportTemplateRows}" styleClass="w-100" rowStyleClass="#{row.department ne null ? 'table-primary' : 'table-light'}">
                 <f:facet name="header">

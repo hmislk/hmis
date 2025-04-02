@@ -9,28 +9,27 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.ItemSupplierPrices;
-import com.divudi.data.ItemType;
-import com.divudi.data.SymanticType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemSupplierPrices;
+import com.divudi.core.data.ItemType;
+import com.divudi.core.data.SymanticType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -66,8 +65,6 @@ public class AmpController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @EJB
     private AmpFacade ejbFacade;
     List<Amp> selectedItems;
@@ -1051,13 +1048,4 @@ public class AmpController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

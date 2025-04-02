@@ -5,20 +5,18 @@
  */
 package com.divudi.ws.lims;
 
-import ca.uhn.fhir.context.FhirContext;
 import com.divudi.bean.common.SecurityController;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PatientSampleComponantFacade;
-import com.divudi.facade.PatientSampleFacade;
-import com.divudi.facade.WebUserFacade;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.facade.WebUserFacade;
 import java.util.HashMap;
 import java.util.Map;
-import com.divudi.data.LoginRequest;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.LoginRequest;
+import com.divudi.core.util.JsfUtil;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
@@ -28,18 +26,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONObject;
-
 import ca.uhn.hl7v2.model.*;
-import com.divudi.bean.common.util.HL7Utils;
+import com.divudi.core.util.HL7Utils;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.ws.rs.HeaderParam;
 import ca.uhn.hl7v2.*;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.lab.Priority;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.entity.lab.PatientSampleComponant;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.lab.Priority;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,28 +44,25 @@ import ca.uhn.hl7v2.parser.Parser;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DepartmentMachineController;
 import com.divudi.bean.lab.MachineController;
-
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.lab.PatientInvestigationStatus;
-import com.divudi.data.lab.SysMex;
-import com.divudi.data.lab.SysMexTypeA;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.SysMex;
+import com.divudi.core.data.lab.SysMexTypeA;
 import com.divudi.ejb.PatientReportBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.lab.DepartmentMachine;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.facade.InvestigationItemValueFlagFacade;
-import com.divudi.facade.PatientReportFacade;
-import com.divudi.facade.PatientReportItemValueFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.lab.DepartmentMachine;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItemValueFlag;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.facade.InvestigationItemValueFlagFacade;
+import com.divudi.core.facade.PatientReportFacade;
+import com.divudi.core.facade.PatientReportItemValueFacade;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -96,8 +90,6 @@ public class LimsMiddlewareController {
     //FOR UNIT TESTING
 
     @EJB
-    InvestigationItemFacade investigationItemFacade;
-    @EJB
     PatientSampleComponantFacade patientSampleComponantFacade;
     @EJB
     PatientSampleFacade patientSampleFacade;
@@ -111,8 +103,7 @@ public class LimsMiddlewareController {
     WebUserFacade webUserFacade;
     @EJB
     ItemFacade itemFacade;
-    @EJB
-    private PatientReportItemValueFacade ptRivFacade;
+
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 
@@ -1035,7 +1026,7 @@ public class LimsMiddlewareController {
 
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
                             && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.ReportImage) {
-                        
+
                         System.out.println("image found");
 
                         System.out.println("priv.getInvestigationItem().getTest() = " + priv.getInvestigationItem().getTest());
@@ -1064,7 +1055,7 @@ public class LimsMiddlewareController {
                                     priv.setFileName(testCodeFromDatabase + sid );
                                     priv.setFileType("BMP");
 
-                                   
+
                                     if (priv.getId() == null) {
                                         patientReportItemValueFacade.create(priv);
                                     } else {
@@ -1075,7 +1066,7 @@ public class LimsMiddlewareController {
                                 }
                             }
 
-                           
+
 
                         }
 
@@ -1622,7 +1613,7 @@ public class LimsMiddlewareController {
 //                    ////// // // // System.out.println("New value added to pr teport" + ptReport);
 //
 //                } else {
-//                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
+//                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Value";
 //                    val = ptRivFacade.findFirstByJpql(sql);
 //                    if (val == null) {
 //                        val = new PatientReportItemValue();
@@ -1652,7 +1643,7 @@ public class LimsMiddlewareController {
         String sql;
         dl = ii.getName();
 
-        long ageInDays = com.divudi.java.CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
+        long ageInDays = com.divudi.core.util.CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
         sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
         List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {

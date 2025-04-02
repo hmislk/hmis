@@ -81,7 +81,7 @@
                                             <p:selectOneMenu value="#{financialTransactionController.cashbookDate}" styleClass="w-100" converter="longDateConverter">
                                                 <f:selectItem itemLabel="Select Date" ></f:selectItem>
                                                 <f:selectItems value="#{financialTransactionController.cashbookDates}" var="date"
-                                                               itemLabel="#{commonController.formatToLongDate(date)}" 
+                                                               itemLabel="#{commonFunctionsProxy.formatToLongDate(date, sessionController.applicationPreference.longDateFormat)}"
                                                                itemValue="#{date}" />
                                             </p:selectOneMenu>
                                         </h:panelGroup>
@@ -106,7 +106,7 @@
                                         <p:commandButton
                                             ajax="false"
                                             value="Process"
-                                            action="#{financialTransactionController.fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbookFilteredByDateAndDepartment}" 
+                                            action="#{financialTransactionController.fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbookFilteredByDateAndDepartment}"
                                             icon="pi pi-check" styleClass="w-100" />
                                     </p:panelGrid>
                                 </div>
@@ -131,9 +131,9 @@
                                         <tbody>
                                             <tr>
                                                 <td style="width:6em;">
-                                                    <p:commandLink 
-                                                        value="Cash" 
-                                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCash()}" 
+                                                    <p:commandLink
+                                                        value="Cash"
+                                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCash()}"
                                                         ></p:commandLink>
                                                 </td>
                                                 <td align="right" style="width:6em;">
@@ -159,9 +159,9 @@
                                             </tr>
                                             <tr>
                                                 <td style="width:6em;">
-                                                    <p:commandLink 
-                                                        value="Card" 
-                                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCard()}" 
+                                                    <p:commandLink
+                                                        value="Card"
+                                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCard()}"
                                                         ></p:commandLink>
                                                 </td>
                                                 <td align="right" style="width:6em;">
@@ -182,9 +182,9 @@
                                             </tr>
                                             <tr>
                                                 <td style="width:6em;">
-                                                    <p:commandLink 
-                                                        value="Voucher" 
-                                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}" 
+                                                    <p:commandLink
+                                                        value="Voucher"
+                                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}"
                                                         ></p:commandLink>
                                                 </td>
                                                 <td align="right" style="width:6em;">
@@ -205,9 +205,9 @@
                                             </tr>
                                             <tr>
                                                 <td style="width:6em;">
-                                                    <p:commandLink 
-                                                        value="Other" 
-                                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}" 
+                                                    <p:commandLink
+                                                        value="Other"
+                                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}"
                                                         ></p:commandLink>
                                                 </td>
                                                 <td align="right" style="width:6em;">
@@ -355,7 +355,7 @@
 
 
                         <h:panelGroup rendered="true" layout="block" class="w-100" style="overflow-x: scroll;">
-                            <p:commandButton 
+                            <p:commandButton
                                 value="Calculate Handing Over Values"
                                 ajax="false"
                                 action="#{financialTransactionController.calculateHandingOverValues()}"
@@ -381,29 +381,29 @@
                                 <p:autoComplete
                                     completeMethod="#{staffController.completeStaff}"
                                     class="mx-2"
-                                    id="acStaff" 
-                                    value="#{financialTransactionController.currentBill.toStaff}" 
+                                    id="acStaff"
+                                    value="#{financialTransactionController.currentBill.toStaff}"
                                     var="staff"
                                     scrollHeight="450"
-                                    itemLabel="#{staff.person.name}" 
+                                    itemLabel="#{staff.person.name}"
                                     itemValue="#{staff}" >
                                 </p:autoComplete>
 
-                                <p:commandButton 
-                                    class="ui-button-success mx-2" 
-                                    ajax="false" 
-                                    value="Handover" 
+                                <p:commandButton
+                                    class="ui-button-success mx-2"
+                                    ajax="false"
+                                    value="Handover"
                                     action="#{financialTransactionController.settleHandoverStartBill()}" >
                                 </p:commandButton>
                             </div>
                             <p:commandButton value="Export to excel" >
                                 <p:dataExporter type="xlsx" target="tblPayments" fileName="exportedData"/>
                             </p:commandButton>
-                            <p:dataTable 
+                            <p:dataTable
                                 class="w-100"
-                                id="tblPayments" 
-                                value="#{financialTransactionController.paymentsFromShiftSratToNow}" 
-                                var="bp" 
+                                id="tblPayments"
+                                value="#{financialTransactionController.paymentsFromShiftSratToNow}"
+                                var="bp"
                                 paginator="true"
                                 paginatorPosition="bottom"
                                 rows="5"
@@ -458,10 +458,10 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Action" >
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="ui-button-success"
                                         icon=" fa-solid fa-eye"
-                                        value="View Bill" 
+                                        value="View Bill"
                                         ajax="false"
                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                         >
@@ -472,8 +472,8 @@
                         </h:panelGroup>
 
 
-                        <p:panelGrid 
-                            columns="2" 
+                        <p:panelGrid
+                            columns="2"
                             rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"
                             >
                             <p:outputLabel value="No Shift Start Fund Bill Available to Close" ></p:outputLabel>

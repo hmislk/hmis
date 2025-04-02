@@ -5,36 +5,35 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.AuditEventApplicationController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.FeeType;
-import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.table.String1Value1;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
-import com.divudi.entity.PersonInstitution;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PersonInstitutionFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.dataStructure.BillsTotals;
+import com.divudi.core.data.table.String1Value1;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PersonInstitution;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PersonInstitutionFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,8 +60,6 @@ public class CommonReport1 implements Serializable {
 
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject AuditEventApplicationController auditEventApplicationController;
     ///////////////////
     @EJB
@@ -70,7 +67,7 @@ public class CommonReport1 implements Serializable {
     @EJB
     PersonInstitutionFacade personInstitutionFacade;
 
- 
+
     CommonFunctions commonFunctions;
     ////////////////////
     private Institution collectingIns;
@@ -105,7 +102,7 @@ public class CommonReport1 implements Serializable {
     private BillsTotals agentCancelBill;
     private BillsTotals inwardPayments;
     private BillsTotals inwardPaymentCancel;
-    //////////////////    
+    //////////////////
     private List<String1Value1> dataTableData;
     List<DocTotal> docTotals;
     ///
@@ -442,7 +439,7 @@ public class CommonReport1 implements Serializable {
             biledBillsTotal += bi.getNetValue() + bi.getVat();
         }
 
-        
+
 
     }
 
@@ -495,7 +492,7 @@ public class CommonReport1 implements Serializable {
             biledBillsTotal += bilst.getNetTotal();
         }
 
-        
+
 
     }
 
@@ -1883,7 +1880,7 @@ public class CommonReport1 implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1904,8 +1901,8 @@ public class CommonReport1 implements Serializable {
         auditEvent.setEventTrigger("createOpdBillList()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
- 
+
+
 
 //        if (paymentScheme == null) {
 //            JsfUtil.addErrorMessage("Please Select Payment Scheme");
@@ -1918,7 +1915,7 @@ public class CommonReport1 implements Serializable {
         cancelBillsTotal = fetchBillsTotal(new CancelledBill(), BillType.OpdBill, paymentScheme);
         refundBillsTotal = fetchBillsTotal(new RefundBill(), BillType.OpdBill, paymentScheme);
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1992,7 +1989,7 @@ public class CommonReport1 implements Serializable {
         biledBills = getLabBillsOwnBilled();
         getLabBillsOwnBilledTotals();
 
-        
+
     }
 
     public void createWithCreditbyDepartmentBilledBillItem() {
@@ -2024,7 +2021,7 @@ public class CommonReport1 implements Serializable {
         }
 //        getLabBillsOwnBilledTotals();
 
-        
+
     }
 
     public List<Bill> getLabBillsOwnBilled() {
@@ -2348,14 +2345,6 @@ public class CommonReport1 implements Serializable {
 
     public void setRefundBillsTotal(double refundBillsTotal) {
         this.refundBillsTotal = refundBillsTotal;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public boolean isOnlyOPD() {

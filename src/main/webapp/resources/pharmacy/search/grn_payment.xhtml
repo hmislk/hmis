@@ -114,7 +114,7 @@
                     <f:setPropertyActionListener value="true" target="#{supplierPaymentController.printPreview}"/>
                 </h:commandLink>
             </p:column>               
-            <p:column headerText="Paymentmethod"  >
+            <p:column headerText="Payment Method"  >
                 <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.paymentMethod}">
                     <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.current}"/>
                     <f:setPropertyActionListener value="#{bill.billItems}" target="#{supplierPaymentController.billItems}"/>
