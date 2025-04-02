@@ -25,15 +25,24 @@
                                 ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
+
                             <p:commandButton 
-                                ajax="false" 
-                                value="Cancel" 
+                                ajax="false"
+                                value="Back" 
                                 style="float: right;"
-                                class="ui-button-danger"
-                                icon="fa fa-cancel"
-                                action="pharmacy_cancel_bill_retail_cash" 
-                                disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                            </p:commandButton>
+                                class="ui-button-warning mx-2"
+                                icon="fa fa-arrow-left"
+                                action="pharmacy_search_pre_bill?faces-redirect=true" >
+                            </p:commandButton>   
+                            <!--                            <p:commandButton 
+                                                            ajax="false" 
+                                                            value="Cancel" 
+                                                            style="float: right;"
+                                                            class="ui-button-danger"
+                                                            icon="fa fa-cancel"
+                                                            action="pharmacy_cancel_bill_retail_cash" 
+                                                            disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                                                        </p:commandButton>-->
 
                         </f:facet>
 
@@ -43,13 +52,12 @@
                                     <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill>
                                 </div>
                             </h:panelGroup> 
-                            
-                        </h:panelGroup>
 
-                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
-                            <div>
-                                <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
-                            </div>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                </div>
+                            </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
 
