@@ -65,9 +65,9 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.MP_PROD_SERVER_IP }}
-          SERVER_USER: ${{ secrets.MP_PROD_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.MP_PROD_SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.MP_PROD_SHARED_SERVER_IP }}
+          SERVER_USER: ${{ secrets.MP_PROD_SHARED_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.MP_PROD_SHARED_SSH_PRIVATE_KEY }}
           PAYARA_ADMIN_PASS: ${{ secrets.MP_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
