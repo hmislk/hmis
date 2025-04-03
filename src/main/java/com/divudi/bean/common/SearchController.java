@@ -7657,6 +7657,12 @@ public class SearchController implements Serializable {
         bills = tokenList.stream().map(t -> t.getBill()).collect(Collectors.toList());
 
     }
+    
+    public List<Bill> getRefreshCashBills(Bill bill){       
+        Bill fetchBill = getBillFacade().findWithoutCache(bill.getId());
+        //System.out.println("line 7663 "+fetchBill.getCashBillsPre());
+        return fetchBill.getCashBillsPre();
+    }
 
     @Inject
     private TokenController tokenController;

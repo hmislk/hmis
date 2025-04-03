@@ -290,7 +290,7 @@
                                                                                 </p:commandButton>-->
                                     </p:column>
                                     <p:column width="35%">
-                                        <p:dataTable value="#{bill.cashBillsPre}" var="rb">
+                                        <p:dataTable value="#{searchController.getRefreshCashBills(bill)}" var="rb">
                                             <p:column  >
                                                 <h:outputLabel  value="#{rb.deptId}"/>
                                             </p:column>
