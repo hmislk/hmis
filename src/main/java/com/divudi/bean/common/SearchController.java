@@ -20,6 +20,7 @@ import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.hr.ReportKeyWord;
 
 import com.divudi.core.data.reports.FinancialReport;
+import com.divudi.core.data.reports.CashierReports;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
@@ -17588,68 +17589,70 @@ public class SearchController implements Serializable {
     }
 
     public void generateAllCashierSummary() {
-        Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
-                + "bill.department, FUNCTION('date', p.createdAt), p.creater, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
-                + "FROM Payment p "
-                + "JOIN p.bill bill "
-                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
+                    + "bill.department, FUNCTION('date', p.createdAt), p.creater, "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                    + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                    + "FROM Payment p "
+                    + "JOIN p.bill bill "
+                    + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
 
-        parameters.put("bfr", true);
-        parameters.put("br", true);
-        //Start - Atomic Bill Type with Cash in and cash out added for 10088-all-cashier-summary-had-calculated-fund-bills
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
-        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
-        jpql += "AND bill.billTypeAtomic in :btas ";
-        parameters.put("btas", btas);
-        // End - Atomic Bill Type with Cash in and cash out added FOR 10088-all-cashier-summary-had-calculated-fund-bills
-        if (institution != null) {
-            jpql += "AND bill.department.institution = :ins ";
-            parameters.put("ins", institution);
-        }
-        if (department != null) {
-            jpql += "AND bill.department = :dep ";
-            parameters.put("dep", department);
-        }
-        if (site != null) {
-            jpql += "AND bill.department.site = :site ";
-            parameters.put("site", site);
-        }
-        if (webUser != null) {
-            jpql += "AND p.creater = :wu ";
-            parameters.put("wu", webUser);
-        }
-        if (paymentMethod != null) {
-            jpql += "AND p.paymentMethod = :pm ";
-            parameters.put("pm", paymentMethod);
-        }
+            parameters.put("bfr", true);
+            parameters.put("br", true);
+            //Start - Atomic Bill Type with Cash in and cash out added for 10088-all-cashier-summary-had-calculated-fund-bills
+            List<BillTypeAtomic> btas = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
+            btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+            jpql += "AND bill.billTypeAtomic in :btas ";
+            parameters.put("btas", btas);
+            // End - Atomic Bill Type with Cash in and cash out added FOR 10088-all-cashier-summary-had-calculated-fund-bills
+            if (institution != null) {
+                jpql += "AND bill.department.institution = :ins ";
+                parameters.put("ins", institution);
+            }
+            if (department != null) {
+                jpql += "AND bill.department = :dep ";
+                parameters.put("dep", department);
+            }
+            if (site != null) {
+                jpql += "AND bill.department.site = :site ";
+                parameters.put("site", site);
+            }
+            if (webUser != null) {
+                jpql += "AND p.creater = :wu ";
+                parameters.put("wu", webUser);
+            }
+            if (paymentMethod != null) {
+                jpql += "AND p.paymentMethod = :pm ";
+                parameters.put("pm", paymentMethod);
+            }
 
-        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
+            jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+            parameters.put("fd", fromDate);
+            parameters.put("td", toDate);
 
-        jpql += "GROUP BY bill.department, FUNCTION('date', p.createdAt), p.creater";
+            jpql += "GROUP BY bill.department, FUNCTION('date', p.createdAt), p.creater";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+            List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        bundle = new ReportTemplateRowBundle();
-        bundle.setReportTemplateRows(rs);
-        bundle.calculateTotalsWithCredit();
+            bundle = new ReportTemplateRowBundle();
+            bundle.setReportTemplateRows(rs);
+            bundle.calculateTotalsWithCredit();
+        }, CashierReports.All_CASHIER_SUMMARY,sessionController.getLoggedUser());
     }
 
     public void generateDepartmentRevenueReport() {
