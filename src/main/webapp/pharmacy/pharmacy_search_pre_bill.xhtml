@@ -78,6 +78,23 @@
                                 <p:commandButton
                                     ajax="false"
                                     class=" ui-button-warning w-100 my-1"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    icon="fas fa-search"
+                                    value="Search Paid Only Tokens"
+                                    action="#{searchController.fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(true)}"/>
+                                
+                                <p:commandButton
+                                    ajax="false"
+                                    class=" ui-button-warning w-100 my-1"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    icon="fas fa-search"
+                                    value="Search Not Paid Tokens"
+                                    action="#{searchController.fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(false)}"/>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    class=" ui-button-warning w-100 my-1"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     icon="fas fa-search"
                                     value="Search Not Paid Only"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierNotPaid()}"/>
@@ -85,6 +102,7 @@
                                     ajax="false"
                                     class=" ui-button-warning w-100"
                                     icon="fas fa-search"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     value="Search Paid Only"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierGetPaid()}"/>
                                 <h:outputLabel/>
@@ -227,7 +245,7 @@
                                                     rendered="#{bill ne null and configOptionApplicationController.getBooleanValueByKey('Enable bill edit in sale for cashier token management system', false)}"
                                                     title="Edit Bill" 
                                                     action="#{tokenController.navigateToSaleForCashierToEditBillWithToken(pharmacyPreSettleController.findTokenFromBill(bill))}">
-                                                    
+
                                                 </p:commandButton>
 
                                                 <p:commandButton
@@ -241,7 +259,7 @@
                                                     actionListener="#{pharmacyPreSettleController.paymentOngoingToken(bill)}"
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
                                                 </p:commandButton> 
-                                                
+
                                                 <p:commandButton
                                                     ajax="true"
                                                     process="@this"
