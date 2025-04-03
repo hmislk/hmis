@@ -39,33 +39,28 @@
 
                         <style>
 
-                            .paper{
-                                position: static !important;
-                                width: 210mm!important;
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 210mm!important;
+                                    zoom: 1.6
+                                }
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 13px!important;
+                                    margin-top: 3mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
 
                             }
 
-                            .header{
-                                line-height: 1.1;
-                                margin: 0mm!important;
-                            }
-
-                            table {
-                                border-collapse: collapse;
-                                width: 100%;
-                                font-size: 13px!important;
-                                margin-top: 3mm!important;
-                            }
-                            th, td {
-                                border: 1px solid #000;
-                                padding: 0px!important;
-                                margin: 2px!important;
-                                text-align: left;
-                                margin-left: 10mm!important;
-                            }
-                            th {
-
-                            }
 
                             @media print {
                                 @page {
@@ -79,6 +74,35 @@
                                 body {
                                     counter-reset: page;
                                 }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 210mm!important;
+
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 13px!important;
+                                    margin-top: 3mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
+
+                                }
+
                             }
 
                         </style>
@@ -116,7 +140,7 @@
                                         <div></div>
                                     </div>
 
-                                    <div class="d-flex justify-content-between mt-2 w-100 gap-2" style=" font-size: 16px;">
+                                    <div class="d-flex justify-content-between mt-2 w-100 gap-2" style=" font-size: 16px;" id="toinsdept">
                                         <div class="d-flex gap-2">
                                             <h:outputText 
                                                 rendered="#{laborataryReportController.toInstitution ne null}"
