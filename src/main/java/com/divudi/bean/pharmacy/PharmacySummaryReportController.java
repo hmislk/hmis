@@ -70,7 +70,7 @@ import org.primefaces.model.StreamedContent;
 public class PharmacySummaryReportController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @EJB
+    @Inject
     private ReportTimerController reportTimerController;
 
 // <editor-fold defaultstate="collapsed" desc="EJBs">

@@ -85,7 +85,7 @@ public class ReportsStock implements Serializable {
     BillType[] billTypes;
     ReportKeyWord reportKeyWord;
     private List<BillItem> billItems;
-    @EJB
+    @Inject
     private ReportTimerController reportTimerController;
     /**
      * Managed Beans
