@@ -11,11 +11,8 @@
 
                 <p:panel header="Lab Analytics">  
                     <div class="row">
-                        <div class="col-3"> 
-
+                        <div class="col-2"> 
                             <p:accordionPanel>
-
-
                                 <p:tab title="Performance" > 
                                     <h:form>
 
@@ -100,6 +97,13 @@
                                     <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton
+                                                class="w-100"  
+                                                ajax="false" 
+                                                value="Test Wise Count Report" 
+                                                action="#{laborataryReportController.navigateToLaboratarySummaryFromLabAnalytics()}" >
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton
                                                 ajax="false" 
                                                 value="Laboratary Income Report" 
                                                 action="#{laborataryReportController.navigateToLaborataryIncomeReportFromLabAnalytics()}">
@@ -152,19 +156,16 @@
 
                             </p:accordionPanel>
                         </div>
-                        <div class="col-9">  
+                        
+                        <div class="col-10">  
                             <ui:insert name="subcontent" >
 
                             </ui:insert>
-
                         </div>
+                        
                     </div>
                 </p:panel> 
-
-
             </ui:define>
-
-
         </ui:composition>
 
     </h:body>
