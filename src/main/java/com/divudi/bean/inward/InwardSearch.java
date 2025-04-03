@@ -926,12 +926,13 @@ public class InwardSearch implements Serializable {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(), new Date());
+            boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false);
+            boolean hasPrivilege = getWebUserController().hasPrivilege("InwardFinalBillCancel");
 
-            if (!configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false) || !getWebUserController().hasPrivilege("InwardFinalBillCancel")) {
-                if (Math.abs(dayCount) > 3 && !getWebUserController().hasPrivilege("InwardFinalBillCancel")) {
-                    JsfUtil.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
-                    return;
-                }
+            // Skip time check if both conditions are true: time limit is disabled AND user has privilege
+            if (!disableTimeLimit && Math.abs(dayCount) > 3 && !hasPrivilege) {
+                JsfUtil.addErrorMessage("You can't cancel bills older than 3 days without special privileges.");
+                return;
             }
 
             if (getBill().isCancelled()) {
