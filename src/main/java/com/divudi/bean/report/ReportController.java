@@ -3192,10 +3192,149 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectingCentreTestWiseCountReport() {
-        // Updated to use null-safe Boolean checks.
-// Original comparisons like bi.retired = :ret excluded rows with NULLs.
-// Now using (is null or = false) to include records where flags are either false or null.
+        // 1. Query for Billed Items
+        String jpqlBilled = "select new com.divudi.core.data.TestWiseCountReport("
+                + " bi.item.name, "
+                + " count(bi), "
+                + " sum(bi.hospitalFee), "
+                + " sum(bi.collectingCentreFee), "
+                + " sum(bi.staffFee), "
+                + " sum(bi.netValue)"
+                + ") "
+                + " from BillItem bi "
+                + " where (bi.retired is null or bi.retired = false) "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billTypeAtomic = :billType ";
 
+        Map mBilled = new HashMap();
+        mBilled.put("fd", fromDate);
+        mBilled.put("td", toDate);
+        mBilled.put("billType", BillTypeAtomic.CC_BILL);
+
+        // Keep your existing logic in both queries
+        if (institution != null) {
+            jpqlBilled += " and bi.bill.institution = :ins ";
+            mBilled.put("ins", institution);
+        }
+        if (department != null) {
+            jpqlBilled += " and bi.bill.department = :dep ";
+            mBilled.put("dep", department);
+        }
+        if (site != null) {
+            jpqlBilled += " and bi.bill.department.site = :site ";
+            mBilled.put("site", site);
+        }
+        if (collectingCentre != null) {
+            jpqlBilled += " and bi.bill.collectingCentre.id = :ccId ";
+            mBilled.put("ccId", collectingCentre.getId());
+        }
+
+        jpqlBilled += " group by bi.item order by bi.item.name asc";
+
+        List<TestWiseCountReport> billedReports
+                = billItemFacade.findLightsByJpql(jpqlBilled, mBilled, TemporalType.TIMESTAMP);
+
+        // 2. Query for Cancellations and Refunds
+        String jpqlCancelRefund = "select new com.divudi.core.data.TestWiseCountReport("
+                + " bi.item.name, "
+                + " count(bi), "
+                + " sum(bi.hospitalFee), "
+                + " sum(bi.collectingCentreFee), "
+                + " sum(bi.staffFee), "
+                + " sum(bi.netValue)"
+                + ") "
+                + " from BillItem bi "
+                + " where (bi.retired is null or bi.retired = false) "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billTypeAtomic in :cancelTypes ";
+
+        Map mCancelRefund = new HashMap();
+        mCancelRefund.put("fd", fromDate);
+        mCancelRefund.put("td", toDate);
+        List<BillTypeAtomic> cancelTypes = new ArrayList<>();
+        cancelTypes.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        cancelTypes.add(BillTypeAtomic.CC_BILL_REFUND);
+        mCancelRefund.put("cancelTypes", cancelTypes);
+
+        // Repeat your filtering logic
+        if (institution != null) {
+            jpqlCancelRefund += " and bi.bill.institution = :ins ";
+            mCancelRefund.put("ins", institution);
+        }
+        if (department != null) {
+            jpqlCancelRefund += " and bi.bill.department = :dep ";
+            mCancelRefund.put("dep", department);
+        }
+        if (site != null) {
+            jpqlCancelRefund += " and bi.bill.department.site = :site ";
+            mCancelRefund.put("site", site);
+        }
+        if (collectingCentre != null) {
+            jpqlCancelRefund += " and bi.bill.collectingCentre.id = :ccId ";
+            mCancelRefund.put("ccId", collectingCentre.getId());
+        }
+
+        jpqlCancelRefund += " group by bi.item order by bi.item.name asc";
+
+        List<TestWiseCountReport> cancelRefundReports
+                = billItemFacade.findLightsByJpql(jpqlCancelRefund, mCancelRefund, TemporalType.TIMESTAMP);
+
+        // 3. Combine in Java
+        //    Store billed items in a map, then convert cancellation/refund fields to negative
+        //    before adding them, so effectively "subtracting" them from the totals.
+        Map<String, TestWiseCountReport> finalMap = new HashMap<>();
+
+        // Put billed items in map
+        if (billedReports != null) {
+            for (TestWiseCountReport r : billedReports) {
+                finalMap.put(r.getTestName(), r);
+            }
+        }
+
+        // Turn all cancellation/refund amounts into negative values
+        if (cancelRefundReports != null) {
+            for (TestWiseCountReport cr : cancelRefundReports) {
+                // 3a: Convert them to absolute then make negative 
+                cr.setCount(-Math.abs(cr.getCount()));
+                cr.setHosFee(-Math.abs(cr.getHosFee()));
+                cr.setCcFee(-Math.abs(cr.getCcFee()));
+                cr.setProFee(-Math.abs(cr.getProFee()));
+                cr.setTotal(-Math.abs(cr.getTotal()));
+
+                // 3b: Merge with existing item in finalMap, or add as new negative entry
+                TestWiseCountReport existing = finalMap.get(cr.getTestName());
+                if (existing == null) {
+                    // If there's no billed entry, just put the negative
+                    finalMap.put(cr.getTestName(), cr);
+                } else {
+                    existing.setCount(existing.getCount() + cr.getCount());
+                    existing.setHosFee(existing.getHosFee() + cr.getHosFee());
+                    existing.setCcFee(existing.getCcFee() + cr.getCcFee());
+                    existing.setProFee(existing.getProFee() + cr.getProFee());
+                    existing.setTotal(existing.getTotal() + cr.getTotal());
+                }
+            }
+        }
+
+        // 4. Build final list and sum totals
+        testWiseCounts = new ArrayList<>(finalMap.values());
+
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalNetTotal = 0.0;
+
+        for (TestWiseCountReport report : testWiseCounts) {
+            totalCount += report.getCount();
+            totalHosFee += report.getHosFee();
+            totalCCFee += report.getCcFee();
+            totalProFee += report.getProFee();
+            totalNetTotal += report.getTotal();
+        }
+    }
+
+    public void processCollectingCentreTestWiseCountReportWithoutCancellationsAndRefunds() {
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi), "

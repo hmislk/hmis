@@ -2362,10 +2362,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         if ((getPatient().getMobileNumberStringTransient() == null
-                || getPatient().getMobileNumberStringTransient().trim().isEmpty())
+                || getPatient().getMobileNumberStringTransient().trim().isEmpty() || getPatient().getPerson().getName().trim().isEmpty())
                 && configOptionApplicationController.getBooleanValueByKey("Patient details are required for retail sale")) {
             billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Please enter pateint details to the bill.");
+            JsfUtil.addErrorMessage("Please enter patient name and mobile number.");
             return;
         }
         if (getPaymentMethod() == PaymentMethod.Card) {
