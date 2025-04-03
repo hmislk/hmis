@@ -49,13 +49,13 @@
                                 <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.total}" />
                                 <h:outputLabel value="Net Total"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
-                                <h:outputLabel value="Pharmacy"/>
-                                <p:selectOneMenu
+<!--                                <h:outputLabel value="Pharmacy"/>-->
+<!--                                <p:selectOneMenu
                                     class="w-100"
                                     value="#{searchController.reportKeyWord.department}">
                                     <f:selectItem itemLabel="Select Department"/>
                                     <f:selectItems value="#{departmentController.pharmacies}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                </p:selectOneMenu>-->
 
                                 <p:commandButton
                                     id="btnSearch"
@@ -73,7 +73,8 @@
                                     ajax="false"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     value="Search Token Bills"
-                                    action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"/>
+                                    action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}">
+                                </p:commandButton>
 
                                 <p:commandButton
                                     ajax="false"
