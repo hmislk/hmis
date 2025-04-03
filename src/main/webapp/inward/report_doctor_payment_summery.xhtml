@@ -16,51 +16,165 @@
                 <h:form>
                     <p:panel header="Doctor Payment" >
 
-                        <h:panelGrid columns="2">
+                        <p:panelGrid 
+                            columns="8" 
+                            layout="tabular"
+                            class="w-100">
                             <p:outputLabel value="From" />
-                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="fdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
+                            <p:calendar 
+                                class=" w-100" 
+                                inputStyleClass="w-100" 
+                                id="fdate"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
+                            <p:spacer></p:spacer>
                             <p:outputLabel value="To" />
-                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="tdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
+                            <p:calendar class=" w-100" inputStyleClass="w-100" id="tdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
+                            <p:spacer></p:spacer>
                             <h:outputLabel  value="Speciality" ></h:outputLabel>
-                            <p:autoComplete class="mx-4 w-100" inputStyleClass="w-100" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
+                            <p:autoComplete class=" w-100" inputStyleClass="w-100" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
                                             completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                             >
                             </p:autoComplete>
+
                             <h:outputLabel value="Admission Type  " ></h:outputLabel>
-                            <p:selectOneMenu class="w-100 mx-4" id="lstAdmissionType"   
+                            <p:selectOneMenu class="w-100 " id="lstAdmissionType"   
                                              value="#{inwardStaffPaymentBillController.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
                                 <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
+                            <p:spacer></p:spacer>                                                        
                             <h:outputLabel value="BHT Type  " ></h:outputLabel>
-                            <p:selectOneMenu  class="w-100 mx-4" id="cmbBhtType" value="#{inwardStaffPaymentBillController.paymentMethod}"  >
+                            <p:selectOneMenu  class="w-100 " id="cmbBhtType" value="#{inwardStaffPaymentBillController.paymentMethod}"  >
                                 <f:selectItem itemLabel="All BHT Types" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
+                            <p:spacer></p:spacer>
                             <h:outputLabel value="Credit Company  " ></h:outputLabel>
-                            <p:selectOneMenu class="w-100 mx-4" id="lstCc"   value="#{inwardStaffPaymentBillController.institution}" >
+                            <p:selectOneMenu class="w-100 " id="lstCc"   value="#{inwardStaffPaymentBillController.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="ccc"
                                                 itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
                             </p:selectOneMenu>   
-                        </h:panelGrid>
-                                                                        
+                        </p:panelGrid>
 
-                        <h:panelGrid columns="4" class="my-4">
-                            <p:commandButton class="ui-button-warning" icon="fas fa-fill" ajax="false" value="Fill Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryCreatedDate()}"   ></p:commandButton>
-                            <p:commandButton class="ui-button-warning" icon="fas fa-fill" ajax="false" value="Fill Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryDischargeDate()}"   ></p:commandButton>
-                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#"  >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
 
-                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel"  >
-                                <p:dataExporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
-                            </p:commandButton>
-                        </h:panelGrid>
+                        <div class="row py-3" >
+                            <div class="col-12" >
+
+                                <p:commandButton
+                                    class="me-1 ui-button-warning" 
+                                    icon="fas fa-fill" 
+                                    ajax="false"
+                                    value="Fill Professional Payments By Added Date" 
+                                    action="#{inwardStaffPaymentBillController.fillProfessionalPaymentsByAddedDate()}"   ></p:commandButton>
+                                <p:commandButton 
+                                    class="mx-1 ui-button-warning" 
+                                    icon="fas fa-fill" 
+                                    ajax="false" 
+                                    value="Fill Professional Payments By Discharge Date" 
+                                    action="#{inwardStaffPaymentBillController.fillProfessionalPaymentsByDischargedDate()}"   ></p:commandButton>
+
+
+                                <p:commandButton
+                                    class="me-1 ui-button-warning" 
+                                    icon="fas fa-fill" 
+                                    ajax="false"
+                                    value="Fill Professional Payments Completed By Added Date" 
+                                    action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryCreatedDate()}"   ></p:commandButton>
+                                <p:commandButton 
+                                    class="mx-1 ui-button-warning" 
+                                    icon="fas fa-fill" 
+                                    ajax="false" 
+                                    value="Fill Professional Payments By Completed Discharge Date" 
+                                    action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryDischargeDate()}"   ></p:commandButton>
+                                <p:commandButton 
+                                    class="mx-1 ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    class="mx-1 ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel"  >
+                                    <p:dataExporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
+                                </p:commandButton>
+
+
+                            </div>
+                        </div>
 
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">
-                                <p:dataTable id="tb" value="#{inwardStaffPaymentBillController.list1}" var="bf" >
+
+                                <p:dataTable
+                                    id="tblBundle"
+                                    rowKey="#{ir.uuid}"
+                                    value="#{inwardStaffPaymentBillController.bundle.rows}"
+                                    var="ir"
+                                    paginator="true"
+                                    rows="10"
+                                    rowsPerPageTemplate="5,10,20,30"
+                                    sortMode="multiple"
+                                    widgetVar="tblBundleWidget"
+                                    reflow="true">
+
+                                    <f:facet name="header">
+                                        <h:outputText value="Staff Income Data" />
+                                    </f:facet>
+
+                                    <p:column
+                                        headerText="Name"
+                                        sortBy="#{ir.staff.person.nameWithTitle}"
+                                        filterBy="#{ir.staff.person.nameWithTitle}"
+                                        filterMatchMode="contains">
+                                        <h:outputText value="#{ir.staff.person.nameWithTitle}" />
+                                    </p:column>
+
+                                    <p:column
+                                        headerText="Net Total"
+                                        style="text-align:right;"
+                                        sortBy="#{ir.netTotal}"
+                                        filterBy="#{ir.netTotal}"
+                                        filterMatchMode="gte">
+                                        <h:outputText value="#{ir.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column
+                                        headerText="Paid Total"
+                                        style="text-align:right;"
+                                        sortBy="#{ir.paidTotal}"
+                                        filterBy="#{ir.paidTotal}"
+                                        filterMatchMode="gte">
+                                        <h:outputText value="#{ir.paidTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <f:facet name="footer">
+                                        <p:row>
+                                            <p:column colspan="1" style="text-align:right;">
+                                                <h:outputText value="Totals:" />
+                                            </p:column>
+                                            <!-- You can bind these total values to your controller later -->
+                                            <p:column style="text-align:right;">
+                                                <h:outputText value="#{inwardStaffPaymentBillController.bundle.totalNet}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column style="text-align:right;">
+                                                <h:outputText value="#{inwardStaffPaymentBillController.bundle.totalPaid}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:row>
+                                    </f:facet>
+
+                                </p:dataTable>
+
+
+                                <p:dataTable 
+                                    id="tb" 
+                                    value="#{inwardStaffPaymentBillController.list1}" var="bf" >
 
                                     <f:facet name="header">
                                         <h:outputLabel value="Payments For :  #{inwardStaffPaymentBillController.speciality}"/>
