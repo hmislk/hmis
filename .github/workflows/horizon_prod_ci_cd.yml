@@ -1,9 +1,9 @@
-name: MP-PROD Build & Deployment Pipeline
+name: HORIZON-PROD Build & Deployment Pipeline
 
 on:
   push:
     branches:
-      - mp-prod
+      - horizon-prod
 
 jobs:
   build:
@@ -29,8 +29,8 @@ jobs:
 
       - name: Update JDBC Data Sources in persistence.xml
         run: |
-          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/mp</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/mpAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/horizon</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/horizonAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
 
       - name: Verify JDBC Data Sources in persistence.xml
         run: |
@@ -65,25 +65,25 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.MP_PROD_SHARED_SERVER_IP }}
-          SERVER_USER: ${{ secrets.MP_PROD_SHARED_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.MP_PROD_SHARED_SSH_PRIVATE_KEY }}
-          PAYARA_ADMIN_PASS: ${{ secrets.MP_PROD_PAYARA_ADMIN_PASS }}
+          SERVER_IP: ${{ secrets.HORIZON_PROD_SERVER_IP }}
+          SERVER_USER: ${{ secrets.HORIZON_PROD_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.HORIZON_PROD_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.HORIZON_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="mp.war"
+          WAR_NAME="horizon.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="mp"
-          SUBDOMAIN="mp"
+          APP_NAME="horizon"
+          SUBDOMAIN="horizon"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             mkdir -p $WAR_DIR
-            chown -R appuser:appuser $WAR_DIR
+            sudo chown -R appuser:appuser $WAR_DIR
             cd $WAR_DIR
 
             # Remove old backup if it exists
@@ -94,6 +94,7 @@ jobs:
             # If the current WAR file exists, back it up
             if [ -f $WAR_NAME ]; then
               mv $WAR_NAME $WAR_NAME.old
+              sudo chown -R appuser:appuser $WAR_DIR
             fi
           "
 
@@ -102,7 +103,7 @@ jobs:
 
           # Set the WAR file permission
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            chown appuser:appuser $WAR_DIR/$WAR_NAME
+            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
           "
 
           # Deploy the WAR using asadmin
