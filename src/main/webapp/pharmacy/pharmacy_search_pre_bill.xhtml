@@ -196,7 +196,9 @@
                                         <div class="row">
                                             <div class="col-12 d-flex justify-content-center align-items-center">
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
                                                     icon="fa-solid fa-phone"
                                                     title="Call Customer"
                                                     class="ui-button-warning mx-1"
@@ -206,7 +208,9 @@
                                                 </p:commandButton>
 
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
                                                     icon="fa-solid fa-phone-slash"
                                                     class="ui-button-danger mx-1"
                                                     title="Cancel Calling"
@@ -227,7 +231,9 @@
                                                 </p:commandButton>
 
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
                                                     class="ui-button-success mx-1"
                                                     title="Accept Payment"
                                                     icon="fa-solid fa-money-bill"
@@ -237,7 +243,9 @@
                                                 </p:commandButton> 
                                                 
                                                 <p:commandButton
-                                                    ajax="false"               
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"               
                                                     title="Display Token"
                                                     class="d-flex justify-content-center align-item-center mx-1"
                                                     style="background-color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? '#74b9ff' : '#ff7675'};"

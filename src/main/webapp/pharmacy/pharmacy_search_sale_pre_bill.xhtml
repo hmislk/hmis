@@ -10,7 +10,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Sale Pre Bill">
+                    <p:panel header="Search Sale For Cashier Bills">
                         <div class="row">
                             <div class="col-md-2">
 
@@ -189,7 +189,7 @@
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Payment Method">
+                                    <p:column headerText="Payment Method" filterBy="#{bill.paymentMethod} #{bill.paymentScheme.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                         <h:outputLabel value="#{bill.paymentScheme.name}" />
                                     </p:column>
