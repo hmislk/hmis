@@ -2257,7 +2257,7 @@ public class ReportController implements Serializable {
 
             bundle.setReportTemplateRows((List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, m));
             bundle.calculateTotalByBills();
-        }, LaboratoryReport.SAMPLE_CARRIER_REPORT, sessionController.getLoggedUser());
+        }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT, sessionController.getLoggedUser());
     }
 
     public void downloadLabTestCount() {
