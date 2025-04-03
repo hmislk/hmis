@@ -2365,7 +2365,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 || getPatient().getMobileNumberStringTransient().trim().isEmpty() || getPatient().getPerson().getName().trim().isEmpty())
                 && configOptionApplicationController.getBooleanValueByKey("Patient details are required for retail sale")) {
             billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Please enter pateint name and mobile number.");
+            JsfUtil.addErrorMessage("Please enter patient name and mobile number.");
             return;
         }
         if (getPaymentMethod() == PaymentMethod.Card) {
