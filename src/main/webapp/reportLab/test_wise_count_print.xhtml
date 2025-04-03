@@ -7,8 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/reportLab/lab_summeries_index.xhtml">
-            <ui:define name="subcontent">
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
 
                 <h:form >
                     <p:panel header="Test Wise Count Report Print" styleClass="w-100">
@@ -43,7 +43,7 @@
                                 .paper{
                                     position: static !important;
                                     width: 210mm!important;
-                                    zoom: 1.6
+                                    zoom: 2.0
                                 }
                                 table {
                                     border-collapse: collapse;
@@ -78,6 +78,7 @@
                                 .paper{
                                     position: static !important;
                                     width: 210mm!important;
+                                    size: A4 portrait!important;
 
                                 }
 
@@ -88,7 +89,7 @@
 
                                 table {
                                     border-collapse: collapse;
-                                    width: 99%;
+                                    width: 99.9%;
                                     font-size: 13px!important;
                                     margin-top: 3mm!important;
                                 }
