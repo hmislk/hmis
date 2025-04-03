@@ -368,6 +368,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public String navigateToSearchOpdBills() {
         batchBill = null;
         bills = null;
+        searchController.setShowLoggedDepartmentOnly(true);
         return "/opd/opd_bill_search?faces-redirect=true";
     }
 

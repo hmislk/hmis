@@ -45,6 +45,15 @@
                                                     class="w-100"
                                                     inputStyleClass="form-control">
                                         </p:calendar>
+                                        
+                                        <hr/>
+                                        <p:selectBooleanButton 
+                                            onLabel="Logged Department Only" 
+                                            offLabel="Any Department"
+                                            value="#{searchController.showLoggedDepartmentOnly}"
+                                            class="w-100">
+                                        </p:selectBooleanButton>
+                                        <hr/>
 
                                         <p:commandButton
                                             icon="fas fa-search"
