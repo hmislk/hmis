@@ -79,13 +79,13 @@
                                     class="me-1 ui-button-warning" 
                                     icon="fas fa-fill" 
                                     ajax="false"
-                                    value="Fill Professional Payments Completed By Added Date" 
+                                    value="Fill Professional Payments Paid By Added Date" 
                                     action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryCreatedDate()}"   ></p:commandButton>
                                 <p:commandButton 
                                     class="mx-1 ui-button-warning" 
                                     icon="fas fa-fill" 
                                     ajax="false" 
-                                    value="Fill Professional Payments By Completed Discharge Date" 
+                                    value="Fill Professional Payments Paid By Completed Discharge Date" 
                                     action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryDischargeDate()}"   ></p:commandButton>
                                 <p:commandButton 
                                     class="mx-1 ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#"  >
@@ -157,12 +157,12 @@
                                             </p:column>
                                             <!-- You can bind these total values to your controller later -->
                                             <p:column style="text-align:right;">
-                                                <h:outputText value="#{inwardStaffPaymentBillController.bundle.totalNet}">
+                                                <h:outputText value="#{inwardStaffPaymentBillController.bundle.cardValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputText>
                                             </p:column>
                                             <p:column style="text-align:right;">
-                                                <h:outputText value="#{inwardStaffPaymentBillController.bundle.totalPaid}">
+                                                <h:outputText value="#{inwardStaffPaymentBillController.bundle.cashValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputText>
                                             </p:column>
