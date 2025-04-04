@@ -274,7 +274,11 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public String navigateToViewInwardPayProfessionalPayments() {
         recreateModel();
+        fetchWithholdingDetailConfiguration();
+        return "/inward/inward_bill_professional_payment?faces-redirect=true";
+    }
 
+    private void fetchWithholdingDetailConfiguration() {
         allowUserToSelectPayWithholdingTaxDuringProfessionalPayments
                 = configOptionApplicationController.getBooleanValueByKey(
                         "Allow User To Select Whether To Pay Withholding Tax During Professional Payments", true);
@@ -299,7 +303,6 @@ public class InwardStaffPaymentBillController implements Serializable {
             withholdingTaxCalculationStatus = "Depending On Payments";  // Default to "Depending On Payments"
         }
 
-        return "/inward/inward_bill_professional_payment?faces-redirect=true";
     }
 
     public void calculateDueFeesForInwardForSelectedPeriod() {
@@ -701,14 +704,16 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         }
 
+        
+        
     }
 
     public void fillProfessionalPaymentsByDischargedDate() {
-        fillProfessionalPayments(false);
+        fillProfessionalPayments(true);
     }
 
     public void fillProfessionalPaymentsByAddedDate() {
-        fillProfessionalPayments(true);
+        fillProfessionalPayments(false);
     }
 
     private void fillProfessionalPayments(boolean dischargeDate) {
@@ -786,8 +791,12 @@ public class InwardStaffPaymentBillController implements Serializable {
         IncomeBundle ib = new IncomeBundle();
         for (IncomeRow row : staffRows.values()) {
             ib.getRows().add(row);
+            ib.setNetTotal(ib.getNetTotal() + row.getNetTotal());
+            ib.setPaidTotal(ib.getPaidTotal() + row.getPaidTotal());
         }
 
+        
+        
         bundle = ib;
     }
 
@@ -1328,7 +1337,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         calculatePaymentsSelected();
         System.out.println("totalPay = " + totalPaying);
 
-        switch (withholdingTaxCalculationStatus) {
+        switch (getWithholdingTaxCalculationStatus()) {
             case "Depending On Payments":
                 System.out.println("totalPaying1 = " + totalPaying);
                 calculateWithholdingTaxDependingOnPayments();
@@ -1987,6 +1996,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     public Double getWithholdingTaxPercentage() {
         if (withholdingTaxPercentage == null) {
             withholdingTaxPercentage = configOptionApplicationController.getDoubleValueByKey("Withholding Tax Percentage");
+            if (withholdingTaxPercentage == null) {
+                withholdingTaxPercentage = 0.0;
+            }
         }
         return withholdingTaxPercentage;
     }
@@ -2028,6 +2040,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public String getWithholdingTaxCalculationStatus() {
+        if (withholdingTaxCalculationStatus == null) {
+            fetchWithholdingDetailConfiguration();
+        }
         return withholdingTaxCalculationStatus;
     }
 
@@ -2036,6 +2051,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<String> getWithholdingTaxCalculationStatuses() {
+        if (withholdingTaxCalculationStatuses == null) {
+            fetchWithholdingDetailConfiguration();
+        }
         return withholdingTaxCalculationStatuses;
     }
 

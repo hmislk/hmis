@@ -62,13 +62,13 @@
                             <div class="col-12" >
 
                                 <p:commandButton
-                                    class="me-1 ui-button-warning" 
+                                    class="m-1 ui-button-warning" 
                                     icon="fas fa-fill" 
                                     ajax="false"
                                     value="Fill Professional Payments By Added Date" 
                                     action="#{inwardStaffPaymentBillController.fillProfessionalPaymentsByAddedDate()}"   ></p:commandButton>
                                 <p:commandButton 
-                                    class="mx-1 ui-button-warning" 
+                                    class="m-1 ui-button-warning" 
                                     icon="fas fa-fill" 
                                     ajax="false" 
                                     value="Fill Professional Payments By Discharge Date" 
@@ -76,137 +76,105 @@
 
 
                                 <p:commandButton
+                                    rendered="false"
                                     class="me-1 ui-button-warning" 
                                     icon="fas fa-fill" 
                                     ajax="false"
                                     value="Fill Professional Payments Paid By Added Date" 
                                     action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryCreatedDate()}"   ></p:commandButton>
                                 <p:commandButton 
-                                    class="mx-1 ui-button-warning" 
+                                    rendered="false"
+                                    class="m-1 ui-button-warning" 
                                     icon="fas fa-fill" 
                                     ajax="false" 
                                     value="Fill Professional Payments Paid By Completed Discharge Date" 
                                     action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryDischargeDate()}"   ></p:commandButton>
                                 <p:commandButton 
-                                    class="mx-1 ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpBillPreview" ></p:printer>
+                                    class="m-1 ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#"  >
+                                    <p:printer target="tbl" ></p:printer>
                                 </p:commandButton>
 
                                 <p:commandButton 
-                                    class="mx-1 ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel"  >
-                                    <p:dataExporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
+                                    class="m-1 ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel"  >
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="Doctor_Payment"  />
                                 </p:commandButton>
 
 
                             </div>
                         </div>
 
-                        <p:panel id="gpBillPreview">
-                            <p:panelGrid columns="3" style="width: 100%;">
 
-                                <p:dataTable
-                                    id="tblBundle"
-                                    rowKey="#{ir.uuid}"
-                                    value="#{inwardStaffPaymentBillController.bundle.rows}"
-                                    var="ir"
-                                    paginator="true"
-                                    rows="10"
-                                    rowsPerPageTemplate="5,10,20,30"
-                                    sortMode="multiple"
-                                    widgetVar="tblBundleWidget"
-                                    reflow="true">
+                        <p:dataTable
+                            id="tbl"
+                            rowKey="#{ir.uuid}"
+                            value="#{inwardStaffPaymentBillController.bundle.rows}"
+                            var="ir"
+                            paginator="true"
+                            rows="10"
+                            paginatorPosition="bottom"
+                            rowsPerPageTemplate="5,10,20,30,50,100,500,1000"
+                            sortMode="multiple"
+                            widgetVar="tblBundleWidget"
+                            reflow="true">
 
-                                    <f:facet name="header">
-                                        <h:outputText value="Staff Income Data" />
-                                    </f:facet>
+                            <f:facet name="header">
+                                <h:outputText value="Processional Payments" />
+                            </f:facet>
 
-                                    <p:column
-                                        headerText="Name"
-                                        sortBy="#{ir.staff.person.nameWithTitle}"
-                                        filterBy="#{ir.staff.person.nameWithTitle}"
-                                        filterMatchMode="contains">
-                                        <h:outputText value="#{ir.staff.person.nameWithTitle}" />
-                                    </p:column>
+                            <p:column
+                                headerText="Speciality"
+                                sortBy="#{ir.staff.speciality.name}"
+                                filterBy="#{ir.staff.speciality.name}"
+                                filterMatchMode="contains">
+                                <h:outputText value="#{ir.staff.speciality.name}" />
+                            </p:column>
 
-                                    <p:column
-                                        headerText="Net Total"
-                                        style="text-align:right;"
-                                        sortBy="#{ir.netTotal}"
-                                        filterBy="#{ir.netTotal}"
-                                        filterMatchMode="gte">
-                                        <h:outputText value="#{ir.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </p:column>
+                            <p:column
+                                headerText="Name"
+                                sortBy="#{ir.staff.person.nameWithTitle}"
+                                filterBy="#{ir.staff.person.nameWithTitle}"
+                                filterMatchMode="contains">
+                                <h:outputText value="#{ir.staff.person.nameWithTitle}" />
+                            </p:column>
 
-                                    <p:column
-                                        headerText="Paid Total"
-                                        style="text-align:right;"
-                                        sortBy="#{ir.paidTotal}"
-                                        filterBy="#{ir.paidTotal}"
-                                        filterMatchMode="gte">
-                                        <h:outputText value="#{ir.paidTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </p:column>
+                            <p:column
+                                headerText="Net Total"
+                                style="text-align:right;"
+                                sortBy="#{ir.netTotal}"
+                                filterBy="#{ir.netTotal}"
+                                filterMatchMode="gte">
+                                <h:outputText value="#{ir.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardStaffPaymentBillController.bundle.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
 
-                                    <f:facet name="footer">
-                                        <p:row>
-                                            <p:column colspan="1" style="text-align:right;">
-                                                <h:outputText value="Totals:" />
-                                            </p:column>
-                                            <!-- You can bind these total values to your controller later -->
-                                            <p:column style="text-align:right;">
-                                                <h:outputText value="#{inwardStaffPaymentBillController.bundle.cardValue}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:column style="text-align:right;">
-                                                <h:outputText value="#{inwardStaffPaymentBillController.bundle.cashValue}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-                                            </p:column>
-                                        </p:row>
-                                    </f:facet>
+                            </p:column>
 
-                                </p:dataTable>
+                            <p:column
+                                headerText="Paid Total"
+                                style="text-align:right;"
+                                sortBy="#{ir.paidTotal}"
+                                filterBy="#{ir.paidTotal}"
+                                filterMatchMode="gte">
+                                <h:outputText value="#{ir.paidTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardStaffPaymentBillController.bundle.paidTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
 
-                                <p:dataTable 
-                                    id="tb" 
-                                    value="#{inwardStaffPaymentBillController.list1}" var="bf" >
 
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Payments For :  #{inwardStaffPaymentBillController.speciality}"/>
-                                    </f:facet>
+                        </p:dataTable>
 
-                                    <p:column headerText="Code">
-                                        <f:facet name="header">
-                                            <p:outputLabel value="Code" />
-                                        </f:facet>
-                                        <p:outputLabel value="#{bf.string2}" >
-                                        </p:outputLabel>
-                                    </p:column>
 
-                                    <p:column headerText="Name">
-                                        <f:facet name="header">
-                                            <p:outputLabel value="Name" />
-                                        </f:facet>
-                                        <p:outputLabel value="#{bf.string1}" >
-                                        </p:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Paid Amount" styleClass="averageNumericColumn">
-                                        <f:facet name="header">
-                                            <p:outputLabel value="Paid Amount" />
-                                        </f:facet>
-                                        <p:outputLabel value="#{bf.value}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </p:outputLabel>
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panelGrid>
-                        </p:panel>
                     </p:panel>
                 </h:form>
             </ui:define>
