@@ -149,19 +149,19 @@
                                                 styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ? 'ui-messages-fatal' : commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire ? 'ui-messages-warn' : ''}">
 
 
-                                                    <h:outputLabel value="#{i.itemBatch.item.name}" />
+                                                <h:outputLabel value="#{i.itemBatch.item.name}" />
 
-                                                    <h:outputLabel
-                                                        rendered="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire}"
-                                                        value="Expired"
-                                                        styleClass="mx-5 ui-badge ui-badge-danger" >
-                                                    </h:outputLabel>
+                                                <h:outputLabel
+                                                    rendered="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire}"
+                                                    value="Expired"
+                                                    styleClass="mx-5 ui-badge ui-badge-danger" >
+                                                </h:outputLabel>
 
-                                                    <h:outputLabel
-                                                        rendered="#{commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire and commonFunctionsProxy.currentDateTime lt i.itemBatch.dateOfExpire}"
-                                                        value="Expiring Soon"
-                                                        styleClass="mx-5 ui-badge ui-badge-warning" >
-                                                    </h:outputLabel>
+                                                <h:outputLabel
+                                                    rendered="#{commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire and commonFunctionsProxy.currentDateTime lt i.itemBatch.dateOfExpire}"
+                                                    value="Expiring Soon"
+                                                    styleClass="mx-5 ui-badge ui-badge-warning" >
+                                                </h:outputLabel>
 
 
                                             </p:column>
@@ -364,9 +364,20 @@
 
 
                                         <h:panelGrid columns="7">
-                                            <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;"   ></p:commandButton>
+                                            <p:commandButton id="nullButton3"
+                                                             icon="fa-solid fa-print"
+                                                             class="ui-button-info w-100" 
+                                                             value="Print Bill" 
+                                                             ajax="false"
+                                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
+                                                             action="#"  >
+                                                <p:printer target="gpBillPreviewFiveFiveCustom3"></p:printer>
+                                            </p:commandButton>
 
-                                            <p:commandButton accesskey="p" id="btnPrint" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}" icon="fa-solid fa-print" class="ui-button-info w-100" value="Print" ajax="false" action="#" >
+                                            <p:commandButton accesskey="p" 
+                                                             id="btnPrint" 
+                                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}" 
+                                                             icon="fa-solid fa-print" class="ui-button-info w-100" value="Print" ajax="false" action="#" >
                                                 <p:printer target="gpBillPreview" ></p:printer>
                                             </p:commandButton>
                                             <p:commandButton accesskey="n" value="New Bill" ajax="false"
@@ -455,11 +466,12 @@
                                 <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{pharmacySaleBhtController.printBill}"/>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}">
-                                <phi:saleBill_Header_Inward bill="#{pharmacySaleBhtController.printBill}" />
-                            </h:panelGroup>
-
                         </h:panelGroup>
+
+                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}">
+                            <phi:saleBill_Header_Inward bill="#{pharmacySaleBhtController.printBill}" />
+                        </h:panelGroup>
+
                     </p:panel>
 
 
