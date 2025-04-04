@@ -3187,10 +3187,28 @@ public class ReportController implements Serializable {
         return doctor;
     }
 
+    /**
+     * Sets the doctor associated with the report.
+     *
+     * @param doctor the Doctor instance to set
+     */
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
 
+    /**
+     * Aggregates test-wise count report data for collecting centres by combining billed items with
+     * cancellations and refunds.
+     * <p>
+     * This method executes two separate JPQL queries over a specified date range to retrieve report
+     * data for both billed items and for cancellations/refunds. The billed items query collects counts
+     * and fee totals (hospital fee, collecting centre fee, staff fee, and net value) for non-retired records,
+     * while the cancellations/refunds query gathers similar metrics for cancellation and refund records.
+     * The cancellation/refund values are converted into negatives and merged with the billed item results to
+     * compute net totals. Final aggregated data are stored in a list, and overall totals (count, hospital fee,
+     * collecting centre fee, professional fee, and net total) are updated accordingly.
+     * </p>
+     */
     public void processCollectingCentreTestWiseCountReport() {
         // 1. Query for Billed Items
         String jpqlBilled = "select new com.divudi.core.data.TestWiseCountReport("
@@ -3334,6 +3352,14 @@ public class ReportController implements Serializable {
         }
     }
 
+    /**
+     * Generates a test-wise count report for collecting centers, excluding cancellations and refunds.
+     *
+     * <p>This method retrieves billed items by test (item name) within a specified date range and bill type, applying
+     * optional filters for institution, department, site, and collecting centre. It aggregates the number of items and 
+     * the sums of hospital fee, collecting centre fee, staff fee, and net value for each test. The results are stored 
+     * in the report list and overall totals are updated accordingly.</p>
+     */
     public void processCollectingCentreTestWiseCountReportWithoutCancellationsAndRefunds() {
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
