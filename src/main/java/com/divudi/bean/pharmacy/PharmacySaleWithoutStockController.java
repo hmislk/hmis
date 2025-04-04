@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
@@ -17,6 +18,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
@@ -59,6 +61,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
+import com.divudi.service.DiscountSchemeValidationService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -103,6 +106,10 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     @Inject
     DrawerController drawerController;
 ////////////////////////
+    @EJB
+    DiscountSchemeValidationService discountSchemeValidationService;
+    @EJB
+    ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -184,6 +191,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
 
     public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
+        billSettlingStarted=false;
         return "/pharmacy/pharmacy_sale_without_stock";
     }
 
@@ -1190,15 +1198,19 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
 
     @EJB
     private CashTransactionBean cashTransactionBean;
+    boolean billSettlingStarted = false;
 
     public void settleBillWithPay() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+        if (billSettlingStarted) {
+            return;
+        }
+
+        billSettlingStarted = true;
         editingQty = null;
         if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
             if (getPaymentScheme() == null) {
                 JsfUtil.addErrorMessage("Please select Payment Scheme");
+                billSettlingStarted = false;
                 return;
             }
         }
@@ -1208,25 +1220,72 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         }
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items to the bill.");
+            billSettlingStarted = false;
             return;
         }
-        if (getPaymentMethod() == PaymentMethod.Credit) {
-            if (toStaff == null && toInstitution == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
+        if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
+            if (getPaymentScheme() == null) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please select Payment Scheme");
                 return;
             }
-//            if (toStaff == null && toInstitution == null) {
-//                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
-//                return;
-//            }
-            if (toStaff != null) {
-                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-                    JsfUtil.addErrorMessage("No enough walfare credit.");
-                    return;
-                }
+        }
+        if ((getPatient().getMobileNumberStringTransient() == null
+                || getPatient().getMobileNumberStringTransient().trim().isEmpty() || getPatient().getPerson().getName().trim().isEmpty())
+                && configOptionApplicationController.getBooleanValueByKey("Patient details are required for retail sale")) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Please enter patient name and mobile number.");
+            return;
+        }
+        if (getPaymentMethod() == PaymentMethod.Card) {
+            String cardNumber = getPaymentMethodData().getCreditCard().getNo();
+            if ((cardNumber == null || cardNumber.trim().isEmpty()
+                    || cardNumber.trim().length() != 4)
+                    && configOptionApplicationController.getBooleanValueByKey("Pharmacy retail sale CreditCard last digits is Mandatory")) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Please enter a Credit Card last 4 digits");
+                return;
             }
         }
+
+        BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme, getPaymentMethodData());
+        if (!discountSchemeValidation.isFlag()) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
+            return;
+        }
+        
+        
+         boolean patientRequiredForPharmacySale = configOptionApplicationController.getBooleanValueByKey(
+                "Patient is required in Pharmacy Retail Sale Bill for " + sessionController.getDepartment().getName(),
+                false
+        );
+
+        if (patientRequiredForPharmacySale) {
+            if (getPatient() == null
+                    || getPatient().getPerson() == null
+                    || getPatient().getPerson().getName() == null
+                    || getPatient().getPerson().getName().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please Select a Patient");
+                billSettlingStarted = false;
+                return;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
+            if (allergyListOfPatient == null) {
+                allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+            }
+            if (!pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient).isEmpty()) {
+                JsfUtil.addErrorMessage(pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient));
+                billSettlingStarted = false;
+                return;
+            }
+        }
+        
+        
         if (errorCheckForSaleBill()) {
+            billSettlingStarted = false;
             return;
         }
         calculateAllRates();
@@ -1248,6 +1307,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
             JsfUtil.addSuccessMessage("User Credit Updated");
         }
         resetAll();
+        billSettlingStarted = false;
         billPreview = true;
 
     }
