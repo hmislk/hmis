@@ -88,46 +88,23 @@ import org.primefaces.event.TabChangeEvent;
  *
  * @author Buddhika
  */
-/**
- *
- * @author Buddhika
- */
 @Named
 @SessionScoped
-public class PharmacySaleWithoutStockController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments  {
+public class PharmacySaleWithoutStockController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
-    /**
-     * Creates a new instance of PharmacySaleController
-     */
-    public PharmacySaleWithoutStockController() {
-    }
-
-    @Inject
-    PaymentSchemeController PaymentSchemeController;
-
-    @Inject
-    SessionController sessionController;
-    @Inject
-    SearchController searchController;
-    @Inject
-    DrawerController drawerController;
-    @Inject
-    PatientDepositController patientDepositController;
-////////////////////////
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
-    DiscountSchemeValidationService discountSchemeValidationService;
-    @EJB
-    ConfigOptionApplicationController configOptionApplicationController;
+    private DiscountSchemeValidationService discountSchemeValidationService;
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
-    ItemFacade itemFacade;
+    private ItemFacade itemFacade;
     @EJB
-    StockFacade stockFacade;
+    private StockFacade stockFacade;
     @EJB
-    PharmacyBean pharmacyBean;
+    private PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -135,71 +112,100 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
-    BillNumberGenerator billNumberBean;
+    private BillNumberGenerator billNumberBean;
     @EJB
-    StaffService staffBean;
+    private StaffService staffBean;
     @EJB
     private UserStockContainerFacade userStockContainerFacade;
     @EJB
     private UserStockFacade userStockFacade;
     @EJB
-    BillFeeFacade billFeeFacade;
+    private BillFeeFacade billFeeFacade;
     @EJB
-    PaymentFacade paymentFacade;
+    private PaymentFacade paymentFacade;
     @EJB
-    BillFeePaymentFacade billFeePaymentFacade;
+    private BillFeePaymentFacade billFeePaymentFacade;
     @EJB
-    PharmacyService pharmacyService;
-/////////////////////////
-    Item selectedAvailableAmp;
-    Item selectedAlternative;
+    private PharmacyService pharmacyService;
+    @EJB
+    private CashTransactionBean cashTransactionBean;
+    @EJB
+    private StockHistoryFacade stockHistoryFacade;
+
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    private PaymentSchemeController PaymentSchemeController;
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    private SearchController searchController;
+    @Inject
+    private DrawerController drawerController;
+    @Inject
+    private PatientDepositController patientDepositController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private boolean billSettlingStarted = false;
+    private Item selectedAvailableAmp;
+    private Item selectedAlternative;
     private PreBill preBill;
     private Bill saleBill;
-    Bill printBill;
-    Bill bill;
-    BillItem billItem;
-    //BillItem removingBillItem;
-    BillItem editingBillItem;
-    Double qty;
-    Integer intQty;
-    Stock stock;
-    Stock replacableStock;
-
-    PaymentScheme paymentScheme;
-
-    int activeIndex;
+    private Bill printBill;
+    private Bill bill;
+    private BillItem billItem;
+    private BillItem editingBillItem;
+    private Double qty;
+    private Integer intQty;
+    private Stock stock;
+    private Stock replacableStock;
+    private PaymentScheme paymentScheme;
+    private int activeIndex;
     private Patient patient;
     private Patient newPatient;
     private Patient searchedPatient;
     private YearMonthDay yearMonthDay;
     private String patientTabId = "tabNewPt";
     private String strTenderedValue = "";
-    boolean billPreview = false;
-    boolean fromOpdEncounter = false;
-    String opdEncounterComments = "";
-    int patientSearchTab = 0;
+    private boolean billPreview = false;
+    private boolean fromOpdEncounter = false;
+    private String opdEncounterComments = "";
+    private int patientSearchTab = 0;
     private boolean patientDetailsEditable;
-
-    Staff toStaff;
-    Institution toInstitution;
-    String errorMessage = "";
+    private Staff toStaff;
+    private Institution toInstitution;
+    private String errorMessage = "";
     private List<ClinicalFindingValue> allergyListOfPatient;
-
-    /////////////////
-    List<Stock> replaceableStocks;
-    //List<BillItem> billItems;
-    List<Item> itemsWithoutStocks;
-    /////////////////////////
-    double cashPaid;
-    double netTotal;
-    double balance;
-    Double editingQty;
-    String cashPaidStr;
-    String comment;
-    ///////////////////
+    private List<Stock> replaceableStocks;
+    private List<Item> itemsWithoutStocks;
+    private double cashPaid;
+    private double netTotal;
+    private double balance;
+    private Double editingQty;
+    private String cashPaidStr;
+    private String comment;
     private UserStockContainer userStockContainer;
-    PaymentMethodData paymentMethodData;
+    private PaymentMethodData paymentMethodData;
 
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
+    public PharmacySaleWithoutStockController() {
+    }
+
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Functions">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
+    // </editor-fold>  
+    /**
+     * Creates a new instance of PharmacySaleController
+     */
     public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
         billSettlingStarted = false;
@@ -1213,10 +1219,6 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         billPreview = true;
     }
 
-    @EJB
-    private CashTransactionBean cashTransactionBean;
-    boolean billSettlingStarted = false;
-
     public void settleBillWithPay() {
         if (billSettlingStarted) {
             return;
@@ -1419,9 +1421,6 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         setNetTotal(getPreBill().getNetTotal());
 
     }
-
-    @EJB
-    private StockHistoryFacade stockHistoryFacade;
 
     public void removeBillItem(BillItem b) {
         getPreBill().getBillItems().remove(b.getSearialNo());
@@ -2159,7 +2158,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     public void setAllergyListOfPatient(List<ClinicalFindingValue> allergyListOfPatient) {
         this.allergyListOfPatient = allergyListOfPatient;
     }
-    
+
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
 
