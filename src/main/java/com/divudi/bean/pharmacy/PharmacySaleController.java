@@ -2067,6 +2067,21 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 false
         );
 
+        if (configOptionApplicationController.getBooleanValueByKey("Patient Phone number is mandotary in sale for cashier", true)) {
+            if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
+                JsfUtil.addErrorMessage("Please enter phone number of the patient");
+                return;
+            } else if (getPatient().getId() == null) {
+                if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 10)) {
+                    JsfUtil.addErrorMessage("Please enter valid phone number with more than 10 digits of the patient");
+                    return;
+                } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 10)) {
+                    JsfUtil.addErrorMessage("Please enter valid mobile number with more than 10 digits of the patient");
+                    return;
+                }
+            }
+        }
+
         Patient pt = null;
         if (patientRequiredForPharmacySale) {
             if (getPatient() == null
