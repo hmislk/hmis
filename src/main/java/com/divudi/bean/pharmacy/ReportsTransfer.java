@@ -1701,33 +1701,35 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select b from Bill b where b.createdAt between :fd and :td and b.billType=:bt");
-        params.put("fd", fromDate);
-        params.put("td", toDate);
-        params.put("bt", BillType.PharmacyTransferReceive);
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> params = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("select b from Bill b where b.createdAt between :fd and :td and b.billType=:bt");
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("bt", BillType.PharmacyTransferReceive);
 
-        if (fromDepartment != null) {
-            jpql.append(" and b.fromDepartment=:fdept");
-            params.put("fdept", fromDepartment);
-        }
-        if (toDepartment != null) {
-            jpql.append(" and b.department=:tdept");
-            params.put("tdept", toDepartment);
-        }
+            if (fromDepartment != null) {
+                jpql.append(" and b.fromDepartment=:fdept");
+                params.put("fdept", fromDepartment);
+            }
+            if (toDepartment != null) {
+                jpql.append(" and b.department=:tdept");
+                params.put("tdept", toDepartment);
+            }
 
-        jpql.append(" order by b.id");
-        transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            jpql.append(" order by b.id");
+            transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        totalsValue = 0.0;
-        discountsValue = 0.0;
-        netTotalValues = 0.0;
-        for (Bill b : transferBills) {
+            totalsValue = 0.0;
+            discountsValue = 0.0;
+            netTotalValues = 0.0;
+            for (Bill b : transferBills) {
 
-            discountsValue = discountsValue + b.getDiscount();
-            netTotalValues = netTotalValues + b.getNetTotal();
-        }
-        calculatePurachaseValuesOfBillItemsInBill(transferBills);
+                discountsValue = discountsValue + b.getDiscount();
+                netTotalValues = netTotalValues + b.getNetTotal();
+            }
+            calculatePurachaseValuesOfBillItemsInBill(transferBills);
+        }, DisbursementReports.TRANSFER_RECEIVE_BY_BILL, sessionController.getLoggedUser());
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
