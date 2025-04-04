@@ -8,7 +8,9 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -22,6 +24,7 @@ import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -38,12 +41,14 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
@@ -61,6 +66,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
+import com.divudi.ejb.PharmacyService;
 import com.divudi.service.DiscountSchemeValidationService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -88,7 +94,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleWithoutStockController implements Serializable, ControllerWithPatient {
+public class PharmacySaleWithoutStockController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments  {
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -105,6 +111,8 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     SearchController searchController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PatientDepositController patientDepositController;
 ////////////////////////
     @EJB
     DiscountSchemeValidationService discountSchemeValidationService;
@@ -140,6 +148,8 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     PaymentFacade paymentFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    PharmacyService pharmacyService;
 /////////////////////////
     Item selectedAvailableAmp;
     Item selectedAlternative;
@@ -173,6 +183,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     Staff toStaff;
     Institution toInstitution;
     String errorMessage = "";
+    private List<ClinicalFindingValue> allergyListOfPatient;
 
     /////////////////
     List<Stock> replaceableStocks;
@@ -191,7 +202,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
 
     public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
-        billSettlingStarted=false;
+        billSettlingStarted = false;
         return "/pharmacy/pharmacy_sale_without_stock";
     }
 
@@ -396,21 +407,27 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     }
 
     private Patient savePatient() {
-        if (!getPatient().getPerson().getName().trim().isEmpty()) {
-            getPatient().setCreater(getSessionController().getLoggedUser());
-            getPatient().setCreatedAt(new Date());
-            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPatient().getPerson().setCreatedAt(new Date());
-            if (getPatient().getPerson().getId() == null) {
-                getPersonFacade().create(getPatient().getPerson());
-            }
-            if (getPatient().getId() == null) {
-                getPatientFacade().create(getPatient());
-            }
-            return getPatient();
-        } else {
+        Patient pat = getPatient();
+        // Check for null references and empty name
+        if (pat == null
+                || pat.getPerson() == null
+                || pat.getPerson().getName() == null
+                || pat.getPerson().getName().trim().isEmpty()) {
             return null;
         }
+
+        pat.setCreater(getSessionController().getLoggedUser());
+        pat.setCreatedAt(new Date());
+        pat.getPerson().setCreater(getSessionController().getLoggedUser());
+        pat.getPerson().setCreatedAt(new Date());
+
+        if (pat.getPerson().getId() == null) {
+            getPersonFacade().create(pat.getPerson());
+        }
+        if (pat.getId() == null) {
+            getPatientFacade().create(pat);
+        }
+        return pat;
     }
 
     public Title[] getTitle() {
@@ -1254,9 +1271,8 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return;
         }
-        
-        
-         boolean patientRequiredForPharmacySale = configOptionApplicationController.getBooleanValueByKey(
+
+        boolean patientRequiredForPharmacySale = configOptionApplicationController.getBooleanValueByKey(
                 "Patient is required in Pharmacy Retail Sale Bill for " + sessionController.getDepartment().getName(),
                 false
         );
@@ -1282,8 +1298,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
                 return;
             }
         }
-        
-        
+
         if (errorCheckForSaleBill()) {
             billSettlingStarted = false;
             return;
@@ -2102,7 +2117,91 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        System.out.println("listnerForPaymentMethodChange");
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+            if (pd != null && pd.getId() != null) {
+                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+            }
+        } else if (paymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+            System.out.println("this = " + this);
+        } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                System.out.println("pd = " + pd);
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    System.out.println("cd = " + cd);
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        System.out.println("cd = " + cd);
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+
+        }
+    }
+
+    public List<ClinicalFindingValue> getAllergyListOfPatient() {
+        return allergyListOfPatient;
+    }
+
+    public void setAllergyListOfPatient(List<ClinicalFindingValue> allergyListOfPatient) {
+        this.allergyListOfPatient = allergyListOfPatient;
+    }
+    
+    @Override
+    public double calculatRemainForMultiplePaymentTotal() {
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+
+            }
+            return getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
+        }
+        return getPreBill().getTotal();
+    }
+
+    @Override
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            }
+
+        }
     }
 
 }
