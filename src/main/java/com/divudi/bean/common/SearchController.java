@@ -119,6 +119,7 @@ import org.primefaces.model.StreamedContent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -7658,9 +7659,18 @@ public class SearchController implements Serializable {
 
     }
     
+    /**
+     * 
+     * @param bill need to find paid bills
+     * @return paid bill list associate with bill
+     * This method added due to avoid cache and get fresh bill entity from db.
+     * Otherwise it is not updated even paid bills are available
+     */
     public List<Bill> getRefreshCashBills(Bill bill){       
         Bill fetchBill = getBillFacade().findWithoutCache(bill.getId());
-        //System.out.println("line 7663 "+fetchBill.getCashBillsPre());
+        if(fetchBill == null){
+            return Collections.emptyList();
+        }
         return fetchBill.getCashBillsPre();
     }
 
