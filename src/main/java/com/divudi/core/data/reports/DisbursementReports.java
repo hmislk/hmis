@@ -2,7 +2,8 @@ package com.divudi.core.data.reports;
 
 public enum DisbursementReports implements IReportType {
     TRANSFER_ISSUE_BY_BILL("Transfer Issue by Bill"),
-    TRANSFER_RECEIVE_BY_BILL("Transfer Receive by Bill");
+    TRANSFER_RECEIVE_BY_BILL("Transfer Receive by Bill"),
+    TRANSFER_ISSUE_BY_BILL_SUMMARY("Transfer Issue by Bill Summary");
 
     private final String displayName;
 

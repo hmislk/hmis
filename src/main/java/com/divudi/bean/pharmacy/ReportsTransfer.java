@@ -736,10 +736,11 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void createTransferIssueBillSummery() {
-        Date startTime = new Date();
+        reportTimerController.trackReportExecution(() -> {
+            Date startTime = new Date();
 
-        fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferIssue);
-
+            fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferIssue);
+        }, DisbursementReports.TRANSFER_ISSUE_BY_BILL_SUMMARY, sessionController.getLoggedUser());
     }
 
     public void createTransferReciveBillSummery() {
