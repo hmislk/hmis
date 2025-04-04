@@ -170,8 +170,17 @@
                                 value="Process" 
                                 style="width: 150px"
                                 icon="fas fa-cogs"
-                                class="mx-2 ui-button-warning"
+                                class="mx-2 ui-button-success"
                                 action="#{reportController.processCollectingCentreTestWiseCountReport()}" >
+                            </p:commandButton>
+                             <p:commandButton 
+                                ajax="false" 
+                                value="Process"
+                                rendered="#{webUserController.hasPrivilege('Developers')}"
+                                style="width: 150px"
+                                icon="fas fa-cogs"
+                                class="mx-2 ui-button-secondary"
+                                action="#{reportController.processCollectingCentreTestWiseCountReportWithoutCancellationsAndRefunds()}" >
                             </p:commandButton>
                             <p:commandButton 
                                 icon="fa-solid fa-print"
@@ -225,7 +234,7 @@
                             <p:column headerText="S. No" width="3em">
                                 <h:outputText value="#{rowIndex + 1}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Test Name">
+                            <p:column headerText="Test Name" sortBy="#{c.testName}">
                                 <h:outputText value="#{c.testName}" ></h:outputText>
                             </p:column>
 
