@@ -71,7 +71,7 @@ public class ApiKeyController implements Serializable {
     }
 
     public boolean isValidKey(String key) {
-        if (key == null || key.trim().equals("")) {
+        if (key == null || key.trim().isEmpty()) {
             return false;
         }
         ApiKey k = findApiKey(key);
@@ -217,7 +217,7 @@ public class ApiKeyController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ApiKeyController controller = (ApiKeyController) facesContext.getApplication().getELResolver().
@@ -232,9 +232,7 @@ public class ApiKeyController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

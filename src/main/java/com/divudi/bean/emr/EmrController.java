@@ -38,10 +38,6 @@ public class EmrController implements Serializable {
         return "/clinical/clinical_patient_for_receptionist.xhtml?faces-redirect=true";
     }
 
-    public String navigateToMembershipRegistration() {
-        return "/clinical/membership_registration.xhtml?faces-redirect=true";
-    }
-
     public String navigateToClinicalQueue() {
         return "/clinical/clinical_queue.xhtml?faces-redirect=true";
     }
