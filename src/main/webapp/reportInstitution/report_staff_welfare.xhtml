@@ -13,23 +13,48 @@
         <h:form>
             <p:panel>
                 <f:facet name="header" >                
-                    <div class="d-flex justify-content-between align-items-center" >
+                    <div class="d-flex justify-content-between align-items-center col-1-large" >
                         <h:outputLabel value="OPD And Pharmacy Staff Welfare Bills"/>
-                        <h:panelGrid columns="3" >
-                            <p:commandButton id="btnRefresh" value="Process" ajax="false" 
-                                             class="ui-button-warning" icon="fas fa-cogs"
-                                         action="#{serviceSummery.createStaffWelfare()}"/>
-                            <p:commandButton ajax="false" value="Print"  
-                                             class="ui-button-info mx-2" icon="fas fa-print"  >
-                                <p:printer target="panelPrint" />
-                            </p:commandButton>
-
-                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
-                                <p:dataExporter type="xlsx" target="opd" fileName="report_staff_welfare"  />
-                            </p:commandButton>
-                    </h:panelGrid>
                     </div>
                 </f:facet>
+                <div>
+                    <h:panelGrid columns="5" class="my-2">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-people-carry ml-5" />
+                            <p:outputLabel value="Staff Name" class="mx-2" >
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:autoComplete
+                            completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                            class="w-100"
+                            id="acStaff" 
+                            style="width: 400px!important"
+                            inputStyleClass="w-100"
+                            value="#{pharmacyReportController.toStaff}" 
+                            var="user"
+                            scrollHeight="450"
+                            itemLabel="#{user.person.name}" 
+                            itemValue="#{user}" >
+
+                            <p:column headerText="Name" >
+                                <h:outputText value="#{user.person.name}" ></h:outputText>
+                            </p:column>
+                        </p:autoComplete>
+                    </h:panelGrid>
+                    <h:panelGrid columns="3" >
+                        <p:commandButton id="btnRefresh" value="Process" ajax="false" 
+                                         class="ui-button-warning" icon="fas fa-cogs"
+                                         action="#{serviceSummery.createStaffWelfare()}"/>
+                        <p:commandButton ajax="false" value="Print"  
+                                         class="ui-button-info mx-2" icon="fas fa-print"  >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+
+                        <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
+                            <p:dataExporter type="xlsx" target="opd" fileName="report_staff_welfare"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+                </div>
                 <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
 
 
