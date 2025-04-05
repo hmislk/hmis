@@ -9,7 +9,7 @@
                 >
 
     <ui:define name="subcontent">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:outputStylesheet ></h:outputStylesheet>
         <h:form>
             <p:panel>
                 <f:facet name="header" >                
@@ -64,30 +64,30 @@
                             <h:outputLabel value="Staff Welfare Summary"/>
                         </f:facet>
 
-                        <p:column headerText="No">
+                        <p:column headerText="No" width="2em">
                             <f:facet name="header">
                                 <p:outputLabel value="No"/>
                             </f:facet>
                             <h:outputLabel value="#{i+1}"/>
                         </p:column>
 
-                        <p:column headerText="Staff Code">
+                        <p:column headerText="Staff Code" width="6em">
                             <f:facet name="header">
                                 <p:outputLabel value="Staff Code"/>
                             </f:facet>
                             <p:outputLabel value="#{s.code}" />
                         </p:column>
 
-                        <p:column headerText="Staff Name">
+                        <p:column headerText="Staff Name" width="10em">
                             <f:facet name="header">
-                                <p:outputLabel value="Staff Name"/>
+                                <p:outputLabel value="Staff Name" />
                             </f:facet>
                             <p:outputLabel value="#{s.person.nameWithTitle}" />
                         </p:column>
 
                         <p:column headerText="Annual Entitlement" >
                             <f:facet name="header">
-                                <p:outputLabel value="Annual Entitlement"/>
+                                <p:outputLabel value="Annual Entitlement" style="float: right;"/>
                             </f:facet>
                             <p:outputLabel value="#{s.annualWelfareQualified}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -96,9 +96,18 @@
 
                         <p:column headerText="Annual Utilized Value">
                             <f:facet name="header">
-                                <p:outputLabel value="Annual Utilized Value"/>
+                                <p:outputLabel value="Annual Utilized Value" style="float: right;"/>
                             </f:facet>
                             <p:outputLabel value="#{s.annualWelfareUtilized}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Annual Remaining Balance">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Remaining Balance" style="float: right;"/>
+                            </f:facet>
+                            <p:outputLabel value="#{s.annualWelfareQualified - s.annualWelfareUtilized}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </p:outputLabel>
                         </p:column>
