@@ -240,7 +240,7 @@
                                                 <p:ajax process="@this cmbPs cmbPaymentScheme"
                                                         update="panelBillDetails panelPaymentDetails"
                                                         event="change"
-                                                        listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
+                                                        listener="#{pharmacySaleWithoutStockController.listnerForPaymentMethodChange()}"/>
                                             </p:selectOneMenu>
 
                                             <p:selectOneMenu   id="cmbPaymentScheme" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}">
@@ -248,7 +248,7 @@
                                                 <p:ajax process="@this pay "
                                                         update="panelBillDetails panelPaymentDetails"
                                                         event="change"
-                                                        listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
+                                                        listener="#{pharmacySaleWithoutStockController.listnerForPaymentMethodChange()}"/>
                                             </p:selectOneMenu>
                                         </div>
                                     </div>
