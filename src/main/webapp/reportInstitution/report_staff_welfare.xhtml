@@ -59,7 +59,10 @@
 
 
                     <p:dataTable id="opd" rowIndexVar="i" 
-                                 value="#{serviceSummery.staffs}" var="s">                   
+                                 value="#{serviceSummery.staffs}" var="s"
+                                 rowKey="#{entry.key}" rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">                   
                         <f:facet name="header">
                             <h:outputLabel value="Staff Welfare Summary"/>
                         </f:facet>
@@ -102,7 +105,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </p:outputLabel>
                         </p:column>
-                        
+
                         <p:column headerText="Annual Remaining Balance">
                             <f:facet name="header" >
                                 <p:outputLabel value="Remaining Balance" style="float: right;"/>
