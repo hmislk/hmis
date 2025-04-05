@@ -147,15 +147,17 @@ public class ServiceSummery implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
-        String sql;
-        sql = "select s from Staff s where "
-                + " s.retired=false "
-                + " and s.annualWelfareQualified>0 "
-                + " order by s.codeInterger ";
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("select s from Staff s where s.retired=false  and s.annualWelfareQualified>0 ");
+                
+        if (staff != null) {
+            sql.append(" and s.person.name =:name ");
+            parameters.put("name", staff.getPerson().getName());
+        }
+        sql.append(" order by s.codeInterger ");
 
-        staffs = getStaffFacade().findByJpql(sql);
-
-
+        staffs = getStaffFacade().findByJpql(sql.toString(), parameters);
 
     }
 
@@ -817,8 +819,6 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
 
-
-
     }
 
     public void createInvestigationSummery() {
@@ -839,7 +839,6 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.OpdBill, FeeType.OwnInstitution, false) + calServiceTot(BillType.OpdBill, FeeType.CollectingCentre, false);
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
-
 
     }
 
@@ -897,8 +896,6 @@ public class ServiceSummery implements Serializable {
 
         calTotal(bills);
 
-
-
     }
 
     public void calTotal(List<Bill> bills) {
@@ -914,7 +911,6 @@ public class ServiceSummery implements Serializable {
     Department department;
     Institution institution;
     PaymentMethod paymentMethod;
-
 
     CommonFunctions commonFunctions;
 
@@ -991,8 +987,6 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            ////// // System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
-
-
     }
 
     public void createServiceSummeryLabNew() {
@@ -1043,7 +1037,6 @@ public class ServiceSummery implements Serializable {
             outSideFeeTotoalGT += svItem.getValue3();
             reagentFeeTotalGT += svItem.getValue4();
         }
-
 
     }
 
@@ -1099,7 +1092,6 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, false);
 
-
     }
 
     public void createServiceSummeryInwardAddedDate() {
@@ -1124,8 +1116,6 @@ public class ServiceSummery implements Serializable {
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
         hosFeeMarginTotal = calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
 
-
-
     }
 
     public void createServiceSummeryInwardDischarged() {
@@ -1144,7 +1134,6 @@ public class ServiceSummery implements Serializable {
         proFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Staff, true);
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, true);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, true);
-
 
     }
 
@@ -1352,8 +1341,6 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
-
-
     }
 
     public void createInvestigationCategorySummery() {
@@ -1400,7 +1387,6 @@ public class ServiceSummery implements Serializable {
 
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
-
 
     }
 
@@ -1449,8 +1435,6 @@ public class ServiceSummery implements Serializable {
 
         calCountTotalCategory(BillType.InwardBill, false);
         calServiceTot(BillType.InwardBill, false);
-
-
 
     }
 
@@ -1532,8 +1516,6 @@ public class ServiceSummery implements Serializable {
 
         calCountTotalCategory(BillType.InwardBill, true);
         //calServiceTot(BillType.InwardBill, true);
-
-
 
     }
 
