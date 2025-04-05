@@ -101,6 +101,7 @@ public class ServiceSummery implements Serializable {
 
     boolean onlyInwardBills;
     boolean credit = false;
+    private Staff staff;
 
     List<String1Value5> string1Value5;
 
@@ -2145,6 +2146,14 @@ public class ServiceSummery implements Serializable {
 
     public void setCredit(boolean credit) {
         this.credit = credit;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
     }
 
 }
