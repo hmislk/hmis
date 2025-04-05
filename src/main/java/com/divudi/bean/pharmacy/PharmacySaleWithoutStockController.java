@@ -20,6 +20,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
@@ -994,6 +995,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         getSaleBill().copyValue(getPreBill());
 
         getSaleBill().setBillType(BillType.PharmacySale);
+        getSaleBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS);
 
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -1823,6 +1825,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.PharmacyPre);
+            preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
