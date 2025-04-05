@@ -1,35 +1,36 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.entity.Patient;
+
 import java.util.List;
 
 public interface ControllerWithPatientViewScope {
 
-    public Patient getPatient();
+    Patient getPatient();
 
-    public void setPatient(Patient patient);
+    void setPatient(Patient patient);
 
-    public boolean isPatientDetailsEditable();
+    boolean isPatientDetailsEditable();
 
-    public void setPatientDetailsEditable(boolean patientDetailsEditable);
+    void setPatientDetailsEditable(boolean patientDetailsEditable);
 
-    public void toggalePatientEditable();
+    void toggalePatientEditable();
 
-    public List<Patient> getQuickSearchPatientList();
+    List<Patient> getQuickSearchPatientList();
 
-    public void setQuickSearchPatientList(List<Patient> quickSearchPatientList);
+    void setQuickSearchPatientList(List<Patient> quickSearchPatientList);
 
-    public void selectQuickOneFromQuickSearchPatient();
+    void selectQuickOneFromQuickSearchPatient();
 
-    public void saveSelected(Patient p);
+    void saveSelected(Patient p);
 
-    public void saveSelectedPatient();
+    void saveSelectedPatient();
 
-    public String getQuickSearchPhoneNumber();
+    String getQuickSearchPhoneNumber();
 
-     public void setQuickSearchPhoneNumber(String quickSearchPhoneNumber);
+    void setQuickSearchPhoneNumber(String quickSearchPhoneNumber);
 
-    public void quickSearchPatientLongPhoneNumber();
+    void quickSearchPatientLongPhoneNumber();
 
-    public void quickSearchNewPatient();
+    void quickSearchNewPatient();
 }
