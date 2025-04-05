@@ -653,7 +653,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>                                       
                         <p:menuitem 
                             ajax="false" 
-                            action="#{pharmacySaleController.navigateToPharmacySaleWithoutStocks}"  
+                            action="#{pharmacySaleWithoutStockController.navigateToPharmacySaleWithoutStocks()}"  
                             value="Sale without Stocks" 
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWithOutStock')}" ></p:menuitem> 
                         <p:menuitem  
