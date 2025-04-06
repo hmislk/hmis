@@ -4411,6 +4411,16 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
+        if (mustReceiveAllHandoversBeforeClosingShift) {
+            boolean haveHandoversToReceived = hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null);
+            if(haveHandoversToReceived){
+                JsfUtil.addErrorMessage("There are Handovers To Received, Please accept them before closing the shift.");
+                return null;
+            }
+        }
+        
+        //ToDo: more checks for others . Will have individual issues 
+
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_END_BILL);
         currentBill.setDeptId(deptId);
         currentBill.setInsId(deptId);
@@ -4947,6 +4957,21 @@ public class FinancialTransactionController implements Serializable {
             Staff fromStaff,
             WebUser toUser,
             Staff toStaff) {
+        return hasAtLeastOneToReceived(BillTypeAtomic.FUND_TRANSFER_BILL, fromUser, fromStaff, toUser, toStaff);
+    }
+    
+     public boolean hasAtLeastOneHandoverBillToReceive(WebUser fromUser,
+            Staff fromStaff,
+            WebUser toUser,
+            Staff toStaff) {
+        return hasAtLeastOneToReceived(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE, fromUser, fromStaff, toUser, toStaff);
+    }
+
+    public boolean hasAtLeastOneToReceived(BillTypeAtomic billTypeAtomic,
+            WebUser fromUser,
+            Staff fromStaff,
+            WebUser toUser,
+            Staff toStaff) {
         System.out.println("hasAtLeastOneFundTransferBillToReceive");
         Map<String, Object> params = new HashMap<>();
 
@@ -4954,11 +4979,20 @@ public class FinancialTransactionController implements Serializable {
                 "select s from Bill s "
                 + "where s.retired=:ret "
                 + "and s.billTypeAtomic=:btype "
-                + "and s.referenceBill is null "
         );
 
+        switch(billTypeAtomic){
+            case FUND_SHIFT_HANDOVER_CREATE:
+                jpql.append("and (s.completed = false or s.completed is null) ");
+                break;
+            case FUND_TRANSFER_BILL:
+                jpql.append("and s.referenceBill is null ");
+                break;
+                
+        }
+        
         params.put("ret", false);
-        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        params.put("btype", billTypeAtomic);
 
         if (fromStaff != null) {
             jpql.append("and s.fromStaff=:fStaff ");
@@ -4982,7 +5016,7 @@ public class FinancialTransactionController implements Serializable {
 
         // Use findFirstByJpql(...) to avoid counting all matching records:
         Bill firstMatch = billFacade.findFirstByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
+        System.out.println("firstMatch = " + firstMatch);
         // If there's at least one matching Bill, return true
         return firstMatch != null;
     }
