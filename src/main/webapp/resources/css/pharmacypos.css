@@ -14,20 +14,24 @@
 
     }
 
-    .fiveinchbill{
-        position: relative!important;
-        padding: 5px!important;
-        width: 12cm!important;
-        height: 14cm!important;
-
-        font-family: sans-serif!important;
-        font-size: 11px!important;
-        margin: auto!important;
-        background-size: 100% auto!important;
-        /*        border: 1px solid!important;*/
+    .fiveinchbill {
+        position: relative !important;
+        padding: 5px !important;
+        width: 21cm !important; /* Changed from 12cm to A4 width */
+        height: auto !important; /* Changed from fixed height to auto */
+        min-height: 14cm !important;
+        font-family: sans-serif !important;
+        font-size: 11px !important;
+        margin: auto !important;
+        background-size: 100% auto !important;
         font-size: 130%;
-        text-transform: capitalize!important;
+        text-transform: capitalize !important;
+    }
 
+    /* Add this new rule to hide the header specifically for inward service bills */
+    .inward-service-bill .institutionName,
+    .inward-service-bill .institutionContact {
+        display: none!important;
     }
 
     .channelRecipt_24_2x9_3{
