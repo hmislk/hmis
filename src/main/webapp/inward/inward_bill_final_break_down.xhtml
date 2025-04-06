@@ -18,19 +18,19 @@
 
                 <f:facet name="header" >
                     <h:outputLabel value="Inward  Break Down -&nbsp;&nbsp; #{bhtSummeryFinalizedController.patientEncounter.patient.person.name}"/>
-                    <p:commandButton ajax="false" value="Process" styleClass="noPrintButton" style="float: right;" />  
+                    <p:commandButton ajax="false" value="Process" styleClass="noPrintButton" style="float: right;" />
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="reportPrint" />
-                    </p:commandButton>  
+                    </p:commandButton>
 
                 </f:facet>
 
                 <p:panelGrid columns="5" styleClass="noPrintButton"  >
-                    <p:autoComplete converter="dis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                    <p:autoComplete converter="dis" widgetVar="aPt" id="acPt" forceSelection="true"
                                     value="#{bhtSummeryFinalizedController.patientEncounter}"
-                                    completeMethod="#{admissionController.completePatientPaymentFinalized}" 
-                                    var="myItem" itemValue="#{myItem}" 
-                                    itemLabel="#{myItem.bhtNo}" 
+                                    completeMethod="#{admissionController.completePatientPaymentFinalized}"
+                                    var="myItem" itemValue="#{myItem}"
+                                    itemLabel="#{myItem.bhtNo}"
                                     size="30"  >
                         <p:ajax event="itemSelect" process="@this" update="data"
                                 listener="#{bhtSummeryFinalizedController.createTablesFinalized()}"/>
@@ -43,10 +43,10 @@
                         <p:column>
                             <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
                         </p:column>
-                    </p:autoComplete>                    
+                    </p:autoComplete>
                 </p:panelGrid>
 
-                <p:panel id="data">                   
+                <p:panel id="data">
                     <breakDown:roomCharges/>
                     <p:spacer height="30"/>
                     <breakDown:moCharges/>
@@ -57,160 +57,160 @@
                     <p:spacer height="30"/>
                     <breakDown:service/>
                     <p:spacer height="30"/>
-                    <p:panel header="Pharmacy Issue" style="text-align: center;">         
-                       
+                    <p:panel header="Pharmacy Issue" style="text-align: center;">
+
                         <p:panelGrid columns="2">
                         <p:commandButton ajax="false" value="Print Pharmacy Issue" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="pharmacyIssue" />
-                        </p:commandButton>  
-                        <p:commandButton value="Export Excel" ajax="false" 
+                        </p:commandButton>
+                        <p:commandButton value="Export Excel" ajax="false"
                                          styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="pharmacyIssue" 
+                            <p:dataExporter type="xlsx" target="pharmacyIssue"
                                          fileName="Pharmacy_Issue"/>
                         </p:commandButton>
                         </p:panelGrid>
-                            
-                        <p:dataTable id="pharmacyIssue" value="#{bhtSummeryFinalizedController.pharmacyItems}" 
-                                     var="iss" 
+
+                        <p:dataTable id="pharmacyIssue" value="#{bhtSummeryFinalizedController.pharmacyItems}"
+                                     var="iss"
                                      sortBy="#{iss.bill.billClass}"
-                                     rowStyleClass="#{(iss.grossValue+iss.marginValue ne 0 )                                                                       
-                                                      and                                                                        
-                                                      ((iss.bill.billClass eq 'class com.divudi.entity.PreBill')
-                                                      or 
-                                                      (iss.bill.billedBill eq null and iss.bill.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}">
+                                     rowStyleClass="#{(iss.grossValue+iss.marginValue ne 0 )
+                                                      and
+                                                      ((iss.bill.billClass eq 'class com.divudi.core.entity.PreBill')
+                                                      or
+                                                      (iss.bill.billedBill eq null and iss.bill.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
                             <p:column headerText="Bill No">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Bill No"/> 
+                                    <h:outputLabel value="Bill No"/>
                                 </f:facet>
-                                <h:outputLabel value="#{iss.bill.deptId}"/>                                
-                            </p:column>   
+                                <h:outputLabel value="#{iss.bill.deptId}"/>
+                            </p:column>
                             <p:column headerText="Item Name">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Item Name"/> 
+                                    <h:outputLabel value="Item Name"/>
                                 </f:facet>
-                                <h:outputLabel value="#{iss.item.name}"/>                                
-                            </p:column>   
+                                <h:outputLabel value="#{iss.item.name}"/>
+                            </p:column>
                             <p:column headerText="Qty" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Qty"/> 
+                                    <h:outputLabel value="Qty"/>
                                 </f:facet>
-                                <h:outputLabel value="#{iss.qty}"/>                                
-                            </p:column> 
+                                <h:outputLabel value="#{iss.qty}"/>
+                            </p:column>
                             <p:column  headerText="Total Value" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Total Value"/> 
+                                    <h:outputLabel value="Total Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{iss.grossValue+iss.marginValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                            </p:column> 
+                            </p:column>
                             <p:column headerText="Discount Value" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Discount Value"/> 
+                                    <h:outputLabel value="Discount Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{iss.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                            </p:column> 
+                            </p:column>
                             <p:column headerText="Net Value" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Net Value"/> 
+                                    <h:outputLabel value="Net Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{iss.netValue}">
                                       <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                            </p:column> 
+                            </p:column>
                               <p:column headerText="Adjusted Value" styleClass="averageNumericColumn">
                                   <f:facet name="header">
-                                    <h:outputLabel value="Adjusted Value"/> 
+                                    <h:outputLabel value="Adjusted Value"/>
                                 </f:facet>
                                   <h:outputLabel value="#{iss.adjustedValue}">
                                       <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                            </p:column> 
+                            </p:column>
                         </p:dataTable>
                     </p:panel>
                     <p:panel header="Store Issue" style="text-align: center;">
-                        
+
                         <p:panelGrid columns="2">
                         <p:commandButton ajax="false" value="Print Store Issue" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="pharmacyIssue" />
-                        </p:commandButton>  
-                        <p:commandButton value="Export Excel" ajax="false" 
+                        </p:commandButton>
+                        <p:commandButton value="Export Excel" ajax="false"
                                          styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="storeIssue" 
+                            <p:dataExporter type="xlsx" target="storeIssue"
                                          fileName="store_Issue"/>
                         </p:commandButton>
                         </p:panelGrid>
-                            
-                        <p:dataTable id="storeIssue" value="#{bhtSummeryFinalizedController.storeItems}" 
-                                     var="iss" 
+
+                        <p:dataTable id="storeIssue" value="#{bhtSummeryFinalizedController.storeItems}"
+                                     var="iss"
                                      sortBy="#{iss.bill.billClass}"
                                      rowStyleClass="#{(iss.grossValue+iss.marginValue ne 0 )? '':'noDisplayRow'}">
                             <p:column headerText="Bill No">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Bill No"/> 
+                                    <h:outputLabel value="Bill No"/>
                                 </f:facet>
-                                <h:outputLabel value="#{iss.bill.deptId}"/>                                
-                            </p:column>   
+                                <h:outputLabel value="#{iss.bill.deptId}"/>
+                            </p:column>
                             <p:column headerText="Item Name">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Item Name"/> 
+                                    <h:outputLabel value="Item Name"/>
                                 </f:facet>
-                                <h:outputLabel value="#{iss.item.name}"/>                                
-                            </p:column>   
+                                <h:outputLabel value="#{iss.item.name}"/>
+                            </p:column>
                             <p:column headerText="Qty" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Qty"/> 
+                                    <h:outputLabel value="Qty"/>
                                 </f:facet>
-                                <h:outputLabel value="#{iss.qty}"/>                                
-                            </p:column> 
+                                <h:outputLabel value="#{iss.qty}"/>
+                            </p:column>
                             <p:column headerText="Total Value" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Total Value"/> 
+                                    <h:outputLabel value="Total Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{iss.grossValue+iss.marginValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                            </p:column> 
+                            </p:column>
                             <p:column headerText="Discount Value" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Discount Value"/> 
+                                    <h:outputLabel value="Discount Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{iss.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                            </p:column> 
+                            </p:column>
                             <p:column headerText="Net Value" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Net Value"/> 
+                                    <h:outputLabel value="Net Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{iss.netValue}">
                                       <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                            </p:column> 
+                            </p:column>
                               <p:column headerText="Adjusted Value" styleClass="averageNumericColumn">
                                   <f:facet name="header">
-                                    <h:outputLabel value="Adjusted Value"/> 
+                                    <h:outputLabel value="Adjusted Value"/>
                                 </f:facet>
                                   <h:outputLabel value="#{iss.adjustedValue}">
                                       <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                            </p:column> 
+                            </p:column>
                         </p:dataTable>
                     </p:panel>
                     <p:spacer height="30"/>
                     <breakDown:professionalFee/>
                     <p:spacer height="30"/>
                     <p:panel header="Paid by Patient" style="text-align: center;">
-                        <p:dataTable id="pay"   
-                                         value="#{bhtSummeryFinalizedController.paymentBills}" 
+                        <p:dataTable id="pay"
+                                         value="#{bhtSummeryFinalizedController.paymentBills}"
                                          var="p"
-                                         rowStyleClass="#{(p.netTotal ne 0 )                                                                       
-                                                          and                                                                        
-                                                          ((p.billClass eq 'class com.divudi.entity.BilledBill')
-                                                          or 
-                                                          (p.billedBill eq null and p.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}" >
+                                         rowStyleClass="#{(p.netTotal ne 0 )
+                                                          and
+                                                          ((p.billClass eq 'class com.divudi.core.entity.BilledBill')
+                                                          or
+                                                          (p.billedBill eq null and p.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}" >
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
@@ -225,21 +225,21 @@
                                     <h:outputLabel value="#{p.netTotal}">
                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    
+
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}">
                                          <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
-                                </p:column>     
+                                </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{p.createdAt}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>                                                   
+                                    </h:outputLabel>
                                     <br/>
                                     <h:panelGroup rendered="#{p.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
-                                        <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
+                                        <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
                                                        value="#{p.cancelledBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -247,25 +247,25 @@
                                 </p:column>
 
                                 <p:column headerText="Billed By" exportable="false">
-                                    <h:outputLabel value="#{p.creater.webUserPerson.name}"/>     
+                                    <h:outputLabel value="#{p.creater.webUserPerson.name}"/>
                                     <br/>
                                     <h:panelGroup rendered="#{p.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled By " />
-                                        <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
-                                                       value="#{p.cancelledBill.creater.webUserPerson.name}" >                                       
+                                        <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
+                                                       value="#{p.cancelledBill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
                                     </h:panelGroup>
-                                </p:column>   
+                                </p:column>
                                 <p:column headerText="Edited" exportable="false">
                                     <h:panelGroup  rendered="#{p.editor ne null}" >
                                         <h:outputLabel style="color: #008000;" value="Edited By " />
-                                        <h:outputLabel style="color: #008000;" 
+                                        <h:outputLabel style="color: #008000;"
                                                        value="#{p.editor.webUserPerson.name}" >
                                         </h:outputLabel>
                                     </h:panelGroup>
                                     <h:panelGroup  rendered="#{p.editedAt ne null}" >
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
-                                        <h:outputLabel style="color: #008000;" 
+                                        <h:outputLabel style="color: #008000;"
                                                        value="#{p.editedAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -274,28 +274,28 @@
                                 <p:column headerText="Checked" exportable="false">
                                     <h:panelGroup  rendered="#{p.checkedBy ne null}" >
 
-                                        <h:outputLabel style="color: #008000;" 
+                                        <h:outputLabel style="color: #008000;"
                                                        value="#{p.checkedBy.webUserPerson.name}" >
                                         </h:outputLabel>
                                     </h:panelGroup><br/>
                                     <h:panelGroup  rendered="#{p.checkeAt ne null}" >
 
-                                        <h:outputLabel style="color: #008000;" 
+                                        <h:outputLabel style="color: #008000;"
                                                        value="#{p.checkeAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
-                                    </h:panelGroup>                        
+                                    </h:panelGroup>
                                 </p:column>
 
                             </p:dataTable>
                     </p:panel>
-                    
+
                     <p:spacer height="30"/>
                     <p:panel header="Credit Company Payment">
-                        <p:dataTable id="cre"  
-                                         value="#{bhtSummeryFinalizedController.creditPayment}" 
+                        <p:dataTable id="cre"
+                                         value="#{bhtSummeryFinalizedController.creditPayment}"
                                          var="cre">
-                                
+
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
@@ -311,18 +311,18 @@
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{bhtSummeryFinalizedController.creditCompanyPaymentTotal}"></h:outputLabel>
                                     </f:facet>
-                                </p:column>     
-                                
+                                </p:column>
+
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{cre.createdAt}">
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
-                                    
+
                                 </p:column>
 
                             </p:dataTable>
                     </p:panel>
-                    
+
                 </p:panel>
 
             </p:panel>

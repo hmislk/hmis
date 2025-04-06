@@ -6,26 +6,25 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.StockReportRecord;
-import com.divudi.data.table.String1Value3;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.dataStructure.StockReportRecord;
+import com.divudi.core.data.table.String1Value3;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,8 +53,6 @@ public class StoreReportsTransfer implements Serializable {
      */
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
 
     Department fromDepartment;
     Department toDepartment;
@@ -263,7 +260,7 @@ public class StoreReportsTransfer implements Serializable {
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
-        
+
     }
 
     public void fillDepartmentUnitIssueByBillStore() {
@@ -304,7 +301,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        
+
     }
 
     public void fillDepartmentUnitIssueByBillItemStore() {
@@ -345,7 +342,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetValue();
         }
 
-        
+
     }
 
     public void fillFromDepartmentUnitIssueByBillStore() {
@@ -374,7 +371,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        
+
     }
 
     public ArrayList<DepartmentBillRow> getDrows() {
@@ -417,7 +414,7 @@ public class StoreReportsTransfer implements Serializable {
 
         }
 
-        
+
 
 //        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
     }
@@ -572,7 +569,7 @@ public class StoreReportsTransfer implements Serializable {
 
         purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
 
-        
+
     }
 
     public void fillDepartmentIssueByBillItem() {
@@ -700,7 +697,7 @@ public class StoreReportsTransfer implements Serializable {
 
         purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
 
-        
+
     }
 
     public void fillDepartmentTransfersIssueByBill() {
@@ -745,7 +742,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        
+
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
@@ -784,7 +781,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        
+
     }
 
     public void createStoreIssueReport() {
@@ -962,7 +959,7 @@ public class StoreReportsTransfer implements Serializable {
         dcr.getCaregoryRows().add(cr);
         departmentCategoryRows.add(dcr);
 
-        
+
     }
 
     public void createStoreIssueCategoryReport() {
@@ -1065,7 +1062,7 @@ public class StoreReportsTransfer implements Serializable {
         saleValue += cr.getTotal();
         caregoryRows.add(cr);
 
-        
+
     }
 
     private ItemRow createItemRow(ItemRow ir, BillClassType bct, double count, double unitValue, double total) {
@@ -1244,7 +1241,7 @@ public class StoreReportsTransfer implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1255,7 +1252,7 @@ public class StoreReportsTransfer implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
@@ -1382,14 +1379,6 @@ public class StoreReportsTransfer implements Serializable {
 
     public void setDepartmentCategoryRows(List<DepartmentCategoryRow> departmentCategoryRows) {
         this.departmentCategoryRows = departmentCategoryRows;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<CaregoryRow> getCaregoryRows() {

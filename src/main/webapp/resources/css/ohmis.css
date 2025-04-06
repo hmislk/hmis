@@ -297,6 +297,21 @@ th.align-right-header .ui-column-title {
     width: 58%;
 }
 
+.compact-panelgrid.ui-panelgrid,
+.compact-panelgrid.ui-panelgrid tr,
+.compact-panelgrid.ui-panelgrid td,
+.compact-panelgrid.ui-panelgrid .ui-panelgrid-cell,
+.compact-panelgrid.ui-panelgrid .ui-panelgrid-header {
+    margin: 0 !important;
+    padding: 2px !important;
+    border: none !important; /* optional, if you want minimal borders */
+}
+
+/* Example: set a background to verify it’s applied */
+.compact-panelgrid.ui-panelgrid {
+    background-color: #eef !important;
+}
+
 
 
 .compact-column-borders {

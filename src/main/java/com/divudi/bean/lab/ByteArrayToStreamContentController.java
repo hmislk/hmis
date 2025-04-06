@@ -1,7 +1,7 @@
 package com.divudi.bean.lab;
 
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.facade.PatientReportItemValueFacade;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.facade.PatientReportItemValueFacade;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import javax.ejb.EJB;

@@ -1,17 +1,17 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.ControllerWithPatient;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
-import com.divudi.entity.ServiceSessionInstance;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.ServiceSessionInstance;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -56,8 +56,8 @@ public class ChannelBookingController implements Serializable, ControllerWithPat
         prepareForNewChannellingBill();
         return "/channel/channel_booking?faces-redirect=true";
     }
-    
-   
+
+
 
     public void prepareForNewChannellingBill() {
 
@@ -82,7 +82,7 @@ public class ChannelBookingController implements Serializable, ControllerWithPat
     public void changeListener() {
 
     }
-    
+
 
     public Speciality getSpeciality() {
         return speciality;
@@ -265,7 +265,7 @@ public class ChannelBookingController implements Serializable, ControllerWithPat
         // ToDo: Add Logic
     }
 
-    
-    
-    
+
+
+
 }

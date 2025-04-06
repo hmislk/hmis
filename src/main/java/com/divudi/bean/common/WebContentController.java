@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.WebContentType;
-import static com.divudi.data.WebContentType.ShortText;
-import com.divudi.entity.WebContent;
-import com.divudi.entity.WebLanguage;
-import com.divudi.facade.WebContentFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.WebContentType;
+import static com.divudi.core.data.WebContentType.ShortText;
+import com.divudi.core.entity.WebContent;
+import com.divudi.core.entity.WebLanguage;
+import com.divudi.core.facade.WebContentFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,8 +107,8 @@ public class WebContentController implements Serializable {
         selected.setType(WebContentType.Image);
         return toEditWebContent();
     }
-    
-    
+
+
 
     public String toEditWebContent() {
         if (selected == null) {
@@ -161,7 +161,7 @@ public class WebContentController implements Serializable {
         }
         setLanguage(selectedlanguage);
     }
-    
+
     public WebContent findSingleWebContent(String word) {
         return findSingleWebContent(word, getLanguage());
     }
@@ -349,7 +349,7 @@ public class WebContentController implements Serializable {
     public void setLanguage(WebLanguage language) {
         this.language = language;
     }
-    
+
     @Deprecated // Now use Data Administration
     public String navigateToManageWeb(){
         return "/webcontent/index?faces-redirect=true";
@@ -362,8 +362,8 @@ public class WebContentController implements Serializable {
     public void setSelectedlanguage(WebLanguage selectedlanguage) {
         this.selectedlanguage = selectedlanguage;
     }
-    
-    
+
+
 
     /**
      *
@@ -408,5 +408,5 @@ public class WebContentController implements Serializable {
         }
     }
 
- 
+
 }

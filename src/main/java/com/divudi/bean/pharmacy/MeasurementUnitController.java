@@ -8,15 +8,16 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.MeasurementUnitFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.facade.MeasurementUnitFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -134,7 +135,7 @@ public class MeasurementUnitController implements Serializable {
         if (mu == null) {
             mu = new MeasurementUnit();
             mu.setName(name);
-            mu.setCode("measurement_unit_" + CommonController.nameToCode(name));
+            mu.setCode("measurement_unit_" + CommonFunctions.nameToCode(name));
             getFacade().create(mu);
         }
         return mu;

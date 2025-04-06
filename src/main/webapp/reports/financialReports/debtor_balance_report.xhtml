@@ -60,7 +60,8 @@
                             <h:outputText value="&#xf084;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Admission Type" class="mx-3"/>
                         </h:panelGroup>
-                        <p:selectOneMenu class="w-100" value="#{reportsController.admissionType}">
+                        <p:selectOneMenu id="admissionTypeDropdown" class="w-100" value="#{reportsController.admissionType}"
+                                         disabled="#{reportsController.visitType eq 'OP'}">
                             <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
                             <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}"
                                            itemLabel="#{myItem.name}"/>
@@ -72,7 +73,8 @@
                             <h:outputText value="&#xf236;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Room Category" class="mx-3"/>
                         </h:panelGroup>
-                        <p:selectOneMenu class="w-100" value="#{reportsController.roomCategory}">
+                        <p:selectOneMenu id="roomCategoryDropdown" class="w-100" value="#{reportsController.roomCategory}"
+                                         disabled="#{reportsController.visitType eq 'OP'}">
                             <f:selectItem itemLabel="Select Room Category" itemValue="#{null}"/>
                             <f:selectItems value="#{roomCategoryController.items}" var="r" itemLabel="#{r.name}"
                                            itemValue="#{r}"/>
@@ -87,6 +89,9 @@
                         <p:selectOneMenu class="w-100" value="#{reportsController.visitType}">
                             <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
                             <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+
+                            <p:ajax update="admissionTypeDropdown"/>
+                            <p:ajax update="roomCategoryDropdown"/>
                         </p:selectOneMenu>
 
                         <h:panelGroup layout="block" styleClass="form-group">
@@ -95,7 +100,7 @@
                         </h:panelGroup>
                         <p:autoComplete inputStyleClass="w-100" class="w-100" id="companyName" forceSelection="true"
                                         style="text-align: right;"
-                                        value="#{reportsController.institution}"
+                                        value="#{reportsController.creditCompany}"
                                         completeMethod="#{creditCompanyController.completeCredit}"
                                         var="ix" itemLabel="#{ix.name}"
                                         itemValue="#{ix}">
@@ -164,10 +169,13 @@
                                 </h:outputLabel>
                             </h:panelGrid>
                         </f:facet>
-                        <p:column>
-                            #{in+1}
+                        <p:column headerText="No">
+                            <f:facet name="header">
+                                <h:outputLabel value="No"/>
+                            </f:facet>
+                            <h:outputLabel value="#{in+1}"/>
                         </p:column>
-                        <p:column headerText="Discharge Date" rendered="#{reportsController.visitType eq 'IP'}">
+                        <p:column headerText="Discharge Date" rendered="#{reportsController.visitType eq 'IP'and i.bill.billClassType ne 'CancelledBill'}">
                             <f:facet name="header">
                                 <h:outputLabel value="Discharge Date"/>
                             </f:facet>
@@ -176,11 +184,20 @@
                                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputLabel>
                         </p:column>
+                        <p:column headerText="Discharge Date" rendered="#{reportsController.visitType eq 'IP'and i.bill.billClassType eq 'CancelledBill'}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Discharge Date"/>
+                            </f:facet>
+                            <h:outputLabel value="#{i.bill.createdAt}">
+                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                   pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputLabel>
+                        </p:column>
                         <p:column headerText="Discharge Date" rendered="#{reportsController.visitType eq 'OP'}">
                             <f:facet name="header">
                                 <h:outputLabel value="Bill Date"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.bill.billDate}">
+                            <h:outputLabel value="#{i.bill.createdAt}">
                                 <f:convertDateTime timeZone="Asia/Colombo"
                                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputLabel>
@@ -246,7 +263,11 @@
                                 <h:outputLabel value="Final Bill Total"/>
                             </f:facet>
                             <h:outputLabel value="#{i.bill.patientEncounter.finalBill.netTotal}"
-                                           rendered="#{reportsController.visitType eq 'IP'}">
+                                           rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="#{i.bill.netTotal}"
+                                           rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel value="#{i.bill.netTotal}" rendered="#{reportsController.visitType eq 'OP'}">
@@ -264,7 +285,11 @@
                                 <h:outputLabel value="Paid By Patient"/>
                             </f:facet>
                             <h:outputLabel value="#{i.bill.patientEncounter.finalBill.settledAmountByPatient}"
-                                           rendered="#{reportsController.visitType eq 'IP'}">
+                                           rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="#{i.bill.settledAmountByPatient}"
+                                           rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel value="#{i.bill.settledAmountByPatient}"
@@ -283,7 +308,11 @@
                                 <h:outputLabel value="Credit Paid Amount"/>
                             </f:facet>
                             <h:outputLabel value="#{i.bill.patientEncounter.finalBill.settledAmountBySponsor}"
-                                           rendered="#{reportsController.visitType eq 'IP'}">
+                                           rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="#{i.bill.settledAmountBySponsor}"
+                                           rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel value="#{i.bill.settledAmountBySponsor}"
@@ -302,12 +331,17 @@
                                 <h:outputLabel value="Due Amount"/>
                             </f:facet>
                             <h:outputLabel
-                                    value="#{i.bill.patientEncounter.finalBill.balance}"
-                                    rendered="#{reportsController.visitType eq 'IP'}">
+                                    value="#{i.bill.patientEncounter.finalBill.netTotal - i.bill.patientEncounter.finalBill.settledAmountByPatient - i.bill.patientEncounter.finalBill.settledAmountBySponsor}"
+                                    rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType ne 'CancelledBill'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel
-                                    value="#{i.bill.balance}"
+                                    value="#{i.bill.netTotal - i.bill.settledAmountByPatient - i.bill.settledAmountBySponsor}"
+                                    rendered="#{reportsController.visitType eq 'IP' and i.bill.billClassType eq 'CancelledBill'}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel
+                                    value="#{i.bill.netTotal - i.bill.settledAmountByPatient - i.bill.settledAmountBySponsor}"
                                     rendered="#{reportsController.visitType eq 'OP'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>

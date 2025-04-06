@@ -8,8 +8,8 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.Fee;
-import com.divudi.facade.FeeFacade;
+import com.divudi.core.entity.Fee;
+import com.divudi.core.facade.FeeFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -21,8 +21,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.FeeType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.FeeType;
 import java.util.HashMap;
 import java.util.Map;
 

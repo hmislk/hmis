@@ -15,7 +15,7 @@
                 <p:commandButton ajax="false" value="Back to Interim"
                                  action="/inward/inward_bill_intrim" />
                 <p:dataTable value="#{bhtSummeryController.billItems}" var="ser"
-                             rowStyleClass="#{(ser.bill.billClass eq 'class com.divudi.entity.BilledBill')? '':'noDisplayRow'}">
+                             rowStyleClass="#{(ser.bill.billClass eq 'class com.divudi.core.entity.BilledBill')? '':'noDisplayRow'}">
                     <p:column headerText="Services Name">
                         #{ser.item.name}
                     </p:column>
@@ -110,14 +110,7 @@
                                          value="View Bill"
                                          actionListener="#{inwardSearch.selectBillItem(ser)}" >
                         </p:commandButton>
-                        <p:commandButton
-                                value="To Manage Samples"
-                                class="ui-button-warning"
-                                ajax="false"
-                                action="#{billBhtController.navigateToSampleManegmentFromInwardIntrimBill(ser.bill)}"
-                                icon="fa-solid fa-cogs"
-                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Sample Management for Inward Service and Investigations')}">
-                        </p:commandButton>
+             
                         <p:commandButton
                                 ajax="false"
                                 value="Cancel (POS)"
@@ -136,6 +129,18 @@
                                 action="#{bhtSummeryController.cancelBillWithPaperType(ser.bill, 'FiveFiveCustom3')}"
                                 rendered="#{!ser.bill.cancelled}"
                                 styleClass="ui-button-danger"/>
+
+                                        actionListener="#{inwardSearch.selectBillItem(ser)}" >
+                        </p:commandButton>
+                        <p:commandButton
+                                                    value="To Manage Samples"
+                                                    class="ui-button-warning"
+                                                    ajax="false"
+                                                    action="#{billBhtController.navigateToSampleManegmentFromInwardIntrimBill(ser.bill)}" icon="fa-solid fa-cogs"
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Sample Management for Inward Service and Investigations')}"
+                                                    >
+                                                </p:commandButton>
+
                     </p:column>
 
                 </p:dataTable>

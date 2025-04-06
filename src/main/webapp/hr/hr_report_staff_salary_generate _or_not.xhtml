@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -20,11 +20,11 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
-                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}" 
+                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}"
                                              var="t">
-                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
-                                               var="theme" 
-                                               itemLabel="#{theme.name}" 
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}"
+                                               var="theme"
+                                               itemLabel="#{theme.name}"
                                                itemValue="#{theme}" ></f:selectItems>
 
                                 <p:column style="width:10%" headerText="Name">
@@ -39,7 +39,7 @@
                                 </p:column>
                             </p:selectOneMenu>
                             <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>                         
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Employee : "/>
@@ -65,10 +65,10 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">    
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tb2" value="#{hrReportController.salaryNotGeneratedStaffs}" var="s" rowIndexVar="i">
                                 <f:facet name="header">
-                                    
+
                                     <h:outputLabel style="font-size: 20px  " value="Salary Not Generated Staffs"/>
                                     <br/>
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
@@ -129,7 +129,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{s.designation.name}"/>
                                 </p:column>
-                               
+
                             </p:dataTable>
                             <p:dataTable id="tb1" value="#{hrReportController.salaryGeneratedStaffs}" var="s" rowIndexVar="i">
                                 <f:facet name="header">
@@ -188,11 +188,11 @@
                                         <h:outputLabel value="Designation"  />
                                     </f:facet>
                                     <h:outputLabel value="#{s.designation.name}"/>
-                                </p:column>                         
+                                </p:column>
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

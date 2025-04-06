@@ -11,21 +11,21 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.FeeType;
-import com.divudi.data.SessionNumberType;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.inward.TheatreService;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.ServiceCategoryFacade;
-import com.divudi.facade.ServiceSubCategoryFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.TheatreServiceFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.SessionNumberType;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.inward.TheatreService;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.ServiceCategoryFacade;
+import com.divudi.core.facade.ServiceSubCategoryFacade;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.TheatreServiceFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -162,7 +162,7 @@ public class TheatreServiceController implements Serializable {
 
     public void prepareAdd() {
         current = new TheatreService();
-    
+
     }
 
     public void bulkUpload() {
@@ -319,7 +319,7 @@ public class TheatreServiceController implements Serializable {
 
     }
 
-    
+
     @EJB
     private ItemFeeFacade itemFeeFacade;
 

@@ -1,9 +1,9 @@
 package com.divudi.bean.pharmacy;
 
-import com.divudi.entity.pharmacy.ConsumableCategory;
-import com.divudi.facade.ConsumableCategoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.common.util.JsfUtil.PersistAction;
+import com.divudi.core.entity.pharmacy.ConsumableCategory;
+import com.divudi.core.facade.ConsumableCategoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.JsfUtil.PersistAction;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;

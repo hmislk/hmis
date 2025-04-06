@@ -11,14 +11,11 @@
 package com.divudi.bean.common.membership;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Family;
-import com.divudi.entity.FamilyMember;
-import com.divudi.entity.Patient;
-import com.divudi.facade.FamilyFacade;
-import com.divudi.facade.FamilyMemberFacade;
+import com.divudi.core.entity.Family;
+import com.divudi.core.entity.FamilyMember;
+import com.divudi.core.facade.FamilyFacade;
+import com.divudi.core.facade.FamilyMemberFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +59,7 @@ public class FamilyController implements Serializable {
         members = fetchAllMembers();
         return "/membership/analytics/lists/members?faces-redirect=true;";
     }
-    
+
     public List<Family>  fetchAllFamilies(){
         String jpql = "select f "
                 + " from Family f "
@@ -72,7 +69,7 @@ public class FamilyController implements Serializable {
         m.put("ret", false);
         return ejbFacade.findByJpql(jpql, m);
     }
-    
+
     public List<FamilyMember>  fetchAllMembers(){
         String jpql = "select fm "
                 + " from FamilyMember fm "
@@ -133,8 +130,8 @@ public class FamilyController implements Serializable {
     public void setFamilies(List<Family> families) {
         this.families = families;
     }
-    
-    
+
+
 
     /**
      *

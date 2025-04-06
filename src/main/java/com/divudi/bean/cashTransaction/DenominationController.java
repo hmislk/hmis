@@ -7,8 +7,8 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.entity.cashTransaction.Denomination;
-import com.divudi.facade.DenominationFacade;
+import com.divudi.core.entity.cashTransaction.Denomination;
+import com.divudi.core.facade.DenominationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

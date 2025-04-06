@@ -13,10 +13,10 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete id="acItem" 
-                        value="#{cc.attrs.value}" 
+        <p:autoComplete id="acItem"
+                        value="#{cc.attrs.value}"
                         forceSelection="true"
-                        completeMethod="#{itemController.completeStoreItem}" 
+                        completeMethod="#{itemController.completeStoreItem}"
                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
             <p:column headerText="Item" >
                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -25,16 +25,16 @@
                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
             </p:column>
             <p:column headerText="Pack Size" >
-                <p:outputLabel value=" X #{vt.dblValue}" 
-                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                <p:outputLabel value=" X #{vt.dblValue}"
+                               rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
             </p:column>
             <p:column headerText="Pack Size" >
-                <p:outputLabel value=" X #{vt.dblValue}" 
-                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                <p:outputLabel value=" X #{vt.dblValue}"
+                               rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
             </p:column>
             <p:column headerText="Pack Size" >
-                <p:outputLabel value=" X #{vt.dblValue}" 
-                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                <p:outputLabel value=" X #{vt.dblValue}"
+                               rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
             </p:column>
             <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode" listener="#{storeGrnController.createSerialNumber()}" ></f:ajax>
         </p:autoComplete>

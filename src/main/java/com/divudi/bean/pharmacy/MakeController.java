@@ -6,10 +6,10 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.entity.pharmacy.Make;
-import com.divudi.facade.MakeFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.common.util.JsfUtil.PersistAction;
+import com.divudi.core.entity.pharmacy.Make;
+import com.divudi.core.facade.MakeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.JsfUtil.PersistAction;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

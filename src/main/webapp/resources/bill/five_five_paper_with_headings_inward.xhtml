@@ -12,7 +12,7 @@
     </h:head>
 
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
@@ -34,13 +34,13 @@
         </style>
 
 
-        <h:panelGroup id="gpPrint" layout="block" class="printStyle" 
+        <h:panelGroup id="gpPrint" layout="block" class="printStyle"
                       style="padding:2cm; margin: 3cm; margin-right: 4cm; margin-top: 0cm; padding-top: 0cm;">
 
             <!-- Bill Header -->
             <!-- Bill Header -->
             <h:panelGroup layout="block" style="text-align: center;">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" 
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}"
                                style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)" />
                 <br/>
                 <h:outputLabel value="#{cc.attrs.bill.department.address}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
@@ -49,12 +49,12 @@
                 <p:spacer width="10" ></p:spacer>
                 <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
                 <p:spacer width="10" ></p:spacer>
-                <h:outputLabel value="#{cc.attrs.bill.department.fax}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>   
-                <br/>    
+                <h:outputLabel value="#{cc.attrs.bill.department.fax}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                <br/>
                 <h:outputLabel value="#{cc.attrs.bill.department.email}" style="font-size: var(--base-font-size);"/>
-                <h:outputLabel value="RECEIPT" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>    
+                <h:outputLabel value="RECEIPT" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                 <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}" style="color: red; font-size: var(--header-font-size); font-family: var(--font-family)"/>
-                <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}" style="color: red; font-size: var(--header-font-size); font-family: var(--font-family)"/> 
+                <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}" style="color: red; font-size: var(--header-font-size); font-family: var(--font-family)"/>
             </h:panelGroup>
 
             <br/>
@@ -62,11 +62,11 @@
             <!-- Bill Details -->
             <h:panelGrid columns="7" style="width: 100%;">
                 <!-- Name -->
-                <h:outputLabel 
-                    value="Name" 
+                <h:outputLabel
+                    value="Name"
                     style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
                 <h:outputLabel value=":" />
-                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" 
+                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"
                                style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
 
                 <!-- Block Seperater -->
@@ -196,7 +196,7 @@
             <br/>
 
             <!-- Cashier -->
-            <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" 
+            <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"
                            style="margin-top: 2cm; text-align: right; font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
 
         </h:panelGroup>
