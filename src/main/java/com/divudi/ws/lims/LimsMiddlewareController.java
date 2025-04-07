@@ -1052,9 +1052,15 @@ public class LimsMiddlewareController {
                                     System.out.println("0 result = " + result);
                                     priv.setLobValue(result);
                                     priv.setBaImage(base64TextToByteArray(result));
-                                    priv.setFileName(testCodeFromDatabase + sid );
-                                    priv.setFileType("BMP");
+                                    priv.setFileName(testCodeFromDatabase + sid);
 
+                                    String fileType = "BMP";
+
+                                    fileType = extractImageTypeFromResult(result);
+
+                                    System.out.println("fileType = " + fileType);
+
+                                    priv.setFileType(fileType);
 
                                     if (priv.getId() == null) {
                                         patientReportItemValueFacade.create(priv);
@@ -1065,8 +1071,6 @@ public class LimsMiddlewareController {
                                     valueToSave = true;
                                 }
                             }
-
-
 
                         }
 
@@ -1224,7 +1228,8 @@ public class LimsMiddlewareController {
         if (base64Text == null || base64Text.isEmpty()) {
             return new byte[0];
         }
-        String cleanedBase64 = base64Text.replaceFirst("^\\^Image\\^BMP\\^Base64\\^", "");
+        // Remove the prefix regardless of image type
+        String cleanedBase64 = base64Text.replaceFirst("^\\^Image\\^[A-Z]+\\^Base64\\^", "");
         return java.util.Base64.getDecoder().decode(cleanedBase64);
     }
 
@@ -1412,6 +1417,24 @@ public class LimsMiddlewareController {
             number.append(matcher.group());
         }
         return number.toString();
+    }
+
+    private String extractImageTypeFromResult(String result) {
+        System.out.println("Received result = " + result);
+        if (result == null || result.isEmpty()) {
+            System.out.println("Result is null or empty. Defaulting to BMP.");
+            return "BMP";
+        }
+        Pattern pattern = Pattern.compile("^\\^Image\\^([A-Z]+)\\^Base64\\^");
+        Matcher matcher = pattern.matcher(result);
+        if (matcher.find()) {
+            String type = matcher.group(1);
+            System.out.println("Extracted image type = " + type);
+            return type;
+        } else {
+            System.out.println("No image type pattern matched. Defaulting to BMP.");
+        }
+        return "BMP";
     }
 
     public class MyTestResult {
