@@ -1,9 +1,9 @@
-name: Coop Test Environment(QA) CI-CD Workflow
+name: HMIS QA2 Environment CI-CD Workflow
 
 on:
   push:
     branches:
-      - coop-test
+      - hmis-qa2
 
 jobs:
   build:
@@ -75,11 +75,11 @@ jobs:
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="coop-test.war"
+          WAR_NAME="qa2.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="coop-test"
+          APP_NAME="qa2"
           SUBDOMAIN="qa"
-          CONTEXT_PATH="coop-test"
+          CONTEXT_PATH="qa2"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
@@ -97,7 +97,7 @@ jobs:
               mv $WAR_NAME $WAR_NAME.old
             fi
           "
- 
+          
           # Copy new WAR file to the server
           rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
 
@@ -124,7 +124,7 @@ jobs:
             fi
             rm /tmp/payara-admin-pass.txt
           "
- 
+          
           # Check if the application is reachable
           for i in {1..5}; do
             RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$CONTEXT_PATH/faces/index1.xhtml)
@@ -140,4 +140,3 @@ jobs:
 
           # Cleanup
           rm -f private_key.pem
-          
