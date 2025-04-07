@@ -822,35 +822,28 @@ public class CommonFunctions {
         Date startOfDay = getStartOfDay(firstDate);
         Date endOfDay = getEndOfDay(firstDate);
 
-        if (startOfDay.before(secondDate) && endOfDay.after(secondDate)) {
-            return true;
-        } else {
-            return false;
-        }
+        return startOfDay.before(secondDate) && endOfDay.after(secondDate);
     }
 
-    public Date getAddedDate(Date date, int range) {
+    public static Date getAddedDate(Date date, int range) {
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.add(Calendar.DATE, range);
-        Date returnDate = cal.getTime();
 
-        return returnDate;
+        return cal.getTime();
     }
 
     public static Long getDayCountTillNow(Date date) {
         if (date == null) {
-            return 0l;
+            return 0L;
         }
 
         Calendar cal1 = Calendar.getInstance();
         Calendar cal2 = Calendar.getInstance();
         cal2.setTime(date);
 
-        Long inDays = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
-        //System.err.println("INDAYS "+inDays);
-        return inDays;
+        return (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
 
     }
 
@@ -1012,7 +1005,7 @@ public class CommonFunctions {
         return calendar.getTime();
     }
 
-    public YearMonthDay guessAge(Date dofb) {
+    public static YearMonthDay guessAge(Date dofb) {
         YearMonthDay yearMonthDay = new YearMonthDay();
 
 //        Calendar cal=Calendar.getInstance();

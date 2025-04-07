@@ -104,7 +104,6 @@ public class LabBillCollectingController implements Serializable {
     @Inject
     private BillBeanController billBean;
 
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -161,14 +160,6 @@ public class LabBillCollectingController implements Serializable {
         setCashBalance(0.0);
         patientTabId = "tabNewPt";
         current = new BilledBill();
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     private void savePatient() {

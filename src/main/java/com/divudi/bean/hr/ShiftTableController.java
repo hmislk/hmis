@@ -52,7 +52,6 @@ public class ShiftTableController implements Serializable {
     @EJB
     HumanResourceBean humanResourceBean;
 
-    CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;
     @Inject
@@ -94,7 +93,7 @@ public class ShiftTableController implements Serializable {
         ss.setDayType(null);
 
         DayType dtp;
-        if (dayType != null || dayType == DayType.DayOff) {
+        if (dayType == DayType.DayOff) {
             dtp = dayType;
         } else {
             dtp = phDateController.getHolidayType(ss.getShiftDate());
@@ -248,15 +247,13 @@ public class ShiftTableController implements Serializable {
 
         }
 
-        Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
 
     }
 
     public void fetchShiftTable() {
-        Date startTime = new Date();
-
         if (errorCheck()) {
             return;
         }
@@ -337,7 +334,7 @@ public class ShiftTableController implements Serializable {
 
         }
 
-        Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
 
@@ -404,7 +401,7 @@ public class ShiftTableController implements Serializable {
 
         }
 
-        Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
     }
 
@@ -601,7 +598,7 @@ public class ShiftTableController implements Serializable {
         shiftTables.add(summeryTable);
         //
 
-        Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
 
@@ -716,14 +713,6 @@ public class ShiftTableController implements Serializable {
 
     public void setShiftController(ShiftController shiftController) {
         this.shiftController = shiftController;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public SessionController getSessionController() {

@@ -78,7 +78,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     @EJB
     TokenFacade tokenFacade;
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -560,7 +559,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -571,7 +570,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -653,14 +652,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     private void savePatient() {
