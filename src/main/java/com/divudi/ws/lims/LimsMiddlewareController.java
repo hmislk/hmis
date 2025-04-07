@@ -1052,15 +1052,16 @@ public class LimsMiddlewareController {
                                     System.out.println("0 result = " + result);
                                     priv.setLobValue(result);
                                     priv.setBaImage(base64TextToByteArray(result));
-                                    priv.setFileName(testCodeFromDatabase + sid);
 
-                                    String fileType = "BMP";
-
-                                    fileType = extractImageTypeFromResult(result);
-
+                                    String fileType = extractImageTypeFromResult(result);
                                     System.out.println("fileType = " + fileType);
-
                                     priv.setFileType(fileType);
+
+                                    String fileName = testCodeFromDatabase + sid;
+                                    if (!fileName.toLowerCase().matches(".*\\.(bmp|png|jpg|jpeg|jpe)$")) {
+                                        fileName += "." + fileType.toLowerCase();
+                                    }
+                                    priv.setFileName(fileName);
 
                                     if (priv.getId() == null) {
                                         patientReportItemValueFacade.create(priv);
