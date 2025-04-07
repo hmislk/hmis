@@ -1,9 +1,9 @@
-name: QA Environment CI-CD Workflow
+name: QA1 Environment CI-CD Workflow
 
 on:
   push:
     branches:
-      - qa-test
+      - hmis-qa1
 
 jobs:
   build:
@@ -75,11 +75,11 @@ jobs:
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="qa.war"
+          WAR_NAME="qa1.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="qa"
+          APP_NAME="qa1"
           SUBDOMAIN="qa"
-          CONTEXT_PATH="qa"
+          CONTEXT_PATH="qa1"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
