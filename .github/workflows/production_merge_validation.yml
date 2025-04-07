@@ -12,7 +12,7 @@ jobs:
   check-branch:
     runs-on: ubuntu-latest
     steps:
-      - name: Check source branch name
+      - name: Production Merge Validation
         env:
           HEAD_BRANCH: ${{ github.head_ref }}
           BASE_BRANCH: ${{ github.base_ref }}
