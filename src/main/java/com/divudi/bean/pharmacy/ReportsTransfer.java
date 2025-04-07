@@ -468,7 +468,7 @@ public class ReportsTransfer implements Serializable {
                         + " order by b.id";
             } else if (fromDepartment == null && toDepartment != null) {
                 params.put("tdept", toDepartment);
-                jpql = "select b from Bill b where"
+                jpql = "select b from Bill b where "
                         + " b.toDepartment=:tdept and b.createdAt "
                         + " between :fd and :td "
                         + " and b.retired=false "
