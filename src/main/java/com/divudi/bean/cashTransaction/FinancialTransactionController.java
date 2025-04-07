@@ -5001,8 +5001,8 @@ public class FinancialTransactionController implements Serializable {
                 + "from Bill s "
                 + "where (s.retired=false or s.retired is null) "
                 + "and s.billTypeAtomic=:btype "
-                + "and s.createdAt between :fd and :td "
-                + "order by s.createdAt ";
+                + "and s.createdAt between :fd and :td ";
+                
         params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
         params.put("fd", getFromDate());
         params.put("td", getToDate());
@@ -5011,6 +5011,7 @@ public class FinancialTransactionController implements Serializable {
             params.put("user", user);
 
         }
+        jpql += "order by s.createdAt ";
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
