@@ -118,7 +118,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
 
     ////////////////////////////
-    private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;
     private Admission current;
@@ -1590,15 +1589,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(ageText));
     }
 
     public PatientRoomFacade getPatientRoomFacade() {

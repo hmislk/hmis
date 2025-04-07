@@ -114,7 +114,6 @@ public class BillSearch implements Serializable {
     @EJB
     private PaymentFacade paymentFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -4526,7 +4525,7 @@ public class BillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -4538,7 +4537,7 @@ public class BillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -4547,14 +4546,6 @@ public class BillSearch implements Serializable {
         //resetLists();
         this.fromDate = fromDate;
 
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getComment() {

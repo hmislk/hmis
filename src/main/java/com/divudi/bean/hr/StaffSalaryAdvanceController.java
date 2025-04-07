@@ -951,7 +951,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 ////                staffShiftFacade.flush();
 //            }
 //
-//            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+//            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), CommonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), CommonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
 //            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
 //            staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
 //            staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
@@ -983,7 +983,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //                staffShiftFacade.edit(earlyOut);
 //            }
 //
-//            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+//            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), CommonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), CommonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
 //            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
 //            staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
 //            staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
@@ -999,7 +999,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //        stfCurrent.setReferenceStaffShiftEarlyOut(stfCurrent);
 //        stfCurrent.setConsiderForEarlyOut(true);
 //        staffShiftFacade.edit(stfCurrent);
-//        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+//        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), CommonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), CommonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
 //        HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
 //        staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
 //        staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
@@ -1014,7 +1014,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //        stfCurrent.setConsiderForLateIn(true);
 //        staffShiftFacade.edit(stfCurrent);
 //
-//        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+//        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), CommonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), CommonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
 //        HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
 //        staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
 //        staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);

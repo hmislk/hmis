@@ -15,7 +15,6 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.StaffShiftFacade;
 import com.divudi.core.facade.TransferFormFacade;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,7 +44,6 @@ public class StaffTransferFormController implements Serializable {
     @EJB
     StaffShiftFacade staffShiftFacade;
 
-    CommonFunctions commonFunctions;
     List<TransferForm> transferForms;
     Department department;
     Staff staff;
@@ -201,14 +199,6 @@ public class StaffTransferFormController implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<TransferForm> getTransferForms() {
