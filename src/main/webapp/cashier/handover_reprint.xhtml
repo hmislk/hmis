@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <h:form>
+            <ui:composition template="./index.xhtml">
+                <ui:define name="subcontent">
+                    <p:panel class="my-1">
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputText value="Hand Over Bill Preview" ></h:outputText>
+                                </div>
+                                <div>
+                                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print">
+                                        <p:printer target="depositbill" />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <h:panelGrid id="depositbill" class="w-100">
+                            <div class="d-flex justify-content-center">
+                                <prints:five_five_paper_with_headings_for_handover 
+                                    bundle="#{financialTransactionController.bundle}"/>  
+                            </div>
+                        </h:panelGrid>
+                    </p:panel>
+
+
+
+
+
+
+                </ui:define>
+            </ui:composition>
+        </h:form>
+    </h:body>
+</html>

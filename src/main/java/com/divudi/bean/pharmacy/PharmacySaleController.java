@@ -244,11 +244,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.currentToken = currentToken;
     }
 
-    public String navigateToPharmacySaleWithoutStocks() {
-        prepareForPharmacySaleWithoutStock();
-        return "/pharmacy/pharmacy_sale_without_stock";
-    }
-
+//    public String navigateToPharmacySaleWithoutStocks() {
+//        prepareForPharmacySaleWithoutStock();
+//        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true;";
+//    }
     public String navigateToPharmacyBillForCashier() {
         if (sessionController.getPharmacyBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
@@ -590,21 +589,27 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     private Patient savePatient() {
-        if (!getPatient().getPerson().getName().trim().isEmpty()) {
-            getPatient().setCreater(getSessionController().getLoggedUser());
-            getPatient().setCreatedAt(new Date());
-            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPatient().getPerson().setCreatedAt(new Date());
-            if (getPatient().getPerson().getId() == null) {
-                getPersonFacade().create(getPatient().getPerson());
-            }
-            if (getPatient().getId() == null) {
-                getPatientFacade().create(getPatient());
-            }
-            return getPatient();
-        } else {
+        Patient pat = getPatient();
+        // Check for null references and empty name
+        if (pat == null
+                || pat.getPerson() == null
+                || pat.getPerson().getName() == null
+                || pat.getPerson().getName().trim().isEmpty()) {
             return null;
         }
+
+        pat.setCreater(getSessionController().getLoggedUser());
+        pat.setCreatedAt(new Date());
+        pat.getPerson().setCreater(getSessionController().getLoggedUser());
+        pat.getPerson().setCreatedAt(new Date());
+
+        if (pat.getPerson().getId() == null) {
+            getPersonFacade().create(pat.getPerson());
+        }
+        if (pat.getId() == null) {
+            getPatientFacade().create(pat);
+        }
+        return pat;
     }
 
 //    private Patient savePatient() {
@@ -2066,6 +2071,21 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 "Patient is required in Pharmacy Retail Sale Bill for " + sessionController.getDepartment().getName(),
                 false
         );
+
+        if (configOptionApplicationController.getBooleanValueByKey("Patient Phone number is mandotary in sale for cashier", true)) {
+            if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
+                JsfUtil.addErrorMessage("Please enter phone number of the patient");
+                return;
+            } else if (getPatient().getId() == null) {
+                if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 10)) {
+                    JsfUtil.addErrorMessage("Please enter valid phone number with more than 10 digits of the patient");
+                    return;
+                } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 10)) {
+                    JsfUtil.addErrorMessage("Please enter valid mobile number with more than 10 digits of the patient");
+                    return;
+                }
+            }
+        }
 
         Patient pt = null;
         if (patientRequiredForPharmacySale) {

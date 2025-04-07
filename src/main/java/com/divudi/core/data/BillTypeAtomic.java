@@ -108,7 +108,11 @@ public enum BillTypeAtomic {
     // PHARMACY
     PHARMACY_RETAIL_SALE("Pharmacy Retail Sale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY,
             PaymentCategory.NON_CREDIT_COLLECTION),
+    PHARMACY_RETAIL_SALE_WITHOUT_STOCKS("Pharmacy Retail Sale without Stocks", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY,
+            PaymentCategory.NON_CREDIT_COLLECTION),
     PHARMACY_RETAIL_SALE_PRE("Pharmacy Retail Sale Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY,
+            PaymentCategory.NO_PAYMENT),
+    PHARMACY_RETAIL_SALE_PRE_WITHOUT_STOCKS("Pharmacy Retail Sale Prebill Without Stocks", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY,
             PaymentCategory.NO_PAYMENT),
     PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER("Pharmacy Retail Sale Pre Bill Settled At Cashier", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY,
             PaymentCategory.NON_CREDIT_COLLECTION),

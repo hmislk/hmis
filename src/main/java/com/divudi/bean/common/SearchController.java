@@ -119,6 +119,7 @@ import org.primefaces.model.StreamedContent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -7553,6 +7554,61 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
     }
+    
+    public void fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(boolean paidOnly) {
+        bills = null;
+        String sql;
+        Map parameters = new HashMap();
+//        Token t = new Token();
+
+        sql = "select token from Token token "
+                + " where token.tokenType = :type "
+                + " and token.bill is not null "
+                + " and token.bill.retired = false"
+                + " and token.tokenAt between :fromDate and :toDate "
+                + " and token.retired = false "
+                + " and token.department = :dept "
+                + " and token.institution = :ins ";
+
+//
+        parameters.put("type", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+        parameters.put("fromDate", getFromDate());
+        parameters.put("toDate", getToDate());
+        parameters.put("dept", sessionController.getDepartment());
+        parameters.put("ins", sessionController.getInstitution());
+        
+        if(paidOnly){
+            sql += " and token.bill.referenceBill is not null ";
+        }else{
+             sql += " and token.bill.referenceBill is null ";
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((token.bill.patient.person.name) like :patientName )";
+            parameters.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((token.bill.deptId) like :billNo )";
+            parameters.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((token.bill.netTotal) like :netTotal )";
+            parameters.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((token.bill.total) like :total )";
+            parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by token.tokenAt desc";
+
+        List<Token> tokenList = tokenFacade.findByJpqlWithoutCache(sql, parameters, TemporalType.TIMESTAMP, 25);
+        bills = tokenList.stream().map(t -> t.getBill()).collect(Collectors.toList());
+
+    }
 
     public void fillPharmacyPreBillsToAcceptAtCashierInTokenSystem() {
         bills = null;
@@ -7601,6 +7657,21 @@ public class SearchController implements Serializable {
         List<Token> tokenList = tokenFacade.findByJpqlWithoutCache(sql, parameters, TemporalType.TIMESTAMP, 25);
         bills = tokenList.stream().map(t -> t.getBill()).collect(Collectors.toList());
 
+    }
+    
+    /**
+     * 
+     * @param bill need to find paid bills
+     * @return paid bill list associate with bill
+     * This method added due to avoid cache and get fresh bill entity from db.
+     * Otherwise it is not updated even paid bills are available
+     */
+    public List<Bill> getRefreshCashBills(Bill bill){       
+        Bill fetchBill = getBillFacade().findWithoutCache(bill.getId());
+        if(fetchBill == null){
+            return Collections.emptyList();
+        }
+        return fetchBill.getCashBillsPre();
     }
 
     @Inject

@@ -655,11 +655,19 @@ public class AmpController implements Serializable {
 
     public void save() {
         if (current == null) {
-            JsfUtil.addErrorMessage("Nothuing selected");
+            JsfUtil.addErrorMessage("No AMP is selected");
             return;
         }
+        
+        if(current.getId() != null){
+            if(!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)){
+                JsfUtil.addErrorMessage("You have no privilage to edit AMPs.");
+                return;
+            }
+        }
+        
         if (current.getName() == null || current.getName().isEmpty()) {
-            JsfUtil.addErrorMessage("No Name");
+            JsfUtil.addErrorMessage("Please add a name to AMP");
             return;
         }
 
@@ -681,6 +689,7 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No VMP selected");
             return;
         }
+     
         if (current.getCategory() == null) {
             if (current.getVmp().getCategory() != null) {
                 current.setCategory(current.getVmp().getCategory());

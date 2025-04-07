@@ -1,6 +1,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.opd.OpdReportController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -61,6 +62,8 @@ public class LaborataryReportController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
+    @Inject
+    OpdReportController opdReportController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -180,16 +183,16 @@ public class LaborataryReportController implements Serializable {
 
     public String navigateToLaboratarySummaryFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
-        setToInstitution(sessionController.getInstitution());
-        setToDepartment(sessionController.getDepartment());
-        return "/reportLab/test_wise_count?faces-redirect=true;";
+        opdReportController.setToInstitution(sessionController.getInstitution());
+        opdReportController.setToDepartment(sessionController.getDepartment());
+        return "/reportLab/laboratary_summary?faces-redirect=true;";
     }
 
     public String navigateToLaborataryTestWiseCountReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         setToInstitution(sessionController.getInstitution());
         setToDepartment(sessionController.getDepartment());
-        return "/reportLab/laboratary_summary?faces-redirect=true;";
+        return "/reportLab/test_wise_count?faces-redirect=true;";
     }
 
     // </editor-fold>
