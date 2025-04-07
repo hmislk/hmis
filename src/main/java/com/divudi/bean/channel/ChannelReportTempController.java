@@ -85,7 +85,6 @@ public class ChannelReportTempController implements Serializable {
     @EJB
     ChannelBean channelBean;
 
-    CommonFunctions commonFunctions;
     //
     @Inject
     SessionController sessionController;
@@ -229,8 +228,8 @@ public class ChannelReportTempController implements Serializable {
 
     public List<Institution> fetchBillsAgencys() {
 
-        Date fd = commonFunctions.getStartOfMonth(fromDate);
-        Date td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(toDate));
+        Date fd = CommonFunctions.getStartOfMonth(fromDate);
+        Date td = CommonFunctions.getEndOfMonth(CommonFunctions.getStartOfMonth(toDate));
 
         String sql;
         Map m = new HashMap();
@@ -305,8 +304,8 @@ public class ChannelReportTempController implements Serializable {
 
     public List<Speciality> fetchBillsSpecilitys() {
 
-        Date fd = commonFunctions.getStartOfMonth(fromDate);
-        Date td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(toDate));
+        Date fd = CommonFunctions.getStartOfMonth(fromDate);
+        Date td = CommonFunctions.getEndOfMonth(CommonFunctions.getStartOfMonth(toDate));
 
         String sql;
         Map m = new HashMap();
@@ -538,15 +537,15 @@ public class ChannelReportTempController implements Serializable {
             Date fd;
             Date td;
             if (byDate) {
-                fd = commonFunctions.getStartOfDay(nowDate);
-                td = commonFunctions.getEndOfDay(nowDate);
+                fd = CommonFunctions.getStartOfDay(nowDate);
+                td = CommonFunctions.getEndOfDay(nowDate);
 
                 DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
                 formatedDate = df.format(fd);
 
             } else {
-                fd = commonFunctions.getStartOfMonth(nowDate);
-                td = commonFunctions.getEndOfMonth(nowDate);
+                fd = CommonFunctions.getStartOfMonth(nowDate);
+                td = CommonFunctions.getEndOfMonth(nowDate);
 
                 DateFormat df = new SimpleDateFormat("yyyy MMMM");
                 formatedDate = df.format(fd);

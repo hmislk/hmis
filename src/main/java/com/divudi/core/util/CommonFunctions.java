@@ -871,7 +871,7 @@ public class CommonFunctions {
         return inDays;
     }
 
-    public Date guessDob(String docStr) {
+    public static Date guessDob(String docStr) {
         try {
             int years = Integer.parseInt(docStr);
             Calendar now = Calendar.getInstance(TimeZone.getTimeZone("IST"));

@@ -23,7 +23,6 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ServiceFacade;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,7 +51,6 @@ public class MdReportController implements Serializable {
     private List<ItemWithFee> fillterItemWithFees;
     private PaymentMethod paymentMethod;
     ////////////////////////////////////
-    private CommonFunctions commonFunctions;
     @EJB
     private DepartmentFacade departmentFacade;
     @EJB
@@ -226,14 +224,6 @@ public class MdReportController implements Serializable {
     public void setToDate(Date toDate) {
 
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public DepartmentFacade getDepartmentFacade() {

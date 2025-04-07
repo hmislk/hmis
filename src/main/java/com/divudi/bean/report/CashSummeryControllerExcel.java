@@ -69,7 +69,6 @@ public class CashSummeryControllerExcel implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -738,14 +737,14 @@ public class CashSummeryControllerExcel implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1001,14 +1000,6 @@ public class CashSummeryControllerExcel implements Serializable {
 //
 //
 //    }
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }

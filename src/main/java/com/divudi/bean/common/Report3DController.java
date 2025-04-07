@@ -220,16 +220,16 @@ public class Report3DController implements Serializable {
 //            Date fd;
 //            Date td;
 //            if (getReportKeyWord().isBool1()) {
-//                fd = commonFunctions.getStartOfDay(nowDate);
-//                td = commonFunctions.getEndOfDay(nowDate);
+//                fd = CommonFunctions.getStartOfDay(nowDate);
+//                td = CommonFunctions.getEndOfDay(nowDate);
 //
 //                DateFormat df = new SimpleDateFormat("yy MM dd");
 //                formatedDate = df.format(fd);
 //                //// // System.out.println("formatedDate = " + formatedDate);
 //
 //            } else {
-//                fd = commonFunctions.getStartOfMonth(nowDate);
-//                td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(nowDate));
+//                fd = CommonFunctions.getStartOfMonth(nowDate);
+//                td = CommonFunctions.getEndOfMonth(CommonFunctions.getStartOfMonth(nowDate));
 //
 //                DateFormat df = new SimpleDateFormat("yy MM");
 //                formatedDate = df.format(fd);

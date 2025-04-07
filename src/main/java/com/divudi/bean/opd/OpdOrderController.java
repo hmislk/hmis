@@ -210,7 +210,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     /**
      * Class Variables
      */
-    private CommonFunctions commonFunctions;
     private ItemLight itemLight;
     private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
@@ -1541,14 +1540,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String changeTextCases(String nm, String tc) {

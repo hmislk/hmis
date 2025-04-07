@@ -187,7 +187,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
     /**
      * Class Variables
      */
-    private CommonFunctions commonFunctions;
     private ItemLight itemLight;
     private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
@@ -1363,14 +1362,6 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String changeTextCases(String nm, String tc) {
