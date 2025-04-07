@@ -1832,7 +1832,7 @@ public class FinancialTransactionController implements Serializable {
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
 
-        return "/cashier/handover_accept_view?faces-redirect=true";
+        return "/cashier/handover_preview?faces-redirect=true";
     }
 
     public String rejectToReceiveHandoverBill() {
@@ -4925,22 +4925,24 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillMyHandovers() {
-        String sql;
+        String jpql;
         currentBills = new ArrayDeque<>();
-        Map tempMap = new HashMap();
-        sql = "select s "
+        Map params = new HashMap();
+        jpql = "select s "
                 + "from Bill s "
-                + "where s.retired=:ret "
+                + "where (s.retired=false or s.retired is null) "
                 + "and s.billTypeAtomic=:btype "
                 + "and s.fromWebUser=:user "
                 + "and s.createdAt between :fd and :td "
                 + "order by s.createdAt ";
-        tempMap.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
-        tempMap.put("ret", false);
-        tempMap.put("fd", getFromDate());
-        tempMap.put("td", getToDate());
-        tempMap.put("user", sessionController.getLoggedUser());
-        currentBills = billFacade.findByJpql(sql, tempMap, TemporalType.TIMESTAMP);
+        params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+        params.put("user", sessionController.getLoggedUser());
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("currentBills = " + currentBills);
     }
 
     public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {
@@ -5172,6 +5174,10 @@ public class FinancialTransactionController implements Serializable {
         //System.out.println("Update Sender Drawer End");
     }
 
+    public String navigateToHandoerReprint() {
+        return "/cashier/handover_reprint?faces-redirect=true";
+    }
+    
     public String acceptHandoverBillAndWriteToCashbook() {
         if (bundle == null) {
             JsfUtil.addErrorMessage("Error - Null Bundle");
