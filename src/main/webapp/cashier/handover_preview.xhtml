@@ -767,6 +767,7 @@
                                             value="View Details" 
                                             icon="pi pi-eye"  
                                             action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
+                                             <f:setPropertyActionListener value="#{summary}" target="#{financialTransactionController.selectedBundle}"></f:setPropertyActionListener>
                                         </p:commandButton>
 
                                     </p:column>
