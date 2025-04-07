@@ -734,7 +734,7 @@
                                     <p:column 
                                         headerText="Online Settlement" 
                                         class="text-end"
-                                        rendered="#{financialTransactionController.bundle.hasOnCallTransaction}" >
+                                        rendered="#{financialTransactionController.bundle.hasOnlineSettlementTransaction}" >
                                         <h:outputText value="#{summary.onlineSettlementValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
