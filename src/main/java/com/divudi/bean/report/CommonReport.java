@@ -4970,7 +4970,7 @@ public class CommonReport implements Serializable {
             getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
 
             getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
-            getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+            getGrnReturnCancel().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
             Date endTime = new Date();
             duration = endTime.getTime() - startTime.getTime();
             auditEvent.setEventDuration(duration);
