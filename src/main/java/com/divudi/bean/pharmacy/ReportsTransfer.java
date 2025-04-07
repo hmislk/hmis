@@ -472,14 +472,14 @@ public class ReportsTransfer implements Serializable {
                         + " b.toDepartment=:tdept and b.createdAt "
                         + " between :fd and :td "
                         + " and b.retired=false "
-                        + " b.billType=:bt order by b.id";
+                        + " and b.billType=:bt order by b.id";
             } else if (fromDepartment != null) {
                 params.put("fdept", fromDepartment);
                 jpql = "select b from Bill b where "
                         + " b.department=:fdept and b.createdAt "
                         + " between :fd and :td "
                         + " and b.retired=false "
-                        + "  b.billType=:bt order by b.id";
+                        + " and b.billType=:bt order by b.id";
             } else {
                 jpql = "select b from Bill b where b.createdAt "
                         + " between :fd and :td and b.billType=:bt "
