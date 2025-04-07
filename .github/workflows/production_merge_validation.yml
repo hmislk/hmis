@@ -11,12 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check source branch name
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+          BASE_BRANCH: ${{ github.base_ref }}
         run: |
-          echo "Source branch: ${{ github.head_ref }}"
-          echo "Target branch: ${{ github.base_ref }}"
-
-          SOURCE="${{ github.head_ref }}"
-          TARGET="${{ github.base_ref }}"
+          echo "Source branch: $HEAD_BRANCH"
+          echo "Target branch: $BASE_BRANCH"
+          SOURCE="$HEAD_BRANCH"
+          TARGET="$BASE_BRANCH"
 
           if [[ "$TARGET" == *-prod ]]; then
             if [[ "$SOURCE" == *-dev || "$SOURCE" == *-stg || "$SOURCE" == "hims-qa1" || "$SOURCE" == "hims-qa2" || "$SOURCE" == "development" ]]; then
