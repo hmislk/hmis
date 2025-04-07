@@ -57,8 +57,6 @@ public class LaborataryReportController implements Serializable {
     public LaborataryReportController() {
     }
 
-    private CommonFunctions commonFunctions;
-
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
@@ -73,7 +71,7 @@ public class LaborataryReportController implements Serializable {
     BillItemFacade billItemFacade;
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -165,7 +163,7 @@ public class LaborataryReportController implements Serializable {
     private double totalCount;
 
 // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
@@ -196,7 +194,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public void resetAllFiltersExceptDateRange() {
         setViewTemplate(null);
@@ -245,7 +243,7 @@ public class LaborataryReportController implements Serializable {
         totalProFee = 0.0;
         totalHosFee = 0.0;
         totalCount = 0.0;
-        
+
     }
 
     public void processLaboratoryIncomeReport() {
@@ -366,11 +364,11 @@ public class LaborataryReportController implements Serializable {
         bundle = new IncomeBundle(bills);
 
     }
-    
+
     public void processLabTestWiseCountReport() {
-        
+
         Map<String, Object> params = new HashMap<>();
-        
+
         String jpql = "select new com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi.item.name), "
@@ -389,7 +387,7 @@ public class LaborataryReportController implements Serializable {
                 + " and type(bi.item) = :invType ";
 
         // Adding filters for institution, department, site
-        
+
         if (institution != null) {
             jpql += " and bi.bill.institution=:ins ";
             params.put("ins", institution);
@@ -430,14 +428,14 @@ public class LaborataryReportController implements Serializable {
             params.put("type", visitType.trim());
         }
         jpql += " group by bi.item.name ";
-        
+
 
         params.put("ret", false);
         params.put("fd", fromDate);
         params.put("td", toDate);
 
         params.put("invType", Investigation.class);
-        
+
         // Handle multiple bill types
         List<BillTypeAtomic> bTypes = Arrays.asList(
                 BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
@@ -524,11 +522,11 @@ public class LaborataryReportController implements Serializable {
                 totalNetHosFee += twc.getHosFee() - twc.getDiscount();
             }
         }
-        
+
         testWiseCounts = alphabetList(testWiseCount);
-        
+
     }
-    
+
     public List <TestWiseCountReport> alphabetList(List <TestWiseCountReport> testWiseCounts) {
 
         List<TestWiseCountReport> reportList = testWiseCounts.stream()
@@ -539,7 +537,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;
@@ -607,7 +605,7 @@ public class LaborataryReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -618,7 +616,7 @@ public class LaborataryReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -970,7 +968,7 @@ public class LaborataryReportController implements Serializable {
     public void setTotalServiceCharge(double totalServiceCharge) {
         this.totalServiceCharge = totalServiceCharge;
     }
-    
+
     public int getActiveIndex() {
         return activeIndex;
     }
@@ -1036,5 +1034,5 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-    
+
 }

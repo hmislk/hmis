@@ -35,9 +35,6 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class Report3DController implements Serializable {
 
-
-    CommonFunctions commonFunctions;
-
     @Inject
     SessionController sessionController;
 
@@ -223,16 +220,16 @@ public class Report3DController implements Serializable {
 //            Date fd;
 //            Date td;
 //            if (getReportKeyWord().isBool1()) {
-//                fd = commonFunctions.getStartOfDay(nowDate);
-//                td = commonFunctions.getEndOfDay(nowDate);
+//                fd = CommonFunctions.getStartOfDay(nowDate);
+//                td = CommonFunctions.getEndOfDay(nowDate);
 //
 //                DateFormat df = new SimpleDateFormat("yy MM dd");
 //                formatedDate = df.format(fd);
 //                //// // System.out.println("formatedDate = " + formatedDate);
 //
 //            } else {
-//                fd = commonFunctions.getStartOfMonth(nowDate);
-//                td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(nowDate));
+//                fd = CommonFunctions.getStartOfMonth(nowDate);
+//                td = CommonFunctions.getEndOfMonth(CommonFunctions.getStartOfMonth(nowDate));
 //
 //                DateFormat df = new SimpleDateFormat("yy MM");
 //                formatedDate = df.format(fd);
@@ -355,15 +352,15 @@ public class Report3DController implements Serializable {
             Date fd;
             Date td;
             if (getReportKeyWord().isBool1()) {
-                fd = commonFunctions.getStartOfDay(nowDate);
-                td = commonFunctions.getEndOfDay(nowDate);
+                fd = CommonFunctions.getStartOfDay(nowDate);
+                td = CommonFunctions.getEndOfDay(nowDate);
 
                 DateFormat df = new SimpleDateFormat(" yy MM dd ");
                 formatedDate = df.format(fd);
 
             } else {
-                fd = commonFunctions.getStartOfMonth(nowDate);
-                td = commonFunctions.getEndOfMonth(nowDate);
+                fd = CommonFunctions.getStartOfMonth(nowDate);
+                td = CommonFunctions.getEndOfMonth(nowDate);
 
                 DateFormat df = new SimpleDateFormat(" yyyy MMM ");
                 formatedDate = df.format(fd);
@@ -454,14 +451,6 @@ public class Report3DController implements Serializable {
 
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<ColumnModel> getColumnModels() {

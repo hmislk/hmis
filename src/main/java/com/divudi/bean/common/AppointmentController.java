@@ -68,7 +68,6 @@ public class AppointmentController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -119,13 +118,6 @@ public class AppointmentController implements Serializable {
 //        }
 //        return a;
 //    }
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
 
     private Patient savePatient(Patient p) {
 
@@ -413,7 +405,7 @@ public class AppointmentController implements Serializable {
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
+        getNewPatient().getPerson().setDob(CommonFunctions.guessDob(ageText));
     }
 
     public BillBeanController getBillBean() {

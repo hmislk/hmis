@@ -63,7 +63,6 @@ public class VariantAdjustment implements Serializable {
 
     //////////
 
-    private CommonFunctions commonFunctions;
     private LazyDataModel<Bill> searchBills;
     private List<StockVarientBillItem> stockVarientBillItems;
 
@@ -101,14 +100,14 @@ public class VariantAdjustment implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -247,14 +246,6 @@ public class VariantAdjustment implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public void setFromDate(Date fromDate) {

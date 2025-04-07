@@ -58,7 +58,6 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.lab.InvestigationTubeSticker;
 import com.divudi.core.entity.UserPreference;
-import com.divudi.core.util.CommonFunctions;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -128,7 +127,7 @@ public class BillBhtController implements Serializable {
     @Inject
     BillController billController;
     ///////////////////
-    CommonFunctions commonFunctions;
+
     private double total;
     private double discount;
     private double netTotal;
@@ -156,7 +155,7 @@ public class BillBhtController implements Serializable {
 
     private List<ItemLight> inwardItems;
     private ItemLight itemLight;
-    
+
     private int entriesIndex;
 
     public String navigateToAddServiceFromMenu() {
@@ -337,14 +336,6 @@ public class BillBhtController implements Serializable {
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     @Inject
     private BillSearch billSearch;
 
@@ -473,7 +464,7 @@ public class BillBhtController implements Serializable {
                 } else if (bf.getFee().getFeeType() == FeeType.Additional) {
                     otherFee += bf.getFeeValue();
                 }
-                
+
                 marginFee += bf.getFeeMargin();
             }
 
@@ -804,7 +795,7 @@ public class BillBhtController implements Serializable {
                 return;
             }
         }
-        
+
         clearBillItemValues();
         //JsfUtil.addSuccessMessage("Item Added");
     }
@@ -959,20 +950,20 @@ public class BillBhtController implements Serializable {
             JsfUtil.addErrorMessage("Error! Please Try Again");
             return;
         }
-        
+
         if (getEntriesIndex() == -1) {
             JsfUtil.addErrorMessage("Error! Please Try Again");
             return;
         }
-        
+
         lstBillEntries.remove(entriesIndex);
-       
+
         lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
 
         JsfUtil.addSuccessMessage("Successfully Removed");
         calTotals();
-        
+
         setEntriesIndex(-1);
 
     }

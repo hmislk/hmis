@@ -69,7 +69,6 @@ public class CashierReportController implements Serializable {
     @Inject
     private SessionController sessionController;
 
-    private CommonFunctions commonFunction;
     @EJB
     private WebUserFacade webUserFacade;
     @EJB
@@ -2352,7 +2351,7 @@ public class CashierReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunction().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -2365,7 +2364,7 @@ public class CashierReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunction().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -2373,14 +2372,6 @@ public class CashierReportController implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
         recreteModal();
-    }
-
-    public CommonFunctions getCommonFunction() {
-        return commonFunction;
-    }
-
-    public void setCommonFunction(CommonFunctions commonFunction) {
-        this.commonFunction = commonFunction;
     }
 
     public WebUserFacade getWebUserFacade() {
