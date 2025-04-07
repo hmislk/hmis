@@ -150,7 +150,7 @@ public class ServiceSummery implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder sql = new StringBuilder();
         sql.append("select s from Staff s where s.retired=false  and s.annualWelfareQualified>0 ");
-                
+
         if (staff != null) {
             sql.append(" and s.person.name =:name ");
             parameters.put("name", staff.getPerson().getName());
@@ -912,12 +912,10 @@ public class ServiceSummery implements Serializable {
     Institution institution;
     PaymentMethod paymentMethod;
 
-    CommonFunctions commonFunctions;
-
     public void createServiceSummeryLab() {
         Date startTime = new Date();
 
-        long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
+        long lng = CommonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
             JsfUtil.addErrorMessage("Date Range is too Long");
@@ -992,7 +990,7 @@ public class ServiceSummery implements Serializable {
     public void createServiceSummeryLabNew() {
         Date startTime = new Date();
 
-        long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
+        long lng = CommonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
             JsfUtil.addErrorMessage("Date Range is too Long");
@@ -1798,7 +1796,7 @@ public class ServiceSummery implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1809,7 +1807,7 @@ public class ServiceSummery implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1952,14 +1950,6 @@ public class ServiceSummery implements Serializable {
 
     public void setReagentFeeTotal(double reagentFeeTotal) {
         this.reagentFeeTotal = reagentFeeTotal;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<BillItemWithFee> getServiceSummeryBill() {

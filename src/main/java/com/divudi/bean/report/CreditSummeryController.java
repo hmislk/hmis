@@ -71,7 +71,6 @@ public class CreditSummeryController implements Serializable {
     List<String1Value2> vatTableOpdCredit;
     /////////////
 
-    private CommonFunctions commonFunctions;
     @EJB
     CreditBean creditBean;
 //    @Inject
@@ -620,7 +619,7 @@ public class CreditSummeryController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
 
         return fromDate;
@@ -632,21 +631,13 @@ public class CreditSummeryController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<DailyCash> getDailyCash() {

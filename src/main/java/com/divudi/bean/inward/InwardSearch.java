@@ -89,7 +89,6 @@ public class InwardSearch implements Serializable {
     PaymentService paymentService;
     @EJB
     DrawerService drawerService;
-    private CommonFunctions commonFunctions;
 
     /**
      * JSF Controllers
@@ -925,7 +924,7 @@ public class InwardSearch implements Serializable {
     public void cancelFinalBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
-            long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(), new Date());
+            long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
             boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false);
             boolean hasPrivilege = getWebUserController().hasPrivilege("InwardFinalBillCancel");
 
@@ -1701,7 +1700,7 @@ public class InwardSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1713,7 +1712,7 @@ public class InwardSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1721,14 +1720,6 @@ public class InwardSearch implements Serializable {
     public void setFromDate(Date fromDate) {
         bills = null;
         this.fromDate = fromDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getComment() {

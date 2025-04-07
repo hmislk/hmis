@@ -36,7 +36,6 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.PaymentFacade;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -107,8 +106,6 @@ public class StorePurchaseController implements Serializable {
     List<BillItem> billExpenses;
     BillItem parentBillItem;
 
-
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberGenerator;
 
@@ -860,10 +857,6 @@ public class StorePurchaseController implements Serializable {
 
     public StoreCalculation getStoreCalculation() {
         return storeCalculation;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
     }
 
     public BillFeeFacade getBillFeeFacade() {

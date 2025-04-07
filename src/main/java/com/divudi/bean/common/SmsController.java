@@ -46,7 +46,6 @@ public class SmsController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    CommonFunctions commonFunctions;
     /*
     Class Variables
      */
@@ -180,14 +179,6 @@ public class SmsController implements Serializable {
 
     public void setSmsSummeryRows(List<SmsSummeryRow> smsSummeryRows) {
         this.smsSummeryRows = smsSummeryRows;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getNumber() {

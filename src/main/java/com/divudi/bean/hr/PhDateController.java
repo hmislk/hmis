@@ -14,7 +14,6 @@ import com.divudi.core.data.hr.DayType;
 
 import com.divudi.core.entity.hr.PhDate;
 import com.divudi.core.facade.PhDateFacade;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,7 +46,6 @@ public class PhDateController implements Serializable {
     @EJB
     private PhDateFacade ejbFacade;
 
-    CommonFunctions commonFunctions;
     private PhDate current;
     private List<PhDate> items = null;
 

@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 /**
@@ -33,8 +32,6 @@ import javax.persistence.TemporalType;
 @RequestScoped
 public class InvestigationMonthSummeryController implements Serializable {
 
-    @Inject
-    private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -67,7 +64,7 @@ public class InvestigationMonthSummeryController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -78,7 +75,7 @@ public class InvestigationMonthSummeryController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-        toDate = getCommonFunctions().getEndOfDay(new Date());
+        toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -93,14 +90,6 @@ public class InvestigationMonthSummeryController implements Serializable {
 
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<InvestigationSummeryData> getItems() {

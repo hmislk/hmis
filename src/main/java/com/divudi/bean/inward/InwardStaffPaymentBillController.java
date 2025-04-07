@@ -87,7 +87,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     BillNumberGenerator billNumberBean;
     @EJB
     StaffFacade staffFacade;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
@@ -95,7 +95,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     DrawerController drawerController;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<BillComponent> billComponents;
 
@@ -106,8 +106,6 @@ public class InwardStaffPaymentBillController implements Serializable {
     private static final long serialVersionUID = 1L;
     private Date fromDate;
     private Date toDate;
-
-    private CommonFunctions commonFunctions;
 
     private Bill current;
     private List<Bill> items = null;
@@ -166,17 +164,17 @@ public class InwardStaffPaymentBillController implements Serializable {
     private AdmissionType admissionType;
     private Institution institution;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Inner Classes">
-    // </editor-fold>  
+    // </editor-fold>
     public void makenull() {
         currentStaff = null;
         speciality = null;
@@ -704,8 +702,8 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         }
 
-        
-        
+
+
     }
 
     public void fillProfessionalPaymentsByDischargedDate() {
@@ -795,8 +793,8 @@ public class InwardStaffPaymentBillController implements Serializable {
             ib.setPaidTotal(ib.getPaidTotal() + row.getPaidTotal());
         }
 
-        
-        
+
+
         bundle = ib;
     }
 
@@ -1631,7 +1629,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1643,7 +1641,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1651,14 +1649,6 @@ public class InwardStaffPaymentBillController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
         //  resetLists();
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<BillItem> getBillItems() {

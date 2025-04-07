@@ -80,7 +80,6 @@ public class StoreGrnController implements Serializable {
     @EJB
     PaymentFacade paymentFacade;
 
-    private CommonFunctions commonFunctions;
     @Inject
     StoreCalculation storeCalculation;
     @Inject
@@ -161,14 +160,14 @@ public class StoreGrnController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -180,7 +179,7 @@ public class StoreGrnController implements Serializable {
 //            if(bi.getPharmaceuticalBillItem().getPurchaseRate() > bi.getPharmaceuticalBillItem().getRetailRate())
 //           msg = "Check Purchase Rate and Retail Rate";
 //        }
-        if (b.getInvoiceNumber() == null || "".equals(b.getInvoiceNumber().trim())) {
+        if (b.getInvoiceNumber() == null || b.getInvoiceNumber().trim().isEmpty()) {
             msg = "Please Fill invoice number";
         }
 
@@ -957,14 +956,6 @@ public class StoreGrnController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<Bill> getFilteredValue() {

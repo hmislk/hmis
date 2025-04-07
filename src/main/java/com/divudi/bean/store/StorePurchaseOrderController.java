@@ -73,7 +73,6 @@ public class StorePurchaseOrderController implements Serializable {
 
     private BillItem currentBillItem;
 
-    private CommonFunctions commonFunctions;
     private LazyDataModel<Bill> searchBills;
 
     public void removeSelected() {
@@ -137,14 +136,14 @@ public class StorePurchaseOrderController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -368,14 +367,6 @@ public class StorePurchaseOrderController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public void setFromDate(Date fromDate) {

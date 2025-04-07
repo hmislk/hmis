@@ -100,6 +100,8 @@ public class ReportController implements Serializable {
     AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
     private ReportTimerController reportTimerController;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -115,8 +117,6 @@ public class ReportController implements Serializable {
     PatientController patientController;
     @Inject
     WebUserController webUserController;
-    @Inject
-    PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -198,7 +198,6 @@ public class ReportController implements Serializable {
 
     private List<PatientDepositHistory> patientDepositHistories;
 
-    private CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
     private PatientInvestigationStatus patientInvestigationStatus;
 
@@ -2895,7 +2894,7 @@ public class ReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -3312,7 +3311,7 @@ public class ReportController implements Serializable {
         // Turn all cancellation/refund amounts into negative values
         if (cancelRefundReports != null) {
             for (TestWiseCountReport cr : cancelRefundReports) {
-                // 3a: Convert them to absolute then make negative 
+                // 3a: Convert them to absolute then make negative
                 cr.setCount(-Math.abs(cr.getCount()));
                 cr.setHosFee(-Math.abs(cr.getHosFee()));
                 cr.setCcFee(-Math.abs(cr.getCcFee()));
@@ -3356,8 +3355,8 @@ public class ReportController implements Serializable {
      * Generates a test-wise count report for collecting centers, excluding cancellations and refunds.
      *
      * <p>This method retrieves billed items by test (item name) within a specified date range and bill type, applying
-     * optional filters for institution, department, site, and collecting centre. It aggregates the number of items and 
-     * the sums of hospital fee, collecting centre fee, staff fee, and net value for each test. The results are stored 
+     * optional filters for institution, department, site, and collecting centre. It aggregates the number of items and
+     * the sums of hospital fee, collecting centre fee, staff fee, and net value for each test. The results are stored
      * in the report list and overall totals are updated accordingly.</p>
      */
     public void processCollectingCentreTestWiseCountReportWithoutCancellationsAndRefunds() {
