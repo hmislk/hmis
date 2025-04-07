@@ -5240,7 +5240,7 @@ public class FinancialTransactionController implements Serializable {
         //System.out.println("Update Sender Drawer End");
     }
 
-    public String navigateToHandoerReprint() {
+    public String navigateToHandoverReprint() {
         return "/cashier/handover_reprint?faces-redirect=true";
     }
 
