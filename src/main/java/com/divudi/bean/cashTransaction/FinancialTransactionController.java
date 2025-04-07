@@ -969,7 +969,6 @@ public class FinancialTransactionController implements Serializable {
         temOutBundle.setTotalOut(totalOutValue);
         temOutBundle.setTotal(totalInValue + totalOutValue);
 
-
         return temOutBundle;
     }
 
@@ -1044,7 +1043,6 @@ public class FinancialTransactionController implements Serializable {
         temOutBundle.setTotalIn(totalInValue);
         temOutBundle.setTotalOut(totalOutValue);
         temOutBundle.setTotal(totalInValue + totalOutValue);
-
 
         return temOutBundle;
     }
@@ -1995,6 +1993,10 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToMyHandovers() {
         fillMyHandovers();
         return "/cashier/handover_bills_from_me?faces-redirect=true";
+    }
+
+    public String navigateToUserHandovers() {
+        return "/reports/cashier_reports/handovers?faces-redirect=true";
     }
 
     private void prepareToAddNewInitialFundBill() {
@@ -4023,7 +4025,6 @@ public class FinancialTransactionController implements Serializable {
         m.put("sid", fromDateParam);
         m.put("eid", toDateParam);
 
-
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -4059,7 +4060,6 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("sid", shiftStartBillId);
         m.put("eid", shiftEndBillId);
-
 
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -4349,22 +4349,21 @@ public class FinancialTransactionController implements Serializable {
 
         if (mustReceiveAllHandoversBeforeClosingShift) {
             boolean haveHandoversForMeToReceive = hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null);
-            if(haveHandoversForMeToReceive){
+            if (haveHandoversForMeToReceive) {
                 JsfUtil.addErrorMessage("There are Handovers FOr You to Receive, Please accept them before closing the shift.");
                 return null;
             }
         }
-        
+
         if (mustWaitUntilOtherUserAcceptsAllFundTransfersBeforeClosingShift) {
             boolean haveHandoversToBeReceived = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
-            if(haveHandoversToBeReceived){
+            if (haveHandoversToBeReceived) {
                 JsfUtil.addErrorMessage("There are Handovers you have created yet to be Received by another user, Please ask the other user to accept them. Until they accept your handovers, you can not close your shift.");
                 return null;
             }
         }
-        
-        //ToDo: more checks for others . Will have individual issues 
 
+        //ToDo: more checks for others . Will have individual issues 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_END_BILL);
         currentBill.setDeptId(deptId);
         currentBill.setInsId(deptId);
@@ -4686,7 +4685,6 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
         currentBill.setBillClassType(BillClassType.PreBill);
 
-
         currentBill.setReferenceBill(bundle.getStartBill());
 
         currentBill.setInstitution(sessionController.getInstitution());
@@ -4712,7 +4710,6 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
 
         billController.save(currentBill);
-
 
         Bill denos = new Bill();
         denos.setDepartment(sessionController.getDepartment());
@@ -4881,7 +4878,6 @@ public class FinancialTransactionController implements Serializable {
 
         jpql.append("order by s.createdAt");
 
-
         return billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
@@ -4891,8 +4887,8 @@ public class FinancialTransactionController implements Serializable {
             Staff toStaff) {
         return hasAtLeastOneToReceived(BillTypeAtomic.FUND_TRANSFER_BILL, fromUser, fromStaff, toUser, toStaff);
     }
-    
-     public boolean hasAtLeastOneHandoverBillToReceive(WebUser fromUser,
+
+    public boolean hasAtLeastOneHandoverBillToReceive(WebUser fromUser,
             Staff fromStaff,
             WebUser toUser,
             Staff toStaff) {
@@ -4912,16 +4908,16 @@ public class FinancialTransactionController implements Serializable {
                 + "and s.billTypeAtomic=:btype "
         );
 
-        switch(billTypeAtomic){
+        switch (billTypeAtomic) {
             case FUND_SHIFT_HANDOVER_CREATE:
                 jpql.append("and (s.completed = false or s.completed is null) ");
                 break;
             case FUND_TRANSFER_BILL:
                 jpql.append("and s.referenceBill is null ");
                 break;
-                
+
         }
-        
+
         params.put("ret", false);
         params.put("btype", billTypeAtomic);
 
@@ -4941,7 +4937,6 @@ public class FinancialTransactionController implements Serializable {
             jpql.append("and s.toWebUser=:tUser ");
             params.put("tUser", toUser);
         }
-
 
         // Use findFirstByJpql(...) to avoid counting all matching records:
         Bill firstMatch = billFacade.findFirstByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -4992,6 +4987,30 @@ public class FinancialTransactionController implements Serializable {
         params.put("fd", getFromDate());
         params.put("td", getToDate());
         params.put("user", sessionController.getLoggedUser());
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("currentBills = " + currentBills);
+    }
+
+    public void fillHandovers() {
+        String jpql;
+        currentBills = new ArrayDeque<>();
+        Map params = new HashMap();
+        jpql = "select s "
+                + "from Bill s "
+                + "where (s.retired=false or s.retired is null) "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.createdAt between :fd and :td "
+                + "order by s.createdAt ";
+        params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+        if (user != null) {
+            jpql += "and s.fromWebUser=:user ";
+            params.put("user", user);
+
+        }
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -5223,7 +5242,7 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToHandoerReprint() {
         return "/cashier/handover_reprint?faces-redirect=true";
     }
-    
+
     public String acceptHandoverBillAndWriteToCashbook() {
         if (bundle == null) {
             JsfUtil.addErrorMessage("Error - Null Bundle");
@@ -5329,7 +5348,6 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-
         updateDraverForHandoverAccept(payments, reciver, sender);
 
         billController.save(currentBill);
@@ -5368,7 +5386,6 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No bills");
             return;
         }
-
 
         for (Bill handoverStartBill : handoverStarts) {
             if (handoverStartBill.getBillTypeAtomic() == null) {
