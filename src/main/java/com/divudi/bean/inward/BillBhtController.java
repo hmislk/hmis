@@ -156,6 +156,8 @@ public class BillBhtController implements Serializable {
 
     private List<ItemLight> inwardItems;
     private ItemLight itemLight;
+    
+    private int entriesIndex;
 
     public String navigateToAddServiceFromMenu() {
         resetBillData();
@@ -802,7 +804,7 @@ public class BillBhtController implements Serializable {
                 return;
             }
         }
-
+        
         clearBillItemValues();
         //JsfUtil.addSuccessMessage("Item Added");
     }
@@ -875,7 +877,6 @@ public class BillBhtController implements Serializable {
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
-
         //billTotal = 0.0;
     }
 
@@ -959,18 +960,20 @@ public class BillBhtController implements Serializable {
             return;
         }
         
-        lstBillEntries.remove(bi);
+        if (getEntriesIndex() == -1) {
+            JsfUtil.addErrorMessage("Error! Please Try Again");
+            return;
+        }
         
-        System.out.println("Before Bill Components = " + lstBillComponents.size());
-        System.out.println("Before Bill Fees = " + lstBillFees.size());
-        
-        recreateList(bi);
-        
-        System.out.println("After Bill Components = " + lstBillComponents.size());
-        System.out.println("After Bill Fees = " + lstBillFees.size());
-        
+        lstBillEntries.remove(entriesIndex);
+       
+        lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
+        lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
+
         JsfUtil.addSuccessMessage("Successfully Removed");
         calTotals();
+        
+        setEntriesIndex(-1);
 
     }
 
@@ -1358,6 +1361,14 @@ public class BillBhtController implements Serializable {
 
     public void setInwardItems(List<ItemLight> inwardItems) {
         this.inwardItems = inwardItems;
+    }
+
+    public int getEntriesIndex() {
+        return entriesIndex;
+    }
+
+    public void setEntriesIndex(int entriesIndex) {
+        this.entriesIndex = entriesIndex;
     }
 
 }
