@@ -43,6 +43,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.entity.Department;
@@ -818,12 +819,43 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Provisional Admission From showing completePatientDishcargedNotFinalized")) {
+            List<Admission> toRemove = new ArrayList<>();
+            for (Admission a : suggestions) {
+                if (isAddmissionHaveProvisionalBill(a)) {
+                    toRemove.add(a);
+                }
+            }
+            suggestions.removeAll(toRemove);
+        }
         return suggestions;
     }
 
     public String navigateToListCurrentInpatients() {
         listCurrentInpatients();
         return "";
+
+    }
+
+    public boolean isAddmissionHaveProvisionalBill(Admission ad) {
+        List<Admission> ads = new ArrayList<>();
+        String sql;
+        HashMap h = new HashMap();
+        sql = "select b from Bill b where b.retired=false "
+                + " and b.billType=:bt "
+                + " and b.cancelled=false"
+                + " and b.patientEncounter=:pe";
+        h.put("bt", BillType.InwardProvisionalBill);
+        h.put("pe", ad);
+        ads = getBillFacade().findByJpql(sql, h);
+        
+        System.out.println("ads.size() = " + ads.size());
+
+        if (ads.size() > 0 || !ads.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
