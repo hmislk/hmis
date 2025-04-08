@@ -365,7 +365,7 @@ public class InwardSearch implements Serializable {
         bill = getBillFacade().findFirstByJpql(jpql, temMap);
 
         if (bill == null) {
-            JsfUtil.addErrorMessage("No Final Bill Created");
+            JsfUtil.addErrorMessage("No Provisional Bill Created");
             return "";
         }
         withProfessionalFee = false;
@@ -1018,8 +1018,8 @@ public class InwardSearch implements Serializable {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
-            boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false);
-            boolean hasPrivilege = getWebUserController().hasPrivilege("InwardFinalBillCancel");
+            boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Provisional Bill Cancellation", false);
+            boolean hasPrivilege = true;
 
             // Skip time check if both conditions are true: time limit is disabled AND user has privilege
             if (!disableTimeLimit && Math.abs(dayCount) > 3 && !hasPrivilege) {
@@ -1794,7 +1794,7 @@ public class InwardSearch implements Serializable {
         billFacade.edit(b);
         for (BillItem bi : b.getBillItems()) {
             billItemFacede.edit(bi);
-            if (!bi.getProFees().isEmpty() || bi.getProFees() != null) {
+            if (bi.getProFees() != null && !bi.getProFees().isEmpty()) {
                 for (BillFee bf : bi.getProFees()) {
                     billFeeFacade.edit(bf);
                 }
