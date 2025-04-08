@@ -148,6 +148,8 @@ public class InwardSearch implements Serializable {
     boolean showOrginalBill;
 
     private boolean withProfessionalFee = false;
+    private boolean showZeroInwardChargeCategoryTypes = false;
+    private boolean changed = false;
 
     public String navigateToPaymentBillCancellation() {
         switch (bill.getBillTypeAtomic()) {
@@ -1656,6 +1658,56 @@ public class InwardSearch implements Serializable {
         return tot;
     }
 
+    public void changeIsMade() {
+        changed = true;
+    }
+
+    public void updateTotal() {
+
+        double grantTotal = 0.0;
+
+        for (BillItem bi : bill.getBillItems()) {
+            grantTotal += bi.getAdjustedValue();
+        }
+
+        bill.setGrantTotal(grantTotal);
+        bill.setNetTotal(grantTotal - bill.getDiscount());
+        changed = false;
+
+    }
+
+    public void updateProTotal(BillItem bi) {
+
+        double totalDr = 0.0;
+
+        for (BillFee bf : bi.getProFees()) {
+            if (bf.getFeeAdjusted() != 0) {
+                totalDr += bf.getFeeAdjusted();
+            } else {
+                totalDr += bf.getFeeValue();
+            }
+        }
+
+        bi.setAdjustedValue(totalDr);
+
+        updateTotal();
+    }
+
+    public void saveProvisionalBill(Bill b) {
+        b.setEditor(sessionController.getLoggedUser());
+        b.setEditedAt(new Date());
+        billFacade.edit(b);
+        for (BillItem bi : b.getBillItems()) {
+            billItemFacede.edit(bi);
+            if (!bi.getProFees().isEmpty() || bi.getProFees() != null) {
+                for (BillFee bf : bi.getProFees()) {
+                    billFeeFacade.edit(bf);
+                }
+            }
+        }
+        JsfUtil.addSuccessMessage("Provisional Bill Saved");
+    }
+
     public WebUserController getWebUserController() {
         return webUserController;
     }
@@ -1831,6 +1883,22 @@ public class InwardSearch implements Serializable {
 
     public void setShowOrginalBill(boolean showOrginalBill) {
         this.showOrginalBill = showOrginalBill;
+    }
+
+    public boolean isShowZeroInwardChargeCategoryTypes() {
+        return showZeroInwardChargeCategoryTypes;
+    }
+
+    public void setShowZeroInwardChargeCategoryTypes(boolean showZeroInwardChargeCategoryTypes) {
+        this.showZeroInwardChargeCategoryTypes = showZeroInwardChargeCategoryTypes;
+    }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public void setChanged(boolean changed) {
+        this.changed = changed;
     }
 
 }
