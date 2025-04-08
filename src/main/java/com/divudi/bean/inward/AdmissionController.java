@@ -833,14 +833,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public boolean isAddmissionHaveProvisionalBill(Admission ad) {
-        List<Admission> ads = new ArrayList<>();
+        List<Bill> ads = new ArrayList<>();
         String sql;
         HashMap h = new HashMap();
         sql = "select b from Bill b where b.retired=false "
-                + " and b.billType=:bt "
+                + " and b.billTypeAtomic=:bt "
                 + " and b.cancelled=false"
                 + " and b.patientEncounter=:pe";
-        h.put("bt", BillType.InwardProvisionalBill);
+        h.put("bt", BillTypeAtomic.INWARD_PROVISIONAL_BILL);
         h.put("pe", ad);
         ads = getBillFacade().findByJpql(sql, h);
         
