@@ -97,13 +97,13 @@
                                 </p:commandButton>
                                 <p:commandButton
                                     rendered="#{(not admissionController.current.discharged or not admissionController.current.paymentFinalized) and admissionController.isAddmissionHaveProvisionalBill(admissionController.current)}"
-                                    action="#{bhtSummeryController.navigateToIntrimBillFromPatientProfile()}"
+                                    action="#{inwardSearch.navigateToProvisionalBillForAdmission()}"
                                     value="Provisional Bill" 
                                     class="w-100"
                                     icon="fa fa-file">
                                     <f:setPropertyActionListener 
                                         value="#{admissionController.current}"
-                                        target="#{bhtSummeryController.patientEncounter}"/>
+                                        target="#{inwardSearch.admission}"/>
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Estimated Bill" 
