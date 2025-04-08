@@ -912,6 +912,13 @@ public class GrnController implements Serializable {
         getGrnBill().setDepartment(getSessionController().getDepartment());
         getGrnBill().setInstitution(getSessionController().getInstitution());
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
+
+        if (getGrnBill().getId() == null) {
+            getBillFacade().create(getGrnBill());
+        } else {
+            getBillFacade().edit(getGrnBill());
+        }
+
         if (getCurrentGrnBillPre() != null) {
 
             if (getCurrentGrnBillPre().getId() == null) {
@@ -922,11 +929,7 @@ public class GrnController implements Serializable {
             getCurrentGrnBillPre().setForwardReferenceBill(getGrnBill());
             getBillFacade().edit(getCurrentGrnBillPre());
         }
-        if (getGrnBill().getId() == null) {
-            getBillFacade().create(getGrnBill());
-        } else {
-            getBillFacade().edit(getGrnBill());
-        }
+
     }
 
     public void saveWholesaleBill() {
