@@ -451,7 +451,6 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersIssueByBill() {
-        reportTimerController.trackReportExecution(() -> {
             Map params = new HashMap();
             String jpql;
             params.put("fd", fromDate);
@@ -502,7 +501,6 @@ public class ReportsTransfer implements Serializable {
             }
 
             calculatePurachaseValuesOfBillItemsInBill(transferBills);
-        }, DisbursementReports.TRANSFER_ISSUE_BY_BILL,sessionController.getLoggedUser());
     }
 
     public void calculatePurachaseValuesOfBillItemsInBill(List<Bill> billList) {
@@ -1702,7 +1700,6 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
-        reportTimerController.trackReportExecution(() -> {
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder("select b from Bill b where b.createdAt between :fd and :td and b.billType=:bt");
             params.put("fd", fromDate);
@@ -1730,7 +1727,6 @@ public class ReportsTransfer implements Serializable {
                 netTotalValues = netTotalValues + b.getNetTotal();
             }
             calculatePurachaseValuesOfBillItemsInBill(transferBills);
-        }, DisbursementReports.TRANSFER_RECEIVE_BY_BILL, sessionController.getLoggedUser());
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
