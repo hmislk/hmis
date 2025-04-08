@@ -176,11 +176,7 @@ public class BillBhtController implements Serializable {
     }
 
     public String navigateToSampleManegmentFromInwardIntrimBill(Bill b) {
-        List<Bill> newBills = new ArrayList<>();
-        newBills.add(b);
-        patientInvestigationController.setBills(newBills);
-        patientInvestigationController.searchBillsWithoutSampleId();
-        return "/lab/generate_barcode_p?faces-redirect=true";
+        return patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(b);
     }
 
     public String navigateToNewBillFromPrintLabelsForInvestigations() {
