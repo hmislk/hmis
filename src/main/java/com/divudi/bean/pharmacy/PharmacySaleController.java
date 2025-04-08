@@ -2078,10 +2078,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 return;
             } else if (getPatient().getId() == null) {
                 if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
-                    JsfUtil.addErrorMessage("Please enter valid phone number with more than 10 digits of the patient");
+                    JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
                     return;
                 } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
-                    JsfUtil.addErrorMessage("Please enter valid mobile number with more than 10 digits of the patient");
+                    JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
                     return;
                 }
             }
