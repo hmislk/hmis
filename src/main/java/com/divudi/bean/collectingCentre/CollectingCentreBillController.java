@@ -148,8 +148,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Inject
     ServiceSessionFunctions serviceSessionBean;
     @Inject
-    CommonController commonController;
-    @Inject
     SessionController sessionController;
     @Inject
     PaymentSchemeController paymentSchemeController;
@@ -878,7 +876,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-//        
+//
         collectingCentreApplicationController.updateCcBalance(
                 collectingCentre,
                 totalHosFee,
@@ -1149,7 +1147,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void dateChangeListen() {
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -1806,14 +1804,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public double calBillPaidValue(Bill b) {
-        String sql;
-
-        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.billFee.bill.id=" + b.getId();
-
-        double d = getBillFeePaymentFacade().findDoubleByJpql(sql);
-
+        String jpql;
+        jpql = "select sum(bfp.amount) from BillFeePayment bfp where "
+                + " bfp.retired=:ret "
+                + " and bfp.billFee.bill.id=:bid ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("bid", b.getId());
+        double d = getBillFeePaymentFacade().findDoubleByJpql(jpql, params);
         return d;
     }
 
@@ -2433,14 +2431,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setReminingCashPaid(double reminingCashPaid) {
         this.reminingCashPaid = reminingCashPaid;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<String> getReferralIds() {

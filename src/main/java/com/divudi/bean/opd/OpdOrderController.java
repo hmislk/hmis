@@ -3758,14 +3758,14 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     }
 
     public double calBillPaidValue(Bill b) {
-        String sql;
-
-        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.billFee.bill.id=" + b.getId();
-
-        double d = billFeePaymentFacade.findDoubleByJpql(sql);
-
+        String jpql = "select sum(bfp.amount) "
+                + " from BillFeePayment bfp "
+                + " where bfp.retired = :ret "
+                + " and bfp.billFee.bill.id = :bid";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", b.getId());
+        double d = billFeePaymentFacade.findDoubleByJpql(jpql, params);
         return d;
     }
 

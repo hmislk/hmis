@@ -1,14 +1,10 @@
 package com.divudi.ws.lims;
 
-import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.lab.Analyzer;
-import static com.divudi.data.lab.Analyzer.HumaCount5D;
-import static com.divudi.data.lab.Analyzer.Sysmex_XS_Series;
 import java.util.ArrayList;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.PatientSample;
-import com.divudi.entity.lab.Sample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import javax.inject.Inject;
@@ -25,7 +21,6 @@ import org.carecode.lims.libraries.OrderRecord;
 import org.carecode.lims.libraries.PatientRecord;
 import org.carecode.lims.libraries.QueryRecord;
 import java.util.Arrays;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -43,8 +38,6 @@ public class MiddlewareController {
     @EJB
     PatientSampleFacade patientSampleFacade;
 
-    @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     LimsMiddlewareController limsMiddlewareController;
 
@@ -167,7 +160,7 @@ public class MiddlewareController {
                     case BioRadD10:
                         return processBioRadD10(dataBundle);
 
-                       
+
                     case Dimension_Clinical_Chemistry_System:
                         return processDimensionClinicalChemistrySystem(dataBundle);
                     case Gallery_Indiko:

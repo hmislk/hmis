@@ -28,14 +28,11 @@ import java.util.*;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -69,8 +66,6 @@ public class CreditCompanyDueController implements Serializable {
     private CommonFunctions commonFunctions;
     @EJB
     AdmissionFacade admissionFacade;
-    @Inject
-    CommonController commonController;
 
     double finalTotal;
     double finalPaidTotal;
@@ -1575,14 +1570,6 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setFinalTransPaidTotalPatient(double finalTransPaidTotalPatient) {
         this.finalTransPaidTotalPatient = finalTransPaidTotalPatient;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public int getManageInwardDueAndAccessIndex() {

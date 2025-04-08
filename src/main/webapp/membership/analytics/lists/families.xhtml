@@ -20,20 +20,33 @@
                         <p:column headerText="Membership Scheme" sortBy="#{fm.membershipScheme.name}" filterBy="#{fm.membershipScheme.name}" filterMatchMode="contains">
                             <p:outputLabel value="#{fm.membershipScheme.name}" />
                         </p:column>
-                         <p:column headerText="Discount Scheme" sortBy="#{fm.membershipScheme.paymentScheme.name}" filterBy="#{fm.membershipScheme.paymentScheme.name}" filterMatchMode="contains">
-                             <p:outputLabel value="#{fm.membershipScheme.paymentScheme.name}" />
-                        </p:column>
                         <p:column headerText="Membership Card No" sortBy="#{fm.membershipCardNo}" filterBy="#{fm.membershipCardNo}" filterMatchMode="contains">
                             <p:outputLabel value="#{fm.membershipCardNo}" />
                         </p:column>
                         <p:column headerText="Phone No" sortBy="#{fm.phoneNo}" filterBy="#{fm.phoneNo}" filterMatchMode="contains">
                             <p:outputLabel value="#{fm.phoneNo}" />
                         </p:column>
-                        <p:column headerText="Action" style="width:100px;text-align:center;">
-                            <p:commandButton value="Manage" icon="fa fa-pencil" ajax="false" action="#{patientController.navigateToManageFamilyMembership()}">
+                        <p:column headerText="Action" width="35em">
+                            <p:commandButton value="Manage" icon="pi pi-users" styleClass="ui-button-info mx-1" ajax="false" action="#{patientController.navigateToManageFamilyMembership()}">
+                                <f:setPropertyActionListener value="#{fm}" target="#{patientController.currentFamily}" />
+                            </p:commandButton>
+
+                            <p:commandButton value="Delete Family" icon="pi pi-trash" styleClass="ui-button-warning mx-1" ajax="false" action="#{patientController.deleteFamilyMembership()}" 
+                                             onclick="return confirm('Are you sure you want to delete this family?');">
+                                <f:setPropertyActionListener value="#{fm}" target="#{patientController.currentFamily}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Delete Family &amp; Members" 
+                                icon="pi pi-times-circle" 
+                                styleClass="ui-button-danger mx-1" 
+                                ajax="false" 
+                                action="#{patientController.deleteFamilyMembershipAndMembers()}" 
+                                onclick="return confirm('Are you sure you want to delete this family and all its members?');">
                                 <f:setPropertyActionListener value="#{fm}" target="#{patientController.currentFamily}" />
                             </p:commandButton>
                         </p:column>
+
                     </p:dataTable>
 
 

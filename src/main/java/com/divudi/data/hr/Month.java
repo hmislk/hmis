@@ -25,15 +25,13 @@ public enum Month {
     December(11)
     ;
 
-    private int monthValue;
-    private Month() {
-    }
-    
+    private final int monthValue;
+
     public int getMonthValue(){
         return monthValue;
     }
-    
-    private Month(int value) {
-        this.monthValue=value;
+
+    Month(int value) {
+        this.monthValue = value;
     }
 }

@@ -1,7 +1,6 @@
 package com.divudi.data;
 
 import com.divudi.entity.*;
-import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.lab.PatientInvestigation;
 
@@ -25,6 +24,8 @@ public class IncomeRow implements Serializable {
 
     private Category category;
     private Bill bill;
+    private Bill batchBill;
+    private Bill referanceBill;
     private BillItem billItem;
     private BillFee billFee;
     private Payment payment;
@@ -157,6 +158,12 @@ public class IncomeRow implements Serializable {
         this();
         this.bill = bill;
         rowType = "Bill";
+    }
+    
+    public IncomeRow(BillItem billItem) {
+        this();
+        this.billItem = billItem;
+        rowType = "BillItem";
     }
 
     public IncomeRow(SessionInstance sessionInstance) {
@@ -1190,4 +1197,22 @@ public class IncomeRow implements Serializable {
         this.payments = payments;
     }
 
+    public Bill getBatchBill() {
+        return batchBill;
+    }
+
+    public void setBatchBill(Bill batchBill) {
+        this.batchBill = batchBill;
+    }
+
+    public Bill getReferanceBill() {
+        return referanceBill;
+    }
+
+    public void setReferanceBill(Bill referanceBill) {
+        this.referanceBill = referanceBill;
+    }
+
+    
+    
 }

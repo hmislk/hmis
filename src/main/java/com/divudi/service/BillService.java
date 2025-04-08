@@ -4,6 +4,7 @@ import com.divudi.data.BillCategory;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_GRN;
+import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
@@ -276,19 +277,42 @@ public class BillService {
         double staffFeesCalculatedByBillFees = 0.0;
         double collectingCentreFeesCalculateByBillFees = 0.0;
         double hospitalFeeCalculatedByBillFess = 0.0;
+        double reagentFeeCalculatedByBillFees = 0.0;
+        double additionalFeeCalculatedByBillFees = 0.0;
+
         List<BillFee> bfs = fetchBillFees(bi);
+        System.out.println("bfs = " + bfs);
+
+        for (BillFee bf : bfs) {
+            System.out.println(bf.getFee().getFeeType() + " - " + bf.getFeeValue());
+        }
+
         for (BillFee bf : bfs) {
             if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
                 collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
             } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
                 staffFeesCalculatedByBillFees += bf.getFeeGrossValue();
             } else {
-                hospitalFeeCalculatedByBillFess = bf.getFeeGrossValue();
+                hospitalFeeCalculatedByBillFess += bf.getFeeGrossValue();
             }
+            if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                reagentFeeCalculatedByBillFees += bf.getFeeGrossValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Additional) {
+                additionalFeeCalculatedByBillFees += bf.getFeeGrossValue();
+            }
+
         }
+
+        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
+        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
+        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
+        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
+
         bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         bi.setStaffFee(staffFeesCalculatedByBillFees);
         bi.setHospitalFee(hospitalFeeCalculatedByBillFess);
+        bi.setReagentFee(reagentFeeCalculatedByBillFees);
+        bi.setOtherFee(additionalFeeCalculatedByBillFees);
         billItemFacade.edit(bi);
     }
 
@@ -298,8 +322,10 @@ public class BillService {
     }
 
     public void createBillItemFeeBreakdownFromBills(List<Bill> bills) {
-        List<BillItem> allBillItems = fetchBillItems(bills);
-        createBillItemFeeBreakdownAsHospitalFeeItemDiscount(allBillItems);
+        List<BillItem> billItems = fetchBillItems(bills);
+
+        createBillItemFeeBreakdownAsHospitalFeeItemDiscount(billItems);
+
     }
 
     public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
@@ -493,6 +519,23 @@ public class BillService {
                 + "where p.bill=:bill "
                 + "order by p.id";
         params.put("bill", bill);
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
+    public List<Payment> fetchBillPayments(Bill bill, Bill batchBill) {
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.bill=:bill "
+                + "order by p.id";
+        if (batchBill != null) {
+            params.put("bill", batchBill);
+        }else{
+            params.put("bill", bill);
+        }
         fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
         return fetchingBillComponents;
     }
@@ -733,6 +776,11 @@ public class BillService {
             params.put("dep", department);
         }
 
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
         if (admissionType != null) {
             jpql += " and b.patientEncounter.admissionType=:admissionType ";
             params.put("admissionType", admissionType);
@@ -741,6 +789,161 @@ public class BillService {
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme ";
             params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc  ";
+        List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedBills;
+    }
+
+    public List<Bill> fetchBillsWithToInstitution(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            Institution toInstitution,
+            Department toDepartment,
+            Institution toSite,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        // From Institution
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        // From Department
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        // From Site (via Department.site)
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        // To Institution
+        if (toInstitution != null) {
+            jpql += " and b.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        // To Department
+        if (toDepartment != null) {
+            jpql += " and b.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+
+        // To Site (via toDepartment.site)
+        if (toSite != null) {
+            jpql += " and b.toDepartment.site=:toSite ";
+            params.put("toSite", toSite);
+        }
+
+        // WebUser
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        // Admission Type
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        // Payment Scheme
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        return billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<Bill> fetchBills(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme,
+            Institution toInstitution,
+            Department toDepartment,
+            String visitType
+    ) {
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        if (toInstitution != null) {
+            jpql += " and b.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and b.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            jpql += " AND b.ipOpOrCc = :type";
+            params.put("type", visitType.trim());
         }
 
         jpql += " order by b.createdAt desc  ";
