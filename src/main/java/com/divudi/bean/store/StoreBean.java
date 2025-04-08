@@ -56,6 +56,8 @@ import com.divudi.core.facade.VmpFacade;
 import com.divudi.core.facade.VmppFacade;
 import com.divudi.core.facade.VtmFacade;
 import com.divudi.core.facade.VirtualProductIngredientFacade;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -71,7 +73,7 @@ import javax.persistence.TemporalType;
  * @author Buddhika
  */
 @Singleton
-public class StoreBean {
+public class StoreBean implements Serializable {
 
     @EJB
     PharmaceuticalItemCategoryFacade PharmaceuticalItemCategoryFacade;

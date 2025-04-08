@@ -36,7 +36,6 @@ import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.FeeFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StaffFacade;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -87,7 +86,6 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
     @EJB
     BillNumberGenerator billNumberBean;
 
-    CommonFunctions commonFunctions;
     //////////////////
     private List<Bill> items = null;
     List<BillFee> lstBillFees;
@@ -432,14 +430,6 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
 
     public void setToClearBill(boolean toClearBill) {
         this.toClearBill = toClearBill;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public void updateFees(AjaxBehaviorEvent event) {

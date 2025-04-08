@@ -214,7 +214,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     /**
      * Class Variables
      */
-    private CommonFunctions commonFunctions;
     private ItemLight itemLight;
     private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
@@ -368,6 +367,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public String navigateToSearchOpdBills() {
         batchBill = null;
         bills = null;
+        searchController.setShowLoggedDepartmentOnly(true);
         return "/opd/opd_bill_search?faces-redirect=true";
     }
 
@@ -1545,14 +1545,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String changeTextCases(String nm, String tc) {

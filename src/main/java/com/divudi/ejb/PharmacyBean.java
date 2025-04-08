@@ -240,10 +240,10 @@ public class PharmacyBean {
     }
 
     public Bill reAddToStock(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
-        if (bill.isCancelled()) {
-            JsfUtil.addErrorMessage("Bill Already Cancelled");
-            return null;
-        }
+//        if (bill.isCancelled()) {
+//            JsfUtil.addErrorMessage("Bill Already Cancelled");
+//            return null;
+//        }
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
 

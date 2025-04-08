@@ -208,53 +208,15 @@
                                                                 styleClass="ui-button-success mx-2"
                                                                 style="width: 150px;"
                                                                 icon="fa fa-check"
+                                                                onclick="if (!confirm('Are you Sure you want to Settle Bill..?'))
+                                                                            return false;"
                                                                 action="#{billBhtController.settleBill}"
                                                                 ajax="false" >
                                                             </p:commandButton>
-                                                            <p:defaultCommand target="btnSettle"/>
                                                         </div>
                                                     </div>
                                                 </f:facet>
                                                 <div class="row">
-                                                    <!--                                                    <div class="row m-1">
-                                                                                                            <div class="col-4">
-                                                                                                                <h:outputLabel value="Category"/>
-                                                                                                            </div>
-                                                                                                            <div class="col-8">
-                                                                                                                <p:autoComplete value="#{itemController.category}" id="ct" size="75"
-                                                                                                                                forceSelection="true"
-                                                                                                                                completeMethod="#{categoryController.completeCategoryService}"
-                                                                                                                                var="cat" itemLabel="#{cat.name}"
-                                                                                                                                itemValue="#{cat}" >
-                                                                                                                    <p:column headerText="Category">
-                                                                                                                        <h:outputLabel value="#{cat.name}"/>
-                                                                                                                    </p:column>
-                                                                                                                    <p:column headerText="Parent Category">
-                                                                                                                        <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                                                                                                    </p:column>
-                                                                                                                    <p:column headerText="TYPE">
-                                                                                                                        <h:outputLabel value="Parent Category"
-                                                                                                                                       rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
-                                                                                                                        <h:outputLabel value="Child Category"
-                                                                                                                                       rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
-                                                                                                                    </p:column>
-                                                                                                                </p:autoComplete>
-                                                                                                            </div>
-                                                                                                        </div>
-
-                                                                                                        <div class="row m-1">
-                                                                                                            <div class="col-4">
-                                                                                                                <h:outputLabel value="Department"/>
-                                                                                                            </div>
-                                                                                                            <div class="col-8">
-                                                                                                                <p:selectOneMenu value="#{itemController.reportKeyWord.department}" class="w-100">
-                                                                                                                    <f:selectItem itemLabel="Select Department"/>
-                                                                                                                    <f:selectItems value="#{departmentController.labs}"
-                                                                                                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                                                                                                    <p:ajax process="@this" update="acIx" event="change"/>
-                                                                                                                </p:selectOneMenu>
-                                                                                                            </div>
-                                                                                                        </div>-->
 
                                                     <div class="row mt-1 mb-2 mx-1">
                                                         <div class="col-3">
@@ -295,10 +257,12 @@
                                                         </div>
                                                         <div class="col-9">
                                                             <h:panelGroup id="gpQtyTxt">
-                                                                <h:inputText autocomplete="off" id="txtQty"
-                                                                             rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
-                                                                             value="#{billBhtController.currentBillItem.qty}"
-                                                                             style="text-align: right; padding-right: 10px;">
+                                                                <h:inputText 
+                                                                    autocomplete="off" 
+                                                                    id="txtQty"
+                                                                    rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
+                                                                    value="#{billBhtController.currentBillItem.qty}"
+                                                                    style="text-align: right; padding-right: 10px;">
                                                                 </h:inputText> </h:panelGroup>
                                                         </div>
                                                     </div>
@@ -371,25 +335,26 @@
                                                             <p:column >
                                                                 <f:facet name="header">Category</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.item.category.name}"/>
-
                                                             </p:column>
 
-                                                            <p:column width="5em">
+                                                            <p:column width="8em">
                                                                 <p:commandButton
                                                                     id="btnRemove"
                                                                     icon="fa fa-times"
-                                                                    title="Remove"
+                                                                    value="Remove"
+                                                                    ajax="false"
+                                                                    onclick="if (!confirm('Are you Sure you want to Remove this Item?'))
+                                                                                return false;"
                                                                     class="ui-button-danger"
                                                                     action="#{billBhtController.removeBillItem(bi)}" >
-                                                                    <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
-                                                                    <p:ajax  process="btnRemove @this" update="@form @all :#{p:resolveFirstComponentWithId('tabBillIx',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId} :#{p:resolveFirstComponentWithId('tabBillItems',view).clientId} :#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('testTable',view).clientId} :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}"/>
+                                                                    <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.entriesIndex}" />
                                                                 </p:commandButton>
                                                             </p:column>
                                                         </p:dataTable>
                                                     </p:tab>
                                                     <p:tab id="tabBillIx" title="Tests" >
                                                         <p:dataTable id="testTable" rowIndexVar="rowIndex" value="#{billBhtController.lstBillComponents}" var="bix" >
-                                                            <p:column>
+                                                            <p:column  width="6em">
                                                                 <f:facet name="header">No</f:facet>
                                                                 <h:outputLabel value="#{rowIndex+1}"/>
                                                             </p:column>
@@ -621,11 +586,11 @@
                                                         <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                     </p:commandButton>
                                                     <p:commandButton
-                                                            ajax="false"
-                                                            title="Manage Bill"
-                                                            class="ui-button-warning m-1"
-                                                            icon="fa fa-file-invoice"
-                                                            action="#{billSearch.navigateToInwardSearchService()}">
+                                                        ajax="false"
+                                                        title="Manage Bill"
+                                                        class="ui-button-warning m-1"
+                                                        icon="fa fa-file-invoice"
+                                                        action="#{billSearch.navigateToInwardSearchService()}">
                                                         <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                     </p:commandButton>
                                                     <p:commandButton

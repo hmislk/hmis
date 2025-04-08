@@ -389,13 +389,16 @@
                                 </div>
                             </h:panelGroup>
                             
-<!--                            <ph:saleBill bill="#{pharmacyPreSettleController.bill}"/>-->
-
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
                                 <div>
                                     <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyPreSettleController.bill}"/>
                                 </div>
                             </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper',true)}">
+                                <ph:saleBill_Header bill="#{pharmacyPreSettleController.bill}"></ph:saleBill_Header>
+                            </h:panelGroup>
+                            
                         </h:panelGroup>
                     </p:panel>
 

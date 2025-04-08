@@ -38,7 +38,6 @@ import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.FeeFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StaffFacade;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -88,7 +87,6 @@ public class InwardProfessionalBillController implements Serializable {
     @EJB
     BillNumberGenerator billNumberBean;
 
-    CommonFunctions commonFunctions;
     //////////////////
     private List<Bill> items = null;
     List<BillFee> lstBillFees;
@@ -436,14 +434,6 @@ public class InwardProfessionalBillController implements Serializable {
         this.toClearBill = toClearBill;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public void updateFees(AjaxBehaviorEvent event) {
     }
 
@@ -493,8 +483,7 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public List<Item> completeItem(String qry) {
-        List<Item> completeItems = getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        return completeItems;
+        return getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
     }
 
     public void setAdmissionController(AdmissionController admissionController) {

@@ -7,7 +7,10 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.reports.DisbursementReports;
+import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.dataStructure.StockReportRecord;
@@ -59,6 +62,8 @@ import org.joda.time.LocalDate;
 @Named
 @SessionScoped
 public class ReportsTransfer implements Serializable {
+    @Inject
+    private ReportTimerController reportTimerController;
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -446,56 +451,56 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersIssueByBill() {
-        Map params = new HashMap();
-        String jpql;
-        params.put("fd", fromDate);
-        params.put("td", toDate);
-        params.put("bt", BillType.PharmacyTransferIssue);
-        if (fromDepartment != null && toDepartment != null) {
-            params.put("fdept", fromDepartment);
-            params.put("tdept", toDepartment);
-            jpql = "select b from Bill b where b.department=:fdept"
-                    + " and b.toDepartment=:tdept "
-                    + " and b.createdAt between :fd "
-                    + " and :td and b.billType=:bt "
-                    + " and b.retired=false "
-                    + " order by b.id";
-        } else if (fromDepartment == null && toDepartment != null) {
-            params.put("tdept", toDepartment);
-            jpql = "select b from Bill b where"
-                    + " b.toDepartment=:tdept and b.createdAt "
-                    + " between :fd and :td "
-                    + " and b.retired=false "
-                    + " b.billType=:bt order by b.id";
-        } else if (fromDepartment != null) {
-            params.put("fdept", fromDepartment);
-            jpql = "select b from Bill b where "
-                    + " b.department=:fdept and b.createdAt "
-                    + " between :fd and :td "
-                    + " and b.retired=false "
-                    + "  b.billType=:bt order by b.id";
-        } else {
-            jpql = "select b from Bill b where b.createdAt "
-                    + " between :fd and :td and b.billType=:bt "
-                    + " and b.retired=false "
-                    + " order by b.id";
-        }
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
-        System.out.println("getBillFacade() = " + getBillFacade());
+            Map params = new HashMap();
+            String jpql;
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("bt", BillType.PharmacyTransferIssue);
+            if (fromDepartment != null && toDepartment != null) {
+                params.put("fdept", fromDepartment);
+                params.put("tdept", toDepartment);
+                jpql = "select b from Bill b where b.department=:fdept"
+                        + " and b.toDepartment=:tdept "
+                        + " and b.createdAt between :fd "
+                        + " and :td and b.billType=:bt "
+                        + " and b.retired=false "
+                        + " order by b.id";
+            } else if (fromDepartment == null && toDepartment != null) {
+                params.put("tdept", toDepartment);
+                jpql = "select b from Bill b where "
+                        + " b.toDepartment=:tdept and b.createdAt "
+                        + " between :fd and :td "
+                        + " and b.retired=false "
+                        + " and b.billType=:bt order by b.id";
+            } else if (fromDepartment != null) {
+                params.put("fdept", fromDepartment);
+                jpql = "select b from Bill b where "
+                        + " b.department=:fdept and b.createdAt "
+                        + " between :fd and :td "
+                        + " and b.retired=false "
+                        + " and b.billType=:bt order by b.id";
+            } else {
+                jpql = "select b from Bill b where b.createdAt "
+                        + " between :fd and :td and b.billType=:bt "
+                        + " and b.retired=false "
+                        + " order by b.id";
+            }
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            System.out.println("getBillFacade() = " + getBillFacade());
 
-        transferBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            transferBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-        totalsValue = 0.0;
-        discountsValue = 0.0;
-        netTotalValues = 0.0;
-        for (Bill b : transferBills) {
-            totalsValue = totalsValue + (b.getTotal());
-            discountsValue = discountsValue + b.getDiscount();
-            netTotalValues = netTotalValues + b.getNetTotal();
-        }
+            totalsValue = 0.0;
+            discountsValue = 0.0;
+            netTotalValues = 0.0;
+            for (Bill b : transferBills) {
+                totalsValue = totalsValue + (b.getTotal());
+                discountsValue = discountsValue + b.getDiscount();
+                netTotalValues = netTotalValues + b.getNetTotal();
+            }
 
-        calculatePurachaseValuesOfBillItemsInBill(transferBills);
+            calculatePurachaseValuesOfBillItemsInBill(transferBills);
     }
 
     public void calculatePurachaseValuesOfBillItemsInBill(List<Bill> billList) {
@@ -516,69 +521,70 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentBHTIssueByBill() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        reportTimerController.trackReportExecution(() -> {
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
 
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("fillDepartmentBHTIssueByBill()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("fillDepartmentBHTIssueByBill()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
-        Map m = new HashMap();
-        String sql;
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bt", BillType.PharmacyBhtPre);
-        m.put("fdept", fromDepartment);
-        sql = "select b from Bill b "
-                + " where b.department=:fdept "
-                + " and b.createdAt  between :fd and :td ";
+            Map m = new HashMap();
+            String sql;
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+            m.put("bt", BillType.PharmacyBhtPre);
+            m.put("fdept", fromDepartment);
+            sql = "select b from Bill b "
+                    + " where b.department=:fdept "
+                    + " and b.createdAt  between :fd and :td ";
 
-        if (admissionType != null) {
-            sql += "  and b.patientEncounter.admissionType=:at ";
-            m.put("at", admissionType);
-        }
+            if (admissionType != null) {
+                sql += "  and b.patientEncounter.admissionType=:at ";
+                m.put("at", admissionType);
+            }
 
-        sql += " and b.billType=:bt order by b.id";
+            sql += " and b.billType=:bt order by b.id";
 
-        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-        totalsValue = 0.0;
-        discountsValue = 0.0;
-        netTotalValues = 0.0;
-        marginValue = 0;
-        for (Bill b : transferBills) {
-            totalsValue = totalsValue + (b.getTotal());
-            discountsValue = discountsValue + b.getDiscount();
-            marginValue += b.getMargin();
-            netTotalValues = netTotalValues + b.getNetTotal();
-        }
+            transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+            totalsValue = 0.0;
+            discountsValue = 0.0;
+            netTotalValues = 0.0;
+            marginValue = 0;
+            for (Bill b : transferBills) {
+                totalsValue = totalsValue + (b.getTotal());
+                discountsValue = discountsValue + b.getDiscount();
+                marginValue += b.getMargin();
+                netTotalValues = netTotalValues + b.getNetTotal();
+            }
 
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        }, PharmacyReports.BHT_ISSUE_BY_BILL, sessionController.getLoggedUser());
     }
 
     Item item;
@@ -728,10 +734,11 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void createTransferIssueBillSummery() {
-        Date startTime = new Date();
+        reportTimerController.trackReportExecution(() -> {
+            Date startTime = new Date();
 
-        fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferIssue);
-
+            fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferIssue);
+        }, DisbursementReports.TRANSFER_ISSUE_BY_BILL_SUMMARY, sessionController.getLoggedUser());
     }
 
     public void createTransferReciveBillSummery() {
@@ -1693,33 +1700,33 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select b from Bill b where b.createdAt between :fd and :td and b.billType=:bt");
-        params.put("fd", fromDate);
-        params.put("td", toDate);
-        params.put("bt", BillType.PharmacyTransferReceive);
+            Map<String, Object> params = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("select b from Bill b where b.createdAt between :fd and :td and b.billType=:bt");
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("bt", BillType.PharmacyTransferReceive);
 
-        if (fromDepartment != null) {
-            jpql.append(" and b.fromDepartment=:fdept");
-            params.put("fdept", fromDepartment);
-        }
-        if (toDepartment != null) {
-            jpql.append(" and b.department=:tdept");
-            params.put("tdept", toDepartment);
-        }
+            if (fromDepartment != null) {
+                jpql.append(" and b.fromDepartment=:fdept");
+                params.put("fdept", fromDepartment);
+            }
+            if (toDepartment != null) {
+                jpql.append(" and b.department=:tdept");
+                params.put("tdept", toDepartment);
+            }
 
-        jpql.append(" order by b.id");
-        transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            jpql.append(" order by b.id");
+            transferBills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        totalsValue = 0.0;
-        discountsValue = 0.0;
-        netTotalValues = 0.0;
-        for (Bill b : transferBills) {
+            totalsValue = 0.0;
+            discountsValue = 0.0;
+            netTotalValues = 0.0;
+            for (Bill b : transferBills) {
 
-            discountsValue = discountsValue + b.getDiscount();
-            netTotalValues = netTotalValues + b.getNetTotal();
-        }
-        calculatePurachaseValuesOfBillItemsInBill(transferBills);
+                discountsValue = discountsValue + b.getDiscount();
+                netTotalValues = netTotalValues + b.getNetTotal();
+            }
+            calculatePurachaseValuesOfBillItemsInBill(transferBills);
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {

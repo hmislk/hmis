@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.ItemLight;
@@ -58,7 +57,6 @@ import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.PaymentFacade;
-import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -92,7 +90,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private BillItemFacade billItemFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -138,8 +135,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ItemController itemController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    DrawerController drawerController;
     @Inject
     OpdBillController opdBillController;
     @Inject
@@ -2016,14 +2011,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         }
         calTotals();
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public void setLstBillEntries(List<BillEntry> lstBillEntries) {

@@ -5,7 +5,9 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
@@ -83,6 +85,8 @@ public class ReportsStock implements Serializable {
     BillType[] billTypes;
     ReportKeyWord reportKeyWord;
     private List<BillItem> billItems;
+    @Inject
+    private ReportTimerController reportTimerController;
     /**
      * Managed Beans
      */
@@ -112,37 +116,39 @@ public class ReportsStock implements Serializable {
      * Methods
      */
     public void fillDepartmentStocks() {
-        System.out.println("fillDepartmentStocks");
-        Date startedAt = new Date();
-        System.out.println("startedAt = " + startedAt);
-        if (department == null) {
-            JsfUtil.addErrorMessage("Please select a department");
-            return;
-        }
-        Map<String, Object> m = new HashMap<>();
-        String sql = "select s from Stock s "
-                + " where s.department=:d "
-                + " and s.stock > 0 ";
-        m.put("d", department);
-        Date beforeJpql = new Date();
-        System.out.println("beforeJpql = " + beforeJpql);
-        stocks = getStockFacade().findByJpql(sql, m);
+        reportTimerController.trackReportExecution(() -> {
+            System.out.println("fillDepartmentStocks");
+            Date startedAt = new Date();
+            System.out.println("startedAt = " + startedAt);
+            if (department == null) {
+                JsfUtil.addErrorMessage("Please select a department");
+                return;
+            }
+            Map<String, Object> m = new HashMap<>();
+            String sql = "select s from Stock s "
+                    + " where s.department=:d "
+                    + " and s.stock > 0 ";
+            m.put("d", department);
+            Date beforeJpql = new Date();
+            System.out.println("beforeJpql = " + beforeJpql);
+            stocks = getStockFacade().findByJpql(sql, m);
 
-        Date afterJpql = new Date();
-        System.out.println("afterJpql = " + afterJpql);
-        stocks.sort(Comparator.comparing(s -> s.getItemBatch().getItem().getName(), String.CASE_INSENSITIVE_ORDER));
+            Date afterJpql = new Date();
+            System.out.println("afterJpql = " + afterJpql);
+            stocks.sort(Comparator.comparing(s -> s.getItemBatch().getItem().getName(), String.CASE_INSENSITIVE_ORDER));
 
-        Date beforeCal = new Date();
-        System.out.println("beforeCal = " + beforeCal);
-        stockPurchaseValue = stocks.stream()
-                .mapToDouble(s -> s.getItemBatch().getPurcahseRate() * s.getStock())
-                .sum();
+            Date beforeCal = new Date();
+            System.out.println("beforeCal = " + beforeCal);
+            stockPurchaseValue = stocks.stream()
+                    .mapToDouble(s -> s.getItemBatch().getPurcahseRate() * s.getStock())
+                    .sum();
 
-        stockSaleValue = stocks.stream()
-                .mapToDouble(s -> s.getItemBatch().getRetailsaleRate() * s.getStock())
-                .sum();
-        Date afterCal = new Date();
-        System.out.println("afterCal = " + afterCal);
+            stockSaleValue = stocks.stream()
+                    .mapToDouble(s -> s.getItemBatch().getRetailsaleRate() * s.getStock())
+                    .sum();
+            Date afterCal = new Date();
+            System.out.println("afterCal = " + afterCal);
+        }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
     }
 
     public void fillDepartmentStocksOfMedicines() {

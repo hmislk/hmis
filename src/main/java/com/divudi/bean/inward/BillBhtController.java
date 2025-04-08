@@ -58,7 +58,6 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.lab.InvestigationTubeSticker;
 import com.divudi.core.entity.UserPreference;
-import com.divudi.core.util.CommonFunctions;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -128,7 +127,7 @@ public class BillBhtController implements Serializable {
     @Inject
     BillController billController;
     ///////////////////
-    CommonFunctions commonFunctions;
+
     private double total;
     private double discount;
     private double netTotal;
@@ -157,6 +156,8 @@ public class BillBhtController implements Serializable {
     private List<ItemLight> inwardItems;
     private ItemLight itemLight;
 
+    private int entriesIndex;
+
     public String navigateToAddServiceFromMenu() {
         resetBillData();
         return "/inward/inward_bill_service?faces-redirect=true";
@@ -175,11 +176,7 @@ public class BillBhtController implements Serializable {
     }
 
     public String navigateToSampleManegmentFromInwardIntrimBill(Bill b) {
-        List<Bill> newBills = new ArrayList<>();
-        newBills.add(b);
-        patientInvestigationController.setBills(newBills);
-        patientInvestigationController.searchBillsWithoutSampleId();
-        return "/lab/generate_barcode_p?faces-redirect=true";
+        return patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(b);
     }
 
     public String navigateToNewBillFromPrintLabelsForInvestigations() {
@@ -335,14 +332,6 @@ public class BillBhtController implements Serializable {
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     @Inject
     private BillSearch billSearch;
 
@@ -443,16 +432,49 @@ public class BillBhtController implements Serializable {
     public List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser, Department matrixDepartment, PaymentMethod paymentMethod) {
         List<BillItem> list = new ArrayList<>();
         for (BillEntry e : billEntries) {
+            double staffFee = 0.0;
+            double collectingCentreFee = 0.0;
+            double hospitalFee = 0.0;
+            double reagentFee = 0.0;
+            double otherFee = 0.0;
+            double marginFee = 0.0;
 
             BillItem billItem = saveBillItems(bill, e.getBillItem(), e, e.getLstBillFees(), webUser, matrixDepartment);
             billItem.setSearialNo(list.size());
+
             for (BillFee bf : billItem.getBillFees()) {
                 PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix);
                 getBillFeeFacade().edit(bf);
+
+                if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                    collectingCentreFee += bf.getFeeValue();
+                } else if (bf.getFee().getFeeType() == FeeType.Staff) {
+                    staffFee += bf.getFeeValue();
+                } else {
+                    hospitalFee += bf.getFeeValue();
+                }
+
+                if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                    reagentFee += bf.getFeeValue();
+                } else if (bf.getFee().getFeeType() == FeeType.Additional) {
+                    otherFee += bf.getFeeValue();
+                }
+
+                marginFee += bf.getFeeMargin();
             }
 
+            billItem.setHospitalFee(hospitalFee);
+            billItem.setCollectingCentreFee(collectingCentreFee);
+            billItem.setReagentFee(reagentFee);
+            billItem.setOtherFee(otherFee);
+            billItem.setStaffFee(staffFee);
+            billItem.setMarginValue(marginFee);
+
+            billItemFacade.editAndCommit(billItem);
+
             list.add(billItem);
+
         }
 
         getBillBean().updateBillByBillFee(bill);
@@ -488,9 +510,7 @@ public class BillBhtController implements Serializable {
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);
             billFacade.edit(b);
-            //System.err.println("4");
             getBillBean().calculateBillItems(b, getLstBillEntries());
-            //System.err.println("5");
             getBills().add(b);
         } else {
             putToBills(matrixDepartment);
@@ -697,11 +717,13 @@ public class BillBhtController implements Serializable {
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             JsfUtil.addErrorMessage("Please set To Department to This item");
             return true;
+
         }
 
         if (!getSessionController().getApplicationPreference().isInwardAddServiceBillTimeCheck()) {
             if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
-                if (getCurrentBillItem().getBillTime() == null) {
+                if (getCurrentBillItem()
+                        .getBillTime() == null) {
                     JsfUtil.addErrorMessage("Please set Time To This Investigation");
                     return true;
                 }
@@ -842,7 +864,6 @@ public class BillBhtController implements Serializable {
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
-
         //billTotal = 0.0;
     }
 
@@ -921,27 +942,25 @@ public class BillBhtController implements Serializable {
 
     public void removeBillItem(BillEntry bi) {
 
-        //TODO: Need to add Logic
-        //////// // System.out.println(getIndex());
-     //   if (getIndex() != null) {
-            boolean remove;
-      //      BillEntry temp = getLstBillEntries().get(getIndex());
-            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
-       //     recreateList(temp);
-            // remove = getLstBillEntries().remove(getIndex());
-
-            //  getLstBillEntries().remove(index);
-            ////////// // System.out.println("Is Removed:" + remove);
-      //      calTotals();
-
-      //  }
-        if(bi == null){
+        if (bi == null) {
             JsfUtil.addErrorMessage("Error! Please Try Again");
             return;
         }
-        lstBillEntries.remove(bi);
+
+        if (getEntriesIndex() == -1) {
+            JsfUtil.addErrorMessage("Error! Please Try Again");
+            return;
+        }
+
+        lstBillEntries.remove(entriesIndex);
+
+        lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
+        lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
+
         JsfUtil.addSuccessMessage("Successfully Removed");
         calTotals();
+
+        setEntriesIndex(-1);
 
     }
 
@@ -1329,6 +1348,14 @@ public class BillBhtController implements Serializable {
 
     public void setInwardItems(List<ItemLight> inwardItems) {
         this.inwardItems = inwardItems;
+    }
+
+    public int getEntriesIndex() {
+        return entriesIndex;
+    }
+
+    public void setEntriesIndex(int entriesIndex) {
+        this.entriesIndex = entriesIndex;
     }
 
 }

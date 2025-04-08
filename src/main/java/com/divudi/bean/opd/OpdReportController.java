@@ -74,7 +74,6 @@ public class OpdReportController implements Serializable {
     private static final long serialVersionUID = 1L;
 
 // <editor-fold defaultstate="collapsed" desc="EJBs">
-    private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -590,20 +589,6 @@ public class OpdReportController implements Serializable {
     }
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-
-    /**
-     * @return the commonFunctions
-     */
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    /**
-     * @param commonFunctions the commonFunctions to set
-     */
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
 
     /**
      * @return the billFacade

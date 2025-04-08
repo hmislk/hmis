@@ -138,7 +138,6 @@ public class PharmacyController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     // </editor-fold>
@@ -4315,7 +4314,7 @@ public class PharmacyController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfMonth();
+            fromDate = CommonFunctions.getStartOfMonth();
         }
         return fromDate;
     }
@@ -4335,14 +4334,6 @@ public class PharmacyController implements Serializable {
     public void setToDate(Date toDate) {
         makeNull();
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
