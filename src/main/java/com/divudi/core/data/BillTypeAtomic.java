@@ -28,6 +28,7 @@ public enum BillTypeAtomic {
     INWARD_DEPOSIT_REFUND_CANCELLATION("Inward Deposit Refund Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_FINAL_BILL("Inward Final Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     INWARD_PROVISIONAL_BILL("Inward Provisional Final Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+    INWARD_PROVISIONAL_BILL_CANCELLATION("Inward Provisional Final Bill Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     INWARD_ORIGINAL_FINAL_BILL("Inward Original Final Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY("Inward Final Bill Payments By Credit Company", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
     INWARD_INTERIM_BILL("Inward Interim Refund", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
