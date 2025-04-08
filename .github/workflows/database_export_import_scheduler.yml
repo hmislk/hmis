@@ -20,7 +20,7 @@ on:
         type: choice
         options:
           - QA1
-          - Qa2
+          - QA2
       date:
         description: 'Select Scheduling Date (YYYY-MM-DD)'
         required: true
