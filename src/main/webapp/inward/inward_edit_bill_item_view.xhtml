@@ -9,19 +9,18 @@
 
 
     <ui:define name="content">
-
-        <p:panel >
-            <f:facet name="header">
-                <h:outputLabel value="BillItem Details" class="mt-2"/>
-                <p:commandButton 
-                    ajax="false" 
-                    style="float: right;"
-                    icon="fa fa-arrow-left"
-                    class="ui-button-warning"
-                    value="Back to Interim"
-                    action="/inward/inward_bill_intrim?faces-redirect=true"/>
-            </f:facet>
-            <h:form  >
+        <h:form  >
+            <p:panel >
+                <f:facet name="header">
+                    <h:outputLabel value="BillItem Details" class="mt-2"/>
+                    <p:commandButton 
+                        ajax="false" 
+                        style="float: right;"
+                        icon="fa fa-arrow-left"
+                        class="ui-button-warning"
+                        value="Back to Interim"
+                        action="/inward/inward_bill_intrim?faces-redirect=true"/>
+                </f:facet>
 
                 <p:dataTable 
                     value="#{bhtSummeryController.billItems}" 
@@ -114,7 +113,7 @@
                                 value="View Bill Fee Break Down"  >
                                 <f:setPropertyActionListener value="#{ser}" target="#{serviceFeeEdit.billItem}"/>
                             </p:commandButton>
-                            
+
                             <p:commandButton 
                                 ajax="false" 
                                 action="inward_reprint_bill_service?faces-redirect=true"
@@ -132,11 +131,9 @@
                             </p:commandButton>
                         </div>
 
-
                     </p:column>
-
                 </p:dataTable>
-            </h:form>
-        </p:panel>
+            </p:panel>
+        </h:form>
     </ui:define>
 </ui:composition>
