@@ -1,40 +1,32 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Staff;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Staff;
 
-import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.cashTransaction.Drawer;
 
-import com.divudi.facade.BillFacade;
+import com.divudi.core.facade.BillFacade;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
-import com.divudi.service.StaffService;
+
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -290,7 +282,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, , 
+        // fetch original bill now, checked alteady returned, cancelled, ,
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
@@ -449,7 +441,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, , 
+        // fetch original bill now, checked alteady returned, cancelled, ,
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.CC_BILL_REFUND);
@@ -457,7 +449,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
         newlyReturnedBill.setReferenceBill(originalBillToReturn);
-        newlyReturnedBill.invertValueOfThisBill();
+        newlyReturnedBill.setBillDate(new Date());
+        newlyReturnedBill.setBillTime(new Date());
+//        newlyReturnedBill.invertValueOfThisBill();
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_BILL_REFUND);
         newlyReturnedBill.setDeptId(deptId);
@@ -523,29 +517,50 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             }
         }
 
-        newlyReturnedBill.setGrantTotal(0 - returningTotal);
-        newlyReturnedBill.setNetTotal(0 - returningNetTotal);
-        newlyReturnedBill.setTotal(0 - returningTotal);
-        newlyReturnedBill.setHospitalFee(0 - returningHospitalTotal);
-        newlyReturnedBill.setCollctingCentreFee(0 - returningCCTotal);
-        newlyReturnedBill.setProfessionalFee(0 - returningStaffTotal);
-        newlyReturnedBill.setDiscount(0 - returningDiscount);
+// Print the original values
+        System.out.println("Original returningTotal: " + returningTotal);
+        System.out.println("Original returningNetTotal: " + returningNetTotal);
+        System.out.println("Original returningHospitalTotal: " + returningHospitalTotal);
+        System.out.println("Original returningCCTotal: " + returningCCTotal);
+        System.out.println("Original returningStaffTotal: " + returningStaffTotal);
+        System.out.println("Original returningDiscount: " + returningDiscount);
 
-        newlyReturnedBill.setTotalHospitalFee(0 - returningHospitalTotal);
-        newlyReturnedBill.setTotalCenterFee(0 - returningCCTotal);
-        newlyReturnedBill.setTotalStaffFee(0 - returningStaffTotal);
+// Convert all values to negative absolute amounts
+        returningTotal = -Math.abs(returningTotal);
+        returningNetTotal = -Math.abs(returningNetTotal);
+        returningHospitalTotal = -Math.abs(returningHospitalTotal);
+        returningCCTotal = -Math.abs(returningCCTotal);
+        returningStaffTotal = -Math.abs(returningStaffTotal);
+        returningDiscount = -Math.abs(returningDiscount);
+
+// Print the adjusted values
+        System.out.println("Adjusted returningTotal: " + returningTotal);
+        System.out.println("Adjusted returningNetTotal: " + returningNetTotal);
+        System.out.println("Adjusted returningHospitalTotal: " + returningHospitalTotal);
+        System.out.println("Adjusted returningCCTotal: " + returningCCTotal);
+        System.out.println("Adjusted returningStaffTotal: " + returningStaffTotal);
+        System.out.println("Adjusted returningDiscount: " + returningDiscount);
+
+// Assign the adjusted values to newlyReturnedBill
+        newlyReturnedBill.setGrantTotal(returningTotal);
+        newlyReturnedBill.setNetTotal(returningNetTotal);
+        newlyReturnedBill.setTotal(returningTotal);
+        newlyReturnedBill.setHospitalFee(returningHospitalTotal);
+        newlyReturnedBill.setCollctingCentreFee(returningCCTotal);
+        newlyReturnedBill.setProfessionalFee(returningStaffTotal);
+        newlyReturnedBill.setDiscount(returningDiscount);
+
+// Print the values before setting
+        System.out.println("Setting TotalHospitalFee: " + returningHospitalTotal);
+        System.out.println("Setting TotalCenterFee: " + returningCCTotal);
+        System.out.println("Setting TotalStaffFee: " + returningStaffTotal);
+
+// Assign the values
+        newlyReturnedBill.setTotalHospitalFee(returningHospitalTotal);
+        newlyReturnedBill.setTotalCenterFee(returningCCTotal);
+        newlyReturnedBill.setTotalStaffFee(returningStaffTotal);
 
         billController.save(newlyReturnedBill);
-
-        System.out.println("CC Balance Update ");
-        //Update Centre Balanace
-//        System.out.println("Institution = " + originalBillToReturn.getCollectingCentre());
-//        System.out.println("Hospital Fee = " + newlyReturnedBill.getHospitalFee());
-//        System.out.println("CollctingCentre Fee = " + newlyReturnedBill.getCollctingCentreFee());
-//        System.out.println("Professional Fee = " + newlyReturnedBill.getProfessionalFee());
-//        System.out.println("Net Total = " + newlyReturnedBill.getNetTotal());
-//        System.out.println("History Type = " + HistoryType.CollectingCentreBillingRefund);
-//        System.out.println("Bill = " + newlyReturnedBill);
 
         agentAndCcApplicationController.updateCcBalance(
                 originalBillToReturn.getCollectingCentre(),
@@ -556,8 +571,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                 HistoryType.CollectingCentreBillingRefund,
                 newlyReturnedBill);
 
-        // drawer Update (No Need Update Drawer)
-//      drawerController.updateDrawerForOuts(returningPayment);
         returningStarted = false;
         return "/collecting_centre/cc_bill_return_print?faces-redirect=true";
 

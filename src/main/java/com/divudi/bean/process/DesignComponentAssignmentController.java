@@ -1,7 +1,7 @@
 package com.divudi.bean.process;
 
-import com.divudi.entity.web.DesignComponentAssignment;
-import com.divudi.facade.web.DesignComponentAssignmentFacade;
+import com.divudi.core.entity.web.DesignComponentAssignment;
+import com.divudi.core.facade.web.DesignComponentAssignmentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;

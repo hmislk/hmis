@@ -6,34 +6,34 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.hr.DayType;
+import com.divudi.core.data.hr.LeaveType;
+import com.divudi.core.data.hr.PaysheetComponentType;
+import com.divudi.core.data.hr.ReportKeyWord;
 
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.HrForm;
-import com.divudi.entity.hr.LeaveFormSystem;
-import com.divudi.entity.hr.PaysheetComponent;
-import com.divudi.entity.hr.SalaryCycle;
-import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffLeaveSystem;
-import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.entity.hr.StaffSalary;
-import com.divudi.entity.hr.StaffSalaryComponant;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.facade.LeaveFormFacade;
-import com.divudi.facade.StaffEmploymentFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffLeaveFacade;
-import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.facade.StaffSalaryComponantFacade;
-import com.divudi.facade.StaffSalaryFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.HrForm;
+import com.divudi.core.entity.hr.LeaveFormSystem;
+import com.divudi.core.entity.hr.PaysheetComponent;
+import com.divudi.core.entity.hr.SalaryCycle;
+import com.divudi.core.entity.hr.StaffLeave;
+import com.divudi.core.entity.hr.StaffLeaveSystem;
+import com.divudi.core.entity.hr.StaffPaysheetComponent;
+import com.divudi.core.entity.hr.StaffSalary;
+import com.divudi.core.entity.hr.StaffSalaryComponant;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.facade.LeaveFormFacade;
+import com.divudi.core.facade.StaffEmploymentFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffLeaveFacade;
+import com.divudi.core.facade.StaffPaysheetComponentFacade;
+import com.divudi.core.facade.StaffSalaryComponantFacade;
+import com.divudi.core.facade.StaffSalaryFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -64,7 +64,7 @@ import org.primefaces.event.RowEditEvent;
 public class StaffSalaryController implements Serializable {
 
     private StaffSalary current;
-    //////////   
+    //////////
     List<StaffSalary> items;
     List<StaffSalary> getSelectedStaffSalaryList;
     ///////
@@ -414,7 +414,7 @@ public class StaffSalaryController implements Serializable {
                 || checkDateRange(getCurrent().getStaff().getDateRetired())) {
 
 //            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
-            //#311 
+            //#311
             double workedDays = 0.0;
             if (checkDateRange(getCurrent().getStaff().getDateLeft()) || checkDateRange(getCurrent().getStaff().getDateRetired())) {
                 workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
@@ -465,7 +465,7 @@ public class StaffSalaryController implements Serializable {
 //            }
 //            becaause this pesonn must analyse to resign date
             //// // System.out.println("7.workedDays = " + workedDays);
-            //remove offdays 
+            //remove offdays
 //            workedDays -= (int) (workedDays / 7); because we get only working days not week days
 //            //// // System.out.println("3.workedDays = " + workedDays);
 
@@ -638,7 +638,7 @@ public class StaffSalaryController implements Serializable {
 
 //        System.err.println("FROM1 " + frmCal.getTime());
 //        System.err.println("TO1 " + toCal.getTime());
-//        
+//
         for (int i = 0; i < numOfWeeks; i++) {
 
 //            ////// // System.out.println("i = " + i);
@@ -699,7 +699,7 @@ public class StaffSalaryController implements Serializable {
 
 //        System.err.println("FROM1 " + frmCal.getTime());
 //        System.err.println("TO1 " + toCal.getTime());
-//        
+//
         for (int i = 0; i < numOfWeeks; i++) {
 
 //            ////// // System.out.println("i = " + i);
@@ -1225,8 +1225,8 @@ public class StaffSalaryController implements Serializable {
             getCurrent().setNoPayCount(noPayCount);
             setAdjustments();
 
-            //Record Late No Pay Leave 
-            //Not consider in any calcualtion is alredy with general NO Pay 
+            //Record Late No Pay Leave
+            //Not consider in any calcualtion is alredy with general NO Pay
             //only for reporting purpose
 //            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             //Issue #311
@@ -1304,7 +1304,7 @@ public class StaffSalaryController implements Serializable {
 ////                ss.setConsideredForSalary(Boolean.FALSE);
 ////                ss.setConsideredForExtraDuty(Boolean.FALSE);
 ////                ss.setLieuPaid(false);
-//                
+//
 //                getStaffShiftFacade().edit(ss);
 //            }
             getStaffSalaryFacade().edit(staffSalary);
@@ -1551,7 +1551,7 @@ public class StaffSalaryController implements Serializable {
             //Automatic No Pay Diduction
             double fromMinute = 90 * 60;
 
-            // Calculate Late in for 1 1\2 h 
+            // Calculate Late in for 1 1\2 h
             if (ss.getStaff().isAllowedLateInLeave()
                     && !ss.isConsiderForLateIn()) {
 
@@ -1689,7 +1689,7 @@ public class StaffSalaryController implements Serializable {
 //                    if (workedDays==0.0) {
 //                        continue;
 //                    }
-//                    
+//
 //                }
                 if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
                     if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
@@ -2148,5 +2148,5 @@ public class StaffSalaryController implements Serializable {
         }
     }
 
-    
+
 }

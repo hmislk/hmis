@@ -1,14 +1,11 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.HistoryType;
-import static com.divudi.data.HistoryType.CollectingCentreBilling;
-import static com.divudi.data.HistoryType.CollectingCentreDebitNoteCancel;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Institution;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import javax.inject.Named;
 import java.util.Date;
 import java.util.HashMap;
@@ -97,7 +94,7 @@ public class AgentAndCcApplicationController {
         }
     }
 
-    
+
     public Double ccBalanceBefore(Bill b){
         String jpql;
         jpql = "select h.balanceBeforeTransaction "
@@ -107,7 +104,7 @@ public class AgentAndCcApplicationController {
         params.put("bill", b);
         return agentHistoryFacade.findDoubleByJpql(jpql, params);
     }
-    
+
     public Double ccBalanceAfter(Bill b){
         String jpql;
         jpql = "select h.balanceAfterTransaction "
@@ -117,7 +114,7 @@ public class AgentAndCcApplicationController {
         params.put("bill", b);
         return agentHistoryFacade.findDoubleByJpql(jpql, params);
     }
-    
+
     private void handleCcBalanceUpdateBill(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
 
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
@@ -218,10 +215,10 @@ public class AgentAndCcApplicationController {
 
             double balanceBeforeTx = collectingCentre.getBallance();
             double balanceAfterTx = balanceBeforeTx + Math.abs(hospitalFee);
-            
+
             System.out.println("Before Balance = " + collectingCentre.getBallance());
             System.out.println("Refund Value = " + hospitalFee);
-            
+
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
 
@@ -229,7 +226,7 @@ public class AgentAndCcApplicationController {
 
             collectingCentre.setBallance(balanceAfterTx);
             institutionFacade.editAndCommit(collectingCentre);
-            
+
             System.out.println("After Balance = " + collectingCentre.getBallance());
 
         } finally {

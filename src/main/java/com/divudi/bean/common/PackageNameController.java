@@ -1,8 +1,8 @@
 package com.divudi.bean.common;
-import com.divudi.entity.Item;
-import com.divudi.entity.Packege;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PackegeFacade;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Packege;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PackegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,7 +14,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -35,7 +35,7 @@ public  class PackageNameController implements Serializable {
     private List<Packege> items = null;
     private List<Item> itemList = null;
 
-    
+
      public List<Packege> completePack(String query) {
         List<Packege> suggestions;
         String sql;
@@ -50,11 +50,11 @@ public  class PackageNameController implements Serializable {
         }
         return suggestions;
     }
-     
+
      public String navigateToPackageNames(){
          return "/admin/pricing/package_name?faces-redirect=true";
      }
-    
+
     /**
      *
      */

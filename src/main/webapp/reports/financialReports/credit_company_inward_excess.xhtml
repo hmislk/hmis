@@ -253,17 +253,17 @@
                                 <p:column>
                                     <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
                                 </p:column>
-                                <p:column style="text-align: right;">
+                                <p:column>
                                     <h:outputLabel value="#{b.finalBill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;">
+                                <p:column>
                                     <h:outputLabel value="#{b.transPaid}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;">
+                                <p:column>
                                     <h:outputLabel value="#{b.transPaid-b.finalBill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -271,21 +271,21 @@
                                 <p:columnGroup type="footer">
                                     <p:row>
                                         <p:column footerText="Total" colspan="2"/>
-                                        <p:column style="text-align: right;">
+                                        <p:column>
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{i.total}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: right;">
+                                        <p:column>
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{i.paidTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: right;">
+                                        <p:column>
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{0-(i.total-i.paidTotal)}">
                                                     <f:convertNumber pattern="#,##0.00"/>

@@ -1,9 +1,9 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.reports.IReportType;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.report.ReportLog;
-import com.divudi.facade.ReportLogFacade;
+import com.divudi.core.data.reports.IReportType;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.report.ReportLog;
+import com.divudi.core.facade.ReportLogFacade;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

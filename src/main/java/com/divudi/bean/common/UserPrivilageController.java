@@ -10,17 +10,17 @@
 package com.divudi.bean.common;
 
 // <editor-fold defaultstate="collapsed" desc="Imports">
-import com.divudi.data.Privileges;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserPrivilege;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.WebUserPrivilegeFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.WebUserRole;
-import com.divudi.entity.WebUserRolePrivilege;
-import com.divudi.facade.WebUserRolePrivilegeFacade;
+import com.divudi.core.data.Privileges;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserPrivilege;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.WebUserRole;
+import com.divudi.core.entity.WebUserRolePrivilege;
+import com.divudi.core.facade.WebUserRolePrivilegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ import org.primefaces.model.TreeNode;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical Informatics)
- * 
+ *
  */
 @Named
 @SessionScoped
@@ -127,6 +127,14 @@ public class UserPrivilageController implements Serializable {
         TreeNode addCreditLimit = new DefaultTreeNode(new PrivilegeHolder(Privileges.AddCreditLimitInRegistration, "Add Credit Limit During Patient Registration"), opdNode);
         TreeNode addNewRefferalDoctor = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdAddNewRefferalDoctor, "Add New Referral Doctor"), opdNode);
         TreeNode addNewCollectingCentre = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdAddNewCollectingCentre, "Add New Referral Center"), opdNode);
+
+        TreeNode cashierNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Cashier, "Cashier Menu"), opdNode);
+        TreeNode acceptPaymentForCashierBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.AcceptPaymentForPharmacyBills, "Accept payment for sale for cashier bills"), cashierNode);
+        TreeNode scanBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.ScanBillsFromCashier, "Scan Bills From Cashier Menu"), cashierNode);
+        TreeNode acceptPaymentForOpdBatchBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.AcceptPaymentForOpdBatchBills, "Accept payment for OPD Bactch Bills From Cashier Menu"), cashierNode);
+        TreeNode refundBillsAtCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundFromCashier, "Refunds From Cashier"), cashierNode);
+        TreeNode refundOpdBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundOpdBillsFromCashier, "Refund Opd Bills From Cashier Menu"), cashierNode);
+        TreeNode refundPharmacyBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundPharmacyBillsFromCashier, "Refund Pharmacy Bills From Cashier"), cashierNode);
 
         // Inward Privileges
         TreeNode inwardNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inward"), allNode);
@@ -505,7 +513,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewBillReports, "Courier View Bill Reports"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewPaymentReports, "Courier View Payment Reports"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreReports, "Courier View Collecting Centre Reports"), courierNode);
-        
+
         // User Menu
         TreeNode userNode = new DefaultTreeNode(new PrivilegeHolder(null, "User"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.UserMenu, "User Menu"), userNode);
@@ -519,7 +527,6 @@ public class UserPrivilageController implements Serializable {
         TreeNode searchRootNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Search, "Search Menu"), searchRootNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchGrand, "Grand Search"), searchRootNode);
-
 
         // Cash Transaction Privileges
         TreeNode cashTransactionNode = new DefaultTreeNode(new PrivilegeHolder(null, "Cash Transaction"), allNode);
@@ -535,7 +542,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode PettyCashBillApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillApprove, "Petty Cash Bill Approval"), cashTransactionNode);
         TreeNode PettyCashBillCancellationApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillCancellationApprove, "Petty Cash Bill Cancellation Approval"), cashTransactionNode);
 
-        //Pharmacy 
+        //Pharmacy
         TreeNode pharmacyTokenManagement = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTokenManagement, "Pharmacy Token Management"), pharmacyNode);
         TreeNode retailTransaction = new DefaultTreeNode("Pharmacy Retail Transaction", pharmacyNode);
         TreeNode retailTransactionMenu = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyRetailTransactionMenue, "Pharmacy Retail Transaction Menu"), retailTransaction);
@@ -573,7 +580,6 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyDisbursementReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementReports, "Pharmacy Disbursement Reports"), disbursementNode);
         TreeNode PharmacyDisbursementApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequestApproval, "Pharmacy Disbursement Request Approval"), disbursementNode);
 
-        
         TreeNode InpatientMedicationManagementNode = new DefaultTreeNode("Inpatient medication Management", pharmacyNode);
         TreeNode InpatientMedicationManagementMenue = new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientMedicationManagementMenue, "Procurement Menu"), InpatientMedicationManagementNode);
         TreeNode PharmacyDirectIssueToBht = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectIssueToBht, "Pharmacy Direct Issue To Bht"), InpatientMedicationManagementNode);

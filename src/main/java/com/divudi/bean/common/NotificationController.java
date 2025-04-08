@@ -8,16 +8,16 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.OptionScope;
-import com.divudi.data.TriggerType;
-import com.divudi.data.TriggerTypeParent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Notification;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.facade.NotificationFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.TriggerType;
+import com.divudi.core.data.TriggerTypeParent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Notification;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.NotificationFacade;
+import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -50,8 +50,6 @@ public class NotificationController implements Serializable {
     UserNotificationController userNotificationController;
     @Inject
     SecurityController securityController;
-    @Inject
-    CommonController commonController;
     @Inject
     ConfigOptionController configOptionController;
     @EJB

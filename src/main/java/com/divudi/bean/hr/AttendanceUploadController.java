@@ -5,14 +5,14 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.hr.Times;
+import com.divudi.core.data.hr.Times;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.FingerPrintRecord;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.facade.FingerPrintRecordFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffShiftFacade;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.FingerPrintRecord;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.facade.FingerPrintRecordFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffShiftFacade;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -313,7 +313,7 @@ public class AttendanceUploadController implements Serializable {
 
     }
 
- 
+
 
     public Times[] getTimes() {
         return Times.values();

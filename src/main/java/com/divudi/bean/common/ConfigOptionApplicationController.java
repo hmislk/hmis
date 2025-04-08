@@ -1,14 +1,13 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.Denomination;
-import com.divudi.data.OptionScope;
-import com.divudi.data.OptionValueType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.ConfigOption;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.ConfigOptionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.ConfigOptionFacade;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -291,7 +290,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
@@ -309,7 +308,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
     public String getColorValueByKey(String key, String defaultColorHashCode) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {

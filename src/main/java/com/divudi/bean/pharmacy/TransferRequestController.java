@@ -4,33 +4,32 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.Department;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.Department;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,8 +53,6 @@ public class TransferRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -660,14 +657,6 @@ public class TransferRequestController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Bill getTranserRequestBillPre() {

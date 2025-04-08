@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill"  />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"  />
         <cc:attribute name="duplicate" />
         <cc:attribute name="cancelled" />
     </cc:interface>
@@ -35,32 +35,32 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
                 </div>
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="DUE PAYMENTS"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="DUE PAYMENTS"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div class="billline">
                 <h1>
                     #{cc.attrs.bill.sessionId}
-                </h1>                         
+                </h1>
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div class="">
-                <p:barcode value="#{cc.attrs.bill.idStr}" 
+                <p:barcode value="#{cc.attrs.bill.idStr}"
                            width="400"
                            height="100"
                            type="code128"  >
@@ -68,7 +68,7 @@
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div>
@@ -120,7 +120,7 @@
 
                     </tr>
 
-                   
+
                     <h:panelGroup rendered="#{cc.attrs.bill.referredByInstitution ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
@@ -164,7 +164,7 @@
 
             </div>
 
-            
+
 
             <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" >
                 <div >
@@ -201,7 +201,7 @@
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
             <table style="width: 100%; margin-left:0.5cm; ">
                 <tr>
@@ -220,7 +220,7 @@
 
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div class="footer">

@@ -7,51 +7,51 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.DepartmentBillItems;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.DepartmentBillItems;
+import com.divudi.core.data.inward.InwardChargeType;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Department;
-import com.divudi.entity.Fee;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PatientItem;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.InwardFee;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.entity.inward.Room;
-import com.divudi.entity.inward.RoomFacilityCharge;
-import com.divudi.entity.inward.TimedItem;
-import com.divudi.entity.inward.TimedItemFee;
-import com.divudi.facade.AdmissionFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientItemFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.PriceMatrixFacade;
-import com.divudi.facade.RoomFacade;
-import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Fee;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.InwardFee;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.Room;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.entity.inward.TimedItem;
+import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientItemFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PriceMatrixFacade;
+import com.divudi.core.facade.RoomFacade;
+import com.divudi.core.facade.TimedItemFeeFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1993,11 +1993,10 @@ public class InwardBeanController implements Serializable {
             return;
         }
 
-        if (billFee.getFee().getFeeType() != FeeType.Staff
-                && priceMatrix != null) {
-
+        if (billFee.getFee().getFeeType() != FeeType.Staff && priceMatrix != null) {
             margin = (billFee.getFeeGrossValue() * priceMatrix.getMargin()) / 100;
             billFee.setFeeMargin(margin);
+            billFeeFacade.edit(billFee);
         }
 
         double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();

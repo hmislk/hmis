@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Item;
-import com.divudi.entity.lab.ItemForItem;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemForItemFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.lab.ItemForItem;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemForItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -169,9 +169,9 @@ public class ItemForItemController implements Serializable {
         recreateModel();
         getItems();
     }
-    
-    
-    
+
+
+
     public void save(ItemForItem saving) {
         if (saving != null && getCurrent().getId() > 0) {
             getFacade().edit(current);

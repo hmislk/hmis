@@ -1,13 +1,13 @@
 package com.divudi.service;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.data.BooleanMessage;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.entity.Bill;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
+import com.divudi.core.data.BooleanMessage;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.PaymentScheme;
+
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
@@ -65,7 +65,7 @@ public class DiscountSchemeValidationService {
 
         return validated;
     }
-    
+
     public BooleanMessage validateDiscountScheme(PaymentMethod paymentMethod, PaymentScheme discountScheme) {
         BooleanMessage validated = new BooleanMessage();
         validated.setFlag(true);
@@ -120,9 +120,9 @@ public class DiscountSchemeValidationService {
         }
         return validated;
     }
-    
-    
-    
+
+
+
     public BooleanMessage validateDiscountSchemeForStaffRequired(PaymentMethod paymentMethod, PaymentScheme discountScheme) {
         BooleanMessage validated = new BooleanMessage();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -139,6 +139,6 @@ public class DiscountSchemeValidationService {
             return validated;
         }
     }
-    
+
 
 }

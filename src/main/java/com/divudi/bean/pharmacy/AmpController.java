@@ -9,28 +9,27 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.ItemSupplierPrices;
-import com.divudi.data.ItemType;
-import com.divudi.data.SymanticType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemSupplierPrices;
+import com.divudi.core.data.ItemType;
+import com.divudi.core.data.SymanticType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -64,12 +63,20 @@ import java.util.Iterator;
 public class AmpController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private AmpFacade ejbFacade;
+    @EJB
+    BillNumberGenerator billNumberBean;
+    @EJB
+    private VmpFacade vmpFacade;
+    @EJB
+    private VirtualProductIngredientFacade vivFacade;
+    @EJB
+    PharmacyBean pharmacyBean;
+    @EJB
+    StockFacade stockFacade;
+
     List<Amp> selectedItems;
     private Amp current;
     private Vtm vtm;
@@ -79,15 +86,14 @@ public class AmpController implements Serializable {
     private VirtualProductIngredient addingVtmInVmp;
     private Vmp currentVmp;
 
-    @EJB
-    private VmpFacade vmpFacade;
-    @EJB
-    private VirtualProductIngredientFacade vivFacade;
     List<Amp> itemsByCode = null;
     List<Amp> listToRemove = null;
     Department department;
     List<Amp> itemList;
     List<ItemSupplierPrices> itemSupplierPrices;
+
+    @Inject
+    SessionController sessionController;
     @Inject
     ItemsDistributorsController itemDistributorsController;
     @Inject
@@ -186,10 +192,6 @@ public class AmpController implements Serializable {
     }
 
     public void fillItemsForItemSupplierPrices() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         List<Amp> amps = getLongCodeItems();
         itemSupplierPrices = new ArrayList<>();
         for (Amp a : amps) {
@@ -208,14 +210,9 @@ public class AmpController implements Serializable {
 //        for (ItemSupplierPrices p : itemSupplierPrices) {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
-
     }
 
     public void fillPricesForItemSupplierPrices() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
 //        List<Amp> amps = getLongCodeItems();
 //        itemSupplierPrices = new ArrayList<>();
 //        for (Amp a : amps) {
@@ -232,18 +229,12 @@ public class AmpController implements Serializable {
 //        for (ItemSupplierPrices p : itemSupplierPrices) {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
-
     }
 
     public void fillSuppliersForItemSupplierPrices() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         for (ItemSupplierPrices p : itemSupplierPrices) {
             p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
         }
-
     }
 
     public List<Amp> getListToRemove() {
@@ -265,9 +256,6 @@ public class AmpController implements Serializable {
         this.billNumberBean = billNumberBean;
     }
 
-    @EJB
-    PharmacyBean pharmacyBean;
-
     public PharmacyBean getPharmacyBean() {
         return pharmacyBean;
     }
@@ -275,9 +263,6 @@ public class AmpController implements Serializable {
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
     }
-
-    @EJB
-    StockFacade stockFacade;
 
     public StockFacade getStockFacade() {
         return stockFacade;
@@ -324,10 +309,6 @@ public class AmpController implements Serializable {
     }
 
     public void createMedicineList() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
         m.put("dep", DepartmentType.Pharmacy);
         String sql = "select c from PharmaceuticalItem c "
@@ -337,14 +318,9 @@ public class AmpController implements Serializable {
                 + " order by c.name";
 
         items = getFacade().findByJpql(sql, m);
-
     }
 
     public void createItemList() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
         m.put("dep", DepartmentType.Pharmacy);
         String sql = "select c from Amp c "
@@ -354,7 +330,6 @@ public class AmpController implements Serializable {
                 + " order by c.name";
 
         items = getFacade().findByJpql(sql, m);
-
     }
 
     public void createItemListPharmacy() {
@@ -399,35 +374,19 @@ public class AmpController implements Serializable {
     }
 
     public void pharmacyDeleteItem() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         itemList = deleteOrNotItem(false, DepartmentType.Store);
-
     }
 
     public void pharmacyNoDeleteItem() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         itemList = deleteOrNotItem(true, DepartmentType.Store);
-
     }
 
     public void storeDeleteItem() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         itemList = deleteOrNotStoreItem(false, DepartmentType.Store);
-
     }
 
     public void storeNoDeleteItem() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         itemList = deleteOrNotStoreItem(true, DepartmentType.Store);
-
     }
 
     public void onTabChange(TabChangeEvent event) {
@@ -473,7 +432,6 @@ public class AmpController implements Serializable {
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
                     + "((c.name) like :n ) order by c.name", m, 30);
-            //////// // System.out.println("a size is " + a.size());
         }
         if (ampList == null) {
             ampList = new ArrayList<>();
@@ -510,7 +468,6 @@ public class AmpController implements Serializable {
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
                     + "((c.name) like :n ) order by c.name", m, 30);
-            //////// // System.out.println("a size is " + a.size());
         }
         return vmps;
     }
@@ -528,7 +485,6 @@ public class AmpController implements Serializable {
 //            ampList = getFacade().findByJpql("select c from Amp c where "
 //                    + " c.retired=false and (c.departmentType is null or c.departmentType!=:dep) and "
 //                    + "((c.code) like :n ) order by c.code", m, 30);
-//            //////// // System.out.println("a size is " + a.size());
 //        }
 //        if (ampList == null) {
 //            ampList = new ArrayList<>();
@@ -543,21 +499,15 @@ public class AmpController implements Serializable {
 //        String sql = "select c from Amp c where "
 //                + " c.retired=false and c.departmentType!=:dep and "
 //                + "((c.barcode) like :n ) order by c.barcode";
-//        //   ////// // System.out.println("sql = " + sql);
-//        //   ////// // System.out.println("m = " + m);
 //
 //        if (qry != null) {
 //            ampList = getFacade().findByJpql(sql, m, 30);
-//            //   ////// // System.out.println("a = " + a);
-//            //////// // System.out.println("a size is " + a.size());
 //        }
 //        if (ampList == null) {
 //            ampList = new ArrayList<>();
 //        }
 //        return ampList;
 //    }
-    @EJB
-    BillNumberGenerator billNumberBean;
 
     public void prepareAdd() {
         current = new Amp();
@@ -586,7 +536,6 @@ public class AmpController implements Serializable {
 
         DecimalFormat df = new DecimalFormat("0000");
         if (amp != null && !amp.getCode().isEmpty()) {
-            //// // System.out.println("amp.getCode() = " + amp.getCode());
 
             String s = amp.getCode().substring(2);
 
@@ -706,20 +655,23 @@ public class AmpController implements Serializable {
 
     public void save() {
         if (current == null) {
-            JsfUtil.addErrorMessage("Nothuing selected");
+            JsfUtil.addErrorMessage("No AMP is selected");
             return;
         }
+        
+        if(current.getId() != null){
+            if(!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)){
+                JsfUtil.addErrorMessage("You have no privilage to edit AMPs.");
+                return;
+            }
+        }
+        
         if (current.getName() == null || current.getName().isEmpty()) {
-            JsfUtil.addErrorMessage("No Name");
+            JsfUtil.addErrorMessage("Please add a name to AMP");
             return;
         }
 
         int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item","4"));
-
-        System.out.println("maxCodeLeanth = " + maxCodeLeanth);
-        System.out.println("Current Code length = " + current.getCode().trim().length());
-
-        System.out.println(current.getCode().trim().length() < maxCodeLeanth);
 
         if (current.getCode().trim().length() < maxCodeLeanth){
             JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
@@ -737,6 +689,7 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No VMP selected");
             return;
         }
+     
         if (current.getCategory() == null) {
             if (current.getVmp().getCategory() != null) {
                 current.setCategory(current.getVmp().getCategory());
@@ -1051,13 +1004,4 @@ public class AmpController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

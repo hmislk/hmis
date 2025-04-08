@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -17,7 +17,7 @@
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" ></p:dataTable>-->
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
-        
+
         <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
             <f:facet name="header" >
                 <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>

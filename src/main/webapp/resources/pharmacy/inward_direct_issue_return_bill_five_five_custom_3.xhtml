@@ -16,7 +16,7 @@
         <!-- Composite Component Interface -->
         <cc:interface>
             <!-- Attributes passed to the component -->
-            <cc:attribute name="bill" required="true"  type="com.divudi.entity.Bill" />
+            <cc:attribute name="bill" required="true"  type="com.divudi.core.entity.Bill" />
             <cc:attribute name="duplicate" required="false" />
         </cc:interface>
 
@@ -29,7 +29,7 @@
                 <!-- Header Section -->
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
-                    <h:outputLabel value="RETURN BILL"   /> 
+                    <h:outputLabel value="RETURN BILL"   />
                 </div>
 
                 <!-- Separator Line -->
@@ -155,14 +155,14 @@
                         <td>
                             <ui:repeat value="#{cc.attrs.bill.payments}" var="ps" rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}">
                                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Cash' }" >
-                                    <h:outputText 
-                                        style="font-size: 8pt"  
+                                    <h:outputText
+                                        style="font-size: 8pt"
                                         value="Paid by : Cash #{ps.paidValue}"/><br/>
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                                    <h:outputText 
-                                        style="font-size: 8pt"  
+                                    <h:outputText
+                                        style="font-size: 8pt"
                                         value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/><br/>
                                 </h:panelGroup>
                             </ui:repeat>

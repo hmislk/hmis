@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" ></cc:attribute>
@@ -52,12 +52,12 @@
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Refuned" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value="Cancelled" />
                     </h:panelGroup>
-                    
+
                     <h:panelGroup>
                         <h:outputLabel value="&nbsp;&nbsp;" />
                         <h:outputLabel value=" Receipt"/>

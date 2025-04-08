@@ -9,37 +9,37 @@ import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 
 import com.divudi.bean.lab.PatientInvestigationController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.EjbApplication;
-import com.divudi.entity.*;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.EncounterComponent;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.EncounterComponentFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -928,11 +928,15 @@ public class InwardSearch implements Serializable {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(), new Date());
+            boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false);
+            boolean hasPrivilege = getWebUserController().hasPrivilege("InwardFinalBillCancel");
 
-            if (Math.abs(dayCount) > 3 && !getWebUserController().hasPrivilege("InwardFinalBillCancel")) {
-                JsfUtil.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
+            // Skip time check if both conditions are true: time limit is disabled AND user has privilege
+            if (!disableTimeLimit && Math.abs(dayCount) > 3 && !hasPrivilege) {
+                JsfUtil.addErrorMessage("You can't cancel bills older than 3 days without special privileges.");
                 return;
             }
+
             if (getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;

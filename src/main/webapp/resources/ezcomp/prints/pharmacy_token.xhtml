@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="token" type="com.divudi.entity.Token"  />
+        <cc:attribute name="token" type="com.divudi.core.entity.Token"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -33,40 +33,40 @@
                     <h:outputLabel value="#{cc.attrs.token.department.telephone2}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.token.department.fax}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.token.department.fax}"/>
                 </div>
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Pharmacy Token"   />    
+                <h:outputLabel value="Pharmacy Token"   />
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
             <div class="billline">
                 <h1>
                     #{cc.attrs.token.tokenNumber}
-                </h1>                         
-            </div>
-            
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                </h1>
             </div>
 
-            
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />
+            </div>
+
+
             <div class="billline d-flex justify-content-center">
-                <p:barcode value="#{cc.attrs.token.idStr}" 
+                <p:barcode value="#{cc.attrs.token.idStr}"
                            width="400"
                            height="100"
                            type="code128"  >
                 </p:barcode>
             </div>
-            
+
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
 
@@ -105,17 +105,17 @@
                         </tr>
                     </h:panelGroup>
 
-                 
+
                 </table>
 
 
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
-           
+
         </div>
     </cc:implementation>
 </html>
