@@ -132,9 +132,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     StaffService staffService;
     @EJB
     PaymentService paymentService;
-    @Inject
-    private BillSearch billSearch;
-    @Inject
+    @EJB
     ProfessionalPaymentService professionalPaymentService;
     /**
      * Controllers
@@ -157,6 +155,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     PatientDepositController patientDepositController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    private BillSearch billSearch;
 
     /**
      * Class Vairables
@@ -235,7 +235,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
 
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -1431,14 +1430,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     private void savePatient() {

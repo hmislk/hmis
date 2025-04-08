@@ -76,7 +76,6 @@ public class CreditCompanyDueController implements Serializable {
     @EJB
     private PaymentFacade paymentFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     AdmissionFacade admissionFacade;
 
@@ -637,7 +636,7 @@ public class CreditCompanyDueController implements Serializable {
         List<Bill> lst = getCreditBean().getCreditBills(inst, true);
         for (Bill b : lst) {
 
-            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
@@ -660,7 +659,7 @@ public class CreditCompanyDueController implements Serializable {
         List<Bill> lst = getCreditBean().getCreditBillsPharmacy(inst, true);
         for (Bill b : lst) {
 
-            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
@@ -683,7 +682,7 @@ public class CreditCompanyDueController implements Serializable {
         List<Bill> lst = getCreditBean().getCreditBills(inst, false);
         for (Bill b : lst) {
 
-            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
@@ -704,7 +703,7 @@ public class CreditCompanyDueController implements Serializable {
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, true, paymentMethod);
         for (PatientEncounter b : lst) {
-            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
             b.setTransDayCount(dayCount);
             double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
             if (dayCount < 30) {
@@ -728,7 +727,7 @@ public class CreditCompanyDueController implements Serializable {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(
                 inst, true, paymentMethod, institutionOfDepartment, department, site);
         for (PatientEncounter b : lst) {
-            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
             b.setTransDayCount(dayCount);
 //            double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
             double finalValue = b.getCreditUsedAmount() + b.getCreditPaidAmount();
@@ -758,7 +757,7 @@ public class CreditCompanyDueController implements Serializable {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, false, paymentMethod);
         for (PatientEncounter b : lst) {
 
-            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
             double finalValue = (Math.abs(b.getCreditUsedAmount()) - Math.abs(b.getCreditPaidAmount()));
 
@@ -780,7 +779,7 @@ public class CreditCompanyDueController implements Serializable {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, false, paymentMethod);
         for (PatientEncounter b : lst) {
 
-            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
             double finalValue = (Math.abs(b.getFinalBill().getNetTotal()) - Math.abs(b.getFinalBill().getPaidAmount()));
 
@@ -812,7 +811,7 @@ public class CreditCompanyDueController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1779,18 +1778,6 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        if (commonFunctions == null) {
-            commonFunctions = new CommonFunctions();
-        }
-
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public CreditBean getCreditBean() {

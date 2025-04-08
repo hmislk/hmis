@@ -41,8 +41,6 @@ public class DrawerEntryController implements Serializable {
     @Inject
     private SessionController sessionController;
 
-    CommonFunctions commonFunctions;
-
     private DrawerEntry current;
     private List<DrawerEntry> userDrawerEntry;
     private Date fromDate;

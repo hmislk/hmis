@@ -2,7 +2,7 @@ package com.divudi.bean.common;
 
 // <editor-fold defaultstate="collapsed" desc="Template">
 // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Importa">
+// <editor-fold defaultstate="collapsed" desc="Imports">
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
@@ -134,7 +134,6 @@ public class SearchController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     // <editor-fold defaultstate="collapsed" desc="EJBs">
-    private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -1957,7 +1956,7 @@ public class SearchController implements Serializable {
     }
 
     public Date getMaxDate() {
-        maxDate = commonFunctions.getEndOfDay(new Date());
+        maxDate = CommonFunctions.getEndOfDay(new Date());
         return maxDate;
     }
 
@@ -6366,11 +6365,11 @@ public class SearchController implements Serializable {
     }
 
     public void createBillItemTableByKeyword() {
-        
+
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        
+
         Date startTime = new Date();
         String sql;
         Map m = new HashMap();
@@ -6383,7 +6382,7 @@ public class SearchController implements Serializable {
                 + " and bi.createdAt between :fromDate and :toDate ";
 
         m.put("billTypesAtomics", billTypesAtomics);
-        
+
         if (showLoggedDepartmentOnly) {
             Department dept = sessionController.getDepartment();
             if (dept != null) {
@@ -6391,7 +6390,7 @@ public class SearchController implements Serializable {
                 m.put("dept", dept);
             }
         }
-        
+
         if (searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().equals("")) {
             sql += " and  ((bi.bill.patient.person.name) like :patientName )";
             m.put("patientName", "%" + searchKeyword.getPatientName().trim().toUpperCase() + "%");
@@ -7554,7 +7553,7 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
     }
-    
+
     public void fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(boolean paidOnly) {
         bills = null;
         String sql;
@@ -7576,7 +7575,7 @@ public class SearchController implements Serializable {
         parameters.put("toDate", getToDate());
         parameters.put("dept", sessionController.getDepartment());
         parameters.put("ins", sessionController.getInstitution());
-        
+
         if(paidOnly){
             sql += " and token.bill.referenceBill is not null ";
         }else{
@@ -7658,15 +7657,15 @@ public class SearchController implements Serializable {
         bills = tokenList.stream().map(t -> t.getBill()).collect(Collectors.toList());
 
     }
-    
+
     /**
-     * 
+     *
      * @param bill need to find paid bills
      * @return paid bill list associate with bill
      * This method added due to avoid cache and get fresh bill entity from db.
      * Otherwise it is not updated even paid bills are available
      */
-    public List<Bill> getRefreshCashBills(Bill bill){       
+    public List<Bill> getRefreshCashBills(Bill bill){
         Bill fetchBill = getBillFacade().findWithoutCache(bill.getId());
         if(fetchBill == null){
             return Collections.emptyList();
@@ -18070,7 +18069,7 @@ public class SearchController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -18081,7 +18080,7 @@ public class SearchController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }

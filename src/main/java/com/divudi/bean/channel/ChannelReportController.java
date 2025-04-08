@@ -6,7 +6,6 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.hr.StaffController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
@@ -133,8 +132,6 @@ public class ChannelReportController implements Serializable {
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
-    private BillItemFacade billItemFacade;
-    @EJB
     private BillFacade billFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
@@ -143,15 +140,10 @@ public class ChannelReportController implements Serializable {
     private ChannelBean channelBean;
     @Inject
     SessionController sessionController;
-    @Inject
-    StaffController staffController;
-    @Inject
-    BookingController bookingController;
 
     @EJB
     DepartmentFacade departmentFacade;
 
-    CommonFunctions commonFunctions;
     @EJB
     StaffFacade staffFacade;
     @EJB
@@ -2386,8 +2378,8 @@ public class ChannelReportController implements Serializable {
     public List<Bill> getChannelUnPaidBillListbyClassTypes(List<BillType> bts, Date d, Staff stf) {
         HashMap hm = new HashMap();
 
-        Date fd = commonFunctions.getStartOfDay(d);
-        Date td = commonFunctions.getEndOfDay(d);
+        Date fd = CommonFunctions.getStartOfDay(d);
+        Date td = CommonFunctions.getEndOfDay(d);
 
         String sql = "SELECT distinct(bf.bill) FROM BillFee bf "
                 + " WHERE bf.retired = false "
@@ -2494,8 +2486,8 @@ public class ChannelReportController implements Serializable {
         Date tod = new Date();
 
         if (fd != null && td == null) {
-            frd = commonFunctions.getStartOfDay(fd);
-            tod = commonFunctions.getEndOfDay(fd);
+            frd = CommonFunctions.getStartOfDay(fd);
+            tod = CommonFunctions.getEndOfDay(fd);
         }
 
         sql = "Select distinct(s) From ServiceSession s "
@@ -2563,8 +2555,8 @@ public class ChannelReportController implements Serializable {
         }
 
         if (d != null) {
-            fd = commonFunctions.getStartOfDay(d);
-            td = commonFunctions.getEndOfDay(d);
+            fd = CommonFunctions.getStartOfDay(d);
+            td = CommonFunctions.getEndOfDay(d);
             sql += " and bi.createdAt between :fd and :td ";
             hm.put("fd", fd);
             hm.put("td", td);
@@ -2638,8 +2630,8 @@ public class ChannelReportController implements Serializable {
     public double getChannelPaymentBillCountbyClassTypes(Bill b, List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
         HashMap hm = new HashMap();
 
-        Date fd = commonFunctions.getStartOfDay(d);
-        Date td = commonFunctions.getEndOfDay(d);
+        Date fd = CommonFunctions.getStartOfDay(d);
+        Date td = CommonFunctions.getEndOfDay(d);
 
         String sql = "SELECT count(bi.paidForBillFee.bill) FROM BillItem bi "
                 + " WHERE bi.retired = false "
@@ -3857,8 +3849,8 @@ public class ChannelReportController implements Serializable {
         Date nowDate = getFromDate();
 
         while (nowDate.before(getToDate())) {
-            Date fd = commonFunctions.getStartOfDay(nowDate);
-            Date td = commonFunctions.getEndOfDay(nowDate);
+            Date fd = CommonFunctions.getStartOfDay(nowDate);
+            Date td = CommonFunctions.getEndOfDay(nowDate);
             AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
             if (createAgentHistory(fd, td, institution, historyTypes).size() > 0) {
                 ahwd.setDate(nowDate);

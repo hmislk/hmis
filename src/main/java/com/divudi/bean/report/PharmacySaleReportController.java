@@ -245,7 +245,6 @@ public class PharmacySaleReportController implements Serializable {
     @Inject
     CommonReport commonReport;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -381,8 +380,8 @@ public class PharmacySaleReportController implements Serializable {
 
 //    private double getSaleValueByDepartment(Date date) {
 //        //   List<Stock> billedSummery;
-//        Date fd = getCommonFunctions().getStartOfDay(date);
-//        Date td = getCommonFunctions().getEndOfDay(date);
+//        Date fd = CommonFunctions.getStartOfDay(date);
+//        Date td = CommonFunctions.getEndOfDay(date);
 //        String sql;
 //        Map m = new HashMap();
 //        m.put("d", getDepartment());
@@ -485,8 +484,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getSaleValueByDepartmentByBill(Date date, Bill bill, PaymentMethod pm) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -516,8 +515,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getSaleValueByDepartmentByBillItem(Date date, Bill bill) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -1956,8 +1955,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getSaleValueByDepartment(Date date) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2020,8 +2019,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getTransIssueValueByDate(Date date, Bill bill) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2047,8 +2046,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getSaleValueByDepartmentPaymentScheme(Date date, Bill bill) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2170,8 +2169,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getIssueValueByDepartment(Date date, Bill bill) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2324,8 +2323,8 @@ public class PharmacySaleReportController implements Serializable {
             m.put("dep", toDepartment);
         }
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
         m.put("fd", fd);
         m.put("td", td);
@@ -2363,8 +2362,8 @@ public class PharmacySaleReportController implements Serializable {
             m.put("dep", toDepartment);
         }
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
         m.put("fd", fd);
         m.put("td", td);
@@ -2404,8 +2403,8 @@ public class PharmacySaleReportController implements Serializable {
             m.put("dep", toDepartment);
         }
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
         m.put("fd", fd);
         m.put("td", td);
@@ -2425,8 +2424,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getSaleValueByDepartmentByBillItem(Date date, PaymentMethod paymentMethod, Bill bill) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2455,8 +2454,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getSaleValueByDepartmentByBill(Date date, PaymentMethod paymentMethod, Bill bill) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2484,8 +2483,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getSaleValueByDepartmentByBill(Date date, PaymentMethod paymentMethod, Bill bill, BillType billType) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2513,8 +2512,8 @@ public class PharmacySaleReportController implements Serializable {
 
 //    private double getSaleValuePaymentmethod(Date date, PaymentMethod paymentMethod, Bill bill) {
 //        //   List<Stock> billedSummery;
-//        Date fd = getCommonFunctions().getStartOfDay(date);
-//        Date td = getCommonFunctions().getEndOfDay(date);
+//        Date fd = CommonFunctions.getStartOfDay(date);
+//        Date td = CommonFunctions.getEndOfDay(date);
 //        String sql;
 //        Map m = new HashMap();
 //        m.put("d", getDepartment());
@@ -2534,8 +2533,8 @@ public class PharmacySaleReportController implements Serializable {
 //
 //    private double getDiscountValueByDepartment(Date date) {
 //        //   List<Stock> billedSummery;
-//        Date fd = getCommonFunctions().getStartOfDay(date);
-//        Date td = getCommonFunctions().getEndOfDay(date);
+//        Date fd = CommonFunctions.getStartOfDay(date);
+//        Date td = CommonFunctions.getEndOfDay(date);
 //        String sql;
 //        Map m = new HashMap();
 //        m.put("d", getDepartment());
@@ -2553,8 +2552,8 @@ public class PharmacySaleReportController implements Serializable {
 //    }
     private double getDiscountValueByDepartmentByBill(Date date, Bill bill, PaymentMethod pm) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2583,8 +2582,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getDiscountValueByDepartmentByBill(Date date, Bill bill, BillType billType) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2607,8 +2606,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getDiscountValueByDepartmentByBillItem(Date date, Bill bill) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2632,8 +2631,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private double getDiscountValueByDepartmentPaymentScheme(Date date, Bill bill) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2669,8 +2668,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private List<Bill> getSaleBillByDepartment(Date date, Bill bill) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2693,8 +2692,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private List<Bill> getSaleBillByDepartment(Date date, Bill bill, PaymentMethod pm) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2722,8 +2721,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private List<Bill> getSaleBillByDepartment(Date date, Bill bill, BillType billType) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2746,8 +2745,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private List<BillItem> getSaleBillItemByDepartment(Date date, Bill bill) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2771,8 +2770,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private List<Bill> getSaleBillByDepartmentPaymentScheme(Date date, Bill bill) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -2809,8 +2808,8 @@ public class PharmacySaleReportController implements Serializable {
 
     private List<Bill> getIssueBillByDepartment(Date date, Bill bill) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -7385,14 +7384,6 @@ public class PharmacySaleReportController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BillItemFacade getBillItemFacade() {

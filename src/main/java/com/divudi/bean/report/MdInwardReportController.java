@@ -88,7 +88,6 @@ public class MdInwardReportController implements Serializable {
 
     ////////////////////////////////////
 
-    private CommonFunctions commonFunctions;
     @EJB
     private DepartmentFacade departmentFacade;
     @EJB
@@ -520,7 +519,7 @@ public class MdInwardReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -532,7 +531,7 @@ public class MdInwardReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -540,14 +539,6 @@ public class MdInwardReportController implements Serializable {
     public void setToDate(Date toDate) {
         //   makeNull();
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public DepartmentFacade getDepartmentFacade() {
