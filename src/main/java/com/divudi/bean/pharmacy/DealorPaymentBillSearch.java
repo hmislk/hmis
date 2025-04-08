@@ -70,7 +70,6 @@ public class DealorPaymentBillSearch implements Serializable {
     List<BillFee> billFees;
     List<Bill> bills;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -843,7 +842,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -855,7 +854,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -863,14 +862,6 @@ public class DealorPaymentBillSearch implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
         resetLists();
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getComment() {

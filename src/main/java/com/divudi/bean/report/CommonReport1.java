@@ -67,8 +67,6 @@ public class CommonReport1 implements Serializable {
     @EJB
     PersonInstitutionFacade personInstitutionFacade;
 
-
-    CommonFunctions commonFunctions;
     ////////////////////
     private Institution collectingIns;
     Institution institution;
@@ -140,14 +138,6 @@ public class CommonReport1 implements Serializable {
     public CommonReport1() {
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
     }
@@ -179,7 +169,7 @@ public class CommonReport1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -191,7 +181,7 @@ public class CommonReport1 implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }

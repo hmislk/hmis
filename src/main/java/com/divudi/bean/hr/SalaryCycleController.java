@@ -63,7 +63,6 @@ public class SalaryCycleController implements Serializable {
     @EJB
     RosterFacade rosterFacade;
 
-    CommonFunctions commonFunctions;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -1000,9 +999,9 @@ public class SalaryCycleController implements Serializable {
             cal.setTime(s.getSalaryCycle().getDayOffPhToDate());
             cal.add(Calendar.DATE, 1);
             s.setWorkingDays(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), commonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
-            s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), commonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setWorkingDaysAfter(hrReportController.fetchWorkedDays(s.getStaff(), cal.getTime(), commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate())));
+            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), CommonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
+            s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), CommonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
+            s.setWorkingDaysAfter(hrReportController.fetchWorkedDays(s.getStaff(), cal.getTime(), CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate())));
 
             if (checkDateRange(s.getStaff().getDateLeft())) {
                 s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateLeft()));
@@ -1026,10 +1025,10 @@ public class SalaryCycleController implements Serializable {
                         && s.getSalaryCycle().getSalaryToDate().getTime() >= s.getStaff().getDateJoined().getTime())) {
                     long extraDays;
                     if (s.getStaff().getDateJoined().getTime() > s.getSalaryCycle().getDayOffPhToDate().getTime()) {
-                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
+                        extraDays = (CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
                     } else {
-                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
+                        extraDays = (CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
                     extraDays -= (int) (extraDays / 7);
@@ -1181,9 +1180,9 @@ public class SalaryCycleController implements Serializable {
             cal.setTime(s.getSalaryCycle().getDayOffPhToDate());
             cal.add(Calendar.DATE, 1);
             s.setWorkingDays(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), commonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
-            s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), commonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setWorkingDaysAfter(hrReportController.fetchWorkedDays(s.getStaff(), cal.getTime(), commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate())));
+            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), CommonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
+            s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), CommonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
+            s.setWorkingDaysAfter(hrReportController.fetchWorkedDays(s.getStaff(), cal.getTime(), CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate())));
 
             if (checkDateRange(s.getStaff().getDateLeft(), s.getSalaryCycle())) {
                 s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateLeft()));
@@ -1207,10 +1206,10 @@ public class SalaryCycleController implements Serializable {
                         && s.getSalaryCycle().getSalaryToDate().getTime() >= s.getStaff().getDateJoined().getTime())) {
                     long extraDays;
                     if (s.getStaff().getDateJoined().getTime() > s.getSalaryCycle().getDayOffPhToDate().getTime()) {
-                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
+                        extraDays = (CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
                     } else {
-                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
+                        extraDays = (CommonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
                     extraDays -= (int) (extraDays / 7);
