@@ -25,9 +25,8 @@ public class ReportLog implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "GENERATEDBY")
-    private WebUser generatedBy;
+    @Column(nullable = false)
+    private Long generatedById;
 
     @Column(nullable = true)
     private Long executionTimeInMillis;
@@ -48,7 +47,7 @@ public class ReportLog implements Serializable {
     }
 
     public ReportLog(IReportType reportType, WebUser generatedBy, Date startTime, Date endTime) {
-        this.generatedBy = generatedBy;
+        this.generatedById = generatedBy.getId();
         this.startTime = startTime;
         this.endTime = endTime;
         this.reportType = reportType.getReportType();
@@ -75,8 +74,8 @@ public class ReportLog implements Serializable {
         return createdAt;
     }
 
-    public WebUser getGeneratedBy() {
-        return generatedBy;
+    public Long getGeneratedById() {
+        return generatedById;
     }
 
     public Long getExecutionTimeInMillis() {

@@ -170,8 +170,17 @@
                                 value="Process" 
                                 style="width: 150px"
                                 icon="fas fa-cogs"
-                                class="mx-2 ui-button-warning"
+                                class="mx-2 ui-button-success"
                                 action="#{reportController.processCollectingCentreTestWiseCountReport()}" >
+                            </p:commandButton>
+                             <p:commandButton 
+                                ajax="false" 
+                                value="Process"
+                                rendered="#{webUserController.hasPrivilege('Developers')}"
+                                style="width: 150px"
+                                icon="fas fa-cogs"
+                                class="mx-2 ui-button-secondary"
+                                action="#{reportController.processCollectingCentreTestWiseCountReportWithoutCancellationsAndRefunds()}" >
                             </p:commandButton>
                             <p:commandButton 
                                 icon="fa-solid fa-print"
@@ -225,11 +234,11 @@
                             <p:column headerText="S. No" width="3em">
                                 <h:outputText value="#{rowIndex + 1}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Test Name">
+                            <p:column headerText="Test Name" sortBy="#{c.testName}">
                                 <h:outputText value="#{c.testName}" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Count" width="10em">
+                            <p:column headerText="Count" width="6em" class="text-end">
                                 <f:facet name="footer">
                                     <h:outputText value="#{reportController.totalCount}" >
                                         <f:convertNumber pattern="#,##0" />
@@ -239,7 +248,7 @@
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Hos Fee" width="10em">
+                            <p:column headerText="Hos Fee" width="10em" class="text-end">
                                 <h:outputText value="#{c.hosFee}" > 
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -250,7 +259,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="CC Fee" width="10em">
+                            <p:column headerText="CC Fee" width="10em" class="text-end">
                                 <h:outputText value="#{c.ccFee}" > 
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -261,7 +270,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Professional Fee" width="10em">
+                            <p:column headerText="Professional Fee" width="10em" class="text-end">
                                 <h:outputText value="#{c.proFee}" > 
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -272,7 +281,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Amount" width="10em">
+                            <p:column headerText="Total Amount" width="10em" class="text-end">
                                 <h:outputText value="#{c.total}" > 
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>

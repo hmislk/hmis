@@ -41,6 +41,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.entity.Department;
@@ -118,7 +119,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
 
     ////////////////////////////
-    private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;
     private Admission current;
@@ -813,12 +813,43 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Provisional Admission From showing completePatientDishcargedNotFinalized")) {
+            List<Admission> toRemove = new ArrayList<>();
+            for (Admission a : suggestions) {
+                if (isAddmissionHaveProvisionalBill(a)) {
+                    toRemove.add(a);
+                }
+            }
+            suggestions.removeAll(toRemove);
+        }
         return suggestions;
     }
 
     public String navigateToListCurrentInpatients() {
         listCurrentInpatients();
         return "";
+
+    }
+
+    public boolean isAddmissionHaveProvisionalBill(Admission ad) {
+        List<Bill> ads = new ArrayList<>();
+        String sql;
+        HashMap h = new HashMap();
+        sql = "select b from Bill b where b.retired=false "
+                + " and b.billTypeAtomic=:bt "
+                + " and b.cancelled=false"
+                + " and b.patientEncounter=:pe";
+        h.put("bt", BillTypeAtomic.INWARD_PROVISIONAL_BILL);
+        h.put("pe", ad);
+        ads = getBillFacade().findByJpql(sql, h);
+        
+        System.out.println("ads.size() = " + ads.size());
+
+        if (ads.size() > 0 || !ads.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
@@ -1594,15 +1625,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(ageText));
     }
 
     public PatientRoomFacade getPatientRoomFacade() {

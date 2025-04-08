@@ -49,13 +49,13 @@
                                 <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.total}" />
                                 <h:outputLabel value="Net Total"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
-                                <h:outputLabel value="Pharmacy"/>
-                                <p:selectOneMenu
+<!--                                <h:outputLabel value="Pharmacy"/>-->
+<!--                                <p:selectOneMenu
                                     class="w-100"
                                     value="#{searchController.reportKeyWord.department}">
                                     <f:selectItem itemLabel="Select Department"/>
                                     <f:selectItems value="#{departmentController.pharmacies}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                </p:selectOneMenu>-->
 
                                 <p:commandButton
                                     id="btnSearch"
@@ -73,11 +73,29 @@
                                     ajax="false"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     value="Search Token Bills"
-                                    action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"/>
+                                    action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}">
+                                </p:commandButton>
 
                                 <p:commandButton
                                     ajax="false"
                                     class=" ui-button-warning w-100 my-1"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    icon="fas fa-search"
+                                    value="Search Paid Only Tokens"
+                                    action="#{searchController.fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(true)}"/>
+                                
+                                <p:commandButton
+                                    ajax="false"
+                                    class=" ui-button-warning w-100 my-1"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    icon="fas fa-search"
+                                    value="Search Not Paid Tokens"
+                                    action="#{searchController.fillPharmacyPaidPreBillsToAcceptAtCashierInTokenSystem(false)}"/>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    class=" ui-button-warning w-100 my-1"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     icon="fas fa-search"
                                     value="Search Not Paid Only"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierNotPaid()}"/>
@@ -85,6 +103,7 @@
                                     ajax="false"
                                     class=" ui-button-warning w-100"
                                     icon="fas fa-search"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                     value="Search Paid Only"
                                     action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierGetPaid()}"/>
                                 <h:outputLabel/>
@@ -196,7 +215,9 @@
                                         <div class="row">
                                             <div class="col-12 d-flex justify-content-center align-items-center">
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
                                                     icon="fa-solid fa-phone"
                                                     title="Call Customer"
                                                     class="ui-button-warning mx-1"
@@ -206,7 +227,9 @@
                                                 </p:commandButton>
 
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
                                                     icon="fa-solid fa-phone-slash"
                                                     class="ui-button-danger mx-1"
                                                     title="Cancel Calling"
@@ -223,11 +246,13 @@
                                                     rendered="#{bill ne null and configOptionApplicationController.getBooleanValueByKey('Enable bill edit in sale for cashier token management system', false)}"
                                                     title="Edit Bill" 
                                                     action="#{tokenController.navigateToSaleForCashierToEditBillWithToken(pharmacyPreSettleController.findTokenFromBill(bill))}">
-                                                    
+
                                                 </p:commandButton>
 
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"
                                                     class="ui-button-success mx-1"
                                                     title="Accept Payment"
                                                     icon="fa-solid fa-money-bill"
@@ -235,9 +260,11 @@
                                                     actionListener="#{pharmacyPreSettleController.paymentOngoingToken(bill)}"
                                                     disabled="#{bill.referenceBill ne null or bill.cancelled or !pharmacyPreSettleController.findTokenFromBill(bill).isCalled()}">
                                                 </p:commandButton> 
-                                                
+
                                                 <p:commandButton
-                                                    ajax="false"               
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="tblBills"               
                                                     title="Display Token"
                                                     class="d-flex justify-content-center align-item-center mx-1"
                                                     style="background-color: #{pharmacyPreSettleController.findTokenFromBill(bill).displayToken ? '#74b9ff' : '#ff7675'};"
@@ -263,7 +290,7 @@
                                                                                 </p:commandButton>-->
                                     </p:column>
                                     <p:column width="35%">
-                                        <p:dataTable value="#{bill.cashBillsPre}" var="rb">
+                                        <p:dataTable value="#{searchController.getRefreshCashBills(bill)}" var="rb">
                                             <p:column  >
                                                 <h:outputLabel  value="#{rb.deptId}"/>
                                             </p:column>

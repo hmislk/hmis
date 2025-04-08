@@ -294,25 +294,25 @@
                                             </th>
                                         </tr>
                                         <tr>
-                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">CC Code</th>
-                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Leaf No.</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">CC Code</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Leaf No.</th>
                                             <ui:fragment rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">
+                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">
                                                     From Department
                                                 </th>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">
+                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">
                                                     Department
                                                 </th>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">
+                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">
                                                     To Department
                                                 </th>
                                             </ui:fragment>
-                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">MRN</th>
-                                            <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Name</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">MRN</th>
+                                            <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Name</th>
                                             <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Invoice Date</th>
                                             <th style="width: 10rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Invoice No</th>
                                             <th style="width: 40rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Details</th>
@@ -346,33 +346,33 @@
                                                     <table style="width: 100%; border-collapse: collapse;">
                                                         <thead>
                                                             <tr>
-                                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Service Name</th>
-                                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: center">Hos Fee.</th>
-                                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: center">Staff Fee.</th>
-                                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: center">CC Fee.</th>
-                                                                <th style="width: 5rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: center">Net Amount</th>
+                                                                <th style="min-width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Service Name</th>
+                                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Hos Fee.</th>
+                                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Staff Fee.</th>
+                                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">CC Fee.</th>
+                                                                <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Net</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             <ui:repeat value="#{entry.value}" var="bi">
                                                                 <tr style="border-bottom: 1px solid #d9d9d9;">
-                                                                    <td>#{bi.item.name}</td>
-                                                                    <td style="text-align: right">
+                                                                    <td style="min-width: 6rem; ">#{bi.item.name}</td>
+                                                                    <td style="width: 6rem; text-align: right">
                                                                         <h:outputText value="#{bi.hospitalFee}">
                                                                             <f:convertNumber pattern="#,##0.00"/>
                                                                         </h:outputText>
                                                                     </td>
-                                                                    <td style="text-align: right">
+                                                                    <td style="width: 6rem; text-align: right">
                                                                         <h:outputText value="#{bi.staffFee}">
                                                                             <f:convertNumber pattern="#,##0.00"/>
                                                                         </h:outputText>
                                                                     </td>
-                                                                    <td style="text-align: right">
+                                                                    <td style="width: 6rem; text-align: right">
                                                                         <h:outputText value="#{bi.collectingCentreFee}">
                                                                             <f:convertNumber pattern="#,##0.00"/>
                                                                         </h:outputText>
                                                                     </td>
-                                                                    <td style="text-align: right">
+                                                                    <td style="width: 6rem; text-align: right">
                                                                         <h:outputText value="#{bi.netValue}">
                                                                             <f:convertNumber pattern="#,##0.00"/>
                                                                         </h:outputText>
@@ -508,13 +508,9 @@
                                 </p:column>
 
                                 <f:facet name="footer">
-                                    <p>You are kindly requested to remit this cheque written in favour of "Ruhunu Hospital (Pvt) Ltd" with the last Possible.</p>
-                                    <p>* Please not that prevailing bank overdraft interest rate will be applied for all overdue debts.</p>
-                                    <p>If You have any Questions about this invoice , please contact Mr S T Dushan Maduranga (Tel : 091-7212897)</p>
-                                    <p>Thanking You,</p>
-                                    <p>Your's Faithfully,</p>
-                                    <p>Accountant</p>
-                                    <p>Ruhunu Hospital (Pvt) Ltd.</p>
+                                    <h:outputText 
+                                        value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report')}" 
+                                        escape="false" ></h:outputText>
                                     <h:outputLabel value="#{reportsController.currentDate}"
                                                    style="text-align: right; display: block;">
                                         <f:convertDateTime
@@ -612,13 +608,9 @@
                                     </f:facet>
                                 </p:column>
                                 <f:facet name="footer">
-                                    <p>You are kindly requested to remit this cheque written in favour of "Ruhunu Hospital (Pvt) Ltd" with the last Possible.</p>
-                                    <p>* Please not that prevailing bank overdraft interest rate will be applied for all overdue debts.</p>
-                                    <p>If You have any Questions about this invoice , please contact Mr S T Dushan Maduranga (Tel : 091-7212897)</p>
-                                    <p>Thanking You,</p>
-                                    <p>Your's Faithfully,</p>
-                                    <p>Accountant</p>
-                                    <p>Ruhunu Hospital (Pvt) Ltd.</p>
+                                    <h:outputText 
+                                        value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report')}" 
+                                        escape="false" ></h:outputText>
                                     <h:outputLabel value="#{reportsController.currentDate}"
                                                    style="text-align: right; display: block;">
                                         <f:convertDateTime

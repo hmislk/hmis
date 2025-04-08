@@ -186,8 +186,7 @@ public class ConfigOptionController implements Serializable {
             default:
                 throw new AssertionError("Unhandled scope: " + scope);
         }
-        ConfigOption option = optionFacade.findFirstByJpql(jpql.toString(), params);
-        return option;
+        return optionFacade.findFirstByJpql(jpql.toString(), params);
     }
 
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
@@ -582,7 +581,7 @@ public class ConfigOptionController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ConfigOptionController controller = (ConfigOptionController) facesContext.getApplication().getELResolver().
@@ -597,9 +596,7 @@ public class ConfigOptionController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

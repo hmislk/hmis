@@ -8,7 +8,7 @@ import javax.persistence.PersistenceContext;
 
 @Stateless
 public class ReportLogFacade extends AbstractFacade<ReportLog> {
-    @PersistenceContext(unitName = "hmisPU")
+    @PersistenceContext(unitName = "hmisAuditPU")
     private EntityManager entityManager;
 
     @Override

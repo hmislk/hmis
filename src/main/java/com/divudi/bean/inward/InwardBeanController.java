@@ -1993,11 +1993,10 @@ public class InwardBeanController implements Serializable {
             return;
         }
 
-        if (billFee.getFee().getFeeType() != FeeType.Staff
-                && priceMatrix != null) {
-
+        if (billFee.getFee().getFeeType() != FeeType.Staff && priceMatrix != null) {
             margin = (billFee.getFeeGrossValue() * priceMatrix.getMargin()) / 100;
             billFee.setFeeMargin(margin);
+            billFeeFacade.edit(billFee);
         }
 
         double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();
