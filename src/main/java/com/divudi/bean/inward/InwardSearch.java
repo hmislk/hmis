@@ -365,7 +365,7 @@ public class InwardSearch implements Serializable {
         bill = getBillFacade().findFirstByJpql(jpql, temMap);
 
         if (bill == null) {
-            JsfUtil.addErrorMessage("No Final Bill Created");
+            JsfUtil.addErrorMessage("No Provisional Bill Created");
             return "";
         }
         withProfessionalFee = false;
@@ -1794,7 +1794,7 @@ public class InwardSearch implements Serializable {
         billFacade.edit(b);
         for (BillItem bi : b.getBillItems()) {
             billItemFacede.edit(bi);
-            if (!bi.getProFees().isEmpty() || bi.getProFees() != null) {
+            if (bi.getProFees() != null && !bi.getProFees().isEmpty()) {
                 for (BillFee bf : bi.getProFees()) {
                     billFeeFacade.edit(bf);
                 }
