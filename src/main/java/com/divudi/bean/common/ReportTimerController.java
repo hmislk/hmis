@@ -7,6 +7,8 @@ import com.divudi.core.facade.ReportLogFacade;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Level;
@@ -36,6 +38,7 @@ public class ReportTimerController implements Serializable {
         save(reportLog);
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void save(ReportLog reportLog) {
         if (reportLog == null) {
             return;
