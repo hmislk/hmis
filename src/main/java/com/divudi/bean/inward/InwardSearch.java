@@ -1017,7 +1017,7 @@ public class InwardSearch implements Serializable {
     public void cancelProvisionalBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
-            long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(), new Date());
+            long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
             boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false);
             boolean hasPrivilege = getWebUserController().hasPrivilege("InwardFinalBillCancel");
 
