@@ -50,7 +50,6 @@ public class AgentReferenceBookController implements Serializable {
     @EJB
     private AgentHistoryFacade agentHistoryFacade;
 
-    CommonFunctions commonFunctions;
     @Inject
     SessionController sessionController;
 
@@ -455,14 +454,6 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setInstitutionFacade(InstitutionFacade institutionFacade) {
         this.institutionFacade = institutionFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public Date getFrmDate() {

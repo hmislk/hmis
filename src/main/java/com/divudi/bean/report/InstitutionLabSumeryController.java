@@ -48,9 +48,6 @@ public class InstitutionLabSumeryController implements Serializable {
     Date fromDate;
     Date toDate;
 
-
-    CommonFunctions commonFunctions;
-
     List<Bill> labBills;
     List<Bill> billedBills;
     List<Bill> billBills;
@@ -1226,14 +1223,6 @@ public class InstitutionLabSumeryController implements Serializable {
 
     public void setLabBills(List<Bill> labBills) {
         this.labBills = labBills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public Date getFromDate() {

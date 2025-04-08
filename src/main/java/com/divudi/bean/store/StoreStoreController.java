@@ -68,7 +68,6 @@ public class StoreStoreController implements Serializable {
     @EJB
     private BillFacade billFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
@@ -799,7 +798,7 @@ public class StoreStoreController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
 //            Date date = ;
-            fromDate = getCommonFunctions().getAddedDate(new Date(), -30);
+            fromDate = CommonFunctions.getAddedDate(new Date(), -30);
         }
         return fromDate;
     }
@@ -819,14 +818,6 @@ public class StoreStoreController implements Serializable {
     public void setToDate(Date toDate) {
         makeNull();
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {

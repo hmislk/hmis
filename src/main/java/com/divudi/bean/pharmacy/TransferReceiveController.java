@@ -69,7 +69,6 @@ public class TransferReceiveController implements Serializable {
     @EJB
     private BillNumberGenerator billNumberBean;
 
-    private CommonFunctions commonFunctions;
     @Inject
     private PharmacyCalculation pharmacyCalculation;
     private List<BillItem> billItems;
@@ -584,14 +583,14 @@ public class TransferReceiveController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -602,14 +601,6 @@ public class TransferReceiveController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public StockFacade getStockFacade() {

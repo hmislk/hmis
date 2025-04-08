@@ -29,7 +29,6 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1272,9 +1271,6 @@ public class InwardReportController implements Serializable {
         this.admissionTypeFacade = admissionTypeFacade;
     }
 
-
-    CommonFunctions commonFunctions;
-
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
@@ -1603,14 +1599,6 @@ public class InwardReportController implements Serializable {
 
     public void setInwardReportControllerBht(InwardReportControllerBht inwardReportControllerBht) {
         this.inwardReportControllerBht = inwardReportControllerBht;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public Bill getBill() {

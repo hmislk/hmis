@@ -128,7 +128,6 @@ public class PharmacyBillSearch implements Serializable {
     PharmacyCalculation pharmacyCalculation;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
-    private CommonFunctions commonFunctions;
     private UploadedFile file;
     private boolean printPreview = false;
     private double refundAmount;
@@ -3379,14 +3378,6 @@ public class PharmacyBillSearch implements Serializable {
         resetLists();
         this.fromDate = fromDate;
 
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BillBeanController getBillBean() {
