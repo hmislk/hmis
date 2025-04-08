@@ -45,9 +45,12 @@ public class PharmacyErrorChecking implements Serializable {
     @Inject
     StockHistoryController stockHistoryController;
 
+    @Inject
+    ReportTimerController reportTimerController;
+
     List<BillItem> billItems;
     private List<StockHistory> stockHistories;
-    private ReportTimerController reportTimerController;
+    //private ReportTimerController reportTimerController;
     Date fromDate;
     Date toDate;
     Item item;
