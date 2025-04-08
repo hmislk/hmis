@@ -2,11 +2,10 @@ name: Production Merge Validation
 
 on:
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    types: [ opened, synchronize, reopened, edited ]
     branches:
       - '*-prod'
-      - '-staging'
-      - '*-stg'
+      - 'staging'
 
 jobs:
   check-branch:
@@ -23,11 +22,11 @@ jobs:
           TARGET="$BASE_BRANCH"
 
           if [[ "$TARGET" == *-prod ]]; then
-            if [[ "$SOURCE" == *-dev || "$SOURCE" == *-stg || "$SOURCE" == "hims-qa1" || "$SOURCE" == "hims-qa2" || "$SOURCE" == "development" ]]; then
+            if [[ "$SOURCE" != *-hotfix && "$SOURCE" != "staging" ]]; then
               echo "❌ Merging from $SOURCE to $TARGET is not allowed."
               exit 1
             fi
-          elif [[ "$TARGET" == *-stg || "$TARGET" == "-staging" ]]; then
+          elif [[ "$TARGET" == "staging" ]]; then
             if [[ "$SOURCE" != "hims-qa1" && "$SOURCE" != "hims-qa2" ]]; then
               echo "❌ Only hims-qa1 and hims-qa2 can merge to $TARGET (staging restriction)."
               exit 1
