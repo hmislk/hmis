@@ -30,6 +30,7 @@ public enum BillType {
     InwardPaymentBill,
     InwardFinalBill,
     InwardOriginalFinalBill,
+    InwardProvisionalBill,
     InwardFinalBillCCPayment,
     InwardAppointmentBill,
     InwardBill,
