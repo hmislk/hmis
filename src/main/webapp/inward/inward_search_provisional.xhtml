@@ -146,8 +146,8 @@
 
                                     <p:column 
                                         headerText="Cancelled By"  
-                                        sortBy="#{bb.creater.webUserPerson.name}" 
-                                        filterBy="#{bb.creater.webUserPerson.name}" 
+                                        sortBy="#{bb.cancelledBill.creater.webUserPerson.name}" 
+                                        filterBy="#{bb.cancelledBill.creater.webUserPerson.name}" 
                                         filterMatchMode="contains"  >  
                                         <h:panelGroup rendered="#{bb.cancelled}" >
                                             <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.creater.webUserPerson.name}" >                                       
