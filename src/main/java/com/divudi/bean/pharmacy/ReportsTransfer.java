@@ -37,6 +37,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,11 +53,11 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 
 /**
- *
  * @author Buddhika
  */
 @Named
@@ -451,6 +452,7 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersIssueByBill() {
+        reportTimerController.trackReportExecution(() -> {
             Map params = new HashMap();
             String jpql;
             params.put("fd", fromDate);
@@ -501,6 +503,7 @@ public class ReportsTransfer implements Serializable {
             }
 
             calculatePurachaseValuesOfBillItemsInBill(transferBills);
+        }, DisbursementReports.TRANSFER_ISSUE_BY_BILL, sessionController.getLoggedUser());
     }
 
     public void calculatePurachaseValuesOfBillItemsInBill(List<Bill> billList) {
@@ -1700,6 +1703,7 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
+        reportTimerController.trackReportExecution(() -> {
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder("select b from Bill b where b.createdAt between :fd and :td and b.billType=:bt");
             params.put("fd", fromDate);
@@ -1727,6 +1731,7 @@ public class ReportsTransfer implements Serializable {
                 netTotalValues = netTotalValues + b.getNetTotal();
             }
             calculatePurachaseValuesOfBillItemsInBill(transferBills);
+        }, DisbursementReports.TRANSFER_RECEIVE_BY_BILL, sessionController.getLoggedUser());
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
