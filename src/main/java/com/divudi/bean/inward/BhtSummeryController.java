@@ -1270,10 +1270,32 @@ public class BhtSummeryController implements Serializable {
 
     }
 
-    public void createTempBill(){
+    public void createTempBill() {
         tempBill = null;
+        updateTotal();
         saveTempBill();
         saveTempBillItem();
+    }
+
+    public void saveProvisionalBill() {
+        if (errorCheck()) {
+            return;
+        }
+
+        originalBill.setDiscount(discount);
+        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
+        getBillFacade().edit(originalBill);
+
+        saveBill();
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PROVISIONAL_BILL);
+        getCurrent().setBillType(BillType.InwardProvisionalBill);
+        getCurrent().setBackwardReferenceBill(originalBill);
+        getBillFacade().edit(getCurrent());
+        saveBillItem();
+        JsfUtil.addSuccessMessage("Provisional Bill Saved");
+        showOrginalBill = false;
+        printPreview = true;
+        originalBill = null;
     }
 
     public void settle() {
@@ -1308,6 +1330,83 @@ public class BhtSummeryController implements Serializable {
         showOrginalBill = false;
         printPreview = true;
         originalBill = null;
+    }
+    
+    public String settleProvisionalBill(Bill b) {
+        
+        if(b == null){
+            JsfUtil.addErrorMessage("Error : Bill Not Found!");
+            return "";
+        }
+        
+        setPatientEncounter(b.getPatientEncounter());
+        
+        originalBill = b.getBackwardReferenceBill();
+        originalBill.setDiscount(b.getDiscount());
+        originalBill.setNetTotal(originalBill.getGrantTotal() - b.getDiscount());
+        getBillFacade().edit(originalBill);
+        
+//        current = new BilledBill();
+//        getCurrent().copy(b);
+//        getCurrent().copyValue(b);
+//        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
+//        getCurrent().setBillType(BillType.InwardFinalBill);
+//        getBillFacade().create(getCurrent());
+//        
+//        for (BillItem bi : b.getBillItems()) {
+//            BillItem bin = new BillItem();
+//            bin.copy(bi);
+//            bin.setBill(getCurrent());
+//            getBillItemFacade().create(bin);
+//            if (!bi.getProFees().isEmpty() || bi.getProFees() != null) {
+//                for (BillFee bf : bi.getProFees()) {
+//                    BillFee nbf = new BillFee();
+//                    nbf.copy(bf);
+//                    nbf.setBill(getCurrent());
+//                    nbf.setBillItem(bin);
+//                    billFeeFacade.create(nbf);
+//                }
+//            }
+//            if(bi.getBillFees() != null || !bi.getBillFees().isEmpty()){
+//                for(BillFee bf : bi.getBillFees()){
+//                    BillFee nbf = new BillFee();
+//                    nbf.copy(bf);
+//                    nbf.setBill(getCurrent());
+//                    nbf.setBillItem(bin);
+//                    billFeeFacade.create(nbf);
+//                }
+//            }
+//        }
+
+        setCurrent(b);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
+        getCurrent().setBillType(BillType.InwardFinalBill);
+       
+        getBillFacade().edit(current);
+       
+
+        if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+            getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
+            createCreditBillForCreditCompany(getPatientEncounter(), getCurrent().getNetTotal());
+        }
+
+        getPatientEncounter().setFinalBill(getCurrent());
+        getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
+        getPatientEncounter().setDiscount(getCurrent().getDiscount());
+        getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
+        getPatientEncounter().setPaymentFinalized(true);
+        getPatientEncounterFacade().edit(getPatientEncounter());
+        getCurrent().setReferenceBill(originalBill);
+        getBillFacade().edit(getCurrent());
+
+        updatePaymentBillList();
+        JsfUtil.addSuccessMessage("Bill Saved");
+
+        showOrginalBill = false;
+        printPreview = true;
+        originalBill = null;
+        
+        return "inward_bill_final?faces-redirect=true";
     }
 
     public void createCreditBillForCreditCompany(PatientEncounter patientEncounter, Double netTotal) {

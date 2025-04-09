@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
@@ -12,29 +13,13 @@ import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ItemWithFee;
 import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.entity.*;
+import com.divudi.core.facade.*;
 import com.divudi.ejb.BillEjb;
 
 import com.divudi.ejb.CreditBean;
-import com.divudi.core.entity.Bill;
-import com.divudi.core.entity.BillFee;
-import com.divudi.core.entity.BillItem;
-import com.divudi.core.entity.BilledBill;
-import com.divudi.core.entity.CancelledBill;
-import com.divudi.core.entity.Category;
-import com.divudi.core.entity.Department;
-import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.Item;
-import com.divudi.core.entity.PatientEncounter;
-import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
-import com.divudi.core.facade.AdmissionTypeFacade;
-import com.divudi.core.facade.BillFacade;
-import com.divudi.core.facade.BillFeeFacade;
-import com.divudi.core.facade.BillItemFacade;
-import com.divudi.core.facade.DepartmentFacade;
-import com.divudi.core.facade.ItemFacade;
-import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
@@ -104,6 +89,8 @@ public class MdInwardReportController implements Serializable {
     AdmissionTypeFacade admissionTypeFacade;
     @EJB
     BillEjb billEjb;
+    @EJB
+    private PatientItemFacade patientItemFacade;
     ///////////////////////////////
     @Inject
     private SessionController sessionController;
@@ -116,6 +103,9 @@ public class MdInwardReportController implements Serializable {
     boolean showCategory = false;
 
     private double purchaseValue;
+    @Named
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     public PaymentMethod[] getPaymentMethods() {
 
@@ -587,6 +577,14 @@ public class MdInwardReportController implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
+    }
+
+    public PatientItemFacade getPatientItemFacade() {
+        return patientItemFacade;
+    }
+
+    public void setPatientItemFacade(PatientItemFacade patientItemFacade) {
+        this.patientItemFacade = patientItemFacade;
     }
 
     private void listInBhtBillItems(BillType billType) {
@@ -2026,6 +2024,39 @@ public class MdInwardReportController implements Serializable {
 
         billfees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         ////// // System.out.println("out");
+
+        if(configOptionApplicationController.getBooleanValueByKey("Add Time Services for Inward Report by Item", false)) {
+            List<PatientItem> items;
+            String sql1;
+            HashMap m = new HashMap();
+
+            sql1 = "select i from PatientItem i where "
+                    + " i.patientEncounter.dateOfDischarge between :fd and :td "
+                    + " and i.retired=false ";
+
+            if (getCurrent().getItem() != null) {
+
+                sql1 += " and i.item=:item";
+                m.put("item", getCurrent().getItem());
+            }
+
+            m.put("fd", getFromDate());
+            m.put("td", getToDate());
+
+            items = getPatientItemFacade().findByJpql(sql1, m, TemporalType.TIMESTAMP);
+            for (PatientItem pi : items) {
+                BillFee bf = new BillFee();
+                bf.setBillItem(new BillItem());
+                bf.getBillItem().setBill(new Bill());
+                bf.setFee(new Fee());
+                bf.getBillItem().getBill().setPatientEncounter(pi.getPatientEncounter());
+                bf.getBillItem().getBill().setDeptId("N/A");
+                bf.getBillItem().setItem(pi.getItem());
+                bf.getBillItem().setCreatedAt(pi.getCreatedAt());
+                bf.getFee().setFee(pi.getServiceValue());
+                billfees.add(bf);
+            }
+        }
 
         total = 0.0;
         for (BillFee bf : billfees) {
