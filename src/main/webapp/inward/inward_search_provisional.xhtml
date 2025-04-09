@@ -173,13 +173,13 @@
 
                                     <p:column 
                                         headerText="Value"  
-                                        sortBy="" 
-                                        filterBy="" 
+                                        sortBy="#{bb.netTotal}" 
+                                        filterBy="#{bb.netTotal}" 
                                         filterMatchMode="contains"  >                              
                                         <h:outputLabel value="#{bb.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>                                  
-                                    </p:column>  
+                                    </p:column>
 
                                     <p:column 
                                         headerText="Comments" >
