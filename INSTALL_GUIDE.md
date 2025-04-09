@@ -115,3 +115,4 @@ and you're ready to go!
 ## Troubleshooting
 
 - I can't access admin pages anymore after creating the first user (which is password/login for the super user?)
+ 

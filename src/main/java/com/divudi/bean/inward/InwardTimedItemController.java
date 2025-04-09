@@ -32,7 +32,6 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -74,7 +73,6 @@ public class InwardTimedItemController implements Serializable {
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
 
-    private CommonFunctions commonFunctions;
     @Inject
     private InwardBeanController inwardBean;
     @Inject
@@ -698,14 +696,6 @@ public class InwardTimedItemController implements Serializable {
 
     public void setTimedItemFeeFacade(TimedItemFeeFacade timedItemFeeFacade) {
         this.timedItemFeeFacade = timedItemFeeFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public InwardBeanController getInwardBean() {

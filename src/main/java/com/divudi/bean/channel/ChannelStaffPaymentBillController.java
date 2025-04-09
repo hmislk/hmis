@@ -79,7 +79,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private PaymentFacade paymentFacade;
     /////////////////
 
-    private CommonFunctions commonFunctions;
     @EJB
     BillNumberGenerator billNumberBean;
     @EJB
@@ -332,7 +331,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             return;
         }
         if (considerDate) {
-            if (getToDate().getTime() > commonFunctions.getEndOfDay().getTime()) {
+            if (getToDate().getTime() > CommonFunctions.getEndOfDay().getTime()) {
                 JsfUtil.addErrorMessage("You Can't search after current Date");
                 return;
             }
@@ -358,7 +357,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             hm.put("to", getToDate());
         } else {
             sql += " and b.bill.appointmentAt <= :nd";
-            hm.put("nd", commonFunctions.getEndOfDay());
+            hm.put("nd", CommonFunctions.getEndOfDay());
         }
 
         if (getSelectedServiceSession() != null) {
@@ -436,7 +435,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             return;
         }
         if (considerDate) {
-            if (getToDate().getTime() > commonFunctions.getEndOfDay().getTime()) {
+            if (getToDate().getTime() > CommonFunctions.getEndOfDay().getTime()) {
                 JsfUtil.addErrorMessage("You Can't search after current Date");
                 return;
             }
@@ -464,7 +463,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             hm.put("to", getToDate());
         } else {
             sql += " and b.bill.appointmentAt <= :nd";
-            hm.put("nd", commonFunctions.getEndOfDay());
+            hm.put("nd", CommonFunctions.getEndOfDay());
         }
 
         if (getSelectedServiceSession() != null) {
@@ -1436,7 +1435,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public Date getToDate() {
         //Dont Remove Comments if u want ask Safrin
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1449,7 +1448,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public Date getFromDate() {
         //Dont Remove Comments if u want ask Safrin
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1459,20 +1458,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
         //  resetLists();
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
     public Institution getInstitution() {
         return institution;
     }
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<BillFee> getDueBillFeeReport() {

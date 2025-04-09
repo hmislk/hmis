@@ -34,7 +34,6 @@ import com.divudi.core.data.LoginPage;
 import com.divudi.core.entity.UserNotification;
 import com.divudi.core.entity.WebUserRole;
 import com.divudi.core.entity.cashTransaction.Drawer;
-import com.divudi.core.facade.UserNotificationFacade;
 import com.divudi.core.light.common.WebUserLight;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -77,8 +76,7 @@ public class WebUserController implements Serializable {
     private StaffFacade staffFacade;
     @EJB
     private WebUserDashboardFacade webUserDashboardFacade;
-    @EJB
-    UserNotificationFacade userNotificationFacade;
+
     /**
      * Controllers
      */
@@ -311,11 +309,10 @@ public class WebUserController implements Serializable {
         }
 
         for (WebUserPrivilege w : getSessionController().getUserPrivileges()) {
-            Privileges p = null;
+            Privileges p;
             try {
                 p = Privileges.valueOf(privilege);
             } catch (Exception e) {
-                hasPri = false;
                 return hasPri;
             }
             if (w.getPrivilege() != null && w.getPrivilege().equals(p)) {
@@ -475,7 +472,7 @@ public class WebUserController implements Serializable {
         for (WebUser w : allUsers) {
 
             if (userName != null && w != null && w.getName() != null) {
-                if (userName.toLowerCase().equals((w.getName()).toLowerCase())) {
+                if (userName.equalsIgnoreCase((w.getName()))) {
                     //////// // System.out.println("Ift");
                     available = true;
                     return available;// ok. that is may be the issue. we will try with it ok
@@ -610,12 +607,12 @@ public class WebUserController implements Serializable {
 
     public List<WebUser> getSearchItems() {
         if (searchItems == null) {
-            if (selectText.equals("")) {
+            if (selectText.isEmpty()) {
                 searchItems = getFacade().findAll("name", true);
             } else {
                 searchItems = getFacade().findAll("name", "%" + selectText + "%",
                         true);
-                if (searchItems.size() > 0) {
+                if (!searchItems.isEmpty()) {
                     current = searchItems.get(0);
                 } else {
                     current = null;
@@ -980,10 +977,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("User ?");
             return;
         }
-        if (current == null) {
-            JsfUtil.addErrorMessage("Dashboard ?");
-            return;
-        }
+
         WebUserDashboard d = new WebUserDashboard();
         d.setWebUser(selected);
         d.setDashboard(dashboard);
@@ -1247,7 +1241,7 @@ public class WebUserController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             WebUserController controller = (WebUserController) facesContext.getApplication().getELResolver().
@@ -1262,9 +1256,7 @@ public class WebUserController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

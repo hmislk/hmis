@@ -118,7 +118,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
 
     ////////////////////////////
-    private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;
     private Admission current;
@@ -553,52 +552,50 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
+        if (patientNameForSearch != null && !patientNameForSearch.trim().isEmpty()) {
             j += " and c.patient.person.name like :name ";
             m.put("name", "%" + patientNameForSearch + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
+        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().isEmpty()) {
             j += "  and c.bhtNo like :bht ";
             m.put("bht", "%" + bhtNumberForSearch + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
+        if (patientNumberForSearch != null && !patientNumberForSearch.trim().isEmpty()) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
             m.put("phn", patientNumberForSearch);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
+        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().isEmpty()) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
             m.put("phone", patientPhoneNumberForSearch);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
+        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().isEmpty()) {
             j += " and c.patient.person.nic =:nic";
             m.put("nic", patientIdentityNumberForSearch);
         }
 
         if (admissionStatusForSearch != null) {
-            if (null != admissionStatusForSearch) {
-                switch (admissionStatusForSearch) {
-                    case ADMITTED_BUT_NOT_DISCHARGED:
-                        j += "  and c.discharged=:dis ";
-                        m.put("dis", false);
-                        break;
-                    case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
-                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                        m.put("dis", true);
-                        m.put("bf", false);
-                        break;
-                    case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                        m.put("dis", true);
-                        m.put("bf", true);
-                        break;
-                    case ANY_STATUS:
-                        break;
-                    default:
-                        break;
-                }
+            switch (admissionStatusForSearch) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    j += "  and c.discharged=:dis ";
+                    m.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                    m.put("dis", true);
+                    m.put("bf", false);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                    m.put("dis", true);
+                    m.put("bf", true);
+                    break;
+                case ANY_STATUS:
+                    break;
+                default:
+                    break;
             }
         }
         if (institutionForSearch != null) {
@@ -640,52 +637,50 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
+        if (patientNameForSearch != null && !patientNameForSearch.trim().isEmpty()) {
             j += " and c.patient.person.name like :name ";
             m.put("name", "%" + patientNameForSearch + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
+        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().isEmpty()) {
             j += "  and c.bhtNo like :bht ";
             m.put("bht", "%" + bhtNumberForSearch + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
+        if (patientNumberForSearch != null && !patientNumberForSearch.trim().isEmpty()) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
             m.put("phn", patientNumberForSearch);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
+        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().isEmpty()) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
             m.put("phone", patientPhoneNumberForSearch);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
+        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().isEmpty()) {
             j += " and c.patient.person.nic =:nic";
             m.put("nic", patientIdentityNumberForSearch);
         }
 
         if (admissionStatusForSearch != null) {
-            if (null != admissionStatusForSearch) {
-                switch (admissionStatusForSearch) {
-                    case ADMITTED_BUT_NOT_DISCHARGED:
-                        j += "  and c.discharged=:dis ";
-                        m.put("dis", false);
-                        break;
-                    case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
-                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                        m.put("dis", true);
-                        m.put("bf", false);
-                        break;
-                    case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                        m.put("dis", true);
-                        m.put("bf", true);
-                        break;
-                    case ANY_STATUS:
-                        break;
-                    default:
-                        break;
-                }
+            switch (admissionStatusForSearch) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    j += "  and c.discharged=:dis ";
+                    m.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                    m.put("dis", true);
+                    m.put("bf", false);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                    m.put("dis", true);
+                    m.put("bf", true);
+                    break;
+                case ANY_STATUS:
+                    break;
+                default:
+                    break;
             }
         }
         if (institutionForSearch != null) {
@@ -1594,15 +1589,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(ageText));
     }
 
     public PatientRoomFacade getPatientRoomFacade() {

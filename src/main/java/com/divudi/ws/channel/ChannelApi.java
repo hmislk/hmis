@@ -126,7 +126,6 @@ public class ChannelApi {
     @EJB
     private PersonFacade personFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private ChannelBean channelBean;
     @EJB
@@ -2859,7 +2858,7 @@ public class ChannelApi {
             m.put("td", toDate);
         } else {
             sql += " and s.sessionDate >= :nd ";
-            m.put("nd", commonFunctions.getStartOfDay());
+            m.put("nd", CommonFunctions.getStartOfDay());
         }
 
         sql += " order by s.sessionDate,s.startingTime ";
@@ -2891,7 +2890,7 @@ public class ChannelApi {
             m.put("td", toDate);
         } else {
             sql += " and s.sessionDate >= :nd ";
-            m.put("nd", commonFunctions.getStartOfDay());
+            m.put("nd", CommonFunctions.getStartOfDay());
         }
 
         sql += " order by s.sessionDate,s.startingTime ";
@@ -2967,7 +2966,7 @@ public class ChannelApi {
             m.put("td", toDate);
         } else {
             sql += " and s.sessionDate >= :nd ";
-            m.put("nd", commonFunctions.getStartOfDay());
+            m.put("nd", CommonFunctions.getStartOfDay());
         }
 
         sql += " order by s.sessionDate,s.startingTime ";
@@ -3095,8 +3094,8 @@ public class ChannelApi {
         }
 
         m.put("id", agentId);
-        m.put("fd", commonFunctions.getStartOfDay(fromDate));
-        m.put("td", commonFunctions.getEndOfDay(toDate));
+        m.put("fd", CommonFunctions.getStartOfDay(fromDate));
+        m.put("td", CommonFunctions.getEndOfDay(toDate));
         billObjects = billSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        //// // System.out.println("m = " + m);
@@ -3815,14 +3814,6 @@ public class ChannelApi {
 
     public void setInstitutionFacade(InstitutionFacade institutionFacade) {
         this.institutionFacade = institutionFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public ChannelBean getChannelBean() {

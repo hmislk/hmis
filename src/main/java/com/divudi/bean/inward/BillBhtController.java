@@ -58,7 +58,6 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.lab.InvestigationTubeSticker;
 import com.divudi.core.entity.UserPreference;
-import com.divudi.core.util.CommonFunctions;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -128,7 +127,7 @@ public class BillBhtController implements Serializable {
     @Inject
     BillController billController;
     ///////////////////
-    CommonFunctions commonFunctions;
+
     private double total;
     private double discount;
     private double netTotal;
@@ -157,6 +156,8 @@ public class BillBhtController implements Serializable {
     private List<ItemLight> inwardItems;
     private ItemLight itemLight;
 
+    private int entriesIndex;
+
     public String navigateToAddServiceFromMenu() {
         resetBillData();
         return "/inward/inward_bill_service?faces-redirect=true";
@@ -175,11 +176,7 @@ public class BillBhtController implements Serializable {
     }
 
     public String navigateToSampleManegmentFromInwardIntrimBill(Bill b) {
-        List<Bill> newBills = new ArrayList<>();
-        newBills.add(b);
-        patientInvestigationController.setBills(newBills);
-        patientInvestigationController.searchBillsWithoutSampleId();
-        return "/lab/generate_barcode_p?faces-redirect=true";
+        return patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(b);
     }
 
     public String navigateToNewBillFromPrintLabelsForInvestigations() {
@@ -335,14 +332,6 @@ public class BillBhtController implements Serializable {
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     @Inject
     private BillSearch billSearch;
 
@@ -471,7 +460,7 @@ public class BillBhtController implements Serializable {
                 } else if (bf.getFee().getFeeType() == FeeType.Additional) {
                     otherFee += bf.getFeeValue();
                 }
-                
+
                 marginFee += bf.getFeeMargin();
             }
 
@@ -875,7 +864,6 @@ public class BillBhtController implements Serializable {
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
-
         //billTotal = 0.0;
     }
 
@@ -958,19 +946,21 @@ public class BillBhtController implements Serializable {
             JsfUtil.addErrorMessage("Error! Please Try Again");
             return;
         }
-        
-        lstBillEntries.remove(bi);
-        
-        System.out.println("Before Bill Components = " + lstBillComponents.size());
-        System.out.println("Before Bill Fees = " + lstBillFees.size());
-        
-        recreateList(bi);
-        
-        System.out.println("After Bill Components = " + lstBillComponents.size());
-        System.out.println("After Bill Fees = " + lstBillFees.size());
-        
+
+        if (getEntriesIndex() == -1) {
+            JsfUtil.addErrorMessage("Error! Please Try Again");
+            return;
+        }
+
+        lstBillEntries.remove(entriesIndex);
+
+        lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
+        lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
+
         JsfUtil.addSuccessMessage("Successfully Removed");
         calTotals();
+
+        setEntriesIndex(-1);
 
     }
 
@@ -1358,6 +1348,14 @@ public class BillBhtController implements Serializable {
 
     public void setInwardItems(List<ItemLight> inwardItems) {
         this.inwardItems = inwardItems;
+    }
+
+    public int getEntriesIndex() {
+        return entriesIndex;
+    }
+
+    public void setEntriesIndex(int entriesIndex) {
+        this.entriesIndex = entriesIndex;
     }
 
 }

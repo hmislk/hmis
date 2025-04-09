@@ -1,6 +1,5 @@
 package com.divudi.service;
 
-import com.divudi.bean.channel.BookingControllerViewScope;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
@@ -107,8 +106,6 @@ public class ChannelService {
     BillService billService;
 
     @Inject
-    private BookingControllerViewScope bookingControllerViewScope;
-    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
     @PermitAll //TODO: Fix this to appropriate roles .
@@ -176,14 +173,6 @@ public class ChannelService {
 
     public void setInstitutionFacade(InstitutionFacade institutionFacade) {
         this.institutionFacade = institutionFacade;
-    }
-
-    public BookingControllerViewScope getBookingControllerViewScope() {
-        return bookingControllerViewScope;
-    }
-
-    public void setBookingControllerViewScope(BookingControllerViewScope bookingControllerViewScope) {
-        this.bookingControllerViewScope = bookingControllerViewScope;
     }
 
     public ServiceSessionBean getServiceSessionBean() {
@@ -1268,8 +1257,6 @@ public class ChannelService {
 
     @EJB
     WebUserFacade webUserFacade;
-    @Inject
-    SecurityController securityController;
 
     public WebUser checkUserCredentialForApi(String temUserName, String temPassword) {
 
@@ -1284,7 +1271,7 @@ public class ChannelService {
             return null;
         }
 
-        if (securityController.matchPassword(temPassword, u.getWebUserPassword())) {
+        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
 
             return u;
         }
