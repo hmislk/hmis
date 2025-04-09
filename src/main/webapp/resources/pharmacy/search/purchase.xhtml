@@ -45,7 +45,7 @@
                 </h:commandLink>
             </p:column> 
             
-            <p:column headerText="Invoice No"  style="padding: 8px; width:8em;">
+            <p:column headerText="Invoice No" filterBy="#{bill.invoiceNumber}" filterMatchMode="contains"  style="padding: 8px; width:8em;">
                     <h:outputLabel  value="#{bill.invoiceNumber}" ></h:outputLabel>
             </p:column>  
             

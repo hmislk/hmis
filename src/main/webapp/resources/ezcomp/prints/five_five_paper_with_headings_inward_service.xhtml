@@ -41,8 +41,10 @@
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
                 <h:outputLabel value="RECEIPT"   />
+
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+
             </div>
 
             <div >

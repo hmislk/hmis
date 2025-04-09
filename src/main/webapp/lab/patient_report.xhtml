@@ -705,6 +705,7 @@
                                                         rendered="#{prv.investigationItem.ixItemType eq 'ReportImage'}">
                                                         <p:graphicImage 
                                                             cache="false"
+                                                            alt="#{prv.id}"
                                                             value="#{byteArrayToStreamContentController.imageById}"
                                                             style="width: #{prv.investigationItem.wtPix}; overflow: visible; display: block; z-index: 800;"
                                                             height="#{prv.investigationItem.htPix}"

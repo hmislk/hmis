@@ -245,7 +245,6 @@ public class PharmacyReportController implements Serializable {
 
     private List<PatientDepositHistory> patientDepositHistories;
 
-    private CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
     private PatientInvestigationStatus patientInvestigationStatus;
 
@@ -1521,7 +1520,7 @@ public class PharmacyReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }

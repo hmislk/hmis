@@ -2,7 +2,9 @@ package com.divudi.core.data.reports;
 
 public enum PharmacyReports implements IReportType {
     STOCK_REPORT_BY_BATCH("Stock Report by Batch"),
-    PHARMACY_BIN_CARD("Pharmacy Bin Card");
+    PHARMACY_BIN_CARD("Pharmacy Bin Card"),
+    BHT_ISSUE_BY_BILL("BHT Issue by Bill"),
+    GRN_SUMMARY("GRN Summary");
 
     private final String displayName;
 

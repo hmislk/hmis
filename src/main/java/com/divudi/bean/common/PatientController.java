@@ -130,7 +130,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @EJB
     private BillNumberGenerator billNumberGenerator;
 
-    CommonFunctions commonFunctions;
     @EJB
     BillFacade billFacade;
     @EJB
@@ -2743,14 +2742,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         membershipTypeListner = null;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     @Deprecated
     private YearMonthDay yearMonthDay;
 
@@ -2774,7 +2765,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     @Deprecated
     public void dobChangeListen() {
-        yearMonthDay = getCommonFunctions().guessAge(getCurrent().getPerson().getDob());
+        yearMonthDay = CommonFunctions.guessAge(getCurrent().getPerson().getDob());
     }
 
     public StreamedContent getPhoto(Patient p) {
