@@ -176,12 +176,12 @@
                                 </h:outputLabel>
                             </td>
                             <td   style="text-align: right; width: 25%; font-size: 10px;" >
-                                <h:outputLabel  styleClass="totalsBlock1"   value="#{bip.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" >
+                                <h:outputLabel  styleClass="totalsBlock1"   value="#{bip.rate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                             <td  style="text-align: right; width: 25%; font-size: 10px;" >
-                                <h:outputLabel styleClass="totalsBlock1"   value="#{bip.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bip.qty}"    >
+                                <h:outputLabel styleClass="totalsBlock1"   value="#{bip.netValue}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>

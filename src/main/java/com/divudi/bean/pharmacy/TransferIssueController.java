@@ -558,6 +558,17 @@ public class TransferIssueController implements Serializable {
                 return;
             }
         }
+        
+        //Remove Zero Qty Item
+        List<BillItem> billItemList = new ArrayList<>();
+        for (BillItem bi : getBillItems()) {
+            if(bi.getPharmaceuticalBillItem().getQty() != 0.0){
+                billItemList.add(bi);
+            }
+        }
+        
+        //Replase the billItem with out Zero Qty Item
+        setBillItems(billItemList);
 
         saveBill();
         for (BillItem i : getBillItems()) {
@@ -617,6 +628,23 @@ public class TransferIssueController implements Serializable {
 
             getIssuedBill().getBillItems().add(i);
         }
+        
+        if (sessionController.getDepartmentPreference().isTranferNetTotalbyRetailRate()) {
+            for (BillItem b : getIssuedBill().getBillItems()) {
+                b.setRate(b.getPharmaceuticalBillItem().getRetailRate());
+                b.setQty(b.getPharmaceuticalBillItem().getQty());
+                b.setNetValue(b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
+                
+                getBillItemFacade().edit(b);
+            }
+        } else {
+            for (BillItem b : getIssuedBill().getBillItems()) {
+                b.setRate(b.getPharmaceuticalBillItem().getPurchaseRate());
+                b.setQty(b.getPharmaceuticalBillItem().getQty());
+                b.setNetValue(b.getPharmaceuticalBillItem().getPurchaseRate() * b.getPharmaceuticalBillItem().getQty());
+                getBillItemFacade().edit(b);
+            }
+        }
 
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
 
@@ -663,7 +691,7 @@ public class TransferIssueController implements Serializable {
         double value = 0;
         int serialNo = 0;
 
-        if (sessionController.getApplicationPreference().isTranferNetTotalbyRetailRate()) {
+        if (sessionController.getDepartmentPreference().isTranferNetTotalbyRetailRate()) {
             for (BillItem b : getIssuedBill().getBillItems()) {
                 value += (b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
                 b.setSearialNo(serialNo++);
