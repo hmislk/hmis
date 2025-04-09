@@ -6,6 +6,8 @@ import com.divudi.core.facade.ReportLogFacade;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,9 +19,11 @@ public class ReportLogAsyncService {
     private ReportLogFacade reportLogFacade;
 
     @Asynchronous
-    public void logReport(ReportLog reportLog) {
+    public Future<ReportLog> logReport(ReportLog reportLog) {
         if (reportLog == null) {
-            return;
+            LOGGER.log(Level.SEVERE, "Error occurred while saving the report log. Report log cannot be null.");
+
+            return null;
         }
 
         if (reportLog.getId() == null) {
@@ -31,6 +35,8 @@ public class ReportLogAsyncService {
         } else {
             getFacade().edit(reportLog);
         }
+
+        return CompletableFuture.completedFuture(reportLog);
     }
 
     public ReportLogFacade getFacade() {

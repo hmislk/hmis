@@ -35,7 +35,7 @@ public class ReportLog implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date startTime;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date endTime;
 
@@ -52,7 +52,7 @@ public class ReportLog implements Serializable {
         this.endTime = endTime;
         this.reportType = reportType.getReportType();
         this.reportName = reportType.getReportName();
-        this.executionTimeInMillis = endTime.getTime() - startTime.getTime();
+        this.executionTimeInMillis = endTime != null && startTime != null ? endTime.getTime() - startTime.getTime() : null;
     }
 
     public ReportLog() {
@@ -111,5 +111,13 @@ public class ReportLog implements Serializable {
         }
 
         return null;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+
+        if (startTime != null && endTime != null) {
+            this.executionTimeInMillis = endTime.getTime() - startTime.getTime();
+        }
     }
 }
