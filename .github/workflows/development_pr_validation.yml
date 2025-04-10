@@ -5,6 +5,7 @@ on:
     types: [ opened, synchronize, reopened ]
     branches:
       - development
+      - '*-prod'
 
 jobs:
   validate-jdbc-data-sources:
