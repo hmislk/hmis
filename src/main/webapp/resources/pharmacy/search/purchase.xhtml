@@ -25,44 +25,39 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}"/>
         </h:panelGrid>
 
+        <p:commandButton ajax="false" value="Download" >
+            <p:dataExporter target="tbl" type="xlsx" fileName="bill_list" ></p:dataExporter>
+        </p:commandButton>
 
-        <p:dataTable rowIndexVar="i" id="tbl" value="#{searchController.bills}" var="bill" class="mt-3" >
+        <p:dataTable rowIndexVar="i" id="tbl"  value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
                 <h:outputLabel value="PURCHASE BILL SEARCH"/>
-                <p:commandButton 
-                    class="ui-button-success mx-2"
-                    icon="fa fa-download"
-                    style="float: right;"
-                    ajax="false" 
-                    value="Download" >
-                    <p:dataExporter target="tbl" type="xlsx" fileName="purchase_bill_list" ></p:dataExporter>
-                </p:commandButton>
             </f:facet>
 
             <p:column headerText="#"  style="padding: 8px; width:2em;">
-                <h:outputLabel  value="#{i+1}" ></h:outputLabel>
+                    <h:outputLabel  value="#{i+1}" ></h:outputLabel>
             </p:column>
-
-            <p:column headerText="Bill No" filterBy="#{bill.deptId}" filterMatchMode="contains"  style="padding: 8px; width: 12em;">
+            
+            <p:column headerText="Bill No" style="padding: 8px;">
                 <h:commandLink action="pharmacy_reprint_purchase?faces-redirect=true" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column> 
-
-            <p:column headerText="Invoice No" filterBy="#{bill.invoiceNumber}" filterMatchMode="contains" style="padding: 8px; width:8em;" filterable="true">
-                <h:outputLabel  value="#{bill.invoiceNumber}" ></h:outputLabel>
+            
+            <p:column headerText="Invoice No" filterBy="#{bill.invoiceNumber}" filterMatchMode="contains"  style="padding: 8px; width:8em;">
+                    <h:outputLabel  value="#{bill.invoiceNumber}" ></h:outputLabel>
             </p:column>  
-
+            
             <p:column headerText="Invoice Date" style="padding: 8px;">
                 <h:outputText value="#{bill.invoiceDate}" >
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                 </h:outputText>
             </p:column>  
-
+            
             <p:column headerText="Billed At" style="padding: 8px;" >
                 <h:outputText value="#{bill.createdAt}" >
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                 </h:outputText>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -78,7 +73,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>  
-
+            
             <p:column headerText="Billed By" style="padding: 8px;">
                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
                 <br/>

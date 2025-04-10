@@ -146,8 +146,8 @@
 
                                     <p:column 
                                         headerText="Cancelled By"  
-                                        sortBy="#{bb.creater.webUserPerson.name}" 
-                                        filterBy="#{bb.creater.webUserPerson.name}" 
+                                        sortBy="#{bb.cancelledBill.creater.webUserPerson.name}" 
+                                        filterBy="#{bb.cancelledBill.creater.webUserPerson.name}" 
                                         filterMatchMode="contains"  >  
                                         <h:panelGroup rendered="#{bb.cancelled}" >
                                             <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.creater.webUserPerson.name}" >                                       
@@ -173,13 +173,13 @@
 
                                     <p:column 
                                         headerText="Value"  
-                                        sortBy="" 
-                                        filterBy="" 
+                                        sortBy="#{bb.netTotal}" 
+                                        filterBy="#{bb.netTotal}" 
                                         filterMatchMode="contains"  >                              
                                         <h:outputLabel value="#{bb.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>                                  
-                                    </p:column>  
+                                    </p:column>
 
                                     <p:column 
                                         headerText="Comments" >

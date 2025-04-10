@@ -67,8 +67,6 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
         return strValue;
     }
 
-
-
     public void setStrValue(String strValue) {
         this.strValue = strValue;
     }
@@ -90,6 +88,16 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
     }
 
     public String getFileName() {
+        if (fileName == null || fileName.isEmpty()) {
+            return fileName;
+        }
+
+        if (!fileName.toLowerCase().matches(".*\\.(bmp|png|jpg|jpeg|jpe)$")) {
+            if (fileType != null && !fileType.isEmpty()) {
+                return fileName + "." + fileType.toLowerCase();
+            }
+        }
+
         return fileName;
     }
 
