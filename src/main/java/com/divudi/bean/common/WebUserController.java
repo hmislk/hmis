@@ -257,6 +257,29 @@ public class WebUserController implements Serializable {
         JsfUtil.addErrorMessage("User Removed");
     }
 
+    public void cancelRetirement() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a retired user to revert.");
+            return;
+        }
+
+        selected.getWebUserPerson().setRetired(false);
+        selected.getWebUserPerson().setRetirer(getSessionController().getLoggedUser());
+        selected.getWebUserPerson().setRetiredAt(Calendar.getInstance().getTime());
+        getPersonFacade().edit(selected.getWebUserPerson());
+
+        selected.setName(selected.getId().toString());
+        selected.setRetired(false);
+        selected.setRetirer(getSessionController().getLoggedUser());
+        selected.setRetiredAt(Calendar.getInstance().getTime());
+        getFacade().edit(selected);
+
+        selected = null;
+        fillLightUsers();
+
+        JsfUtil.addSuccessMessage("Retirement successfully reverted.");
+    }
+
     public List<WebUser> completeUser(String qry) {
         List<WebUser> a = null;
         if (qry != null) {
@@ -649,8 +672,8 @@ public class WebUserController implements Serializable {
     public String navigateToListRetiredUsers() {
         fillLightUsersRetired();
         return "/admin/users/user_list_retired?faces-redirect=true";
-    }    
-    
+    }
+
     private void fillLightUsers() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
@@ -662,7 +685,7 @@ public class WebUserController implements Serializable {
         m.put("ret", false);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
     }
-    
+
     private void fillLightUsersRetired() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
