@@ -551,13 +551,6 @@
                                         <h:outputText value="#{summary.cardValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
-                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Card')}" >
-                                        </p:commandButton>
                                         <f:facet name="footer">
                                             <h:outputText value="#{financialTransactionController.bundle.cardValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -761,16 +754,6 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column headerText="Actions" class="text-center">
-                                        <p:commandButton 
-                                            class="m-1 ui-button-success" 
-                                            value="View Details" 
-                                            icon="pi pi-eye"  
-                                            action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
-                                             <f:setPropertyActionListener value="#{summary}" target="#{financialTransactionController.selectedBundle}"></f:setPropertyActionListener>
-                                        </p:commandButton>
-
-                                    </p:column>
 
                                 </p:dataTable>
                             </div>
