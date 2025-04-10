@@ -45,11 +45,11 @@
                                      <p:outputLabel value="Repayment Details" ></p:outputLabel>
                                      <h:panelGroup id="paymentDetails">
                                         <h:panelGroup id="creditCard"  rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Card'}">
-                                            <pa:creditCard paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
+                                            <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="cheque"  rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Cheque'}">
-                                            <pa:cheque paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
+                                            <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{agentPaymentReceiveSearchController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="slip" rendered="#{agentPaymentReceiveSearchController.paymentMethod eq 'Slip'}">
