@@ -13599,6 +13599,7 @@ public class SearchController implements Serializable {
     }
 
     public void generateDailyReturn() {
+        reportTimerController.trackReportExecution(() -> {
 
         bundle = new ReportTemplateRowBundle();
         bundle.setName("Daily Return");
@@ -13749,6 +13750,8 @@ public class SearchController implements Serializable {
         netCashForTheDayBundlePlusCredits.setBundleType("netCashPlusCredit");
         netCashForTheDayBundlePlusCredits.setTotal(netCollectionPlusCredits);
         bundle.getBundles().add(netCashForTheDayBundlePlusCredits);
+
+        }, FinancialReport.DAILY_RETURN,sessionController.getLoggedUser());
     }
 
     public ReportTemplateRowBundle generatePaymentColumnForCollections(List<BillTypeAtomic> bts, List<PaymentMethod> pms) {
@@ -13904,7 +13907,8 @@ public class SearchController implements Serializable {
     }
 
     public void generateCashierSummary() {
-        bundle = new ReportTemplateRowBundle();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
 
         paymentMethod = null;
 
@@ -14229,7 +14233,7 @@ public class SearchController implements Serializable {
 
         bundle.getBundles().add(netCashForTheDayBundle);
         bundle.calculateTotalsByAllChildBundles();
-
+        }, CashierReports.CASHIER_SUMMARY,sessionController.getLoggedUser());
     }
 
     public void listAllDrawers() {
@@ -14253,6 +14257,7 @@ public class SearchController implements Serializable {
     }
 
     public void generateCashierDetailed() {
+        reportTimerController.trackReportExecution(() -> {
         bundle = new ReportTemplateRowBundle();
 
         double collectionForTheDay = 0.0;
@@ -14593,6 +14598,7 @@ public class SearchController implements Serializable {
 
         bundle.getBundles().add(netCashForTheDayBundle);
         bundle.calculateTotalsByAllChildBundles();
+        }, CashierReports.CASHIER_DETAILED,sessionController.getLoggedUser());
 
     }
 
@@ -17793,7 +17799,9 @@ public class SearchController implements Serializable {
     }
 
     public void generateTotalCashierSummary() {
-        Map<String, Object> parameters = new HashMap<>();
+        reportTimerController.trackReportExecution(() -> {
+
+            Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), "
                 + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
@@ -17850,6 +17858,8 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
         bundle.calculateTotalsWithCredit();
+
+        }, CashierReports.TOTAL_CASHIER_SUMMARY,sessionController.getLoggedUser());
     }
 
     public void generateShiftStartEndSummary() {
