@@ -16,24 +16,33 @@
                                         <p:commandButton  
                                             ajax="false" 
                                             value="Add New User" 
+                                            icon="fa fa-user-plus"
                                             action="#{webUserController.navigateToAddNewUser}"/>
+
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Staff Users" 
+                                            icon="fa fa-users"
                                             action="#{webUserController.navigateToListUsers()}" />
+
                                         <p:commandButton   
                                             ajax="false" 
                                             value="View User Logins" 
+                                            icon="fa fa-sign-in-alt"
                                             action="#{loginController.navigateToViewLogins()}" />
+
                                         <p:commandButton 
                                             ajax="false" 
                                             value="To Remove Multiple Users" 
-                                            action="#{webUserController.navigateToRemoveMultipleUsers()}"
-                                            />
+                                            icon="fa fa-user-minus"
+                                            action="#{webUserController.navigateToRemoveMultipleUsers()}" />
+
                                         <hr/>
+
                                         <p:commandButton 
                                             ajax="false" 
                                             value="User Roles" 
+                                            icon="fa fa-user-tag"
                                             action="#{webUserRoleController.navigateToManageWebUserRoles()}" />
 
                                         <p:commandButton
@@ -44,14 +53,23 @@
                                             action="#{webUserRoleController.navigateToManageWebUserRoleUsers()}"
                                             ajax="false" >
                                         </p:commandButton>
+
                                         <hr/>
+
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Non Staff Users" 
+                                            icon="fa fa-user-circle"
                                             action="#{webUserController.navigateToManageUsersWithoutStaff()}" />
-                                        <hr/>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="View Retired Users" 
+                                            icon="fa fa-user-slash"
+                                            action="#{webUserController.navigateToListRetiredUsers()}" />
 
+                                        <hr/>
                                     </div>
+
                                 </p:tab>
                             </p:accordionPanel>
                         </h:form>
