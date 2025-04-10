@@ -41,6 +41,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.entity.Department;
@@ -552,50 +553,52 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().isEmpty()) {
+        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
             j += " and c.patient.person.name like :name ";
             m.put("name", "%" + patientNameForSearch + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().isEmpty()) {
+        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
             j += "  and c.bhtNo like :bht ";
             m.put("bht", "%" + bhtNumberForSearch + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().isEmpty()) {
+        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
             m.put("phn", patientNumberForSearch);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().isEmpty()) {
+        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
             m.put("phone", patientPhoneNumberForSearch);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().isEmpty()) {
+        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
             j += " and c.patient.person.nic =:nic";
             m.put("nic", patientIdentityNumberForSearch);
         }
 
         if (admissionStatusForSearch != null) {
-            switch (admissionStatusForSearch) {
-                case ADMITTED_BUT_NOT_DISCHARGED:
-                    j += "  and c.discharged=:dis ";
-                    m.put("dis", false);
-                    break;
-                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
-                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                    m.put("dis", true);
-                    m.put("bf", false);
-                    break;
-                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                    m.put("dis", true);
-                    m.put("bf", true);
-                    break;
-                case ANY_STATUS:
-                    break;
-                default:
-                    break;
+            if (null != admissionStatusForSearch) {
+                switch (admissionStatusForSearch) {
+                    case ADMITTED_BUT_NOT_DISCHARGED:
+                        j += "  and c.discharged=:dis ";
+                        m.put("dis", false);
+                        break;
+                    case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", false);
+                        break;
+                    case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", true);
+                        break;
+                    case ANY_STATUS:
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         if (institutionForSearch != null) {
@@ -637,50 +640,52 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().isEmpty()) {
+        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
             j += " and c.patient.person.name like :name ";
             m.put("name", "%" + patientNameForSearch + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().isEmpty()) {
+        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
             j += "  and c.bhtNo like :bht ";
             m.put("bht", "%" + bhtNumberForSearch + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().isEmpty()) {
+        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
             m.put("phn", patientNumberForSearch);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().isEmpty()) {
+        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
             m.put("phone", patientPhoneNumberForSearch);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().isEmpty()) {
+        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
             j += " and c.patient.person.nic =:nic";
             m.put("nic", patientIdentityNumberForSearch);
         }
 
         if (admissionStatusForSearch != null) {
-            switch (admissionStatusForSearch) {
-                case ADMITTED_BUT_NOT_DISCHARGED:
-                    j += "  and c.discharged=:dis ";
-                    m.put("dis", false);
-                    break;
-                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
-                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                    m.put("dis", true);
-                    m.put("bf", false);
-                    break;
-                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                    m.put("dis", true);
-                    m.put("bf", true);
-                    break;
-                case ANY_STATUS:
-                    break;
-                default:
-                    break;
+            if (null != admissionStatusForSearch) {
+                switch (admissionStatusForSearch) {
+                    case ADMITTED_BUT_NOT_DISCHARGED:
+                        j += "  and c.discharged=:dis ";
+                        m.put("dis", false);
+                        break;
+                    case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", false);
+                        break;
+                    case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", true);
+                        break;
+                    case ANY_STATUS:
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         if (institutionForSearch != null) {
@@ -808,12 +813,43 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Provisional Admission From showing completePatientDishcargedNotFinalized")) {
+            List<Admission> toRemove = new ArrayList<>();
+            for (Admission a : suggestions) {
+                if (isAddmissionHaveProvisionalBill(a)) {
+                    toRemove.add(a);
+                }
+            }
+            suggestions.removeAll(toRemove);
+        }
         return suggestions;
     }
 
     public String navigateToListCurrentInpatients() {
         listCurrentInpatients();
         return "";
+
+    }
+
+    public boolean isAddmissionHaveProvisionalBill(Admission ad) {
+        List<Bill> ads = new ArrayList<>();
+        String sql;
+        HashMap h = new HashMap();
+        sql = "select b from Bill b where b.retired=false "
+                + " and b.billTypeAtomic=:bt "
+                + " and b.cancelled=false"
+                + " and b.patientEncounter=:pe";
+        h.put("bt", BillTypeAtomic.INWARD_PROVISIONAL_BILL);
+        h.put("pe", ad);
+        ads = getBillFacade().findByJpql(sql, h);
+        
+        System.out.println("ads.size() = " + ads.size());
+
+        if (ads.size() > 0 || !ads.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
