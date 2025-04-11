@@ -32,7 +32,6 @@ jobs:
               echo "❌ Only development can merge to $TARGET (qa restriction)."
               exit 1
             fi
-          fi
           elif [[ "$TARGET" == "staging" ]]; then
             if [[ "$SOURCE" != "hims-qa1" && "$SOURCE" != "hims-qa2" ]]; then
               echo "❌ Only hims-qa1 and hims-qa2 can merge to $TARGET (staging restriction)."
