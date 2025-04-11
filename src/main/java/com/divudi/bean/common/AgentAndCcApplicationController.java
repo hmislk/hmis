@@ -453,7 +453,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
 
-            agentHistoryFacade.create(agentHistory);
+            agentHistoryFacade.createAndFlush(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
             institutionFacade.editAndCommit(collectingCentre);
