@@ -95,7 +95,7 @@
 
                 <h:panelGroup id="gpBillPreview" >
                     <pharmacy:purhcase
-                        bill="#{pharmacyPurchaseController.bill}"
+                        bill="#{pharmacyBillSearch.bill}"
                         ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                         ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                     </pharmacy:purhcase>
