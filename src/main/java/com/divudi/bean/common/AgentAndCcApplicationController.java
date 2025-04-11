@@ -101,7 +101,7 @@ public class AgentAndCcApplicationController {
                 auditEvent.setEventStatus("ERROR");
                 String jsonWithError = "";
                 auditEvent.setAfterJson(jsonWithError);
-                auditEventApplicationController.saveAutitEvent(auditEvent);
+                auditEventApplicationController.saveAuditEvent(auditEvent);
                 break;
         }
     }
