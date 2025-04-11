@@ -68,12 +68,12 @@ public class PaymentService {
      * <ul>
      * <li>Creates payments based on the provided bill and payment method
      * data.</li>
+     * <li>Updates the drawer.</li>
+     * <li>Updates the cashbook if required by the specified options.</li>
      * <li>DO NOT Update the balance of patient deposits.</li>
      * <li>DO NOT Update balances for credit companies.</li>
      * <li>DO NOT Update balances for collecting centres.</li>
      * <li>DO NOT Update Staff Credit.</li>
-     * <li>Writes to the drawer for transaction recording.</li>
-     * <li>Updates the cashbook if required by the specified options.</li>
      * </ul>
      *
      * @param bill The bill for which payments are being created.

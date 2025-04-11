@@ -87,18 +87,25 @@
                                 </f:facet>
                                 <div class="row">
                                     <div class="col-7">
-                                        <p:autoComplete  id="items" value="#{transferRequestController.currentBillItem.item}"
-                                                         forceSelection="true"  class="w-100" inputStyleClass="w-100"
+                                        <p:autoComplete  
+                                            id="items" 
+                                            value="#{transferRequestController.currentBillItem.item}"
+                                                         forceSelection="true"  
+                                                         class="w-100" 
+                                                         maxResults="15"
+                                                         inputStyleClass="w-100"
                                                          completeMethod="#{itemController.completeAmpItem}"
-                                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
+                                                         var="vt" 
+                                                         itemLabel="#{vt.name}" 
+                                                         itemValue="#{vt}"
                                                          >
-                                            <p:column headerText="Item" >
+                                            <p:column headerText="Item" style="padding: 6px;">
                                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Code" >
+                                            <p:column headerText="Code"  style="padding: 6px;">
                                                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Pack Size" rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" >
+                                            <p:column headerText="Pack Size" style="padding: 6px;" rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" >
                                                 <p:outputLabel value=" X #{vt.dblValue}"
                                                                rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
                                             </p:column>
