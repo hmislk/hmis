@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author buddhika
@@ -1070,8 +1071,8 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                double amount = isOutpatient ? row.getBill().getNetTotal() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
-                        row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal();
+                double amount = isOutpatient ? row.getBill().getNetTotal() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill)
+                        ? row.getBill().getNetTotal() : row.getBill().getPatientEncounter().getFinalBill().getNetTotal();
                 total += amount;
             }
         }
@@ -1112,8 +1113,8 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
 
-                double amount = isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
-                        row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+                double amount = isOutpatient ? row.getBill().getSettledAmountByPatient() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill)
+                        ? row.getBill().getSettledAmountByPatient() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
 
                 settledAmountByPatientsTotal += amount;
             }
@@ -1127,8 +1128,8 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                double amount = isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
-                        row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
+                double amount = isOutpatient ? row.getBill().getSettledAmountBySponsor() : row.getBill().getBillClassType().equals(BillClassType.CancelledBill)
+                        ? row.getBill().getSettledAmountBySponsor() : row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor();
 
                 settledAmountBySponsorsTotal += amount;
             }
@@ -1143,11 +1144,11 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
 
-                double amount = isOutpatient ? row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient() :
-                        row.getBill().getBillClassType().equals(BillClassType.CancelledBill) ?
-                                row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient() :
-                                row.getBill().getPatientEncounter().getFinalBill().getNetTotal() - row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor() -
-                                        row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
+                double amount = isOutpatient ? row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient()
+                        : row.getBill().getBillClassType().equals(BillClassType.CancelledBill)
+                        ? row.getBill().getNetTotal() - row.getBill().getSettledAmountBySponsor() - row.getBill().getSettledAmountByPatient()
+                        : row.getBill().getPatientEncounter().getFinalBill().getNetTotal() - row.getBill().getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
+                        - row.getBill().getPatientEncounter().getFinalBill().getSettledAmountByPatient();
 
                 totalBalance += amount;
             }
@@ -2850,6 +2851,13 @@ public class ReportTemplateRowBundle implements Serializable {
 //    }
     public List<DenominationTransaction> getDenominationTransactions() {
         return denominationTransactions;
+    }
+
+    public List<DenominationTransaction> getFilteredDenominationTransactions() {
+        return getDenominationTransactions()
+                .stream()
+                .filter(t -> t.getDenominationQty() != 0 || t.getDenominationValue() != 0)
+                .collect(Collectors.toList());
     }
 
     public void setDenominationTransactions(List<DenominationTransaction> denominationTransactions) {
