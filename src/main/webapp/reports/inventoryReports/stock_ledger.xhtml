@@ -303,9 +303,6 @@
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? f.pbItem.billItem.bill.referenceBill : f.pbItem.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
-                                <br/>
-                                <h:outputText rendered="#{pharmacyReportController.documentType eq 'opSaleDoc'}"
-                                              value="#{f.pbItem.billItem.bill.billTypeAtomic}"/>
                             </p:column>
 
                             <!--                            <p:column headerText="Ref Doc No." width="15em">
