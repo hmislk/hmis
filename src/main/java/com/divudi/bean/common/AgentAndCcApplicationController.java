@@ -7,9 +7,11 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.AgentHistoryFacade;
 import com.divudi.core.facade.InstitutionFacade;
+import com.google.gson.Gson;
 import javax.inject.Named;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +33,7 @@ public class AgentAndCcApplicationController {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     InstitutionFacade institutionFacade;
-    
+
     @Inject
     AuditEventApplicationController auditEventApplicationController;
 
@@ -84,7 +86,7 @@ public class AgentAndCcApplicationController {
             case CollectingCentreBillingRefund:
                 handleCcBillingRefund(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
-            case CollectingentrePaymentMadeBill : // There is a typo, but can not correct it as the data is already in the database.
+            case CollectingentrePaymentMadeBill: // There is a typo, but can not correct it as the data is already in the database.
                 handleCcCollectingCentrePaymentMade(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreCreditNote:
@@ -94,12 +96,22 @@ public class AgentAndCcApplicationController {
                 handleCcDebitNoteCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
                 break;
             default:
+                Map<String, Object> errorInfo = new LinkedHashMap<>();
+                errorInfo.put("fileName", "AgentAndCcApplicationController.java");
+                errorInfo.put("methodName", "updateCcBalance");
+                errorInfo.put("historyType", historyType != null ? historyType.name() : null);
+                errorInfo.put("billId", bill != null ? bill.getId() : null);
+                errorInfo.put("institutionId", bill != null && bill.getInstitution() != null ? bill.getInstitution().getId() : null);
+                errorInfo.put("departmentId", bill != null && bill.getDepartment() != null ? bill.getDepartment().getId() : null);
+                errorInfo.put("collectingCentreId", collectingCentre != null ? collectingCentre.getId() : null);
+
+                Gson gson = new Gson();
+                String jsonWithError = gson.toJson(errorInfo);
                 AuditEvent auditEvent = new AuditEvent();
                 auditEvent.setDepartmentId(bill.getDepartment().getId());
                 auditEvent.setWebUserId(bill.getWebUser().getId());
                 auditEvent.setEventDataTime(new Date());
                 auditEvent.setEventStatus("ERROR");
-                String jsonWithError = "";
                 auditEvent.setAfterJson(jsonWithError);
                 auditEventApplicationController.saveAuditEvent(auditEvent);
                 break;
