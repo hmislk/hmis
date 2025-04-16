@@ -108,12 +108,21 @@ public class AgentAndCcApplicationController {
                 Gson gson = new Gson();
                 String jsonWithError = gson.toJson(errorInfo);
                 AuditEvent auditEvent = new AuditEvent();
-                auditEvent.setDepartmentId(bill.getDepartment().getId());
-                auditEvent.setWebUserId(bill.getWebUser().getId());
+                if (bill != null) {
+                    if (bill.getDepartment() != null && bill.getDepartment().getId() != null) {
+                        auditEvent.setDepartmentId(bill.getDepartment().getId());
+                    }
+                    if (bill.getWebUser() != null && bill.getWebUser().getId() != null) {
+                        auditEvent.setWebUserId(bill.getWebUser().getId());
+                    }
+                }
                 auditEvent.setEventDataTime(new Date());
                 auditEvent.setEventStatus("ERROR");
                 auditEvent.setAfterJson(jsonWithError);
-                auditEventApplicationController.saveAuditEvent(auditEvent);
+                if (auditEventApplicationController != null) {
+                    auditEventApplicationController.saveAuditEvent(auditEvent);
+                }
+
                 break;
         }
     }
