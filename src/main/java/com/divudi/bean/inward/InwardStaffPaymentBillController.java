@@ -734,6 +734,11 @@ public class InwardStaffPaymentBillController implements Serializable {
             jpql += " and bf.staff.speciality=:s ";
             params.put("s", speciality);
         }
+        
+        if (currentStaff != null) {
+            jpql += " and bf.staff.id=:staffid ";
+            params.put("staffid", currentStaff.getId());
+        }
 
         if (admissionType != null) {
             jpql += " and bf.bill.patientEncounter.admissionType=:admTp ";
@@ -1198,14 +1203,6 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     }
 
-    public StaffFacade getStaffFacade() {
-        return staffFacade;
-    }
-
-    public void setStaffFacade(StaffFacade staffFacade) {
-        this.staffFacade = staffFacade;
-    }
-
     public Speciality getSpeciality() {
         return speciality;
     }
@@ -1227,7 +1224,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //   ////// // System.out.println(sql);
-            suggestions = getStaffFacade().findByJpql(sql);
+            suggestions = staffFacade.findByJpql(sql);
         }
         return suggestions;
     }
@@ -1243,10 +1240,10 @@ public class InwardStaffPaymentBillController implements Serializable {
         } else {
             if (getReferringDoctorSpeciality() != null) {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality=:rd order by p.person.name";
-                suggestions = getStaffFacade().findByJpql(sql, m);
+                suggestions = staffFacade.findByJpql(sql, m);
             } else {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
-                suggestions = getStaffFacade().findByJpql(sql);
+                suggestions = staffFacade.findByJpql(sql);
             }
         }
         return suggestions;

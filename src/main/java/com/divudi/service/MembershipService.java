@@ -5,6 +5,8 @@ import com.divudi.core.entity.FamilyMember;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.FamilyFacade;
 import com.divudi.core.facade.FamilyMemberFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +21,10 @@ public class MembershipService {
     FamilyMemberFacade familyMemberFacade;
     @EJB
     FamilyFacade familyFacade;
+    @EJB
+    PatientFacade patientFacade;
+    @EJB
+    PersonFacade personFacade;
 
     public void deleteFamilyMember(FamilyMember familyMember, WebUser user) {
         if (familyMember == null || user == null) {
@@ -28,6 +34,9 @@ public class MembershipService {
         familyMember.setRetiredAt(new Date());
         familyMember.setRetirer(user);
         familyMemberFacade.edit(familyMember);
+        familyMember.getPatient().getPerson().setMembershipScheme(null);
+        patientFacade.edit(familyMember.getPatient());
+        personFacade.edit(familyMember.getPatient().getPerson());
     }
 
     public List<FamilyMember> fetchFamilyMembers(Family family) {
