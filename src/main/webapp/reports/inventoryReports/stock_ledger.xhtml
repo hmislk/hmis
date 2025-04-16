@@ -286,12 +286,22 @@
                             </p:column>
                             <p:column headerText="Ref Doc No." width="15em">
                                 <p:commandLink 
+                                    rendered="#{pharmacyReportController.documentType ne 'opSaleDoc'}"
                                     value="#{not empty f.pbItem.billItem.bill.cancelledBill ? f.pbItem.billItem.bill.cancelledBill.deptId : f.pbItem.billItem.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
+                                <p:commandLink 
+                                    rendered="#{pharmacyReportController.documentType eq 'opSaleDoc'}"
+                                    value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? f.pbItem.billItem.bill.forwardReferenceBill.deptId : f.pbItem.billItem.bill.backwardReferenceBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? f.pbItem.billItem.bill.referenceBill : f.pbItem.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
 
@@ -315,7 +325,11 @@
                                                         </p:column>-->
                             <p:column headerText="Ref Doc Date" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.createdAt}" />
-                                <h:outputText value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
+                                <h:outputText rendered="#{pharmacyReportController.documentType ne 'opSaleDoc'}" 
+                                              value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
+                                <h:outputText rendered="#{pharmacyReportController.documentType eq 'opSaleDoc'}"
+                                    value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? f.pbItem.billItem.bill.forwardReferenceBill.createdAt : f.pbItem.billItem.bill.backwardReferenceBill.createdAt}" />
+                                
                             </p:column>
                             <p:column headerText="From Store" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />
