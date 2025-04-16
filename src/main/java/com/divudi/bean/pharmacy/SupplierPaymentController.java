@@ -1095,6 +1095,7 @@ public class SupplierPaymentController implements Serializable {
         bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01, true);
 
         String jpql = "SELECT b FROM Bill b WHERE b.retired = :ret AND b.cancelled = :can "
+                + "AND (b.paymentGenerated = false OR b.paymentGenerated = 0) "
                 + "AND b.createdAt BETWEEN :frm AND :to";
 
         HashMap<String, Object> params = new HashMap<>();
