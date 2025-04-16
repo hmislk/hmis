@@ -1769,6 +1769,7 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariablesForAcceptHandoverBill();
         bundle = new ReportTemplateRowBundle();
         bundle.setUser(selectedBill.getFromWebUser());
+        bundle.setToUser(selectedBill.getToWebUser());
         bundle.setStartBill(selectedBill.getReferenceBill());
         if (selectedBill.getReferenceBill() != null) {
             bundle.setEndBill(selectedBill.getReferenceBill().getReferenceBill());
