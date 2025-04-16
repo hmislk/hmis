@@ -2,13 +2,16 @@ package com.divudi.bean.common;
 
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.AgentHistoryFacade;
 import com.divudi.core.facade.InstitutionFacade;
+import com.google.gson.Gson;
 import javax.inject.Named;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +19,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 /**
  *
@@ -29,6 +33,9 @@ public class AgentAndCcApplicationController {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     InstitutionFacade institutionFacade;
+
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
 
     // A map to store locks for each collecting centre based on its ID
     private final Map<Long, Lock> lockMap = new ConcurrentHashMap<>();
@@ -77,10 +84,9 @@ public class AgentAndCcApplicationController {
                 handleCollectingCentreBilling(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreBillingRefund:
-                //System.out.println("Refund");
                 handleCcBillingRefund(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
-            case CollectingentrePaymentMadeBill:
+            case CollectingentrePaymentMadeBill: // There is a typo, but can not correct it as the data is already in the database.
                 handleCcCollectingCentrePaymentMade(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreCreditNote:
@@ -88,14 +94,40 @@ public class AgentAndCcApplicationController {
                 break;
             case CollectingCentreDebitNoteCancel:
                 handleCcDebitNoteCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
+                break;
             default:
-//                handleDefault(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                Map<String, Object> errorInfo = new LinkedHashMap<>();
+                errorInfo.put("fileName", "AgentAndCcApplicationController.java");
+                errorInfo.put("methodName", "updateCcBalance");
+                errorInfo.put("historyType", historyType != null ? historyType.name() : null);
+                errorInfo.put("billId", bill != null ? bill.getId() : null);
+                errorInfo.put("institutionId", bill != null && bill.getInstitution() != null ? bill.getInstitution().getId() : null);
+                errorInfo.put("departmentId", bill != null && bill.getDepartment() != null ? bill.getDepartment().getId() : null);
+                errorInfo.put("collectingCentreId", collectingCentre != null ? collectingCentre.getId() : null);
+
+                Gson gson = new Gson();
+                String jsonWithError = gson.toJson(errorInfo);
+                AuditEvent auditEvent = new AuditEvent();
+                if (bill != null) {
+                    if (bill.getDepartment() != null && bill.getDepartment().getId() != null) {
+                        auditEvent.setDepartmentId(bill.getDepartment().getId());
+                    }
+                    if (bill.getWebUser() != null && bill.getWebUser().getId() != null) {
+                        auditEvent.setWebUserId(bill.getWebUser().getId());
+                    }
+                }
+                auditEvent.setEventDataTime(new Date());
+                auditEvent.setEventStatus("ERROR");
+                auditEvent.setAfterJson(jsonWithError);
+                if (auditEventApplicationController != null) {
+                    auditEventApplicationController.saveAuditEvent(auditEvent);
+                }
+
                 break;
         }
     }
 
-
-    public Double ccBalanceBefore(Bill b){
+    public Double ccBalanceBefore(Bill b) {
         String jpql;
         jpql = "select h.balanceBeforeTransaction "
                 + " from AgentHistory h "
@@ -105,7 +137,7 @@ public class AgentAndCcApplicationController {
         return agentHistoryFacade.findDoubleByJpql(jpql, params);
     }
 
-    public Double ccBalanceAfter(Bill b){
+    public Double ccBalanceAfter(Bill b) {
         String jpql;
         jpql = "select h.balanceAfterTransaction "
                 + " from AgentHistory h "
@@ -453,7 +485,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
 
-            agentHistoryFacade.create(agentHistory);
+            agentHistoryFacade.createAndFlush(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
             institutionFacade.editAndCommit(collectingCentre);
@@ -545,69 +577,5 @@ public class AgentAndCcApplicationController {
             lock.unlock();
         }
     }
-
-//    @Deprecated
-//    private void handleDefault(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
-//        // Default case handling if necessary
-//    }
-//
-//    @Deprecated
-//    public void updateBalance(Institution collectingCentre,
-//            double collectingCenterFeeValue,
-//            double valueWithoutccFee,
-//            double transactionValue,
-//            HistoryType historyType,
-//            Bill bill,
-//            String refNo) {
-//        Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
-//        Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
-//        lock.lock();
-//        try {
-//            if (bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL) {
-//                AgentHistory agentHistory = new AgentHistory();
-//                agentHistory.setCreatedAt(new Date());
-//                agentHistory.setCreater(bill.getCreater());
-//                agentHistory.setBill(bill);
-//                agentHistory.setInstitution(bill.getInstitution());
-//                agentHistory.setDepartment(bill.getDepartment());
-//                agentHistory.setAgency(collectingCentre);
-//                agentHistory.setReferenceNumber(refNo);
-//                agentHistory.setHistoryType(historyType);
-//
-//                double balanceAfterTx = 0;
-//                double balanceAfterTransaction = 0;
-//                double agentBalanceAfterTx = 0;
-//
-//                switch (historyType) {
-//                    case CollectingCentreBilling:
-//
-//                        break;
-//                    default:
-//                        balanceAfterTx = collectingCentre.getBallance() - valueWithoutccFee;
-//                        balanceAfterTransaction = collectingCentre.getAgentBalance() - valueWithoutccFee;
-//                        agentBalanceAfterTx = collectingCentre.getCompanyBalance() - valueWithoutccFee;
-//                }
-//
-//                agentHistory.setBalanceBeforeTransaction(collectingCentre.getBallance());
-//                agentHistory.setBalanceAfterTransaction(balanceAfterTx);
-//                agentHistory.setTransactionValue(valueWithoutccFee);
-//
-//                agentHistory.setCompanyBalanceBefore(collectingCentre.getCompanyBalance());
-//                agentHistory.setCompanyBalanceAfter(collectingCentre.getCompanyBalance());
-//
-//                agentHistory.setCompanyTransactionValue(valueWithoutccFee);
-//                agentHistory.setTransactionValue(valueWithoutccFee);
-//
-//                agentHistory.setCollectingCentertransactionValue(collectingCenterFeeValue);
-//                agentHistoryFacade.create(agentHistory);
-//
-//                collectingCentre.setBallance(balanceAfterTx);
-//                institutionFacade.editAndCommit(collectingCentre);
-//            }
-//
-//        } finally {
-//            lock.unlock();
-//        }
-//    }
 
 }
