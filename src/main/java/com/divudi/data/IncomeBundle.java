@@ -20,6 +20,7 @@ import static com.divudi.data.PaymentMethod.YouOweMe;
 import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.entity.*;
 import com.divudi.entity.channel.SessionInstance;
+import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -75,6 +76,10 @@ public class IncomeBundle implements Serializable {
     private double patientDepositValue;
     private double patientPointsValue;
     private double onlineSettlementValue;
+
+    private double saleValue;
+    private double purchaseValue;
+    private double grossProfitValue;
 
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
@@ -232,6 +237,15 @@ public class IncomeBundle implements Serializable {
                         rows.add(ir);
                     }
                 }
+            } else if (firstElement instanceof PharmaceuticalBillItem) {
+                // Process list as Bills
+                for (Object obj : entries) {
+                    if (obj instanceof PharmaceuticalBillItem) {
+                        PharmaceuticalBillItem pbi = (PharmaceuticalBillItem) obj;
+                        IncomeRow ir = new IncomeRow(pbi);
+                        rows.add(ir);
+                    }
+                }
             } else if (firstElement instanceof IncomeRow) {
                 // Process list as IncomeRows
                 for (Object obj : entries) {
@@ -281,6 +295,56 @@ public class IncomeBundle implements Serializable {
             quantityValueAtRetailSaleRate += qty * retailRate;
             freeQuantityValueAtRetailSaleRate += freeQty * retailRate;
             quantityPlusFreeQuantityValueAtRetailSaleRate += (qty + freeQty) * retailRate;
+        }
+    }
+
+    public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
+        saleValue = 0;
+        purchaseValue = 0;
+        grossProfitValue = 0;
+
+        for (IncomeRow r : getRows()) {
+            PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
+            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
+                continue;
+            }
+
+            BillCategory bc = b.getBillItem().getBill().getBillTypeAtomic().getBillCategory();
+
+            Double q = b.getQty();
+            Double rRate = b.getRetailRate();
+            Double pRate = b.getPurchaseRate();
+
+            if (q == null || rRate == null || pRate == null) {
+                continue;
+            }
+
+            // Make rates absolute before any calculation
+            double retail = Math.abs(rRate);
+            double purchase = Math.abs(pRate);
+            double qty = q;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    qty = Math.abs(qty); // Positive
+                    break;
+                case CANCELLATION:
+                case REFUND:
+                    qty = -Math.abs(qty); // Negative
+                    break;
+                default:
+                    break;
+            }
+
+            double retailTotal = retail * qty;
+            double purchaseTotal = purchase * qty;
+            double grossProfit = (retail - purchase) * qty;
+
+            saleValue += Math.abs(retailTotal);
+            purchaseValue += Math.abs(purchaseTotal);
+            grossProfitValue += Math.abs(grossProfit);
         }
     }
 
@@ -1299,6 +1363,30 @@ public class IncomeBundle implements Serializable {
 
     public void setQuantityPlusFreeQuantityValueAtRetailSaleRate(Double quantityPlusFreeQuantityValueAtRetailSaleRate) {
         this.quantityPlusFreeQuantityValueAtRetailSaleRate = quantityPlusFreeQuantityValueAtRetailSaleRate;
+    }
+
+    public double getSaleValue() {
+        return saleValue;
+    }
+
+    public void setSaleValue(double saleValue) {
+        this.saleValue = saleValue;
+    }
+
+    public double getPurchaseValue() {
+        return purchaseValue;
+    }
+
+    public void setPurchaseValue(double purchaseValue) {
+        this.purchaseValue = purchaseValue;
+    }
+
+    public double getGrossProfitValue() {
+        return grossProfitValue;
+    }
+
+    public void setGrossProfitValue(double grossProfitValue) {
+        this.grossProfitValue = grossProfitValue;
     }
 
 }

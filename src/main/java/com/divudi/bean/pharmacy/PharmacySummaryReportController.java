@@ -44,6 +44,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
@@ -490,9 +491,8 @@ public class PharmacySummaryReportController implements Serializable {
         }
         bundle.generatePaymentDetailsForBills();
     }
-    
-    
-     public void processPharmacyIncomeAndCostReport() {
+
+    public void processPharmacyIncomeAndCostReport() {
         System.out.println("processPharmacyIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
@@ -518,20 +518,9 @@ public class PharmacySummaryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
 
-        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-        bundle = new IncomeBundle(bills);
-        for (IncomeRow r : bundle.getRows()) {
-            if (r.getBill() == null) {
-                continue;
-            }
-            if (r.getBill().getPaymentMethod() == null) {
-                continue;
-            }
-            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                r.setPayments(billService.fetchBillPayments(r.getBill()));
-            }
-        }
-        bundle.generatePaymentDetailsForBills();
+        List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new IncomeBundle(pbis);
+        bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
     }
 
 // </editor-fold>

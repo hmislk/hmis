@@ -3,6 +3,7 @@ package com.divudi.data;
 import com.divudi.entity.*;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class IncomeRow implements Serializable {
     private Bill batchBill;
     private Bill referanceBill;
     private BillItem billItem;
+    private PharmaceuticalBillItem pharmaceuticalBillItem;
     private BillFee billFee;
     private Payment payment;
 
@@ -164,6 +166,12 @@ public class IncomeRow implements Serializable {
         this();
         this.billItem = billItem;
         rowType = "BillItem";
+    }
+    
+    public IncomeRow(PharmaceuticalBillItem pbi) {
+        this();
+        this.pharmaceuticalBillItem = pbi;
+        rowType = "PharmaceuticalBillItem";
     }
 
     public IncomeRow(SessionInstance sessionInstance) {
@@ -1211,6 +1219,14 @@ public class IncomeRow implements Serializable {
 
     public void setReferanceBill(Bill referanceBill) {
         this.referanceBill = referanceBill;
+    }
+
+    public PharmaceuticalBillItem getPharmaceuticalBillItem() {
+        return pharmaceuticalBillItem;
+    }
+
+    public void setPharmaceuticalBillItem(PharmaceuticalBillItem pharmaceuticalBillItem) {
+        this.pharmaceuticalBillItem = pharmaceuticalBillItem;
     }
 
     

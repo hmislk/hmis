@@ -32,6 +32,10 @@ public class CommonController implements Serializable {
     public CommonController() {
     }
 
+    public double abs(double value) {
+        return Math.abs(value);
+    }
+
     public String convertToWordJSF(double number) {
         return CommonFunctions.convertToWord(number);
     }
