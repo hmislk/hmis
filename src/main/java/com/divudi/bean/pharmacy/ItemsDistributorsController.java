@@ -8,18 +8,17 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PackageFee;
-import com.divudi.entity.pharmacy.ItemsDistributors;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.PackageFeeFacade;
-import com.divudi.facade.PackegeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PackageFee;
+import com.divudi.core.entity.pharmacy.ItemsDistributors;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.PackageFeeFacade;
+import com.divudi.core.facade.PackegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,8 +54,6 @@ public class ItemsDistributorsController implements Serializable {
     private PackageFeeFacade packageFeeFacade;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     private DealerController dealerController;
     private ItemsDistributors current;
@@ -494,14 +491,6 @@ public class ItemsDistributorsController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + ItemsDistributorsController.class.getName());
             }
         }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

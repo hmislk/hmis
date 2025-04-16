@@ -1,14 +1,15 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.reports.IReportType;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.report.ReportLog;
-import com.divudi.facade.ReportLogFacade;
+import com.divudi.core.data.reports.IReportType;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.report.ReportLog;
+import com.divudi.service.ReportLogAsyncService;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,12 +19,19 @@ public class ReportTimerController implements Serializable {
     private static final Logger LOGGER = Logger.getLogger(ReportTimerController.class.getName());
 
     @EJB
-    private ReportLogFacade reportLogFacade;
+    private ReportLogAsyncService reportLogAsyncService;
 
     public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, WebUser loggedUser) {
         final Date startTime = new Date();
 
+        final ReportLog reportLog = new ReportLog(reportType, loggedUser, startTime, null);
+
+        ReportLog savedLog = null;
+
         try {
+            Future<ReportLog> futureLog = reportLogAsyncService.logReport(reportLog);
+            savedLog = futureLog.get();
+
             reportGenerationLogic.run();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error occurred while generating the report", e);
@@ -31,28 +39,9 @@ public class ReportTimerController implements Serializable {
 
         final Date endTime = new Date();
 
-        final ReportLog reportLog = new ReportLog(reportType, loggedUser, startTime, endTime);
-
-        save(reportLog);
-    }
-
-    public void save(ReportLog reportLog) {
-        if (reportLog == null) {
-            return;
+        if (savedLog != null) {
+            savedLog.setEndTime(endTime);
+            reportLogAsyncService.logReport(savedLog);
         }
-
-        if (reportLog.getId() == null) {
-            try {
-                getFacade().create(reportLog);
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Error occurred while saving the report log", e);
-            }
-        } else {
-            getFacade().edit(reportLog);
-        }
-    }
-
-    public ReportLogFacade getFacade() {
-        return reportLogFacade;
     }
 }

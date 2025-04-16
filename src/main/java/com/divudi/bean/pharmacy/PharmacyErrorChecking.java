@@ -5,21 +5,24 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
-import com.divudi.data.BillType;
+import com.divudi.bean.common.ReportTimerController;
+import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.reports.PharmacyReports;
+import com.divudi.core.data.reports.SummaryReports;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyErrorCheckingEjb;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.BillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -40,12 +43,14 @@ public class PharmacyErrorChecking implements Serializable {
     PharmacyErrorCheckingEjb ejb;
 
     @Inject
-    CommonController commonController;
-    @Inject
     StockHistoryController stockHistoryController;
+
+    @Inject
+    ReportTimerController reportTimerController;
 
     List<BillItem> billItems;
     private List<StockHistory> stockHistories;
+    //private ReportTimerController reportTimerController;
     Date fromDate;
     Date toDate;
     Item item;
@@ -57,6 +62,9 @@ public class PharmacyErrorChecking implements Serializable {
     double currentStock;
     double currentSaleValue;
     double currentPurchaseValue;
+    @Named
+    @Inject
+    private SessionController sessionController;
 
     public void listMismatchPreBills() {
         mismatchPreBills = getEjb().errPreBills(department);
@@ -93,7 +101,9 @@ public class PharmacyErrorChecking implements Serializable {
     }
 
     public void processBinCard() {
-        stockHistories  = stockHistoryController.findStockHistories(fromDate, toDate, null,department, item);
+        reportTimerController.trackReportExecution(() -> {
+            stockHistories  = stockHistoryController.findStockHistories(fromDate, toDate, null,department, item);
+        }, PharmacyReports.PHARMACY_BIN_CARD,sessionController.getLoggedUser());
     }
 
     public void listPharmacyMovementByDateRange() {
@@ -501,14 +511,6 @@ public class PharmacyErrorChecking implements Serializable {
 
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<StockHistory> getStockHistories() {

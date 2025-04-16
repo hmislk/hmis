@@ -9,37 +9,37 @@ import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 
 import com.divudi.bean.lab.PatientInvestigationController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.EjbApplication;
-import com.divudi.entity.*;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.EncounterComponent;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.EncounterComponentFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -89,7 +89,6 @@ public class InwardSearch implements Serializable {
     PaymentService paymentService;
     @EJB
     DrawerService drawerService;
-    private CommonFunctions commonFunctions;
 
     /**
      * JSF Controllers
@@ -148,6 +147,8 @@ public class InwardSearch implements Serializable {
     boolean showOrginalBill;
 
     private boolean withProfessionalFee = false;
+    private boolean showZeroInwardChargeCategoryTypes = false;
+    private boolean changed = false;
 
     public String navigateToPaymentBillCancellation() {
         switch (bill.getBillTypeAtomic()) {
@@ -340,6 +341,36 @@ public class InwardSearch implements Serializable {
         withProfessionalFee = false;
 
         return "/inward/inward_reprint_bill_final?faces-redirect=true";
+    }
+    
+    public String navigateToProvisionalBillForAdmission() {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+
+        String jpql;
+        Map temMap = new HashMap();
+        jpql = "select b from Bill b where"
+                + " b.billType = :billType and "
+                + " b.retired=false ";
+
+        jpql += " and  b.patientEncounter=:pe ";
+        temMap.put("pe", admission);
+
+        temMap.put("billType", BillType.InwardProvisionalBill);
+        jpql += " order by b.id desc ";
+
+        // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        bill = getBillFacade().findFirstByJpql(jpql, temMap);
+
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Provisional Bill Created");
+            return "";
+        }
+        withProfessionalFee = false;
+
+        return "/inward/inward_provisional_bill_edit?faces-redirect=true";
     }
 
     public String navigateDoctorPayment() {
@@ -925,14 +956,16 @@ public class InwardSearch implements Serializable {
     public void cancelFinalBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
-            long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(), new Date());
+            long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
+            boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false);
+            boolean hasPrivilege = getWebUserController().hasPrivilege("InwardFinalBillCancel");
 
-            if (!configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false) || !getWebUserController().hasPrivilege("InwardFinalBillCancel")) {
-                if (Math.abs(dayCount) > 3 && !getWebUserController().hasPrivilege("InwardFinalBillCancel")) {
-                    JsfUtil.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
-                    return;
-                }
+            // Skip time check if both conditions are true: time limit is disabled AND user has privilege
+            if (!disableTimeLimit && Math.abs(dayCount) > 3 && !hasPrivilege) {
+                JsfUtil.addErrorMessage("You can't cancel bills older than 3 days without special privileges.");
+                return;
             }
+
             if (getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
@@ -969,6 +1002,68 @@ public class InwardSearch implements Serializable {
             getBill().getPatientEncounter().setPaymentFinalized(false);
             getBill().getPatientEncounter().setCreditUsedAmount(0);
             getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+
+            JsfUtil.addSuccessMessage("Cancelled");
+
+            printPreview = true;
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+
+    }
+    
+    public void cancelProvisionalBillPayment() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
+            boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Provisional Bill Cancellation", false);
+            boolean hasPrivilege = true;
+
+            // Skip time check if both conditions are true: time limit is disabled AND user has privilege
+            if (!disableTimeLimit && Math.abs(dayCount) > 3 && !hasPrivilege) {
+                JsfUtil.addErrorMessage("You can't cancel bills older than 3 days without special privileges.");
+                return;
+            }
+
+            if (getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+                return;
+            }
+            if (getBill().isRefunded()) {
+                JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+                return;
+            }
+
+            if (getBill().getPatientEncounter() == null) {
+                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
+                return;
+            }
+
+            if (getComment() == null || getComment().trim().equals("")) {
+                JsfUtil.addErrorMessage("Please enter a comment");
+                return;
+            }
+
+            CancelledBill cb = createCancelBill();
+            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PROVISIONAL_BILL_CANCELLATION);
+            //Copy & paste
+            if (cb.getId() == null) {
+                getBillFacade().create(cb);
+            }
+            cancelBillItems(cb);
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+            getBillFacade().edit((BilledBill) getBill());
+
+//            getBill().getPatientEncounter().setGrantTotal(0);
+//            getBill().getPatientEncounter().setDiscount(0);
+//            getBill().getPatientEncounter().setNetTotal(0);
+//            getBill().getPatientEncounter().setAdjustedTotal(0);
+//            getBill().getPatientEncounter().setPaymentFinalized(false);
+//            getBill().getPatientEncounter().setCreditUsedAmount(0);
+//            getPatientEncounterFacade().edit(getBill().getPatientEncounter());
 
             JsfUtil.addSuccessMessage("Cancelled");
 
@@ -1658,6 +1753,56 @@ public class InwardSearch implements Serializable {
         return tot;
     }
 
+    public void changeIsMade() {
+        changed = true;
+    }
+
+    public void updateTotal() {
+
+        double grantTotal = 0.0;
+
+        for (BillItem bi : bill.getBillItems()) {
+            grantTotal += bi.getAdjustedValue();
+        }
+
+        bill.setGrantTotal(grantTotal);
+        bill.setNetTotal(grantTotal - bill.getDiscount());
+        changed = false;
+
+    }
+
+    public void updateProTotal(BillItem bi) {
+
+        double totalDr = 0.0;
+
+        for (BillFee bf : bi.getProFees()) {
+            if (bf.getFeeAdjusted() != 0) {
+                totalDr += bf.getFeeAdjusted();
+            } else {
+                totalDr += bf.getFeeValue();
+            }
+        }
+
+        bi.setAdjustedValue(totalDr);
+
+        updateTotal();
+    }
+
+    public void saveProvisionalBill(Bill b) {
+        b.setEditor(sessionController.getLoggedUser());
+        b.setEditedAt(new Date());
+        billFacade.edit(b);
+        for (BillItem bi : b.getBillItems()) {
+            billItemFacede.edit(bi);
+            if (bi.getProFees() != null && !bi.getProFees().isEmpty()) {
+                for (BillFee bf : bi.getProFees()) {
+                    billFeeFacade.edit(bf);
+                }
+            }
+        }
+        JsfUtil.addSuccessMessage("Provisional Bill Saved");
+    }
+
     public WebUserController getWebUserController() {
         return webUserController;
     }
@@ -1699,7 +1844,7 @@ public class InwardSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1711,7 +1856,7 @@ public class InwardSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1719,14 +1864,6 @@ public class InwardSearch implements Serializable {
     public void setFromDate(Date fromDate) {
         bills = null;
         this.fromDate = fromDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getComment() {
@@ -1833,6 +1970,22 @@ public class InwardSearch implements Serializable {
 
     public void setShowOrginalBill(boolean showOrginalBill) {
         this.showOrginalBill = showOrginalBill;
+    }
+
+    public boolean isShowZeroInwardChargeCategoryTypes() {
+        return showZeroInwardChargeCategoryTypes;
+    }
+
+    public void setShowZeroInwardChargeCategoryTypes(boolean showZeroInwardChargeCategoryTypes) {
+        this.showZeroInwardChargeCategoryTypes = showZeroInwardChargeCategoryTypes;
+    }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public void setChanged(boolean changed) {
+        this.changed = changed;
     }
 
 }

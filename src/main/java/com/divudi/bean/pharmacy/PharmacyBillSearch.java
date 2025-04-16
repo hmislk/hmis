@@ -12,10 +12,10 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.store.StoreBillSearch;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
@@ -23,31 +23,31 @@ import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.StockBill;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.StockBill;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -128,7 +128,6 @@ public class PharmacyBillSearch implements Serializable {
     PharmacyCalculation pharmacyCalculation;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
-    private CommonFunctions commonFunctions;
     private UploadedFile file;
     private boolean printPreview = false;
     private double refundAmount;
@@ -2014,6 +2013,7 @@ public class PharmacyBillSearch implements Serializable {
             getBillFacade().edit(getBill());
 
             if (getBill().getReferenceBill() != null) {
+                getBill().getReferenceBill().setCancelled(true);
                 getBill().getReferenceBill().setReferenceBill(null);
                 getBillFacade().edit(getBill().getReferenceBill());
             }
@@ -3378,14 +3378,6 @@ public class PharmacyBillSearch implements Serializable {
         resetLists();
         this.fromDate = fromDate;
 
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BillBeanController getBillBean() {

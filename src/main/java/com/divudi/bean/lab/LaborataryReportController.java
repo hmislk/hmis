@@ -1,39 +1,48 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.IncomeBundle;
-import com.divudi.data.IncomeRow;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.pharmacy.DailyStockBalanceReport;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.java.CommonFunctions;
+import com.divudi.bean.opd.OpdReportController;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.IncomeBundle;
+import com.divudi.core.data.IncomeRow;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.TestWiseCountReport;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -48,19 +57,21 @@ public class LaborataryReportController implements Serializable {
     public LaborataryReportController() {
     }
 
-    private CommonFunctions commonFunctions;
-
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
+    @Inject
+    OpdReportController opdReportController;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillService billService;
+    @EJB
+    BillItemFacade billItemFacade;
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -141,11 +152,23 @@ public class LaborataryReportController implements Serializable {
     private double totalDiscount;
     private double totalServiceCharge;
 
+    private int activeIndex;
+
+    private List<TestWiseCountReport> testWiseCounts;
+    private double totalNetHosFee;
+    private double totalAdditionalFee;
+    private double totalCCFee;
+    private double totalProFee;
+    private double totalHosFee;
+    private double totalCount;
+
 // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
+        setToInstitution(sessionController.getInstitution());
+        setToDepartment(sessionController.getDepartment());
         return "/reportLab/lab_inward_order_report?faces-redirect=true;";
     }
 
@@ -156,13 +179,22 @@ public class LaborataryReportController implements Serializable {
         return "/reportLab/laboratary_income_report?faces-redirect=true;";
     }
 
-    public String navigateToLaboratarySummaryFromReport() {
+    public String navigateToLaboratarySummaryFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
+        opdReportController.setToInstitution(sessionController.getInstitution());
+        opdReportController.setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_summary?faces-redirect=true;";
     }
 
+    public String navigateToLaborataryTestWiseCountReportFromLabAnalytics() {
+        resetAllFiltersExceptDateRange();
+        setToInstitution(sessionController.getInstitution());
+        setToDepartment(sessionController.getDepartment());
+        return "/reportLab/test_wise_count?faces-redirect=true;";
+    }
+
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public void resetAllFiltersExceptDateRange() {
         setViewTemplate(null);
@@ -203,6 +235,15 @@ public class LaborataryReportController implements Serializable {
         totalNetTotal = 0.0;
         totalDiscount = 0.0;
         totalServiceCharge = 0.0;
+
+        testWiseCounts = new ArrayList<>();;
+        totalNetHosFee = 0.0;
+        totalAdditionalFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalHosFee = 0.0;
+        totalCount = 0.0;
+
     }
 
     public void processLaboratoryIncomeReport() {
@@ -235,7 +276,7 @@ public class LaborataryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
 
-        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme,toInstitution,toDepartment,visitType);
+        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, toInstitution, toDepartment, visitType);
         bundle = new IncomeBundle(bills);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {
@@ -302,7 +343,7 @@ public class LaborataryReportController implements Serializable {
                     IncomeRow billItemIncomeRow = new IncomeRow(billItem);
                     bundle.getRows().add(billItemIncomeRow);
                     checkInInvestigationBillItem = true;
-                    totalHospitalFee += (billItem.getHospitalFee() - billItem.getReagentFee()- billItem.getOtherFee());
+                    totalHospitalFee += (billItem.getHospitalFee() - billItem.getReagentFee() - billItem.getOtherFee());
                     totalReagentFee += billItem.getReagentFee();
                     totalOtherFee += billItem.getOtherFee();
                     totalNetTotal += billItem.getNetValue();
@@ -318,11 +359,185 @@ public class LaborataryReportController implements Serializable {
     }
 
     public void processLaboratorySummary() {
+        System.out.println("processLaboratorySummary");
+
+        bundle = new IncomeBundle(bills);
 
     }
 
+    public void processLabTestWiseCountReport() {
+
+        Map<String, Object> params = new HashMap<>();
+
+        String jpql = "select new com.divudi.core.data.TestWiseCountReport("
+                + "bi.item.name, "
+                + "count(bi.item.name), "
+                + "sum(bi.hospitalFee), "
+                + "sum(bi.collectingCentreFee), "
+                + "sum(bi.staffFee), "
+                + "sum(bi.reagentFee), "
+                + "sum(bi.otherFee), "
+                + "sum(bi.discount), "
+                + "sum(bi.netValue)"
+                + ") "
+                + " from BillItem bi "
+                + " where bi.retired = :ret "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billTypeAtomic IN :bType " // Corrected IN clause
+                + " and type(bi.item) = :invType ";
+
+        // Adding filters for institution, department, site
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and bi.bill.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (admissionType != null) {
+            jpql += " and bi.bill.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and bi.bill.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        if (toInstitution != null) {
+            jpql += " and bi.bill.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bi.bill.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            jpql += " AND bi.bill.ipOpOrCc = :type ";
+            params.put("type", visitType.trim());
+        }
+        jpql += " group by bi.item.name ";
+
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        params.put("invType", Investigation.class);
+
+        // Handle multiple bill types
+        List<BillTypeAtomic> bTypes = Arrays.asList(
+                BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.CC_BILL,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.INWARD_SERVICE_BILL);
+
+        params.put("bType", bTypes);  // Use 'bType' for IN clause
+
+        // Fetch results for OpdBill
+        List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        // Now fetch results for OpdBillCancel (use a list for single bType)
+        params.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
+        List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Now fetch results for OpdBillRefund (use a list for single bType)
+        params.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND, BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
+
+        List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Subtract cancel and refund results from the main results
+        Map<String, TestWiseCountReport> resultMap = new HashMap<>();
+
+        for (TestWiseCountReport posResult : positiveResults) {
+            resultMap.put(posResult.getTestName(), posResult);
+        }
+
+        // Subtract cancel results
+        for (TestWiseCountReport cancelResult : cancelResults) {
+            TestWiseCountReport posResult = resultMap.get(cancelResult.getTestName());
+            if (posResult != null) {
+                posResult.setCount(posResult.getCount() - Math.abs(cancelResult.getCount()));
+                posResult.setHosFee(posResult.getHosFee() - Math.abs(cancelResult.getHosFee()));
+                posResult.setCcFee(posResult.getCcFee() - Math.abs(cancelResult.getCcFee()));
+                posResult.setProFee(posResult.getProFee() - Math.abs(cancelResult.getProFee()));
+                posResult.setReagentFee(posResult.getReagentFee() - Math.abs(cancelResult.getReagentFee()));
+                posResult.setOtherFee(posResult.getOtherFee() - Math.abs(cancelResult.getOtherFee()));
+                posResult.setTotal(posResult.getTotal() - Math.abs(cancelResult.getTotal()));
+                posResult.setDiscount(posResult.getDiscount() - Math.abs(cancelResult.getDiscount()));
+            }
+        }
+
+        // Subtract refund results
+        for (TestWiseCountReport refundResult : refundResults) {
+            TestWiseCountReport posResult = resultMap.get(refundResult.getTestName());
+            if (posResult != null) {
+                posResult.setHosFee(posResult.getHosFee() - Math.abs(refundResult.getHosFee()));
+                posResult.setCcFee(posResult.getCcFee() - Math.abs(refundResult.getCcFee()));
+                posResult.setProFee(posResult.getProFee() - Math.abs(refundResult.getProFee()));
+                posResult.setReagentFee(posResult.getReagentFee() - Math.abs(refundResult.getReagentFee()));
+                posResult.setOtherFee(posResult.getOtherFee() - Math.abs(refundResult.getOtherFee()));
+                posResult.setTotal(posResult.getTotal() - Math.abs(refundResult.getTotal()));
+                posResult.setDiscount(posResult.getDiscount() - Math.abs(refundResult.getDiscount()));
+            }
+        }
+
+        List<TestWiseCountReport> tempTestWiseCounts = new ArrayList<>(resultMap.values());
+
+        List<TestWiseCountReport> testWiseCount = new ArrayList<>();
+
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalReagentFee = 0.0;
+        totalAdditionalFee = 0.0;
+        totalNetTotal = 0.0;
+        totalDiscount = 0.0;
+        totalNetHosFee = 0.0;
+
+        for (TestWiseCountReport twc : tempTestWiseCounts) {
+            if (twc.getCount() > 0.0) {
+                testWiseCount.add(twc);
+
+                totalCount += twc.getCount();
+                totalHosFee += (twc.getHosFee());
+                totalCCFee += twc.getCcFee();
+                totalProFee += twc.getProFee();
+                totalReagentFee += twc.getReagentFee();
+                totalAdditionalFee += twc.getOtherFee();
+                totalNetTotal += twc.getTotal();
+                totalDiscount += twc.getDiscount();
+                totalNetHosFee += twc.getHosFee() - twc.getDiscount();
+            }
+        }
+
+        testWiseCounts = alphabetList(testWiseCount);
+
+    }
+
+    public List <TestWiseCountReport> alphabetList(List <TestWiseCountReport> testWiseCounts) {
+
+        List<TestWiseCountReport> reportList = testWiseCounts.stream()
+                .sorted(Comparator.comparing(TestWiseCountReport::getTestName))
+                .collect(Collectors.toList());
+
+        return reportList;
+    }
+
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;
@@ -390,7 +605,7 @@ public class LaborataryReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -401,7 +616,7 @@ public class LaborataryReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -754,5 +969,70 @@ public class LaborataryReportController implements Serializable {
         this.totalServiceCharge = totalServiceCharge;
     }
 
+    public int getActiveIndex() {
+        return activeIndex;
+    }
+
+    public void setActiveIndex(int activeIndex) {
+        this.activeIndex = activeIndex;
+    }
+
+    public List<TestWiseCountReport> getTestWiseCounts() {
+        return testWiseCounts;
+    }
+
+    public void setTestWiseCounts(List<TestWiseCountReport> testWiseCounts) {
+        this.testWiseCounts = testWiseCounts;
+    }
+
+    public double getTotalNetHosFee() {
+        return totalNetHosFee;
+    }
+
+    public void setTotalNetHosFee(double totalNetHosFee) {
+        this.totalNetHosFee = totalNetHosFee;
+    }
+
+    public double getTotalAdditionalFee() {
+        return totalAdditionalFee;
+    }
+
+    public void setTotalAdditionalFee(double totalAdditionalFee) {
+        this.totalAdditionalFee = totalAdditionalFee;
+    }
+
+    public double getTotalCCFee() {
+        return totalCCFee;
+    }
+
+    public void setTotalCCFee(double totalCCFee) {
+        this.totalCCFee = totalCCFee;
+    }
+
+    public double getTotalProFee() {
+        return totalProFee;
+    }
+
+    public void setTotalProFee(double totalProFee) {
+        this.totalProFee = totalProFee;
+    }
+
+    public double getTotalHosFee() {
+        return totalHosFee;
+    }
+
+    public void setTotalHosFee(double totalHosFee) {
+        this.totalHosFee = totalHosFee;
+    }
+
+    public double getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(double totalCount) {
+        this.totalCount = totalCount;
+    }
+
     // </editor-fold>
+
 }

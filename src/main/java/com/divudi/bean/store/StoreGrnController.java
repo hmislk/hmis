@@ -7,34 +7,34 @@ package com.divudi.bean.store;
 import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.Payment;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -80,7 +80,6 @@ public class StoreGrnController implements Serializable {
     @EJB
     PaymentFacade paymentFacade;
 
-    private CommonFunctions commonFunctions;
     @Inject
     StoreCalculation storeCalculation;
     @Inject
@@ -161,14 +160,14 @@ public class StoreGrnController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -178,9 +177,9 @@ public class StoreGrnController implements Serializable {
 
 //        for(BillItem bi : billItems){
 //            if(bi.getPharmaceuticalBillItem().getPurchaseRate() > bi.getPharmaceuticalBillItem().getRetailRate())
-//           msg = "Check Purchase Rate and Retail Rate"; 
+//           msg = "Check Purchase Rate and Retail Rate";
 //        }
-        if (b.getInvoiceNumber() == null || "".equals(b.getInvoiceNumber().trim())) {
+        if (b.getInvoiceNumber() == null || b.getInvoiceNumber().trim().isEmpty()) {
             msg = "Please Fill invoice number";
         }
 
@@ -345,7 +344,7 @@ public class StoreGrnController implements Serializable {
             getBillItemFacade().create(i);
             getGrnBill().getBillExpenses().add(i);
         }
-        
+
         Payment p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
 
         getGrnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
@@ -375,14 +374,14 @@ public class StoreGrnController implements Serializable {
         printPreview = true;
 
     }
-    
+
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
         setPaymentMethodData(p, pm);
         return p;
     }
-    
+
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
 
         p.setInstitution(getSessionController().getInstitution());
@@ -534,7 +533,7 @@ public class StoreGrnController implements Serializable {
 
         }
     }
-    
+
     public String navigateToRecieve() {
         clearList();
         createGrn();
@@ -620,11 +619,11 @@ public class StoreGrnController implements Serializable {
         // billItem.setId(billItem.getSearialNoInteger().longValue());
         // billItem.setId(billItem.getSearialNoInteger().longValue());
 
-//        billItem.setSearialNo(getBillItems().size() + 1);        
+//        billItem.setSearialNo(getBillItems().size() + 1);
         getBillItems().add(billItem);
 //
 //        getBillItemController().setItems(getBillItems());
-//      
+//
 //        getBillItemController().setItems(getBillItems());
     }
 
@@ -957,14 +956,6 @@ public class StoreGrnController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<Bill> getFilteredValue() {

@@ -10,70 +10,58 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.membership.MembershipSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.ChargeItemTotal;
-import com.divudi.data.dataStructure.DepartmentBillItems;
-import com.divudi.data.dataStructure.InwardBillItem;
-import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.data.inward.InwardChargeType;
-import static com.divudi.data.inward.InwardChargeType.AdministrationCharge;
-import static com.divudi.data.inward.InwardChargeType.AdmissionFee;
-import static com.divudi.data.inward.InwardChargeType.DoctorAndNurses;
-import static com.divudi.data.inward.InwardChargeType.LinenCharges;
-import static com.divudi.data.inward.InwardChargeType.MOCharges;
-import static com.divudi.data.inward.InwardChargeType.MaintainCharges;
-import static com.divudi.data.inward.InwardChargeType.MedicalCareICU;
-import static com.divudi.data.inward.InwardChargeType.Medicine;
-import static com.divudi.data.inward.InwardChargeType.NursingCharges;
-import static com.divudi.data.inward.InwardChargeType.ProfessionalCharge;
-import static com.divudi.data.inward.InwardChargeType.RoomCharges;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ChargeItemTotal;
+import com.divudi.core.data.dataStructure.DepartmentBillItems;
+import com.divudi.core.data.dataStructure.InwardBillItem;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.inward.InwardChargeType;
+import static com.divudi.core.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PatientItem;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.GuardianRoom;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.entity.inward.TimedItem;
-import com.divudi.entity.inward.TimedItemFee;
-import com.divudi.entity.membership.InwardMemberShipDiscount;
-import com.divudi.facade.AdmissionTypeFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientItemFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.ServiceFacade;
-import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.EncounterCreditCompany;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
-import com.divudi.facade.EncounterCreditCompanyFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.GuardianRoom;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.TimedItem;
+import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.entity.membership.InwardMemberShipDiscount;
+import com.divudi.core.facade.AdmissionTypeFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientItemFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.ServiceFacade;
+import com.divudi.core.facade.TimedItemFeeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.EncounterCreditCompany;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.EncounterCreditCompanyFacade;
+import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -89,7 +77,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import kotlin.collections.ArrayDeque;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -103,7 +90,6 @@ public class BhtSummeryController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private PatientRoomFacade patientRoomFacade;
     @EJB
@@ -131,13 +117,7 @@ public class BhtSummeryController implements Serializable {
     @Inject
     WebUserController webUserController;
     @Inject
-    BhtEditController bhtEditController;
-    @Inject
     PriceMatrixController priceMatrixController;
-    @Inject
-    CommonController commonController;
-    @Inject
-    InpatientClinicalDataController inpatientClinicalDataController;
     //////////////////////////
     @Inject
     private SessionController sessionController;
@@ -151,7 +131,7 @@ public class BhtSummeryController implements Serializable {
     RoomChangeController roomChangeController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    ////////////////////////    
+    ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
     private List<BillFee> doctorAndNurseFee;
@@ -1289,11 +1269,33 @@ public class BhtSummeryController implements Serializable {
         JsfUtil.addSuccessMessage("Original Bill Saved");
 
     }
-    
-    public void createTempBill(){
+
+    public void createTempBill() {
         tempBill = null;
+        updateTotal();
         saveTempBill();
         saveTempBillItem();
+    }
+
+    public void saveProvisionalBill() {
+        if (errorCheck()) {
+            return;
+        }
+
+        originalBill.setDiscount(discount);
+        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
+        getBillFacade().edit(originalBill);
+
+        saveBill();
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PROVISIONAL_BILL);
+        getCurrent().setBillType(BillType.InwardProvisionalBill);
+        getCurrent().setBackwardReferenceBill(originalBill);
+        getBillFacade().edit(getCurrent());
+        saveBillItem();
+        JsfUtil.addSuccessMessage("Provisional Bill Saved");
+        showOrginalBill = false;
+        printPreview = true;
+        originalBill = null;
     }
 
     public void settle() {
@@ -1328,6 +1330,83 @@ public class BhtSummeryController implements Serializable {
         showOrginalBill = false;
         printPreview = true;
         originalBill = null;
+    }
+    
+    public String settleProvisionalBill(Bill b) {
+        
+        if(b == null){
+            JsfUtil.addErrorMessage("Error : Bill Not Found!");
+            return "";
+        }
+        
+        setPatientEncounter(b.getPatientEncounter());
+        
+        originalBill = b.getBackwardReferenceBill();
+        originalBill.setDiscount(b.getDiscount());
+        originalBill.setNetTotal(originalBill.getGrantTotal() - b.getDiscount());
+        getBillFacade().edit(originalBill);
+        
+//        current = new BilledBill();
+//        getCurrent().copy(b);
+//        getCurrent().copyValue(b);
+//        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
+//        getCurrent().setBillType(BillType.InwardFinalBill);
+//        getBillFacade().create(getCurrent());
+//        
+//        for (BillItem bi : b.getBillItems()) {
+//            BillItem bin = new BillItem();
+//            bin.copy(bi);
+//            bin.setBill(getCurrent());
+//            getBillItemFacade().create(bin);
+//            if (!bi.getProFees().isEmpty() || bi.getProFees() != null) {
+//                for (BillFee bf : bi.getProFees()) {
+//                    BillFee nbf = new BillFee();
+//                    nbf.copy(bf);
+//                    nbf.setBill(getCurrent());
+//                    nbf.setBillItem(bin);
+//                    billFeeFacade.create(nbf);
+//                }
+//            }
+//            if(bi.getBillFees() != null || !bi.getBillFees().isEmpty()){
+//                for(BillFee bf : bi.getBillFees()){
+//                    BillFee nbf = new BillFee();
+//                    nbf.copy(bf);
+//                    nbf.setBill(getCurrent());
+//                    nbf.setBillItem(bin);
+//                    billFeeFacade.create(nbf);
+//                }
+//            }
+//        }
+
+        setCurrent(b);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
+        getCurrent().setBillType(BillType.InwardFinalBill);
+       
+        getBillFacade().edit(current);
+       
+
+        if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+            getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
+            createCreditBillForCreditCompany(getPatientEncounter(), getCurrent().getNetTotal());
+        }
+
+        getPatientEncounter().setFinalBill(getCurrent());
+        getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
+        getPatientEncounter().setDiscount(getCurrent().getDiscount());
+        getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
+        getPatientEncounter().setPaymentFinalized(true);
+        getPatientEncounterFacade().edit(getPatientEncounter());
+        getCurrent().setReferenceBill(originalBill);
+        getBillFacade().edit(getCurrent());
+
+        updatePaymentBillList();
+        JsfUtil.addSuccessMessage("Bill Saved");
+
+        showOrginalBill = false;
+        printPreview = true;
+        originalBill = null;
+        
+        return "inward_bill_final?faces-redirect=true";
     }
 
     public void createCreditBillForCreditCompany(PatientEncounter patientEncounter, Double netTotal) {
@@ -1699,7 +1778,7 @@ public class BhtSummeryController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
     }
-    
+
     private void saveTempBill() {
 
         getTempBill().setGrantTotal(grantTotal);
@@ -1793,7 +1872,7 @@ public class BhtSummeryController implements Serializable {
         }
     }
 
-//    public void edit 
+//    public void edit
     // private void saveAdmissionBillFee
     private void saveBillItem() {
         double temProfFee = 0;
@@ -1841,7 +1920,7 @@ public class BhtSummeryController implements Serializable {
 
         getBillFacade().edit(getCurrent());
     }
-    
+
     private void saveTempBillItem() {
         double temProfFee = 0;
         double temHosFee = 0.0;
@@ -1932,7 +2011,7 @@ public class BhtSummeryController implements Serializable {
         }
 
     }
-    
+
     private void updateProTempBillFee(BillItem bItem) {
         for (BillFee bf : getProfesionallFee()) {
             bf.setReferenceBillItem(bItem);
@@ -1953,7 +2032,7 @@ public class BhtSummeryController implements Serializable {
         }
 
     }
-    
+
     private void updateProTempBillFeeForDocAndNeurses(BillItem bItem) {
         for (BillFee bf : getDoctorAndNurseFee()) {
             bf.setReferenceBillItem(bItem);
@@ -1996,7 +2075,7 @@ public class BhtSummeryController implements Serializable {
         bItem.setBillFees(list);
 
     }
-    
+
     private void saveTempRoomBillFee(List<PatientRoom> patientRooms, BillItem bItem) {
         List<BillFee> list = new ArrayList<>();
         for (PatientRoom pt : patientRooms) {
@@ -2153,7 +2232,7 @@ public class BhtSummeryController implements Serializable {
         patientEncounter = null;
         makeNull();
     }
-    
+
     public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe) {
         List<BillItem> newBillItems = new ArrayList<>();
         Map<Staff, BillFee> staffFeeMap = new HashMap<>();
@@ -2807,7 +2886,7 @@ public class BhtSummeryController implements Serializable {
     public void setOriginalBill(Bill originalBill) {
         this.originalBill = originalBill;
     }
-    
+
     public Bill getTempBill() {
         if (tempBill == null) {
             tempBill = new BilledBill();
@@ -3006,14 +3085,6 @@ public class BhtSummeryController implements Serializable {
 
     public void setAdmissionTypeFacade(AdmissionTypeFacade admissionTypeFacade) {
         this.admissionTypeFacade = admissionTypeFacade;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public WebUserController getWebUserController() {

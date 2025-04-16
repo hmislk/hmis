@@ -8,16 +8,15 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 
 
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.AmendmentForm;
-import com.divudi.entity.hr.Shift;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.facade.AmendmentFormFacade;
-import com.divudi.facade.ShiftFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.AmendmentForm;
+import com.divudi.core.entity.hr.Shift;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.facade.AmendmentFormFacade;
+import com.divudi.core.facade.ShiftFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.facade.StaffShiftHistoryFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,8 +42,6 @@ public class StaffAmendmentFormController implements Serializable {
     @Inject
     SessionController sessionController;
 
-
-    CommonFunctions commonFunctions;
     List<AmendmentForm> amendmentForms;
     Staff fromStaff;
     Staff toStaff;
@@ -159,8 +156,8 @@ public class StaffAmendmentFormController implements Serializable {
         if(fromStaffShift2nd!=null)fromStaffShift2nd.reset();
         if(toStaffShift1st!=null)toStaffShift1st.reset();
         if(toStaffShift2nd!=null)toStaffShift2nd.reset();
-        
-        
+
+
         //Create New Staff Shift if ToSatffShift is null
         if (getCurrAmendmentForm().getToShift() != null && toStaffShift1st == null) {
             toStaffShift1st = createToStaffShift(getCurrAmendmentForm().getToShift());
@@ -231,7 +228,7 @@ public class StaffAmendmentFormController implements Serializable {
         clear();
     }
 
-//    
+//
 //           StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
 //        staffShiftHistory.setCreatedAt(new Date());
 //        staffShiftHistory.setCreater(sessionController.getLoggedUser());
@@ -438,14 +435,6 @@ public class StaffAmendmentFormController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public List<AmendmentForm> getAmendmentForms() {
         return amendmentForms;
     }
@@ -464,7 +453,7 @@ public class StaffAmendmentFormController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -475,7 +464,7 @@ public class StaffAmendmentFormController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

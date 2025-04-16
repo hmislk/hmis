@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
@@ -18,17 +18,17 @@
             <p:outputLabel
                 value="Select Staff"
                 class="form-label"></p:outputLabel>
-            <p:autoComplete  
+            <p:autoComplete
                 minQueryLength="3"
-                forceSelection="true" 
-                value="#{opdBillController.toStaff}" 
+                forceSelection="true"
+                value="#{opdBillController.toStaff}"
                 id="welfareStaff"
-                completeMethod="#{staffController.completeStaff}" 
-                var="mys" 
+                completeMethod="#{staffController.completeStaff}"
+                var="mys"
                 class="w-100"
                 placeholder="Staff (Type at least 4 letters to search)"
                 inputStyleClass="form-control"
-                itemLabel="#{mys.person.name}" 
+                itemLabel="#{mys.person.name}"
                 itemValue="#{mys}"
                 size="10">
                 <p:column headerText="Name" style="padding: 2px;">
@@ -47,9 +47,9 @@
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                 </p:column>
-                <p:ajax process="@this" 
+                <p:ajax process="@this"
                         update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                        event="itemSelect"  
+                        event="itemSelect"
                         listener="#{opdBillController.calTotals()}" />
             </p:autoComplete>
 

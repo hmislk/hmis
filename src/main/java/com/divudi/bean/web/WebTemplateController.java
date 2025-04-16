@@ -1,8 +1,8 @@
 package com.divudi.bean.web;
 
-import com.divudi.entity.web.WebTemplate;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.facade.web.WebTemplateFacade;
+import com.divudi.core.entity.web.WebTemplate;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.facade.web.WebTemplateFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;

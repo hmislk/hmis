@@ -7,12 +7,12 @@ package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.MessageType;
-import com.divudi.entity.Sms;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.facade.SmsFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;
@@ -549,7 +549,7 @@ public class SmsManagerEjb {
             URL url = new URL(smsGatewayUrl);
 
             String accessToken = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Access Token");
-            if (accessToken == null || accessToken.trim().equals("")) {
+            if (accessToken == null || accessToken.trim().isEmpty()) {
                 accessToken = getNewAccessToken(userName, password, loginUrl);
             }
 

@@ -1,61 +1,56 @@
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.DoctorController;
-import com.divudi.bean.common.InstitutionController;
-import com.divudi.bean.common.ItemApplicationController;
-import com.divudi.bean.common.ItemController;
-import com.divudi.bean.common.PatientController;
-import com.divudi.bean.common.PersonController;
-import com.divudi.bean.common.WebUserController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillItemStatus;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.CategoryCount;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.ItemCount;
-import com.divudi.data.ItemLight;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.Sex;
-import com.divudi.data.TestWiseCountReport;
-import com.divudi.data.dataStructure.BillAndItemDataRow;
-import com.divudi.data.dataStructure.ItemDetailsCell;
-import com.divudi.data.lab.PatientInvestigationStatus;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDepositHistory;
-import com.divudi.entity.Person;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Route;
-import com.divudi.entity.Service;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.channel.AgentReferenceBook;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.AgentReferenceBookFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PatientDepositHistoryFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.java.CommonFunctions;
-import com.divudi.light.common.BillLight;
-import com.divudi.light.common.PrescriptionSummaryReportRow;
+import com.divudi.bean.common.*;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillItemStatus;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CategoryCount;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.ItemCount;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.TestWiseCountReport;
+import com.divudi.core.data.dataStructure.BillAndItemDataRow;
+import com.divudi.core.data.dataStructure.ItemDetailsCell;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.reports.CollectionCenterReport;
+import com.divudi.core.data.reports.LaboratoryReport;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDepositHistory;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Route;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.AgentReferenceBookFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PatientDepositHistoryFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.light.common.BillLight;
+import com.divudi.core.light.common.PrescriptionSummaryReportRow;
 import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -103,6 +98,10 @@ public class ReportController implements Serializable {
     PatientDepositHistoryFacade patientDepositHistoryFacade;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
+    @EJB
+    private ReportTimerController reportTimerController;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -119,9 +118,9 @@ public class ReportController implements Serializable {
     @Inject
     WebUserController webUserController;
     @Inject
-    PatientInvestigationFacade patientInvestigationFacade;
-    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private SessionController sessionController;
 
     private int reportIndex;
     private Institution institution;
@@ -199,7 +198,6 @@ public class ReportController implements Serializable {
 
     private List<PatientDepositHistory> patientDepositHistories;
 
-    private CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
     private PatientInvestigationStatus patientInvestigationStatus;
 
@@ -488,7 +486,7 @@ public class ReportController implements Serializable {
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
         billedBundle.setName("Collecting Centre Report By Item");
         billedBundle.setDescription("From : to :");
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(bi), "
                 + "sum(bi.hospitalFee), "
@@ -563,7 +561,7 @@ public class ReportController implements Serializable {
         ReportTemplateRowBundle crBundle = new ReportTemplateRowBundle();
         crBundle.setName("Collecting Centre Report By Item");
         crBundle.setDescription("From : to :");
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(bi), "
                 + "sum(bi.hospitalFee), "
@@ -645,7 +643,7 @@ public class ReportController implements Serializable {
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
         billedBundle.setName("Collecting Centre Report By Item");
         billedBundle.setDescription("From : to :");
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(b), "
                 + "sum(b.totalHospitalFee), "
@@ -720,7 +718,7 @@ public class ReportController implements Serializable {
         ReportTemplateRowBundle crBundle = new ReportTemplateRowBundle();
         crBundle.setName("Collecting Centre Report By Item");
         crBundle.setDescription("From : to :");
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(b), "
                 + "sum(b.totalHospitalFee), "
@@ -802,33 +800,50 @@ public class ReportController implements Serializable {
         combinedBundle.setDescription("From : to :");
 
         Map<Institution, ReportTemplateRow> combinedResults = new HashMap<>();
-
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
+        // Process the billed bundle
         // Process the billed bundle
         for (ReportTemplateRow row : billedBundle.getReportTemplateRows()) {
             Institution institution = row.getInstitution();
             combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
             ReportTemplateRow existingRow = combinedResults.get(institution);
+
             existingRow.setItemCount(existingRow.getItemCount() + row.getItemCount());
             existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() + row.getItemHospitalFee());
             existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() + row.getItemCollectingCentreFee());
             existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());
             existingRow.setItemNetTotal(existingRow.getItemNetTotal() + row.getItemNetTotal());
-        }
 
+        }
+        // Process the CR bundle and adjust by taking absolute values and subtracting
+        // Process the CR bundle and adjust by taking absolute values and subtracting
+        // Process the CR bundle and adjust by taking absolute values and subtracting
         // Process the CR bundle and adjust by taking absolute values and subtracting
         for (ReportTemplateRow row : crBundle.getReportTemplateRows()) {
             Institution institution = row.getInstitution();
             combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
             ReportTemplateRow existingRow = combinedResults.get(institution);
+
             existingRow.setItemCount(existingRow.getItemCount() - row.getItemCount());  // Subtract the count
             existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() - Math.abs(row.getItemHospitalFee()));  // Subtract the absolute value
             existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() - Math.abs(row.getItemCollectingCentreFee()));
             existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());  // Assuming this is correctly negative
             existingRow.setItemNetTotal(existingRow.getItemNetTotal() - Math.abs(row.getItemNetTotal()));
+
         }
 
         combinedBundle.setReportTemplateRows(new ArrayList<>(combinedResults.values()));
-
+        // Debug output for totals
+        // Debug output for totals
+        // Debug output for totals
+        // Debug output for totals
+        // Debug output for totals
+        // Debug output for totals
         long totalCount = combinedResults.values().stream().mapToLong(ReportTemplateRow::getItemCount).sum();
         double totalHospitalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemHospitalFee).sum();
         double totalCCFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemCollectingCentreFee).sum();
@@ -837,7 +852,6 @@ public class ReportController implements Serializable {
 
         combinedBundle.setCount(totalCount);
         combinedBundle.setTotal(totalNet);
-
         combinedBundle.setHospitalTotal(totalHospitalFee);
         combinedBundle.setCcTotal(totalCCFee);
         combinedBundle.setStaffTotal(totalProfessionalFee);
@@ -986,7 +1000,7 @@ public class ReportController implements Serializable {
     }
 
     public void createReferringDoctorWiseRevenueSummaryReport() {
-        String jpql = "select new com.divudi.data.TestWiseCountReport("
+        String jpql = "select new com.divudi.core.data.TestWiseCountReport("
                 + "bi.bill.referredBy.person, "
                 + "count(bi.item.name), "
                 + "sum(bi.hospitalFee), "
@@ -1124,38 +1138,40 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectionCenterBalance() {
-        bundle = new ReportTemplateRowBundle();
-        String jpql;
-        Map<String, Object> parameters = new HashMap<>();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
+            String jpql;
+            Map<String, Object> parameters = new HashMap<>();
 
-        // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
-        jpql = "select new com.divudi.data.ReportTemplateRow(ah) "
-                + " from AgentHistory ah "
-                + " where ah.retired <> :ret "
-                + " and ah.createdAt < :hxDate "
-                + " and ah.agency.institutionType=:insType "
-                + " and ah.id = (select max(subAh.id) "
-                + " from AgentHistory subAh "
-                + " where subAh.retired <> :ret "
-                + " and subAh.agency = ah.agency "
-                + " and subAh.agency.institutionType=:insType  "
-                + " and subAh.createdAt < :hxDate)";
+            // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
+            jpql = "select new com.divudi.core.data.ReportTemplateRow(ah) "
+                    + " from AgentHistory ah "
+                    + " where ah.retired <> :ret "
+                    + " and ah.createdAt < :hxDate "
+                    + " and ah.agency.institutionType=:insType "
+                    + " and ah.id = (select max(subAh.id) "
+                    + " from AgentHistory subAh "
+                    + " where subAh.retired <> :ret "
+                    + " and subAh.agency = ah.agency "
+                    + " and subAh.agency.institutionType=:insType  "
+                    + " and subAh.createdAt < :hxDate)";
 
-        Date nextDayStart = CommonFunctions.getNextDateStart(getFromDate());
+            Date nextDayStart = CommonFunctions.getNextDateStart(getFromDate());
 
-        parameters.put("ret", true);
-        parameters.put("hxDate", nextDayStart);  // Ensure this is the first millisecond of the next day
-        parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
+            parameters.put("ret", true);
+            parameters.put("hxDate", nextDayStart);  // Ensure this is the first millisecond of the next day
+            parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
 
-        if (collectingCentre != null) {
-            jpql += " and ah.agency = :cc";
-            parameters.put("cc", collectingCentre);
-        }
+            if (collectingCentre != null) {
+                jpql += " and ah.agency = :cc";
+                parameters.put("cc", collectingCentre);
+            }
 
-        // Fetch the results and convert to ReportTemplateRow
-        List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+            // Fetch the results and convert to ReportTemplateRow
+            List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        bundle.setReportTemplateRows(results);
+            bundle.setReportTemplateRows(results);
+        }, CollectionCenterReport.COLLECTION_CENTER_BALANCE_REPORT, sessionController.getLoggedUser());
     }
 
     public void processCurrentCollectionCenterBalance() {
@@ -1164,7 +1180,7 @@ public class ReportController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
 
         // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
-        jpql = "select new com.divudi.data.ReportTemplateRow(cc) "
+        jpql = "select new com.divudi.core.data.ReportTemplateRow(cc) "
                 + " from Institution cc "
                 + " where cc.retired <> :ret "
                 + " and cc.institutionType=:insType ";
@@ -1546,7 +1562,7 @@ public class ReportController implements Serializable {
 
     // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI.
     public void processLabTestCount() {
-        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+        String jpql = "select new com.divudi.core.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
                 + " and bi.bill.billDate between :fd and :td "
@@ -1619,7 +1635,7 @@ public class ReportController implements Serializable {
         List<BillTypeAtomic> billtypes = new ArrayList<>();
         billtypes.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
 
-        String jpql = "select new com.divudi.data.ItemCount(bi.bill.fromStaff.person.name, bi.bill.fromStaff.id, bi.item.name, bi.item.id, count(bi)) "
+        String jpql = "select new com.divudi.core.data.ItemCount(bi.bill.fromStaff.person.name, bi.bill.fromStaff.id, bi.item.name, bi.item.id, count(bi)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
                 + " and bi.bill.billTypeAtomic IN :bt"
@@ -1713,122 +1729,122 @@ public class ReportController implements Serializable {
 
 //    Not COrrect
     public void listCcReportPrint() {
-        String jpql;
-        Map<String, Object> params = new HashMap<>();
+        reportTimerController.trackReportExecution(() -> {
+            String jpql;
+            Map<String, Object> params = new HashMap<>();
 
-        jpql = "SELECT i "
-                + " FROM PatientInvestigation i "
-                + " WHERE i.retired = :ret ";
+            jpql = "SELECT i "
+                    + " FROM PatientInvestigation i "
+                    + " WHERE i.retired = :ret ";
 
-        jpql += " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
-        params.put("fd", getFromDate());
-        params.put("td", getToDate());
+            jpql += " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
 
-        if (institution != null) {
-            jpql += " AND i.billItem.bill.creater.institution.name = :orderedInstitution ";
-            params.put("orderedInstitution", institution.getName());
-        }
+            if (institution != null) {
+                jpql += " AND i.billItem.bill.creater.institution.name = :orderedInstitution ";
+                params.put("orderedInstitution", institution.getName());
+            }
 
-        if (department != null) {
-            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
-            params.put("orderedDepartment", department);
-        }
+            if (department != null) {
+                jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+                params.put("orderedDepartment", department);
+            }
 
-        if (site != null) {
-            jpql += " AND i.billItem.bill.department.site=:site";
-            params.put("site", site);
-        }
+            if (site != null) {
+                jpql += " AND i.billItem.bill.department.site=:site";
+                params.put("site", site);
+            }
 
-        if (toInstitution != null) {
-            jpql += " AND i.performInstitution = :peformingInstitution ";
-            params.put("peformingInstitution", toInstitution);
-        }
+            if (toInstitution != null) {
+                jpql += " AND i.performInstitution = :peformingInstitution ";
+                params.put("peformingInstitution", toInstitution);
+            }
 
-        if (toDepartment != null) {
-            jpql += " AND i.performDepartment = :peformingDepartment ";
-            params.put("peformingDepartment", toDepartment);
-        }
+            if (toDepartment != null) {
+                jpql += " AND i.performDepartment = :peformingDepartment ";
+                params.put("peformingDepartment", toDepartment);
+            }
 
-        if (collectingCentre != null) {
-            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
-            params.put("collectionCenter", collectingCentre);
-        } else {
-            jpql += " AND (i.billItem.bill.collectingCentre is not null OR i.billItem.bill.fromInstitution.institutionType=:ccType) ";
-            params.put("ccType", InstitutionType.CollectingCentre);
-        }
+            if (collectingCentre != null) {
+                jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+                params.put("collectionCenter", collectingCentre);
+            } else {
+                jpql += " AND (i.billItem.bill.collectingCentre is not null OR i.billItem.bill.fromInstitution.institutionType=:ccType) ";
+                params.put("ccType", InstitutionType.CollectingCentre);
+            }
 
-        if (route != null) {
-            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
-            params.put("route", getRoute());
-        }
+            if (route != null) {
+                jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+                params.put("route", getRoute());
+            }
 
-        if (phn != null && !phn.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.patient.phn=:phn ";
-            params.put("phn", phn);
-        }
+            if (phn != null && !phn.trim().isEmpty()) {
+                jpql += " AND i.billItem.bill.patient.phn=:phn ";
+                params.put("phn", phn);
+            }
 
-        if (doctor != null) {
-            jpql += " AND i.billItem.bill.referredBy.person.name = :referringDoctor ";
-            params.put("referringDoctor", doctor.getPerson().getName());
-        }
+            if (doctor != null) {
+                jpql += " AND i.billItem.bill.referredBy.person.name = :referringDoctor ";
+                params.put("referringDoctor", doctor.getPerson().getName());
+            }
 
-        if (investigation != null) {
-            jpql += " AND i.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
-        }
+            if (investigation != null) {
+                jpql += " AND i.investigation = :investigation ";
+                params.put("investigation", getInvestigation());
+            }
 
-        if (category != null) {
-            jpql += " AND i.investigation.category = :cat ";
-            params.put("cat", category);
-        }
+            if (category != null) {
+                jpql += " AND i.investigation.category = :cat ";
+                params.put("cat", category);
+            }
 
-        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " AND i.billItem.bill.deptId = :iNo ";
-            params.put("iNo", invoiceNumber);
-        }
+            if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+                jpql += " AND i.billItem.bill.deptId = :iNo ";
+                params.put("iNo", invoiceNumber);
+            }
 
-        if (patientInvestigationStatus != null) {
-            jpql += " AND i.status = :patientInvestigationStatus ";
-            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
-        }
+            if (patientInvestigationStatus != null) {
+                jpql += " AND i.status = :patientInvestigationStatus ";
+                params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+            }
 
-        jpql += " ORDER BY i.id DESC";
+            jpql += " ORDER BY i.id DESC";
 
-        params.put("ret", false);
+            params.put("ret", false);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-
-        patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        }, CollectionCenterReport.COLLECTION_CENTER_REPORTS_PRINT, sessionController.getLoggedUser());
     }
 
     public void processCollectingCentreStatementReportNew() {
+        reportTimerController.trackReportExecution(() -> {
+            String jpql = "select ah "
+                    + " from AgentHistory ah "
+                    + " where ah.retired=:ret"
+                    + " and ah.createdAt between :fd and :td ";
 
-        String jpql = "select ah "
-                + " from AgentHistory ah "
-                + " where ah.retired=:ret"
-                + " and ah.createdAt between :fd and :td ";
+            Map<String, Object> m = new HashMap<>();
+            m.put("ret", false);
+            m.put("fd", fromDate);
+            m.put("td", toDate);
 
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+            if (collectingCentre != null) {
+                jpql += " and ah.agency = :cc ";
+                m.put("cc", collectingCentre);
+            }
 
-        if (collectingCentre != null) {
-            jpql += " and ah.agency = :cc ";
-            m.put("cc", collectingCentre);
-        }
+            if (institution != null) {
+                jpql += " and ah.bill.institution = :ins ";
+                m.put("ins", institution);
+            }
 
-        if (institution != null) {
-            jpql += " and ah.bill.institution = :ins ";
-            m.put("ins", institution);
-        }
-
-        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " and (ah.bill.insId = :inv or ah.bill.deptId = :inv) ";
-            m.put("inv", invoiceNumber);
-        }
-        agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+            if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+                jpql += " and (ah.bill.insId = :inv or ah.bill.deptId = :inv) ";
+                m.put("inv", invoiceNumber);
+            }
+            agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
 
     public void processCollectingCentreStatementReport() {
@@ -1889,9 +1905,9 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
-//    
+//
 //    public void processPharmacySaleReferralCount() {
-//        String jpql = "select new com.divudi.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
+//        String jpql = "select new com.divudi.core.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
 //                + " from Bill bi "
 //                + " where bi.cancelled=:can "
 //                + " and bi.createdAt between :fd and :td "
@@ -1908,7 +1924,7 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.fromDepartment=:fdept ";
 //            m.put("fdept", department);
 //        }
-//        
+//
 //        if (referingDoctor  != null) {
 //            jpql += " and bi.referredBy=:refDoc ";
 //            m.put("refDoc", referingDoctor);
@@ -1917,10 +1933,10 @@ public class ReportController implements Serializable {
 //        jpql += " order by bi.referredBy.person.name ";
 //        prescriptionSummaryReportRows = (List<PrescriptionSummaryReportRow>) billFacade.findLightsByJpql(jpql, m);
 //    }
-//    
+//
     public void processPresciptionSummeryReport() {
         String jpql = "select new "
-                + " com.divudi.light.common.PrescriptionSummaryReportRow(bi.referredBy.person.name, bi.referredBy.person.id, count(bi), sum(bi.netTotal)) "
+                + " com.divudi.core.light.common.PrescriptionSummaryReportRow(bi.referredBy.person.name, bi.referredBy.person.id, count(bi), sum(bi.netTotal)) "
                 + " from Bill bi "
                 + " where bi.cancelled=:can "
                 + " and bi.billDate between :fd and :td "
@@ -1944,7 +1960,7 @@ public class ReportController implements Serializable {
 
     public void processPresciptionListEvenWhenNoPatientData() {
         String jpql = "select new "
-                + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, "
+                + " com.divudi.core.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, "
                 + " coalesce(p.person.name, 'No Patient'), bi.netTotal) "
                 + " from Bill bi "
                 + " left join bi.patient p "
@@ -1974,7 +1990,7 @@ public class ReportController implements Serializable {
 
     public void processPresciptionList() {
         String jpql = "select new "
-                + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, bi.patient.person.name, bi.netTotal) "
+                + " com.divudi.core.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, bi.patient.person.name, bi.netTotal) "
                 + " from Bill bi "
                 + " where bi.cancelled=:can "
                 + " and bi.billDate between :fd and :td "
@@ -2003,7 +2019,7 @@ public class ReportController implements Serializable {
     }
 
     public void processPharmacySaleItemCount() {
-        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+        String jpql = "select new com.divudi.core.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
                 + " and bi.bill.billDate between :fd and :td "
@@ -2044,7 +2060,7 @@ public class ReportController implements Serializable {
     }
 
     public void processOpdServiceCount() {
-        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+        String jpql = "select new com.divudi.core.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
                 + " and bi.bill.billDate between :fd and :td "
@@ -2173,72 +2189,74 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectingCentreReciptReport() {
-        bundle = new ReportTemplateRowBundle();
-        List<BillTypeAtomic> billtypes = new ArrayList<>();
-        billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_BILL);
-        billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL);
-        billtypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
-        billtypes.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> billtypes = new ArrayList<>();
+            billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_BILL);
+            billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL);
+            billtypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+            billtypes.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
 
-        String jpql = "select new com.divudi.data.ReportTemplateRow(bill) "
-                + " from Bill bill "
-                + " where bill.retired=:ret"
-                + " and bill.billDate between :fd and :td "
-                + " and bill.billTypeAtomic in :bTypes";
+            String jpql = "select new com.divudi.core.data.ReportTemplateRow(bill) "
+                    + " from Bill bill "
+                    + " where bill.retired=:ret"
+                    + " and bill.billDate between :fd and :td "
+                    + " and bill.billTypeAtomic in :bTypes";
 
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bTypes", billtypes);
+            Map<String, Object> m = new HashMap<>();
+            m.put("ret", false);
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+            m.put("bTypes", billtypes);
 
-        if (site != null) {
-            jpql += " and bill.department.site = :route ";
-            m.put("route", site);
-        }
+            if (site != null) {
+                jpql += " and bill.department.site = :route ";
+                m.put("route", site);
+            }
 
-        if (route != null) {
-            jpql += " and bill.fromInstitution.route = :route ";
-            m.put("route", route);
-        }
+            if (route != null) {
+                jpql += " and bill.fromInstitution.route = :route ";
+                m.put("route", route);
+            }
 
-        if (institution != null) {
-            jpql += " and bill.institution = :ins ";
-            m.put("ins", institution);
-        }
+            if (institution != null) {
+                jpql += " and bill.institution = :ins ";
+                m.put("ins", institution);
+            }
 
-        if (collectingCentre != null) {
-            jpql += " and bill.fromInstitution = :cc ";
-            m.put("cc", collectingCentre);
-        }
+            if (collectingCentre != null) {
+                jpql += " and bill.fromInstitution = :cc ";
+                m.put("cc", collectingCentre);
+            }
 
-        if (toDepartment != null) {
-            jpql += " and bill.toDepartment = :tdep ";
-            m.put("tdep", toDepartment);
-        }
+            if (toDepartment != null) {
+                jpql += " and bill.toDepartment = :tdep ";
+                m.put("tdep", toDepartment);
+            }
 
-        if (department != null) {
-            jpql += " and bill.department = :dep ";
-            m.put("dep", department);
-        }
+            if (department != null) {
+                jpql += " and bill.department = :dep ";
+                m.put("dep", department);
+            }
 
-        if (phn != null && !phn.isEmpty()) {
-            jpql += " and bill.patient.phn = :phn ";
-            m.put("phn", phn);
-        }
+            if (phn != null && !phn.isEmpty()) {
+                jpql += " and bill.patient.phn = :phn ";
+                m.put("phn", phn);
+            }
 
-        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " and bill.deptId = :inv ";
-            m.put("inv", invoiceNumber);
-        }
+            if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+                jpql += " and bill.deptId = :inv ";
+                m.put("inv", invoiceNumber);
+            }
 
-        if (doctor != null) {
-            jpql += " and bill.referredBy = :refDoc ";
-            m.put("refDoc", doctor);
-        }
+            if (doctor != null) {
+                jpql += " and bill.referredBy = :refDoc ";
+                m.put("refDoc", doctor);
+            }
 
-        bundle.setReportTemplateRows((List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, m));
-        bundle.calculateTotalByBills();
+            bundle.setReportTemplateRows((List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, m));
+            bundle.calculateTotalByBills();
+        }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT, sessionController.getLoggedUser());
     }
 
     public void downloadLabTestCount() {
@@ -2876,7 +2894,7 @@ public class ReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -3168,36 +3186,199 @@ public class ReportController implements Serializable {
         return doctor;
     }
 
+    /**
+     * Sets the doctor associated with the report.
+     *
+     * @param doctor the Doctor instance to set
+     */
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
 
+    /**
+     * Aggregates test-wise count report data for collecting centres by combining billed items with
+     * cancellations and refunds.
+     * <p>
+     * This method executes two separate JPQL queries over a specified date range to retrieve report
+     * data for both billed items and for cancellations/refunds. The billed items query collects counts
+     * and fee totals (hospital fee, collecting centre fee, staff fee, and net value) for non-retired records,
+     * while the cancellations/refunds query gathers similar metrics for cancellation and refund records.
+     * The cancellation/refund values are converted into negatives and merged with the billed item results to
+     * compute net totals. Final aggregated data are stored in a list, and overall totals (count, hospital fee,
+     * collecting centre fee, professional fee, and net total) are updated accordingly.
+     * </p>
+     */
     public void processCollectingCentreTestWiseCountReport() {
-        String jpql = "select new  com.divudi.data.TestWiseCountReport("
+        // 1. Query for Billed Items
+        String jpqlBilled = "select new com.divudi.core.data.TestWiseCountReport("
+                + " bi.item.name, "
+                + " count(bi), "
+                + " sum(bi.hospitalFee), "
+                + " sum(bi.collectingCentreFee), "
+                + " sum(bi.staffFee), "
+                + " sum(bi.netValue)"
+                + ") "
+                + " from BillItem bi "
+                + " where (bi.retired is null or bi.retired = false) "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billTypeAtomic = :billType ";
+
+        Map mBilled = new HashMap();
+        mBilled.put("fd", fromDate);
+        mBilled.put("td", toDate);
+        mBilled.put("billType", BillTypeAtomic.CC_BILL);
+
+        // Keep your existing logic in both queries
+        if (institution != null) {
+            jpqlBilled += " and bi.bill.institution = :ins ";
+            mBilled.put("ins", institution);
+        }
+        if (department != null) {
+            jpqlBilled += " and bi.bill.department = :dep ";
+            mBilled.put("dep", department);
+        }
+        if (site != null) {
+            jpqlBilled += " and bi.bill.department.site = :site ";
+            mBilled.put("site", site);
+        }
+        if (collectingCentre != null) {
+            jpqlBilled += " and bi.bill.collectingCentre.id = :ccId ";
+            mBilled.put("ccId", collectingCentre.getId());
+        }
+
+        jpqlBilled += " group by bi.item order by bi.item.name asc";
+
+        List<TestWiseCountReport> billedReports
+                = billItemFacade.findLightsByJpql(jpqlBilled, mBilled, TemporalType.TIMESTAMP);
+
+        // 2. Query for Cancellations and Refunds
+        String jpqlCancelRefund = "select new com.divudi.core.data.TestWiseCountReport("
+                + " bi.item.name, "
+                + " count(bi), "
+                + " sum(bi.hospitalFee), "
+                + " sum(bi.collectingCentreFee), "
+                + " sum(bi.staffFee), "
+                + " sum(bi.netValue)"
+                + ") "
+                + " from BillItem bi "
+                + " where (bi.retired is null or bi.retired = false) "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billTypeAtomic in :cancelTypes ";
+
+        Map mCancelRefund = new HashMap();
+        mCancelRefund.put("fd", fromDate);
+        mCancelRefund.put("td", toDate);
+        List<BillTypeAtomic> cancelTypes = new ArrayList<>();
+        cancelTypes.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        cancelTypes.add(BillTypeAtomic.CC_BILL_REFUND);
+        mCancelRefund.put("cancelTypes", cancelTypes);
+
+        // Repeat your filtering logic
+        if (institution != null) {
+            jpqlCancelRefund += " and bi.bill.institution = :ins ";
+            mCancelRefund.put("ins", institution);
+        }
+        if (department != null) {
+            jpqlCancelRefund += " and bi.bill.department = :dep ";
+            mCancelRefund.put("dep", department);
+        }
+        if (site != null) {
+            jpqlCancelRefund += " and bi.bill.department.site = :site ";
+            mCancelRefund.put("site", site);
+        }
+        if (collectingCentre != null) {
+            jpqlCancelRefund += " and bi.bill.collectingCentre.id = :ccId ";
+            mCancelRefund.put("ccId", collectingCentre.getId());
+        }
+
+        jpqlCancelRefund += " group by bi.item order by bi.item.name asc";
+
+        List<TestWiseCountReport> cancelRefundReports
+                = billItemFacade.findLightsByJpql(jpqlCancelRefund, mCancelRefund, TemporalType.TIMESTAMP);
+
+        // 3. Combine in Java
+        //    Store billed items in a map, then convert cancellation/refund fields to negative
+        //    before adding them, so effectively "subtracting" them from the totals.
+        Map<String, TestWiseCountReport> finalMap = new HashMap<>();
+
+        // Put billed items in map
+        if (billedReports != null) {
+            for (TestWiseCountReport r : billedReports) {
+                finalMap.put(r.getTestName(), r);
+            }
+        }
+
+        // Turn all cancellation/refund amounts into negative values
+        if (cancelRefundReports != null) {
+            for (TestWiseCountReport cr : cancelRefundReports) {
+                // 3a: Convert them to absolute then make negative
+                cr.setCount(-Math.abs(cr.getCount()));
+                cr.setHosFee(-Math.abs(cr.getHosFee()));
+                cr.setCcFee(-Math.abs(cr.getCcFee()));
+                cr.setProFee(-Math.abs(cr.getProFee()));
+                cr.setTotal(-Math.abs(cr.getTotal()));
+
+                // 3b: Merge with existing item in finalMap, or add as new negative entry
+                TestWiseCountReport existing = finalMap.get(cr.getTestName());
+                if (existing == null) {
+                    // If there's no billed entry, just put the negative
+                    finalMap.put(cr.getTestName(), cr);
+                } else {
+                    existing.setCount(existing.getCount() + cr.getCount());
+                    existing.setHosFee(existing.getHosFee() + cr.getHosFee());
+                    existing.setCcFee(existing.getCcFee() + cr.getCcFee());
+                    existing.setProFee(existing.getProFee() + cr.getProFee());
+                    existing.setTotal(existing.getTotal() + cr.getTotal());
+                }
+            }
+        }
+
+        // 4. Build final list and sum totals
+        testWiseCounts = new ArrayList<>(finalMap.values());
+
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalNetTotal = 0.0;
+
+        for (TestWiseCountReport report : testWiseCounts) {
+            totalCount += report.getCount();
+            totalHosFee += report.getHosFee();
+            totalCCFee += report.getCcFee();
+            totalProFee += report.getProFee();
+            totalNetTotal += report.getTotal();
+        }
+    }
+
+    /**
+     * Generates a test-wise count report for collecting centers, excluding cancellations and refunds.
+     *
+     * <p>This method retrieves billed items by test (item name) within a specified date range and bill type, applying
+     * optional filters for institution, department, site, and collecting centre. It aggregates the number of items and
+     * the sums of hospital fee, collecting centre fee, staff fee, and net value for each test. The results are stored
+     * in the report list and overall totals are updated accordingly.</p>
+     */
+    public void processCollectingCentreTestWiseCountReportWithoutCancellationsAndRefunds() {
+        String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
-                + "count(bi.item.name), "
+                + "count(bi), "
                 + "sum(bi.hospitalFee) , "
                 + "sum(bi.collectingCentreFee), "
                 + "sum(bi.staffFee), "
                 + "sum(bi.netValue)"
                 + ") "
                 + " from BillItem bi "
-                + " where bi.retired=:ret"
-                + " and bi.bill.cancelled=:can"
-                + " and bi.bill.billDate between :fd and :td "
+                + " where (bi.retired is null or bi.retired = false) "
+                + " and (bi.bill.cancelled is null or bi.bill.cancelled = false) "
+                + " and (bi.refunded is null or bi.refunded = false) "
+                + " and bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
 
         Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
-
-        if (route != null) {
-            jpql += " and bi.bill.fromInstitution.route = :route ";
-            m.put("route", route);
-        }
 
         if (institution != null) {
             jpql += " and bi.bill.institution = :ins ";
@@ -3215,45 +3396,16 @@ public class ReportController implements Serializable {
         }
 
         if (collectingCentre != null) {
-            jpql += " and bi.bill.fromInstitution = :cc ";
-            m.put("cc", collectingCentre);
+            jpql += " and bi.bill.collectingCentre.id = :ccId ";
+            m.put("ccId", collectingCentre.getId());
         }
-
-        if (phn != null && !phn.isEmpty()) {
-            jpql += " and bi.bill.patient.phn = :phn ";
-            m.put("phn", phn);
-        }
-
-        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " and bi.bill.deptId = :inv ";
-            m.put("inv", invoiceNumber);
-        }
-
-        if (itemLight != null) {
-            jpql += " and bi.item.id = :item ";
-            m.put("item", itemLight.getId());
-        }
-
-        if (doctor != null) {
-            jpql += " and bi.bill.referredBy = :refDoc ";
-            m.put("refDoc", doctor);
-        }
-
-        if (status != null) {
-            jpql += " and bi.billItemStatus = :status ";
-            m.put("status", status);
-        }
-
         jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
-
-        testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
-
+        testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         totalCount = 0.0;
         totalHosFee = 0.0;
         totalCCFee = 0.0;
         totalProFee = 0.0;
         totalNetTotal = 0.0;
-
         if (testWiseCounts != null) {
             for (TestWiseCountReport report : testWiseCounts) {
                 totalCount += report.getCount();
@@ -3267,7 +3419,7 @@ public class ReportController implements Serializable {
     }
 
     public void processLabTestWiseCountReport() {
-        String jpql = "select new com.divudi.data.TestWiseCountReport("
+        String jpql = "select new com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi.item.name), "
                 + "sum(bi.hospitalFee), "
@@ -3326,11 +3478,11 @@ public class ReportController implements Serializable {
         // Fetch results for OpdBill
         List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         // Now fetch results for OpdBillCancel (use a list for single bType)
-        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION,BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
         List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Now fetch results for OpdBillRefund (use a list for single bType)
-        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND,BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND, BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
 
         List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
@@ -3372,8 +3524,8 @@ public class ReportController implements Serializable {
 
         List<TestWiseCountReport> tempTestWiseCounts = new ArrayList<>(resultMap.values());
 
-        testWiseCounts = new  ArrayList<>();
-        
+        testWiseCounts = new ArrayList<>();
+
         totalCount = 0.0;
         totalHosFee = 0.0;
         totalCCFee = 0.0;

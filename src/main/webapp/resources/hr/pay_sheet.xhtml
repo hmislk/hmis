@@ -20,11 +20,11 @@
         <div style="position: relative!important;
              /*padding-left: 0.5%!important;*/
              height:100%!important;
-             width:100%!important; 
+             width:100%!important;
              /*             overflow:hidden!important; */
-             font-family: Times New Roman!important; 
-             font-size: 10px!important; 
-             margin:1px!important; 
+             font-family: Times New Roman!important;
+             font-size: 10px!important;
+             margin:1px!important;
              padding: 1px!important;
              /*             background-size: 100% auto!important;*/
              letter-spacing: 0px;
@@ -56,7 +56,7 @@
 
                     <tr>
                         <td>
-                            <h:outputLabel value="#{commonController.currentDateTime}">
+                            <h:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
                                 <f:convertDateTime pattern="yyyy/MMM/dd" />
                             </h:outputLabel>
                         </td>
@@ -158,13 +158,13 @@
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="Basic Salary + BR" style="text-align: left;"/> 
+                            <h:outputText value="Basic Salary + BR" style="text-align: left;"/>
                         </td>
                         <td>
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.basicValue}">                                 
+                            <h:outputText value="#{cc.attrs.bill.basicValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -172,13 +172,13 @@
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="Mercantile Day Allowance" style="text-align: left;" rendered="#{cc.attrs.bill.merchantileAllowanceValue ne 0.0}"/> 
+                            <h:outputText value="Mercantile Day Allowance" style="text-align: left;" rendered="#{cc.attrs.bill.merchantileAllowanceValue ne 0.0}"/>
                         </td>
                         <td>
                             <h:outputLabel value=":" rendered="#{cc.attrs.bill.merchantileAllowanceValue ne 0.0}"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.merchantileAllowanceValue}" rendered="#{cc.attrs.bill.merchantileAllowanceValue ne 0.0}">      
+                            <h:outputText value="#{cc.attrs.bill.merchantileAllowanceValue}" rendered="#{cc.attrs.bill.merchantileAllowanceValue ne 0.0}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -186,7 +186,7 @@
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="Poya Day Allowance" style="text-align: left;" rendered="#{cc.attrs.bill.poyaAllowanceValue ne 0.0}"/> 
+                            <h:outputText value="Poya Day Allowance" style="text-align: left;" rendered="#{cc.attrs.bill.poyaAllowanceValue ne 0.0}"/>
                         </td>
                         <td>
                             <h:outputLabel value=":" rendered="#{cc.attrs.bill.poyaAllowanceValue ne 0.0}"/>
@@ -200,27 +200,13 @@
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="Day Off Allowance" style="text-align: left;" rendered="#{cc.attrs.bill.dayOffAllowance ne 0.0}"/> 
+                            <h:outputText value="Day Off Allowance" style="text-align: left;" rendered="#{cc.attrs.bill.dayOffAllowance ne 0.0}"/>
                         </td>
                         <td>
                             <h:outputLabel value=":" rendered="#{cc.attrs.bill.dayOffAllowance ne 0.0}"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.dayOffAllowance}" rendered="#{cc.attrs.bill.dayOffAllowance ne 0.0}"> 
-                                <f:convertNumber pattern="#,##0.00" />                                
-                            </h:outputText>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td style="text-align: left;">
-                            <h:outputText value="Basic Adjustment" style="text-align: left;" rendered="#{cc.attrs.bill.adjustmentToBasic ne 0.0}"/> 
-                        </td>
-                        <td>
-                            <h:outputLabel value=":" rendered="#{cc.attrs.bill.adjustmentToBasic ne 0.0}"/>
-                        </td>
-                        <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.adjustmentToBasic}" rendered="#{cc.attrs.bill.adjustmentToBasic ne 0.0}">   
+                            <h:outputText value="#{cc.attrs.bill.dayOffAllowance}" rendered="#{cc.attrs.bill.dayOffAllowance ne 0.0}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -228,7 +214,21 @@
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="No Pay Basic" style="text-align: left;" rendered="#{cc.attrs.bill.noPayValueBasic ne 0.0}"/> 
+                            <h:outputText value="Basic Adjustment" style="text-align: left;" rendered="#{cc.attrs.bill.adjustmentToBasic ne 0.0}"/>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" rendered="#{cc.attrs.bill.adjustmentToBasic ne 0.0}"/>
+                        </td>
+                        <td style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.adjustmentToBasic}" rendered="#{cc.attrs.bill.adjustmentToBasic ne 0.0}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;">
+                            <h:outputText value="No Pay Basic" style="text-align: left;" rendered="#{cc.attrs.bill.noPayValueBasic ne 0.0}"/>
                         </td>
                         <td>
                             <h:outputLabel value=":" rendered="#{cc.attrs.bill.noPayValueBasic ne 0.0}"/>
@@ -242,27 +242,27 @@
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="Allowance Adjustment" style="text-align: left;" rendered="#{cc.attrs.bill.adjustmentToAllowance ne 0.0}"/> 
+                            <h:outputText value="Allowance Adjustment" style="text-align: left;" rendered="#{cc.attrs.bill.adjustmentToAllowance ne 0.0}"/>
                         </td>
                         <td>
                             <h:outputLabel value=":" rendered="#{cc.attrs.bill.adjustmentToAllowance ne 0.0}"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.adjustmentToAllowance}" rendered="#{cc.attrs.bill.adjustmentToAllowance ne 0.0}"> 
-                                <f:convertNumber pattern="#,##0.00" />                                
+                            <h:outputText value="#{cc.attrs.bill.adjustmentToAllowance}" rendered="#{cc.attrs.bill.adjustmentToAllowance ne 0.0}">
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
                     </tr>
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="No Pay Allowance" style="text-align: left;" rendered="#{cc.attrs.bill.noPayValueAllowance ne 0.0}"/> 
+                            <h:outputText value="No Pay Allowance" style="text-align: left;" rendered="#{cc.attrs.bill.noPayValueAllowance ne 0.0}"/>
                         </td>
                         <td>
                             <h:outputLabel value=":" rendered="#{cc.attrs.bill.noPayValueAllowance ne 0.0}"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.noPayValueAllowance}" rendered="#{cc.attrs.bill.noPayValueAllowance ne 0.0}">     
+                            <h:outputText value="#{cc.attrs.bill.noPayValueAllowance}" rendered="#{cc.attrs.bill.noPayValueAllowance ne 0.0}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -270,7 +270,7 @@
                     <ui:repeat var="we" value="#{cc.attrs.bill.transStaffSalaryComponantsAddition}">
                         <tr>
                             <td style="text-align: left;">
-                                <h:outputText value="#{we.staffPaysheetComponent.paysheetComponent.name}" rendered="#{we.componantValue ne 0.0}"/> 
+                                <h:outputText value="#{we.staffPaysheetComponent.paysheetComponent.name}" rendered="#{we.componantValue ne 0.0}"/>
                                 <h:outputText value="( " rendered="#{we.staffPaysheetComponent.paysheetComponent.componentType eq 'PerformanceAllowance' and we.componantValue ne 0.0}" />
                                 <h:outputText value="#{we.staffPaysheetComponentPercentage.staffPaySheetComponentValue}" rendered="#{we.staffPaysheetComponent.paysheetComponent.componentType eq 'PerformanceAllowance' and we.componantValue ne 0.0}">
                                     <f:convertNumber pattern="##0" />
@@ -317,14 +317,14 @@
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="EPF Staff 8%" style="text-align: left;"/> 
+                            <h:outputText value="EPF Staff 8%" style="text-align: left;"/>
                         </td>
                         <td>
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.epfStaffValue}"> 
-                                <f:convertNumber pattern="#,##0.00" />                                
+                            <h:outputText value="#{cc.attrs.bill.epfStaffValue}">
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
                     </tr>
@@ -332,7 +332,7 @@
                     <ui:repeat var="t" value="#{cc.attrs.bill.transStaffSalaryComponantsSubtraction}">
                         <tr>
                             <td style="text-align: left;">
-                                <h:outputText value="#{t.staffPaysheetComponent.paysheetComponent.name}" rendered="#{t.componantValue ne 0.0}"/> 
+                                <h:outputText value="#{t.staffPaysheetComponent.paysheetComponent.name}" rendered="#{t.componantValue ne 0.0}"/>
                             </td>
                             <td>
                                 <h:outputLabel value=":" rendered="#{t.componantValue ne 0.0}"/>
@@ -353,7 +353,7 @@
                         <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.transNetSalry}" style="text-align: right;  border-bottom: 1px solid black; border-top: 1px solid black;">
                                 <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel> 
+                            </h:outputLabel>
                         </td>
                     </tr>
 
@@ -382,7 +382,7 @@
                                 <p:outputLabel value="He" rendered="#{cc.attrs.bill.staff.person.sex eq 'Male'}"/>
                                 <p:outputLabel value="She" rendered="#{cc.attrs.bill.staff.person.sex eq 'Female'}"/>
                                 <h:outputLabel value=" is due to retire on "/>
-                                <h:outputLabel value="#{commonController.retiermentDate(cc.attrs.bill.staff.person.dob)}" rendered="#{cc.attrs.bill ne null}">
+                                <h:outputLabel value="#{commonFunctionsProxy.retiermentDate(cc.attrs.bill.staff.person.dob)}" rendered="#{cc.attrs.bill ne null}">
                                     <f:convertDateTime pattern="yyyy MMM dd" />
                                 </h:outputLabel>
                                 <p:outputLabel value=". He" rendered="#{cc.attrs.bill.staff.person.sex eq 'Male'}"/>

@@ -1,57 +1,56 @@
 package com.divudi.service;
 
-import com.divudi.bean.channel.BookingControllerViewScope;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.ApiKeyType;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.ApiKeyType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ServiceSessionBean;
-import com.divudi.entity.ApiKey;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.ApiKeyFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.ConsultantFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.ApiKey;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.ApiKeyFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.ConsultantFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -106,8 +105,6 @@ public class ChannelService {
     @EJB
     BillService billService;
 
-    @Inject
-    private BookingControllerViewScope bookingControllerViewScope;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -176,14 +173,6 @@ public class ChannelService {
 
     public void setInstitutionFacade(InstitutionFacade institutionFacade) {
         this.institutionFacade = institutionFacade;
-    }
-
-    public BookingControllerViewScope getBookingControllerViewScope() {
-        return bookingControllerViewScope;
-    }
-
-    public void setBookingControllerViewScope(BookingControllerViewScope bookingControllerViewScope) {
-        this.bookingControllerViewScope = bookingControllerViewScope;
     }
 
     public ServiceSessionBean getServiceSessionBean() {
@@ -1268,8 +1257,6 @@ public class ChannelService {
 
     @EJB
     WebUserFacade webUserFacade;
-    @Inject
-    SecurityController securityController;
 
     public WebUser checkUserCredentialForApi(String temUserName, String temPassword) {
 
@@ -1284,7 +1271,7 @@ public class ChannelService {
             return null;
         }
 
-        if (securityController.matchPassword(temPassword, u.getWebUserPassword())) {
+        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
 
             return u;
         }

@@ -19,6 +19,15 @@
                             <p:commandButton 
                                 class="w-100"
                                 disabled="false"
+                                value="Fix Missing Bill Time Data" 
+                                action="#{financialTransactionController.addMissingBillTimeData}" 
+                                ajax="false">
+                            </p:commandButton>
+                        </div>
+                        <div class="col-12 col-md-4 col-lg-2 p-1" >
+                            <p:commandButton 
+                                class="w-100"
+                                disabled="false"
                                 value="Add Handover Accept Bill Referance to Handover Create Bill" 
                                 action="#{financialTransactionController.addMissingBackwordReferancesForShiftStartBills}" 
                                 ajax="false">

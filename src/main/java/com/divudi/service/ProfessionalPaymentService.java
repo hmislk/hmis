@@ -1,15 +1,15 @@
 package com.divudi.service;
 
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.ServiceType;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
-import com.divudi.facade.BillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.ServiceType;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -61,7 +61,7 @@ public class ProfessionalPaymentService {
         double totalPaid = billFacade.findDoubleByJpql(jpql, parameters, null); // No TemporalType needed here
         return totalPaid > 0;
     }
-    
+
     public boolean isProfessionalFeePaid(Bill bill, BillItem billItem) {
         if (bill == null) {
             return false;

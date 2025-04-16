@@ -1,50 +1,38 @@
 package com.divudi.service;
 
-import com.divudi.data.BillCategory;
-import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_GRN;
-import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.None;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PaymentFacade;
+import com.divudi.core.data.BillCategory;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.PaymentMethod;
+
+import static com.divudi.core.data.PaymentMethod.Cash;
+import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
+
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PaymentFacade;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ejb.EJB;
@@ -637,7 +625,7 @@ public class BillService {
         String jpql;
         Map params = new HashMap();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow(b) "
+        jpql = "select new com.divudi.core.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic in :billTypesAtomics "

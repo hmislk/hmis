@@ -6,85 +6,85 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.dataStructure.BillListWithTotals;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dataStructure.BillListWithTotals;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.BillEjb;
-import com.divudi.entity.*;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillEntryFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillNumberFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PatientInvestigationItemValueFacade;
-import com.divudi.facade.PatientReportFacade;
-import com.divudi.facade.PatientReportItemValueFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.PharmaceuticalItemCategoryFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.*;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillEntryFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillNumberFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientInvestigationItemValueFacade;
+import com.divudi.core.facade.PatientReportFacade;
+import com.divudi.core.facade.PatientReportItemValueFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.PharmaceuticalItemCategoryFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.cashTransaction.CashBook;
-import com.divudi.entity.cashTransaction.CashBookEntry;
-import com.divudi.entity.cashTransaction.CashTransaction;
-import com.divudi.entity.cashTransaction.CashTransactionHistory;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.cashTransaction.DrawerEntry;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.entity.lab.PatientSampleComponant;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.entity.pharmacy.StockVarientBillItem;
-import com.divudi.entity.pharmacy.UserStock;
-import com.divudi.entity.pharmacy.UserStockContainer;
-import com.divudi.facade.AbstractFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.CashBookEntryFacade;
-import com.divudi.facade.CashBookFacade;
-import com.divudi.facade.CashTransactionFacade;
-import com.divudi.facade.CashTransactionHistoryFacade;
-import com.divudi.facade.DrawerEntryFacade;
-import com.divudi.facade.DrawerFacade;
-import com.divudi.facade.FamilyFacade;
-import com.divudi.facade.FamilyMemberFacade;
-import com.divudi.facade.PatientDepositFacade;
-import com.divudi.facade.PatientDepositHistoryFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientFlagFacade;
-import com.divudi.facade.PatientItemFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.PatientSampleComponantFacade;
-import com.divudi.facade.PatientSampleFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.StockVarientBillItemFacade;
-import com.divudi.facade.UserStockContainerFacade;
-import com.divudi.facade.UserStockFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.cashTransaction.CashBook;
+import com.divudi.core.entity.cashTransaction.CashBookEntry;
+import com.divudi.core.entity.cashTransaction.CashTransaction;
+import com.divudi.core.entity.cashTransaction.CashTransactionHistory;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.cashTransaction.DrawerEntry;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.pharmacy.StockVarientBillItem;
+import com.divudi.core.entity.pharmacy.UserStock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.facade.AbstractFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.CashBookEntryFacade;
+import com.divudi.core.facade.CashBookFacade;
+import com.divudi.core.facade.CashTransactionFacade;
+import com.divudi.core.facade.CashTransactionHistoryFacade;
+import com.divudi.core.facade.DrawerEntryFacade;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.FamilyFacade;
+import com.divudi.core.facade.FamilyMemberFacade;
+import com.divudi.core.facade.PatientDepositFacade;
+import com.divudi.core.facade.PatientDepositHistoryFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientFlagFacade;
+import com.divudi.core.facade.PatientItemFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.facade.StockVarientBillItemFacade;
+import com.divudi.core.facade.UserStockContainerFacade;
+import com.divudi.core.facade.UserStockFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
@@ -277,6 +277,7 @@ public class DataAdministrationController implements Serializable {
     private int manageCheckEnteredDataIndex;
     private String errors;
     private String suggestedSql;
+    private String allCreateStetements;
     private String createdSql;
     private String alterSql;
     private String executionFeedback;
@@ -288,6 +289,7 @@ public class DataAdministrationController implements Serializable {
     private String code;
 
     private int tabIndex;
+    private int tabIndexMissingFields;
 
     private int progress;
     private String progressMessage;
@@ -646,6 +648,11 @@ public class DataAdministrationController implements Serializable {
     }
 
     public String navigateToCheckMissingFields() {
+        allCreateStetements ="";
+        executionFeedback="";
+        errors="";
+        createdSql="";
+        suggestedSql="";
         return "/dataAdmin/missing_database_fields?faces-redirect=true";
     }
 
@@ -745,7 +752,7 @@ public class DataAdministrationController implements Serializable {
 
     public List<Class<?>> findEntityClassNames() {
         List<Class<?>> lst = new ArrayList<>();
-        Reflections reflections = new Reflections("com.divudi.entity");
+        Reflections reflections = new Reflections("com.divudi.core.entity");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class);
         lst.addAll(annotated);
         return lst;
@@ -862,6 +869,86 @@ public class DataAdministrationController implements Serializable {
     private String generateAlterConstraintStatement(String tableName, String constraintDef) {
         // Handle constraints such as PRIMARY KEY, FOREIGN KEY, UNIQUE, etc.
         return String.format("ALTER TABLE %s ADD %s;", tableName, constraintDef);
+    }
+
+    public void createTablesAndFieldsForAllCreateStatements() {
+        StringBuilder executionResults = new StringBuilder();
+
+        System.out.println("===== Starting CREATE TABLE parsing and ALTER execution =====");
+
+        // Split by CREATE TABLE, keeping it in the output
+        String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
+        int counter = 0;
+
+        for (String part : rawParts) {
+            part = part.trim();
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            String createStatement = "CREATE TABLE " + part;
+            System.out.println("\n[INFO] Processing statement #" + (++counter));
+            System.out.println("Create SQL:\n" + createStatement);
+
+            try {
+                String tableName = extractTableName(createStatement);
+                if (tableName == null || tableName.isEmpty()) {
+                    System.out.println("[WARNING] Skipping statement — table name not found.");
+                    executionResults.append("<br/>Skipped malformed CREATE TABLE statement.");
+                    continue;
+                }
+
+                System.out.println("[INFO] Extracted table name: " + tableName);
+
+                String alterSql = generateAlterStatements(createStatement);
+                System.out.println("[INFO] Generated ALTER statements:\n" + alterSql);
+
+                String[] sqlStatements = alterSql.split(";");
+                for (String sql : sqlStatements) {
+                    sql = sql.trim();
+                    if (sql.isEmpty()) {
+                        continue;
+                    }
+
+                    try {
+                        if (isValidSqlStatement(sql)) {
+                            System.out.println("[EXEC] Running SQL: " + sql);
+                            itemFacade.executeNativeSql(sql);
+                            executionResults.append("<br/>Successfully executed: ").append(sql);
+                        } else {
+                            System.out.println("[ERROR] Potentially harmful SQL rejected: " + sql);
+                            executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("[ERROR] SQL failed: " + sql);
+                        System.out.println("[ERROR] Exception: " + e.getMessage());
+                        executionResults.append("<br/>Failed to execute: ").append(sql);
+                        executionResults.append("<br/>Error: ").append(e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("[ERROR] Unexpected error while processing create statement.");
+                e.printStackTrace();
+                executionResults.append("<br/>Error processing create statement: ").append(e.getMessage());
+            }
+        }
+
+        executionFeedback = executionResults.toString();
+
+        System.out.println("===== All CREATE TABLE processing complete =====");
+    }
+    
+    // Add this method to validate SQL statements
+    private boolean isValidSqlStatement(String sql) {
+        sql = sql.trim().toLowerCase();
+        // Only allow CREATE TABLE, ALTER TABLE statements, and setting foreign key checks
+        return (sql.startsWith("create table") || 
+                sql.startsWith("alter table") ||
+                sql.startsWith("set foreign_key_checks")) &&
+               !sql.contains("drop") &&
+               !sql.contains("truncate") &&
+               !sql.contains("delete") &&
+               !sql.contains("update");
     }
 
     public void runSqlToCreateFields() {
@@ -2267,6 +2354,24 @@ public class DataAdministrationController implements Serializable {
     public void setProgressMessage(String progressMessage) {
         this.progressMessage = progressMessage;
     }
+
+    public String getAllCreateStetements() {
+        return allCreateStetements;
+    }
+
+    public void setAllCreateStetements(String allCreateStetements) {
+        this.allCreateStetements = allCreateStetements;
+    }
+
+    public int getTabIndexMissingFields() {
+        return tabIndexMissingFields;
+    }
+
+    public void setTabIndexMissingFields(int tabIndexMissingFields) {
+        this.tabIndexMissingFields = tabIndexMissingFields;
+    }
+    
+    
 
     public class EntityFieldError {
 

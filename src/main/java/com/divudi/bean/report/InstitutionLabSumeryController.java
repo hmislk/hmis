@@ -4,23 +4,22 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.table.String1Value1;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.table.String1Value1;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,18 +42,12 @@ public class InstitutionLabSumeryController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    
-    @Inject
-     private CommonController commonController;       
-    
+
     String txtSearch;
-    
+
     Date fromDate;
     Date toDate;
-    
-  
-    CommonFunctions commonFunctions;
-    
+
     List<Bill> labBills;
     List<Bill> billedBills;
     List<Bill> billBills;
@@ -92,12 +85,12 @@ public class InstitutionLabSumeryController implements Serializable {
 
     List<PatientInvestigation> searchedPatientInvestigations;
 
-    
-    
+
+
     public void createDailyFeeTypeSummery(){
-        
+
     }
-    
+
     public List<PatientInvestigation> getSearchedPatientInvestigations() {
         return searchedPatientInvestigations;
     }
@@ -583,7 +576,7 @@ public class InstitutionLabSumeryController implements Serializable {
 
     public void createTableCashCreditBills() {
         Date startTime = new Date();
-        
+
         if (paymentMethod == null) {
             JsfUtil.addErrorMessage("Payment Methord...!");
             return;
@@ -603,8 +596,8 @@ public class InstitutionLabSumeryController implements Serializable {
         ////// // System.out.println("canBills = " + canBills);
         ////// // System.out.println("refBills = " + refBills);
 
-        
-        
+
+
     }
 
     public PaymentMethod[] getPaymentMethord() {
@@ -890,8 +883,8 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("toIns", getInstitution());
 
         labBilleds = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
-        
-        
+
+
 
     }
 
@@ -902,7 +895,7 @@ public class InstitutionLabSumeryController implements Serializable {
 //            bhtTotal += billsOwn.get;
 //        }
 //        return bhtTotal;
-//    } 
+//    }
     public List<Bill> getLabBilleds() {
         return labBilleds;
     }
@@ -929,8 +922,8 @@ public class InstitutionLabSumeryController implements Serializable {
 //        String sql;
 //        Map tm;
 //
-//        
-//        
+//
+//
 //        sql = "select f from Bill f where "
 //                + " f.retired=false "
 //                + " and f.billType = :billType"
@@ -977,7 +970,7 @@ public class InstitutionLabSumeryController implements Serializable {
                 + " and f.institution=:ins "
                 + " and f.toInstitution=:toIns "
                 + " and f.createdAt  between :fromDate and :toDate";
-                
+
 
         tm = new HashMap();
         tm.put("fromDate", fromDate);
@@ -1012,8 +1005,8 @@ public class InstitutionLabSumeryController implements Serializable {
         }
 
         setString1Value1Table();
-        
-        
+
+
 
     }
 
@@ -1122,7 +1115,7 @@ public class InstitutionLabSumeryController implements Serializable {
                 labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
                 calTotals();
             } else {
-                sql = "select f from Bill f where f.retired=false and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+                sql = "select f from Bill f where f.retired=false and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
                 Map tm = new HashMap();
                 tm.put("fromDate", fromDate);
                 tm.put("toDate", toDate);
@@ -1142,14 +1135,14 @@ public class InstitutionLabSumeryController implements Serializable {
             return;
         }
 
-        sql = "select sum(f.total - f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+        sql = "select sum(f.total - f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
         tm.put("billType", BillType.OpdBill);
         tm.put("billClass", BilledBill.class);
         hosTotB = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
-        sql = "select sum(f.total - f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+        sql = "select sum(f.total - f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
 
         tm.put(
@@ -1159,7 +1152,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("billType", BillType.OpdBill);
         tm.put("billClass", CancelledBill.class);
         hosTotC = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
-        sql = "select sum(f.total - f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+        sql = "select sum(f.total - f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
 
         tm.put("fromDate", fromDate);
@@ -1168,7 +1161,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("billClass", RefundBill.class);
         hosTotR = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
         hosTot = hosTotB + hosTotC + hosTotR;
-        sql = "select sum(f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+        sql = "select sum(f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
 
         tm.put("fromDate", fromDate);
@@ -1176,7 +1169,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("billType", BillType.OpdBill);
         tm.put("billClass", BilledBill.class);
         profTotB = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
-        sql = "select sum(f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+        sql = "select sum(f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
 
         tm.put("fromDate", fromDate);
@@ -1184,7 +1177,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("billType", BillType.OpdBill);
         tm.put("billClass", CancelledBill.class);
         profTotC = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
-        sql = "select sum(f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+        sql = "select sum(f.staffFee) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
 
         tm.put("fromDate", fromDate);
@@ -1193,7 +1186,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("billClass", RefundBill.class);
         profTotR = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
         profTot = profTotB + profTotC + profTotR;
-        sql = "select sum(f.discount) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+        sql = "select sum(f.discount) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
 
         tm.put("fromDate", fromDate);
@@ -1201,7 +1194,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("billType", BillType.OpdBill);
         tm.put("billClass", BilledBill.class);
         disTotB = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
-        sql = "select sum(f.discount) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+        sql = "select sum(f.discount) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
 
         tm.put("fromDate", fromDate);
@@ -1209,7 +1202,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("billType", BillType.OpdBill);
         tm.put("billClass", CancelledBill.class);
         disTotC = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
-        sql = "select sum(f.discount) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
+        sql = "select sum(f.discount) from Bill f where f.retired=false and type(f) = :billClass and f.billType = :billType and f.paymentMethod!=com.divudi.core.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
         tm = new HashMap();
 
         tm.put("fromDate", fromDate);
@@ -1230,14 +1223,6 @@ public class InstitutionLabSumeryController implements Serializable {
 
     public void setLabBills(List<Bill> labBills) {
         this.labBills = labBills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public Date getFromDate() {
@@ -1459,14 +1444,6 @@ public class InstitutionLabSumeryController implements Serializable {
 
     public void setBilledBills(List<Bill> billedBills) {
         this.billedBills = billedBills;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

@@ -5,23 +5,22 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.dataStructure.ShiftTable;
-import com.divudi.data.hr.DayType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.dataStructure.ShiftTable;
+import com.divudi.core.data.hr.DayType;
 
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.Roster;
-import com.divudi.entity.hr.Shift;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.hr.StaffShiftExtra;
-import com.divudi.entity.hr.StaffShiftHistory;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.Shift;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.entity.hr.StaffShiftExtra;
+import com.divudi.core.entity.hr.StaffShiftHistory;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.facade.StaffShiftHistoryFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,17 +52,13 @@ public class ShiftTableController implements Serializable {
     @EJB
     HumanResourceBean humanResourceBean;
 
-    CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;
     @Inject
     SessionController sessionController;
     @Inject
     ShiftController shiftController;
-    @Inject
-    StaffShiftController staffShiftController;
-    @Inject
-    CommonController commonController;
+
     boolean all;
     Staff staff;
 
@@ -98,7 +93,7 @@ public class ShiftTableController implements Serializable {
         ss.setDayType(null);
 
         DayType dtp;
-        if (dayType != null || dayType == DayType.DayOff) {
+        if (dayType == DayType.DayOff) {
             dtp = dayType;
         } else {
             dtp = phDateController.getHolidayType(ss.getShiftDate());
@@ -252,15 +247,13 @@ public class ShiftTableController implements Serializable {
 
         }
 
-        Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        
+
     }
 
     public void fetchShiftTable() {
-        Date startTime = new Date();
-
         if (errorCheck()) {
             return;
         }
@@ -341,10 +334,10 @@ public class ShiftTableController implements Serializable {
 
         }
 
-        Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        
+
     }
 
     public void fetchShiftTableByStaff() {
@@ -408,7 +401,7 @@ public class ShiftTableController implements Serializable {
 
         }
 
-        Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
     }
 
@@ -605,10 +598,10 @@ public class ShiftTableController implements Serializable {
         shiftTables.add(summeryTable);
         //
 
-        Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        
+
     }
 
     public double fetchWorkTime(Staff staff, Date date) {
@@ -722,14 +715,6 @@ public class ShiftTableController implements Serializable {
         this.shiftController = shiftController;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
     }
@@ -841,13 +826,4 @@ public class ShiftTableController implements Serializable {
     public void setStaff(Staff staff) {
         this.staff = staff;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

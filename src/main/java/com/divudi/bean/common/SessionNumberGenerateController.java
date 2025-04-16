@@ -1,8 +1,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.channel.ChannelScheduleController;
-import com.divudi.entity.SessionNumberGenerator;
-import com.divudi.facade.SessionNumberGeneratorFacade;
+import com.divudi.core.entity.SessionNumberGenerator;
+import com.divudi.core.facade.SessionNumberGeneratorFacade;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;

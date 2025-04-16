@@ -1,9 +1,9 @@
 package com.divudi.service;
 
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.StockHistoryFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.facade.StockHistoryFacade;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;

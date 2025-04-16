@@ -1,12 +1,12 @@
 package com.divudi.service;
 
 
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.analytics.AggregatedRecord;
-import com.divudi.facade.AggregatedRecordFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.analytics.AggregatedRecord;
+import com.divudi.core.facade.AggregatedRecordFacade;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class AggregatedRecordService {
                                                          Department fromDepartment, Department toDepartment,
                                                          Staff fromStaff, Staff toStaff,
                                                          WebUser webUser, WebUser fromWebUser, WebUser toWebUser,
-                                                         Date fromDate, Date toDate, 
+                                                         Date fromDate, Date toDate,
                                                          boolean createNewRecord) {
         if (key == null || fromDate == null || toDate == null) {
             return null;

@@ -9,10 +9,10 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.Atm;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.AtmFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.AtmFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

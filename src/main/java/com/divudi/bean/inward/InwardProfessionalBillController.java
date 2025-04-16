@@ -9,37 +9,35 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.inward.PatientEncounterComponentType;
-import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.inward.PatientEncounterComponentType;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.inward.EncounterComponent;
-import com.divudi.facade.BillEntryFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.EncounterComponentFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.facade.BillEntryFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -66,8 +64,6 @@ public class InwardProfessionalBillController implements Serializable {
     SessionController sessionController;
     @Inject
     AdmissionController admissionController;
-    @Inject
-    CommonController commonController;
     ////////////////////
     @EJB
     private BillFacade ejbFacade;
@@ -91,8 +87,7 @@ public class InwardProfessionalBillController implements Serializable {
     @EJB
     BillNumberGenerator billNumberBean;
 
-    CommonFunctions commonFunctions;
-    //////////////////    
+    //////////////////
     private List<Bill> items = null;
     List<BillFee> lstBillFees;
     List<BillItem> lstBillItems;
@@ -439,14 +434,6 @@ public class InwardProfessionalBillController implements Serializable {
         this.toClearBill = toClearBill;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public void updateFees(AjaxBehaviorEvent event) {
     }
 
@@ -496,8 +483,7 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public List<Item> completeItem(String qry) {
-        List<Item> completeItems = getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        return completeItems;
+        return getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
     }
 
     public void setAdmissionController(AdmissionController admissionController) {
@@ -1038,13 +1024,4 @@ public class InwardProfessionalBillController implements Serializable {
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

@@ -9,33 +9,33 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.UserStock;
-import com.divudi.entity.pharmacy.UserStockContainer;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.UserStock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,7 +65,7 @@ import org.primefaces.event.SelectEvent;
 public class StoreIssueController_ implements Serializable {
 
     String errorMessage = null;
-    
+
     /**
      * Creates a new instance of PharmacySaleController
      */
@@ -116,7 +116,7 @@ public class StoreIssueController_ implements Serializable {
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -504,7 +504,7 @@ public class StoreIssueController_ implements Serializable {
     private CashTransactionBean cashTransactionBean;
 
     public void settleBill() {
-        
+
         editingQty = null;
      //   ////System.out.println("editingQty = " + editingQty);
         errorMessage=null;
@@ -548,7 +548,7 @@ public class StoreIssueController_ implements Serializable {
 
     public void addBillItem() {
         errorMessage=null;
-        
+
         editingQty = null;
 
         if (billItem == null) {
@@ -802,8 +802,8 @@ public class StoreIssueController_ implements Serializable {
         editingQty = null;
 
     }
-    
-   
+
+
 
     public SessionController getSessionController() {
         return sessionController;
@@ -1055,6 +1055,6 @@ public class StoreIssueController_ implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
-    
-    
+
+
 }
