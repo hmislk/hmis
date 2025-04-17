@@ -10,13 +10,10 @@ public class WebUserLight {
     private Long id;
     private String name;
     private String roleName;
+    private String code;
+    private String staffNameWithTitle;
 
     public WebUserLight() {
-    }
-
-    public WebUserLight(String userName, Long id) {
-        this.userName = userName;
-        this.id = id;
     }
 
     public WebUserLight(String userName, String name, Long id) {
@@ -30,6 +27,15 @@ public class WebUserLight {
         this.name = name;
         this.id = id;
         this.roleName = roleName;
+    }
+
+    public WebUserLight(String userName, String name, Long id, String roleName, String code, String staffNameWithTitle) {
+        this.userName = userName;
+        this.name = name;
+        this.id = id;
+        this.roleName = roleName;
+        this.code = code;
+        this.staffNameWithTitle = staffNameWithTitle;
     }
 
     public String getUserName() {
@@ -64,4 +70,19 @@ public class WebUserLight {
         this.roleName = roleName;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getStaffNameWithTitle() {
+        return staffNameWithTitle;
+    }
+
+    public void setStaffNameWithTitle(String staffNameWithTitle) {
+        this.staffNameWithTitle = staffNameWithTitle;
+    }
 }

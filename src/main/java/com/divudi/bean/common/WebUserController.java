@@ -677,11 +677,17 @@ public class WebUserController implements Serializable {
     private void fillLightUsers() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.core.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
-                + " from WebUser wu "
-                + " where wu.retired=:ret "
-                + " and wu.staff is not null "
-                + " order by wu.name";
+        jpql = "Select new com.divudi.core.light.common.WebUserLight("
+                + "wu.name, "
+                + "wu.webUserPerson.name, "
+                + "wu.id, "
+                + "wu.webUserRole.name, "
+                + "wu.code, "
+                + "wu.staff.person.nameWithTitle) "
+                + "from WebUser wu "
+                + "where wu.retired=:ret "
+                + "and wu.staff is not null "
+                + "order by wu.name";
         m.put("ret", false);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
     }
@@ -689,11 +695,17 @@ public class WebUserController implements Serializable {
     private void fillLightUsersRetired() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.core.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
-                + " from WebUser wu "
-                + " where wu.retired=:ret "
-                + " and wu.staff is not null "
-                + " order by wu.name";
+        jpql = "Select new com.divudi.core.light.common.WebUserLight("
+                + "wu.name, "
+                + "wu.webUserPerson.name, "
+                + "wu.id, "
+                + "wu.webUserRole.name, "
+                + "wu.code, "
+                + "wu.staff.person.nameWithTitle) "
+                + "from WebUser wu "
+                + "where wu.retired=:ret "
+                + "and wu.staff is not null "
+                + "order by wu.name";
         m.put("ret", true);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
     }
