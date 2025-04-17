@@ -309,7 +309,6 @@ public class IncomeBundle implements Serializable {
 //            System.out.println("Retail Total: " + retailTotal);
 //            System.out.println("Purchase Total: " + purchaseTotal);
 //            System.out.println("Gross Profit: " + grossProfit);
-
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
             grossProfitValue += grossProfit;
@@ -1000,6 +999,10 @@ public class IncomeBundle implements Serializable {
         hasPatientDepositTransaction = false;
         hasPatientPointsTransaction = false;
         hasOnlineSettlementTransaction = false;
+
+        saleValue = 0.0;
+        purchaseValue = 0.0;
+        grossProfitValue = 0.0;
     }
 
     public void collectDepartments() {
