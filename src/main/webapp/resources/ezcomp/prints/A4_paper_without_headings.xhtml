@@ -20,7 +20,7 @@
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="a4bill" style="width: 210mm;" >
 
-            <div style="height: 55mm!important;"></div>
+            <div style="height: #{configOptionApplicationController.getShortTextValueByKey('Inward Servise Bill Header Height',55)}mm!important;"></div>
 
             <div class="billDetailsFiveFive" >
                 <table style="width: 99%!important;" >

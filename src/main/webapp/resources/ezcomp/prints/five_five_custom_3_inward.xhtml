@@ -12,6 +12,7 @@
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" type="java.lang.Integer"></cc:attribute>
+        <cc:attribute name="cancelled" type="java.lang.Boolean"/>
     </cc:interface>
 
     <h:head>
@@ -25,6 +26,8 @@
             <!-- Attributes passed to the component -->
             <cc:attribute name="bill" required="true" />
             <cc:attribute name="duplicate" required="false" />
+            <cc:attribute name="cancelled" type="java.lang.Boolean"/>
+
         </cc:interface>
 
         <!-- Composite Component Implementation -->
@@ -63,7 +66,7 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
                     <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.cancelled}" />
                 </div>
 
                 <!-- Separator Line -->
