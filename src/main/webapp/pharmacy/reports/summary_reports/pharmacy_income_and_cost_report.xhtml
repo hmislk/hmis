@@ -255,11 +255,6 @@
                             <h:outputText value="#{row.pharmaceuticalBillItem.retailRate}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{commonFunctionsProxy.abs(pharmacySummaryReportController.bundle.saleValue)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </f:facet>
                         </p:column>
                         <p:column headerText="Retail Value" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
                             <h:outputText value="#{commonFunctionsProxy.abs(row.pharmaceuticalBillItem.retailRate * row.pharmaceuticalBillItem.qty)}">
