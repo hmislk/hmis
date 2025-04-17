@@ -188,6 +188,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean passwordRequirementsFulfilled = true;
     private boolean enforcedPasswordChange = false;
     private String passwordRequirementMessage;
+    private Boolean inwardServiceBillingAfterShiftStart;
+    private Boolean inwardServiceBillItemSearchByAutocomplete;
 
     public String navigateToLoginPage() {
         return "/index1.xhtml";
@@ -2362,6 +2364,28 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setOpdBillItemSearchByAutocomplete(Boolean opdBillItemSearchByAutocomplete) {
         this.opdBillItemSearchByAutocomplete = opdBillItemSearchByAutocomplete;
+    }
+
+    public Boolean getInwardServiceBillingAfterShiftStart() {
+        if (inwardServiceBillingAfterShiftStart == null) {
+            inwardServiceBillingAfterShiftStart =  configOptionApplicationController.getBooleanValueByKey("Inward Service Bill With Payment Need to Start the Shift", false);;
+        }
+        return inwardServiceBillingAfterShiftStart;
+    }
+
+    public void setInwardServiceBillingAfterShiftStart(Boolean inwardServiceBillingAfterShiftStart) {
+        this.inwardServiceBillingAfterShiftStart = inwardServiceBillingAfterShiftStart;
+    }
+
+    public Boolean getInwardServiceBillItemSearchByAutocomplete() {
+        if (inwardServiceBillItemSearchByAutocomplete == null) {
+            inwardServiceBillItemSearchByAutocomplete = configOptionApplicationController.getBooleanValueByKey("Inward Service Bill Item Search By Autocomplete", false);
+        }
+        return inwardServiceBillItemSearchByAutocomplete;
+    }
+
+    public void setInwardServiceBillItemSearchByAutocomplete(Boolean inwardServiceBillItemSearchByAutocomplete) {
+        this.inwardServiceBillItemSearchByAutocomplete = inwardServiceBillItemSearchByAutocomplete;
     }
 
     public Boolean getPharmacyBillingAfterShiftStart() {
