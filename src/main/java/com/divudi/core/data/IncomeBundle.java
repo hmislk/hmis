@@ -222,7 +222,7 @@ public class IncomeBundle implements Serializable {
                         rows.add(ir);
                     }
                 }
-                } else if (firstElement instanceof PharmaceuticalBillItem) {
+            } else if (firstElement instanceof PharmaceuticalBillItem) {
                 // Process list as Bills
                 for (Object obj : entries) {
                     if (obj instanceof PharmaceuticalBillItem) {
@@ -243,7 +243,7 @@ public class IncomeBundle implements Serializable {
         }
     }
 
-     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
+    public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;
         grossProfitValue = 0;
@@ -264,36 +264,40 @@ public class IncomeBundle implements Serializable {
                 continue;
             }
 
-            // Make rates absolute before any calculation
+            double qty = Math.abs(q);
             double retail = Math.abs(rRate);
             double purchase = Math.abs(pRate);
-            double qty = q;
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+            double grossProfit = 0;
 
             switch (bc) {
                 case BILL:
                 case PAYMENTS:
                 case PREBILL:
-                    qty = Math.abs(qty); // Positive
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    grossProfit = (retail - purchase) * qty;
                     break;
+
                 case CANCELLATION:
                 case REFUND:
-                    qty = -Math.abs(qty); // Negative
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    grossProfit = -(retail - purchase) * qty;
                     break;
+
                 default:
                     break;
             }
 
-            double retailTotal = retail * qty;
-            double purchaseTotal = purchase * qty;
-            double grossProfit = (retail - purchase) * qty;
-
-            saleValue += Math.abs(retailTotal);
-            purchaseValue += Math.abs(purchaseTotal);
-            grossProfitValue += Math.abs(grossProfit);
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+            grossProfitValue += grossProfit;
         }
     }
 
-    
     public void generateProcurementDetailsForBillItems() {
         // Reset all values before starting calculations
         quantity = 0.0;
@@ -1620,7 +1624,5 @@ public class IncomeBundle implements Serializable {
     public void setGrossProfitValue(double grossProfitValue) {
         this.grossProfitValue = grossProfitValue;
     }
-    
-    
 
 }
