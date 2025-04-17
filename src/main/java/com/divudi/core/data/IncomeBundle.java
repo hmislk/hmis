@@ -292,10 +292,25 @@ public class IncomeBundle implements Serializable {
                     break;
             }
 
+            System.out.println("---- Item ----");
+            System.out.println("BillCategory: " + bc);
+            System.out.println("Original Qty: " + q);
+            System.out.println("Retail Rate: " + rRate);
+            System.out.println("Purchase Rate: " + pRate);
+            System.out.println("Adjusted Qty: " + ((bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -qty : qty));
+            System.out.println("Retail Total: " + retailTotal);
+            System.out.println("Purchase Total: " + purchaseTotal);
+            System.out.println("Gross Profit: " + grossProfit);
+
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
             grossProfitValue += grossProfit;
         }
+
+        System.out.println("==== Final Totals ====");
+        System.out.println("Total Sale Value: " + saleValue);
+        System.out.println("Total Purchase Value: " + purchaseValue);
+        System.out.println("Total Gross Profit: " + grossProfitValue);
     }
 
     public void generateProcurementDetailsForBillItems() {
