@@ -5,23 +5,22 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.pharmacy.StockVarientBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockVarientBillItemFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.pharmacy.StockVarientBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockVarientBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,8 +57,6 @@ public class ReportsStockVariant implements Serializable {
      */
     @Inject
     DealerController dealerController;
-    @Inject
-    CommonController commonController;
 
     /**
      * EJBs
@@ -148,8 +145,8 @@ public class ReportsStockVariant implements Serializable {
 
             systemStockValue += (r.getSystemStock() * r.getPurchaseRate());
         }
-        
-        
+
+
 
     }
 
@@ -397,15 +394,5 @@ public class ReportsStockVariant implements Serializable {
     public void setRecordedBillAfter(Bill recordedBillAfter) {
         this.recordedBillAfter = recordedBillAfter;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
-    
 
 }

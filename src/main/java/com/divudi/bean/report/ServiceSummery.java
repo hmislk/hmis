@@ -5,38 +5,37 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.BillItemWithFee;
-import com.divudi.data.table.String1Value5;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.BillItemWithFee;
+import com.divudi.core.data.table.String1Value5;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceCategory;
-import com.divudi.entity.ServiceSubCategory;
-import com.divudi.entity.Staff;
-import com.divudi.entity.lab.InvestigationCategory;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceCategory;
+import com.divudi.core.entity.ServiceSubCategory;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,8 +62,6 @@ public class ServiceSummery implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     // private List<DailyCash> dailyCashs;
     @Temporal(TemporalType.TIMESTAMP)
     private Date fromDate;
@@ -104,6 +101,7 @@ public class ServiceSummery implements Serializable {
 
     boolean onlyInwardBills;
     boolean credit = false;
+    private Staff staff;
 
     List<String1Value5> string1Value5;
 
@@ -149,15 +147,17 @@ public class ServiceSummery implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
-        String sql;
-        sql = "select s from Staff s where "
-                + " s.retired=false "
-                + " and s.annualWelfareQualified>0 "
-                + " order by s.codeInterger ";
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("select s from Staff s where s.retired=false  and s.annualWelfareQualified>0 ");
 
-        staffs = getStaffFacade().findByJpql(sql);
+        if (staff != null) {
+            sql.append(" and s.person.name =:name ");
+            parameters.put("name", staff.getPerson().getName());
+        }
+        sql.append(" order by s.codeInterger ");
 
-        
+        staffs = getStaffFacade().findByJpql(sql.toString(), parameters);
 
     }
 
@@ -819,8 +819,6 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
 
-        
-
     }
 
     public void createInvestigationSummery() {
@@ -842,7 +840,6 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
 
-        
     }
 
     List<Bill> bills;
@@ -899,8 +896,6 @@ public class ServiceSummery implements Serializable {
 
         calTotal(bills);
 
-        
-
     }
 
     public void calTotal(List<Bill> bills) {
@@ -917,13 +912,10 @@ public class ServiceSummery implements Serializable {
     Institution institution;
     PaymentMethod paymentMethod;
 
-
-    CommonFunctions commonFunctions;
-
     public void createServiceSummeryLab() {
         Date startTime = new Date();
 
-        long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
+        long lng = CommonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
             JsfUtil.addErrorMessage("Date Range is too Long");
@@ -993,14 +985,12 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            ////// // System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
-        
-
     }
 
     public void createServiceSummeryLabNew() {
         Date startTime = new Date();
 
-        long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
+        long lng = CommonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
             JsfUtil.addErrorMessage("Date Range is too Long");
@@ -1046,7 +1036,6 @@ public class ServiceSummery implements Serializable {
             reagentFeeTotalGT += svItem.getValue4();
         }
 
-        
     }
 
     public void createSummaryTable(Bill bill) {
@@ -1101,7 +1090,6 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, false);
 
-        
     }
 
     public void createServiceSummeryInwardAddedDate() {
@@ -1126,8 +1114,6 @@ public class ServiceSummery implements Serializable {
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
         hosFeeMarginTotal = calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
 
-        
-
     }
 
     public void createServiceSummeryInwardDischarged() {
@@ -1147,7 +1133,6 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, true);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, true);
 
-        
     }
 
     List<BillItemWithFee> serviceSummery;
@@ -1354,8 +1339,6 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
-        
-
     }
 
     public void createInvestigationCategorySummery() {
@@ -1403,7 +1386,6 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
-        
     }
 
     private void calServiceTot1(BillType billType, boolean discharged) {
@@ -1451,8 +1433,6 @@ public class ServiceSummery implements Serializable {
 
         calCountTotalCategory(BillType.InwardBill, false);
         calServiceTot(BillType.InwardBill, false);
-
-        
 
     }
 
@@ -1534,8 +1514,6 @@ public class ServiceSummery implements Serializable {
 
         calCountTotalCategory(BillType.InwardBill, true);
         //calServiceTot(BillType.InwardBill, true);
-
-        
 
     }
 
@@ -1818,7 +1796,7 @@ public class ServiceSummery implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1829,7 +1807,7 @@ public class ServiceSummery implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1972,14 +1950,6 @@ public class ServiceSummery implements Serializable {
 
     public void setReagentFeeTotal(double reagentFeeTotal) {
         this.reagentFeeTotal = reagentFeeTotal;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<BillItemWithFee> getServiceSummeryBill() {
@@ -2126,14 +2096,6 @@ public class ServiceSummery implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public boolean isOnlyInwardBills() {
         return onlyInwardBills;
     }
@@ -2156,6 +2118,14 @@ public class ServiceSummery implements Serializable {
 
     public void setCredit(boolean credit) {
         this.credit = credit;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
     }
 
 }

@@ -13,38 +13,37 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.Privileges;
-import com.divudi.ejb.ApplicationEjb;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.Privileges;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Logins;
-import com.divudi.entity.Person;
-import com.divudi.entity.UserIcon;
-import com.divudi.entity.UserPreference;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserDashboard;
-import com.divudi.entity.WebUserDepartment;
-import com.divudi.entity.WebUserPrivilege;
-import com.divudi.entity.WebUserRole;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.LoginsFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.UserPreferenceFacade;
-import com.divudi.facade.WebUserDashboardFacade;
-import com.divudi.facade.WebUserDepartmentFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.WebUserPrivilegeFacade;
-import com.divudi.facade.WebUserRoleFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Staff;
-import com.divudi.entity.cashTransaction.CashBook;
-import com.divudi.entity.cashTransaction.Denomination;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Logins;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.UserIcon;
+import com.divudi.core.entity.UserPreference;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserDashboard;
+import com.divudi.core.entity.WebUserDepartment;
+import com.divudi.core.entity.WebUserPrivilege;
+import com.divudi.core.entity.WebUserRole;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.LoginsFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.UserPreferenceFacade;
+import com.divudi.core.facade.WebUserDashboardFacade;
+import com.divudi.core.facade.WebUserDepartmentFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
+import com.divudi.core.facade.WebUserRoleFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.cashTransaction.CashBook;
+import com.divudi.core.entity.cashTransaction.Denomination;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.StaffFacade;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -86,8 +85,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     private CashTransactionBean cashTransactionBean;
     @EJB
     private DepartmentFacade departmentFacade;
-    @EJB
-    private ApplicationEjb applicationEjb;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -762,8 +759,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean login() {
-        getApplicationEjb().recordAppStart();
-        if (userName.trim().equals("")) {
+        getApplicationController().recordStart();
+        if (userName.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a username");
             return false;
         }
@@ -842,7 +839,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void changePassword() {
         WebUser user = getLoggedUser();
-        if (!getSecurityController().matchPassword(oldPassword, user.getWebUserPassword())) {
+        if (!SecurityController.matchPassword(oldPassword, user.getWebUserPassword())) {
             JsfUtil.addErrorMessage("The old password you entered is incorrect");
             return;
         }
@@ -883,11 +880,12 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public Boolean userNameAvailable(String userName) {
-        Boolean available = true;
+        boolean available = true;
         List<WebUser> allUsers = getFacede().findAll();
         for (WebUser w : allUsers) {
-            if (userName.toLowerCase().equals(w.getName().toLowerCase())) {
+            if (userName.equalsIgnoreCase(w.getName())) {
                 available = false;
+                break;
             }
         }
         return available;
@@ -913,7 +911,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         List<WebUser> allUsers = getFacede().findByJpql(temSQL);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
-                if (getSecurityController().matchPassword(password, u.getWebUserPassword())) {
+                if (SecurityController.matchPassword(password, u.getWebUserPassword())) {
                     if (!canLogToDept(u, department)) {
                         JsfUtil.addErrorMessage("No privilage to Login This Department");
                         return false;
@@ -992,7 +990,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
 
-//    
+//
 //    public void decryptAllUsers() {
 //        String temSQL;
 //        temSQL = "SELECT u FROM WebUser u";
@@ -1042,7 +1040,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             return false;
         }
 
-        if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
+        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
 
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
@@ -1085,7 +1083,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             return false;
         }
 
-        if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
+        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
 //            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
@@ -1307,7 +1305,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         //System.out.println("userName = " + userName);
         //System.out.println("password = " + password);
-
         // Check if password matches the username
         if (preventMatchingPasswordWithUsername && password.equals(userName)) {
             JsfUtil.addErrorMessage("Password cannot be the same as the username.");
@@ -1608,14 +1605,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         return institutionFacade.findByJpql(jpql, m);
     }
 
-    public ApplicationEjb getApplicationEjb() {
-        return applicationEjb;
-    }
-
-    public void setApplicationEjb(ApplicationEjb applicationEjb) {
-        this.applicationEjb = applicationEjb;
-    }
-
     public ApplicationController getApplicationController() {
         return applicationController;
     }
@@ -1793,7 +1782,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         defLocale = "en";
         if (getLoggedUser() != null) {
             if (getLoggedUser().getDefLocale() != null) {
-                if (!getLoggedUser().getDefLocale().equals("")) {
+                if (!getLoggedUser().getDefLocale().isEmpty()) {
                     return getLoggedUser().getDefLocale();
                 }
             }
@@ -1806,12 +1795,12 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String getPrimeTheme() {
-        if (primeTheme == null || primeTheme.equals("")) {
+        if (primeTheme == null || primeTheme.isEmpty()) {
             primeTheme = "material-light-outlined";
         }
         if (getLoggedUser() != null) {
             if (getLoggedUser().getPrimeTheme() != null) {
-                if (!getLoggedUser().getPrimeTheme().equals("")) {
+                if (!getLoggedUser().getPrimeTheme().isEmpty()) {
                     return getLoggedUser().getPrimeTheme();
                 }
             }
@@ -1840,7 +1829,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public List<Privileges> getPrivilegeses() {
-        if (privilegeses == null || privilegeses.isEmpty()) {
+        if (privilegeses != null && privilegeses.isEmpty()) {
             privilegeses.addAll(Arrays.asList(Privileges.values()));
         }
         return privilegeses;
@@ -1974,12 +1963,12 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
-        String ip = httpServletRequest.getRemoteAddr();
+        String ipAddr = httpServletRequest.getHeader("X-FORWARDED-FOR");
+        String ipAddress = (ipAddr == null) ? httpServletRequest.getRemoteAddr() : ipAddr;
         String host = httpServletRequest.getRemoteHost();
 
-        thisLogin.setIpaddress(ip);
+        thisLogin.setIpaddress(ipAddress);
         thisLogin.setComputerName(host);
-        // This should print null if the ID is not set.
 
         if (thisLogin.getId() == null) {
             try {
@@ -2385,14 +2374,14 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setPharmacyBillingAfterShiftStart(Boolean pharmacyBillingAfterShiftStart) {
         this.pharmacyBillingAfterShiftStart = pharmacyBillingAfterShiftStart;
     }
-    
+
     public Boolean getPaymentManagementAfterShiftStart() {
         if (paymentManagementAfterShiftStart == null) {
             paymentManagementAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Payment Management can be done after shift start", false);
         }
         return paymentManagementAfterShiftStart;
     }
-    
+
     public void setPaymentManagementAfterShiftStart(Boolean paymentManagementAfterShiftStart) {
         this.paymentManagementAfterShiftStart = paymentManagementAfterShiftStart;
     }

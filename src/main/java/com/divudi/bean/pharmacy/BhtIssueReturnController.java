@@ -8,22 +8,22 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.inward.InwardBeanController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,8 +32,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
 
 /**
  *
@@ -204,7 +204,7 @@ public class BhtIssueReturnController implements Serializable {
 
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) i.getQty());
+            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
 
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
@@ -213,7 +213,7 @@ public class BhtIssueReturnController implements Serializable {
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty((double) i.getPharmaceuticalBillItem().getQty());
+            i.setQty(i.getPharmaceuticalBillItem().getQty());
 
 //            double value = i.getRate() * i.getQty();
 //            i.setGrossValue(0 - value);
@@ -298,7 +298,7 @@ public class BhtIssueReturnController implements Serializable {
             }
         }
 
-//        
+//
 //        System.out.println("returnBill.getTotal() = " + returnBill.getTotal());
 //        System.out.println("getReturnBill().getTotal() = " + getReturnBill().getTotal());
         if (returnBill.getTotal() == 0) {
@@ -363,11 +363,11 @@ public class BhtIssueReturnController implements Serializable {
             grossTotal += p.getRate() * p.getQty();
             marginTotal += p.getMarginRate() * p.getQty();
             netTotal += p.getNetRate() * p.getQty();
-            
+
             p.setNetValue(p.getNetRate() * p.getQty());
             p.setGrossValue(p.getRate() * p.getQty());
             p.setMarginValue(p.getMarginRate() * p.getQty());
-            
+
         }
 
         getReturnBill().setTotal(grossTotal);
@@ -398,7 +398,7 @@ public class BhtIssueReturnController implements Serializable {
                 continue;
             }
 
-            tmp.setQtyInUnit((double) tmpQty);
+            tmp.setQtyInUnit(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 

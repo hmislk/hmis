@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete"
       xmlns:salary="http://xmlns.jcp.org/jsf/composite/hr">
 
@@ -21,12 +21,12 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
-                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}" 
+                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}"
                                              var="t">
-                                <f:selectItem itemLabel="Select Salary Cycle" />    
-                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
-                                               var="theme" 
-                                               itemLabel="#{theme.name}" 
+                                <f:selectItem itemLabel="Select Salary Cycle" />
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}"
+                                               var="theme"
+                                               itemLabel="#{theme.name}"
                                                itemValue="#{theme}" ></f:selectItems>
 
                                 <p:column style="width:10%" headerText="Name">
@@ -41,7 +41,7 @@
                                 </p:column>
                             </p:selectOneMenu>
                             <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>                           
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Employee : "/>
@@ -69,10 +69,10 @@
                         <p:commandButton value="Print" ajax="false" action="#">
                             <p:printer target="gpBillPreview"></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalaryComponants}" var="ss">
                                 <f:facet name="header">
-                                    
+
                                     <h:outputLabel value="Staff Salary Component"/>
                                     <br/>
                                     <h:outputLabel value="Salary Cycle : #{hrReportController.reportKeyWord.salaryCycle.name}"/>
@@ -99,7 +99,7 @@
                                     </h:panelGroup>
                                 </f:facet>
                                 <p:column headerText="Emp No">
-                                    <f:facet name="header">         
+                                    <f:facet name="header">
                                         <h:outputLabel value="Emp No"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staffSalary.staff.codeInterger}" >
@@ -111,28 +111,28 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staffSalary.staff.person.nameWithTitle}">
                                     </p:outputLabel>
-                                </p:column>                              
+                                </p:column>
                                 <p:column headerText="Paysheet Component ">
                                     <f:facet name="header">
                                         <h:outputLabel value="Paysheet Component"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staffPaysheetComponent.paysheetComponent.name}">
                                     </p:outputLabel>
-                                </p:column>  
+                                </p:column>
                                 <p:column headerText="Paysheet Component ">
                                     <f:facet name="header">
                                         <h:outputLabel value="ID"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staffPaysheetComponent.id}">
                                     </p:outputLabel>
-                                </p:column>  
+                                </p:column>
                                 <p:column headerText="Salary Cycle" rendered="#{hrReportController.reportKeyWord.salaryCycle eq null}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Salary Cycle"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.salaryCycle.name}">
                                     </p:outputLabel>
-                                </p:column>  
+                                </p:column>
                                 <p:column headerText="Opennig Balance" rendered="#{hrReportController.reportKeyWord.salaryCycle eq null}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Opennig Balance"  />
@@ -167,7 +167,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
-                                </p:column>  
+                                </p:column>
                                 <p:column headerText="EPF Staff Value " style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="EPF Staff Value"  />
@@ -175,7 +175,7 @@
                                     <p:outputLabel value="#{ss.epfValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="EPF Company Value " style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="EPF Company Value"  />
@@ -183,7 +183,7 @@
                                     <p:outputLabel value="#{ss.epfCompanyValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="ETF Company Value " style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="ETF Company Value"  />
@@ -226,7 +226,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>
@@ -238,8 +238,8 @@
                                 <p:printer target="gpBillPreviewPaysheet" ></p:printer>
                             </p:commandButton>
                             <h:panelGroup   id="gpBillPreviewPaysheet">
-                                <salary:bank_letter salary="#{hrReportController.staffSalaryComponants}" 
-                                                    bank="#{hrReportController.reportKeyWord.institutionBank}" 
+                                <salary:bank_letter salary="#{hrReportController.staffSalaryComponants}"
+                                                    bank="#{hrReportController.reportKeyWord.institutionBank}"
                                                     component="#{hrReportController.reportKeyWord.paysheetComponent}"
                                                     total="#{hrReportController.total}"/>
                             </h:panelGroup>

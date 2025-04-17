@@ -5,14 +5,13 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.hr.Roster;
-import com.divudi.entity.hr.Shift;
-import com.divudi.facade.RosterFacade;
-import com.divudi.facade.ShiftFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.Shift;
+import com.divudi.core.facade.RosterFacade;
+import com.divudi.core.facade.ShiftFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,8 +42,7 @@ public class ShiftController implements Serializable {
     private RosterFacade rosterFacade;
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     boolean checked = false;
 
     private boolean errorCheck() {
@@ -53,7 +51,7 @@ public class ShiftController implements Serializable {
             return true;
         }
 
-        if (getCurrent().getName().trim().isEmpty() && getCurrent().getName().equals("")) {
+        if (getCurrent().getName().trim().isEmpty() && getCurrent().getName().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Name");
             return true;
         }
@@ -256,7 +254,7 @@ public class ShiftController implements Serializable {
 
         shiftList = getFacade().findByJpql(sql);
 
-        
+
     }
 
     public List<Shift> getShiftList() {
@@ -272,7 +270,7 @@ public class ShiftController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ShiftController controller = (ShiftController) facesContext.getApplication().getELResolver().
@@ -291,9 +289,7 @@ public class ShiftController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -310,13 +306,4 @@ public class ShiftController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.lab.DepartmentMachine;
-import com.divudi.entity.lab.Machine;
-import com.divudi.facade.DepartmentMachineFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.lab.DepartmentMachine;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.facade.DepartmentMachineFacade;
 
 import java.io.Serializable;
 import java.util.Date;

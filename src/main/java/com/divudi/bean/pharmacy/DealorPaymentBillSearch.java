@@ -6,36 +6,34 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.common.WebUserController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.CreditBean;
 import com.divudi.ejb.EjbApplication;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BilledBillFacade;
-import com.divudi.facade.CancelledBillFacade;
-import com.divudi.facade.RefundBillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BilledBillFacade;
+import com.divudi.core.facade.CancelledBillFacade;
+import com.divudi.core.facade.RefundBillFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,7 +70,6 @@ public class DealorPaymentBillSearch implements Serializable {
     List<BillFee> billFees;
     List<Bill> bills;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -87,10 +84,6 @@ public class DealorPaymentBillSearch implements Serializable {
     private RefundBillFacade refundBillFacade;
     @Inject
     SessionController sessionController;
-    @Inject
-    private WebUserController webUserController;
-    @Inject
-    BillBeanController billBeanController;
 
     @EJB
     EjbApplication ejbApplication;
@@ -104,7 +97,7 @@ public class DealorPaymentBillSearch implements Serializable {
     WebUser user;
 
     public void approve() {
-        if (getBill().getReferenceBill() != null  && getBill().isReactivated() == false) {
+        if (getBill().getReferenceBill() != null && !getBill().isReactivated()) {
             JsfUtil.addErrorMessage("Already Approved");
             return;
         }
@@ -314,7 +307,7 @@ public class DealorPaymentBillSearch implements Serializable {
             }
 
             RefundBill rb = createRefundBill();
-            if (rb == null || rb.getId() == null) {
+            if (rb.getId() == null) {
                 JsfUtil.addErrorMessage("Refund Bill creation failed.");
                 return;
             }
@@ -401,7 +394,7 @@ public class DealorPaymentBillSearch implements Serializable {
             return true;
         }
 
-        if (getComment() == null || getComment().trim().equals("")) {
+        if (getComment() == null || getComment().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
@@ -434,7 +427,7 @@ public class DealorPaymentBillSearch implements Serializable {
 //
 //        return tmp;
 //    }
-//      
+//
 //       private void saveBhtBillItem(Bill b) {
 //        BillItem temBi = new BillItem();
 //        temBi.setBill(b);
@@ -606,13 +599,13 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public List<Bill> getBills() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.OpdBill);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.OpdBill);
             }
             if (bills == null) {
-                bills = new ArrayList<Bill>();
+                bills = new ArrayList<>();
             }
         }
         return bills;
@@ -620,13 +613,13 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public List<Bill> getRequests() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
             }
             if (bills == null) {
-                bills = new ArrayList<Bill>();
+                bills = new ArrayList<>();
             }
         }
         return bills;
@@ -638,24 +631,21 @@ public class DealorPaymentBillSearch implements Serializable {
         if (bills == null) {
             String sql;
             Map temMap = new HashMap();
-            if (bills == null) {
-                if (txtSearch == null || txtSearch.trim().equals("")) {
-                    sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate order by b.id";
-                    temMap.put("toDate", getToDate());
-                    temMap.put("fromDate", getFromDate());
-                    temMap.put("type", BillType.PaymentBill);
-                    bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
-                } else {
-                    sql = "select b from BilledBill b where b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
-                    temMap.put("toDate", getToDate());
-                    temMap.put("fromDate", getFromDate());
-                    temMap.put("type", BillType.PaymentBill);
-                    bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
-                }
-                if (bills == null) {
-                    bills = new ArrayList<Bill>();
-                }
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
+                sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate order by b.id";
+            } else {
+                sql = "select b from BilledBill b where b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+            }
+
+            temMap.put("toDate", getToDate());
+            temMap.put("fromDate", getFromDate());
+            temMap.put("type", BillType.PaymentBill);
+
+            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
+
+            if (bills == null) {
+                bills = new ArrayList<>();
             }
         }
         return bills;
@@ -666,27 +656,27 @@ public class DealorPaymentBillSearch implements Serializable {
         List<Bill> userBills;
         //////// // System.out.println("getting user bills");
         if (getUser() == null) {
-            userBills = new ArrayList<Bill>();
+            userBills = new ArrayList<>();
             //////// // System.out.println("user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
             //////// // System.out.println("user ok");
         }
         if (userBills == null) {
-            userBills = new ArrayList<Bill>();
+            userBills = new ArrayList<>();
         }
         return userBills;
     }
 
     public List<Bill> getOpdBills() {
-        if (txtSearch == null || txtSearch.trim().equals("")) {
+        if (txtSearch == null || txtSearch.trim().isEmpty()) {
             bills = getBillBean().billsForTheDay(fromDate, toDate, BillType.OpdBill);
         } else {
             bills = getBillBean().billsFromSearch(txtSearch, fromDate, toDate, BillType.OpdBill);
         }
 
         if (bills == null) {
-            bills = new ArrayList<Bill>();
+            bills = new ArrayList<>();
         }
         return bills;
     }
@@ -819,14 +809,6 @@ public class DealorPaymentBillSearch implements Serializable {
         this.refundBillFacade = refundBillFacade;
     }
 
-    public WebUserController getWebUserController() {
-        return webUserController;
-    }
-
-    public void setWebUserController(WebUserController webUserController) {
-        this.webUserController = webUserController;
-    }
-
     public Bill getBillForCancel() {
         return billForCancel;
     }
@@ -860,7 +842,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -872,7 +854,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -880,14 +862,6 @@ public class DealorPaymentBillSearch implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
         resetLists();
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getComment() {

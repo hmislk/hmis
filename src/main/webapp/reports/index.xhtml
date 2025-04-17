@@ -83,11 +83,17 @@
                                         action="#{searchController.navigateToListAllDrawers()}"
                                         value="4. All Drawers" >
                                     </p:commandButton>
+                                     <p:commandButton  
+                                        class="w-100"  
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToUserHandovers()}"
+                                        value="5. Shifts" >
+                                    </p:commandButton>
                                     <p:commandButton  
                                         class="w-100"  
                                         ajax="false" 
                                         action="#{searchController.navigateToAllCashierHandovers()}"
-                                        value="5. Handovers" >
+                                        value="6. Handovers" >
                                     </p:commandButton>
 
 
@@ -96,7 +102,7 @@
 
                             <p:tab title="Collection Center Reports">
                                 <div class="d-grid gap-2">
-                                    
+
                                     <p:commandButton 
                                         class="w-100"  
                                         ajax="false" 
@@ -439,6 +445,7 @@
 
                                     <p:commandButton   class="w-100"  ajax="false" value="Lab Register" action="#{reportController.navigateToLabRegisterReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Collection center statement" action="#{reportController.navigateToCollectionCenterStatement()}"/>
+
                                 </div>
                             </p:tab>
 

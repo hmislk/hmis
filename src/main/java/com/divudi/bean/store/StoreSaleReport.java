@@ -5,29 +5,28 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.DatedBills;
-import com.divudi.data.dataStructure.PharmacyDetail;
-import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
-import com.divudi.data.dataStructure.PharmacySummery;
-import com.divudi.data.table.String1Value3;
-import com.divudi.data.table.String2Value4;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.DatedBills;
+import com.divudi.core.data.dataStructure.PharmacyDetail;
+import com.divudi.core.data.dataStructure.PharmacyPaymetMethodSummery;
+import com.divudi.core.data.dataStructure.PharmacySummery;
+import com.divudi.core.data.table.String1Value3;
+import com.divudi.core.data.table.String2Value4;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -75,23 +74,18 @@ public class StoreSaleReport implements Serializable {
     List<Bill> billedBills;
     List<Bill> cancelledBills;
     List<Bill> refundBills;
-    
-    List<BillItem> billItem; 
-            
-    
+
+    List<BillItem> billItem;
+
+
     Department toDepartment;
 
     /////
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private BillFacade billFacade;
-    
-    //////
-    @Inject
-    CommonController commonController;
 
     public void makeNull() {
         fromDate = null;
@@ -109,8 +103,8 @@ public class StoreSaleReport implements Serializable {
 
 //    private double getSaleValueByDepartment(Date date) {
 //        //   List<Stock> billedSummery;
-//        Date fd = getCommonFunctions().getStartOfDay(date);
-//        Date td = getCommonFunctions().getEndOfDay(date);
+//        Date fd = CommonFunctions.getStartOfDay(date);
+//        Date td = CommonFunctions.getEndOfDay(date);
 //        String sql;
 //        Map m = new HashMap();
 //        m.put("d", getDepartment());
@@ -128,8 +122,8 @@ public class StoreSaleReport implements Serializable {
 //    }
     private double getSaleValueByDepartment(Date date, Bill bill) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -164,8 +158,8 @@ public class StoreSaleReport implements Serializable {
                 + " and f.toInstitution=:ins "
                 + " and f.institution=:billedIns ";
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
 
         Map m = new HashMap();
@@ -200,8 +194,8 @@ public class StoreSaleReport implements Serializable {
                 + " and f.toInstitution=:ins "
                 + " and f.institution=:billedIns ";
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
         Map m = new HashMap();
         m.put("fd", fd);
@@ -236,8 +230,8 @@ public class StoreSaleReport implements Serializable {
                 + " and f.toInstitution=:ins "
                 + " and f.institution=:billedIns ";
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
 
         Map m = new HashMap();
         m.put("fd", fd);
@@ -258,8 +252,8 @@ public class StoreSaleReport implements Serializable {
 
     private double getSaleValueByDepartment(Date date, PaymentMethod paymentMethod, Bill bill) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -281,8 +275,8 @@ public class StoreSaleReport implements Serializable {
 
     private double getSaleValuePaymentmethod(Date date, PaymentMethod paymentMethod, Bill bill) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -301,8 +295,8 @@ public class StoreSaleReport implements Serializable {
 //
 //    private double getDiscountValueByDepartment(Date date) {
 //        //   List<Stock> billedSummery;
-//        Date fd = getCommonFunctions().getStartOfDay(date);
-//        Date td = getCommonFunctions().getEndOfDay(date);
+//        Date fd = CommonFunctions.getStartOfDay(date);
+//        Date td = CommonFunctions.getEndOfDay(date);
 //        String sql;
 //        Map m = new HashMap();
 //        m.put("d", getDepartment());
@@ -321,8 +315,8 @@ public class StoreSaleReport implements Serializable {
 
     private double getDiscountValueByDepartment(Date date, Bill bill) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -340,8 +334,8 @@ public class StoreSaleReport implements Serializable {
 
     private List<Bill> getSaleBillByDepartment(Date date, Bill bill) {
         //   List<Stock> billedSummery;
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -588,7 +582,7 @@ public class StoreSaleReport implements Serializable {
 
     public void createSaleReportByDate() {
         Date startTime = new Date();
-        
+
         billedSummery = new PharmacySummery();
 
         billedSummery.setBills(new ArrayList<String1Value3>());
@@ -622,9 +616,9 @@ public class StoreSaleReport implements Serializable {
         billedSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill()));
 
         grantNetTotal = calGrantNetTotalByDepartment();
-        
-        
-        
+
+
+
 
     }
 
@@ -665,7 +659,7 @@ public class StoreSaleReport implements Serializable {
 
     public void createSalePaymentMethod() {
         Date startTime = new Date();
-        
+
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
         billedPaymentSummery.setBills(new ArrayList<String2Value4>());
 
@@ -734,13 +728,13 @@ public class StoreSaleReport implements Serializable {
         grantCardTotal = calGrantTotalByPaymentMethod(PaymentMethod.Card);
         grantCashTotal = calGrantTotalByPaymentMethod(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
-        
-        
+
+
     }
 
     public void createSaleReportByDateDetail() {
         Date startTime = new Date();
-        
+
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
         refundedDetail = new PharmacyDetail();
@@ -808,14 +802,14 @@ public class StoreSaleReport implements Serializable {
 
         grantNetTotal = calGrantNetTotalByDepartment();
         grantDiscount = calGrantDiscountByDepartment();
-        
-        
+
+
 
     }
 
     public void createSalePaymentMethodDetail() {
         Date startTime = new Date();
-        
+
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
         refundedDetail = new PharmacyDetail();
@@ -905,11 +899,11 @@ public class StoreSaleReport implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethod(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
         grantDiscount = calGrantDiscountByDepartment();
-        
-        
+
+
 
     }
-    
+
     public void createIssueReportByDateStore() {
         billedSummery = new PharmacySummery();
 
@@ -938,7 +932,7 @@ public class StoreSaleReport implements Serializable {
             nowDate = nc.getTime();
 
         }
-        
+
 
         billedSummery.setBilledTotal(calGrantNetTotalIssue(new BilledBill()));
         billedSummery.setCancelledTotal(calGrantNetTotalIssue(new CancelledBill()));
@@ -947,11 +941,11 @@ public class StoreSaleReport implements Serializable {
         grantNetTotal = calGrantNetTotalIssue();
 
     }
-    
+
     private double getTransIssueValueByDate(Date date, Bill bill) {
 
-        Date fd = getCommonFunctions().getStartOfDay(date);
-        Date td = getCommonFunctions().getEndOfDay(date);
+        Date fd = CommonFunctions.getStartOfDay(date);
+        Date td = CommonFunctions.getEndOfDay(date);
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -967,22 +961,22 @@ public class StoreSaleReport implements Serializable {
         return saleValue;
 
     }
-    
+
     public void fetchTrasferAssetBills() {
         billedBills = getTransIssueValueByDate(new BilledBill());
         cancelledBills = getTransIssueValueByDate(new CancelledBill());
         refundBills = getTransIssueValueByDate(new RefundBill());
-        
+
         billedBillTotal = getTransIssueValueByDateTotal(new BilledBill());
         cancelledBillTotal = getTransIssueValueByDateTotal(new CancelledBill());
         refundBillTotal = getTransIssueValueByDateTotal(new RefundBill());
     }
-    
+
     List<Bill> getTransIssueValueByDate(Bill bill) {
 
         String sql;
         Map m = new HashMap();
-        
+
         sql = "SELECT b FROM Bill b "
                 + " WHERE b.billType=:btp "
                 + " and type(b)=:cl "
@@ -990,7 +984,7 @@ public class StoreSaleReport implements Serializable {
                 + " and b.singleBillItem.item.departmentType=:dty "
                 + " and b.department=:dep "
                 + " and i.toDepartment=:tdep ";
-        
+
         m.put("dep", getDepartment());
         m.put("fd", getFromDate());
         m.put("td", getToDate());
@@ -998,57 +992,57 @@ public class StoreSaleReport implements Serializable {
         m.put("btp", BillType.StoreTransferIssue);
         m.put("dty", DepartmentType.Inventry);
         m.put("tdep", getToDepartment());
-        
+
         return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void getTransIssueValueByDate() {
         Date startTime = new Date();
 
         String sql;
         Map m = new HashMap();
-        
+
         sql = "SELECT b FROM BillItem b "
                 + " WHERE b.bill.billType=:btp "
                 //+ " and type(b)=:cl "
                 + " and b.bill.createdAt between :fd and :td "
                 + " and b.item.departmentType=:dty ";
-        
+
         if(department != null){
            sql += " and b.bill.department=:dep ";
            m.put("dep", getDepartment());
-                
+
         }
-        
+
         if(toDepartment != null){
             sql += " and b.bill.toDepartment=:tdep ";
             m.put("tdep", getToDepartment());
         }
-        
-        
+
+
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         //m.put("cl", bill.getClass());
         m.put("btp", BillType.StoreTransferIssue);
         m.put("dty", DepartmentType.Inventry);
-        
-        
+
+
         billItem = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         grantTotal = 0.0;
 //        for (BillItem bi:billItem){
 //            grantTotal+=getGrantTotal();
 //        }
-        
-        
+
+
 
     }
-    
+
     double getTransIssueValueByDateTotal(Bill bill) {
 
         String sql;
         Map m = new HashMap();
-        
+
         sql = "SELECT sum(b.netTotal) FROM Bill b "
                 + " WHERE b.billType=:btp "
                 + " and type(b)=:cl "
@@ -1056,7 +1050,7 @@ public class StoreSaleReport implements Serializable {
                 + " and b.singleBillItem.item.departmentType=:dty "
                 + " and b.department=:dep "
                 + " and i.toDepartment=:tdep ";
-        
+
         m.put("dep", getDepartment());
         m.put("fd", getFromDate());
         m.put("td", getToDate());
@@ -1064,11 +1058,11 @@ public class StoreSaleReport implements Serializable {
         m.put("btp", BillType.StoreTransferIssue);
         m.put("dty", DepartmentType.Inventry);
         m.put("tdep", getToDepartment());
-        
+
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double calGrantNetTotalIssue(Bill bill) {
         //   List<Stock> billedSummery;
         String sql;
@@ -1086,7 +1080,7 @@ public class StoreSaleReport implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
      private double calGrantNetTotalIssue() {
         //   List<Stock> billedSummery;
         String sql;
@@ -1111,7 +1105,7 @@ public class StoreSaleReport implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1123,8 +1117,8 @@ public class StoreSaleReport implements Serializable {
     public void setBillItem(List<BillItem> billItem) {
         this.billItem = billItem;
     }
-    
-    
+
+
 
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
@@ -1132,7 +1126,7 @@ public class StoreSaleReport implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
@@ -1184,9 +1178,9 @@ public class StoreSaleReport implements Serializable {
     public void setRefundBills(List<Bill> refundBills) {
         this.refundBills = refundBills;
     }
-    
-    
-    
+
+
+
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
@@ -1197,14 +1191,6 @@ public class StoreSaleReport implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BillItemFacade getBillItemFacade() {
@@ -1343,13 +1329,4 @@ public class StoreSaleReport implements Serializable {
         this.toDepartment = toDepartment;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
-    
 }

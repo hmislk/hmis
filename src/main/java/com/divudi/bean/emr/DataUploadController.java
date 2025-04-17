@@ -14,14 +14,13 @@ import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.AgencyController;
 import com.divudi.bean.common.AreaController;
 import com.divudi.bean.common.CategoryController;
-import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConsultantController;
 import com.divudi.bean.common.CreditCompanyController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.EnumController;
-import com.divudi.bean.common.FeeController;
 import com.divudi.bean.common.FeeValueController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
@@ -45,74 +44,70 @@ import com.divudi.bean.pharmacy.AtmController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
-import com.divudi.data.CollectingCentrePaymentMethod;
-import com.divudi.data.EncounterType;
-import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.entity.Area;
-import com.divudi.entity.Category;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Department;
-import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Fee;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Route;
-import com.divudi.entity.Service;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationTube;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.Sample;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Atm;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.VtmFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.membership.MembershipController;
+import com.divudi.core.data.CollectingCentrePaymentMethod;
+import com.divudi.core.data.EncounterType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.Area;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.DoctorSpeciality;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Route;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.Sample;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.pharmacy.PharmacyPurchaseController;
-import com.divudi.data.SymanticHyrachi;
-import com.divudi.data.SymanticType;
-import com.divudi.data.dataStructure.PharmacyImportCol;
+import com.divudi.core.data.SymanticHyrachi;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.data.dataStructure.PharmacyImportCol;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Family;
-import com.divudi.entity.FamilyMember;
-import com.divudi.entity.Person;
-import com.divudi.entity.Relation;
-import com.divudi.entity.inward.InwardService;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.entity.pharmacy.PharmaceuticalItemType;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.AmppFacade;
-import com.divudi.facade.AtmFacade;
-import com.divudi.facade.FamilyFacade;
-import com.divudi.facade.FamilyMemberFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VmppFacade;
-import com.divudi.java.CommonFunctions;
-import com.mysql.cj.jdbc.interceptors.SessionAssociationInterceptor;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Family;
+import com.divudi.core.entity.FamilyMember;
+import com.divudi.core.entity.Relation;
+import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.AtmFacade;
+import com.divudi.core.facade.FamilyFacade;
+import com.divudi.core.facade.FamilyMemberFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VmppFacade;
+import com.divudi.core.util.CommonFunctions;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.inject.Named;
@@ -141,24 +136,10 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.xssf.usermodel.XSSFTable;
-import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
-
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.poi.ss.SpreadsheetVersion;
 
 @Named
 @ViewScoped
@@ -238,6 +219,8 @@ public class DataUploadController implements Serializable {
     FeeValueController feeValueController;
     @Inject
     private PharmacyPurchaseController pharmacyPurchaseController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @EJB
     private PharmacyBean pharmacyBean;
@@ -1233,8 +1216,7 @@ public class DataUploadController implements Serializable {
                 continue;
             }
 
-            Item masterItem = itemController.findMasterItemByName(name);
-
+//            Item masterItem = itemController.findMasterItemByName(name);
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
                 printingName = printingNameCell.getStringCellValue();
@@ -1340,7 +1322,7 @@ public class DataUploadController implements Serializable {
                 service.setFullName(fullName);
                 service.setCode(code);
                 service.setCategory(category);
-                service.setMasterItemReference(masterItem);
+//                service.setMasterItemReference(masterItem);
                 service.setInstitution(institution);
                 service.setDepartment(department);
                 service.setInwardChargeType(iwct);
@@ -1359,7 +1341,7 @@ public class DataUploadController implements Serializable {
                 ix.setInwardChargeType(iwct);
                 ix.setSample(smpl);
                 ix.setInvestigationTube(tube);
-                ix.setMasterItemReference(masterItem);
+//                ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 item = ix;
@@ -1568,8 +1550,7 @@ public class DataUploadController implements Serializable {
                 continue;
             }
 
-            Item masterItem = itemController.findMasterItemByName(name);
-
+//            Item masterItem = itemController.findMasterItemByName(name);
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
                 printingName = printingNameCell.getStringCellValue();
@@ -1675,7 +1656,7 @@ public class DataUploadController implements Serializable {
                 service.setFullName(fullName);
                 service.setCode(code);
                 service.setCategory(category);
-                service.setMasterItemReference(masterItem);
+//                service.setMasterItemReference(masterItem);
                 service.setInstitution(institution);
                 service.setDepartment(department);
                 service.setInwardChargeType(iwct);
@@ -1694,7 +1675,7 @@ public class DataUploadController implements Serializable {
                 ix.setInwardChargeType(iwct);
                 ix.setSample(smpl);
                 ix.setInvestigationTube(tube);
-                ix.setMasterItemReference(masterItem);
+//                ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 item = ix;
@@ -2537,9 +2518,8 @@ public class DataUploadController implements Serializable {
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
 
-        // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
-            rowIterator.next();
+            rowIterator.next(); // Skip header row
         }
 
         while (rowIterator.hasNext()) {
@@ -2548,6 +2528,7 @@ public class DataUploadController implements Serializable {
             Staff staff;
             Title title;
 
+            String code = null;
             String epfNo = null;
             String titleString = null;
             String name = null;
@@ -2568,7 +2549,12 @@ public class DataUploadController implements Serializable {
             Institution bank = null;
             Sex gender = null;
 
-            Cell epfNoCell = row.getCell(0);
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+
+            Cell epfNoCell = row.getCell(1);
             if (epfNoCell != null) {
                 if (epfNoCell.getCellType() == CellType.NUMERIC) {
                     epfNo = String.valueOf((int) epfNoCell.getNumericCellValue());
@@ -2577,82 +2563,82 @@ public class DataUploadController implements Serializable {
                 }
             }
 
-            Cell titleCell = row.getCell(1);
+            Cell titleCell = row.getCell(2);
             if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
                 titleString = titleCell.getStringCellValue();
             }
 
-            Cell nameCell = row.getCell(2);
+            Cell nameCell = row.getCell(3);
             if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 name = nameCell.getStringCellValue();
             }
 
-            Cell fullNameCell = row.getCell(3);
+            Cell fullNameCell = row.getCell(4);
             if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
                 fullName = fullNameCell.getStringCellValue();
             }
 
-            Cell nameWithInitialsCell = row.getCell(4);
+            Cell nameWithInitialsCell = row.getCell(5);
             if (nameWithInitialsCell != null && nameWithInitialsCell.getCellType() == CellType.STRING) {
                 nameWithInitials = nameWithInitialsCell.getStringCellValue();
             }
 
-            Cell addressCell = row.getCell(5);
+            Cell addressCell = row.getCell(6);
             if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
                 address = addressCell.getStringCellValue();
             }
 
-            Cell sexCell = row.getCell(6);
+            Cell sexCell = row.getCell(7);
             if (sexCell != null && sexCell.getCellType() == CellType.STRING) {
                 sex = sexCell.getStringCellValue();
-                gender = Sex.valueOf(sex);
+                try {
+                    gender = Sex.valueOf(sex);
+                } catch (IllegalArgumentException e) {
+                    gender = null;
+                }
             }
 
-            Cell nicNoCell = row.getCell(7);
+            Cell nicNoCell = row.getCell(8);
             if (nicNoCell != null && nicNoCell.getCellType() == CellType.STRING) {
                 nicNo = nicNoCell.getStringCellValue();
             }
 
-            Cell dobCell = row.getCell(8);
-
+            Cell dobCell = row.getCell(9);
             if (dobCell != null) {
                 if (dobCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dobCell)) {
                     dob = dobCell.getDateCellValue();
                 } else if (dobCell.getCellType() == CellType.STRING) {
                     String dobString = dobCell.getStringCellValue();
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // Adjust the date format as needed
                     try {
-                        dob = dateFormat.parse(dobString);
-                    } catch (ParseException e) {
-                        dob = null;
+                        String uploadDateFormat = configOptionApplicationController.getShortTextValueByKey("Date format for Uploads", "yyyy-MM-dd");
+                        dob = new SimpleDateFormat(uploadDateFormat).parse(dobString);
+                    } catch (ParseException ignored) {
                     }
                 }
             }
 
-            Cell retiredCell = row.getCell(9);
+            Cell retiredCell = row.getCell(10);
             if (retiredCell != null) {
                 if (retiredCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(retiredCell)) {
                     retired = retiredCell.getDateCellValue();
                 } else if (retiredCell.getCellType() == CellType.STRING) {
                     String retiredString = retiredCell.getStringCellValue();
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     try {
-                        retired = dateFormat.parse(retiredString);
-                    } catch (ParseException e) {
-                        retired = null;
+                        retired = new SimpleDateFormat("yyyy-MM-dd").parse(retiredString);
+                    } catch (ParseException ignored) {
                     }
                 }
             }
 
-            Cell departmentCell = row.getCell(10);
+            Cell departmentCell = row.getCell(11);
             if (departmentCell != null && departmentCell.getCellType() == CellType.STRING) {
                 departmentName = departmentCell.getStringCellValue();
             }
             if (departmentName != null) {
-                department = departmentController.findAndSaveDepartmentByName(name);
+                department = departmentController.findAndSaveDepartmentByName(departmentName);
             }
 
-            Cell branchCell = row.getCell(11);
+            Cell branchCell = row.getCell(12);
             if (branchCell != null && branchCell.getCellType() == CellType.STRING) {
                 branchName = branchCell.getStringCellValue();
             }
@@ -2660,19 +2646,21 @@ public class DataUploadController implements Serializable {
                 institution = institutionController.findAndSaveInstitutionByName(branchName);
             }
 
-            Cell acNoCell = row.getCell(12);
+            Cell acNoCell = row.getCell(13);
             if (acNoCell != null && acNoCell.getCellType() == CellType.STRING) {
                 acNo = acNoCell.getStringCellValue();
             }
 
-            Cell bankCell = row.getCell(13);
+            Cell bankCell = row.getCell(14);
             if (bankCell != null && bankCell.getCellType() == CellType.STRING) {
                 bankName = bankCell.getStringCellValue();
             }
-            if (bank != null) {
+            if (bankName != null) {
                 bank = institutionController.findAndSaveInstitutionByName(bankName);
-                bank.setInstitutionType(InstitutionType.Bank);
-                institutionController.save(bank);
+                if (bank != null) {
+                    bank.setInstitutionType(InstitutionType.Bank);
+                    institutionController.save(bank);
+                }
             }
 
             if (name == null || name.trim().isEmpty()) {
@@ -2688,11 +2676,13 @@ public class DataUploadController implements Serializable {
             if (staff == null) {
                 staff = new Staff();
             }
+
+            staff.setCode(code);
             staff.setEpfNo(epfNo);
             staff.getPerson().setName(name);
             staff.getPerson().setTitle(title);
-            staff.getPerson().setNameWithInitials(nameWithInitials);
             staff.getPerson().setFullName(fullName);
+            staff.getPerson().setNameWithInitials(nameWithInitials);
             staff.getPerson().setAddress(address);
             staff.getPerson().setSex(gender);
             staff.getPerson().setNic(nicNo);
@@ -2702,6 +2692,7 @@ public class DataUploadController implements Serializable {
             staff.setInstitution(institution);
             staff.setAccountNo(acNo);
             staff.setBankBranch(bank);
+
             stf.add(staff);
         }
 
@@ -5859,7 +5850,7 @@ public class DataUploadController implements Serializable {
                 if (idCell.getCellType() == CellType.STRING) {
                     idStr = idCell.getStringCellValue();
 
-                    id = CommonFunctions.convertStringToLong(idStr);
+                    id = CommonFunctions.convertStringToLongOrNull(idStr);
 
                 } else if (idCell.getCellType() == CellType.NUMERIC) {
                     Double tmp;
@@ -5885,7 +5876,7 @@ public class DataUploadController implements Serializable {
                 }
             }
 
-            if (name == null || name.trim().equals("")) {
+            if (name == null || name.trim().isEmpty()) {
                 continue;
             }
 
@@ -6084,7 +6075,7 @@ public class DataUploadController implements Serializable {
             Cell nameCell = row.getCell(1);
             if (nameCell != null) {
                 vtm.setName(nameCell.getStringCellValue());
-                vtm.setCode(CommonController.nameToCode("vtm_" + vtm.getName()));
+                vtm.setCode(CommonFunctions.nameToCode("vtm_" + vtm.getName()));
             }
             vtm.setCreatedAt(new Date());
             vtm.setCreater(sessionController.getLoggedUser());
@@ -6118,7 +6109,7 @@ public class DataUploadController implements Serializable {
             Cell nameCell = row.getCell(1);
             if (nameCell != null) {
                 atm.setName(nameCell.getStringCellValue());
-                atm.setCode(CommonController.nameToCode("atm_" + atm.getName()));
+                atm.setCode(CommonFunctions.nameToCode("atm_" + atm.getName()));
             }
             Cell vtmCell = row.getCell(2);
             if (vtmCell != null) {
@@ -6543,7 +6534,7 @@ public class DataUploadController implements Serializable {
 
 //            amp = new Amp();
             amp.setName(ampName);
-            amp.setCode("amp_" + CommonController.nameToCode(ampName));
+            amp.setCode("amp_" + CommonFunctions.nameToCode(ampName));
 
             if (vmp != null) {
                 amp.setVmp(vmp);

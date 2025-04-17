@@ -7,70 +7,70 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.WebUserController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.StockHistoryController;
-import com.divudi.data.BillFinanceType;
-import com.divudi.data.BillItemStatus;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.CategoryCount;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.ItemCount;
-import com.divudi.data.ItemLight;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PharmacyRow;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.ServiceType;
-import com.divudi.data.Sex;
-import com.divudi.data.TestWiseCountReport;
-import com.divudi.data.dataStructure.BillAndItemDataRow;
-import com.divudi.data.dataStructure.ItemDetailsCell;
-import com.divudi.data.dataStructure.ItemLastSupplier;
-import com.divudi.data.dataStructure.PharmacyStockRow;
-import com.divudi.data.dataStructure.StockReportRecord;
-import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.BillFinanceType;
+import com.divudi.core.data.BillItemStatus;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CategoryCount;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemCount;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PharmacyRow;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.TestWiseCountReport;
+import com.divudi.core.data.dataStructure.BillAndItemDataRow;
+import com.divudi.core.data.dataStructure.ItemDetailsCell;
+import com.divudi.core.data.dataStructure.ItemLastSupplier;
+import com.divudi.core.data.dataStructure.PharmacyStockRow;
+import com.divudi.core.data.dataStructure.StockReportRecord;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDepositHistory;
-import com.divudi.entity.Person;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Route;
-import com.divudi.entity.Service;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.channel.AgentReferenceBook;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.AgentReferenceBookFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PatientDepositHistoryFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.java.CommonFunctions;
-import com.divudi.light.common.BillLight;
-import com.divudi.light.common.PrescriptionSummaryReportRow;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDepositHistory;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Route;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.AgentReferenceBookFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PatientDepositHistoryFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.light.common.BillLight;
+import com.divudi.core.light.common.PrescriptionSummaryReportRow;
 
 import java.io.IOException;
 import javax.faces.context.ExternalContext;
@@ -116,7 +116,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 
-import com.divudi.facade.ItemFacade;
+import com.divudi.core.facade.ItemFacade;
 
 /**
  * @author Pubudu Piyankara
@@ -245,13 +245,13 @@ public class PharmacyReportController implements Serializable {
 
     private List<PatientDepositHistory> patientDepositHistories;
 
-    private CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
     private PatientInvestigationStatus patientInvestigationStatus;
 
     private List<AgentReferenceBook> agentReferenceBooks;
 
     private boolean showPaymentData;
+    private boolean showData;
 
     private List<BillAndItemDataRow> billAndItemDataRows;
     private BillAndItemDataRow headerBillAndItemDataRow;
@@ -307,6 +307,9 @@ public class PharmacyReportController implements Serializable {
     private Double quantity;
 
     private Double stockQty;
+
+    private Institution fromSite;
+    private Institution toSite;
 
     //Constructor
     public PharmacyReportController() {
@@ -545,7 +548,7 @@ public class PharmacyReportController implements Serializable {
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
         billedBundle.setName("Collecting Centre Report By Item");
         billedBundle.setDescription("From : to :");
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(bi), "
                 + "sum(bi.hospitalFee), "
@@ -620,7 +623,7 @@ public class PharmacyReportController implements Serializable {
         ReportTemplateRowBundle crBundle = new ReportTemplateRowBundle();
         crBundle.setName("Collecting Centre Report By Item");
         crBundle.setDescription("From : to :");
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(bi), "
                 + "sum(bi.hospitalFee), "
@@ -703,7 +706,7 @@ public class PharmacyReportController implements Serializable {
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
         billedBundle.setName("Collecting Centre Report By Item");
         billedBundle.setDescription("From : to :");
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(b), "
                 + "sum(b.totalHospitalFee), "
@@ -778,7 +781,7 @@ public class PharmacyReportController implements Serializable {
         ReportTemplateRowBundle crBundle = new ReportTemplateRowBundle();
         crBundle.setName("Collecting Centre Report By Item");
         crBundle.setDescription("From : to :");
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(b), "
                 + "sum(b.totalHospitalFee), "
@@ -1062,7 +1065,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     //    public void processPharmacySaleReferralCount() {
-//        String jpql = "select new com.divudi.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
+//        String jpql = "select new com.divudi.core.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
 //                + " from Bill bi "
 //                + " where bi.cancelled=:can "
 //                + " and bi.createdAt between :fd and :td "
@@ -1079,7 +1082,7 @@ public class PharmacyReportController implements Serializable {
 //            jpql += " and bi.fromDepartment=:fdept ";
 //            m.put("fdept", department);
 //        }
-//        
+//
 //        if (referingDoctor  != null) {
 //            jpql += " and bi.referredBy=:refDoc ";
 //            m.put("refDoc", referingDoctor);
@@ -1088,10 +1091,10 @@ public class PharmacyReportController implements Serializable {
 //        jpql += " order by bi.referredBy.person.name ";
 //        prescriptionSummaryReportRows = (List<PrescriptionSummaryReportRow>) billFacade.findLightsByJpql(jpql, m);
 //    }
-//    
+//
     public void processPresciptionSummeryReport() {
         String jpql = "select new "
-                + " com.divudi.light.common.PrescriptionSummaryReportRow(bi.referredBy.person.name, bi.referredBy.person.id, count(bi), sum(bi.netTotal)) "
+                + " com.divudi.core.light.common.PrescriptionSummaryReportRow(bi.referredBy.person.name, bi.referredBy.person.id, count(bi), sum(bi.netTotal)) "
                 + " from Bill bi "
                 + " where bi.cancelled=:can "
                 + " and bi.billDate between :fd and :td "
@@ -1115,7 +1118,7 @@ public class PharmacyReportController implements Serializable {
 
     public void processPresciptionListEvenWhenNoPatientData() {
         String jpql = "select new "
-                + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, "
+                + " com.divudi.core.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, "
                 + " coalesce(p.person.name, 'No Patient'), bi.netTotal) "
                 + " from Bill bi "
                 + " left join bi.patient p "
@@ -1145,7 +1148,7 @@ public class PharmacyReportController implements Serializable {
 
     public void processPresciptionList() {
         String jpql = "select new "
-                + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, bi.patient.person.name, bi.netTotal) "
+                + " com.divudi.core.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, bi.patient.person.name, bi.netTotal) "
                 + " from Bill bi "
                 + " where bi.cancelled=:can "
                 + " and bi.billDate between :fd and :td "
@@ -1203,7 +1206,7 @@ public class PharmacyReportController implements Serializable {
     public ReportTemplateRowBundle generatePaymentMethodColumnsByBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), "
                 + "SUM(p.paidValue)) "
                 + "FROM Payment p "
@@ -1330,7 +1333,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processPharmacySaleItemCount() {
-        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+        String jpql = "select new com.divudi.core.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
                 + " and bi.bill.billDate between :fd and :td "
@@ -1517,7 +1520,7 @@ public class PharmacyReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1822,7 +1825,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processCollectingCentreTestWiseCountReport() {
-        String jpql = "select new  com.divudi.data.TestWiseCountReport("
+        String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi.item.name), "
                 + "sum(bi.hospitalFee) , "
@@ -1919,6 +1922,64 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private void addFilter(StringBuilder sql, Map<String, Object> parameters, String sqlField, String paramKey, Object value) {
+        if (value != null) {
+            sql.append(" AND ").append(sqlField).append(" = :").append(paramKey).append(" ");
+            parameters.put(paramKey, value);
+        }
+    }
+
+    private void addFilter(StringBuilder sql, String condition) {
+        if (condition != null && !condition.isEmpty()) {
+            sql.append(" ").append(condition).append(" ");
+        }
+    }
+
+    public void processGoodInTransistReport() {
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("select bi from BillItem bi"
+                + " where bi.bill.billType = :bt"
+                + " and bi.retired = :ret"
+                + " and bi.bill.billedBill is null "
+                + " and bi.bill.createdAt between :fd and :td"
+                + " and bi.bill.toStaff is not null"
+                + " and bi.bill.fromDepartment is not null");
+
+        parameters.put("bt", BillType.PharmacyTransferIssue);
+        parameters.put("ret", false);
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+        addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+        addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+        addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+        addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+        addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+        addFilter(sql, parameters, "bi.item", "item", item);
+        addFilter(sql, parameters, "bi.item.category", "cat", category);
+        addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
+        if (showData) {
+            reportType = "pending";
+            sql.append(" and bi.bill.forwardReferenceBill Is null ");
+        }
+        if (reportType.equals("pending")) {
+            addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
+        }
+        if (reportType.equals("accepted")) {
+            addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
+        }
+        if (reportType.equals("issueCancel")) {
+            addFilter(sql, "and bi.bill.cancelled = true");
+        }
+        System.out.println("dccdjidci" + showData);
+        sql.append(" order by bi.bill.id ");
+
+        billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+    }
+
     public void processStockLedgerReport() {
 
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -2012,6 +2073,200 @@ public class PharmacyReportController implements Serializable {
         stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
+    public void processClosingStockForBatchReport() {
+        List<Long> ids;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
+                + " from StockHistory sh "
+                + " where sh.retired = :ret "
+                + " and (sh.itemBatch.item.departmentType is null "
+                + "      or sh.itemBatch.item.departmentType = :depty) ");
+
+        // Set query parameters
+        params.put("depty", DepartmentType.Pharmacy);
+        params.put("ret", false);
+
+        if (institution != null) {
+            jpql.append("and sh.institution = :ins ");
+            params.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
+        }
+
+        if (department != null) {
+            jpql.append("and sh.department = :dep ");
+            params.put("dep", department);
+        }
+
+        if (category != null) {
+            jpql.append("and sh.itemBatch.item.category = :cat ");
+            params.put("cat", category);
+        }
+
+        if (amp != null) {
+            item = amp;
+            jpql.append("and sh.itemBatch.item = :itm ");
+            params.put("itm", item);
+        }
+
+        jpql.append("and sh.createdAt < :et ");
+        params.put("et", CommonFunctions.getEndOfDay(toDate));
+
+        // Group by itemBatch (and department if you want per-department breakdown)
+        jpql.append("group by sh.department, sh.itemBatch ");
+        jpql.append("order by sh.itemBatch.item.name");
+
+        // Fetch the IDs of the latest StockHistory rows per itemBatch
+        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        System.out.println("jpql = " + jpql.toString());
+        System.out.println("params = " + params);
+        System.out.println("ids = " + ids);
+
+        rows = new ArrayList<>();
+
+        // Build rows per ItemBatch
+        for (Long shid : ids) {
+            StockHistory shx = facade.find(shid);
+            if (shx == null || shx.getItemBatch() == null || shx.getItemBatch().getItem() == null) {
+                continue;
+            }
+
+            // Create a fresh row for each itemBatch
+            PharmacyRow row = new PharmacyRow();
+            row.setItem(shx.getItemBatch().getItem());
+            row.setItemBatch(shx.getItemBatch());
+
+            double batchQty = shx.getItemStock();
+            double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
+            double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
+
+            // Populate row values directly (no accumulation needed, as each batch is its own row)
+            row.setQuantity(batchQty);
+            row.setPurchaseValue(batchQty * batchPurchaseRate);
+            row.setSaleValue(batchQty * batchSaleRate);
+
+            rows.add(row);
+        }
+    }
+
+    public void processClosingStockForItemReport() {
+        List<Long> ids;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
+                + " from StockHistory sh where sh.retired=:ret "
+                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+
+        // Set query parameters
+        params.put("depty", DepartmentType.Pharmacy);
+        params.put("ret", false);
+
+        if (institution != null) {
+            jpql.append("and sh.institution = :ins ");
+            params.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
+        }
+
+        if (department != null) {
+            jpql.append("and sh.department = :dep ");
+            params.put("dep", department);
+        }
+
+        if (category != null) {
+            jpql.append("and sh.itemBatch.item.category = :cat ");
+            params.put("cat", category);
+        }
+
+        if (amp != null) {
+            item = amp;
+            jpql.append("and sh.itemBatch.item = :itm ");
+            params.put("itm", item);
+        }
+
+        jpql.append("and sh.createdAt < :et ");
+        params.put("et", CommonFunctions.getEndOfDay(toDate));
+
+        jpql.append("group by sh.department, sh.itemBatch.item ");
+        jpql.append("order by sh.itemBatch.item.name");
+
+        // Fetch the IDs of the latest StockHistory rows per ItemBatch
+        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        System.out.println("jpql = " + jpql.toString());
+        System.out.println("params = " + params);
+        System.out.println("ids = " + ids);
+
+        rows = new ArrayList<>();
+
+        // Process each StockHistory to build rows per Item (not per batch)
+        for (Long shid : ids) {
+            StockHistory shx = facade.find(shid);
+            if (shx == null || shx.getItemBatch() == null || shx.getItemBatch().getItem() == null) {
+                continue;
+            }
+
+            // Assign class-level 'item' so it is not shadowed by a local variable
+            item = shx.getItemBatch().getItem();
+
+            double batchQty = shx.getItemStock();
+            double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
+            double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
+
+            // Check if a PharmacyRow already exists for this Item
+            PharmacyRow matchingRow = null;
+            for (PharmacyRow r : rows) {
+                if (r.getItem() != null && r.getItem().equals(item)) {
+                    matchingRow = r;
+                    break;
+                }
+            }
+
+            // If not found, create one
+            if (matchingRow == null) {
+                matchingRow = new PharmacyRow();
+                matchingRow.setItem(item);
+                matchingRow.setQuantity(0.0);
+                matchingRow.setPurchaseValue(0.0);
+                matchingRow.setSaleValue(0.0);
+                rows.add(matchingRow);
+            }
+
+            // Accumulate the quantities and values
+            matchingRow.setQuantity(matchingRow.getQuantity() + batchQty);
+            matchingRow.setPurchaseValue(matchingRow.getPurchaseValue() + batchQty * batchPurchaseRate);
+            matchingRow.setSaleValue(matchingRow.getSaleValue() + batchQty * batchSaleRate);
+        }
+    }
+
+    public void processClosingStock() {
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockQty = 0.0;
+        if (reportType.equals("batchWise")) {
+            processClosingStockForBatchReport();
+        } else if (reportType.equals("itemWise")) {
+            processClosingStockForItemReport();
+        } else {
+            JsfUtil.addErrorMessage("Report Type " + reportType + " is NOT supported.");
+            return;
+        }
+        if (rows != null) {
+            for (PharmacyRow pr : rows) {
+                stockPurchaseValue += pr.getPurchaseValue();
+                stockSaleValue += pr.getSaleValue();
+                stockQty += pr.getQuantity();
+            }
+        }
+    }
+
+    @Deprecated
     public void processClosingStockReport() {
         stockSaleValue = 0.0;
         stockQty = 0.0;
@@ -2022,8 +2277,8 @@ public class PharmacyReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
                 + " from StockHistory sh where sh.retired=:ret "
-                + "and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) "
-                + "and sh.stockQty > 0 ");
+                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+//                + "and sh.stockQty > 0 "); Eventhough the qty is zero, thay need to be considered
 
         params.put("depty", DepartmentType.Pharmacy);
         params.put("ret", false);
@@ -2804,7 +3059,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processLabTestWiseCountReport() {
-        String jpql = "select new com.divudi.data.TestWiseCountReport("
+        String jpql = "select new com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi.item.name), "
                 + "sum(bi.hospitalFee), "
@@ -3500,5 +3755,29 @@ public class PharmacyReportController implements Serializable {
 
     public void setQuantity(Double quantity) {
         this.quantity = quantity;
+    }
+
+    public Institution getFromSite() {
+        return fromSite;
+    }
+
+    public void setFromSite(Institution fromSite) {
+        this.fromSite = fromSite;
+    }
+
+    public Institution getToSite() {
+        return toSite;
+    }
+
+    public void setToSite(Institution toSite) {
+        this.toSite = toSite;
+    }
+
+    public boolean isShowData() {
+        return showData;
+    }
+
+    public void setShowData(boolean showData) {
+        this.showData = showData;
     }
 }

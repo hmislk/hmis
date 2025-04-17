@@ -34,18 +34,18 @@
                             </p:commandButton>
 
                             <p:outputLabel value="Passed Time" ></p:outputLabel>
-                            <h:outputText id="txt_count" value="#{commonController.number} - #{patientInvestigationController.patientReportItemValues eq null}" />
+                            <h:outputText id="txt_count" value="#{patientInvestigationController.number} - #{patientInvestigationController.patientReportItemValues eq null}" />
 
                         </p:panelGrid>
 
 
 
-                        <p:poll interval="3" listener="#{commonController.increment}" update="txt_count" />
+                        <p:poll interval="3" listener="#{patientInvestigationController.increment}" update="txt_count" />
 
 
 
 
-                        <p:dataTable 
+                        <p:dataTable
                             id="tbl"
                             var="v" value="#{patientInvestigationController.patientReportItemValues}" rows="10"
                             rowKey="#{v.id}"

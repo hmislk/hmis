@@ -1,39 +1,39 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.bean.inward.InwardBeanController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.QuickBookFormat;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.table.String3Value2;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.QuickBookFormat;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.table.String3Value2;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.util.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -83,8 +83,6 @@ public class QuickBookReportController implements Serializable {
     private AdmissionTypeController admissionTypeController;
     @Inject
     private InwardBeanController inwardBeanController;
-
-    private CommonFunctions commonFunctions;
 
     private List<QuickBookFormat> quickBookFormats;
     private List<Category> categorys;
@@ -270,15 +268,15 @@ public class QuickBookReportController implements Serializable {
         List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.OnlineSettlement, PaymentMethod.MultiplePaymentMethods);
 
         if (withProfessionalFee) {
-            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
-            qbfs.addAll(fetchOPdListProfessionalFeeDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
+            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), null));
+            qbfs.addAll(fetchOPdListProfessionalFeeDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), null));
         } else {
-            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), null));
+            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), null));
         }
 
-        qbfs.addAll(createPharmacySale(BillType.PharmacySale, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate)));
-        qbfs.addAll(createInwardCollection(commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate)));
-        qbfs.addAll(createAgencyAndCollectionCenterTotal(commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate)));
+        qbfs.addAll(createPharmacySale(BillType.PharmacySale, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+        qbfs.addAll(createInwardCollection(CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+        qbfs.addAll(createAgencyAndCollectionCenterTotal(CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
 
         QuickBookFormat qbf = new QuickBookFormat();
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
@@ -354,7 +352,7 @@ public class QuickBookReportController implements Serializable {
         quickBookFormats = new ArrayList<>();
 
         List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Credit);
-        for (Institution i : fetchCreditCompany(commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), true, BillType.OpdBill)) {
+        for (Institution i : fetchCreditCompany(CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), true, BillType.OpdBill)) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
             if (i != null) {
@@ -362,8 +360,8 @@ public class QuickBookReportController implements Serializable {
             } else {
                 System.out.println("****i = " + i);
             }
-            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), i));
-            qbfs.addAll(fetchOPdDocPaymentTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), i));
+            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), i));
+            qbfs.addAll(fetchOPdDocPaymentTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), i));
             if (qbfs.size() == 0) {
                 System.out.println("qbfs.size() = " + qbfs.size());
                 continue;
@@ -543,16 +541,16 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnP = new ArrayList<>();
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
-        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate))) {
+        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
             System.out.println("d.getName() = " + d.getName());
-            billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturn.addAll(getBills(new BilledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturn.addAll(getBills(new BilledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
         }
 
         System.out.println("billsBilled.size() = " + billsBilled.size());
@@ -809,16 +807,16 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnP = new ArrayList<>();
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
-        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.StorePurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate))) {
+        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.StorePurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
             System.out.println("d.getName() = " + d.getName());
-            billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsCanceled.addAll(getBills(new CancelledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturn.addAll(getBills(new BilledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsCanceled.addAll(getBills(new CancelledBill(), BillType.StoreGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.StorePurchase, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturn.addAll(getBills(new BilledBill(), BillType.StoreGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.StoreGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
         }
 
         System.out.println("billsBilled.size() = " + billsBilled.size());
@@ -1068,16 +1066,16 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnP = new ArrayList<>();
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
-        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate))) {
+        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
             System.out.println("d.getName() = " + d.getName());
-            billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturn.addAll(getBills(new BilledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
-            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturn.addAll(getBills(new BilledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
         }
 
         System.out.println("billsBilled.size() = " + billsBilled.size());
@@ -1328,7 +1326,7 @@ public class QuickBookReportController implements Serializable {
 
         List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Credit);
 
-        quickBookFormats.addAll(fetchPharmacySaleTable(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit}), commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), institution, Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale})));
+        quickBookFormats.addAll(fetchPharmacySaleTable(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit}), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), institution, Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale})));
     }
 
     //-------Main Functions
@@ -1893,8 +1891,8 @@ public class QuickBookReportController implements Serializable {
                 + " order by bf.billItem.item.category.name, bf.billItem.item.name";
 
         temMap.put("billType", BillType.InwardBill);
-        temMap.put("fd", getCommonFunctions().getStartOfDay(fd));
-        temMap.put("td", getCommonFunctions().getEndOfDay(td));
+        temMap.put("fd", CommonFunctions.getStartOfDay(fd));
+        temMap.put("td", CommonFunctions.getEndOfDay(td));
         List<Object[]> results = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
 
         System.out.println("results.size() = " + results.size());
@@ -2070,8 +2068,8 @@ public class QuickBookReportController implements Serializable {
             m.put("cc", cc);
         }
 
-        m.put("fd", getCommonFunctions().getStartOfDay(fd));
-        m.put("td", getCommonFunctions().getEndOfDay(td));
+        m.put("fd", CommonFunctions.getStartOfDay(fd));
+        m.put("td", CommonFunctions.getEndOfDay(td));
 
         Object obj[] = getPatientRoomFacade().findAggregateModified(sql, m, TemporalType.TIMESTAMP);
 
@@ -2236,8 +2234,8 @@ public class QuickBookReportController implements Serializable {
 
         m.put("refType1", BillType.InwardBill);
         m.put("refType2", BillType.InwardProfessional);
-        m.put("fd", getCommonFunctions().getStartOfDay(fd));
-        m.put("td", getCommonFunctions().getEndOfDay(td));
+        m.put("fd", CommonFunctions.getStartOfDay(fd));
+        m.put("td", CommonFunctions.getEndOfDay(td));
 
         List<Object[]> objects = billFeeFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
 
@@ -2328,8 +2326,8 @@ public class QuickBookReportController implements Serializable {
         sql += " group by i.item.category, i.item "
                 + " order by i.item.category.name, i.item.name ";
 
-        m.put("fd", getCommonFunctions().getStartOfDay(fd));
-        m.put("td", getCommonFunctions().getEndOfDay(td));
+        m.put("fd", CommonFunctions.getStartOfDay(fd));
+        m.put("td", CommonFunctions.getEndOfDay(td));
 
         List<Object[]> results = getBillFeeFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
@@ -2589,8 +2587,8 @@ public class QuickBookReportController implements Serializable {
             sql += " and i.patientEncounter.creditCompany=:cc ";
             m.put("cc", cc);
         }
-        m.put("fd", getCommonFunctions().getStartOfDay(fd));
-        m.put("td", getCommonFunctions().getEndOfDay(td));
+        m.put("fd", CommonFunctions.getStartOfDay(fd));
+        m.put("td", CommonFunctions.getEndOfDay(td));
         m.put("btp", BillType.InwardOutSideBill);
 
         return billFeeFacade.findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -2628,8 +2626,8 @@ public class QuickBookReportController implements Serializable {
             m.put("cc", cc);
         }
 
-        m.put("fd", getCommonFunctions().getStartOfDay(fd));
-        m.put("td", getCommonFunctions().getEndOfDay(td));
+        m.put("fd", CommonFunctions.getStartOfDay(fd));
+        m.put("td", CommonFunctions.getEndOfDay(td));
         m.put("btp", billType);
 
         return billFeeFacade.findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -2668,8 +2666,8 @@ public class QuickBookReportController implements Serializable {
             m.put("cc", cc);
         }
 
-        m.put("fd", getCommonFunctions().getStartOfDay(fd));
-        m.put("td", getCommonFunctions().getEndOfDay(td));
+        m.put("fd", CommonFunctions.getStartOfDay(fd));
+        m.put("td", CommonFunctions.getEndOfDay(td));
         m.put("inwTp", InwardChargeType.AdmissionFee);
         m.put("btp", BillType.InwardFinalBill);
 
@@ -2707,8 +2705,8 @@ public class QuickBookReportController implements Serializable {
             m.put("cc", cc);
         }
 
-        m.put("fd", getCommonFunctions().getStartOfDay(fd));
-        m.put("td", getCommonFunctions().getEndOfDay(td));
+        m.put("fd", CommonFunctions.getStartOfDay(fd));
+        m.put("td", CommonFunctions.getEndOfDay(td));
         m.put("inwTp", InwardChargeType.AdmissionFee);
         m.put("btp", BillType.InwardOutSideBill);
 
@@ -2827,8 +2825,8 @@ public class QuickBookReportController implements Serializable {
 
         sql += " order by b.patientEncounter.bhtNo";
 
-        m.put("fd", getCommonFunctions().getStartOfDay(fd));
-        m.put("td", getCommonFunctions().getEndOfDay(td));
+        m.put("fd", CommonFunctions.getStartOfDay(fd));
+        m.put("td", CommonFunctions.getEndOfDay(td));
         m.put("billType", BillType.InwardFinalBill);
 
         pes = getPatientEncounterFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -2878,7 +2876,7 @@ public class QuickBookReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay();
+            toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
     }
@@ -2889,7 +2887,7 @@ public class QuickBookReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay();
+            fromDate = CommonFunctions.getStartOfDay();
         }
         return fromDate;
     }
@@ -2955,14 +2953,6 @@ public class QuickBookReportController implements Serializable {
 
     public void setBillBeanController(BillBeanController billBeanController) {
         this.billBeanController = billBeanController;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getReport() {

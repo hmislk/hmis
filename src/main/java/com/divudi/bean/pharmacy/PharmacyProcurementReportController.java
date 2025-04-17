@@ -7,36 +7,35 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
 
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Staff;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.StockFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.StockFacade;
 import com.divudi.bean.opd.OpdBillController;
-import com.divudi.data.BillClassType;
+import com.divudi.core.data.BillClassType;
 
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.IncomeBundle;
-import com.divudi.data.IncomeRow;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Category;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.DrawerFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.IncomeBundle;
+import com.divudi.core.data.IncomeRow;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,7 +48,7 @@ import javax.inject.Named;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
-// </editor-fold>  
+// </editor-fold>
 
 /**
  * @author Dr M H B Ariyaratne
@@ -61,7 +60,6 @@ public class PharmacyProcurementReportController implements Serializable {
     private static final long serialVersionUID = 1L;
 
 // <editor-fold defaultstate="collapsed" desc="EJBs">
-    private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -81,7 +79,7 @@ public class PharmacyProcurementReportController implements Serializable {
     @EJB
     BillService billService;
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private BillBeanController billBean;
@@ -89,8 +87,6 @@ public class PharmacyProcurementReportController implements Serializable {
     private SessionController sessionController;
     @Inject
     private TransferController transferController;
-    @Inject
-    private CommonController commonController;
     @Inject
     private PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
@@ -127,7 +123,7 @@ public class PharmacyProcurementReportController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -190,7 +186,7 @@ public class PharmacyProcurementReportController implements Serializable {
     }
 
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
     public void resetAllFiltersExceptDateRange() {
@@ -250,26 +246,12 @@ public class PharmacyProcurementReportController implements Serializable {
         bundle.generateProcurementDetailsForBillItems();
     }
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Constructors">
     public PharmacyProcurementReportController() {
     }
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-
-    /**
-     * @return the commonFunctions
-     */
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    /**
-     * @param commonFunctions the commonFunctions to set
-     */
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
 
     /**
      * @return the billFacade
@@ -423,20 +405,6 @@ public class PharmacyProcurementReportController implements Serializable {
      */
     public void setTransferController(TransferController transferController) {
         this.transferController = transferController;
-    }
-
-    /**
-     * @return the commonController
-     */
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    /**
-     * @param commonController the commonController to set
-     */
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     /**
@@ -1174,5 +1142,5 @@ public class PharmacyProcurementReportController implements Serializable {
         this.maxResult = maxResult;
     }
 
-// </editor-fold>  
+// </editor-fold>
 }

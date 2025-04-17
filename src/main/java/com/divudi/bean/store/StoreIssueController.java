@@ -9,36 +9,36 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.IssueRateMargins;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.UserStock;
-import com.divudi.entity.pharmacy.UserStockContainer;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.IssueRateMarginsFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.IssueRateMargins;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.UserStock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.IssueRateMarginsFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -119,7 +119,7 @@ public class StoreIssueController implements Serializable {
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -515,14 +515,14 @@ public class StoreIssueController implements Serializable {
 
     @EJB
     private CashTransactionBean cashTransactionBean;
-    
+
     public boolean checkIssue(){
         if(getPreBill().getInvoiceNumber()==null || getPreBill().getInvoiceNumber().trim().equals("")){
             JsfUtil.addErrorMessage("Please Input Issue Number");
             ////System.out.println("invoice number = " + getPreBill().getInvoiceNumber());
             return true;
         }
-        
+
         return false;
     }
 
@@ -533,7 +533,7 @@ public class StoreIssueController implements Serializable {
          if(checkIssue()){
             return;
         }
-        
+
         if (checkAllBillItem()) {
             //   ////System.out.println("Check all bill Ietems");
             return;
@@ -543,9 +543,9 @@ public class StoreIssueController implements Serializable {
             //   ////System.out.println("Error for sale bill");
             return;
         }
-        
+
         getPreBill().setPaidAmount(getPreBill().getTotal());
-        
+
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
@@ -592,7 +592,7 @@ public class StoreIssueController implements Serializable {
             errorMessage = "Please select Deferent Department to send items";
             return;
         }
-        
+
         if (getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select To Department");
             errorMessage = "Please select the department to send items";
@@ -794,7 +794,7 @@ public class StoreIssueController implements Serializable {
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
             return;
         }
-        
+
         if (getToDepartment() == null) {
             errorMessage = "Please select a department to issue.";
             JsfUtil.addErrorMessage("Please select to department");

@@ -20,7 +20,7 @@
             <h:panelGrid columns="2" styleClass="alignTop" >
                 <h:panelGrid id="actions" columns="1"  >
                     <p:commandButton  styleClass="linkButton" value="Decrypt Usernames" action="#{sessionController.decryptAllUsers()}" ajax="false" />
-                    
+
                     <p:commandButton disabled="#{webUserController.selected == null}" styleClass="linkButton" value="Manage Password" action="password" ajax="false" />
                     <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Privileges" action="pri" ajax="false" />
                     <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Loggable Departments" action="depts" ajax="false" />
@@ -28,9 +28,9 @@
 
                 <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u"
                              rowKey="#{u.id}"
-                             selection="#{webUserController.selected}" 
+                             selection="#{webUserController.selected}"
                              rows="100" selectionMode="single"
-                             paginator="#{commonController.renderPaginator(webUserController.selectedItems, 10)}"
+                             paginator="#{commonFunctionsProxy.renderPaginator(webUserController.selectedItems, 10)}"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="10,50,100,500"
                              >
@@ -72,7 +72,7 @@
 
         </h:form>
 
-       
+
 
     </h:body>
 </html>

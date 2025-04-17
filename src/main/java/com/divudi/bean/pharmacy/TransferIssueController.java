@@ -5,40 +5,36 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.StockQty;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.StockQty;
 import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.UserStock;
-import com.divudi.entity.pharmacy.UserStockContainer;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.UserStock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -66,8 +62,6 @@ public class TransferIssueController implements Serializable {
     @Inject
     BillController billController;
     @Inject
-    CommonController commonController;
-    @Inject
     NotificationController notificationController;
     ////
     @EJB
@@ -84,7 +78,6 @@ public class TransferIssueController implements Serializable {
     @EJB
     private BillNumberGenerator billNumberBean;
 
-    private CommonFunctions commonFunctions;
     private List<BillItem> billItems;
     private BillItem billItem;
     private Double qty;
@@ -303,9 +296,9 @@ public class TransferIssueController implements Serializable {
                 //     //System.err.println("List "+bItem.getTmpSuggession());
                 PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
                 phItem.setBillItem(bItem);
-                phItem.setQtyInUnit((double) sq.getQty());
-                phItem.setPurchaseRateInUnit((double) sq.getStock().getItemBatch().getPurcahseRate());
-                phItem.setRetailRateInUnit((double) sq.getStock().getItemBatch().getRetailsaleRate());
+                phItem.setQtyInUnit(sq.getQty());
+                phItem.setPurchaseRateInUnit(sq.getStock().getItemBatch().getPurcahseRate());
+                phItem.setRetailRateInUnit(sq.getStock().getItemBatch().getRetailsaleRate());
                 phItem.setStock(sq.getStock());
                 phItem.setDoe(sq.getStock().getItemBatch().getDateOfExpire());
                 phItem.setItemBatch(sq.getStock().getItemBatch());
@@ -531,7 +524,6 @@ public class TransferIssueController implements Serializable {
 //        getBillFacade().edit(getRequestedBill());
         Bill b = getBillFacade().find(getIssuedBill().getId());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
-        issuedBill = null;
         issuedBill = b;
 
         printPreview = true;
@@ -661,7 +653,6 @@ public class TransferIssueController implements Serializable {
         Bill b = getBillFacade().find(getIssuedBill().getId());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
-        issuedBill = null;
         issuedBill = b;
 
         printPreview = true;
@@ -727,7 +718,7 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(qty);
         billItem.getPharmaceuticalBillItem().setStock(getTmpStock());
         billItem.getPharmaceuticalBillItem().setItemBatch(getTmpStock().getItemBatch());
 
@@ -873,14 +864,14 @@ public class TransferIssueController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -891,14 +882,6 @@ public class TransferIssueController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public PharmacyController getPharmacyController() {

@@ -4,33 +4,32 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.Department;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.Department;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,8 +53,6 @@ public class TransferRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -103,7 +100,7 @@ public class TransferRequestController implements Serializable {
 
     private boolean checkItems(Item item) {
         for (BillItem b : getBillItems()) {
-            if (b.getItem().getId() == item.getId()) {
+            if (Objects.equals(b.getItem().getId(), item.getId())) {
                 return true;
             }
         }
@@ -116,7 +113,7 @@ public class TransferRequestController implements Serializable {
             return true;
         }
 
-        if (getToDepartment().getId() == getSessionController().getDepartment().getId()) {
+        if (Objects.equals(getToDepartment().getId(), getSessionController().getDepartment().getId())) {
             JsfUtil.addErrorMessage("U can't request same department");
             return true;
         }
@@ -218,7 +215,7 @@ public class TransferRequestController implements Serializable {
         }
 
     }
-    
+
     public void approveTransferRequestBill(){
         transerRequestBillPre.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         transerRequestBillPre.setApproveAt(new Date());
@@ -227,11 +224,11 @@ public class TransferRequestController implements Serializable {
         transerRequestBillPre.setApproveUser(sessionController.getLoggedUser());
         billFacade.edit(transerRequestBillPre);
         JsfUtil.addSuccessMessage("Approval done. Send the request to "+ transerRequestBillPre.getToDepartment());
-        
+
         bill = transerRequestBillPre;
         printPreview = true;
-       
-        
+
+
     }
 
     public void request() {
@@ -423,7 +420,7 @@ public class TransferRequestController implements Serializable {
         setToDepartment(getTranserRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
     }
-    
+
     @Inject
     private SearchController searchController;
 
@@ -488,7 +485,7 @@ public class TransferRequestController implements Serializable {
         getTranserRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTranserRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
-        
+
         searchController.fillSavedTranserRequestBills();
         return "/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true";
     }
@@ -660,14 +657,6 @@ public class TransferRequestController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Bill getTranserRequestBillPre() {

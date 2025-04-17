@@ -10,32 +10,31 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.hr.StaffController;
-import com.divudi.data.Dashboard;
-import com.divudi.data.Privileges;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Person;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserDashboard;
-import com.divudi.entity.WebUserPrivilege;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.WebUserDashboardFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.WebUserPrivilegeFacade;
-import com.divudi.facade.WebUserRoleFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.Dashboard;
+import com.divudi.core.data.Privileges;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserDashboard;
+import com.divudi.core.entity.WebUserPrivilege;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.WebUserDashboardFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
+import com.divudi.core.facade.WebUserRoleFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.hr.StaffImageController;
-import com.divudi.data.LoginPage;
-import com.divudi.entity.UserNotification;
-import com.divudi.entity.WebUserRole;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.UserNotificationFacade;
-import com.divudi.light.common.WebUserLight;
+import com.divudi.core.data.LoginPage;
+import com.divudi.core.entity.UserNotification;
+import com.divudi.core.entity.WebUserRole;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.light.common.WebUserLight;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -77,8 +76,7 @@ public class WebUserController implements Serializable {
     private StaffFacade staffFacade;
     @EJB
     private WebUserDashboardFacade webUserDashboardFacade;
-    @EJB
-    UserNotificationFacade userNotificationFacade;
+
     /**
      * Controllers
      */
@@ -301,7 +299,7 @@ public class WebUserController implements Serializable {
                 return false;
             }
         }
-        
+
         if (getSessionController().getLoggedUser() == null) {
             return hasPri;
         }
@@ -311,11 +309,10 @@ public class WebUserController implements Serializable {
         }
 
         for (WebUserPrivilege w : getSessionController().getUserPrivileges()) {
-            Privileges p = null;
+            Privileges p;
             try {
                 p = Privileges.valueOf(privilege);
             } catch (Exception e) {
-                hasPri = false;
                 return hasPri;
             }
             if (w.getPrivilege() != null && w.getPrivilege().equals(p)) {
@@ -475,7 +472,7 @@ public class WebUserController implements Serializable {
         for (WebUser w : allUsers) {
 
             if (userName != null && w != null && w.getName() != null) {
-                if (userName.toLowerCase().equals((w.getName()).toLowerCase())) {
+                if (userName.equalsIgnoreCase((w.getName()))) {
                     //////// // System.out.println("Ift");
                     available = true;
                     return available;// ok. that is may be the issue. we will try with it ok
@@ -610,12 +607,12 @@ public class WebUserController implements Serializable {
 
     public List<WebUser> getSearchItems() {
         if (searchItems == null) {
-            if (selectText.equals("")) {
+            if (selectText.isEmpty()) {
                 searchItems = getFacade().findAll("name", true);
             } else {
                 searchItems = getFacade().findAll("name", "%" + selectText + "%",
                         true);
-                if (searchItems.size() > 0) {
+                if (!searchItems.isEmpty()) {
                     current = searchItems.get(0);
                 } else {
                     current = null;
@@ -652,7 +649,7 @@ public class WebUserController implements Serializable {
     private void fillLightUsers() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
+        jpql = "Select new com.divudi.core.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
                 + " from WebUser wu "
                 + " where wu.retired=:ret "
                 + " and wu.staff is not null "
@@ -664,7 +661,7 @@ public class WebUserController implements Serializable {
     private void fillLightUsersWithoutStaff() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
+        jpql = "Select new com.divudi.core.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
                 + " from WebUser wu "
                 + " where wu.retired=:ret "
                 + " and wu.staff is null "
@@ -980,10 +977,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("User ?");
             return;
         }
-        if (current == null) {
-            JsfUtil.addErrorMessage("Dashboard ?");
-            return;
-        }
+
         WebUserDashboard d = new WebUserDashboard();
         d.setWebUser(selected);
         d.setDashboard(dashboard);
@@ -1247,7 +1241,7 @@ public class WebUserController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             WebUserController controller = (WebUserController) facesContext.getApplication().getELResolver().
@@ -1262,9 +1256,7 @@ public class WebUserController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

@@ -5,38 +5,38 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Payment;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -81,7 +81,6 @@ public class GrnController implements Serializable {
     @EJB
     private AmpFacade ampFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
@@ -269,8 +268,8 @@ public class GrnController implements Serializable {
         double totalQuantityOfBillItemsRefernceToOriginalItem = 0.0;
         double totalFreeQuantityOfBillItemsRefernceToOriginalItem = 0.0;
 
-        double remainFreeQty = 0.0;
-        double remainQty = 0.0;
+        double remainFreeQty;
+        double remainQty;
         if (originalBillItemToDuplicate != null) {
             PharmaceuticalBillItem newPharmaceuticalBillItemCreatedByDuplication = new PharmaceuticalBillItem();
             newPharmaceuticalBillItemCreatedByDuplication.copy(originalBillItemToDuplicate.getPharmaceuticalBillItem());
@@ -342,7 +341,7 @@ public class GrnController implements Serializable {
             }
         }
 
-        if (pid.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+        if (pid.getPharmaceuticalBillItem().getStringValue().trim().isEmpty()) {
             Date date = pid.getPharmaceuticalBillItem().getDoe();
             DateFormat df = new SimpleDateFormat("ddMMyyyy");
             String reportDate = df.format(date);
@@ -354,14 +353,14 @@ public class GrnController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -913,6 +912,13 @@ public class GrnController implements Serializable {
         getGrnBill().setDepartment(getSessionController().getDepartment());
         getGrnBill().setInstitution(getSessionController().getInstitution());
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
+
+        if (getGrnBill().getId() == null) {
+            getBillFacade().create(getGrnBill());
+        } else {
+            getBillFacade().edit(getGrnBill());
+        }
+
         if (getCurrentGrnBillPre() != null) {
 
             if (getCurrentGrnBillPre().getId() == null) {
@@ -923,11 +929,7 @@ public class GrnController implements Serializable {
             getCurrentGrnBillPre().setForwardReferenceBill(getGrnBill());
             getBillFacade().edit(getCurrentGrnBillPre());
         }
-        if (getGrnBill().getId() == null) {
-            getBillFacade().create(getGrnBill());
-        } else {
-            getBillFacade().edit(getGrnBill());
-        }
+
     }
 
     public void saveWholesaleBill() {
@@ -949,9 +951,9 @@ public class GrnController implements Serializable {
 
 //    public void generateBillComponent() {
 //
-//        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {        
+//        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
 //            double remains = getPharmacyCalculation().calQtyInTwoSql(i);
-//            
+//
 //            if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
 //                BillItem bi = new BillItem();
 //                bi.setSearialNo(getBillItems().size());
@@ -1001,14 +1003,14 @@ public class GrnController implements Serializable {
                 double tmpQty = bi.getQty();
                 double tmpFreeQty = remainFreeQty;
 
-                bi.setPreviousRecieveQtyInUnit((double) tmpQty);
-                bi.setPreviousRecieveFreeQtyInUnit((double) tmpFreeQty);
+                bi.setPreviousRecieveQtyInUnit(tmpQty);
+                bi.setPreviousRecieveFreeQtyInUnit(tmpFreeQty);
 
                 ph.setQty(tmpQty);
-                ph.setQtyInUnit((double) tmpQty);
+                ph.setQtyInUnit(tmpQty);
 
-                ph.setFreeQtyInUnit((double) tmpFreeQty);
-                ph.setFreeQty((double) tmpFreeQty);
+                ph.setFreeQtyInUnit(tmpFreeQty);
+                ph.setFreeQty(tmpFreeQty);
 
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
@@ -1050,14 +1052,14 @@ public class GrnController implements Serializable {
                 double tmpQty = bi.getQty();
                 double tmpFreeQty = remainFreeQty;
 
-                bi.setPreviousRecieveQtyInUnit((double) tmpQty);
-                bi.setPreviousRecieveFreeQtyInUnit((double) tmpFreeQty);
+                bi.setPreviousRecieveQtyInUnit(tmpQty);
+                bi.setPreviousRecieveFreeQtyInUnit(tmpFreeQty);
 
                 ph.setQty(tmpQty);
-                ph.setQtyInUnit((double) tmpQty);
+                ph.setQtyInUnit(tmpQty);
 
-                ph.setFreeQtyInUnit((double) tmpFreeQty);
-                ph.setFreeQty((double) tmpFreeQty);
+                ph.setFreeQtyInUnit(tmpFreeQty);
+                ph.setFreeQty(tmpFreeQty);
 
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
@@ -1097,7 +1099,7 @@ public class GrnController implements Serializable {
             double tmpQty = bi.getQty();
 
             ph.setQty(tmpQty);
-            ph.setQtyInUnit((double) tmpQty);
+            ph.setQtyInUnit(tmpQty);
 
             ph.setFreeQty(i.getFreeQty());
             ph.setFreeQtyInUnit(i.getFreeQty());
@@ -1153,7 +1155,7 @@ public class GrnController implements Serializable {
         String sql = "select (p.retailRate) from PharmaceuticalBillItem p where p.billItem=:b";
         HashMap hm = new HashMap();
         hm.put("b", billItem.getReferanceBillItem());
-        return (double) getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public void onEdit(RowEditEvent event) {
@@ -1204,10 +1206,8 @@ public class GrnController implements Serializable {
     }
 
     public void onEditPurchaseRate(BillItem tmp) {
-
         double retail = tmp.getPharmaceuticalBillItem().getPurchaseRate() + (tmp.getPharmaceuticalBillItem().getPurchaseRate() * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
-        tmp.getPharmaceuticalBillItem().setRetailRate((double) retail);
-
+        tmp.getPharmaceuticalBillItem().setRetailRate(retail);
     }
 
     public void calGrossTotal() {
@@ -1361,7 +1361,7 @@ public class GrnController implements Serializable {
         double exp = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
-            p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
+            p.setQty(p.getPharmaceuticalBillItem().getQtyInUnit());
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             serialNo++;
             p.setSearialNo(serialNo);
@@ -1492,14 +1492,6 @@ public class GrnController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<Bill> getFilteredValue() {

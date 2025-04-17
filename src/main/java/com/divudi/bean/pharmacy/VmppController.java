@@ -9,9 +9,9 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.facade.VmppFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.facade.VmppFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,7 +69,7 @@ public class VmppController implements Serializable {
     }
 
     private void saveVmpp() {
-        if (current.getName() == null || current.getName().equals("")) {
+        if (current.getName() == null || current.getName().isEmpty()) {
             JsfUtil.addErrorMessage("No Name");
             return;
         }
@@ -192,7 +192,7 @@ public class VmppController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             VmppController controller = (VmppController) facesContext.getApplication().getELResolver().
@@ -201,15 +201,13 @@ public class VmppController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

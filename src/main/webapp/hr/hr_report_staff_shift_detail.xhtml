@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -56,10 +56,10 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
                                 <f:facet name="header">
-                                    
+
                                     <h:outputLabel value="Worked Time"/><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{hrReportController.fromDate}" >
@@ -67,7 +67,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{hrReportController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy "/>
                                     </h:outputLabel><br/>
@@ -112,14 +112,14 @@
                                     </f:facet>
                                     <p:outputLabel value="  #{ss.staff.person.nameWithTitle}" ></p:outputLabel>
 
-                                </p:column>                              
+                                </p:column>
                                 <p:column headerText="Staff Category" rendered="false">
                                     <f:facet name="header">
                                         <h:outputLabel value="Staff Category"/>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staff.staffCategory.name}" ></p:outputLabel>
 
-                                </p:column>                               
+                                </p:column>
                                 <p:column headerText="Staff Roster" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Staff Roster"/>
@@ -152,7 +152,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Shift Date"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{ss.shiftDate}">                                        
+                                    <h:outputLabel value="#{ss.shiftDate}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
@@ -161,7 +161,7 @@
                                         <h:outputLabel value="Worked Time"/>
                                     </f:facet>
 
-                                    <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">                                        
+                                    <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -175,16 +175,16 @@
                                         <h:outputLabel value="Extra Time"/>
                                     </f:facet>
 
-                                    <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified}">                                        
+                                    <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>                              
+                                </p:column>
                                 <p:column headerText="Basic per Sec">
                                     <f:facet name="header">
                                         <h:outputLabel value="Basic per Sec"/>
                                     </f:facet>
 
-                                    <h:outputLabel value="#{ss.overTimeValuePerSecond}">                                        
+                                    <h:outputLabel value="#{ss.overTimeValuePerSecond}">
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
@@ -193,7 +193,7 @@
                                         <h:outputLabel value="Multiplying Factor Salary"/>
                                     </f:facet>
 
-                                    <h:outputLabel value="#{ss.multiplyingFactorSalary}">                                        
+                                    <h:outputLabel value="#{ss.multiplyingFactorSalary}">
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
@@ -202,46 +202,46 @@
                                         <h:outputLabel value="Multiplying Factor Over Time"/>
                                     </f:facet>
 
-                                    <h:outputLabel value="#{ss.multiplyingFactorOverTime}">                                        
+                                    <h:outputLabel value="#{ss.multiplyingFactorOverTime}">
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
-                                </p:column>                             
+                                </p:column>
                                 <p:column headerText="Lie Allowed">
                                     <f:facet name="header">
                                         <h:outputLabel value="Lie Allowed"/>
                                     </f:facet>
 
-                                    <h:outputLabel value="#{ss.lieuAllowed}">                                        
+                                    <h:outputLabel value="#{ss.lieuAllowed}">
                                     </h:outputLabel>
-                                </p:column>                             
+                                </p:column>
                                 <p:column headerText="Lie Utiliezed">
                                     <f:facet name="header">
                                         <h:outputLabel value="Lie Utiliezed"/>
                                     </f:facet>
 
-                                    <h:outputLabel value="#{ss.lieuQtyUtilized}">                                        
+                                    <h:outputLabel value="#{ss.lieuQtyUtilized}">
                                     </h:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Start">
                                     <f:facet name="header">
                                         <h:outputLabel value="Start"/>
                                     </f:facet>
 
-                                    <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">                                        
+                                    <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                     </h:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="End">
                                     <f:facet name="header">
                                         <h:outputLabel value="End"/>
                                     </f:facet>
 
-                                    <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">                                        
+                                    <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                     </h:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

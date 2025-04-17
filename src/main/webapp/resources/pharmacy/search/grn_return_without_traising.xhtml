@@ -24,6 +24,7 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
         </h:panelGrid>
+
         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" class="w-100">
             <f:facet name="header">
                 <h:outputLabel value="GOOD RETURN NOTE WITHOUT RECEIPT"/>
@@ -43,7 +44,7 @@
                     <f:setPropertyActionListener value="true" target="#{pharmacyReturnwithouttresing.billPreview}"/>
                 </h:commandLink>
             </p:column>
-            <p:column headerText="Billed at"  >
+            <p:column headerText="Billed At"  >
                 <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
@@ -65,7 +66,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>                 
-            <p:column headerText="Billed by" >
+            <p:column headerText="Billed By" >
                 <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
@@ -91,7 +92,7 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               -->
-            <p:column headerText="Net Value" style="text-align: right;"  >
+            <p:column headerText="Net Return Value" style="text-align: right;"  >
                 <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>
@@ -101,9 +102,9 @@
                 </h:commandLink>
             </p:column>
             
-            <p:column headerText="Sale Value" style="text-align: right;"  >
+            <p:column headerText="Retail Sale Value" style="text-align: right;"  >
                 <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
-                    <h:outputLabel value="#{bill.saleValue}" >
+                    <h:outputLabel value="#{bill.pharmacyBill.saleValue}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>

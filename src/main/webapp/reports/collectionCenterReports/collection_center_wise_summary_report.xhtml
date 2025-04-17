@@ -24,13 +24,13 @@
 
                             </h:panelGroup>
                             <p:datePicker
-                                value="#{reportController.fromDate}" 
+                                value="#{reportController.fromDate}"
                                 class="w-100"
                                 showTime="true"
                                 showButtonBar="true"
                                 timeInput="true"
                                 inputStyleClass="form-control"
-                                maxdate="#{commonFunctionsController.endOfDay}"
+                                maxdate="#{commonFunctionsProxy.endOfDay}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          ></p:datePicker>
 
                             <h:panelGroup>
@@ -38,7 +38,7 @@
                                 <p:outputLabel value="To Date" class="mx-3" />
                             </h:panelGroup>
 
-                            <p:datePicker 
+                            <p:datePicker
                                 class="w-100"
                                 showTime="true"
                                 showButtonBar="true"
@@ -92,18 +92,18 @@
 
                             </h:panelGroup>
 
-                            <p:autoComplete 
-                                id="creditCom" 
-                                forceSelection="true" 
+                            <p:autoComplete
+                                id="creditCom"
+                                forceSelection="true"
                                 value="#{reportController.collectingCentre}"
-                                completeMethod="#{institutionController.completeCollectingCenter}" 
-                                var="ix" 
+                                completeMethod="#{institutionController.completeCollectingCenter}"
+                                var="ix"
                                 class="w-100"
                                 inputStyleClass="form-control"
-                                itemLabel="#{ix.name}" 
-                                itemValue="#{ix}" 
-                                size="30" 
-                                maxResults="20"                                
+                                itemLabel="#{ix.name}"
+                                itemValue="#{ix}"
+                                size="30"
+                                maxResults="20"
                                 >
                                 <f:ajax  event="itemSelect" execute="creditCom"  />
                                 <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
@@ -119,14 +119,14 @@
                         </p:panelGrid>
 
                         <h:panelGrid columns="6" class="my-3">
-                            <p:commandButton 
+                            <p:commandButton
                                 ajax="false"
                                 rendered="false"
                                 action="#{reportController.ccSummaryReportByBill()}"
                                 value="Process by Bill"
                                 icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
-                            <p:commandButton 
+                            <p:commandButton
                                 ajax="false"
                                 action="#{reportController.ccSummaryReportByItem()}"
                                 value="Process"
@@ -143,7 +143,7 @@
                             </p:commandButton>
                         </h:panelGrid>
 
-                        <p:dataTable id="dtaPr" 
+                        <p:dataTable id="dtaPr"
 
                                      rowKey="#{c.uuid}"
                                      rowIndexVar="count"
@@ -170,10 +170,10 @@
                             <p:column headerText="CC Code" filterMatchMode="contains" sortBy="#{c.institution.code}" filterBy="#{c.institution.code}" >
                                 <h:outputText value="#{c.institution.code}" ></h:outputText>
                             </p:column>
-                            <p:column 
-                                headerText="CC Name" 
-                                filterMatchMode="contains" 
-                                sortBy="#{c.institution.name}" 
+                            <p:column
+                                headerText="CC Name"
+                                filterMatchMode="contains"
+                                sortBy="#{c.institution.name}"
                                 filterBy="#{c.institution.name}">
                                 <h:outputText value="#{c.institution.name}" ></h:outputText>
                             </p:column>

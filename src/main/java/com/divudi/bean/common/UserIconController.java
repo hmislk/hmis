@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.Icon;
-import com.divudi.entity.Department;
-import com.divudi.entity.UserIcon;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.UserIconFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.Icon;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.UserIcon;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.UserIconFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;

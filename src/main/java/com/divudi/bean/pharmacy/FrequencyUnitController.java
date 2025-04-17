@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.FrequencyUnit;
-import com.divudi.facade.FrequencyUnitFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.FrequencyUnit;
+import com.divudi.core.facade.FrequencyUnitFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -41,7 +41,7 @@ public  class FrequencyUnitController implements Serializable {
     private List<FrequencyUnit> items = null;
     String selectText = "";
 
-   
+
     public void prepareAdd() {
         current = new FrequencyUnit();
     }
@@ -141,7 +141,7 @@ public  class FrequencyUnitController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             FrequencyUnitController controller = (FrequencyUnitController) facesContext.getApplication().getELResolver().
@@ -150,15 +150,13 @@ public  class FrequencyUnitController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

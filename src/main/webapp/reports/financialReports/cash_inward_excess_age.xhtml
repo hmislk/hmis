@@ -32,6 +32,14 @@
                         <p:spacer width="20"/>
                     </h:panelGrid>
 
+                    <!--                    <p:commandButton-->
+                    <!--                            id="btnSearch"-->
+                    <!--                            class="ui-button-warning my-4 mx-2"-->
+                    <!--                            style="width: 220px"-->
+                    <!--                            ajax="false"-->
+                    <!--                            value="Process Excess Age"-->
+                    <!--                            icon="fas fa-cogs"-->
+                    <!--                            action="#{creditCompanyDueController.createInwardCashAgeTableAccessWithFilters()}">-->
                     <p:commandButton
                             id="btnSearch"
                             class="ui-button-warning my-4 mx-2"
@@ -39,7 +47,7 @@
                             ajax="false"
                             value="Process Excess Age"
                             icon="fas fa-cogs"
-                            action="#{creditCompanyDueController.createInwardCashAgeTableAccessWithFilters()}">
+                            action="#{creditCompanyDueController.createInwardAgeTableAccessWithFilters()}">
                     </p:commandButton>
 
                     <p:defaultCommand target="btnSearch"/>

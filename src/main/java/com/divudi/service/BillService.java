@@ -1,49 +1,38 @@
 package com.divudi.service;
 
-import com.divudi.data.BillCategory;
-import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_GRN;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.None;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.YouOweMe;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PaymentFacade;
+import com.divudi.core.data.BillCategory;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.PaymentMethod;
+
+import static com.divudi.core.data.PaymentMethod.Cash;
+import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
+
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PaymentFacade;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ejb.EJB;
@@ -276,19 +265,42 @@ public class BillService {
         double staffFeesCalculatedByBillFees = 0.0;
         double collectingCentreFeesCalculateByBillFees = 0.0;
         double hospitalFeeCalculatedByBillFess = 0.0;
+        double reagentFeeCalculatedByBillFees = 0.0;
+        double additionalFeeCalculatedByBillFees = 0.0;
+
         List<BillFee> bfs = fetchBillFees(bi);
+        System.out.println("bfs = " + bfs);
+
+        for (BillFee bf : bfs) {
+            System.out.println(bf.getFee().getFeeType() + " - " + bf.getFeeValue());
+        }
+
         for (BillFee bf : bfs) {
             if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
                 collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
             } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
                 staffFeesCalculatedByBillFees += bf.getFeeGrossValue();
             } else {
-                hospitalFeeCalculatedByBillFess = bf.getFeeGrossValue();
+                hospitalFeeCalculatedByBillFess += bf.getFeeGrossValue();
             }
+            if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                reagentFeeCalculatedByBillFees += bf.getFeeGrossValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Additional) {
+                additionalFeeCalculatedByBillFees += bf.getFeeGrossValue();
+            }
+
         }
+
+        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
+        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
+        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
+        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
+
         bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         bi.setStaffFee(staffFeesCalculatedByBillFees);
         bi.setHospitalFee(hospitalFeeCalculatedByBillFess);
+        bi.setReagentFee(reagentFeeCalculatedByBillFees);
+        bi.setOtherFee(additionalFeeCalculatedByBillFees);
         billItemFacade.edit(bi);
     }
 
@@ -298,8 +310,10 @@ public class BillService {
     }
 
     public void createBillItemFeeBreakdownFromBills(List<Bill> bills) {
-        List<BillItem> allBillItems = fetchBillItems(bills);
-        createBillItemFeeBreakdownAsHospitalFeeItemDiscount(allBillItems);
+        List<BillItem> billItems = fetchBillItems(bills);
+
+        createBillItemFeeBreakdownAsHospitalFeeItemDiscount(billItems);
+
     }
 
     public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
@@ -320,6 +334,66 @@ public class BillService {
         parameters.put("b", individualBill);
         Bill batchBill = (Bill) billFacade.findFirstByJpql(j, parameters);
         return batchBill;
+    }
+
+    public Bill fetchBillReferredAsReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("referenceBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsBackwardReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("backwardReferenceBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsForwardReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("forwardReferenceBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsBilledBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("billedBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsCancelledBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("cancelledBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsRefundedBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("refundedBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsReactivatedBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("reactivatedBill", referredBill, billTypeAtomic);
+    }
+
+    public Bill fetchBillReferredAsPaidBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        return fetchBillByReferenceType("paidBill", referredBill, billTypeAtomic);
+    }
+
+    private Bill fetchBillByReferenceType(String referenceField, Bill referredBill, BillTypeAtomic billTypeAtomic) {
+        String jpql = "SELECT b FROM Bill b WHERE b." + referenceField + " = :b AND b.billTypeAtomic = :billType";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("b", referredBill);
+        parameters.put("billType", billTypeAtomic);
+        return billFacade.findFirstByJpql(jpql, parameters);
+    }
+
+    public Bill fetchFirstBill() {
+        String jpql = "SELECT b "
+                + " FROM Bill b "
+                + " where b.retired=:ret "
+                + " order by b.id";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        return billFacade.findFirstByJpql(jpql, parameters);
+    }
+
+    public Bill fetchLastBill() {
+        String jpql = "SELECT b "
+                + " FROM Bill b "
+                + " where b.retired=:ret "
+                + " order by b.id desc";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        return billFacade.findFirstByJpql(jpql, parameters);
     }
 
     public void saveBill(Bill bill) {
@@ -437,6 +511,23 @@ public class BillService {
         return fetchingBillComponents;
     }
 
+    public List<Payment> fetchBillPayments(Bill bill, Bill batchBill) {
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.bill=:bill "
+                + "order by p.id";
+        if (batchBill != null) {
+            params.put("bill", batchBill);
+        }else{
+            params.put("bill", bill);
+        }
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
     public Payment fetchBillPayment(Bill b) {
         if (b == null) {
             return null;
@@ -534,7 +625,7 @@ public class BillService {
         String jpql;
         Map params = new HashMap();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow(b) "
+        jpql = "select new com.divudi.core.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic in :billTypesAtomics "
@@ -630,9 +721,165 @@ public class BillService {
             Institution site,
             Department department,
             WebUser webUser,
+            BillTypeAtomic billTypeAtomic) {
+        return fetchBills(fromDate, toDate, institution, site, department, webUser,
+                billTypeAtomic != null ? Collections.singletonList(billTypeAtomic) : null);
+    }
+
+    public List<Bill> fetchBills(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
             List<BillTypeAtomic> billTypeAtomics,
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc  ";
+        List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedBills;
+    }
+
+    public List<Bill> fetchBillsWithToInstitution(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            Institution toInstitution,
+            Department toDepartment,
+            Institution toSite,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        // From Institution
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        // From Department
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        // From Site (via Department.site)
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        // To Institution
+        if (toInstitution != null) {
+            jpql += " and b.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        // To Department
+        if (toDepartment != null) {
+            jpql += " and b.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+
+        // To Site (via toDepartment.site)
+        if (toSite != null) {
+            jpql += " and b.toDepartment.site=:toSite ";
+            params.put("toSite", toSite);
+        }
+
+        // WebUser
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        // Admission Type
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        // Payment Scheme
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        return billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<Bill> fetchBills(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme,
+            Institution toInstitution,
+            Department toDepartment,
+            String visitType
+    ) {
         String jpql;
         Map params = new HashMap();
 
@@ -670,6 +917,21 @@ public class BillService {
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme ";
             params.put("paymentScheme", paymentScheme);
+        }
+
+        if (toInstitution != null) {
+            jpql += " and b.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and b.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            jpql += " AND b.ipOpOrCc = :type";
+            params.put("type", visitType.trim());
         }
 
         jpql += " order by b.createdAt desc  ";

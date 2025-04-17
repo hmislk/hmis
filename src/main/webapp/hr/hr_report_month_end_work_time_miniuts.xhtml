@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -47,15 +47,15 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandLink ajax="false" value="New Method" 
+                            <p:commandLink ajax="false" value="New Method"
                                            action="#{hrReportController.createMonthEndWorkTimeReportBySalaryGenerationMethod()}"
                                            styleClass="tinyText" style="float: right;"/>
 
                         </h:panelGrid>
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
                             <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss"  editable="true">
                                 <f:facet name="header" >
-                                   
+
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.roster.name} Roster" rendered="#{hrReportController.reportKeyWord.roster ne null}"/>
                                         <br />
@@ -105,7 +105,7 @@
                                     <f:facet name="header" >
                                         <h:outputLabel value="Staff" />
                                     </f:facet>
-                                    <p:commandLink value="#{ss.staff.person.name}" 
+                                    <p:commandLink value="#{ss.staff.person.name}"
                                                    action="#{hrReportController.fromWeekelyOverTimeReportToStaffFingerPrintAnalysis(ss.staff)}" ajax="false" ></p:commandLink>
                                 </p:column>
                                 <p:column styleClass="shortNumericColumn" >
@@ -222,7 +222,7 @@
                                         </h:outputLabel>
                                         <h:outputLabel value="hrs" ></h:outputLabel>
                                     </p:tooltip>
-                                </p:column> 
+                                </p:column>
                                 <p:column styleClass="shortNumericColumn" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Entitled" />
@@ -236,7 +236,7 @@
                                         </h:outputLabel>
                                         <h:outputLabel value="hrs" ></h:outputLabel>
                                     </p:tooltip>
-                                </p:column> 
+                                </p:column>
 
                                 <p:column styleClass="shortNumericColumn">
                                     <f:facet name="header" >
@@ -254,7 +254,7 @@
                                         </h:outputLabel>
                                         <h:outputLabel value="hrs" ></h:outputLabel>
                                     </p:tooltip>
-                                </p:column>  
+                                </p:column>
 
                                 <p:column styleClass="shortNumericColumn">
                                     <f:facet name="header" >
@@ -263,7 +263,7 @@
                                             <h:outputLabel value="Weekely Orvertime Value" />
                                         </p:tooltip>
                                     </f:facet>
-                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">  
+                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -271,7 +271,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

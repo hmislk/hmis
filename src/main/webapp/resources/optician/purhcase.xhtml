@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -29,7 +29,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="PURCHASE BILL"   />                           
+                <h:outputLabel value="PURCHASE BILL"   />
             </div>
 
             <div class="headingBill d-flex flex-column align-items-center">
@@ -40,7 +40,7 @@
 
             <div>
 
-                <h:panelGrid columns="4" class="poDetail" >    
+                <h:panelGrid columns="4" class="poDetail" >
                     <h:outputLabel value="Purchase Date" class="billDetailsFiveFive"/>
                     <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
@@ -54,8 +54,8 @@
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>
 
-                    <h:outputLabel value="Invoice No" class="billDetailsFiveFive"/>  
-                    <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="billDetailsFiveFive"/> 
+                    <h:outputLabel value="Invoice No" class="billDetailsFiveFive"/>
+                    <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="billDetailsFiveFive"/>
 
                     <h:outputLabel value="Supplier" class="billDetailsFiveFive"/>
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="billDetailsFiveFive"/>
@@ -75,7 +75,7 @@
                         <f:facet name="header">Item</f:facet>
                         <h:outputText value="#{bip.item.name}" ></h:outputText>
                         <h:outputText value=" (#{bip.item.code})" ></h:outputText>
-                    </p:column>                                          
+                    </p:column>
                     <p:column >
                         <f:facet name="header">QTY</f:facet>
                             #{bip.pharmaceuticalBillItem.qty}
@@ -91,7 +91,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column>
                         <f:facet name="header">P. Value</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
@@ -112,7 +112,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                  
+
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column colspan="4" footerText="Total"/>
@@ -194,13 +194,13 @@
                 </div>
                 <div>
                     <br></br>
-                    <h:outputLabel value="Prepared By :" /> 
+                    <h:outputLabel value="Prepared By :" />
                     <h:outputLabel value="................................................................."/>
-                    <br></br>                
-                    <br></br>         
+                    <br></br>
+                    <br></br>
                     <h:outputLabel value="Approved By :"/>
                     <h:outputLabel value="................................................................."/>
-                    <br></br>                                      
+                    <br></br>
                     <br></br>
                     <h:outputLabel value="Authorized By :"/>
                     <h:outputLabel value="................................................................"/>
@@ -211,7 +211,7 @@
                     <h:outputLabel value="...................................................................."/>
                     <h:outputLabel value="Amount : Rs. ................" style="position: absolute; left: 70%;"/>
                     <br></br>
-                    <br></br>                    
+                    <br></br>
                     <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. "/>
                     <h:outputLabel value="#{cc.attrs.bill.creater.institution.name}"></h:outputLabel>
                     <br></br>
@@ -247,7 +247,7 @@
                             <h4 style="color: #000000;">
                                 Payment Voucher
                             </h4>
-            
+
                             <h:panelGrid columns="2" styleClass="poDetail">
                                 <h:outputLabel value="Payee : "/>
                                 <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
@@ -264,8 +264,8 @@
                                 <h:outputLabel value="Received with thanks sum of Rupees  : "/>
                                 <h:outputLabel value="...................................."/>
                             </h:panelGrid>
-            
-            
+
+
                         </div>-->
         </div>
     </cc:implementation>

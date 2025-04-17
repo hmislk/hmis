@@ -7,39 +7,23 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.CashBookEntryData;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Agent;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.IOU;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnCall;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.PatientPoints;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
-import static com.divudi.data.PaymentMethod.Voucher;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.SitesGroupedIntoInstitutions;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Payment;
-import com.divudi.entity.cashTransaction.CashBook;
-import com.divudi.entity.cashTransaction.CashBookEntry;
-import com.divudi.facade.CashBookEntryFacade;
-import com.divudi.facade.CashBookFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.CashBookEntryData;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.SitesGroupedIntoInstitutions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.cashTransaction.CashBook;
+import com.divudi.core.entity.cashTransaction.CashBookEntry;
+import com.divudi.core.facade.CashBookEntryFacade;
+import com.divudi.core.facade.CashBookFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -1330,7 +1314,7 @@ public class CashBookEntryController implements Serializable {
 //        }
     }
 
-    public void writeCashBookEntryAtHandover(Payment p, CashBook cb) {
+    public void writeCashBookEntryAtHandover(Payment p, CashBook cb, Bill handoverAcceptBill) {
         System.out.println("writeCashBookEntryAtHandover");
         System.out.println("p = " + p);
         System.out.println("cb = " + cb);
@@ -1351,7 +1335,7 @@ public class CashBookEntryController implements Serializable {
         newCbEntry.setPaymentMethod(p.getPaymentMethod());
         newCbEntry.setEntryValue(p.getPaidValue());
         newCbEntry.setPayment(p);
-        newCbEntry.setBill(p.getHandoverAcceptBill());
+        newCbEntry.setBill(handoverAcceptBill);
         newCbEntry.setCashBook(cb);
         updateBalances(p.getPaymentMethod(), p.getPaidValue(), newCbEntry);
 

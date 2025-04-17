@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -47,10 +47,10 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
                             <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss"  editable="true">
                                 <f:facet name="header" >
-                                   
+
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.roster.name} Roster" rendered="#{hrReportController.reportKeyWord.roster ne null}"/>
                                         <br />
@@ -103,7 +103,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{ss.sunDay}">
                                         <f:converter converterId="longToTime"/>
-                                    </h:outputLabel>                                    
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Mon" >
                                     <f:facet name="header" >
@@ -160,7 +160,7 @@
                                     <h:outputLabel value="#{ss.total}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Over Time Hour">
                                     <f:facet name="header" >
                                         <h:outputLabel value="Over Time Hour" />
@@ -168,12 +168,12 @@
                                     <h:outputLabel value="#{ss.overTime}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>                                                            
+                                </p:column>
                                 <p:column headerText="Over Time Value">
                                     <f:facet name="header" >
                                         <h:outputLabel value="Over Time Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">  
+                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -197,7 +197,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

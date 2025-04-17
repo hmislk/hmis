@@ -6,106 +6,160 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
-    <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="patient" type="com.divudi.entity.Patient"  />
+        <cc:attribute name="patient" type="com.divudi.core.entity.Patient" />
     </cc:interface>
 
-    <!-- IMPLEMENTATION -->
     <cc:implementation>
+
+        <style>
+            .icon-label-pair {
+                display: inline-flex;
+                align-items: baseline;
+                gap: 0.5em;
+                margin-right: 2em;
+                margin-bottom: 0.5em;
+            }
+
+            .compact-grid .ui-panelgrid-cell {
+                padding: 0.3em 0.6em;
+                vertical-align: top;
+            }
+
+            .full-width-label {
+                display: flex;
+                align-items: baseline;
+                gap: 0.5em;
+                margin-bottom: 0.5em;
+            }
+        </style>
+
         <div class="row">
-            <div class="d-flex align-items-center">
-                <div>
-                    <h:panelGrid columns="2">
-                        <i class="fa fa-user fa-fw" style="color: #007bff;" title="Name"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}" style="font-weight: bold; font-size: 1.2em; margin-left: 20px;"/>
+            <div class="col-12">
 
-                        <i class="fa fa-birthday-cake fa-fw" style="color: #28a745;" title="Age" rendered="#{not empty cc.attrs.patient.person.ageAsString}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.ageAsString}" rendered="#{not empty cc.attrs.patient.person.ageAsString}" style="margin-left: 20px;"/>
+                <!-- Name -->
+                <h:panelGrid columns="1" styleClass="compact-grid">
+                    <h:panelGroup layout="block" styleClass="icon-label-pair">
+                        <i class="fa fa-user fa-fw" style="color: #007bff;" title="Name" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}" style="font-weight: bold; font-size: 1.2em;" />
+                    </h:panelGroup>
+                </h:panelGrid>
 
-                        <i class="fa fa-venus-mars fa-fw" style="color: #17a2b8;" title="Sex" rendered="#{not empty cc.attrs.patient.person.sex}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.sex}" rendered="#{not empty cc.attrs.patient.person.sex}" style="margin-left: 20px;"/>
+                <!-- Age | DOB | Sex -->
+                <h:panelGrid columns="3" styleClass="compact-grid">
 
-                        <i class="fa fa-globe fa-fw" style="color: #58e7e9;" title="Status" rendered="#{not empty cc.attrs.patient.person.foreigner}"></i>
-                        <p:badge 
-                            style="margin-left: 20px;"
-                            value="#{cc.attrs.patient.person.foreigner eq false or cc.attrs.patient.person.foreigner eq null?'Patient is Local':'Patient is Forigner'}" 
-                            severity="#{cc.attrs.patient.person.foreigner?'warning':'success'}" 
-                            styleClass="mr-2">
-                        </p:badge>
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.ageAsString}">
+                        <i class="fa fa-birthday-cake fa-fw" style="color: #28a745;" title="Age" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.ageAsString}" />
+                    </h:panelGroup>
 
-                        <i class="fa fa-calendar fa-fw" style="color: #fd7e14;" title="Date of Birth" rendered="#{not empty cc.attrs.patient.person.dob}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.dob}" rendered="#{not empty cc.attrs.patient.person.dob}" style="margin-left: 20px;">
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.dob}">
+                        <i class="fa fa-calendar fa-fw" style="color: #fd7e14;" title="Date of Birth" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.dob}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </p:outputLabel>
-                        <i class="fa fa-phone fa-fw" style="color: #ffc107;" title="Phone" rendered="#{not empty cc.attrs.patient.person.phone}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.phone}" rendered="#{not empty cc.attrs.patient.person.phone}" style="margin-left: 20px;"/>
+                    </h:panelGroup>
 
-                        <i class="fa fa-mobile-alt fa-fw" style="color: #007bff;" title="Mobile" rendered="#{not empty cc.attrs.patient.person.mobile}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.mobile}" rendered="#{not empty cc.attrs.patient.person.mobile}" style="margin-left: 20px;"/>
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.sex}">
+                        <i class="fa fa-venus-mars fa-fw" style="color: #17a2b8;" title="Sex" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.sex}" />
+                    </h:panelGroup>
 
-                        <i class="fa fa-envelope fa-fw" style="color: #6c757d;" title="Email" rendered="#{not empty cc.attrs.patient.person.email}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.email}" rendered="#{not empty cc.attrs.patient.person.email}" style="margin-left: 20px;"/>
-                        <p:outputLabel value="No Email" rendered="#{ empty cc.attrs.patient.person.email}" style="margin-left: 20px;"/>
+                </h:panelGrid>
 
-                        <i class="fa fa-home fa-fw" style="color: #fd7e14;" title="Address" rendered="#{not empty cc.attrs.patient.person.address}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.address}" rendered="#{not empty cc.attrs.patient.person.address}" style="margin-left: 20px;"/>
-                        <p:outputLabel value="No Address" rendered="#{ empty cc.attrs.patient.person.address}" style="margin-left: 20px;"/>
-                    </h:panelGrid>   
-                </div>
+                <!-- Status -->
+                <h:panelGrid columns="1" styleClass="compact-grid">
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.foreigner}">
+                        <i class="fa fa-globe fa-fw" style="color: #58e7e9;" title="Status" />
+                        <p:badge
+                            value="#{cc.attrs.patient.person.foreigner ? 'Foreign Patient' : 'Local Patient'}"
+                            severity="#{cc.attrs.patient.person.foreigner ? 'warning' : 'success'}" />
+                    </h:panelGroup>
+                </h:panelGrid>
 
-                <div class="mx-4" style="margin-left: 20px;box-sizing: border-box;border-left: 2px solid black">
-                    <div class="col-md-12" style="line-height: 2.5;">
+                <!-- Identification -->
+                <h:panelGrid columns="3" styleClass="compact-grid">
 
-                        <h:panelGroup rendered="#{not empty cc.attrs.patient.person.race.name}">
-                            <i class="fa fa-flag fa-fw" style="color: #6f42c1;" title="Race"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.race.name}" style="margin-left: 20px;"/>
-                        </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.phn}">
+                        <i class="fa fa-id-card fa-fw" style="color: #ffc107;" title="PHN" />
+                        <p:outputLabel value="#{cc.attrs.patient.phn}" />
+                    </h:panelGroup>
 
-                        <h:panelGroup rendered="#{not empty cc.attrs.patient.person.religion.name}">
-                            <i class="fa fa-pray fa-fw" style="color: #17a2b8;" title="Religion"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.religion.name}" style="margin-left: 20px;"/>
-                        </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.nic}">
+                        <i class="fa fa-id-card fa-fw" style="color: #17a2b8;" title="NIC / Passport" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.nic}" />
+                    </h:panelGroup>
 
-                        <h:panelGroup rendered="#{not empty cc.attrs.patient.person.occupation.name}">
-                            <i class="fa fa-briefcase fa-fw" style="color: #28a745;" title="Occupation"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.occupation.name}" style="margin-left: 20px;"/>
-                        </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.code}">
+                        <i class="fa fa-barcode fa-fw" style="color: #28a745;" title="Patient Code" />
+                        <p:outputLabel value="#{cc.attrs.patient.code}" />
+                    </h:panelGroup>
 
-                        <h:panelGroup rendered="#{not empty cc.attrs.patient.person.civilStatus.name}">
-                            <i class="fa fa-heart fa-fw" style="color: #dc3545;" title="Civil Status"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.civilStatus.name}"/>
-                        </h:panelGroup>
+                </h:panelGrid>
 
-                    </div>
-                </div>
+                <!-- Contact -->
+                <h:panelGrid columns="3" styleClass="compact-grid">
 
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.phone}">
+                        <i class="fa fa-phone fa-fw" style="color: #ffc107;" title="Phone" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.phone}" />
+                    </h:panelGroup>
 
-                <div>
-                    <div>
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.mobile}">
+                        <i class="fa fa-mobile-alt fa-fw" style="color: #007bff;" title="Mobile" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.mobile}" />
+                    </h:panelGroup>
 
-                        <h:panelGroup rendered="#{not empty cc.attrs.patient.person.bloodGroup.name}">
-                            <i class="fa fa-tint fa-fw" style="color: #dc3545;" title="Blood Group"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.bloodGroup.name}" style="margin-left: 20px;"/>
-                        </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="icon-label-pair">
+                        <i class="fa fa-envelope fa-fw" style="color: #6c757d;" title="Email" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.email}" rendered="#{not empty cc.attrs.patient.person.email}" />
+                        <p:outputLabel value="No Email" rendered="#{empty cc.attrs.patient.person.email}" />
+                    </h:panelGroup>
 
-                        <h:panelGroup rendered="#{not empty cc.attrs.patient.phn}">
-                            <i class="fa fa-id-card fa-fw" style="color: #ffc107;" title="PHN"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.phn}" style="margin-left: 20px;"/>
-                        </h:panelGroup>
+                </h:panelGrid>
 
-                        <h:panelGroup rendered="#{not empty cc.attrs.patient.person.nic}">
-                            <i class="fa fa-id-card fa-fw" style="color: #17a2b8;" title="NIC / Passport"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.nic}" style="margin-left: 20px;"/>
-                        </h:panelGroup>
+                <!-- Address (Full Width) -->
+                <h:panelGrid columns="1" styleClass="compact-grid">
+                    <h:panelGroup layout="block" styleClass="full-width-label">
+                        <i class="fa fa-home fa-fw" style="color: #fd7e14;" title="Address" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.address}" rendered="#{not empty cc.attrs.patient.person.address}" />
+                        <p:outputLabel value="No Address" rendered="#{empty cc.attrs.patient.person.address}" />
+                    </h:panelGroup>
+                </h:panelGrid>
 
-                        <h:panelGroup rendered="#{not empty cc.attrs.patient.code}">
-                            <i class="fa fa-barcode fa-fw" style="color: #28a745;" title="Patient Code"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.code}"/>
-                        </h:panelGroup>
+                <!-- Other Personal Info -->
+                <h:panelGrid columns="4" styleClass="compact-grid">
 
-                    </div>
-                </div>
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.race.name}">
+                        <i class="fa fa-flag fa-fw" style="color: #6f42c1;" title="Race" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.race.name}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.religion.name}">
+                        <i class="fa fa-pray fa-fw" style="color: #17a2b8;" title="Religion" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.religion.name}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.occupation.name}">
+                        <i class="fa fa-briefcase fa-fw" style="color: #28a745;" title="Occupation" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.occupation.name}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.civilStatus.name}">
+                        <i class="fa fa-heart fa-fw" style="color: #dc3545;" title="Civil Status" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.civilStatus.name}" />
+                    </h:panelGroup>
+
+                </h:panelGrid>
+
+                <!-- Blood Group -->
+                <h:panelGrid columns="1" styleClass="compact-grid">
+                    <h:panelGroup layout="block" styleClass="icon-label-pair" rendered="#{not empty cc.attrs.patient.person.bloodGroup.name}">
+                        <i class="fa fa-tint fa-fw" style="color: #dc3545;" title="Blood Group" />
+                        <p:outputLabel value="#{cc.attrs.patient.person.bloodGroup.name}" />
+                    </h:panelGroup>
+                </h:panelGrid>
+
             </div>
         </div>
 
