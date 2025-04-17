@@ -267,21 +267,12 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a retired user to revert.");
             return;
         }
-
         selected.getWebUserPerson().setRetired(false);
-        selected.getWebUserPerson().setRetirer(getSessionController().getLoggedUser());
-        selected.getWebUserPerson().setRetiredAt(Calendar.getInstance().getTime());
         getPersonFacade().edit(selected.getWebUserPerson());
-
-        selected.setName(selected.getId().toString());
         selected.setRetired(false);
-        selected.setRetirer(getSessionController().getLoggedUser());
-        selected.setRetiredAt(Calendar.getInstance().getTime());
         getFacade().edit(selected);
-
         selected = null;
         fillLightUsers();
-
         JsfUtil.addSuccessMessage("Retirement successfully reverted.");
     }
 
