@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+      xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
 
@@ -58,54 +58,48 @@
                         </f:facet>
 
                         <style>
-                            @media print{
-                                .purhcaseBill{
-                                    width: 297mm!important;
-                                }
+                    @media print{
+                        .purhcaseBill{
+                            width: 297mm!important;
+                        }
 
-                                .hideProfit{
-                                    display: none!important;
-                                }
+                        .hideProfit{
+                            display: none!important;
+                        }
 
-                                .showProfit{
+                        .showProfit{
 
-                                }
-                                
-                                .hideRetailValue{
-                                    display: none!important;
-                                }
+                        }
+                        
+                        .hideRetailValue{
+                            display: none!important;
+                        }
 
-                                .showRetailValue{
+                        .showRetailValue{
 
-                                }
+                        }
 
-                            }
+                    }
 
-                            @media screen{
-                                .purhcaseBill{
-                                    width: 100%!important;
-                                }
+                    @media screen{
+                        .purhcaseBill{
+                            width: 100%!important;
+                        }
 
-                                .showProfit{
+                        .showProfit{
 
-                                }
-                                
-                                .showRetailValue{
+                        }
+                    }
 
-                                }
-                            }
+                </style>
 
-                        </style>
-
-                        <h:panelGroup id="gpBillPreview" >
-                            <div class="d-flex justify-content-between" style="width: 297mm;">
-                                <ph:purhcase 
-                                    bill="#{pharmacyBillSearch.bill}" 
-                                    ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
-                                    ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                                </ph:purhcase>
-                            </div>
-                        </h:panelGroup>
+                <h:panelGroup id="gpBillPreview" >
+                    <pharmacy:purhcase
+                        bill="#{pharmacyBillSearch.bill}"
+                        ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                        ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                    </pharmacy:purhcase>
+                </h:panelGroup>
 
                     </p:panel>
 

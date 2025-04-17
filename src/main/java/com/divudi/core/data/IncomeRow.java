@@ -138,6 +138,7 @@ public class IncomeRow implements Serializable {
     private double tax;
     private double actualTotal;
     private double netTotal;
+    private double paidTotal;
 
     private double hospitalTotal;
     private double staffTotal;
@@ -893,6 +894,8 @@ public class IncomeRow implements Serializable {
     public void setCategoryNetTotal(double categoryNetTotal) {
         this.categoryNetTotal = categoryNetTotal;
     }
+    
+    
 
     public Long getItemCount() {
         return itemCount;
@@ -1211,6 +1214,14 @@ public class IncomeRow implements Serializable {
 
     public void setReferanceBill(Bill referanceBill) {
         this.referanceBill = referanceBill;
+    }
+
+    public double getPaidTotal() {
+        return paidTotal;
+    }
+
+    public void setPaidTotal(double paidTotal) {
+        this.paidTotal = paidTotal;
     }
 
 

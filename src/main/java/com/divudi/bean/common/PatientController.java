@@ -130,7 +130,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @EJB
     private BillNumberGenerator billNumberGenerator;
 
-    CommonFunctions commonFunctions;
     @EJB
     BillFacade billFacade;
     @EJB
@@ -2224,17 +2223,20 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String searchFamily() {
         families = null;
-        String j = "Select f from Family f where f.retired=false and f.phoneNo = :pn or f.membershipCardNo = :mcn";
-        Map m = new HashMap();
+        String jpql = "Select f "
+                + "from Family f "
+                + "where f.retired=false "
+                + "and (f.phoneNo = :pn or f.membershipCardNo = :mcn) ";
+        Map params = new HashMap();
         Long mcn;
         try {
             mcn = Long.parseLong(searchText);
         } catch (Exception e) {
             mcn = 0L;
         }
-        m.put("pn", searchText);
-        m.put("mcn", mcn);
-        List<Family> fs = getFamilyFacade().findByJpql(j, m);
+        params.put("pn", searchText);
+        params.put("mcn", mcn);
+        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
         if (fs == null || fs.isEmpty()) {
             JsfUtil.addErrorMessage("No matching families found");
             return "";
@@ -2263,10 +2265,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         families = null;
-        String j = "Select f from Family f where f.retired=false and f.chiefHouseHolder.person.name like :pn order by f.chiefHouseHolder.person.name";
-        Map m = new HashMap();
-        m.put("pn", "%" + searchText + "%");
-        List<Family> fs = getFamilyFacade().findByJpql(j, m);
+        String jpql = "Select f "
+                + " from Family f "
+                + " where f.retired=false "
+                + " and f.chiefHouseHolder.person.name like :pn "
+                + " order by f.chiefHouseHolder.person.name";
+        Map params = new HashMap();
+        params.put("pn", "%" + searchText + "%");
+        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
         if (fs == null || fs.isEmpty()) {
             JsfUtil.addErrorMessage("No matching families found");
             return "";
@@ -2736,14 +2742,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         membershipTypeListner = null;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     @Deprecated
     private YearMonthDay yearMonthDay;
 
@@ -2767,7 +2765,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     @Deprecated
     public void dobChangeListen() {
-        yearMonthDay = getCommonFunctions().guessAge(getCurrent().getPerson().getDob());
+        yearMonthDay = CommonFunctions.guessAge(getCurrent().getPerson().getDob());
     }
 
     public StreamedContent getPhoto(Patient p) {

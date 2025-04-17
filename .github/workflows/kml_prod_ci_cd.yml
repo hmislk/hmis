@@ -11,16 +11,16 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
 
       - name: Cache Maven Packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
@@ -83,7 +83,7 @@ jobs:
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
             mkdir -p $WAR_DIR
-            sudo chown -R appuser:appuser $WAR_DIR
+            chown -R appuser:appuser $WAR_DIR
             cd $WAR_DIR
 
             # Remove old backup if it exists
@@ -94,7 +94,6 @@ jobs:
             # If the current WAR file exists, back it up
             if [ -f $WAR_NAME ]; then
               mv $WAR_NAME $WAR_NAME.old
-              sudo chown -R appuser:appuser $WAR_DIR
             fi
           "
 
@@ -103,7 +102,7 @@ jobs:
 
           # Set the WAR file permission
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
+            chown appuser:appuser $WAR_DIR/$WAR_NAME
           "
 
           # Deploy the WAR using asadmin

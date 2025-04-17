@@ -30,8 +30,13 @@ public class TestWiseCountReport {
     private BillItem billItem;
     private Double reagentFee;
     private Double otherFee;
+    
+    private int check;
 
-
+    public TestWiseCountReport(String testName, int check) {
+        this.testName = testName;
+        this.check = check;
+    }
 
     public TestWiseCountReport(String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double total) {
         this.testName = testName;
@@ -172,6 +177,9 @@ public class TestWiseCountReport {
     }
 
     public Double getReagentFee() {
+        if(reagentFee == null){
+            reagentFee = 0.0;
+        }
         return reagentFee;
     }
 
@@ -180,10 +188,21 @@ public class TestWiseCountReport {
     }
 
     public Double getOtherFee() {
+        if(otherFee == null){
+            otherFee = 0.0;
+        }
         return otherFee;
     }
 
     public void setOtherFee(Double otherFee) {
         this.otherFee = otherFee;
+    }
+
+    public int getCheck() {
+        return check;
+    }
+
+    public void setCheck(int check) {
+        this.check = check;
     }
 }

@@ -177,7 +177,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private BillSearch billSearch;
     @Inject
     private BillBeanController billBean;
-    CommonFunctions commonFunctions;
 
     /**
      * Properties
@@ -706,14 +705,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     private void savePatient() {

@@ -29,7 +29,7 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                font-size: 75pt;
+                font-size: 70pt;
                 font-weight: bold
             }
 
@@ -127,14 +127,31 @@
             }
 
             .element {
-                width: 150px; /* Initial width */
-                height: 150px; /* Initial height */
+                width: 200px; /* Initial width */
+                height: 200px; /* Initial height */
                 background-color: #007bff;
                 animation: scaleAnimation 5s ease-in-out infinite alternate; /* Animation properties */
             }
+            
+            .element2{
+                 width: 200px; /* Initial width */
+                height: 200px; /* Initial height */
+                background-color: #007bff;
+                font-size: 65pt;
+                animation: scaleAnimation 5s ease-in-out infinite alternate; /* Animation properties */
+            }
+            
             .mini-element {
                 width: 70px; /* Initial width */
                 height: 70px; /* Initial height */
+                background-color: #6c5ce7;
+
+            }
+            
+            .mini-element2 {
+                width: 70px; /* Initial width */
+                height: 70px; /* Initial height */
+                font-size: 20pt;
                 background-color: #6c5ce7;
 
             }
@@ -204,7 +221,7 @@
                                                             </div>
                                                         </div>-->
                             <div class="col-3">
-                                <div class="token-circle element">
+                                <div class="token-circle #{token.tokenNumber > 100 ? 'element2' : 'element'}">
                                     <h:outputText value="#{token.tokenNumber}" />
                                 </div>
                             </div>
@@ -236,7 +253,7 @@
                             </div>
 
                             <div class="col-3">
-                                <div class="token-circle element">
+                                <div class="token-circle #{token.tokenNumber > 100 ? 'element2' : 'element'}">
                                     <h:outputText value="#{token.tokenNumber}" />
                                 </div>
                             </div>
@@ -258,7 +275,7 @@
                                                             </div>
                                                         </div>-->
                             <div class="col-3">
-                                <div class="mini-token-circle mini-element ">
+                                <div class="mini-token-circle  #{inprogressToken.tokenNumber > 100 ? 'mini-element2':'mini-element'}">
                                     <h:outputText value="#{inprogressToken.tokenNumber}" />
                                 </div>
                             </div>
@@ -274,7 +291,7 @@
                             </div>
 
                             <div class="col-3">
-                                <div class="mini-token-circle mini-element">
+                                <div class="mini-token-circle  #{inprogressToken.tokenNumber > 100 ? 'mini-element2':'mini-element'}">
                                     <h:outputText value="#{inprogressToken.tokenNumber}" />
                                 </div>
                             </div>

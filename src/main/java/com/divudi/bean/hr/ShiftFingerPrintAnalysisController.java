@@ -536,7 +536,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
 
     }
 
@@ -605,7 +605,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
 
 
     }
@@ -816,7 +816,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
 
 
     }
@@ -885,7 +885,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
     }
 
     public void createShiftTableReset() {
@@ -952,7 +952,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
     }
 
     public void createShiftTableResetByStaff() {
@@ -1021,7 +1021,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         }
 
-        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+        // Long range = CommonFunctions.getDayCount(getFromDate(), getToDate());
     }
 
     public void fingerPrintSelectListenerStartRecord(StaffShift staffShift) {

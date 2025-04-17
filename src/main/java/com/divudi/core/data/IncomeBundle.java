@@ -40,6 +40,9 @@ public class IncomeBundle implements Serializable {
     private SessionInstance sessionInstance;
 
     private PaymentMethod paymentMethod;
+    
+    private double netTotal;
+    private double paidTotal;
 
     private double onCallValue;
     private double cashValue;
@@ -1513,4 +1516,22 @@ public class IncomeBundle implements Serializable {
         this.quantityPlusFreeQuantityValueAtRetailSaleRate = quantityPlusFreeQuantityValueAtRetailSaleRate;
     }
 
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
+    }
+
+    public double getPaidTotal() {
+        return paidTotal;
+    }
+
+    public void setPaidTotal(double paidTotal) {
+        this.paidTotal = paidTotal;
+    }
+
+    
+    
 }

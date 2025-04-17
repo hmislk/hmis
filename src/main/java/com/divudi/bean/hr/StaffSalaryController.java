@@ -81,7 +81,6 @@ public class StaffSalaryController implements Serializable {
     @EJB
     private HumanResourceBean humanResourceBean;
 
-    private CommonFunctions commonFunctions;
     /////////////
     @Inject
     private SessionController sessionController;
@@ -445,13 +444,13 @@ public class StaffSalaryController implements Serializable {
                 if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
                     long extraDays;
                     if (getCurrent().getStaff().getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime()) {
-                        long l=commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime();
+                        long l=CommonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - CommonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime();
                         extraDays = (l) / (1000 * 60 * 60 * 24);
                     } else {
-                        extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+                        extraDays = (CommonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
-                    //// // System.out.println("commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime() = " + (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime()));
-                    //// // System.out.println("commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime() = " + (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime()));
+                    //// // System.out.println("CommonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - CommonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime() = " + (CommonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - CommonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime()));
+                    //// // System.out.println("CommonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - CommonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime() = " + (CommonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - CommonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime()));
                     extraDays -= (int) (extraDays / 7);
                     workedDays += extraDays;
                 }
@@ -509,9 +508,9 @@ public class StaffSalaryController implements Serializable {
                 if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
                     long extraDays;
                     if (getCurrent().getStaff().getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime()) {
-                        extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - getCurrent().getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
+                        extraDays = (CommonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - getCurrent().getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
                     } else {
-                        extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+                        extraDays = (CommonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
                     extraDays -= (int) (extraDays / 7);
                     workedDays += extraDays;
@@ -609,7 +608,7 @@ public class StaffSalaryController implements Serializable {
     FinalVariables finalVariables;
 
     public Long calculateOverTimeMinute() {
-        Long dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+        Long dateCount = CommonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
         Long numOfWeeks = dateCount / 7;
         if (numOfWeeks == 0l) {
             return 0l;
@@ -665,9 +664,9 @@ public class StaffSalaryController implements Serializable {
         //// // System.out.println("calculating over time in minutes");
         Long dateCount = 0l;
         if (checkDateRange(s.getDateLeft())) {
-            dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), s.getDateLeft());
+            dateCount = CommonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), s.getDateLeft());
         } else {
-            dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+            dateCount = CommonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
         }
 
         Long numOfWeeks = dateCount / 7;
@@ -1619,7 +1618,7 @@ public class StaffSalaryController implements Serializable {
                     }
 
                 }
-                if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
+                if (checkDateRange(CommonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
                     if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
                         DateFormat df = new SimpleDateFormat("yyyy-MMM-dd");
                         String rd = df.format(getCurrent().getStaff().getDateLeft());
@@ -1691,7 +1690,7 @@ public class StaffSalaryController implements Serializable {
 //                    }
 //
 //                }
-                if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
+                if (checkDateRange(CommonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
                     if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
                         DateFormat df = new SimpleDateFormat("yyyy-MMM-dd");
                         String rd = df.format(getCurrent().getStaff().getDateLeft());
@@ -2096,14 +2095,6 @@ public class StaffSalaryController implements Serializable {
         this.humanResourceBean = humanResourceBean;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public void setItems(List<StaffSalary> items) {
         this.items = items;
     }
@@ -2113,7 +2104,7 @@ public class StaffSalaryController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             StaffSalaryController controller = (StaffSalaryController) facesContext.getApplication().getELResolver().
@@ -2128,9 +2119,7 @@ public class StaffSalaryController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

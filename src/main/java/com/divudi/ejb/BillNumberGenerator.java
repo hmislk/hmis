@@ -459,8 +459,8 @@ public class BillNumberGenerator {
         HashMap hm = new HashMap();
         hm.put("ins", institution);
         hm.put("bt", billType);
-//        hm.put("f", commonFunctions.getFirstDayOfYear(new Date()));
-//        hm.put("t", commonFunctions.getLastDayOfYear(new Date()));
+//        hm.put("f", CommonFunctions.getFirstDayOfYear(new Date()));
+//        hm.put("t", CommonFunctions.getLastDayOfYear(new Date()));
         Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
         return (i + 1) + "";

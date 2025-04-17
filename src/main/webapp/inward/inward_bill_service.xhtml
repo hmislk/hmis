@@ -335,7 +335,6 @@
                                                             <p:column >
                                                                 <f:facet name="header">Category</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.item.category.name}"/>
-
                                                             </p:column>
 
                                                             <p:column width="8em">
@@ -348,7 +347,7 @@
                                                                                 return false;"
                                                                     class="ui-button-danger"
                                                                     action="#{billBhtController.removeBillItem(bi)}" >
-                                                                    <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
+                                                                    <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.entriesIndex}" />
                                                                 </p:commandButton>
                                                             </p:column>
                                                         </p:dataTable>

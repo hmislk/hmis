@@ -48,7 +48,6 @@ public class OpdPreBillReportController implements Serializable {
 
     @EJB
     PaymentFacade paymentFacade;
-    CommonFunctions commonFunctions;
     @EJB
     WebUserFacade webUserFacade;
 
@@ -850,7 +849,7 @@ public class OpdPreBillReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -861,7 +860,7 @@ public class OpdPreBillReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -900,14 +899,6 @@ public class OpdPreBillReportController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<Bill> getBills() {

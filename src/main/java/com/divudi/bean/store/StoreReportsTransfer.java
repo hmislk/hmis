@@ -24,7 +24,6 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -93,8 +92,6 @@ public class StoreReportsTransfer implements Serializable {
     StoreBean StoreBean;
     @Inject
     BillBeanController billBeanController;
-
-    CommonFunctions commonFunctions;
 
     /**
      * Methods
@@ -1363,14 +1360,6 @@ public class StoreReportsTransfer implements Serializable {
 
     public void setBillBeanController(BillBeanController billBeanController) {
         this.billBeanController = billBeanController;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<DepartmentCategoryRow> getDepartmentCategoryRows() {
