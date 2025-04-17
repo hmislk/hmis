@@ -300,15 +300,15 @@ public class IncomeBundle implements Serializable {
                     break;
             }
 
-            System.out.println("---- Item ----");
-            System.out.println("BillCategory: " + bc);
-            System.out.println("Original Qty: " + q);
-            System.out.println("Retail Rate: " + rRate);
-            System.out.println("Purchase Rate: " + pRate);
-            System.out.println("Adjusted Qty: " + ((bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -qty : qty));
-            System.out.println("Retail Total: " + retailTotal);
-            System.out.println("Purchase Total: " + purchaseTotal);
-            System.out.println("Gross Profit: " + grossProfit);
+//            System.out.println("---- Item ----");
+//            System.out.println("BillCategory: " + bc);
+//            System.out.println("Original Qty: " + q);
+//            System.out.println("Retail Rate: " + rRate);
+//            System.out.println("Purchase Rate: " + pRate);
+//            System.out.println("Adjusted Qty: " + ((bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -qty : qty));
+//            System.out.println("Retail Total: " + retailTotal);
+//            System.out.println("Purchase Total: " + purchaseTotal);
+//            System.out.println("Gross Profit: " + grossProfit);
 
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
