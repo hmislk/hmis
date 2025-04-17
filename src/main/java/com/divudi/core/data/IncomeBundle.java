@@ -1058,6 +1058,10 @@ public class IncomeBundle implements Serializable {
                 hasPatientDepositTransaction |= childBundle.hasPatientDepositTransaction;
                 hasPatientPointsTransaction |= childBundle.hasPatientPointsTransaction;
                 hasOnlineSettlementTransaction |= childBundle.hasOnlineSettlementTransaction;
+
+                saleValue += childBundle.saleValue;
+                purchaseValue += childBundle.purchaseValue;
+                grossProfitValue += childBundle.grossProfitValue;
             }
         }
     }
