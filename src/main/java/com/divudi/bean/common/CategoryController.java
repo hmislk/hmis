@@ -8,21 +8,23 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.Category;
-import com.divudi.entity.Item;
-import com.divudi.entity.Nationality;
-import com.divudi.entity.Religion;
-import com.divudi.entity.ServiceCategory;
-import com.divudi.entity.ServiceSubCategory;
-import com.divudi.entity.inward.TimedItemCategory;
-import com.divudi.entity.lab.InvestigationCategory;
-import com.divudi.entity.pharmacy.AssetCategory;
-import com.divudi.entity.pharmacy.ConsumableCategory;
-import com.divudi.entity.pharmacy.PharmaceuticalCategory;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticHyrachi;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Nationality;
+import com.divudi.core.entity.Religion;
+import com.divudi.core.entity.ServiceCategory;
+import com.divudi.core.entity.ServiceSubCategory;
+import com.divudi.core.entity.inward.TimedItemCategory;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.entity.pharmacy.AssetCategory;
+import com.divudi.core.entity.pharmacy.ConsumableCategory;
+import com.divudi.core.entity.pharmacy.PharmaceuticalCategory;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticHyrachi;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -170,7 +172,7 @@ public class CategoryController implements Serializable {
         if (c == null) {
             c = new Category();
             c.setName(qry);
-            c.setCode("category_" + CommonController.nameToCode(qry));
+            c.setCode("category_" + CommonFunctions.nameToCode(qry));
             getFacade().create(c);
         }
         return c;

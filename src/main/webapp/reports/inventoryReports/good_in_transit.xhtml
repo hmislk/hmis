@@ -26,11 +26,11 @@
                                 <p:outputLabel value="From Date" class="mx-2" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{pharmacyReportController.fromDate}" 
-                                          inputStyleClass="w-100"
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}">
-                            </p:datePicker>
+                            <p:calendar value="#{pharmacyReportController.fromDate}" 
+                                        inputStyleClass="w-100"
+                                        class="w-100"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:calendar>
 
 
                             <p:spacer width="20"></p:spacer> 
@@ -39,11 +39,11 @@
                                 <p:outputLabel value="To Date" class="mx-2" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{pharmacyReportController.toDate}"
-                                          inputStyleClass="w-100"
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}">
-                            </p:datePicker>
+                            <p:calendar value="#{pharmacyReportController.toDate}"
+                                        inputStyleClass="w-100"
+                                        class="w-100"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:calendar>
 
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>  
@@ -300,22 +300,24 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-clock ml-5" />
-                                <p:outputLabel value="Show only Pending Docs" class="mx-2" >
+                                <p:outputLabel value="Show only Pending" class="mx-2" for="pendingDocsToggle">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
+                            <p:toggleSwitch id="pendingDocsToggle"
+                                            class="custom-toggle"
+                                            value="#{pharmacyReportController.showData}">
+                            </p:toggleSwitch>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-exchange-alt ml-5" />
                                 <p:outputLabel value="Issuing/Returning Doc.Status" class="mx-3" />
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
+                            <p:selectOneMenu class="w-100" value="#{pharmacyReportController.reportType}">
+                                <!--<f:selectItem itemLabel="All" ></f:selectItem>-->
+                                <f:selectItem itemLabel="Pending" itemValue="pending"/>
+                                <f:selectItem itemLabel="Accepted" itemValue="accepted"/>
+                                <f:selectItem itemLabel="Cancelled by Issuing" itemValue="issueCancel"/>
                             </p:selectOneMenu>
 
 
@@ -337,7 +339,7 @@
                                 scrollHeight="450"
                                 itemLabel="#{user.person.name}" 
                                 itemValue="#{user}" >
-                                
+
                                 <p:column headerText="Name" >
                                     <h:outputText value="#{user.person.name}" ></h:outputText>
                                 </p:column>
@@ -350,7 +352,7 @@
 
                         </h:panelGrid>
 
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center my-2">
                             <p:commandButton class="ui-button-warning mx-1" 
                                              icon="fas fa-cogs" 
                                              ajax="false"  
@@ -358,38 +360,31 @@
                                              action="#{pharmacyReportController.processGoodInTransistReport}">
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                                <p:printer target="tbl" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="good_in_transit" />
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="tbl" fileName="good_in_transit" />
                             </p:commandButton>
                         </div>
 
                         <p:dataTable id="tbl"
-                                     value="#{pharmacyReportController.billItems}" var="bi"  
-                                     >
-                            <p:column headerText="Staff" 
-                                      sortBy="#{bi.bill.toStaff.person.name}"
-                                      filterBy="#{bi.bill.toStaff.person.name}"
-                                      filterMatchMode="contains">
+                                     value="#{pharmacyReportController.billItems}" var="bi">
+                            <p:column headerText="Staff">
                                 <f:facet name="header">
                                     <h:outputLabel value="Staff"/>
                                 </f:facet>
                                 <h:outputLabel value="#{bi.bill.toStaff.person.name}"/> 
                             </p:column>
-                            <p:column headerText="Item" 
-                                      sortBy="#{bi.item.name}"
-                                      filterBy="#{bi.item.name}"
-                                      filterMatchMode="contains">
+                            <p:column headerText="Item">
                                 <f:facet name="header">
                                     <h:outputLabel value="Item"/>
                                 </f:facet>
                                 <h:outputLabel value="#{bi.item.name}"/> 
                             </p:column>
-                            <p:column headerText="Code" 
-                                      sortBy="#{bi.item.code}"
-                                      filterBy="#{bi.item.code}"
-                                      filterMatchMode="contains">
+                            <p:column headerText="Code">
                                 <f:facet name="header">
                                     <h:outputLabel value="Code"/>
                                 </f:facet>

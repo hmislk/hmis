@@ -4,16 +4,16 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.data.dataStructure.InvestigationSummeryData;
+import com.divudi.core.data.dataStructure.InvestigationSummeryData;
 
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Item;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Item;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 /**
@@ -33,8 +32,6 @@ import javax.persistence.TemporalType;
 @RequestScoped
 public class InvestigationMonthSummeryController implements Serializable {
 
-    @Inject
-    private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -55,8 +52,8 @@ public class InvestigationMonthSummeryController implements Serializable {
     public InvestigationMonthSummeryController() {
     }
 
-    
-    
+
+
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
     }
@@ -66,8 +63,8 @@ public class InvestigationMonthSummeryController implements Serializable {
     }
 
     public Date getFromDate() {
-        if (fromDate == null) {            
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -78,7 +75,7 @@ public class InvestigationMonthSummeryController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-        toDate = getCommonFunctions().getEndOfDay(new Date());
+        toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -93,14 +90,6 @@ public class InvestigationMonthSummeryController implements Serializable {
 
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<InvestigationSummeryData> getItems() {
@@ -126,8 +115,8 @@ public class InvestigationMonthSummeryController implements Serializable {
 //                + "b.item.id=" + w.getId() + " and  b.bill.createdAt between :fromDate and :toDate";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
-        //    temMap.put("pactype", com.divudi.entity.Packege.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
+        //    temMap.put("pactype", com.divudi.core.entity.Packege.class);
         List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         double tot = 0.0;
@@ -174,7 +163,7 @@ public class InvestigationMonthSummeryController implements Serializable {
 
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
 
         investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -206,7 +195,7 @@ public class InvestigationMonthSummeryController implements Serializable {
     }
 
     public List<InvestigationSummeryData> getItemDetails() {
-        
+
         itemDetails = new ArrayList<InvestigationSummeryData>();
 
         for (Item w : getInvestigations()) {

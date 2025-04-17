@@ -460,6 +460,9 @@
                                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Duplicate Bill is FiveFIvePaperCustom2',true)}">
                                                                 <ez:fivefivePapaerCustom2 bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
                                                             </h:panelGroup>
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Duplicate Bill is FiveFIvePaperCustom3',true)}">
+                                                                <ez:fivefivePapaerCustom3 bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                                                            </h:panelGroup>
                                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Duplicate Bill is FiveFivePrintedPaper',true)}">
                                                                 <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
                                                             </h:panelGroup>
@@ -520,6 +523,9 @@
                                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFIvePaperCustom2',true)}">
                                                                 <ez:fivefivePapaerCustom2 bill="#{channelBillController.billSession.billItem.bill}" />
                                                             </h:panelGroup>
+                                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFIvePaperCustom3',true)}">
+                                                                <ez:fivefivePapaerCustom3 bill="#{channelBillController.billSession.billItem.bill}" />
+                                                            </h:panelGroup>
                                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFivePrintedPaper',true)}">
                                                                 <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}" />
                                                             </h:panelGroup>
@@ -576,6 +582,9 @@
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFIvePaperCustom2',true)}">
                                                         <ez:fivefivePapaerCustom2 bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                                                    </h:panelGroup>
+                                                      <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFIvePaperCustom3',true)}">
+                                                          <ez:fivefivePapaerCustom3 bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFivePrintedPaper',true)}">
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
@@ -657,6 +666,9 @@
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Cancel Bill is FiveFIvePaperCustom2',true)}">
                                             <ez:fivefivePapaerCustom2  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Cancel Bill is FiveFIvePaperCustom3',true)}">
+                                            <ez:fivefivePapaerCustom3  bill="#{channelBillController.billSession.billItem.bill}"/>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Cancel Bill is FiveFivePrintedPaper',true)}">
                                             <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
@@ -789,6 +801,9 @@
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFIvePaperCustom2',true)}">
                                             <ez:fivefivePapaerCustom2  bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFIvePaperCustom3',true)}">
+                                            <ez:fivefivePapaerCustom3  bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFivePrintedPaper',true)}">
                                             <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
@@ -1029,6 +1044,9 @@
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFIvePaperCustom2',true)}">
                                                     <ez:fivefivePapaerCustom2  bill="#{channelBillController.billSession.billItem.bill}"/>
                                                 </h:panelGroup>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFIvePaperCustom3',true)}">
+                                                    <ez:fivefivePapaerCustom3  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                                </h:panelGroup>
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFivePrintedPaper',true)}">
                                                     <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
                                                 </h:panelGroup>
@@ -1057,7 +1075,7 @@
                                     <div class="col-6">
                                         <p:panel class="m-1">
                                             <f:facet name="header" >
-                                                <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                                <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                                 <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                             </f:facet>
                                             <div class="row my-1"  >
@@ -1320,6 +1338,9 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFIvePaperCustom2',true)}">
                                                 <ez:fivefivePapaerCustom2  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFIvePaperCustom3',true)}">
+                                                <ez:fivefivePapaerCustom3  bill="#{channelBillController.billSession.billItem.bill}"/>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFivePrintedPaper',true)}">
                                                 <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>

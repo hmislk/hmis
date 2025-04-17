@@ -5,29 +5,28 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.AuditEventApplicationController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PaymentMethodValue;
-import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.dataStructure.CashierSummeryData;
-import com.divudi.data.dataStructure.WebUserBillsTotal;
-import com.divudi.data.table.String1Value1;
-import com.divudi.data.table.String1Value5;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentMethodValue;
+import com.divudi.core.data.dataStructure.BillsTotals;
+import com.divudi.core.data.dataStructure.CashierSummeryData;
+import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.table.String1Value1;
+import com.divudi.core.data.table.String1Value5;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.WebUserFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -69,10 +68,7 @@ public class CashierReportController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    private CommonController commonController;
 
-    private CommonFunctions commonFunction;
     @EJB
     private WebUserFacade webUserFacade;
     @EJB
@@ -128,6 +124,14 @@ public class CashierReportController implements Serializable {
         fromReciptNo = null;
         toReciptNo = null;
         recreteModal();
+    }
+
+
+
+    public void init() {
+        // Set the current cashier to the logged-in user
+        currentCashier = sessionController.getLoggedUser();
+        // ... rest of initialization code ...
     }
 
     public String navigateToDepartmentAllCashierReport() {
@@ -734,25 +738,25 @@ public class CashierReportController implements Serializable {
             PaymentMethodValue pmv = (PaymentMethodValue) o;
             switch (pmv.getPaymentMethod()) {
                 case Card:
-                    newB.setCard(pmv.getValue());
-                    finalCardTot += pmv.getValue();
+                    newB.setCard(pmv.getAmount());
+                    finalCardTot += pmv.getAmount();
                     break;
                 case Cash:
-                    newB.setCash(pmv.getValue());
-                    finalCashTot += pmv.getValue();
+                    newB.setCash(pmv.getAmount());
+                    finalCashTot += pmv.getAmount();
                     break;
 
                 case Cheque:
-                    newB.setCheque(pmv.getValue());
-                    finalChequeTot += pmv.getValue();
+                    newB.setCheque(pmv.getAmount());
+                    finalChequeTot += pmv.getAmount();
                     break;
                 case Credit:
-                    newB.setCredit(pmv.getValue());
-                    finalCreditTot += pmv.getValue();
+                    newB.setCredit(pmv.getAmount());
+                    finalCreditTot += pmv.getAmount();
                     break;
                 case Slip:
-                    newB.setSlip(pmv.getValue());
-                    finalSlipTot += pmv.getValue();
+                    newB.setSlip(pmv.getAmount());
+                    finalSlipTot += pmv.getAmount();
                     break;
             }
         }
@@ -1001,7 +1005,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        
+
 
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
@@ -1194,7 +1198,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        
+
 
     }
 
@@ -1376,7 +1380,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1409,7 +1413,7 @@ public class CashierReportController implements Serializable {
         }
         calCashierData();
 
-        
+
     }
 
     public void calculateCashierSummeryTotals() {
@@ -1483,7 +1487,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1573,7 +1577,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        
+
 
     }
 
@@ -1698,7 +1702,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1818,7 +1822,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1894,7 +1898,7 @@ public class CashierReportController implements Serializable {
 
         }
 
-        
+
 
     }
 
@@ -1903,7 +1907,7 @@ public class CashierReportController implements Serializable {
     private List<Object> userBillTotalsWithPaymentMethods(WebUser w, Bill billClass, BillType billType) {
         String sql;
         Map temMap = new HashMap();
-        sql = "select new com.divudi.data.PaymentMethodValue(b.paymentMethod, sum(b.netTotal+b.vat))"
+        sql = "select new com.divudi.core.data.PaymentMethodValue(b.paymentMethod, sum(b.netTotal+b.vat))"
                 + " from Bill b "
                 + " where type(b)=:bill "
                 + " and b.creater=:cret "
@@ -1929,7 +1933,7 @@ public class CashierReportController implements Serializable {
 //        int day2;
 //        day2 = Calendar.DAY_OF_YEAR(getToDate());
 //        if(day2>=2){
-//                    
+//
 //            JsfUtil.addErrorMessage("Please Enter Blow 2 Days");
 //            return 0;
 //        }
@@ -1960,7 +1964,7 @@ public class CashierReportController implements Serializable {
 //        int day2;
 //        day2 = Calendar.DAY_OF_YEAR(getToDate());
 //        if(day2>=2){
-//                    
+//
 //            JsfUtil.addErrorMessage("Please Enter Blow 2 Days");
 //            return 0;
 //        }
@@ -1991,7 +1995,7 @@ public class CashierReportController implements Serializable {
 //        int day2;
 //        day2 = Calendar.DAY_OF_YEAR(getToDate());
 //        if(day2>=2){
-//                    
+//
 //            JsfUtil.addErrorMessage("Please Enter Blow 2 Days");
 //            return 0;
 //        }
@@ -2347,7 +2351,7 @@ public class CashierReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunction().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -2360,7 +2364,7 @@ public class CashierReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunction().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -2368,14 +2372,6 @@ public class CashierReportController implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
         recreteModal();
-    }
-
-    public CommonFunctions getCommonFunction() {
-        return commonFunction;
-    }
-
-    public void setCommonFunction(CommonFunctions commonFunction) {
-        this.commonFunction = commonFunction;
     }
 
     public WebUserFacade getWebUserFacade() {
@@ -2781,8 +2777,8 @@ public class CashierReportController implements Serializable {
 
             Row fDate = sheet.createRow(2);
             fDate.createCell(0).setCellValue("From Date -  " + outputFormat.format(inputFormat.parse(fromDate.toString())));
-            
-            
+
+
             Row tDate = sheet.createRow(3);
             tDate.createCell(0).setCellValue("To Date -  " + outputFormat.format(inputFormat.parse(toDate.toString())));
 
@@ -2869,14 +2865,6 @@ public class CashierReportController implements Serializable {
 
     public void setToReciptNo(String toReciptNo) {
         this.toReciptNo = toReciptNo;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public String getHeader() {

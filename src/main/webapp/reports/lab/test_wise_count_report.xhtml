@@ -18,37 +18,42 @@
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From Date"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          class="w-100"
-                                          showTime="true"
-                                          inputStyleClass="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
-
+                            <p:datePicker 
+                                value="#{reportController.fromDate}" 
+                                class="w-100"
+                                showTime="true"
+                                inputStyleClass="w-100"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:datePicker>
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="To Date"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          class="w-100"
-                                          showTime="true"
-                                          inputStyleClass="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
+                            <p:datePicker 
+                                value="#{reportController.toDate}"
+                                class="w-100"
+                                showTime="true"
+                                inputStyleClass="w-100"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:datePicker>
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
                                 <h:outputLabel value="Institution/Branch"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu filter="true" id="cmdInstitution"
-                                             filterMatchMode="contains"
-                                             style=" max-width: 100%; overflow-x: auto; "
-                                             class="w-100"
-                                             value="#{reportController.institution}">
+                            <p:selectOneMenu 
+                                filter="true" id="cmdInstitution"
+                                filterMatchMode="contains"
+                                style=" max-width: 100%; overflow-x: auto; "
+                                class="w-100"
+                                value="#{reportController.institution}">
                                 <f:selectItem itemLabel="All" />
-                                <f:selectItems value="#{institutionController.companies}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" />
+                                <f:selectItems 
+                                    value="#{institutionController.companies}"
+                                    var="i"
+                                    itemLabel="#{i.name}"
+                                    itemValue="#{i}" />
                                 <p:ajax process="@this" update="dept" event="itemSelect" />
                             </p:selectOneMenu>
 
@@ -75,10 +80,11 @@
                             </h:panelGroup>
                             <p:selectOneMenu id="dept" value="#{reportController.department}" style=" max-width: 100%; overflow-x: auto;" class="w-100" filter="true" filterMatchMode="contains">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInstitutionDepartmentsWithSite(reportController.institution,reportController.site)}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" ></f:selectItems>
+                                <f:selectItems 
+                                    value="#{departmentController.getInstitutionDepartmentsWithSite(reportController.institution,reportController.site)}"
+                                    var="i"
+                                    itemLabel="#{i.name}"
+                                    itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
                         </p:panelGrid>
                         <h:panelGrid columns="6">
@@ -89,37 +95,37 @@
                                 icon="fas fa-cogs"
                                 class="mx-2 ui-button-warning"
                                 action="#{reportController.processLabTestWiseCountReport()}" >
-
                             </p:commandButton>
+
                             <p:commandButton 
                                 icon="fa-solid fa-print"
                                 class="mx-2 ui-button-info"
                                 style="width: 150px"
                                 ajax="false" 
-                                value="Print"
-                                >
+                                value="Print">
                                 <p:printer target="tblExport" />
                             </p:commandButton>
+
                             <p:commandButton 
                                 class="mx-2 ui-button-success" 
                                 style="width: 150px"
                                 icon="fas fa-file-excel"
                                 ajax="false" 
-                                value="Excel"
-                                >
+                                value="Excel">
                                 <p:dataExporter type="xlsx" target="tblExport"  fileName="lab_test_wise_count_report.xlsx" ></p:dataExporter>
                             </p:commandButton>
+
                             <p:commandButton 
                                 class="mx-2 ui-button-danger" 
                                 icon="fa-solid fa-file-pdf"
                                 style="width: 150px"
                                 ajax="false" 
-                                value="PDF"
-                                >
+                                value="PDF">
                                 <p:dataExporter
                                     type="pdf" 
                                     target="tblExport"  
-                                    fileName="lab_test_wise_count_report" ></p:dataExporter>
+                                    fileName="lab_test_wise_count_report" >
+                                </p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -158,7 +164,12 @@
                             }
                         </style>
 
-                        <p:dataTable value="#{reportController.testWiseCounts}" id="tblExport" var="c" rowIndexVar="rowIndex">
+                        <p:dataTable 
+                            value="#{reportController.testWiseCounts}" 
+                            id="tblExport" 
+                            var="c" 
+                            rowIndexVar="rowIndex">
+
                             <p:column headerText="No" width="2em">
                                 <h:outputText value="#{rowIndex + 1}" />
                             </p:column>
@@ -171,17 +182,28 @@
                                     <h:outputText value="#{reportController.totalCount}" ></h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Hos Fee"  width="5em" styleClass="text-end">
-                                <h:outputText value="#{c.hosFee}" >
+
+                            <p:column 
+                                headerText="Hos. Fee"  
+                                width="5em" 
+                                styleClass="text-end" 
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report - Show Hospital Fee Column',true)}">
+                                <h:outputText value="#{c.hosFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+
                                 <f:facet name="footer">
-                                    <h:outputText value="#{reportController.totalHosFee}" >
+                                    <h:outputText value="#{reportController.totalHosFee}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Professional Fee"  width="5em" styleClass="text-end">
+
+                            <p:column 
+                                headerText="Professional Fee"  
+                                width="5em" 
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report - Show Professional Fee Column',true)}">
                                 <h:outputText value="#{c.proFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -191,7 +213,57 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Net Hos Fee"  width="5em" styleClass="text-end">
+
+                            <p:column 
+                                headerText="Reagent Fee"  
+                                width="5em" 
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report - Show Reagent Fee Column',false)}">
+                                <h:outputText value="#{c.reagentFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalReagentFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column 
+                                headerText="CC Fee" 
+                                width="5em" 
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report - Show CC Fee Column',false)}">
+                                <h:outputText value="#{c.ccFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalCCFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column 
+                                headerText="Other Fee" 
+                                width="5em" 
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report - Show Other Fee Column',false)}">
+                                <h:outputText value="#{c.otherFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalAdditionalFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column 
+                                headerText="Net Hos. Fee"  
+                                width="5em" 
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report - Show Net Hospital Fee Column',true)}">
                                 <h:outputText value="#{c.hosFee - c.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -201,7 +273,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Discount"  width="5em" styleClass="text-end">
+
+                            <p:column 
+                                headerText="Discount"  
+                                width="5em" 
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report - Show Discount Column',true)}">
                                 <h:outputText value="#{c.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>

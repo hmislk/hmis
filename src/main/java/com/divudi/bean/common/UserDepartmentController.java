@@ -7,14 +7,14 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserDepartment;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.WebUserDepartmentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserDepartment;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.WebUserDepartmentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -161,10 +161,10 @@ public class UserDepartmentController implements Serializable {
         getEjbFacade().create(d);
         items=null;
         currentDepartment = null;
-        
+
     }
-    
-    
+
+
     public void addRouteForUser() {
         if (selectedUser == null) {
             JsfUtil.addSuccessMessage("Select A User");
@@ -181,7 +181,7 @@ public class UserDepartmentController implements Serializable {
         getEjbFacade().create(d);
         items=null;
         currentDepartment = null;
-        
+
     }
 
     public List<WebUserDepartment> fillWebUserDepartments(WebUser wu) {
@@ -208,8 +208,8 @@ public class UserDepartmentController implements Serializable {
         }
         return items;
     }
-    
-    
+
+
 
     public WebUserDepartmentFacade getEjbFacade() {
         return ejbFacade;

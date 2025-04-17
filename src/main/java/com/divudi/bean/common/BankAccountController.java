@@ -8,17 +8,14 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Area;
-import com.divudi.entity.hr.BankAccount;
-import com.divudi.facade.AreaFacade;
-import com.divudi.facade.BankAccountFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.hr.BankAccount;
+import com.divudi.core.facade.BankAccountFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -71,8 +68,8 @@ public class BankAccountController implements Serializable {
         HashMap params = new HashMap();
         jpql = "select b from BankAccount b "
                 + " where b.retired=false "
-                + " and (b.accountNo) like :q "
-                + " order by c.accountNo";
+                + " and (b.accountNo like :q or b.accountName like :q ) "
+                + " order by b.accountName";
         params.put("q", "%" + qry.toUpperCase() + "%");
         list = getFacade().findByJpql(jpql, params);
 

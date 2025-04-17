@@ -9,52 +9,47 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ClinicalFindingValueController;
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.AdmissionStatus;
-import com.divudi.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.ApplicationInstitution;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.AdmissionStatus;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
 
-import com.divudi.entity.Appointment;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.EncounterCreditCompany;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.facade.AdmissionFacade;
-import com.divudi.facade.AppointmentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.EncounterCreditCompanyFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.RoomFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Appointment;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.EncounterCreditCompany;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.AppointmentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.EncounterCreditCompanyFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.RoomFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.clinical.ClinicalFindingValueType;
-import static com.divudi.data.inward.AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
-import static com.divudi.data.inward.AdmissionStatus.ANY_STATUS;
-import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
-import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
-import com.divudi.entity.Department;
-import com.divudi.entity.Staff;
-import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.facade.ClinicalFindingValueFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -94,13 +89,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Inject
     InpatientClinicalDataController inpatientClinicalDataController;
     @Inject
-    CommonFunctionsController commonFunctionsController;
-    @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    private CommonController commonController;
+
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -127,7 +119,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
 
     ////////////////////////////
-    private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;
     private Admission current;
@@ -294,7 +285,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void dateChangeListen() {
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -487,7 +478,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         parentAdmission = current;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
@@ -822,12 +813,43 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Provisional Admission From showing completePatientDishcargedNotFinalized")) {
+            List<Admission> toRemove = new ArrayList<>();
+            for (Admission a : suggestions) {
+                if (isAddmissionHaveProvisionalBill(a)) {
+                    toRemove.add(a);
+                }
+            }
+            suggestions.removeAll(toRemove);
+        }
         return suggestions;
     }
 
     public String navigateToListCurrentInpatients() {
         listCurrentInpatients();
         return "";
+
+    }
+
+    public boolean isAddmissionHaveProvisionalBill(Admission ad) {
+        List<Bill> ads = new ArrayList<>();
+        String sql;
+        HashMap h = new HashMap();
+        sql = "select b from Bill b where b.retired=false "
+                + " and b.billTypeAtomic=:bt "
+                + " and b.cancelled=false"
+                + " and b.patientEncounter=:pe";
+        h.put("bt", BillTypeAtomic.INWARD_PROVISIONAL_BILL);
+        h.put("pe", ad);
+        ads = getBillFacade().findByJpql(sql, h);
+        
+        System.out.println("ads.size() = " + ads.size());
+
+        if (ads.size() > 0 || !ads.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
@@ -1036,8 +1058,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     private void savePatient() {
         String tc = sessionController.getApplicationPreference().getChangeTextCasesPatientName();
-        String updatedPersonName = commonFunctionsController.changeTextCases(getPatient().getPerson().getName(), tc);
-        String updatedAddress = commonFunctionsController.changeTextCases(getPatient().getPerson().getAddress(), tc);
+        String updatedPersonName = CommonFunctions.changeTextCases(getPatient().getPerson().getName(), tc);
+        String updatedAddress = CommonFunctions.changeTextCases(getPatient().getPerson().getAddress(), tc);
         if (updatedPersonName == null) {
             getPatient().getPerson().setName(updatedPersonName);
         }
@@ -1603,15 +1625,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(ageText));
     }
 
     public PatientRoomFacade getPatientRoomFacade() {

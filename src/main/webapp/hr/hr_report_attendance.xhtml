@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -50,10 +50,10 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >                     
+                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss"  rowIndexVar="i">
                                 <f:facet name="header">
-                                    
+
                                     <h:outputLabel style="text-align: center" value="  Attendence Report "  /><br/>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
@@ -63,7 +63,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{hrReportController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
                                     </h:outputLabel>
@@ -174,16 +174,16 @@
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy kk:mm:ss a"/>
-                                    </h:outputLabel>  
-                                </p:column>                           
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Out Checked">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Out Checked" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy kk:mm:ss a"/>
-                                    </h:outputLabel>  
-                                </p:column>  
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Worked Time Within Shift Varified">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Worked Time Within Shift Varified" ></p:outputLabel>
@@ -191,15 +191,15 @@
                                     <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Worked Time Outside Shift Varified">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Worked Time Outside Shift Varified" ></p:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="#{ss.workedOutSideTimeFrameVarified}">                                        
+                                    <h:outputLabel value="#{ss.workedOutSideTimeFrameVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Worked Time Varified">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Worked Time Varified" ></p:outputLabel>
@@ -207,11 +207,11 @@
                                     <h:outputLabel value="#{(ss.workedWithinTimeFrameVarified+ss.workedOutSideTimeFrameVarified)}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

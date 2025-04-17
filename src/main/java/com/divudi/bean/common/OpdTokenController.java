@@ -1,25 +1,25 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.TokenCount;
-import com.divudi.data.TokenType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.TokenCount;
+import com.divudi.core.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.Staff;
-import com.divudi.entity.Token;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.TokenFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.Token;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.TokenFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -48,7 +48,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
-    // </editor-fold> 
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -70,7 +70,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Inject
     OpdPreBillController opdPreBillController;
 
-    // </editor-fold> 
+    // </editor-fold>
     private Token currentToken;
     private Token onGoingToken;
     private Token removeingToken;
@@ -376,10 +376,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
         //System.out.println("currentTokens = " + currentTokens);
     }
-    
+
     public void fillOpdWaitingTokensCounts() {
         Map<String, Object> m = new HashMap<>();
-        String j = "Select new com.divudi.data.TokenCount(t.counter, t.staff, count(t)) "
+        String j = "Select new com.divudi.core.data.TokenCount(t.counter, t.staff, count(t)) "
                 + " from Token t"
                 + " where t.department=:dep"
                 + " and t.tokenDate=:date "
@@ -387,15 +387,15 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
                 + " and t.tokenType=:ty"
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
-        
+
         boolean testing = false;
         if(testing){
             Token t=new Token();
             t.getCounter();
             t.getStaff();
-            
+
         }
-        
+
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("cal", false); // Tokens that are called
@@ -489,7 +489,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
 //    public void startTokenService() {
-//        
+//
 //    }
 //
 //    public void completeTokenService() {
@@ -515,7 +515,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
 //    public void restartTokenService() {
-//        
+//
 //    }
     public void reverseCompleteTokenService() {
         if (currentToken == null) {
@@ -638,8 +638,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         return doctor;
     }
 
-    
-    
+
+
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
@@ -677,7 +677,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
 
-    
+
 
     @Override
     public void listnerForPaymentMethodChange() {

@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="billItems" />
     </cc:interface>
 
@@ -18,7 +18,7 @@
         <div style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher CSS')}" >
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header CSS')}" >
-                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text')}" escape="false" ></h:outputText>
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header Text')}" escape="false" ></h:outputText>
             </div>
 
 
@@ -62,7 +62,7 @@
                                     <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="position: relative; left: 70%;" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputLabel>
-                
+
                                 </div>-->
 
                 <div>
@@ -72,9 +72,9 @@
                         <p:column headerText="PO Number">
                             <p:outputLabel value="#{bi.referenceBill.referenceBill.deptId}" ></p:outputLabel>
 <!--                            <p:outputLabel value="#{bi.referenceBill.referenceBill.createdAt}" style="text-align: center;">
-                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>                                
+                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>
                             </p:outputLabel>-->
-                        </p:column>                   
+                        </p:column>
 
                         <p:column headerText="Invoice Number" >
                             <p:outputLabel value="#{bi.referenceBill.invoiceNumber}" style="text-align: center;"/>
@@ -141,23 +141,23 @@
                         <h:outputLabel value="Prepared By :" /> <br/>
                         <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}" />
                     </div>
-                    
+
                     <div class="col-4" >
                         <h:outputLabel value="Checked By :" /> <br/>
                         <h:outputLabel value="#{cc.attrs.bill.referenceBill.completedBy.webUserPerson.nameWithTitle}" />
                     </div>
-                    
+
                      <div class="col-4" >
                         <h:outputLabel value="Approved By :" /> <br/>
                         <h:outputLabel value="#{cc.attrs.bill.referenceBill.paymentApprovedBy.webUserPerson.nameWithTitle}" />
                     </div>
-                    
+
                 </div>
 
             </div>
 
-           
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header CSS')}" >
+
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer CSS')}" >
                 <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text')}" escape="false" ></h:outputText>
             </div>
         </div>

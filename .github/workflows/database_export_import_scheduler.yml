@@ -19,8 +19,8 @@ on:
         required: true
         type: choice
         options:
-          - QA
-          - COOP_Test
+          - QA1
+          - QA2
       date:
         description: 'Select Scheduling Date (YYYY-MM-DD)'
         required: true

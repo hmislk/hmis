@@ -8,20 +8,19 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.DealerController;
 import com.divudi.bean.pharmacy.ItemsDistributorsController;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PackageFee;
-import com.divudi.entity.pharmacy.ItemsDistributors;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.PackageFeeFacade;
-import com.divudi.facade.PackegeFacade;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PackageFee;
+import com.divudi.core.entity.pharmacy.ItemsDistributors;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.PackageFeeFacade;
+import com.divudi.core.facade.PackegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,8 +55,6 @@ public class StoreItemsDistributorsController implements Serializable {
     private PackageFeeFacade packageFeeFacade;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     private DealerController dealerController;
     private ItemsDistributors current;
@@ -267,8 +264,8 @@ public class StoreItemsDistributorsController implements Serializable {
         sql += " order by b.institution.name,b.item.name ";
 
         searchItems = getFacade().findByJpql(sql, tmp);
-        
-        
+
+
 
     }
 
@@ -441,7 +438,7 @@ public class StoreItemsDistributorsController implements Serializable {
          */
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ItemsDistributorsController controller = (ItemsDistributorsController) facesContext.getApplication().getELResolver().
@@ -456,9 +453,7 @@ public class StoreItemsDistributorsController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         /**
@@ -483,12 +478,4 @@ public class StoreItemsDistributorsController implements Serializable {
         }
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
 }

@@ -5,14 +5,14 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.RefundBill;
-import com.divudi.facade.BillFacade;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.facade.BillFacade;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,6 +32,8 @@ public class BillReportBean {
     @EJB
     BillFacade billFacade;
 
+
+
     public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm, Institution institution, Department department, BillType[] billTypes, Class bc) {
         String sql;
         Map m = new HashMap();
@@ -49,20 +51,20 @@ public class BillReportBean {
             sql += " and bi.bill.toInstitution=:ins ";
             m.put("ins", institution);
         }
-        
+
         if (department != null) {
             sql += " and bi.bill.toDepartment=:dep ";
             m.put("dep", department);
         }
-        
+
         List<BillType> bts = Arrays.asList(billTypes);
-        
+
         m.put("billTypes", bts);
         m.put("bc", bc);
         m.put("fd", fd);
         m.put("td", td);
-        
-        
+
+
         return billFacade.findLongByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 

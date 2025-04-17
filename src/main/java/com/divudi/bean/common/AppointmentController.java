@@ -8,32 +8,30 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.inward.BhtEditController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillType;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
-
-import com.divudi.entity.Appointment;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.facade.AppointmentFacade;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.inward.Reservation;
-import com.divudi.facade.ReservationFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Appointment;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.facade.AppointmentFacade;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.inward.Reservation;
+import com.divudi.core.facade.ReservationFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import javax.ejb.EJB;
@@ -58,11 +56,7 @@ public class AppointmentController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    BhtEditController bhtEditController;
 
-    @Inject
-    CommonController commonController;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -74,7 +68,6 @@ public class AppointmentController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -125,13 +118,6 @@ public class AppointmentController implements Serializable {
 //        }
 //        return a;
 //    }
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
 
     private Patient savePatient(Patient p) {
 
@@ -229,7 +215,7 @@ public class AppointmentController implements Serializable {
     }
 
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getNewPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -264,17 +250,17 @@ public class AppointmentController implements Serializable {
     private boolean checkPatientAgeSex() {
 
 //        if (getPatientTabId().toString().equals("tabNewPt")) {
-        if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getAgeText() == null) {
+        if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().isEmpty() || getNewPatient().getPerson().getSex() == null || getAgeText() == null) {
             JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
 
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
+        if (!Person.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
             JsfUtil.addErrorMessage("Check Title,Age,Sex");
             return true;
         }
 
-        if (getNewPatient().getPerson().getPhone().length() < 1) {
+        if (getNewPatient().getPerson().getPhone().isEmpty()) {
             JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
             return true;
         }
@@ -322,7 +308,7 @@ public class AppointmentController implements Serializable {
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrentBill().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
-//       
+//
         return false;
     }
 
@@ -419,7 +405,7 @@ public class AppointmentController implements Serializable {
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
+        getNewPatient().getPerson().setDob(CommonFunctions.guessDob(ageText));
     }
 
     public BillBeanController getBillBean() {
@@ -596,7 +582,7 @@ public class AppointmentController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             AppointmentController controller = (AppointmentController) facesContext.getApplication().getELResolver().
@@ -629,10 +615,6 @@ public class AppointmentController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + Appointment.class.getName());
             }
         }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
     }
 
 }

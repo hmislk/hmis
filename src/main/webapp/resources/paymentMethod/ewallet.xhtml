@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData" type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
@@ -21,7 +21,7 @@
         </p:inputText>
         <div class="d-flex gap-2">
 
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class="" placeholder="e-wallet No"/>                                
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class="" placeholder="e-wallet No"/>
 
 
             <p:selectOneMenu value="#{cc.attrs.paymentMethodData.ewallet.institution}" >

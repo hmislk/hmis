@@ -4,15 +4,14 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.entity.inward.RoomFacilityCharge;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.RoomFacade;
-import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.RoomFacade;
+import com.divudi.core.facade.RoomFacilityChargeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -29,8 +28,6 @@ import javax.inject.Named;
 @SessionScoped
 public class RoomOccupancyController implements Serializable {
 
-    @Inject
-    CommonController commonController;
     @Inject
     NotificationController notificationController;
 
@@ -128,7 +125,7 @@ public class RoomOccupancyController implements Serializable {
 
         patientRooms = getPatientRoomFacade().findByJpql(sql);
 
-        
+
 
     }
 
@@ -143,7 +140,7 @@ public class RoomOccupancyController implements Serializable {
                 + " order by rf.name";
 
         roomFacilityCharges = getRoomFacilityChargeFacade().findByJpql(sql);
-        
+
     }
 
     public void createPatientRoomAll() {
@@ -157,8 +154,8 @@ public class RoomOccupancyController implements Serializable {
                 + " order by pr.roomFacilityCharge.name";
 
         patientRooms = getPatientRoomFacade().findByJpql(sql);
-        
-        
+
+
     }
 
     public List<PatientRoom> getPatientRooms() {
@@ -185,13 +182,4 @@ public class RoomOccupancyController implements Serializable {
     public void setRoomFacilityCharges(List<RoomFacilityCharge> roomFacilityCharges) {
         this.roomFacilityCharges = roomFacilityCharges;
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

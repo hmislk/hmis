@@ -461,22 +461,21 @@
                                     <h:outputLabel value="Return Patient Deposit" />
                                 </f:facet>
 
-                                <div class="d-flex flex-wrap w-100">
+                                <div class="flex " style="display: flex; flex-direction: column; gap: 1rem;">
                                     <p:selectOneMenu
                                         id="cmbPs"
-                                        style="width: 12em;"
+                                        style="width: 12em; "
                                         value="#{patientController.bill.paymentMethod}">
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                         <p:ajax process="cmbPs" update="panelGroup payment" event="change" listener="#{patientController.listnerForPaymentMethodChange()}" />
                                     </p:selectOneMenu>
-
                                     <h:panelGroup id="payment">
 
-                                        <h:panelGroup id="panelGroup" rendered="#{!(patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet')}">
+                                        <h:panelGroup id="panelGroup" rendered="#{!(patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet')}" style="display: inline-flex; align-items: center; gap: 1rem;" >
                                             <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
                                             <p:inputText value="#{patientController.bill.comments}" placeholder="Enter a Comment" id="comment"/>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup id="creditCard" rendered="#{patientController.bill.paymentMethod eq 'Card'}">
                                             <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>

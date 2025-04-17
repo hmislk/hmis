@@ -9,10 +9,10 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.Institution;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,7 +48,7 @@ public class ManufacturerController implements Serializable {
 
     public List<Institution> completeManu(String qry) {
         if (qry != null) {
-            institutionList = getFacade().findByJpql("select c from Institution c where c.institutionType=com.divudi.data.InstitutionType.Manufacturer and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            institutionList = getFacade().findByJpql("select c from Institution c where c.institutionType=com.divudi.core.data.InstitutionType.Manufacturer and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (institutionList == null) {
             institutionList = new ArrayList<>();
@@ -142,7 +142,7 @@ public class ManufacturerController implements Serializable {
 
     public List<Institution> getItems() {
         if (items == null) {
-            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Manufacturer order by i.name";
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.core.data.InstitutionType.Manufacturer order by i.name";
             items = getEjbFacade().findByJpql(sql);
         }
         return items;
@@ -156,7 +156,7 @@ public class ManufacturerController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ManufacturerController controller = (ManufacturerController) facesContext.getApplication().getELResolver().
@@ -177,9 +177,7 @@ public class ManufacturerController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

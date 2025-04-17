@@ -5,30 +5,30 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.Payment;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -293,7 +293,7 @@ public class GoodsReturnController implements Serializable {
             JsfUtil.addErrorMessage("Select Dealor");
             return;
         }
-        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().equals("")) {
+        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
@@ -316,8 +316,8 @@ public class GoodsReturnController implements Serializable {
         calTotal();
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getReturnBill());
 
-        
-        
+
+
         getBillFacade().edit(getReturnBill());
 
         updateOriginalBill();
@@ -376,11 +376,11 @@ public class GoodsReturnController implements Serializable {
             //System.err.println("Billed " + rBilled);
             //System.err.println("Cancelled " + rCacnelled);
             //System.err.println("Net " + netQty);
-            retPh.setQty((double) (grnPh.getQtyInUnit() - netQty));
-            retPh.setQtyInUnit((double) (grnPh.getQtyInUnit() - netQty));
+            retPh.setQty(grnPh.getQtyInUnit() - netQty);
+            retPh.setQtyInUnit(grnPh.getQtyInUnit() - netQty);
 
-            retPh.setFreeQty((double) (grnPh.getQtyInUnit() - netFreeQty));
-            retPh.setFreeQtyInUnit((double) (grnPh.getFreeQtyInUnit() - netFreeQty));
+            retPh.setFreeQty(grnPh.getQtyInUnit() - netFreeQty);
+            retPh.setFreeQtyInUnit(grnPh.getFreeQtyInUnit() - netFreeQty);
 
             List<Item> suggessions = new ArrayList<>();
             Item item = bi.getItem();
@@ -395,8 +395,8 @@ public class GoodsReturnController implements Serializable {
 //
 //
 //            bi.setTmpSuggession(suggessions);
-            bi.setTmpQty((double) (grnPh.getQtyInUnit() - netQty));
-            bi.setTmpFreeQty((double) (grnPh.getFreeQtyInUnit() - netFreeQty));
+            bi.setTmpQty(grnPh.getQtyInUnit() - netQty);
+            bi.setTmpFreeQty(grnPh.getFreeQtyInUnit() - netFreeQty);
             bi.setPharmaceuticalBillItem(retPh);
 
             getBillItems().add(bi);
@@ -599,13 +599,13 @@ public class GoodsReturnController implements Serializable {
         }
         returnBill.setBilledBill(bill);
         billFacade.edit(returnBill);
-        
+
         bill.getRefundBills().add(returnBill);
         bill.setRefundAmount(Math.abs(bill.getRefundAmount()) + Math.abs(returnBill.getNetTotal()));
         bill.setBalance(Math.abs(bill.getNetTotal()) - Math.abs(bill.getRefundAmount()));
-        
+
         billFacade.edit(bill);
-        
+
     }
 
 }

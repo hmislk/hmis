@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -82,7 +82,7 @@
 
 
 
-        <!--     
+        <!--
                 <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
                     <f:facet name="header" >
                         <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
@@ -102,17 +102,17 @@
                     <p:column>
                         <f:facet name="header">
                             <h:outputText value="Card Ref.Number" />
-                        </f:facet>                
-                        <h:outputText 
+                        </f:facet>
+                        <h:outputText
                             value="#{ps.payment}"/>
                     </p:column>
                     <p:column>
                         <f:facet name="header">
                             <h:outputText value="Card Ref.Number" />
-                        </f:facet>                
+                        </f:facet>
                         <ui:repeat value="#{row.payment.bill.payments}" var="ps">
                             <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                                <h:outputText 
+                                <h:outputText
                                     value="#{ps}"/>
                             </h:panelGroup>
                         </ui:repeat>
@@ -120,8 +120,8 @@
                     <p:column>
                         <f:facet name="header">
                             <h:outputText value="Bank" />
-                        </f:facet>      
-                        <h:outputText 
+                        </f:facet>
+                        <h:outputText
                             value="#{ps.paymentMethod.bank.name}"/>
                     </p:column>
                     <p:column>
@@ -132,8 +132,8 @@
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputText>
                     </p:column>
-              
-        
+
+
                 </p:dataTable>
         -->
 

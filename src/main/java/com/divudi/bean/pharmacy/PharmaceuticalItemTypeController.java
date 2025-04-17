@@ -9,9 +9,9 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.PharmaceuticalItemType;
-import com.divudi.facade.PharmaceuticalItemTypeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
+import com.divudi.core.facade.PharmaceuticalItemTypeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -169,7 +169,7 @@ public class PharmaceuticalItemTypeController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             PharmaceuticalItemTypeController controller = (PharmaceuticalItemTypeController) facesContext.getApplication().getELResolver().
@@ -178,15 +178,13 @@ public class PharmaceuticalItemTypeController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -204,5 +202,5 @@ public class PharmaceuticalItemTypeController implements Serializable {
         }
     }
 
-    
+
 }
