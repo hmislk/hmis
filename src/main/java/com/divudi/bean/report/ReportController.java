@@ -1564,11 +1564,10 @@ public class ReportController implements Serializable {
     public void processLabTestCount() {
         String jpql = "select new com.divudi.core.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
-                + " where bi.bill.cancelled=:can "
-                + " and bi.bill.billDate between :fd and :td "
+                + " where bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billTypeAtomic IN :bType "
                 + " and TYPE(bi.item) = Investigation ";
         Map<String, Object> m = new HashMap<>();
-        m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
 
@@ -1592,23 +1591,57 @@ public class ReportController implements Serializable {
             m.put("machine", machine);
         }
 
-        if (billTypeAtomic != null) {
-            jpql += " and bi.bill.billTypeAtomic=:billTypeAtomic ";
-            m.put("billTypeAtomic", billTypeAtomic);
-        }
+        List<BillTypeAtomic> bTypes = Arrays.asList(
+                BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.CC_BILL,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.INWARD_SERVICE_BILL);
+
+        m.put("bType", bTypes);  // Use 'bType' for IN clause
 
         jpql += " group by bi.item.category.name, bi.item.name ";
         jpql += " order by bi.item.category.name, bi.item.name";
 
         // Unchecked cast here
-        reportLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
-
+        List<ItemCount> allLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
+        List<ItemCount> cancelTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
+        // Now fetch results for OpdBillRefund (use a list for single bType)
+        m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND, BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
+        List<ItemCount> refundTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
         Map<String, CategoryCount> categoryReports = new HashMap<>();
 
-        for (ItemCount count : reportLabTestCounts) {
-            categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L))
-                    .getItems().add(count);
-            categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+        List<ItemCount> adjustmentsList = new ArrayList<>();
+        adjustmentsList.addAll(cancelTestCounts);
+        adjustmentsList.addAll(refundTestCounts);
+
+        for (ItemCount adjustment : adjustmentsList) {
+            boolean found = false;
+            for (ItemCount original : allLabTestCounts) {
+                if (original.getCategory().equals(adjustment.getCategory()) && original.getTestName().equals(adjustment.getTestName())) {
+                    original.setTestCount(original.getTestCount() - adjustment.getTestCount());
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                // If not found in allLabTestCounts, treat it as a new item with negative count
+                ItemCount negativeItem = new ItemCount(adjustment.getCategory(), adjustment.getTestName(), -adjustment.getTestCount());
+                allLabTestCounts.add(negativeItem);
+            }
+        }
+
+        //Add All Lab Test Count
+        for (ItemCount count : allLabTestCounts) {
+            if (count.getTestCount() != 0.0) {
+                categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L)).getItems().add(count);
+                categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+            }
         }
 
         // Convert the map values to a list to be used in the JSF page
@@ -3196,16 +3229,19 @@ public class ReportController implements Serializable {
     }
 
     /**
-     * Aggregates test-wise count report data for collecting centres by combining billed items with
-     * cancellations and refunds.
+     * Aggregates test-wise count report data for collecting centres by
+     * combining billed items with cancellations and refunds.
      * <p>
-     * This method executes two separate JPQL queries over a specified date range to retrieve report
-     * data for both billed items and for cancellations/refunds. The billed items query collects counts
-     * and fee totals (hospital fee, collecting centre fee, staff fee, and net value) for non-retired records,
-     * while the cancellations/refunds query gathers similar metrics for cancellation and refund records.
-     * The cancellation/refund values are converted into negatives and merged with the billed item results to
-     * compute net totals. Final aggregated data are stored in a list, and overall totals (count, hospital fee,
-     * collecting centre fee, professional fee, and net total) are updated accordingly.
+     * This method executes two separate JPQL queries over a specified date
+     * range to retrieve report data for both billed items and for
+     * cancellations/refunds. The billed items query collects counts and fee
+     * totals (hospital fee, collecting centre fee, staff fee, and net value)
+     * for non-retired records, while the cancellations/refunds query gathers
+     * similar metrics for cancellation and refund records. The
+     * cancellation/refund values are converted into negatives and merged with
+     * the billed item results to compute net totals. Final aggregated data are
+     * stored in a list, and overall totals (count, hospital fee, collecting
+     * centre fee, professional fee, and net total) are updated accordingly.
      * </p>
      */
     public void processCollectingCentreTestWiseCountReport() {
@@ -3352,12 +3388,16 @@ public class ReportController implements Serializable {
     }
 
     /**
-     * Generates a test-wise count report for collecting centers, excluding cancellations and refunds.
+     * Generates a test-wise count report for collecting centers, excluding
+     * cancellations and refunds.
      *
-     * <p>This method retrieves billed items by test (item name) within a specified date range and bill type, applying
-     * optional filters for institution, department, site, and collecting centre. It aggregates the number of items and
-     * the sums of hospital fee, collecting centre fee, staff fee, and net value for each test. The results are stored
-     * in the report list and overall totals are updated accordingly.</p>
+     * <p>
+     * This method retrieves billed items by test (item name) within a specified
+     * date range and bill type, applying optional filters for institution,
+     * department, site, and collecting centre. It aggregates the number of
+     * items and the sums of hospital fee, collecting centre fee, staff fee, and
+     * net value for each test. The results are stored in the report list and
+     * overall totals are updated accordingly.</p>
      */
     public void processCollectingCentreTestWiseCountReportWithoutCancellationsAndRefunds() {
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
