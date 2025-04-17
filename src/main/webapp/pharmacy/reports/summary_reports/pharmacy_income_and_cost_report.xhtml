@@ -223,6 +223,12 @@
                                 </h:outputText>
                             </f:facet>
                         </p:column>
+                        <p:column 
+                            
+                            headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" >
+                            <h:outputText value="#{row.pharmaceuticalBillItem.billItem.bill.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
+                        </p:column>
+
                         <p:column headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.pharmaceuticalBillItem.billItem.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
                         </p:column>
@@ -235,34 +241,54 @@
                             <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.item.name}"  style="padding: 0px!important; margin: 0px!important;" >
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Retail Value" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
-                            <h:outputText value="#{commonController.abs(row.pharmaceuticalBillItem.retailRate * row.pharmaceuticalBillItem.qty)}">
+                        <p:column headerText="Qty" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
+                            <h:outputText value="#{row.pharmaceuticalBillItem.qty}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{commonController.abs(pharmacySummaryReportController.bundle.saleValue)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                <h:outputText value="#{commonFunctionsProxy.abs(pharmacySummaryReportController.bundle.saleValue)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Retail Rate" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
+                            <h:outputText value="#{row.pharmaceuticalBillItem.retailRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{commonFunctionsProxy.abs(pharmacySummaryReportController.bundle.saleValue)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Retail Value" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
+                            <h:outputText value="#{commonFunctionsProxy.abs(row.pharmaceuticalBillItem.retailRate * row.pharmaceuticalBillItem.qty)}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{commonFunctionsProxy.abs(pharmacySummaryReportController.bundle.saleValue)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
                         </p:column>
 
                         <p:column headerText="Cost Value" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
-                            <h:outputText value="#{commonController.abs(row.pharmaceuticalBillItem.purchaseRate * row.pharmaceuticalBillItem.qty)}">
+                            <h:outputText value="#{commonFunctionsProxy.abs(row.pharmaceuticalBillItem.purchaseRate * row.pharmaceuticalBillItem.qty)}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{commonController.abs(pharmacySummaryReportController.bundle.purchaseValue)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                <h:outputText value="#{commonFunctionsProxy.abs(pharmacySummaryReportController.bundle.purchaseValue)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
                         </p:column>
 
                         <p:column headerText="Gross Profit" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
-                            <h:outputText value="#{commonController.abs((row.pharmaceuticalBillItem.retailRate - row.pharmaceuticalBillItem.purchaseRate) * row.pharmaceuticalBillItem.qty)}">
+                            <h:outputText value="#{commonFunctionsProxy.abs((row.pharmaceuticalBillItem.retailRate - row.pharmaceuticalBillItem.purchaseRate) * row.pharmaceuticalBillItem.qty)}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{commonController.abs(pharmacySummaryReportController.bundle.grossProfitValue)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                <h:outputText value="#{commonFunctionsProxy.abs(pharmacySummaryReportController.bundle.grossProfitValue)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>

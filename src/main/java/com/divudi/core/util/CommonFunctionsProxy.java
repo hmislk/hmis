@@ -12,7 +12,7 @@ import java.util.List;
 public class CommonFunctionsProxy {
 
     public double abs(double value) {
-        return Math.abs(value);
+        return CommonFunctions.abs(value);
     }
 
     public String convertToWordJSF(double number) {
