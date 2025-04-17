@@ -33,6 +33,7 @@ import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ejb.EJB;
@@ -64,6 +65,8 @@ public class BillService {
     BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
@@ -899,7 +902,7 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
-        List<PharmaceuticalBillItem> fetchedPharmaceuticalBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<PharmaceuticalBillItem> fetchedPharmaceuticalBillItems = pharmaceuticalBillItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedPharmaceuticalBillItems;
     }
 
