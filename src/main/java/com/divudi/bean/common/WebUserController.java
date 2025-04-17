@@ -247,7 +247,12 @@ public class WebUserController implements Serializable {
         selected.getWebUserPerson().setRetirer(getSessionController().getLoggedUser());
         selected.getWebUserPerson().setRetiredAt(Calendar.getInstance().getTime());
         getPersonFacade().edit(selected.getWebUserPerson());
-        selected.setName(selected.getId().toString());
+// selected.setName(selected.getId().toString()); 
+// ❌ This line is incorrect and should not be used.
+// ⚠️ The username should never be altered during the retirement process.
+// ✅ Preserving the original username is essential to:
+//    - Prevent conflicts if a new user is later created with the same username.
+//    - Allow reactivation of the same user by reversing the retirement, if needed.
         selected.setRetired(true);
         selected.setRetirer(getSessionController().getLoggedUser());
         selected.setRetiredAt(Calendar.getInstance().getTime());
