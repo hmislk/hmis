@@ -1606,15 +1606,27 @@ public class ReportController implements Serializable {
         // Unchecked cast here
         List<ItemCount> allLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         
+        if(allLabTestCounts == null){
+            allLabTestCounts = new ArrayList<>();
+        }
+        
         m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
         List<ItemCount> cancelTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
+        if(cancelTestCounts == null){
+            cancelTestCounts = new ArrayList<>();
+        }
         
         // Now fetch results for OpdBillRefund (use a list for single bType)
         m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND, BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
         List<ItemCount> refundTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         
+        if(refundTestCounts == null){
+            refundTestCounts = new ArrayList<>();
+        }
+        
         Map<String, CategoryCount> categoryReports = new HashMap<>();
-
+        
         List<ItemCount> adjustmentsList = new ArrayList<>();
         adjustmentsList.addAll(cancelTestCounts);
         adjustmentsList.addAll(refundTestCounts);
