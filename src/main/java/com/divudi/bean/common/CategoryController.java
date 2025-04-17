@@ -206,20 +206,20 @@ public class CategoryController implements Serializable {
 
     public List<Category> completeServiceCategory(String query) {
         List<Category> suggestions;
-        String sql;
-        HashMap tmpMap = new HashMap();
+        String jpql;
+        HashMap params = new HashMap();
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-
-            sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub) and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            tmpMap.put("sup", ServiceCategory.class);
-            tmpMap.put("sub", ServiceSubCategory.class);
-            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
+            jpql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub) and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            params.put("sup", ServiceCategory.class);
+            params.put("sub", ServiceSubCategory.class);
+            suggestions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         }
         return suggestions;
     }
+    
+    
 
     private List<Category> serviceCategories;
 
