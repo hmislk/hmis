@@ -254,7 +254,15 @@ public class IncomeBundle implements Serializable {
                 continue;
             }
 
-            BillCategory bc = b.getBillItem().getBill().getBillTypeAtomic().getBillCategory();
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b.getBillItem())
+                    .map(BillItem::getBill)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+            if (bta == null || bta.getBillCategory() == null) {
+                continue; // unable to categorise safely
+            }
+            BillCategory bc = bta.getBillCategory();
 
             Double q = b.getQty();
             Double rRate = b.getRetailRate();
