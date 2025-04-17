@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%c{1}]: %msg%n" />
+        </Console>
+
+        <RollingFile name="RollingFileLogger"
+                     fileName="logs/audit-events.log"
+                     filePattern="logs/archive/audit-events-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%c{1}]: %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs/archive" maxDepth="1">
+                    <IfFileName glob="audit-events-*.log.gz" />
+                    <IfLastModified age="7d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFileLogger"/>
+        </Root>
+    </Loggers>
+</Configuration>
