@@ -310,6 +310,7 @@ public class PharmacyBean {
 
         newCancellationPreBillCreated.invertAndAssignValuesFromOtherBill(originalBill);
         newCancellationPreBillCreated.setBilledBill(originalBill);
+        newCancellationPreBillCreated.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
         String commonDeptAndInsId = getBillNumberBean().departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
         newCancellationPreBillCreated.setDeptId(commonDeptAndInsId);
         newCancellationPreBillCreated.setInsId(commonDeptAndInsId);
