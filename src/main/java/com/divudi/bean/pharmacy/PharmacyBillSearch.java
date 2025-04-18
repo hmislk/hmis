@@ -1300,6 +1300,28 @@ public class PharmacyBillSearch implements Serializable {
         return cb;
     }
 
+    private CancelledBill createPharmacyRetailSaleCancellationBill(Bill originalBill) {
+        CancelledBill cb = new CancelledBill();
+
+        cb.setBilledBill(originalBill);
+        cb.copy(originalBill);
+        cb.setReferenceBill(originalBill.getReferenceBill());
+        cb.invertAndAssignValuesFromOtherBill(originalBill);
+
+        cb.setPaymentScheme(originalBill.getPaymentScheme());
+        cb.setBalance(0.0);
+        cb.setCreatedAt(new Date());
+        cb.setCreater(getSessionController().getLoggedUser());
+
+        cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        cb.setInstitution(getSessionController().getInstitution());
+
+        cb.setComments(getComment());
+        cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+
+        return cb;
+    }
+
     private RefundBill pharmacyCreateRefundCancelBill() {
         RefundBill cb = new RefundBill();
         cb.invertQty();
@@ -1728,21 +1750,18 @@ public class PharmacyBillSearch implements Serializable {
 //            }
             newlyCreatedReturningItem.setPharmaceuticalBillItem(newlyCreatedReturningPharmaceuticalBillItem);
             newlyCreatedReturningPharmaceuticalBillItem.setBillItem(newlyCreatedReturningItem);
-            
-            getBillItemFacede().create(newlyCreatedReturningItem);
 
+            getBillItemFacede().create(newlyCreatedReturningItem);
 
             //get billfees from using cancel billItem  >> This feature of BillFee for Bill Items is NOT used in pharmacy related transactions
 //            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + originalBillItem.getId();
 //            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
 //            cancelBillFee(can, newlyCreatedReturningItem, tmp);
-
             //create BillFeePayments For cancel >> This feature of BillFee for Bill Items is NOT used in pharmacy related transactions
 //            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + newlyCreatedReturningItem.getId();
 //            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
 //            calculateBillfeePaymentsForCancelRefundBill(tmpC, p);
             //
-
             newlyCreatedCancellingBill.getBillItems().add(newlyCreatedReturningItem);
 
         }
@@ -2079,57 +2098,43 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-//            if (calculateNumberOfBillsPerOrder(getBill().getReferenceBill())) {
-//                return;
-//            } before
-            ////System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
-            ////System.out.println("bill.getDepartment() = " + getBill().getDepartment().getName());
-            ////System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
             if (checkDepartment(getBill())) {
                 return;
             }
 
-            Bill preBill = getPharmacyBean().reAddToStock(getBill().getReferenceBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PRECAN);
-            CancelledBill cb = pharmacyCreateCancelBill();
+            Bill newlyCreatedRetailSaleCancellationBillPre = getPharmacyBean().createPreBillForRetailSaleCancellation(getBill().getReferenceBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment());
+
+            CancelledBill newlyCreatedRetailSaleCancellationBill = createPharmacyRetailSaleCancellationBill(getBill());
 
             String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
 
-            cb.setDeptId(deptId);
-            cb.setInsId(deptId);
+            newlyCreatedRetailSaleCancellationBill.setDeptId(deptId);
+            newlyCreatedRetailSaleCancellationBill.setInsId(deptId);
 
-            if (cb.getId() == null) {
-                getBillFacade().create(cb);
+            if (newlyCreatedRetailSaleCancellationBill.getId() == null) {
+                getBillFacade().create(newlyCreatedRetailSaleCancellationBill);
             }
 
             //for Payment,billFee and BillFeepayment
-            List<Payment> newlyCreatedCancellationPayments = pharmacySaleController.createPaymentForRetailSaleCancellation(cb, paymentMethod);
+            List<Payment> newlyCreatedCancellationPayments = pharmacySaleController.createPaymentForRetailSaleCancellation(newlyCreatedRetailSaleCancellationBill, paymentMethod);
             drawerController.updateDrawerForOuts(newlyCreatedCancellationPayments);
-            pharmacyCancelBillItems(cb, newlyCreatedCancellationPayments);
+            pharmacyCancelBillItems(newlyCreatedRetailSaleCancellationBill, newlyCreatedCancellationPayments);
 
             getBill().setCancelled(true);
-            getBill().setCancelledBill(cb);
+            getBill().setCancelledBill(newlyCreatedRetailSaleCancellationBill);
             getBillFacade().edit(getBill());
 
-            preBill.setBackwardReferenceBill(getBill());
-            preBill.setForwardReferenceBill(cb);
-            getBillFacade().edit(preBill);
+            newlyCreatedRetailSaleCancellationBillPre.setBackwardReferenceBill(getBill());
+            newlyCreatedRetailSaleCancellationBillPre.setForwardReferenceBill(newlyCreatedRetailSaleCancellationBill);
+            getBillFacade().edit(newlyCreatedRetailSaleCancellationBillPre);
 
-//            if (getBill().getReferenceBill() != null) {
-//                getBill().getReferenceBill().setReferenceBill(null);
-//                getBillFacade().edit(getBill().getReferenceBill());
-//            }
-//            getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
             JsfUtil.addSuccessMessage("Cancelled");
-            //   ////System.out.println("going to cancel staff payments");
             if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-                //   ////System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-                //   ////System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
                 if (getBill().getToStaff() != null) {
-                    //   ////System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
                     getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                     JsfUtil.addSuccessMessage("Staff Credit Updated");
-                    cb.setFromStaff(getBill().getToStaff());
-                    getBillFacade().edit(cb);
+                    newlyCreatedRetailSaleCancellationBill.setFromStaff(getBill().getToStaff());
+                    getBillFacade().edit(newlyCreatedRetailSaleCancellationBill);
                 }
             }
 
