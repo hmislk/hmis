@@ -40,20 +40,6 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            <!--<p:spacer width="50" ></p:spacer>-->
-<!--                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
-
-
-                            <p:outputLabel value="Bill Type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu filter="true" filterMatchMode="contains" value="#{reportController.billTypeAtomics}"  >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{enumController.billTypesAtomicForLabTests}"
-                                               var="bta"
-                                               itemLabel="#{bta.label}"
-                                               itemValue="#{bta}" ></f:selectItems>
-                            </p:selectOneMenu>-->
                             <p:spacer width="50" ></p:spacer>
                             <p:outputLabel value="Analyzer" >
                             </p:outputLabel>
@@ -66,10 +52,6 @@
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
-
-<!--                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>-->
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -171,29 +153,33 @@
                             </h:panelGroup>
                         </h:panelGrid>
 
-                        <p:commandButton 
-                            ajax="false"
-                            value="Process"
-                            class="ui-button-success m-1"
-                            icon="pi pi-cog"
-                            action="#{reportController.processLabTestCount()}">
-                        </p:commandButton>
+                        <div class="d-flex gap-3 my-3">
+                            <p:commandButton 
+                                ajax="false"
+                                value="Process"
+                                class="ui-button-warning m-1"
+                                icon="pi pi-cog"
+                                action="#{reportController.processLabTestCount()}">
+                            </p:commandButton>
 
-                        <p:commandButton 
-                            ajax="false" 
-                            class="ui-button-success m-1"
-                            value="Download"
-                            icon="pi pi-download"
-                            action="#{reportController.downloadLabTestCount}">
-                        </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                class="ui-button-success m-1"
+                                value="Download"
+                                icon="pi pi-download"
+                                action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+                        </div>
 
+                        <p:dataTable 
+                            id="tbl"
+                            value="#{reportController.reportList}" 
+                            var="catReport"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="20"
 
-
-                        <p:dataTable id="tbl" value="#{reportController.reportList}" var="catReport"
-                                     paginator="true"
-                                     rows="10"
-
-                                     >
+                            >
                             <p:subTable var="item" value="#{catReport.items}">
                                 <f:facet name="header">
                                     <h:outputText value="Total for #{catReport.category} : #{catReport.total}" />
