@@ -262,6 +262,10 @@ public class EnumController implements Serializable {
         return Arrays.asList(Priority.values());
     }
 
+    public List<CategoryType> getCategoryTypes() {
+        return Arrays.asList(CategoryType.values());
+    }
+
     public List<HistoryType> getHistoryTypes() {
         return Arrays.asList(HistoryType.values());
     }
