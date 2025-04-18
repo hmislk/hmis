@@ -11,6 +11,7 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="cancelled" type="java.lang.Boolean"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -43,7 +44,7 @@
                 <h:outputLabel value="RECEIPT"   />
 
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.cancelled}" />
 
             </div>
 
