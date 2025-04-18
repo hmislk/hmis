@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.core.data.CategoryType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Nationality;
@@ -149,12 +150,54 @@ public class CategoryController implements Serializable {
     }
 
     public List<Category> completeCategory(String qry) {
-        List<Category> c;
-        c = getFacade().findByJpql("select c from Category c where c.retired=false and c.name like '%" + qry.toUpperCase() + "%' order by c.name");
-        if (c == null) {
-            c = new ArrayList<>();
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
         }
-        return c;
+        String jpql = "SELECT c FROM Category c WHERE c.retired = false AND c.name LIKE :q ORDER BY c.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("q", "%" + qry.trim() + "%");
+        List<Category> c = getFacade().findByJpql(jpql, params);
+        return c != null ? c : new ArrayList<>();
+    }
+
+    /**
+     * Returns a list of non-retired {@link Category} entities matching the
+     * given name query and category type. Uses a case-insensitive partial match
+     * for the name and filters by {@link CategoryType}.
+     *
+     * @param qry The name or partial name of the category to search for.
+     * @param categoryType The specific {@link CategoryType} to filter results
+     * by.
+     * @return A list of matching {@link Category} entities, or an empty list if
+     * none found.
+     */
+    public List<Category> completeCategory(String qry, CategoryType categoryType) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT c FROM Category c WHERE c.retired = false "
+                + "AND c.name LIKE :q AND c.categoryType = :type ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("q", "%" + qry.trim() + "%");
+        params.put("type", categoryType);
+
+        List<Category> c = getFacade().findByJpql(jpql, params);
+        return c != null ? c : new ArrayList<>();
+    }
+
+    /**
+     * Returns a list of non-retired {@link Category} entities of type
+     * {@code FINANCIAL_CATEGORY} matching the given name query.
+     *
+     * @param qry The name or partial name of the financial category to search
+     * for.
+     * @return A list of matching financial {@link Category} entities, or an
+     * empty list if none found.
+     */
+    public List<Category> completeFinancialCategory(String qry) {
+        return completeCategory(qry, CategoryType.FINANCIAL_CATEGORY);
     }
 
     public Category findAndCreateCategoryByName(String qry) {
@@ -206,20 +249,45 @@ public class CategoryController implements Serializable {
 
     public List<Category> completeServiceCategory(String query) {
         List<Category> suggestions;
-        String jpql;
-        HashMap params = new HashMap();
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            jpql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub) and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            params.put("sup", ServiceCategory.class);
-            params.put("sub", ServiceSubCategory.class);
-            suggestions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
         }
+
+        String jpql = "SELECT c FROM Category c "
+                + "WHERE c.retired = FALSE "
+                + "AND (TYPE(c) = :sup OR TYPE(c) = :sub) "
+                + "AND LOWER(c.name) LIKE :q "
+                + "ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("sup", ServiceCategory.class);
+        params.put("sub", ServiceSubCategory.class);
+        params.put("q", "%" + query.toLowerCase() + "%");
+
+        suggestions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return suggestions;
     }
-    
-    
+
+    public List<Category> completeFinanceCategory(String query) {
+        List<Category> suggestions;
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT c FROM Category c "
+                + "WHERE c.retired = FALSE "
+                + "AND (TYPE(c) = :sup OR TYPE(c) = :sub) "
+                + "AND LOWER(c.name) LIKE :q "
+                + "ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("sup", ServiceCategory.class);
+        params.put("sub", ServiceSubCategory.class);
+        params.put("q", "%" + query.toLowerCase() + "%");
+
+        suggestions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return suggestions;
+    }
 
     private List<Category> serviceCategories;
 

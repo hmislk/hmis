@@ -4,13 +4,40 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.bean.pharmacy.RouteOfAdministration;
+import com.divudi.core.data.CategoryType;
 import com.divudi.core.data.SymanticHyrachi;
+import com.divudi.core.entity.hr.Designation;
+import com.divudi.core.entity.hr.Grade;
+import com.divudi.core.entity.hr.StaffCategory;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.Room;
+import com.divudi.core.entity.inward.RoomCategory;
+import com.divudi.core.entity.inward.TimedItemCategory;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.entity.lab.InvestigationItemValueCategory;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.ReportFormat;
+import com.divudi.core.entity.lab.Sample;
+import com.divudi.core.entity.lab.WorksheetFormat;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.pharmacy.AdjustmentCategory;
+import com.divudi.core.entity.pharmacy.DiscardCategory;
+import com.divudi.core.entity.pharmacy.FrequencyUnit;
+import com.divudi.core.entity.pharmacy.Make;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.PharmaceuticalCategory;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
+import com.divudi.core.entity.pharmacy.StoreItemCategory;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -19,6 +46,8 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -39,38 +68,30 @@ public class Category implements Serializable {
     String name;
     String description;
     int orderNo;
+    @Enumerated(EnumType.STRING)
+    private CategoryType categoryType;
     //Created Properties
     @ManyToOne
-
     WebUser creater;
-
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
 
     private boolean retired;
     @ManyToOne
-
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-
     Date retiredAt;
-
     String retireComments;
 
     Double dblValue;
-
     Long longValue;
 
     @ManyToOne
     Category parentCategory;
-
     Double saleMargin = 0.0;
-
     Double wholeSaleMargin = 0.0;
-
     private Double pointesForThousand;
-
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     List<Item> items;
     String code;
@@ -86,12 +107,9 @@ public class Category implements Serializable {
     private double profitMargin;
     @ManyToOne
     private PaymentScheme paymentScheme;
-
     @ManyToOne
     private Institution institution;
 
-    // @ManyToOne
-    //   private Department department;
     public boolean isFilled() {
         return filled;
     }
@@ -330,6 +348,104 @@ public class Category implements Serializable {
         this.pointesForThousand = pointesForThousand;
     }
 
+    /*
+ * ChatGPT contributed fallback logic for dynamic CategoryType resolution
+     */
+    public CategoryType getCategoryType() {
+        if (this.categoryType != null) {
+            return this.categoryType;
+        } else {
+            this.updateCategoryType(); // Populate based on instance
+            return this.categoryType;
+        }
+    }
 
+    public void setCategoryType(CategoryType categoryType) {
+        this.categoryType = categoryType;
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void updateCategoryType() {
+        if (this.categoryType == null) {
+            if (this instanceof ServiceCategory) {
+                this.categoryType = CategoryType.SERVICE_CATEGORY;
+            } else if (this instanceof ServiceSubCategory) {
+                this.categoryType = CategoryType.SERVICE_SUB_CATEGORY;
+            } else if (this instanceof InvestigationCategory) {
+                this.categoryType = CategoryType.INVESTIGATION_CATEGORY;
+            } else if (this instanceof InvestigationTube) {
+                this.categoryType = CategoryType.INVESTIGATION_TUBE;
+            } else if (this instanceof RouteOfAdministration) {
+                this.categoryType = CategoryType.ROUTE_OF_ADMINISTRATION;
+            } else if (this instanceof Make) {
+                this.categoryType = CategoryType.MAKE;
+            } else if (this instanceof DosageForm) {
+                this.categoryType = CategoryType.DOSAGE_FORM;
+            } else if (this instanceof PharmaceuticalCategory) {
+                this.categoryType = CategoryType.PHARMACEUTICAL_CATEGORY;
+            } else if (this instanceof PharmaceuticalItemCategory) {
+                this.categoryType = CategoryType.PHARMACEUTICAL_ITEM_CATEGORY;
+            } else if (this instanceof PharmaceuticalItemType) {
+                this.categoryType = CategoryType.PHARMACEUTICAL_ITEM_TYPE;
+            } else if (this instanceof StoreItemCategory) {
+                this.categoryType = CategoryType.STORE_ITEM_CATEGORY;
+            } else if (this instanceof MeasurementUnit) {
+                this.categoryType = CategoryType.MEASUREMENT_UNIT;
+            } else if (this instanceof FrequencyUnit) {
+                this.categoryType = CategoryType.FREQUENCY_UNIT;
+            } else if (this instanceof AdjustmentCategory) {
+                this.categoryType = CategoryType.ADJUSTMENT_CATEGORY;
+            } else if (this instanceof DiscardCategory) {
+                this.categoryType = CategoryType.DISCARD_CATEGORY;
+            } else if (this instanceof Designation) {
+                this.categoryType = CategoryType.DESIGNATION;
+            } else if (this instanceof Grade) {
+                this.categoryType = CategoryType.GRADE;
+            } else if (this instanceof StaffCategory) {
+                this.categoryType = CategoryType.STAFF_CATEGORY;
+            } else if (this instanceof AdmissionType) {
+                this.categoryType = CategoryType.ADMISSION_TYPE;
+            } else if (this instanceof RoomCategory) {
+                this.categoryType = CategoryType.ROOM_CATEGORY;
+            } else if (this instanceof Room) {
+                this.categoryType = CategoryType.ROOM;
+            } else if (this instanceof TimedItemCategory) {
+                this.categoryType = CategoryType.TIMED_ITEM_CATEGORY;
+            } else if (this instanceof ReportFormat) {
+                this.categoryType = CategoryType.REPORT_FORMAT;
+            } else if (this instanceof WorksheetFormat) {
+                this.categoryType = CategoryType.WORKSHEET_FORMAT;
+            } else if (this instanceof Sample) {
+                this.categoryType = CategoryType.SAMPLE;
+            } else if (this instanceof InvestigationItemValueCategory) {
+                this.categoryType = CategoryType.INVESTIGATION_ITEM_VALUE_CATEGORY;
+            } else if (this instanceof Machine) {
+                this.categoryType = CategoryType.MACHINE;
+            } else if (this instanceof MembershipScheme) {
+                this.categoryType = CategoryType.MEMBERSHIP_SCHEME;
+            } else if (this instanceof FormFormat) {
+                this.categoryType = CategoryType.FORM_FORMAT;
+            } else if (this instanceof InventoryCategory) {
+                this.categoryType = CategoryType.INVENTORY_CATEGORY;
+            } else if (this instanceof MetadataCategory) {
+                this.categoryType = CategoryType.METADATA_CATEGORY;
+            } else if (this instanceof MetadataSuperCategory) {
+                this.categoryType = CategoryType.METADATA_SUPER_CATEGORY;
+            } else if (this instanceof Nationality) {
+                this.categoryType = CategoryType.NATIONALITY;
+            } else if (this instanceof Religion) {
+                this.categoryType = CategoryType.RELIGION;
+            } else if (this instanceof Relation) {
+                this.categoryType = CategoryType.RELATION;
+            } else if (this instanceof Vocabulary) {
+                this.categoryType = CategoryType.VOCABULARY;
+            } else if (this instanceof Speciality) {
+                this.categoryType = CategoryType.SPECIALITY;
+            } else if (this instanceof SessionNumberGenerator) {
+                this.categoryType = CategoryType.SESSION_NUMBER_GENERATOR;
+            }
+        }
+    }
 
 }
