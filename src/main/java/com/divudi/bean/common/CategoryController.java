@@ -58,14 +58,16 @@ public class CategoryController implements Serializable {
     private CategoryFacade ejbFacade;
     List<Category> selectedItems;
     private Category current;
-    Category fromCategory;
-    Category toCategory;
+    private Category fromCategory;
+    private Category toCategory;
     private List<Category> items = null;
     private List<Category> feeListTypes = null;
-    String selectText = "";
+    private String selectText = "";
 
     @Inject
     ItemController itemController;
+
+    private List<Category> serviceCategories;
 
     public String navigateToManageFeeListTypes() {
         fillFeeItemListTypes();
@@ -267,29 +269,6 @@ public class CategoryController implements Serializable {
         suggestions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return suggestions;
     }
-
-    public List<Category> completeFinanceCategory(String query) {
-        List<Category> suggestions;
-        if (query == null || query.trim().isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        String jpql = "SELECT c FROM Category c "
-                + "WHERE c.retired = FALSE "
-                + "AND (TYPE(c) = :sup OR TYPE(c) = :sub) "
-                + "AND LOWER(c.name) LIKE :q "
-                + "ORDER BY c.name";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("sup", ServiceCategory.class);
-        params.put("sub", ServiceSubCategory.class);
-        params.put("q", "%" + query.toLowerCase() + "%");
-
-        suggestions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        return suggestions;
-    }
-
-    private List<Category> serviceCategories;
 
     public List<Category> findServiceCategories() {
         List<Category> suggestions;
