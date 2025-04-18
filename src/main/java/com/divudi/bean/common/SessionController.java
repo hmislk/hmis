@@ -2368,7 +2368,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Boolean getInwardServiceBillingAfterShiftStart() {
         if (inwardServiceBillingAfterShiftStart == null) {
-            inwardServiceBillingAfterShiftStart =  configOptionApplicationController.getBooleanValueByKey("Inward Service Bill With Payment Need to Start the Shift", false);;
+            inwardServiceBillingAfterShiftStart =  configOptionApplicationController.getBooleanValueByKey("Inward Service Bill With Payment Need to Start the Shift", false);
         }
         return inwardServiceBillingAfterShiftStart;
     }
