@@ -2,6 +2,7 @@ package com.divudi.core.data;
 
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -40,9 +41,13 @@ public class IncomeBundle implements Serializable {
     private SessionInstance sessionInstance;
 
     private PaymentMethod paymentMethod;
-    
+
     private double netTotal;
     private double paidTotal;
+
+    private double saleValue;
+    private double purchaseValue;
+    private double grossProfitValue;
 
     private double onCallValue;
     private double cashValue;
@@ -217,6 +222,15 @@ public class IncomeBundle implements Serializable {
                         rows.add(ir);
                     }
                 }
+            } else if (firstElement instanceof PharmaceuticalBillItem) {
+                // Process list as Bills
+                for (Object obj : entries) {
+                    if (obj instanceof PharmaceuticalBillItem) {
+                        PharmaceuticalBillItem pbi = (PharmaceuticalBillItem) obj;
+                        IncomeRow ir = new IncomeRow(pbi);
+                        rows.add(ir);
+                    }
+                }
             } else if (firstElement instanceof IncomeRow) {
                 // Process list as IncomeRows
                 for (Object obj : entries) {
@@ -227,6 +241,83 @@ public class IncomeBundle implements Serializable {
                 }
             }
         }
+    }
+
+    public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
+        saleValue = 0;
+        purchaseValue = 0;
+        grossProfitValue = 0;
+
+        for (IncomeRow r : getRows()) {
+            PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
+            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
+                continue;
+            }
+
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b.getBillItem())
+                    .map(BillItem::getBill)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+            if (bta == null || bta.getBillCategory() == null) {
+                continue; // unable to categorise safely
+            }
+            BillCategory bc = bta.getBillCategory();
+
+            Double q = b.getQty();
+            Double rRate = b.getRetailRate();
+            Double pRate = b.getPurchaseRate();
+
+            if (q == null || rRate == null || pRate == null) {
+                continue;
+            }
+
+            double qty = Math.abs(q);
+            double retail = Math.abs(rRate);
+            double purchase = Math.abs(pRate);
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+            double grossProfit = 0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    grossProfit = (retail - purchase) * qty;
+                    break;
+
+                case CANCELLATION:
+                case REFUND:
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    grossProfit = -(retail - purchase) * qty;
+                    break;
+
+                default:
+                    break;
+            }
+
+//            System.out.println("---- Item ----");
+//            System.out.println("BillCategory: " + bc);
+//            System.out.println("Original Qty: " + q);
+//            System.out.println("Retail Rate: " + rRate);
+//            System.out.println("Purchase Rate: " + pRate);
+//            System.out.println("Adjusted Qty: " + ((bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -qty : qty));
+//            System.out.println("Retail Total: " + retailTotal);
+//            System.out.println("Purchase Total: " + purchaseTotal);
+//            System.out.println("Gross Profit: " + grossProfit);
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+            grossProfitValue += grossProfit;
+        }
+
+        System.out.println("==== Final Totals ====");
+        System.out.println("Total Sale Value: " + saleValue);
+        System.out.println("Total Purchase Value: " + purchaseValue);
+        System.out.println("Total Gross Profit: " + grossProfitValue);
     }
 
     public void generateProcurementDetailsForBillItems() {
@@ -908,6 +999,10 @@ public class IncomeBundle implements Serializable {
         hasPatientDepositTransaction = false;
         hasPatientPointsTransaction = false;
         hasOnlineSettlementTransaction = false;
+
+        saleValue = 0.0;
+        purchaseValue = 0.0;
+        grossProfitValue = 0.0;
     }
 
     public void collectDepartments() {
@@ -963,6 +1058,10 @@ public class IncomeBundle implements Serializable {
                 hasPatientDepositTransaction |= childBundle.hasPatientDepositTransaction;
                 hasPatientPointsTransaction |= childBundle.hasPatientPointsTransaction;
                 hasOnlineSettlementTransaction |= childBundle.hasOnlineSettlementTransaction;
+
+                saleValue += childBundle.saleValue;
+                purchaseValue += childBundle.purchaseValue;
+                grossProfitValue += childBundle.grossProfitValue;
             }
         }
     }
@@ -1532,6 +1631,28 @@ public class IncomeBundle implements Serializable {
         this.paidTotal = paidTotal;
     }
 
-    
-    
+    public double getSaleValue() {
+        return saleValue;
+    }
+
+    public void setSaleValue(double saleValue) {
+        this.saleValue = saleValue;
+    }
+
+    public double getPurchaseValue() {
+        return purchaseValue;
+    }
+
+    public void setPurchaseValue(double purchaseValue) {
+        this.purchaseValue = purchaseValue;
+    }
+
+    public double getGrossProfitValue() {
+        return grossProfitValue;
+    }
+
+    public void setGrossProfitValue(double grossProfitValue) {
+        this.grossProfitValue = grossProfitValue;
+    }
+
 }

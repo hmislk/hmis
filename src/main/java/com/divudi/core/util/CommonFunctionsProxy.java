@@ -11,6 +11,10 @@ import java.util.List;
 @ApplicationScoped
 public class CommonFunctionsProxy {
 
+    public double abs(double value) {
+        return CommonFunctions.abs(value);
+    }
+
     public String convertToWordJSF(double number) {
         return CommonFunctions.convertToWord(number);
     }
