@@ -4,6 +4,28 @@
  */
 package com.divudi.core.entity;
 
+
+import com.divudi.core.util.CommonFunctions;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Temporal;
+import javax.persistence.Transient;
+
+
 import com.divudi.bean.pharmacy.RouteOfAdministration;
 import com.divudi.core.data.CategoryType;
 import com.divudi.core.data.SymanticHyrachi;
@@ -31,25 +53,6 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
 import com.divudi.core.entity.pharmacy.StoreItemCategory;
-import com.divudi.core.util.CommonFunctions;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Temporal;
-import javax.persistence.Transient;
 
 /**
  *
@@ -348,16 +351,9 @@ public class Category implements Serializable {
         this.pointesForThousand = pointesForThousand;
     }
 
-    /*
- * ChatGPT contributed fallback logic for dynamic CategoryType resolution
-     */
+
     public CategoryType getCategoryType() {
-        if (this.categoryType != null) {
-            return this.categoryType;
-        } else {
-            this.updateCategoryType(); // Populate based on instance
-            return this.categoryType;
-        }
+        return this.categoryType;
     }
 
     public void setCategoryType(CategoryType categoryType) {

@@ -88,6 +88,8 @@
                                     <p:selectOneMenu 
                                         id="ddlCategoryType" 
                                         value="#{categoryController.current.categoryType}" 
+                                        required="true"
+                                        requiredMessage="Please select a category type"
                                         filter="true" 
                                         filterMatchMode="contains" 
                                         styleClass="form-control w-100">
