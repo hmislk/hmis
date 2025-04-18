@@ -219,7 +219,6 @@
                             <h:outputText value="#{row.pharmaceuticalBillItem.billItem.bill.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
                             <f:facet name="footer" >
                                 <h:outputText value="Total Amounts" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
-
                                 </h:outputText>
                             </f:facet>
                         </p:column>
@@ -227,8 +226,6 @@
                             headerText="Bill Type"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.pharmaceuticalBillItem.billItem.bill.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
                         </p:column>
-                        </p:column>
-
                         <p:column headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.pharmaceuticalBillItem.billItem.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
                         </p:column>
@@ -299,25 +296,6 @@
                                 ajax="false">
                                 <f:setPropertyActionListener value="#{row.pharmaceuticalBillItem.billItem.bill}" target="#{billSearch.bill}" />
                             </p:commandLink>
-
-                            <!--                            <p:commandLink 
-                                                            value="Manage" 
-                                                            style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
-                                                            class="mx-1"
-                                                            action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
-                                                            ajax="false">
-                                                            <f:setPropertyActionListener value="#{row.pharmaceuticalBillItem.billItem.bill}" target="#{billSearch.bill}" />
-                                                        </p:commandLink>-->
-
-                            <!--                            <p:commandLink 
-                                                            value="Admin" 
-                                                            style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
-                                                            class="mx-1"
-                                                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                                            ajax="false" 
-                                                            rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                            <f:setPropertyActionListener value="#{row.pharmaceuticalBillItem.billItem.bill}" target="#{billSearch.bill}" />
-                                                        </p:commandLink>-->
                         </p:column>
 
 

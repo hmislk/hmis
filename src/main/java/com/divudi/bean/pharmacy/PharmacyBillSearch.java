@@ -190,7 +190,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToViewPharmacyTransferReqest() {
-        if(bill==null){
+        if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
@@ -1696,57 +1696,58 @@ public class PharmacyBillSearch implements Serializable {
         pharmacyCancelBillItems(can, payments);
     }
 
-    private void pharmacyCancelBillItems(CancelledBill can, List<Payment> ps) {
-        for (BillItem nB : getBill().getBillItems()) {
-            BillItem b = nB;
-            b.setBill(can);
-//            b.copy(nB);
-            b.invertValue(nB);
+    private void pharmacyCancelBillItems(CancelledBill newlyCreatedCancellingBill, List<Payment> ps) {
+        for (BillItem originalBillItem : getBill().getBillItems()) {
+            BillItem newlyCreatedReturningItem = new BillItem();
+            newlyCreatedReturningItem.copy(originalBillItem);
+            newlyCreatedReturningItem.setBill(newlyCreatedCancellingBill);
+            newlyCreatedReturningItem.invertValue(originalBillItem);
 
-            if (can.getBillType() == BillType.PharmacyGrnBill || can.getBillType() == BillType.PharmacyGrnReturn) {
-                b.setReferanceBillItem(nB.getReferanceBillItem());
+            if (newlyCreatedCancellingBill.getBillType() == BillType.PharmacyGrnBill || newlyCreatedCancellingBill.getBillType() == BillType.PharmacyGrnReturn) {
+                newlyCreatedReturningItem.setReferanceBillItem(originalBillItem.getReferanceBillItem());
             } else {
-                b.setReferanceBillItem(nB);
+                newlyCreatedReturningItem.setReferanceBillItem(originalBillItem);
             }
 
-            b.setCreatedAt(new Date());
-            b.setCreater(getSessionController().getLoggedUser());
+            newlyCreatedReturningItem.setCreatedAt(new Date());
+            newlyCreatedReturningItem.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
-            ph.copy(nB.getPharmaceuticalBillItem());
-            ph.invertValue(nB.getPharmaceuticalBillItem());
+            PharmaceuticalBillItem newlyCreatedReturningPharmaceuticalBillItem = new PharmaceuticalBillItem();
+            newlyCreatedReturningPharmaceuticalBillItem.copy(originalBillItem.getPharmaceuticalBillItem());
+            newlyCreatedReturningPharmaceuticalBillItem.invertValue(originalBillItem.getPharmaceuticalBillItem());
 
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
+            // No need to create billItem and pharmaceuticalBillItem sepeately as there is a relationship with persistsAll
+//            if (newlyCreatedReturningPharmaceuticalBillItem.getId() == null) {
+//                getPharmaceuticalBillItemFacade().create(newlyCreatedReturningPharmaceuticalBillItem);
+//            }
+//
+//            newlyCreatedReturningItem.setPharmaceuticalBillItem(newlyCreatedReturningPharmaceuticalBillItem);
+//
+//            if (newlyCreatedReturningItem.getId() == null) {
+//                getBillItemFacede().create(newlyCreatedReturningItem);
+//            }
+            newlyCreatedReturningItem.setPharmaceuticalBillItem(newlyCreatedReturningPharmaceuticalBillItem);
+            newlyCreatedReturningPharmaceuticalBillItem.setBillItem(newlyCreatedReturningItem);
+            
+            getBillItemFacede().create(newlyCreatedReturningItem);
 
-            b.setPharmaceuticalBillItem(ph);
 
-            if (b.getId() == null) {
-                getBillItemFacede().create(b);
-            }
+            //get billfees from using cancel billItem  >> This feature of BillFee for Bill Items is NOT used in pharmacy related transactions
+//            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + originalBillItem.getId();
+//            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
+//            cancelBillFee(can, newlyCreatedReturningItem, tmp);
 
-            ph.setBillItem(b);
-            getPharmaceuticalBillItemFacade().edit(ph);
-
-            getBillItemFacede().edit(b);
-
-            //get billfees from using cancel billItem
-            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
-            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
-            cancelBillFee(can, b, tmp);
-
-            //create BillFeePayments For cancel
-            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
-            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
+            //create BillFeePayments For cancel >> This feature of BillFee for Bill Items is NOT used in pharmacy related transactions
+//            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + newlyCreatedReturningItem.getId();
+//            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
 //            calculateBillfeePaymentsForCancelRefundBill(tmpC, p);
             //
 
-            can.getBillItems().add(b);
+            newlyCreatedCancellingBill.getBillItems().add(newlyCreatedReturningItem);
 
         }
 
-        getBillFacade().edit(can);
+        getBillFacade().edit(newlyCreatedCancellingBill);
     }
 
     private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
@@ -2108,7 +2109,7 @@ public class PharmacyBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            
+
             preBill.setBackwardReferenceBill(getBill());
             preBill.setForwardReferenceBill(cb);
             getBillFacade().edit(preBill);
