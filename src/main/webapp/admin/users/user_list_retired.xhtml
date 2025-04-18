@@ -38,14 +38,16 @@
                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                 rowsPerPageTemplate="25,50,100,500"
                                                 >
-                                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
-                                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" />
+                                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" />
+
                                                 <p:column headerText="User Name" 
                                                           sortBy="#{u.userName}" 
                                                           filterBy="#{u.userName}"
                                                           filterMatchMode="contains">
                                                     <h:outputText value="#{u.userName}"/>
                                                 </p:column>
+
                                                 <p:column headerText="Name" 
                                                           sortBy="#{u.name}" 
                                                           filterBy="#{u.name}"
@@ -53,7 +55,22 @@
                                                           filterMatchMode="contains">
                                                     <h:outputText value="#{u.name}"/>
                                                 </p:column>
+
+                                                <p:column headerText="Code" 
+                                                          sortBy="#{u.code}" 
+                                                          filterBy="#{u.code}"
+                                                          filterMatchMode="contains">
+                                                    <h:outputText value="#{u.code}"/>
+                                                </p:column>
+
+                                                <p:column headerText="Staff Name" 
+                                                          sortBy="#{u.staffNameWithTitle}" 
+                                                          filterBy="#{u.staffNameWithTitle}"
+                                                          filterMatchMode="contains">
+                                                    <h:outputText value="#{u.staffNameWithTitle}"/>
+                                                </p:column>
                                             </p:dataTable>
+
                                         </ui:insert>
                                     </div>
 
