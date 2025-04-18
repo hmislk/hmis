@@ -2096,7 +2096,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean executeInwardSettleBillActions() {
-        setPatient(patientEncounter.getPatient());
+        if(patientEncounter != null){
+            setPatient(patientEncounter.getPatient());
+        }
+
         if (errorCheck()) {
             return false;
         }
@@ -4305,8 +4308,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void selectPatientEncounter(){
-        if(patientEncounter == null){
-            patient = patientEncounter.getPatient();
+        if (patientEncounter != null) {
+            setPatient(patientEncounter.getPatient());
+        } else {
+            JsfUtil.addErrorMessage("Please select an encounter first.");
         }
     }
 
