@@ -226,9 +226,7 @@
                                                         icon="fa-regular fa-calendar"
                                                         process="btnViewSessions"
                                                         update="dlgSessions"
-                                                        onclick="function () {
-                                                                    PF('dlgSessions').show();
-                                                                }"
+                                                        onclick="PF('dlgSessions').show();"
                                                         >
                                                     </p:commandButton>
                                                     <p:dialog id="dlgSessions" widgetVar="dlgSessions" modal="true" header="Session" closeOnEscape="true">
@@ -535,9 +533,9 @@
                                                                     </h:panelGroup>
 
                                                                     <p:commandButton 
-                                                                        id="btnChangeDocByFee"
+                                                                        id="btnChangeDocByFeeBundled"
                                                                         rendered="#{billFeeBundleEntry.selectedBillFee.fee.feeType eq 'Staff'}"
-                                                                        process="btnChangeDocByFee  drs"
+                                                                        process="btnChangeDocByFeeBundled  drs"
                                                                         update=":#{p:resolveFirstComponentWithId('panelWorkingStaff',view).clientId}"
                                                                         title="Set Doctor"  
                                                                         icon="fa fa-user-md" 
