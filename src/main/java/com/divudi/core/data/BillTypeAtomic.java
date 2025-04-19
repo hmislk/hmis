@@ -407,6 +407,8 @@ public enum BillTypeAtomic {
                         return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
                     case PharmacyPurchaseBill:
                         return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                    case PharmacyPre:
+                        return BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE;
                 }
                 return null;
             case RefundBill:
