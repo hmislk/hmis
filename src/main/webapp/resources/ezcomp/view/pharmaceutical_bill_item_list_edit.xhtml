@@ -28,61 +28,7 @@
             <p:column headerText="ID">
                 <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>
             </p:column>
-            <p:column headerText="Bill Item ID">
-                <h:outputText value="#{bi.billItem.item.name}" ></h:outputText>
-            </p:column>
-            <p:column headerText="Item Name">
-                <h:outputText value="#{bi.billItem.item.name}" ></h:outputText>
-            </p:column>
-            <p:column headerText="Quantity" class="text-end">
-                <p:inputText value="#{bi.qty}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <p:outputLabel value="#{bi.qty}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-            <p:column headerText="Rate" class="text-end">
-                <p:inputText value="#{bi.netRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <p:outputLabel value="#{bi.netRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-             <p:column headerText="Margin Rate" class="text-end">
-                <p:inputText value="#{bi.marginRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <p:outputLabel value="#{bi.marginRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-            <p:column headerText="Hospital Fee" class="text-end">
-                <p:inputText value="#{bi.hospitalFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <h:outputText value="#{bi.hospitalFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-            <p:column headerText="Staff Fee" class="text-end">
-                <p:inputText value="#{bi.staffFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <h:outputText value="#{bi.staffFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-            <p:column headerText="Collecting Centre Fee" class="text-end">
-                <p:inputText value="#{bi.collectingCentreFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <h:outputText value="#{bi.collectingCentreFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-            <p:column headerText="Other Fee" class="text-end">
-                <p:inputText value="#{bi.otherFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <h:outputText value="#{bi.otherFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-            <p:column headerText="Gross Value" class="text-end">
-                <p:inputText value="#{bi.grossValue}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <h:outputText value="#{bi.grossValue}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-            <p:column headerText="Discount" class="text-end">
-                <p:inputText value="#{bi.discount}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <h:outputText value="#{bi.discount}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-              <p:column headerText="Service Charge" class="text-end">
-                <p:inputText value="#{bi.marginValue}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <h:outputText value="#{bi.marginValue}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-            <p:column headerText="Net Value" class="text-end">
-                <p:inputText value="#{bi.netValue}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <h:outputText value="#{bi.netValue}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-            <p:column headerText="Retired" class="text-end">
-                <p:selectBooleanCheckbox value="#{bi.retired}" rendered="#{cc.attrs.editable}" class="text-end" />
-                <p:outputLabel value="#{bi.retired ? 'Yes' : 'No'}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
-
+          
         </p:dataTable>
 
     </cc:implementation>
