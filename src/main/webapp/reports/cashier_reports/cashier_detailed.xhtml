@@ -13,23 +13,24 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel class="m-1">
-                        
+
                         <f:facet name="header">
                             <div class="d-flex align-item-center justify-content-between" >
                                 <div>
                                     <h:outputLabel value="Cashier Details" />
                                 </div>
                                 <div>
-                                    <p:commandButton class="ui-button-secondary"
-                                                     icon="fas fa-arrow-left"
-                                                     value="Back to All Cashier Summary"
-                                                     action="#{searchController.navigatBackToAllCashierSummary}"
-                                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Back to All Cashier Summary Button on Cashier Detailed',false)}"
-                                                     ajax="false"/>
+                                    <p:commandButton 
+                                        class="ui-button-secondary"
+                                        icon="fas fa-arrow-left"
+                                        value="Back to All Cashier Summary"
+                                        action="#{searchController.navigatBackToAllCashierSummary}"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Back to All Cashier Summary Button on Cashier Detailed',false)}"
+                                        ajax="false"/>
                                 </div>
                             </div>
                         </f:facet>
-                        
+
                         <h:panelGrid columns="8" class="w-100">
                             <h:outputLabel value="From"/>
                             <p:calendar 
@@ -156,7 +157,7 @@
 
                             </h:panelGroup>
 
-                              
+
 
 
                             <h:outputLabel value="User"/> 
@@ -170,24 +171,26 @@
                                 scrollHeight="450"
                                 itemLabel="#{user.webUserPerson.name}" 
                                 itemValue="#{user}" >
-                                <p:column headerText="Username" >
+                                <p:column headerText="Username" style="padding: 6px;">
                                     <h:outputText value="#{user.name}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Name" >
+                                <p:column headerText="Name"  style="padding: 6px;">
                                     <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
                                 </p:column>
                             </p:autoComplete>
 
                         </h:panelGrid>
 
-                        <p:commandButton  
-                            value="Process" 
-                            ajax="false"
-                            action="#{searchController.generateCashierDetailed()}" 
-                            class="ui-button-warning" icon="fas fa-cogs">
-                        </p:commandButton>
+                        <div class="my-2">
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                action="#{searchController.generateCashierDetailed()}" 
+                                class="ui-button-warning" 
+                                icon="fas fa-cogs">
+                            </p:commandButton>
+                        </div>
 
-                        
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
 
                             <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceBilled'}"/>
@@ -239,10 +242,10 @@
                             <ez:collectingCentrePaymentReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentReceive'}"/>
                             <ez:collectingCentrePaymentCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentCancel'}"/>
 
-<!--                             OPD Credits 
-                            <ez:opdCredit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCredit'}"/>
-                            <ez:opdCreditCancelled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditCancelled'}"/>
-                            <ez:opdCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditRefund'}"/>-->
+                            <!--                             OPD Credits 
+                                                        <ez:opdCredit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCredit'}"/>
+                                                        <ez:opdCreditCancelled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditCancelled'}"/>
+                                                        <ez:opdCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditRefund'}"/>-->
 
                             <!-- Pharmacy Credit Bills -->
                             <ez:pharmacyCreditBills bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
@@ -251,23 +254,21 @@
 
                             <ez:agencyDeposits bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'AgencyDeposit'}"/>
 
-                            <p:splitterPanel ></p:splitterPanel>
 
+                            <!-- Channel Appointment Income-->
+                            <ez:channel_billed bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelAppointmentWithPayment'}"/>
+
+                            <p:splitterPanel ></p:splitterPanel>
 
                         </ui:repeat>
 
                         <!-- Net Cash Summary -->
                         <ez:netCash bundle="#{searchController.bundle}" />
 
-
-
                     </p:panel>
-
+                    
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
-
     </body>
 </html>

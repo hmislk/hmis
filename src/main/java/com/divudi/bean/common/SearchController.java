@@ -14648,6 +14648,20 @@ public class SearchController implements Serializable {
         agencyPaymentBundle.setName("Agency Accept Payments");
         bundle.getBundles().add(agencyPaymentBundle);
         collectionForTheDay += getSafeTotal(agencyPaymentBundle);
+        
+        //Genarate Channel Appointment Paid
+        List<BillTypeAtomic> channeling = new ArrayList<>();
+        channeling.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        channeling.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        channeling.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        channeling.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
+        
+        ReportTemplateRowBundle channelAppointmentBundle = generatePaymentMethodColumnsByBills(channeling);
+        channelAppointmentBundle.setBundleType("ChannelAppointmentWithPayment");
+        channelAppointmentBundle.setName("Channel Appointment Collection");
+        bundle.getBundles().add(channelAppointmentBundle);
+        collectionForTheDay += getSafeTotal(channelAppointmentBundle);
+        
 
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
