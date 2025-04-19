@@ -14674,7 +14674,17 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(ChannelBookingsCancellationBundle);
         collectionForTheDay -= getSafeTotal(ChannelBookingsCancellationBundle);
         
+        //Genarate Channel Refund
+        List<BillTypeAtomic> channelRefunds = new ArrayList<>();
+        channelRefunds.add(BillTypeAtomic.CHANNEL_REFUND);
+        channelRefunds.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        channelRefunds.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
         
+        ReportTemplateRowBundle ChannelBookingsRefundBundle = generatePaymentMethodColumnsByBills(channelRefunds);
+        ChannelBookingsRefundBundle.setBundleType("ChannelBookingsRefunds");
+        ChannelBookingsRefundBundle.setName("Channel Paid Bookings Refunds");
+        bundle.getBundles().add(ChannelBookingsRefundBundle);
+        collectionForTheDay -= getSafeTotal(ChannelBookingsRefundBundle);
         
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
