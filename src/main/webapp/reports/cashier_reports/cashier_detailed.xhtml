@@ -255,8 +255,10 @@
                             <ez:agencyDeposits bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'AgencyDeposit'}"/>
 
 
-                            <!-- Channel Appointment Income-->
-                            <ez:channel_billed bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelAppointmentWithPayment'}"/>
+                            <!-- Channel Bookings Income-->
+                            <ez:channel_billed bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelBookingsWithPayment'}"/>
+                            <!-- Channel Bookings Cancellations-->
+                            <ez:channel_bills_cancellation bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelBookingsCancellation'}"/>
 
                             <p:splitterPanel ></p:splitterPanel>
 
