@@ -247,7 +247,12 @@ public class WebUserController implements Serializable {
         selected.getWebUserPerson().setRetirer(getSessionController().getLoggedUser());
         selected.getWebUserPerson().setRetiredAt(Calendar.getInstance().getTime());
         getPersonFacade().edit(selected.getWebUserPerson());
-        selected.setName(selected.getId().toString());
+// selected.setName(selected.getId().toString()); 
+// ❌ This line is incorrect and should not be used.
+// ⚠️ The username should never be altered during the retirement process.
+// ✅ Preserving the original username is essential to:
+//    - Prevent conflicts if a new user is later created with the same username.
+//    - Allow reactivation of the same user by reversing the retirement, if needed.
         selected.setRetired(true);
         selected.setRetirer(getSessionController().getLoggedUser());
         selected.setRetiredAt(Calendar.getInstance().getTime());
@@ -262,21 +267,12 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a retired user to revert.");
             return;
         }
-
         selected.getWebUserPerson().setRetired(false);
-        selected.getWebUserPerson().setRetirer(getSessionController().getLoggedUser());
-        selected.getWebUserPerson().setRetiredAt(Calendar.getInstance().getTime());
         getPersonFacade().edit(selected.getWebUserPerson());
-
-        selected.setName(selected.getId().toString());
         selected.setRetired(false);
-        selected.setRetirer(getSessionController().getLoggedUser());
-        selected.setRetiredAt(Calendar.getInstance().getTime());
         getFacade().edit(selected);
-
         selected = null;
         fillLightUsers();
-
         JsfUtil.addSuccessMessage("Retirement successfully reverted.");
     }
 
@@ -677,11 +673,16 @@ public class WebUserController implements Serializable {
     private void fillLightUsers() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.core.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
-                + " from WebUser wu "
-                + " where wu.retired=:ret "
-                + " and wu.staff is not null "
-                + " order by wu.name";
+        jpql = "Select new com.divudi.core.light.common.WebUserLight("
+                + "wu.name, "
+                + "wu.webUserPerson.name, "
+                + "wu.id, "
+                + "wu.code, "
+                + "wu.staff.person.name) "
+                + "from WebUser wu "
+                + "where wu.retired=:ret "
+                + "and wu.staff is not null "
+                + "order by wu.name";
         m.put("ret", false);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
     }
@@ -689,11 +690,16 @@ public class WebUserController implements Serializable {
     private void fillLightUsersRetired() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
-        jpql = "Select new com.divudi.core.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
-                + " from WebUser wu "
-                + " where wu.retired=:ret "
-                + " and wu.staff is not null "
-                + " order by wu.name";
+        jpql = "Select new com.divudi.core.light.common.WebUserLight("
+                + "wu.name, "
+                + "wu.webUserPerson.name, "
+                + "wu.id, "
+                + "wu.code, "
+                + "wu.staff.person.name) "
+                + "from WebUser wu "
+                + "where wu.retired=:ret "
+                + "and wu.staff is not null "
+                + "order by wu.name";
         m.put("ret", true);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
     }

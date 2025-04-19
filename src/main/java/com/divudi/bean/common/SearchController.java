@@ -14648,7 +14648,44 @@ public class SearchController implements Serializable {
         agencyPaymentBundle.setName("Agency Accept Payments");
         bundle.getBundles().add(agencyPaymentBundle);
         collectionForTheDay += getSafeTotal(agencyPaymentBundle);
-
+        
+        //Genarate Channel Appointment Paid
+        List<BillTypeAtomic> channeling = new ArrayList<>();
+        channeling.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        channeling.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        channeling.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        channeling.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
+        
+        ReportTemplateRowBundle channelAppointmentBundle = generatePaymentMethodColumnsByBills(channeling);
+        channelAppointmentBundle.setBundleType("ChannelBookingsWithPayment");
+        channelAppointmentBundle.setName("Channel Paid Bookings");
+        bundle.getBundles().add(channelAppointmentBundle);
+        collectionForTheDay += getSafeTotal(channelAppointmentBundle);
+        
+        //Genarate Channel Cancellations
+        List<BillTypeAtomic> channelCancellations = new ArrayList<>();
+        channelCancellations.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        channelCancellations.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+        channelCancellations.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+        
+        ReportTemplateRowBundle ChannelBookingsCancellationBundle = generatePaymentMethodColumnsByBills(channelCancellations);
+        ChannelBookingsCancellationBundle.setBundleType("ChannelBookingsCancellation");
+        ChannelBookingsCancellationBundle.setName("Channel Paid Bookings Cancellations");
+        bundle.getBundles().add(ChannelBookingsCancellationBundle);
+        collectionForTheDay -= getSafeTotal(ChannelBookingsCancellationBundle);
+        
+        //Genarate Channel Refund
+        List<BillTypeAtomic> channelRefunds = new ArrayList<>();
+        channelRefunds.add(BillTypeAtomic.CHANNEL_REFUND);
+        channelRefunds.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        channelRefunds.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+        
+        ReportTemplateRowBundle ChannelBookingsRefundBundle = generatePaymentMethodColumnsByBills(channelRefunds);
+        ChannelBookingsRefundBundle.setBundleType("ChannelBookingsRefunds");
+        ChannelBookingsRefundBundle.setName("Channel Paid Bookings Refunds");
+        bundle.getBundles().add(ChannelBookingsRefundBundle);
+        collectionForTheDay -= getSafeTotal(ChannelBookingsRefundBundle);
+        
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
         netCashForTheDayBundle.setName("Net Cash");
