@@ -7,6 +7,7 @@ package com.divudi.ejb;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemBatchQty;
 import com.divudi.core.data.StockQty;
@@ -239,6 +240,51 @@ public class PharmacyBean {
 
     }
 
+    
+    
+    private List<BillItem> createBillItemsForPharmacyRetailSaleCancellationPreBillWithStockReturn(Bill originalBill, Bill cancellationPreBill, WebUser user, Department department) {
+
+        List<BillItem> billItems = new ArrayList<>();
+
+        if (originalBill == null) {
+            return billItems;
+        }
+
+        if (originalBill.getBillItems() == null) {
+            return billItems;
+        }
+
+        for (BillItem existingBillItemFromOriginalBill : originalBill.getBillItems()) {
+            BillItem newlyCreatedBillItemForCancellationPrebill = new BillItem();
+            newlyCreatedBillItemForCancellationPrebill.copy(existingBillItemFromOriginalBill);
+            newlyCreatedBillItemForCancellationPrebill.invertValue(existingBillItemFromOriginalBill);
+            newlyCreatedBillItemForCancellationPrebill.setBill(cancellationPreBill);
+            newlyCreatedBillItemForCancellationPrebill.setReferanceBillItem(existingBillItemFromOriginalBill);
+            newlyCreatedBillItemForCancellationPrebill.setCreatedAt(new Date());
+            newlyCreatedBillItemForCancellationPrebill.setCreater(user);
+
+            PharmaceuticalBillItem newlyCreatedPharmaceuticalBillItem = new PharmaceuticalBillItem();
+            newlyCreatedPharmaceuticalBillItem.copy(existingBillItemFromOriginalBill.getPharmaceuticalBillItem());
+            newlyCreatedPharmaceuticalBillItem.invertValue(existingBillItemFromOriginalBill.getPharmaceuticalBillItem());
+            newlyCreatedPharmaceuticalBillItem.setBillItem(newlyCreatedBillItemForCancellationPrebill);
+            newlyCreatedBillItemForCancellationPrebill.setPharmaceuticalBillItem(newlyCreatedPharmaceuticalBillItem);
+
+            getBillItemFacade().create(newlyCreatedBillItemForCancellationPrebill);
+
+            double qty = 0;
+            if (existingBillItemFromOriginalBill.getQty() != null) {
+                qty = Math.abs(existingBillItemFromOriginalBill.getQty());
+            }
+
+            addToStock(newlyCreatedPharmaceuticalBillItem.getStock(), qty, newlyCreatedPharmaceuticalBillItem, department);
+            billItems.add(newlyCreatedBillItemForCancellationPrebill);
+
+        }
+
+        return billItems;
+
+    }
+    
     public Bill reAddToStock(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
 //        if (bill.isCancelled()) {
 //            JsfUtil.addErrorMessage("Bill Already Cancelled");
@@ -254,6 +300,37 @@ public class PharmacyBean {
         getBillFacade().edit(preBill);
 
         return preBill;
+    }
+
+    public Bill createPreBillForRetailSaleCancellation(Bill originalBill, WebUser user, Department department) {
+        Bill newCancellationPreBillCreated = new PreBill();
+        // This is not needed as invertAndAssignValuesFromOtherBill do both the following actions
+//        newPre.copy(originalBill);
+//        newPre.invertQty();
+
+        newCancellationPreBillCreated.invertAndAssignValuesFromOtherBill(originalBill);
+        newCancellationPreBillCreated.setBilledBill(originalBill);
+        newCancellationPreBillCreated.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+        String commonDeptAndInsId = getBillNumberBean().departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+        newCancellationPreBillCreated.setDeptId(commonDeptAndInsId);
+        newCancellationPreBillCreated.setInsId(commonDeptAndInsId);
+        newCancellationPreBillCreated.setDepartment(department);
+        newCancellationPreBillCreated.setInstitution(department.getInstitution());
+        newCancellationPreBillCreated.setCreatedAt(new Date());
+        newCancellationPreBillCreated.setCreater(user);
+        newCancellationPreBillCreated.setBackwardReferenceBill(originalBill);
+
+        getBillFacade().create(newCancellationPreBillCreated);
+
+        List<BillItem> listOfNewlyCreatedBillItemsForPharmacyRetailSaleCancellationPreBill = createBillItemsForPharmacyRetailSaleCancellationPreBillWithStockReturn(originalBill, newCancellationPreBillCreated, user, department);
+
+        originalBill.setForwardReferenceBill(newCancellationPreBillCreated);
+        getBillFacade().edit(originalBill);
+
+        newCancellationPreBillCreated.setBillItems(listOfNewlyCreatedBillItemsForPharmacyRetailSaleCancellationPreBill);
+        getBillFacade().edit(newCancellationPreBillCreated);
+
+        return newCancellationPreBillCreated;
     }
 
     public Bill readdStockForIssueBills(PreBill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
