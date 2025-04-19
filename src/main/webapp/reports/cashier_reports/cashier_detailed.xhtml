@@ -259,7 +259,9 @@
                             <ez:channel_billed bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelBookingsWithPayment'}"/>
                             <!-- Channel Bookings Cancellations-->
                             <ez:channel_bills_cancellation bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelBookingsCancellation'}"/>
-
+                            <!-- Channel Bookings Refunds-->
+                            <ez:channel_bills_refund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelBookingsRefunds'}"/>
+                            
                             <p:splitterPanel ></p:splitterPanel>
 
                         </ui:repeat>
