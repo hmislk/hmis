@@ -14657,12 +14657,25 @@ public class SearchController implements Serializable {
         channeling.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
         
         ReportTemplateRowBundle channelAppointmentBundle = generatePaymentMethodColumnsByBills(channeling);
-        channelAppointmentBundle.setBundleType("ChannelAppointmentWithPayment");
-        channelAppointmentBundle.setName("Channel Appointment Collection");
+        channelAppointmentBundle.setBundleType("ChannelBookingsWithPayment");
+        channelAppointmentBundle.setName("Channel Paid Bookings");
         bundle.getBundles().add(channelAppointmentBundle);
         collectionForTheDay += getSafeTotal(channelAppointmentBundle);
         
-
+        //Genarate Channel Cancellations
+        List<BillTypeAtomic> channelCancellations = new ArrayList<>();
+        channelCancellations.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        channelCancellations.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+        channelCancellations.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+        
+        ReportTemplateRowBundle ChannelBookingsCancellationBundle = generatePaymentMethodColumnsByBills(channelCancellations);
+        ChannelBookingsCancellationBundle.setBundleType("ChannelBookingsCancellation");
+        ChannelBookingsCancellationBundle.setName("Channel Paid Bookings Cancellations");
+        bundle.getBundles().add(ChannelBookingsCancellationBundle);
+        collectionForTheDay -= getSafeTotal(ChannelBookingsCancellationBundle);
+        
+        
+        
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
         netCashForTheDayBundle.setName("Net Cash");
