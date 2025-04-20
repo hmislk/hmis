@@ -64,6 +64,13 @@
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputText>
             </p:column>
+            <p:column headerText="Actions">
+                <p:commandButton 
+                    value="Fix" 
+                    action="#{billController.convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(bi)}" 
+                    ajax="false"
+                    ></p:commandButton>
+            </p:column>
 
 
         </p:dataTable>
