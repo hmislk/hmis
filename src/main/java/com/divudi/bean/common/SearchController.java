@@ -12491,6 +12491,65 @@ public class SearchController implements Serializable {
 //        }
 
     }
+    
+    public void createInwardProvisionalBills() {
+//        double d = commonController.dateDifferenceInMinutes(fromDate, toDate) / (60 * 24);
+//        if (d > 32 && getReportKeyWord().isBool1()) {
+//            JsfUtil.addErrorMessage("Date Range To Long");
+//            return;
+//        }
+        Date startTime = new Date();
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BilledBill b where"
+                + " b.billType = :billType and "
+                + " b.createdAt between :fromDate and :toDate "
+                + "and b.retired=false ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            try {
+                double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
+                sql += " and  ((b.netTotal) = :netTotal )";
+                temMap.put("netTotal", netTotal);
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid number format for Net Total");
+            }
+        }
+
+        sql += " order by b.deptId desc  ";
+
+        temMap.put("billType", BillType.InwardProvisionalBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+//        if (getReportKeyWord().isBool1()) {
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+//        } else {
+//            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+//        }
+
+    }
 
     public void createCancelledInwardFinalBills() {
         Date startTime = new Date();
@@ -13599,6 +13658,7 @@ public class SearchController implements Serializable {
     }
 
     public void generateDailyReturn() {
+        reportTimerController.trackReportExecution(() -> {
 
         bundle = new ReportTemplateRowBundle();
         bundle.setName("Daily Return");
@@ -13749,6 +13809,8 @@ public class SearchController implements Serializable {
         netCashForTheDayBundlePlusCredits.setBundleType("netCashPlusCredit");
         netCashForTheDayBundlePlusCredits.setTotal(netCollectionPlusCredits);
         bundle.getBundles().add(netCashForTheDayBundlePlusCredits);
+
+        }, FinancialReport.DAILY_RETURN,sessionController.getLoggedUser());
     }
 
     public ReportTemplateRowBundle generatePaymentColumnForCollections(List<BillTypeAtomic> bts, List<PaymentMethod> pms) {
@@ -13904,7 +13966,8 @@ public class SearchController implements Serializable {
     }
 
     public void generateCashierSummary() {
-        bundle = new ReportTemplateRowBundle();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
 
         paymentMethod = null;
 
@@ -14229,7 +14292,7 @@ public class SearchController implements Serializable {
 
         bundle.getBundles().add(netCashForTheDayBundle);
         bundle.calculateTotalsByAllChildBundles();
-
+        }, CashierReports.CASHIER_SUMMARY,sessionController.getLoggedUser());
     }
 
     public void listAllDrawers() {
@@ -14253,6 +14316,7 @@ public class SearchController implements Serializable {
     }
 
     public void generateCashierDetailed() {
+        reportTimerController.trackReportExecution(() -> {
         bundle = new ReportTemplateRowBundle();
 
         double collectionForTheDay = 0.0;
@@ -14584,7 +14648,44 @@ public class SearchController implements Serializable {
         agencyPaymentBundle.setName("Agency Accept Payments");
         bundle.getBundles().add(agencyPaymentBundle);
         collectionForTheDay += getSafeTotal(agencyPaymentBundle);
-
+        
+        //Genarate Channel Appointment Paid
+        List<BillTypeAtomic> channeling = new ArrayList<>();
+        channeling.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        channeling.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
+        channeling.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        channeling.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
+        
+        ReportTemplateRowBundle channelAppointmentBundle = generatePaymentMethodColumnsByBills(channeling);
+        channelAppointmentBundle.setBundleType("ChannelBookingsWithPayment");
+        channelAppointmentBundle.setName("Channel Paid Bookings");
+        bundle.getBundles().add(channelAppointmentBundle);
+        collectionForTheDay += getSafeTotal(channelAppointmentBundle);
+        
+        //Genarate Channel Cancellations
+        List<BillTypeAtomic> channelCancellations = new ArrayList<>();
+        channelCancellations.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        channelCancellations.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+        channelCancellations.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+        
+        ReportTemplateRowBundle ChannelBookingsCancellationBundle = generatePaymentMethodColumnsByBills(channelCancellations);
+        ChannelBookingsCancellationBundle.setBundleType("ChannelBookingsCancellation");
+        ChannelBookingsCancellationBundle.setName("Channel Paid Bookings Cancellations");
+        bundle.getBundles().add(ChannelBookingsCancellationBundle);
+        collectionForTheDay -= getSafeTotal(ChannelBookingsCancellationBundle);
+        
+        //Genarate Channel Refund
+        List<BillTypeAtomic> channelRefunds = new ArrayList<>();
+        channelRefunds.add(BillTypeAtomic.CHANNEL_REFUND);
+        channelRefunds.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        channelRefunds.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+        
+        ReportTemplateRowBundle ChannelBookingsRefundBundle = generatePaymentMethodColumnsByBills(channelRefunds);
+        ChannelBookingsRefundBundle.setBundleType("ChannelBookingsRefunds");
+        ChannelBookingsRefundBundle.setName("Channel Paid Bookings Refunds");
+        bundle.getBundles().add(ChannelBookingsRefundBundle);
+        collectionForTheDay -= getSafeTotal(ChannelBookingsRefundBundle);
+        
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
         netCashForTheDayBundle.setName("Net Cash");
@@ -14593,6 +14694,7 @@ public class SearchController implements Serializable {
 
         bundle.getBundles().add(netCashForTheDayBundle);
         bundle.calculateTotalsByAllChildBundles();
+        }, CashierReports.CASHIER_DETAILED,sessionController.getLoggedUser());
 
     }
 
@@ -17793,7 +17895,9 @@ public class SearchController implements Serializable {
     }
 
     public void generateTotalCashierSummary() {
-        Map<String, Object> parameters = new HashMap<>();
+        reportTimerController.trackReportExecution(() -> {
+
+            Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), "
                 + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
@@ -17850,6 +17954,8 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
         bundle.calculateTotalsWithCredit();
+
+        }, CashierReports.TOTAL_CASHIER_SUMMARY,sessionController.getLoggedUser());
     }
 
     public void generateShiftStartEndSummary() {

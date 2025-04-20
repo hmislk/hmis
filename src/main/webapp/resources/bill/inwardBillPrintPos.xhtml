@@ -10,8 +10,9 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
-        <cc:attribute name="duplicate" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean" />
         <cc:attribute name="refunded" />
+        <cc:attribute name="cancelled" type="java.lang.Boolean"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -57,7 +58,7 @@
             <div class="headingBill">
                 <h:outputLabel value="INVOICE"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.cancelled }" />
             </div>
 
             <div class="billline">

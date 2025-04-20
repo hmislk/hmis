@@ -502,14 +502,14 @@
 
                                                 </h:panelGrid>  
                                                 <div class="mt-2 d-flex justify-content-end">
-                                                        <p:commandButton 
-                                                            id="btnDocSave" 
-                                                            value="Add New"
-                                                            ajax="false"
-                                                            process="btnDocSave panDoc" 
-                                                            update="msg panDoc cmbDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
-                                                        </p:commandButton>
-                                                    </div>
+                                                    <p:commandButton 
+                                                        id="btnDocSave" 
+                                                        value="Add New"
+                                                        ajax="false"
+                                                        process="btnDocSave panDoc" 
+                                                        update="msg panDoc cmbDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                                    </p:commandButton>
+                                                </div>
                                             </p:dialog>
                                         </h:panelGroup>
 
@@ -705,6 +705,7 @@
                                                         rendered="#{prv.investigationItem.ixItemType eq 'ReportImage'}">
                                                         <p:graphicImage 
                                                             cache="false"
+                                                            alt="#{prv.id}"
                                                             value="#{byteArrayToStreamContentController.imageById}"
                                                             style="width: #{prv.investigationItem.wtPix}; overflow: visible; display: block; z-index: 800;"
                                                             height="#{prv.investigationItem.htPix}"
@@ -876,76 +877,103 @@
 
                     </p:panel>
 
-                    <p:panel header="Debug" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <h:panelGroup rendered="false" >
+                        <p:panel header="Debug" rendered="#{webUserController.hasPrivilege('Developers')}">
 
-                        <table class="table table-stripped">
-
-                            <tr>
-                                <th>
-                                    Name
-                                </th>
-                                <th>
-                                    Retired
-                                </th>
-                                <th>
-                                    CSS
-                                </th>
-                                <th>
-                                    LOB
-                                </th>
-                                <th>
-                                    Str
-                                </th>
-                                <th>
-                                    Display
-                                </th>
-                                <th>
-                                    Double
-                                </th>
-                                <th>
-                                    Value
-                                </th>
-                            </tr>
-
-                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                            <table class="table table-stripped">
 
                                 <tr>
-                                    <td>
-                                        #{prv.investigationItem.name}
-                                    </td>
-                                    <td>
-                                        #{prv.investigationItem.ixItemType}
-                                    </td>
-
-                                    <td>
-                                        #{prv.investigationItem.retired}
-                                    </td>
-                                    <td>
-                                        #{prv.investigationItem.cssStyle}
-                                    </td>
-                                    <td>
-                                        #{prv.lobValue}
-                                    </td>
-                                    <td>
-                                        #{prv.strValue}
-                                    </td>
-                                    <td>
-                                        #{prv.displayValue}
-                                    </td>
-                                    <td>
-                                        #{prv.doubleValue}
-                                    </td>
-                                    <td>
-                                        #{prv.value}
-                                    </td>
-
+                                    <th>
+                                        Name
+                                    </th>
+                                    <th>
+                                        Retired
+                                    </th>
+                                    <th>
+                                        CSS
+                                    </th>
+                                    <th>
+                                        LOB
+                                    </th>
+                                    <th>
+                                        Str
+                                    </th>
+                                    <th>
+                                        Display
+                                    </th>
+                                    <th>
+                                        Double
+                                    </th>
+                                    <th>
+                                        Value
+                                    </th>
                                 </tr>
 
-                            </ui:repeat>
+                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
 
-                        </table>
+                                    <tr>
+                                        <td>
+                                            #{prv.investigationItem.name}
+                                        </td>
+                                        <td>
+                                            #{prv.investigationItem.ixItemType}
+                                        </td>
 
-                    </p:panel>
+                                        <td>
+                                            #{prv.investigationItem.retired}
+                                        </td>
+                                        <td>
+                                            #{prv.investigationItem.cssStyle}
+                                        </td>
+                                        <td>
+                                            #{prv.lobValue}
+                                        </td>
+                                        <td>
+                                            #{prv.strValue}
+                                        </td>
+                                        <td>
+                                            #{prv.displayValue}
+                                        </td>
+                                        <td>
+                                            #{prv.doubleValue}
+                                        </td>
+
+                                        <td>
+                                            <p:graphicImage 
+                                                cache="false"
+                                                value="#{byteArrayToStreamContentController.imageById}"
+                                                style="width: 100px; overflow: visible; display: block; z-index: 800;"
+                                                height="100"
+                                                width="100">
+                                                <f:param name="id" value="#{prv.id}" />
+                                            </p:graphicImage>
+                                        </td>
+
+                                        <td>
+                                            #{prv.value}
+
+                                            PRIV : #{prv} <br/>
+
+                                            ID : #{prv.id} <br/>
+
+                                            image : #{prv.baImage} <br/>
+
+                                            File Name : #{prv.fileName} <br/>
+
+                                            File Type: #{prv.fileType} <br/>
+
+                                        </td>
+
+                                    </tr>
+
+                                </ui:repeat>
+
+                            </table>
+
+                        </p:panel>
+                    </h:panelGroup>
+
+
 
                 </h:form>
 

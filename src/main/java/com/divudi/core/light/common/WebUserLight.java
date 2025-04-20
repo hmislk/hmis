@@ -1,15 +1,13 @@
 package com.divudi.core.light.common;
 
-/**
- *
- * @author Dr M H B Ariyaratne
- */
 public class WebUserLight {
 
     private String userName;
     private Long id;
     private String name;
     private String roleName;
+    private String code;
+    private String staffNameWithTitle;
 
     public WebUserLight() {
     }
@@ -25,11 +23,12 @@ public class WebUserLight {
         this.id = id;
     }
 
-    public WebUserLight(String userName, String name, Long id, String roleName) {
+    public WebUserLight(String userName, String name, Long id, String code, String staffNameWithTitle) {
         this.userName = userName;
         this.name = name;
         this.id = id;
-        this.roleName = roleName;
+        this.code = code;
+        this.staffNameWithTitle = staffNameWithTitle;
     }
 
     public String getUserName() {
@@ -64,4 +63,19 @@ public class WebUserLight {
         this.roleName = roleName;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getStaffNameWithTitle() {
+        return staffNameWithTitle;
+    }
+
+    public void setStaffNameWithTitle(String staffNameWithTitle) {
+        this.staffNameWithTitle = staffNameWithTitle;
+    }
 }
