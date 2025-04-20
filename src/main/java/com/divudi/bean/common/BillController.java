@@ -129,8 +129,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     @EJB
     PaymentFacade paymentFacade;
     @EJB
-    BillItemFacade billItemFacede;
-    @EJB
     BillService billService;
     @EJB
     StaffService staffService;
@@ -2370,7 +2368,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             newBillItem.setCreater(getSessionController().getLoggedUser());
             newBillItem.setPaidForBillFee(originalBillItem.getPaidForBillFee());
             newBillItem.setReferanceBillItem(originalBillItem);
-            billItemFacede.create(newBillItem);
+            billItemFacade.create(newBillItem);
 
             cancelBillComponents(originalBill, cancellationBill, originalBillItem, newBillItem);
 
