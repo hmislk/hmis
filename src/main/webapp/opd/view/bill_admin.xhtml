@@ -41,6 +41,9 @@
                                     </p:tab>
                                     <p:tab title="Bill Items" >
                                         <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
+                                        
+                                        <view:pharmaceutical_bill_item_list_edit editable="true" pharmaceuticalBillItems="#{billSearch.viewingPharmaceuticalBillItems}"/>
+                                        
                                     </p:tab>
                                     <p:tab title="Bill Fees" >
                                         <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
@@ -176,9 +179,9 @@
                                             rowsPerPageTemplate="5,10,15,50"
                                             >
 
-<!--                                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
+                                            <p:column headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
                                                 <h:outputLabel value="#{bill.id}"/>
-                                            </p:column>-->
+                                            </p:column>
             <!--                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Ins ID" sortBy="#{bill.insId}" filterBy="#{bill.insId}" filterMatchMode="contains" >                                
                                                 <h:outputLabel value="#{bill.insId}"/>
                                             </p:column>-->
