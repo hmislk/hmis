@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="pharmaceuticalBillItems" type="com.divudi.core.entity.pharmacy.PharmaceuticalBillItem"/>
+        <cc:attribute name="pharmaceuticalBillItems" />
         <cc:attribute name="editable" type="java.lang.Boolean" />
     </cc:interface>
 
@@ -23,12 +23,49 @@
             id="tblBillItems"
             value="#{cc.attrs.pharmaceuticalBillItems}" var="bi" rowKey="#{bi.id}" >
             <f:facet name="header" >
-                <h:outputText value="Bill Items" ></h:outputText>
+                <h:outputText value="Pharmaceutical Bill Items" ></h:outputText>
             </f:facet>
             <p:column headerText="ID">
                 <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>
             </p:column>
-          
+            <p:column headerText="Bill Item ID">
+                <h:outputText value="#{bi.billItem.id}" class="w-100 m-1"></h:outputText>
+            </p:column>
+            <p:column headerText="Item">
+                <h:outputText value="#{bi.itemBatch.item.name}" class="w-100 m-1"></h:outputText>
+            </p:column>
+            <p:column headerText="Qty">
+                <h:outputText value="#{bi.qty}" class="w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Fee Qty">
+                <h:outputText value="#{bi.freeQty}" class="w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Retail Rate">
+                <h:outputText value="#{bi.retailRate}" class="w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Retail Value">
+                <h:outputText value="#{bi.retailValue}" class="w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Purchase Rate">
+                <h:outputText value="#{bi.purchaseRate}" class="w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Purchase Value">
+                <h:outputText value="#{bi.purchaseValue}" class="w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+
+
         </p:dataTable>
 
     </cc:implementation>

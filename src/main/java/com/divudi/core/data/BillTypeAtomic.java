@@ -370,6 +370,9 @@ public enum BillTypeAtomic {
     private final PaymentCategory paymentCategory;
 
     public static BillTypeAtomic getBillTypeAtomic(BillType billType, BillClassType billClassType) {
+        System.out.println("getBillTypeAtomic");
+        System.out.println("billClassType = " + billClassType);
+        System.out.println("billType = " + billType);
         switch (billClassType) {
             case Bill:
                 switch (billType) {
