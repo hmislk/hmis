@@ -67,9 +67,12 @@
             <p:column headerText="Actions">
                 <p:commandButton 
                     value="Fix" 
-                    action="#{billController.convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(bi)}" 
+                    action="#{billController.convertPharmaceuticalBillItemReferenceFromErroneouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(bi)}" 
                     ajax="false"
-                    ></p:commandButton>
+                    onclick="return confirm('Are you sure you want to fix this pharmaceutical bill item? This action cannot be undone.');"
+                    styleClass="ui-button-warning"
+                    rendered="#{cc.attrs.editable}">
+                </p:commandButton>
             </p:column>
 
 
