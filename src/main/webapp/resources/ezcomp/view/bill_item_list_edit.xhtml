@@ -25,11 +25,17 @@
             <f:facet name="header" >
                 <h:outputText value="Bill Items" ></h:outputText>
             </f:facet>
-            <!--            <p:column >
-                            <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>
-                        </p:column>-->
-            <p:column >
+            <p:column headerText="Item" >
+                <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>
+            </p:column>
+            <p:column headerText="Item Name">
                 <h:outputText value="#{bi.item.name}" ></h:outputText>
+            </p:column>
+            <p:column headerText="Referance Bill Item ID">
+                <h:outputText value="#{bi.referanceBillItem.id}" ></h:outputText>
+            </p:column>
+            <p:column headerText="Pharmaceutical Bill Item ID">
+                <h:outputText value="#{bi.pharmaceuticalBillItem.id}" ></h:outputText>
             </p:column>
             <p:column headerText="Quantity" class="text-end">
                 <p:inputText value="#{bi.qty}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />

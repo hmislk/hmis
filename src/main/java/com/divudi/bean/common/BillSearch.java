@@ -278,6 +278,7 @@ public class BillSearch implements Serializable {
     private List<Bill> viewingRefundBills;
     private List<Bill> viewingReferanceBills;
     private List<BillItem> viewingBillItems;
+    private List<PharmaceuticalBillItem> viewingPharmaceuticalBillItems;
     private List<BillFee> viewingBillFees;
     private List<BillComponent> viewingBillComponents;
     private List<Payment> viewingBillPayments;
@@ -1807,6 +1808,7 @@ public class BillSearch implements Serializable {
     public void saveViewingBillData() {
         billController.save(viewingBill);
         billItemController.save(viewingBillItems);
+        billItemController.savePharmaceuticalItems(viewingPharmaceuticalBillItems);
         billFeeController.save(viewingBillFees);
         paymentController.save(viewingBillPayments);
     }
@@ -5240,9 +5242,8 @@ public class BillSearch implements Serializable {
         viewingIndividualBillsOfBatchBill = billBean.fetchIndividualBillsOfBatchBill(bill);
         viewingRefundBills = billBean.fetchRefundBillsOfBilledBill(bill);
         viewingBillItems = billService.fetchBillItems(bill);
-//        System.out.println("viewingBillItems = " + viewingBillItems);
+        viewingPharmaceuticalBillItems = billService.fetchPharmaceuticalBillItems(bill);
         viewingBillFees = billService.fetchBillFees(bill);
-//        System.out.println("viewingBillFees = " + viewingBillFees);
         viewingBillComponents = billBean.fetchBillComponents(bill);
         viewingBillPayments = billBean.fetchBillPayments(bill);
         viewingReferanceBills = billService.fetchAllReferanceBills(bill);
@@ -5263,6 +5264,8 @@ public class BillSearch implements Serializable {
     public void setViewingBillItems(List<BillItem> viewingBillItems) {
         this.viewingBillItems = viewingBillItems;
     }
+    
+    
 
     public List<BillFee> getViewingBillFees() {
         return viewingBillFees;
@@ -5334,6 +5337,14 @@ public class BillSearch implements Serializable {
 
     public void setViewingReferanceBills(List<Bill> viewingReferanceBills) {
         this.viewingReferanceBills = viewingReferanceBills;
+    }
+
+    public List<PharmaceuticalBillItem> getViewingPharmaceuticalBillItems() {
+        return viewingPharmaceuticalBillItems;
+    }
+
+    public void setViewingPharmaceuticalBillItems(List<PharmaceuticalBillItem> viewingPharmaceuticalBillItems) {
+        this.viewingPharmaceuticalBillItems = viewingPharmaceuticalBillItems;
     }
 
     public class PaymentSummary {

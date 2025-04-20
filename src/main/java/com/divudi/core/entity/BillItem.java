@@ -113,6 +113,7 @@ public class BillItem implements Serializable, RetirableEntity {
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
+    @Lob
     String retireComments;
     String insId;
     String deptId;

@@ -370,6 +370,9 @@ public enum BillTypeAtomic {
     private final PaymentCategory paymentCategory;
 
     public static BillTypeAtomic getBillTypeAtomic(BillType billType, BillClassType billClassType) {
+        System.out.println("getBillTypeAtomic");
+        System.out.println("billClassType = " + billClassType);
+        System.out.println("billType = " + billType);
         switch (billClassType) {
             case Bill:
                 switch (billType) {
@@ -407,6 +410,8 @@ public enum BillTypeAtomic {
                         return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
                     case PharmacyPurchaseBill:
                         return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                    case PharmacyPre:
+                        return BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE;
                 }
                 return null;
             case RefundBill:

@@ -9,7 +9,9 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -36,6 +38,8 @@ public class BillItemController implements Serializable {
 
     @EJB
     BillItemFacade billItemFacade;
+    @EJB
+    PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
 
     @Inject
     SessionController sessionController;
@@ -68,11 +72,37 @@ public class BillItemController implements Serializable {
         }
     }
 
+    public void save(PharmaceuticalBillItem sbi) {
+        if (sbi == null) {
+            return;
+        }
+        if (sbi.getId() == null) {
+            if (sbi.getCreatedAt() == null) {
+                sbi.setCreatedAt(new Date());
+            }
+            if (sbi.getCreater() == null) {
+                sbi.setCreater(sessionController.getLoggedUser());
+            }
+            pharmaceuticalBillItemFacade.create(sbi);
+        } else {
+            pharmaceuticalBillItemFacade.edit(sbi);
+        }
+    }
+
     public void save(List<BillItem> billItems) {
         if (billItems == null || billItems.isEmpty()) {
             return;
         }
         for (BillItem sbi : billItems) {
+            save(sbi);
+        }
+    }
+
+    public void savePharmaceuticalItems(List<PharmaceuticalBillItem> pharmaceuticalBillItems) {
+        if (pharmaceuticalBillItems == null || pharmaceuticalBillItems.isEmpty()) {
+            return;
+        }
+        for (PharmaceuticalBillItem sbi : pharmaceuticalBillItems) {
             save(sbi);
         }
     }
@@ -162,7 +192,6 @@ public class BillItemController implements Serializable {
 //        }
 //
 //    }
-
     @FacesConverter(forClass = BillItem.class)
     public static class BillItemControllerConverter implements Converter {
 

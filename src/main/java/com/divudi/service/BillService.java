@@ -465,6 +465,17 @@ public class BillService {
         return billItemFacade.findByJpql(jpql, params);
     }
 
+    public List<PharmaceuticalBillItem> fetchPharmaceuticalBillItems(Bill b) {
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "SELECT pbi "
+                + " FROM PharmaceuticalBillItem pbi "
+                + " WHERE pbi.billItem.bill=:bl "
+                + " order by pbi.id";
+        params.put("bl", b);
+        return pharmaceuticalBillItemFacade.findByJpql(jpql, params);
+    }
+
     public Long fetchBillItemCount(Bill b) {
         String jpql;
         HashMap params = new HashMap();
@@ -524,7 +535,7 @@ public class BillService {
                 + "order by p.id";
         if (batchBill != null) {
             params.put("bill", batchBill);
-        }else{
+        } else {
             params.put("bill", bill);
         }
         fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
@@ -786,7 +797,7 @@ public class BillService {
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
-    
+
     public List<BillItem> fetchBillItems(Date fromDate,
             Date toDate,
             Institution institution,
@@ -803,7 +814,7 @@ public class BillService {
                 + " from BillItem bi "
                 + " join bi.bill b "
                 + " where (b.retired=false or b.retired is null) "
-                 + " and (bi.retired=false or bi.retired is null) "
+                + " and (bi.retired=false or bi.retired is null) "
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate ";
 
@@ -845,7 +856,7 @@ public class BillService {
         List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
     }
-    
+
     public List<PharmaceuticalBillItem> fetchPharmaceuticalBillItems(Date fromDate,
             Date toDate,
             Institution institution,
@@ -863,7 +874,7 @@ public class BillService {
                 + " join pbi.billItem bi "
                 + " join bi.bill b "
                 + " where (b.retired=false or b.retired is null) "
-                 + " and (bi.retired=false or bi.retired is null) "
+                + " and (bi.retired=false or bi.retired is null) "
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate ";
 
