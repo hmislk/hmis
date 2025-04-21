@@ -43,7 +43,7 @@
                             <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                         </div>
                         <div >
-                            <h:outputLabel value="#{cc.attrs.bill.department.telephone2} / #{cc.attrs.bill.department.telephone2}"/>
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone1} / #{cc.attrs.bill.department.telephone2}"/>
                             <!--                    <h:outputLabel value="/" style="width: 10px; text-align: center;"/>
                                                 <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>-->
                         </div>
@@ -82,9 +82,7 @@
                         <td style="padding: 2px;" class="spacer"></td>
                         <td style="padding: 2px;">Mobile</td>
                         <td style="padding: 2px;">
-                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" >
-                                <f:convertDateTime pattern="HH:mm a" />
-                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
                         </td>
                     </tr>
 
