@@ -259,13 +259,15 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{b.transPaid}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+<!--                                    <h:outputLabel value="#{b.transPaid}">-->
+                                    <h:outputLabel value="#{b.finalBill.settledAmountByPatient + b.finalBill.settledAmountBySponsor}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{b.transPaid-b.finalBill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+<!--                                    <h:outputLabel value="#{b.transPaid-b.finalBill.netTotal}">-->
+                                    <h:outputLabel value="#{b.finalBill.settledAmountByPatient + b.finalBill.settledAmountBySponsor - b.finalBill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:columnGroup type="footer">
@@ -304,6 +306,5 @@
                 </h:form>
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>

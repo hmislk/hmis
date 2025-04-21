@@ -1526,8 +1526,6 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCreditAccessWithFilters() {
-        Date startTime = new Date();
-
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(),
                 PaymentMethod.Credit, false, institutionOfDepartment, department, site);
 
@@ -1535,26 +1533,18 @@ public class CreditCompanyDueController implements Serializable {
         for (Institution ins : setIns) {
             List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(),
                     PaymentMethod.Credit, false, institutionOfDepartment, department, site);
+
+            updateSettledAmountsForIP(lst);
+
             InstitutionEncounters newIns = new InstitutionEncounters();
             newIns.setInstitution(ins);
             newIns.setPatientEncounters(lst);
 
             for (PatientEncounter b : lst) {
-//                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
-//                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
-                b.getFinalBill().setNetTotal(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
-                b.setCreditPaidAmount(Math.abs(b.getCreditPaidAmount()));
-                b.setCreditPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getCreditPaidAmount()));
-                b.getFinalBill().setPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
-                b.setTransPaid(b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
-                //// // System.out.println("b.getTransPaid() = " + b.getTransPaid());
-                b.setTransPaid(com.divudi.core.util.CommonFunctions.round(b.getTransPaid()));
-
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
-//                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getTransPaid());
-
+                newIns.setPaidTotal(newIns.getPaidTotal() + b.getFinalBill().getSettledAmountBySponsor() + b.getFinalBill().getSettledAmountByPatient());
             }
+
             newIns.setTotal(com.divudi.core.util.CommonFunctions.round(newIns.getTotal()));
             newIns.setPaidTotal(com.divudi.core.util.CommonFunctions.round(newIns.getPaidTotal()));
             institutionEncounters.add(newIns);
@@ -1618,16 +1608,11 @@ public class CreditCompanyDueController implements Serializable {
             List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(),
                     PaymentMethod.Credit, false, institutionOfDepartment, department, site);
 
-            for (PatientEncounter b : lst) {
-                b.getFinalBill().setNetTotal(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
-                b.setCreditPaidAmount(Math.abs(b.getCreditPaidAmount()));
-                b.setCreditPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getCreditPaidAmount()));
-                b.getFinalBill().setPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
-                b.setTransPaid(b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
-                b.setTransPaid(com.divudi.core.util.CommonFunctions.round(b.getTransPaid()));
+            updateSettledAmountsForIP(lst);
 
+            for (PatientEncounter b : lst) {
                 finalTransPaidTotal += b.getFinalBill().getNetTotal();
-                finalPaidTotal += b.getTransPaid();
+                finalPaidTotal += b.getFinalBill().getSettledAmountByPatient() + b.getFinalBill().getSettledAmountBySponsor();
             }
 
             patientEncounters.addAll(lst);
