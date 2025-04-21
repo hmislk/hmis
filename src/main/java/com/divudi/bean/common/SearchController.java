@@ -10638,6 +10638,9 @@ public class SearchController implements Serializable {
         // Execute the query
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
+        total=0.0;
+        netTotal=0.0;
+        discount=0.0;
         if (bills != null) {
             for (Bill bill : bills) {
                 if (bill != null) {
