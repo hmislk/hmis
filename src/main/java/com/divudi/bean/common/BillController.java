@@ -2918,6 +2918,64 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     }
 
+    /**
+     * Temporary method to fix totals in
+     * PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS bills. This method is
+     * intended for one-time data correction and should be deleted after cleanup
+     * is completed.
+     *
+     * ChatGPT contributed - 2025-04
+     */
+    public void fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS() {
+        System.out.println("Starting temporary fix method: fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS");
+
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bta ";
+        Map m = new HashMap();
+        m.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+
+        List<Bill> billsWithWrongGrossTotal = getFacade().findByJpql(jpql, m, 1000);
+        if (billsWithWrongGrossTotal == null || billsWithWrongGrossTotal.isEmpty()) {
+            System.out.println("No matching bills found.");
+            return;
+        }
+
+        System.out.println("Number of bills found: " + billsWithWrongGrossTotal.size());
+
+        for (Bill b : billsWithWrongGrossTotal) {
+            System.out.println("Checking bill ID: " + b.getId());
+
+            Double total = 0.0;
+            Double netTotal = 0.0;
+            Double qty = 0.0;
+            Double grossRate = 0.0;
+            for (BillItem bi : b.getBillItems()) {
+                grossRate = bi.getRate(); // There is a naming difference. Rate means gorss rate
+                qty = bi.getQty();
+                total = grossRate * qty;
+                bi.setGrossValue(total);
+                billItemFacade.edit(bi);
+                total += bi.getGrossValue();
+                netTotal += bi.getNetValue();
+            }
+
+            System.out.println("Calculated Total: " + total + ", Existing Total: " + b.getTotal());
+            System.out.println("Calculated NetTotal: " + netTotal + ", Existing NetTotal: " + b.getNetTotal());
+
+            if (Math.abs(b.getNetTotal() - netTotal) >= 1.0) {
+                System.out.println("Bill ID: " + b.getId() + " Net Total is also wrong. Must be some other issue. Skipping.");
+            } else {
+                System.out.println("Updating Gross Total in bill ID: " + b.getId() + " as the nettotal is fine..");
+                b.setTotal(total);
+                getFacade().edit(b);
+            }
+        }
+
+        System.out.println("Completed processing bills.");
+    }
+
     public void addMissingBillTypeAtomics() {
         System.out.println("addMissingBillTypeAtomics");
         String jpql = "select b "
@@ -3030,12 +3088,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         originalBillItemNowWonglyAssignedToCancelledBill.setPharmaceuticalBillItem(null);
         billItemFacade.edit(originalBillItemNowWonglyAssignedToCancelledBill);
         System.out.println("Reassigned original BillItem to Original Bill ID: " + originalBill.getId());
-        
-        
+
         pbiFromCancelledBill.setBillItem(billItemNeededToCreateForCancellationBill);
         pharmaceuticalBillItemFacade.edit(pbiFromCancelledBill);
-        
-        
+
         pbiFromOriginalBillItem.setBillItem(originalBillItemNowWonglyAssignedToCancelledBill);
         pharmaceuticalBillItemFacade.edit(pbiFromOriginalBillItem);
 
