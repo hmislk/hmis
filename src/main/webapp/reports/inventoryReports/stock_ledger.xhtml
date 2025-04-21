@@ -333,9 +333,8 @@
                             </p:column>
 
                             <p:column headerText="Ref Doc Date" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.createdAt}" />
-                                <h:outputText rendered="#{pharmacyReportController.documentType ne 'opSaleDoc'}" 
-                                              value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
+                                <h:outputText rendered="#{pharmacyReportController.documentType ne 'opSaleDoc' or pharmacyReportController.documentType ne 'ipSaleDoc'}" 
+                                              value="#{f.pbItem.billItem.bill.cancelledBill.createdAt}" />
                                 <h:outputText rendered="#{pharmacyReportController.documentType eq 'opSaleDoc' or pharmacyReportController.documentType eq 'ipSaleDoc'}"
                                               value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? f.pbItem.billItem.bill.forwardReferenceBill.createdAt : f.pbItem.billItem.bill.backwardReferenceBill.createdAt}" />
 
