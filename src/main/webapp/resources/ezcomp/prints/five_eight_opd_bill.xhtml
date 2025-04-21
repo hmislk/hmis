@@ -171,31 +171,33 @@
 
                 <div class="d-flex">
                     <div>
-                        <table >
-                            <thead>
-                                <tr>
-                                    <td>Pay Type</td>
-                                    <td style="text-align: end"> Amount</td>
-                                    <td></td>
-                                </tr>
-                            </thead>
-                            <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill.backwardReferenceBill)}" var="ps">
-                                <tr>
-                                    <td style="width: 4cm;">
-                                        <h:outputText style="font-size: 8pt;"  value="#{ps.paymentMethod}"/>
-                                        <h:outputText style="font-size: 8pt; width: 2cm;"  value=" (#{ps.creditCardRefNo})" rendered="#{ps.paymentMethod eq 'Card'}"/>
-                                    </td>
-                                    <td style="width: 3cm; text-align: end">
-                                        <h:outputText style="font-size: 8pt; width: 2cm;"  value="#{ps.paidValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
-                                    <td style="width: 1cm;">
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}">
+                            <table >
+                                <thead>
+                                    <tr>
+                                        <td>Pay Type</td>
+                                        <td style="text-align: end"> Amount</td>
+                                        <td></td>
+                                    </tr>
+                                </thead>
+                                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill.backwardReferenceBill)}" var="ps">
+                                    <tr>
+                                        <td style="width: 4cm;">
+                                            <h:outputText style="font-size: 8pt;"  value="#{ps.paymentMethod}"/>
+                                            <h:outputText style="font-size: 8pt; width: 2cm;"  value=" (#{ps.creditCardRefNo})" rendered="#{ps.paymentMethod eq 'Card'}"/>
+                                        </td>
+                                        <td style="width: 3cm; text-align: end">
+                                            <h:outputText style="font-size: 8pt; width: 2cm;"  value="#{ps.paidValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </td>
+                                        <td style="width: 1cm;">
 
-                                    </td>
-                                </tr>
-                            </ui:repeat>
-                        </table>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </table>
+                        </h:panelGroup>
                     </div>
                     <div class="w-100">
                         <table class="total-table">
@@ -224,7 +226,7 @@
                                     </h:outputLabel>
                                 </td>
                             </tr>
-                            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod ne 'MultiplePaymentMethods'}">
+                            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod ne 'MultiplePaymentMethods' and cc.attrs.bill.patientEncounter eq null}">
                                 <tr>
                                     <td >Tendered Amount</td>
                                     <td style="text-align: right;">
