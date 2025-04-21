@@ -193,8 +193,8 @@
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel"
+                            action="#{creditCompanyDueController.exportCreditCompanyInwardExcessToExcel()}"
                             actionListener="#{creditCompanyDueController.createInwardCreditAccessWithFilters()}">
-                            <p:dataExporter type="xlsx" target="lst" fileName="Excess Search(Credit Company)"/>
                         </p:commandButton>
 
                         <p:commandButton
@@ -203,8 +203,8 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             value="PDF"
+                            action="#{creditCompanyDueController.exportCreditCompanyInwardExcessToPdf()}"
                             actionListener="#{creditCompanyDueController.createInwardCreditAccessWithFilters()}">
-                            <p:dataExporter type="pdf" target="lst" fileName="Excess Search(Credit Company)"/>
                         </p:commandButton>
 
                         <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">

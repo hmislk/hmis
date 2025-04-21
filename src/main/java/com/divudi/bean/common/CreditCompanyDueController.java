@@ -1551,6 +1551,166 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
+    public void exportCreditCompanyInwardExcessToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Excess_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Excess Report");
+            int rowIndex = 0;
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+
+            Row dateHeader = sheet.createRow(rowIndex++);
+            dateHeader.createCell(0).setCellValue("EXCESS SEARCH");
+
+            Row rangeRow = sheet.createRow(rowIndex++);
+            rangeRow.createCell(0).setCellValue("From:");
+            rangeRow.createCell(1).setCellValue(dateFormatter.format(getFromDate()));
+            rangeRow.createCell(2).setCellValue("To:");
+            rangeRow.createCell(3).setCellValue(dateFormatter.format(getToDate()));
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("Institution");
+            headerRow.createCell(1).setCellValue("Patient Encounter");
+            headerRow.createCell(2).setCellValue("Patient Name");
+            headerRow.createCell(3).setCellValue("Used Amount");
+            headerRow.createCell(4).setCellValue("Paid Amount");
+            headerRow.createCell(5).setCellValue("Net Amount");
+
+            for (InstitutionEncounters i : getInstitutionEncounters()) {
+                Row institutionRow = sheet.createRow(rowIndex++);
+                institutionRow.createCell(0).setCellValue(i.getInstitution().getName());
+
+                for (PatientEncounter b : i.getPatientEncounters()) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    dataRow.createCell(1).setCellValue(b.getBhtNo());
+                    dataRow.createCell(2).setCellValue(b.getPatient().getPerson().getNameWithTitle());
+
+                    Cell usedAmountCell = dataRow.createCell(3);
+                    usedAmountCell.setCellValue(b.getFinalBill().getNetTotal());
+                    usedAmountCell.setCellStyle(amountStyle);
+
+                    double paidAmount = b.getFinalBill().getSettledAmountByPatient() + b.getFinalBill().getSettledAmountBySponsor();
+                    Cell paidAmountCell = dataRow.createCell(4);
+                    paidAmountCell.setCellValue(paidAmount);
+                    paidAmountCell.setCellStyle(amountStyle);
+
+                    Cell netAmountCell = dataRow.createCell(5);
+                    netAmountCell.setCellValue(paidAmount - b.getFinalBill().getNetTotal());
+                    netAmountCell.setCellStyle(amountStyle);
+                }
+
+                Row subtotalRow = sheet.createRow(rowIndex++);
+                subtotalRow.createCell(2).setCellValue("Sub Total");
+
+                Cell subtotalUsed = subtotalRow.createCell(3);
+                subtotalUsed.setCellValue(i.getTotal());
+                subtotalUsed.setCellStyle(amountStyle);
+
+                Cell subtotalPaid = subtotalRow.createCell(4);
+                subtotalPaid.setCellValue(i.getPaidTotal());
+                subtotalPaid.setCellStyle(amountStyle);
+
+                Cell subtotalNet = subtotalRow.createCell(5);
+                subtotalNet.setCellValue(0 - (i.getTotal() - i.getPaidTotal()));
+                subtotalNet.setCellStyle(amountStyle);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportCreditCompanyInwardExcessToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Excess_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            Paragraph title = new Paragraph("EXCESS SEARCH", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+            Paragraph dateRange = new Paragraph("From: " + dateFormatter.format(getFromDate()) + "   To: " + dateFormatter.format(getToDate()), normalFont);
+            dateRange.setAlignment(Element.ALIGN_CENTER);
+            dateRange.setSpacingAfter(20);
+            document.add(dateRange);
+
+            PdfPTable table = new PdfPTable(6);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{3f, 3f, 3f, 2.5f, 2.5f, 2.5f});
+
+            String[] headers = {"Institution", "Patient Encounter", "Patient Name", "Used Amount", "Paid Amount", "Net Amount"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+
+            for (InstitutionEncounters i : getInstitutionEncounters()) {
+                PdfPCell institutionCell = new PdfPCell(new Phrase(i.getInstitution().getName(), boldFont));
+                institutionCell.setColspan(6);
+                table.addCell(institutionCell);
+
+                for (PatientEncounter b : i.getPatientEncounters()) {
+                    table.addCell("");
+                    table.addCell(new Phrase(b.getBhtNo(), normalFont));
+                    table.addCell(new Phrase(b.getPatient().getPerson().getNameWithTitle(), normalFont));
+
+                    double used = b.getFinalBill().getNetTotal();
+                    double paid = b.getFinalBill().getSettledAmountByPatient() + b.getFinalBill().getSettledAmountBySponsor();
+                    double net = paid - used;
+
+                    table.addCell(new Phrase(decimalFormat.format(used), normalFont));
+                    table.addCell(new Phrase(decimalFormat.format(paid), normalFont));
+                    table.addCell(new Phrase(decimalFormat.format(net), normalFont));
+                }
+
+                table.addCell("");
+                table.addCell("");
+                table.addCell(new Phrase("Sub Total", boldFont));
+
+                double subtotalUsed = i.getTotal();
+                double subtotalPaid = i.getPaidTotal();
+                double subtotalNet = 0 - (subtotalUsed - subtotalPaid);
+
+                table.addCell(new Phrase(decimalFormat.format(subtotalUsed), normalFont));
+                table.addCell(new Phrase(decimalFormat.format(subtotalPaid), normalFont));
+                table.addCell(new Phrase(decimalFormat.format(subtotalNet), normalFont));
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void createInwardCashAccess() {
         Date startTime = new Date();
 
