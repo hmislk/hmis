@@ -256,9 +256,10 @@ public class SaleReturnController implements Serializable {
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             //   i.getBillItem().setQty(i.getPharmaceuticalBillItem().getQty());
-            double value = i.getNetRate() * i.getQty();
-            i.setGrossValue(0 - value);
-            i.setNetValue(0 - value);
+            double grossValue = i.getRate() * i.getQty();
+            double netValue = i.getNetRate() * i.getQty();
+            i.setGrossValue(0 - grossValue);
+            i.setNetValue(0 - netValue);
 
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
@@ -445,7 +446,7 @@ public class SaleReturnController implements Serializable {
 
         savePreReturnBill();
         savePreComponent();
-        getReturnBill().setTotal(getReturnBill().getNetTotal()+getReturnBill().getDiscount());
+//        getReturnBill().setTotal(getReturnBill().getNetTotal()+getReturnBill().getDiscount());
 
 
         getBill().getReturnPreBills().add(getReturnBill());
