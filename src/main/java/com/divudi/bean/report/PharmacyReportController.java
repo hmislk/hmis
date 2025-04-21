@@ -2224,7 +2224,7 @@ public class PharmacyReportController implements Serializable {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
 
             int rowNum = 1;
-            for (StockHistory f : getStockLedgerHistories()) {
+            for (StockHistory f : histories) {
 
                 table.addCell(createCell(String.valueOf(rowNum++), cellFont));
                 table.addCell(createCell(safeGet(() -> f.getDepartment().getName(), ""), cellFont));
@@ -2300,7 +2300,7 @@ public class PharmacyReportController implements Serializable {
 
     private String getRefDocNo(StockHistory f) {
         return safeGet(() -> {
-            if (documentType.equals("opSaleDoc") || documentType.equals("ipSaleDoc")) {
+            if ("opSaleDoc".equals(documentType) || "ipSaleDoc".equals(documentType)) {
                 return f.getPbItem().getBillItem().getBill().getReferenceBill().isCancelled()
                         ? f.getPbItem().getBillItem().getBill().getForwardReferenceBill().getDeptId()
                         : f.getPbItem().getBillItem().getBill().getBackwardReferenceBill().getDeptId();
