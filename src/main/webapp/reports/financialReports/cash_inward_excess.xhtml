@@ -199,7 +199,7 @@
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <f:facet name="footer">
-                                <h:outputLabel value="#{creditCompanyDueController.finalTransPaidTotal}">
+                                <h:outputLabel value="#{creditCompanyDueController.finalTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
@@ -224,7 +224,7 @@
                             </h:outputLabel>
                             <f:facet name="footer">
                                 <h:outputLabel
-                                        value="#{creditCompanyDueController.finalPaidTotal - creditCompanyDueController.finalTransPaidTotal}">
+                                        value="#{creditCompanyDueController.finalPaidTotal - creditCompanyDueController.finalTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>

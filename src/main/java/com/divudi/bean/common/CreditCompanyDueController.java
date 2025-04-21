@@ -1534,7 +1534,9 @@ public class CreditCompanyDueController implements Serializable {
             List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(),
                     PaymentMethod.Credit, false, institutionOfDepartment, department, site);
 
-            updateSettledAmountsForIP(lst);
+            if (lst != null && !lst.isEmpty()) {
+                updateSettledAmountsForIP(lst);
+            }
 
             InstitutionEncounters newIns = new InstitutionEncounters();
             newIns.setInstitution(ins);
@@ -1761,17 +1763,19 @@ public class CreditCompanyDueController implements Serializable {
                 PaymentMethod.Credit, false, institutionOfDepartment, department, site);
 
         patientEncounters = new ArrayList<>();
-        finalTransPaidTotal = 0;
+        finalTotal = 0;
         finalPaidTotal = 0;
 
         for (Institution ins : setIns) {
             List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(),
                     PaymentMethod.Credit, false, institutionOfDepartment, department, site);
 
-            updateSettledAmountsForIP(lst);
+            if (lst != null && !lst.isEmpty()) {
+                updateSettledAmountsForIP(lst);
+            }
 
             for (PatientEncounter b : lst) {
-                finalTransPaidTotal += b.getFinalBill().getNetTotal();
+                finalTotal += b.getFinalBill().getNetTotal();
                 finalPaidTotal += b.getFinalBill().getSettledAmountByPatient() + b.getFinalBill().getSettledAmountBySponsor();
             }
 
