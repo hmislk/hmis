@@ -117,6 +117,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 
 import com.divudi.core.facade.ItemFacade;
+import java.text.DecimalFormat;
+import java.util.function.Supplier;
 
 /**
  * @author Pubudu Piyankara
@@ -2151,6 +2153,179 @@ public class PharmacyReportController implements Serializable {
 
             rows.add(row);
         }
+    }
+
+    public static <T> T safeGet(Supplier<T> supplier, T defaultValue) {
+        try {
+            T result = supplier.get();
+            return result != null ? result : defaultValue;
+        } catch (NullPointerException e) {
+            return defaultValue;
+        }
+    }
+
+    public void exportStockLedgerToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        List<StockHistory> histories = getStockLedgerHistories();
+        if (histories == null || histories.isEmpty()) {
+
+            System.out.println("No stock ledger data available for the selected period");
+            return;
+        }
+
+        response.reset();
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Ledger_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Stock Ledger Report", (Font) titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+            Paragraph dateRange = new Paragraph(
+                    String.format("From: %s To: %s",
+                            formatDate(getFromDate()),
+                            formatDate(getToDate())), (Font) subTitleFont);
+            dateRange.setAlignment(Element.ALIGN_CENTER);
+            dateRange.setSpacingAfter(20);
+            document.add(dateRange);
+
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+
+            PdfPTable table = new PdfPTable(19); // Number of columns
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2});
+
+            String[] headers = {
+                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                "Closing Stock", "Rate", "Closing Value"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setBackgroundColor(new BaseColor(220, 220, 220));
+                table.addCell(cell);
+            }
+
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+
+            int rowNum = 1;
+            for (StockHistory f : getStockLedgerHistories()) {
+
+                table.addCell(createCell(String.valueOf(rowNum++), cellFont));
+                table.addCell(createCell(safeGet(() -> f.getDepartment().getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getItem().getCategory().getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getItem().getCode(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getItem().getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getItem().getMeasurementUnit().getName(), " "), cellFont));
+
+                String transactionType = safeGet(() -> f.getPbItem().isTransThisIsStockIn() ? "STOCK IN" : "STOCK OUT", "N/A");
+                PdfPCell transCell = new PdfPCell(new Phrase(transactionType, cellFont));
+                transCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(transCell);
+
+                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getBill().getDeptId(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> dateFormat.format(f.getCreatedAt()), ""), cellFont));
+
+                String refDocNo = getRefDocNo(f);
+                table.addCell(createCell(refDocNo != null ? refDocNo : "", cellFont));
+
+                String refDocDate = getRefDocDate(f);
+                table.addCell(createCell(refDocDate != null ? refDocDate : "", cellFont));
+
+                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getBill().getFromDepartment().getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getBill().getToDepartment().getName(), ""), cellFont));
+
+                String docType = safeGet(()
+                        -> f.getPbItem().getBillItem().getBill().getBillTypeAtomic() != null
+                        ? f.getPbItem().getBillItem().getBill().getBillTypeAtomic().getLabel()
+                        : f.getPbItem().getBillItem().getBill().getBillType().getLabel(),
+                        "");
+                table.addCell(createCell(docType, cellFont));
+
+                double stockIn = safeGet(() -> f.getPbItem().isTransThisIsStockIn() ? f.getPbItem().getQty() + f.getPbItem().getFreeQty() : 0.0, 0.0);
+                table.addCell(createCell(decimalFormat.format(stockIn), cellFont));
+
+                double stockOut = safeGet(() -> f.getPbItem().isTransThisIsStockOut() ? f.getPbItem().getQty() + f.getPbItem().getFreeQty() : 0.0, 0.0);
+                table.addCell(createCell(decimalFormat.format(stockOut), cellFont));
+
+                double itemStock = safeGet(() -> f.getItemStock(), 0.0);
+                table.addCell(createCell(decimalFormat.format(itemStock), cellFont));
+
+                double purchaseRate = safeGet(() -> f.getPbItem().getPurchaseRate(), 0.0);
+                table.addCell(createCell(decimalFormat.format(purchaseRate), cellFont));
+
+                double closingValue = safeGet(() -> f.getItemStock() * f.getPbItem().getPurchaseRate(), 0.0);
+                table.addCell(createCell(decimalFormat.format(closingValue), cellFont));
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private PdfPCell createCell(String content, Font font) {
+        if (content == null || content.isEmpty()) {
+            content = " ";
+        }
+        PdfPCell cell = new PdfPCell(new Phrase(content, font));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+    private String formatDate(Date date) {
+        if (date == null) {
+            return "N/A";
+        }
+        return new SimpleDateFormat("dd-MMM-yyyy").format(date);
+    }
+
+    private String getRefDocNo(StockHistory f) {
+        return safeGet(() -> {
+            if (documentType.equals("opSaleDoc") || documentType.equals("ipSaleDoc")) {
+                return f.getPbItem().getBillItem().getBill().getReferenceBill().isCancelled()
+                        ? f.getPbItem().getBillItem().getBill().getForwardReferenceBill().getDeptId()
+                        : f.getPbItem().getBillItem().getBill().getBackwardReferenceBill().getDeptId();
+            } else {
+                return f.getPbItem().getBillItem().getBill().getCancelledBill() != null
+                        ? f.getPbItem().getBillItem().getBill().getCancelledBill().getDeptId()
+                        : f.getPbItem().getBillItem().getBill().getReferenceBill().getDeptId();
+            }
+        }, "");
+    }
+
+    private String getRefDocDate(StockHistory f) {
+        Date refDocDate = safeGet(() -> {
+            if (documentType.equals("opSaleDoc") || documentType.equals("ipSaleDoc")) {
+                return f.getPbItem().getBillItem().getBill().getReferenceBill().isCancelled()
+                        ? f.getPbItem().getBillItem().getBill().getForwardReferenceBill().getCreatedAt()
+                        : f.getPbItem().getBillItem().getBill().getBackwardReferenceBill().getCreatedAt();
+            } else {
+                return f.getPbItem().getBillItem().getBill().getCancelledBill() != null
+                        ? f.getPbItem().getBillItem().getBill().getCancelledBill().getCreatedAt()
+                        : f.getPbItem().getBillItem().getBill().getReferenceBill().getCreatedAt();
+            }
+        }, null);
+
+        return refDocDate != null ? formatDate(refDocDate) : "";
     }
 
     public void processClosingStockForItemReport() {
