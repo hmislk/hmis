@@ -61,6 +61,8 @@ import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.entity.FamilyMember;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
@@ -113,6 +115,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
+    PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+    @EJB
     private InstitutionFacade institutionFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
@@ -124,8 +128,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     PaymentFacade paymentFacade;
-    @EJB
-    BillItemFacade billItemFacede;
     @EJB
     BillService billService;
     @EJB
@@ -2366,7 +2368,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             newBillItem.setCreater(getSessionController().getLoggedUser());
             newBillItem.setPaidForBillFee(originalBillItem.getPaidForBillFee());
             newBillItem.setReferanceBillItem(originalBillItem);
-            billItemFacede.create(newBillItem);
+            billItemFacade.create(newBillItem);
 
             cancelBillComponents(originalBill, cancellationBill, originalBillItem, newBillItem);
 
@@ -2917,6 +2919,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public void addMissingBillTypeAtomics() {
+        System.out.println("addMissingBillTypeAtomics");
         String jpql = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret "
@@ -2925,6 +2928,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         Map m = new HashMap();
         m.put("ret", false);
         List<Bill> billsWithoutBillTypeAtomic = getFacade().findByJpql(jpql, m, 1000);
+        if (billsWithoutBillTypeAtomic == null) {
+            System.out.println("No Bills");
+            return;
+        }
+        System.out.println("billsWithoutBillTypeAtomic = " + billsWithoutBillTypeAtomic.size());
         for (Bill b : billsWithoutBillTypeAtomic) {
             if (b.getBillTypeAtomic() != null) {
                 continue;
@@ -2932,6 +2940,111 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             b.setBillTypeAtomic(BillTypeAtomic.getBillTypeAtomic(b.getBillType(), b.getBillClassType()));
             getFacade().edit(b);
         }
+    }
+
+    public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(PharmaceuticalBillItem pbi) {
+        Bill originalBill = null;
+        Bill cancelledBill = null;
+        BillItem originalBillItemNowWonglyAssignedToCancelledBill = null;
+        BillItem billItemNeededToCreateForCancellationBill = null;
+        PharmaceuticalBillItem pbiFromOriginalBillItem = null;
+        PharmaceuticalBillItem pbiFromCancelledBill = null;
+
+        if (pbi == null) {
+            System.out.println("No Selected Pharmaceutical Bill Item - returning");
+            return;
+        } else {
+            pbiFromCancelledBill = pbi;
+            System.out.println("Selected Pharmaceutical Bill Item ID: " + pbiFromCancelledBill.getId());
+        }
+
+        if (pbiFromCancelledBill.getBillItem() == null) {
+            System.out.println("Cancelled BillItem is null - returning");
+            return;
+        } else {
+            originalBillItemNowWonglyAssignedToCancelledBill = pbi.getBillItem();
+            System.out.println("Original BillItem ID: " + originalBillItemNowWonglyAssignedToCancelledBill.getId());
+        }
+
+        if (originalBillItemNowWonglyAssignedToCancelledBill.getBill() == null) {
+            System.out.println("Cancelled Bill is null - returning");
+            return;
+        } else {
+            cancelledBill = pbi.getBillItem().getBill();
+            System.out.println("Cancelled Bill ID: " + cancelledBill.getId());
+        }
+
+        Long cancelledBillId = originalBillItemNowWonglyAssignedToCancelledBill.getId();
+        Long pbiFromCancelledBillId = pbiFromCancelledBill.getId();
+
+        // Sampbple cancelledtion bill id is 542424
+        // Sample Correct PBI ID is 542428
+        // Sample Wrong PBI ID is 542417
+        System.out.println("Cancelled BillItem ID: " + cancelledBillId);
+        System.out.println("Selected PBI ID: " + pbiFromCancelledBillId);
+
+        if (pbiFromCancelledBillId < cancelledBillId) {
+            System.out.println("Clicking on the wrong Pharmaceutical Bill Item. Select the other one - returning");
+            return;
+        }
+
+        if (cancelledBill.getBillTypeAtomic() == null) {
+            System.out.println("Cancelled BillTypeAtomic is null - returning");
+            return;
+        }
+
+        if (cancelledBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED) {
+            System.out.println("Cancelled bill type is not PHARMACY_RETAIL_SALE_CANCELLED - returning");
+            return;
+        }
+
+        if (cancelledBill.getBilledBill() == null) {
+            System.out.println("Cancelled bill has no billed bill - returning");
+            return;
+        } else {
+            originalBill = cancelledBill.getBilledBill();
+            System.out.println("Original Bill ID: " + originalBill.getId());
+        }
+
+        if (originalBillItemNowWonglyAssignedToCancelledBill.getPharmaceuticalBillItem() == null) {
+            System.out.println("Original BillItem has no PBI - returning");
+            return;
+        } else {
+            pbiFromOriginalBillItem = originalBillItemNowWonglyAssignedToCancelledBill.getPharmaceuticalBillItem();
+            System.out.println("Original PBI ID: " + pbiFromOriginalBillItem.getId());
+        }
+
+        System.out.println("Creating new BillItem for cancelled bill");
+        billItemNeededToCreateForCancellationBill = new BillItem();
+        billItemNeededToCreateForCancellationBill.copy(originalBillItemNowWonglyAssignedToCancelledBill);
+        billItemNeededToCreateForCancellationBill.setBill(cancelledBill);
+        billItemNeededToCreateForCancellationBill.setReferanceBillItem(originalBillItemNowWonglyAssignedToCancelledBill);
+        billItemFacade.create(billItemNeededToCreateForCancellationBill);
+        System.out.println("Created new BillItem with ID: " + billItemNeededToCreateForCancellationBill.getId());
+
+        billItemNeededToCreateForCancellationBill.setPharmaceuticalBillItem(null);
+        billItemFacade.edit(billItemNeededToCreateForCancellationBill);
+        System.out.println("Linked new BillItem to Cancelled PBI ID: " + pbiFromCancelledBill.getId());
+
+        originalBillItemNowWonglyAssignedToCancelledBill.setBill(originalBill);
+        originalBillItemNowWonglyAssignedToCancelledBill.setPharmaceuticalBillItem(null);
+        billItemFacade.edit(originalBillItemNowWonglyAssignedToCancelledBill);
+        System.out.println("Reassigned original BillItem to Original Bill ID: " + originalBill.getId());
+        
+        
+        pbiFromCancelledBill.setBillItem(billItemNeededToCreateForCancellationBill);
+        pharmaceuticalBillItemFacade.edit(pbiFromCancelledBill);
+        
+        
+        pbiFromOriginalBillItem.setBillItem(originalBillItemNowWonglyAssignedToCancelledBill);
+        pharmaceuticalBillItemFacade.edit(pbiFromOriginalBillItem);
+
+        billItemNeededToCreateForCancellationBill.setPharmaceuticalBillItem(pbiFromCancelledBill);
+        billItemFacade.edit(billItemNeededToCreateForCancellationBill);
+
+        originalBillItemNowWonglyAssignedToCancelledBill.setPharmaceuticalBillItem(pbiFromOriginalBillItem);
+        billItemFacade.edit(originalBillItemNowWonglyAssignedToCancelledBill);
+
     }
 
     public List<BillType> getBillTypesByAtomicBillTypes(List<BillTypeAtomic> ba) {
