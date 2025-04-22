@@ -2271,7 +2271,9 @@ public class ReportsController implements Serializable {
                 }
             } else {
                 monthMap = new HashMap<>();
-                monthMap.put(yearMonth, bill);
+                Bill cloneBill = new Bill();
+                cloneBill.clone(bill);
+                monthMap.put(yearMonth, cloneBill);
             }
 
             map.put(bill.getCollectingCentre().getRoute(), monthMap);
@@ -2311,7 +2313,9 @@ public class ReportsController implements Serializable {
 
             } else {
                 monthMap = new HashMap<>();
-                monthMap.put(yearMonth, bill);
+                Bill cloneBill = new Bill();
+                cloneBill.clone(bill);
+                monthMap.put(yearMonth, cloneBill);
 
             }
             map.put(bill.getCollectingCentre(), monthMap);
