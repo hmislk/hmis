@@ -3001,6 +3001,68 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         System.out.println("Completed processing for bill type: " + billTypeAtomic);
     }
 
+    /**
+     * Temporary admin method to correct BillItem rate, netRate, grossValue, and
+     * netValue for PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY bills. These values
+     * should be negative to reflect a return transaction.
+     *
+     * Note: This method does not alter Bill-level totals as net total is
+     * already negative.
+     *
+     * ChatGPT contributed - 2025-04
+     */
+    public void correctBillItemRatesInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY() {
+        System.out.println("Starting BillItem correction for PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY");
+
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+
+        List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
+        if (bills == null || bills.isEmpty()) {
+            System.out.println("No matching bills found.");
+            return;
+        }
+
+        System.out.println("Number of bills found: " + bills.size());
+
+        for (Bill bill : bills) {
+            System.out.println("Processing bill ID: " + bill.getId());
+            for (BillItem bi : bill.getBillItems()) {
+                boolean updated = false;
+
+                if (bi.getRate() > 0) {
+                    bi.setRate(-bi.getRate());
+                    updated = true;
+                }
+
+                if (bi.getNetRate() > 0) {
+                    bi.setNetRate(-bi.getNetRate());
+                    updated = true;
+                }
+
+                if (bi.getGrossValue() > 0) {
+                    bi.setGrossValue(-bi.getGrossValue());
+                    updated = true;
+                }
+
+                if (bi.getNetValue() > 0) {
+                    bi.setNetValue(-bi.getNetValue());
+                    updated = true;
+                }
+
+                if (updated) {
+                    billItemFacade.edit(bi);
+                    System.out.println("Updated BillItem ID: " + bi.getId());
+                } else {
+                    System.out.println("No update needed for BillItem ID: " + bi.getId());
+                }
+            }
+        }
+
+        System.out.println("Completed correction of BillItem values.");
+    }
+
     public void addMissingBillTypeAtomics() {
         System.out.println("addMissingBillTypeAtomics");
         String jpql = "select b "
