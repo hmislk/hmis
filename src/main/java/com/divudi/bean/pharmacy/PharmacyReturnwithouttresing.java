@@ -11,6 +11,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -552,6 +553,8 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
