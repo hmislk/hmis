@@ -89,19 +89,14 @@
                             </h:panelGroup>
                             <h:panelGroup id="cmbDept">
                                 <!-- Component 1: Without Institution and Site -->
-                                <p:selectOneMenu
+                                <p:autoComplete
                                         rendered="#{reportController.institution eq null and reportController.site eq null}"
-                                        styleClass="w-100 form-control"
                                         value="#{reportController.department}"
-                                        filterMatchMode="contains"
-                                        filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                            var="d"
-                                            itemLabel="#{d.name}"
-                                            itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                        inputStyleClass="w-100"
+                                        class="w-100"
+                                        completeMethod="#{departmentController.completeDept}"
+                                        var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
+                                </p:autoComplete>
 
                                 <!-- Component 2: With Site Only -->
                                 <p:selectOneMenu
