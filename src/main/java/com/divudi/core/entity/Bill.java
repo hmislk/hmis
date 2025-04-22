@@ -965,6 +965,55 @@ public class Bill implements Serializable, RetirableEntity {
         }
     }
 
+    public void clone(Bill bill) {
+        billType = bill.getBillType();
+        referenceNumber = bill.getReferenceNumber();
+        membershipScheme = bill.getMembershipScheme();
+        collectingCentre = bill.getCollectingCentre();
+        catId = bill.getCatId();
+        creditCompany = bill.getCreditCompany();
+        staff = bill.getStaff();
+        webUser = bill.getWebUser();
+        toStaff = bill.getToStaff();
+        fromStaff = bill.getFromStaff();
+        toDepartment = bill.getToDepartment();
+        toInstitution = bill.getToInstitution();
+        fromDepartment = bill.getFromDepartment();
+        fromInstitution = bill.getFromInstitution();
+        discountPercent = bill.getDiscountPercent();
+        patient = bill.getPatient();
+        patientEncounter = bill.getPatientEncounter();
+        referredBy = bill.getReferredBy();
+        referringDepartment = bill.getReferringDepartment();
+        surgeryBillType = bill.getSurgeryBillType();
+        comments = bill.getComments();
+        paymentMethod = bill.getPaymentMethod();
+        paymentScheme = bill.getPaymentScheme();
+        bank = bill.getBank();
+        chequeDate = bill.getChequeDate();
+        referenceInstitution = bill.getReferenceInstitution();
+        bookingId = bill.getBookingId();
+        appointmentAt = bill.getAppointmentAt();
+        referredByInstitution = bill.getReferredByInstitution();
+        invoiceNumber = bill.getInvoiceNumber();
+        vat = bill.getVat();
+        vatPlusNetTotal = bill.getVatPlusNetTotal();
+        sessionId = bill.getSessionId();
+        ipOpOrCc = bill.getIpOpOrCc();
+        chequeRefNo = bill.getChequeRefNo();
+        settledAmountByPatient = bill.getSettledAmountByPatient();
+        settledAmountBySponsor = bill.getSettledAmountBySponsor();
+        qty = bill.getQty();
+        hospitalFee = bill.getHospitalFee();
+        totalHospitalFee = bill.getTotalHospitalFee();
+        billItems = new ArrayList<>(BillItem.copyBillItems(bill.getBillItems()));
+        //      referenceBill=bill.getReferenceBill();
+        if (bill.getPharmacyBill() != null) {
+            pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
+            pharmacyBill.setBill(this);
+        }
+    }
+
     public List<BillComponent> getBillComponents() {
         return billComponents;
     }
