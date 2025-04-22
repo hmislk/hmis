@@ -33,6 +33,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
+
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.ExternalContext;
@@ -2249,6 +2250,23 @@ public class ReportsController implements Serializable {
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             Bill bill = row.getBill();
 
+            double billItemQty = bill.getBillItems().stream()
+                    .mapToDouble(BillItem::getQty)
+                    .sum();
+
+            double totalHospitalFee = bill.getBillItems().stream()
+                    .mapToDouble(BillItem::getHospitalFee)
+                    .sum();
+
+            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
+                if (billItemQty > 0) {
+                    billItemQty = -billItemQty;
+                }
+                if (totalHospitalFee > 0) {
+                    totalHospitalFee = -totalHospitalFee;
+                }
+            }
+
             final Calendar cal = Calendar.getInstance();
             cal.setTime(bill.getCreatedAt());
 
@@ -2264,8 +2282,8 @@ public class ReportsController implements Serializable {
 
                 if (monthMap.containsKey(yearMonth)) {
                     Bill existingBill = monthMap.get(yearMonth);
-                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + bill.getTotalHospitalFee());
-                    existingBill.setQty(existingBill.getQty() + bill.getQty());
+                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
+                    existingBill.setQty(existingBill.getQty() + billItemQty);
                 } else {
                     monthMap.put(yearMonth, bill);
                 }
@@ -2273,6 +2291,9 @@ public class ReportsController implements Serializable {
                 monthMap = new HashMap<>();
                 Bill cloneBill = new Bill();
                 cloneBill.clone(bill);
+                cloneBill.setQty(billItemQty);
+                cloneBill.setTotalHospitalFee(totalHospitalFee);
+
                 monthMap.put(yearMonth, cloneBill);
             }
 
@@ -2290,6 +2311,23 @@ public class ReportsController implements Serializable {
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             Bill bill = row.getBill();
 
+            double billItemQty = bill.getBillItems().stream()
+                    .mapToDouble(BillItem::getQty)
+                    .sum();
+
+            double totalHospitalFee = bill.getBillItems().stream()
+                    .mapToDouble(BillItem::getHospitalFee)
+                    .sum();
+
+            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
+                if (billItemQty > 0) {
+                    billItemQty = -billItemQty;
+                }
+                if (totalHospitalFee > 0) {
+                    totalHospitalFee = -totalHospitalFee;
+                }
+            }
+
             final Calendar cal = Calendar.getInstance();
             cal.setTime(bill.getCreatedAt());
 
@@ -2305,8 +2343,8 @@ public class ReportsController implements Serializable {
 
                 if (monthMap.containsKey(yearMonth)) {
                     Bill existingBill = monthMap.get(yearMonth);
-                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + bill.getTotalHospitalFee());
-                    existingBill.setQty(existingBill.getQty() + bill.getQty());
+                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
+                    existingBill.setQty(existingBill.getQty() + billItemQty);
                 } else {
                     monthMap.put(yearMonth, bill);
                 }
@@ -2315,6 +2353,9 @@ public class ReportsController implements Serializable {
                 monthMap = new HashMap<>();
                 Bill cloneBill = new Bill();
                 cloneBill.clone(bill);
+                cloneBill.setQty(billItemQty);
+                cloneBill.setTotalHospitalFee(totalHospitalFee);
+
                 monthMap.put(yearMonth, cloneBill);
 
             }
@@ -2660,7 +2701,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-            boolean onlyDueBills) {
+                                                                    boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "

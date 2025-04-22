@@ -1006,6 +1006,7 @@ public class Bill implements Serializable, RetirableEntity {
         qty = bill.getQty();
         hospitalFee = bill.getHospitalFee();
         totalHospitalFee = bill.getTotalHospitalFee();
+        billItems = new ArrayList<>(BillItem.copyBillItems(bill.getBillItems()));
         //      referenceBill=bill.getReferenceBill();
         if (bill.getPharmacyBill() != null) {
             pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
