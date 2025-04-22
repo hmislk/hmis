@@ -3068,6 +3068,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      * netValue for DIRECT_ISSUE_INWARD_MEDICINE_RETURN bills. These values
      * should be negative to reflect a return transaction.
      *
+     * PharmaceuticalBillItem values (retailRate, retailValue, purchaseRate,
+     * purchaseValue) are also updated to ensure negative direction for returns.
+     *
      * Note: This method does not alter Bill-level totals.
      *
      * ChatGPT contributed - 2025-04
@@ -3112,6 +3115,38 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     updated = true;
                 }
 
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                if (pbi != null) {
+                    boolean pbiUpdated = false;
+
+                    if (pbi.getRetailRate() > 0) {
+                        pbi.setRetailRate(-pbi.getRetailRate());
+                        pbiUpdated = true;
+                    }
+
+                    if (pbi.getRetailValue() > 0) {
+                        pbi.setRetailValue(-pbi.getRetailValue());
+                        pbiUpdated = true;
+                    } else if (pbi.getRetailValue() == 0) {
+                        double value = Math.abs(pbi.getRetailRate() * pbi.getQty());
+                        pbi.setRetailValue(-value);
+                        pbiUpdated = true;
+                    }
+
+                    if (pbi.getPurchaseRate() > 0) {
+                        pbi.setPurchaseRate(-pbi.getPurchaseRate());
+                        pbiUpdated = true;
+                    }
+
+                    double purchaseValue = Math.abs(pbi.getPurchaseRate() * pbi.getQty());
+                    pbi.setPurchaseValue(-purchaseValue);
+                    pbiUpdated = true;
+
+                    if (pbiUpdated) {
+                        pharmaceuticalBillItemFacade.edit(pbi);
+                    }
+                }
+
                 if (updated) {
                     billItemFacade.edit(bi);
                     System.out.println("Updated BillItem ID: " + bi.getId());
@@ -3121,7 +3156,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             }
         }
 
-        System.out.println("Completed correction of BillItem values.");
+        System.out.println("Completed correction of BillItem and PharmaceuticalBillItem values.");
     }
 
     public void addMissingBillTypeAtomics() {
