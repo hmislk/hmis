@@ -2460,7 +2460,7 @@ public class ReportsController implements Serializable {
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
-        parameters.put("td", CommonFunctions.getEndOfDay(toDate));
+        parameters.put("td", toDate);
 
         jpql += "GROUP BY bill";
 
