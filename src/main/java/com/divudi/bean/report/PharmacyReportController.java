@@ -1,11 +1,13 @@
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PersonController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.StockHistoryController;
@@ -56,6 +58,7 @@ import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import com.divudi.core.facade.AgentHistoryFacade;
@@ -165,10 +168,11 @@ public class PharmacyReportController implements Serializable {
     @Inject
     WebUserController webUserController;
     @Inject
-    PatientInvestigationFacade patientInvestigationFacade;
+    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
-    StockHistoryController stockHistoryController;
+    SessionController sessionController;
 
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,##0.00");
     private int reportIndex;
     private Institution institution;
     private Institution site;
@@ -2164,6 +2168,19 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
+        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+    };
+
+    private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
+        for (String header : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setBackgroundColor(new BaseColor(220, 220, 220));
+            table.addCell(cell);
+        }
+    }
+
     public void exportStockLedgerToPdf() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
@@ -2204,7 +2221,8 @@ public class PharmacyReportController implements Serializable {
 
             PdfPTable table = new PdfPTable(19); // Number of columns
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2});
+
+            table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
 
             String[] headers = {
                 "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
@@ -2213,15 +2231,9 @@ public class PharmacyReportController implements Serializable {
                 "Closing Stock", "Rate", "Closing Value"
             };
 
-            for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
-                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cell.setBackgroundColor(new BaseColor(220, 220, 220));
-                table.addCell(cell);
-            }
+            addTableHeaders(table, headerFont, headers);
 
-            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+            SimpleDateFormat dateFormat = new SimpleDateFormat(configOptionApplicationController.getShortTextValueByKey("Short Date Format", sessionController.getApplicationPreference().getShortDateFormat()));
 
             int rowNum = 1;
             for (StockHistory f : histories) {
@@ -2230,7 +2242,7 @@ public class PharmacyReportController implements Serializable {
                 final Item item = billItem.getItem();
                 final Department fromDept = safeGet(() -> bill.getFromDepartment(), null);
                 final Department toDept = safeGet(() -> bill.getToDepartment(), null);
-                final ItemCategory itemCategory = safeGet(() -> item.getCategory(), null);
+                final Category itemCategory = safeGet(() -> item.getCategory(), null);
                 final MeasurementUnit unit = safeGet(() -> item.getMeasurementUnit(), null);
                 final BillTypeAtomic atomicType = safeGet(() -> bill.getBillTypeAtomic(), null);
                 final BillType billType = safeGet(() -> bill.getBillType(), null);
@@ -2268,18 +2280,18 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(createCell(docType, cellFont));
 
                 double stockIn = isIn ? qty + freeQty : 0.0;
-                table.addCell(createCell(decimalFormat.format(stockIn), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT .format(stockIn), cellFont));
 
                 double stockOut = isOut ? qty + freeQty : 0.0;
-                table.addCell(createCell(decimalFormat.format(stockOut), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT .format(stockOut), cellFont));
 
                 double itemStock = safeGet(() -> f.getItemStock(), 0.0);
-                table.addCell(createCell(decimalFormat.format(itemStock), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT .format(itemStock), cellFont));
 
-                table.addCell(createCell(decimalFormat.format(purchaseRate), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT .format(purchaseRate), cellFont));
 
                 double closingValue = itemStock * purchaseRate;
-                table.addCell(createCell(decimalFormat.format(closingValue), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT .format(closingValue), cellFont));
             }
 
             document.add(table);
@@ -2288,10 +2300,17 @@ public class PharmacyReportController implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (document != null && document.isOpen()) {
-                document.close();
+            if (document != null) {
+                try {
+                    if (document.isOpen()) {
+                        document.close();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
+
     }
 
     private PdfPCell createCell(String content, Font font) {
