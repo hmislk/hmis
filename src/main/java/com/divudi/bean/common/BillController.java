@@ -2953,6 +2953,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      *
      * @param billTypeAtomic the atomic bill type to filter and process
      */
+    @javax.transaction.Transactional
     public void fixTotalsInBillsByAtomicType(BillTypeAtomic billTypeAtomic) {
         System.out.println("Starting temporary fix for bill type: " + billTypeAtomic);
 
@@ -2960,7 +2961,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         Map<String, Object> params = new HashMap<>();
         params.put("bta", billTypeAtomic);
 
-        List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
+        // Process in smaller batches for better memory management
+        List<Bill> bills = getFacade().findByJpql(jpql, params, 500);
 
         if (bills == null || bills.isEmpty()) {
             System.out.println("No matching bills found for type: " + billTypeAtomic);
@@ -2969,8 +2971,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         System.out.println("Found " + bills.size() + " bills to process.");
 
+        int processed = 0;
+        int updated = 0;
+        int skipped = 0;
+        int batchCounter = 0;
+
         for (Bill b : bills) {
-            System.out.println("Processing bill ID: " + b.getId());
+            processed++;
+            System.out.println("Processing bill ID: " + b.getId() + " (" + processed + "/" + bills.size() + ")");
 
             double total = 0.0;
             double netTotal = 0.0;
@@ -2982,6 +2990,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 bi.setGrossValue(grossValue);
                 billItemFacade.edit(bi);
 
+                batchCounter++;
+                // Flush periodically to manage memory and reduce lock contention
+                if (batchCounter % 100 == 0) {
+                    billItemFacade.flush();
+                }
+
                 total += grossValue;
                 netTotal += bi.getNetValue();
             }
@@ -2990,15 +3004,40 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             System.out.println("Calculated Net Total: " + netTotal + " | Existing: " + b.getNetTotal());
 
             if (Math.abs(b.getNetTotal() - netTotal) >= 1.0) {
-                System.out.println("Skipping bill ID: " + b.getId() + ". Net total mismatch suggests deeper issue.");
+                System.out.println("WARNING: Skipping bill ID: " + b.getId()
+                    + ". Net total mismatch suggests deeper issue. "
+                    + "Expected: " + netTotal + ", Actual: " + b.getNetTotal()
+                    + ", Difference: " + Math.abs(b.getNetTotal() - netTotal));
+                skipped++;
             } else {
                 System.out.println("Updating gross total for bill ID: " + b.getId());
                 b.setTotal(total);
+                // Update other relevant bill total fields for consistency
+                if (b.getGrantTotal() != null) {
+                    b.setGrantTotal(total);
+                }
+                // If VAT is present, update VAT-related totals
+                if (b.getVat() > 0) {
+                    b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
+                }
                 getFacade().edit(b);
+                updated++;
+                // Flush periodically
+                if (updated % 50 == 0) {
+                    getFacade().flush();
+                }
             }
         }
 
-        System.out.println("Completed processing for bill type: " + billTypeAtomic);
+        // Provide a summary report for easy verification
+        System.out.println("\n===== SUMMARY =====");
+        System.out.println("Bill type: " + billTypeAtomic);
+        System.out.println("Total bills processed: " + processed);
+        System.out.println("Bills updated: " + updated);
+        System.out.println("Bills skipped due to discrepancies: " + skipped);
+        System.out.println("==================\n");
+        // Final flush to ensure all changes are persisted
+        getFacade().flush();
     }
 
     /**
