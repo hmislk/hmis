@@ -2178,9 +2178,9 @@ public class PharmacyReportController implements Serializable {
         response.reset();
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=Stock_Ledger_Report.pdf");
-
+        Document document = null;
         try (OutputStream out = response.getOutputStream()) {
-            Document document = new Document(PageSize.A4.rotate());
+            document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
@@ -2278,6 +2278,10 @@ public class PharmacyReportController implements Serializable {
             context.responseComplete();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (document != null && document.isOpen()) {
+                document.close();
+            }
         }
     }
 
