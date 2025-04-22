@@ -17,13 +17,34 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                            <p:commandButton
+                                class="m-1 ui-button-success"
+                                icon="fa fa-print"
+                                value="Reprint" 
+                                ajax="false">
+                                <p:printer target="gpBillPreview"/>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_bill" disabled="#{pharmacyBillSearch.bill.cancelled}" 
-                                             rendered="#{webUserController.hasPrivilege('PharmacySaleCancel') or true}">                           
+
+                            <p:commandButton
+                                class="m-1 ui-button-danger"
+                                ajax="false" 
+                                value="Cancel" 
+                                icon="fa fa-times"
+                                action="pharmacy_cancel_bill" 
+                                disabled="#{pharmacyBillSearch.bill.cancelled}" 
+                                rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">
                             </p:commandButton>
-                          
+
+                            <p:commandButton 
+                                title="Admin" 
+                                icon="fa fa-shield-alt" 
+                                class="m-1 ui-button-danger" 
+                                action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                ajax="false" 
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:setPropertyActionListener value="#{pharmacyBillSearch.bill}" target="#{billSearch.bill}" />
+                            </p:commandButton>
+
                         </f:facet>
                     </p:panel>
 
