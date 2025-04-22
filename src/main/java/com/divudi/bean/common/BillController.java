@@ -3185,6 +3185,79 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
     }
 
+//    /**
+//     * Administrative method to batch-correct all PharmaceuticalBillItems that
+//     * were wrongly assigned due to cancellation logic in
+//     * PHARMACY_RETAIL_SALE_CANCELLED bills.
+//     *
+//     * This method scans all non-retired bills of type
+//     * PHARMACY_RETAIL_SALE_CANCELLED, and for each BillItem in those bills,
+//     * attempts to fix the linked PharmaceuticalBillItem (if present) by calling
+//     * the correction method.
+//     *
+//     * ChatGPT contributed - 2025-04
+//     */
+//    public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills() {
+//        BillTypeAtomic billTypeAtomic = BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
+//
+//        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta "
+//                + " and b.createdAt between :fd and :td ";
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("bta", billTypeAtomic);
+//        params.put("fd", getFromDate());
+//        params.put("td", getToDate());
+//
+//        List<Bill> pharmacyRetailSaleCancellationBills = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+//
+//        if (pharmacyRetailSaleCancellationBills == null || pharmacyRetailSaleCancellationBills.isEmpty()) {
+//            System.out.println("No matching bills found for type: " + billTypeAtomic);
+//            return;
+//        }
+//
+//        System.out.println("Found " + pharmacyRetailSaleCancellationBills.size() + " cancelled bills to process...");
+//
+//        for (Bill cancelledBill : pharmacyRetailSaleCancellationBills) {
+//            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(cancelledBill);
+//
+//            if (pbis == null || pbis.isEmpty()) {
+//                System.out.println("Cancelled bill ID " + cancelledBill.getId() + " has no pharmaceutical bill items.");
+//                continue;
+//            }
+//
+//            for (PharmaceuticalBillItem pbi : pbis) {
+//                if (pbi != null) {
+//                    BillItem bi = pbi.getBillItem();
+//                    if (hasMoreThanOnePbi(bi)) {
+//                        convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(pbi);
+//                    }
+//                }
+//            }
+//        }
+//
+//        System.out.println("Completed batch correction of wrongly assigned PharmaceuticalBillItems.");
+//    }
+
+    /**
+     * Checks whether a BillItem has more than one associated
+     * PharmaceuticalBillItem.
+     *
+     * @param bi The BillItem to check
+     * @return true if more than one PharmaceuticalBillItem exists for the given
+     * BillItem; false otherwise
+     */
+    private boolean hasMoreThanOnePbi(BillItem bi) {
+        if (bi == null || bi.getId() == null) {
+            return false;
+        }
+
+        String jpql = "SELECT COUNT(pbi) FROM PharmaceuticalBillItem pbi WHERE pbi.billItem.id = :bid";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bid", bi.getId());
+
+        Long count = pharmaceuticalBillItemFacade.countByJpql(jpql, params);
+        return count != null && count > 1;
+    }
+
     public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(PharmaceuticalBillItem pbi) {
         Bill originalBill = null;
         Bill cancelledBill = null;
