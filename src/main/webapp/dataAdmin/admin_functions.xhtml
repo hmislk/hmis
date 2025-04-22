@@ -35,6 +35,19 @@
                                 value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS Bills"/>
                         </div>
 
+
+<div class="col-12 col-md-8 col-lg-6 p-1">
+    <p:commandButton 
+        ajax="false"
+        disabled="false"
+        onclick="return confirm('This will modify billing data. Proceed?');"
+        rendered="#{webUserController.hasPrivilege('Developers')}"
+        action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
+        update=":growl"
+        class="w-100 m-1"
+        value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
+</div>
+
                         <div class="col-12 col-md-8 col-lg-6 p-1">
                             <p:commandButton 
                                 ajax="false"
@@ -53,6 +66,7 @@
                                 class="w-100 m-1"
                                 value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
                         </div>
+
 
 
                         <div class="col-12 col-md-8 col-lg-6 p-1">
