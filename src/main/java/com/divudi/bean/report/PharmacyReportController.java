@@ -2140,7 +2140,7 @@ public class PharmacyReportController implements Serializable {
             row.setItem(shx.getItemBatch().getItem());
             row.setItemBatch(shx.getItemBatch());
 
-            double batchQty = shx.getItemStock();
+            double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
 
