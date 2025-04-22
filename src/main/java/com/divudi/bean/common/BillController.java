@@ -3138,9 +3138,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         pbiUpdated = true;
                     }
 
-                    double purchaseValue = Math.abs(pbi.getPurchaseRate() * pbi.getQty());
-                    pbi.setPurchaseValue(-purchaseValue);
-                    pbiUpdated = true;
+                    if (pbi.getPurchaseValue() == 0) {
+                        double value = Math.abs(pbi.getPurchaseRate() * pbi.getQty());
+                        pbi.setPurchaseValue(-value);
+                        pbiUpdated = true;
+                    }
 
                     if (pbiUpdated) {
                         pharmaceuticalBillItemFacade.edit(pbi);
