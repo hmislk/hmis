@@ -2225,20 +2225,34 @@ public class PharmacyReportController implements Serializable {
 
             int rowNum = 1;
             for (StockHistory f : histories) {
+                final BillItem billItem = f.getPbItem().getBillItem();
+                final Bill bill = billItem.getBill();
+                final Item item = billItem.getItem();
+                final Department fromDept = safeGet(() -> bill.getFromDepartment(), null);
+                final Department toDept = safeGet(() -> bill.getToDepartment(), null);
+                final ItemCategory itemCategory = safeGet(() -> item.getCategory(), null);
+                final MeasurementUnit unit = safeGet(() -> item.getMeasurementUnit(), null);
+                final BillTypeAtomic atomicType = safeGet(() -> bill.getBillTypeAtomic(), null);
+                final BillType billType = safeGet(() -> bill.getBillType(), null);
+                final double qty = safeGet(() -> f.getPbItem().getQty(), 0.0);
+                final double freeQty = safeGet(() -> f.getPbItem().getFreeQty(), 0.0);
+                final double purchaseRate = safeGet(() -> f.getPbItem().getPurchaseRate(), 0.0);
+                final boolean isIn = safeGet(() -> f.getPbItem().isTransThisIsStockIn(), false);
+                final boolean isOut = safeGet(() -> f.getPbItem().isTransThisIsStockOut(), false);
 
                 table.addCell(createCell(String.valueOf(rowNum++), cellFont));
                 table.addCell(createCell(safeGet(() -> f.getDepartment().getName(), ""), cellFont));
-                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getItem().getCategory().getName(), ""), cellFont));
-                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getItem().getCode(), ""), cellFont));
-                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getItem().getName(), ""), cellFont));
-                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getItem().getMeasurementUnit().getName(), " "), cellFont));
+                table.addCell(createCell(safeGet(() -> itemCategory.getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> item.getCode(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> item.getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> unit.getName(), " "), cellFont));
 
-                String transactionType = safeGet(() -> f.getPbItem().isTransThisIsStockIn() ? "STOCK IN" : "STOCK OUT", "N/A");
+                String transactionType = isIn ? "STOCK IN" : isOut ? "STOCK OUT" : "N/A";
                 PdfPCell transCell = new PdfPCell(new Phrase(transactionType, cellFont));
                 transCell.setHorizontalAlignment(Element.ALIGN_CENTER);
                 table.addCell(transCell);
 
-                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getBill().getDeptId(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> bill.getDeptId(), ""), cellFont));
                 table.addCell(createCell(safeGet(() -> dateFormat.format(f.getCreatedAt()), ""), cellFont));
 
                 String refDocNo = getRefDocNo(f);
@@ -2247,29 +2261,24 @@ public class PharmacyReportController implements Serializable {
                 String refDocDate = getRefDocDate(f);
                 table.addCell(createCell(refDocDate != null ? refDocDate : "", cellFont));
 
-                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getBill().getFromDepartment().getName(), ""), cellFont));
-                table.addCell(createCell(safeGet(() -> f.getPbItem().getBillItem().getBill().getToDepartment().getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> fromDept.getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> toDept.getName(), ""), cellFont));
 
-                String docType = safeGet(()
-                        -> f.getPbItem().getBillItem().getBill().getBillTypeAtomic() != null
-                        ? f.getPbItem().getBillItem().getBill().getBillTypeAtomic().getLabel()
-                        : f.getPbItem().getBillItem().getBill().getBillType().getLabel(),
-                        "");
+                String docType = atomicType != null ? atomicType.getLabel() : safeGet(() -> billType.getLabel(), "");
                 table.addCell(createCell(docType, cellFont));
 
-                double stockIn = safeGet(() -> f.getPbItem().isTransThisIsStockIn() ? f.getPbItem().getQty() + f.getPbItem().getFreeQty() : 0.0, 0.0);
+                double stockIn = isIn ? qty + freeQty : 0.0;
                 table.addCell(createCell(decimalFormat.format(stockIn), cellFont));
 
-                double stockOut = safeGet(() -> f.getPbItem().isTransThisIsStockOut() ? f.getPbItem().getQty() + f.getPbItem().getFreeQty() : 0.0, 0.0);
+                double stockOut = isOut ? qty + freeQty : 0.0;
                 table.addCell(createCell(decimalFormat.format(stockOut), cellFont));
 
                 double itemStock = safeGet(() -> f.getItemStock(), 0.0);
                 table.addCell(createCell(decimalFormat.format(itemStock), cellFont));
 
-                double purchaseRate = safeGet(() -> f.getPbItem().getPurchaseRate(), 0.0);
                 table.addCell(createCell(decimalFormat.format(purchaseRate), cellFont));
 
-                double closingValue = safeGet(() -> f.getItemStock() * f.getPbItem().getPurchaseRate(), 0.0);
+                double closingValue = itemStock * purchaseRate;
                 table.addCell(createCell(decimalFormat.format(closingValue), cellFont));
             }
 
