@@ -122,6 +122,8 @@ public enum BillTypeAtomic {
             PaymentCategory.NO_PAYMENT),
     PHARMACY_RETAIL_SALE_CANCELLED("Pharmacy Retail Sale Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY,
             PaymentCategory.NON_CREDIT_COLLECTION),
+    PHARMACY_RETAIL_SALE_CANCELLED_PRE("Pharmacy Retail Sale Cancelled - Pre Bill", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY,
+            PaymentCategory.NO_PAYMENT),
     PHARMACY_RETAIL_SALE_REFUND("Pharmacy Retail Sale Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY,
             PaymentCategory.NON_CREDIT_COLLECTION),
     PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY("Pharmacy Retail Sale Return Items Only", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY,
@@ -368,6 +370,9 @@ public enum BillTypeAtomic {
     private final PaymentCategory paymentCategory;
 
     public static BillTypeAtomic getBillTypeAtomic(BillType billType, BillClassType billClassType) {
+        System.out.println("getBillTypeAtomic");
+        System.out.println("billClassType = " + billClassType);
+        System.out.println("billType = " + billType);
         switch (billClassType) {
             case Bill:
                 switch (billType) {
@@ -405,6 +410,8 @@ public enum BillTypeAtomic {
                         return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
                     case PharmacyPurchaseBill:
                         return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                    case PharmacyPre:
+                        return BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE;
                 }
                 return null;
             case RefundBill:

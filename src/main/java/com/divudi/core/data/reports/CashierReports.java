@@ -1,7 +1,10 @@
 package com.divudi.core.data.reports;
 
 public enum CashierReports implements IReportType {
-    All_CASHIER_SUMMARY("All Cashier Summary");
+    All_CASHIER_SUMMARY("All Cashier Summary"),
+    CASHIER_SUMMARY("Cashier Summary"),
+    CASHIER_DETAILED("Cashier Detailed"),
+    TOTAL_CASHIER_SUMMARY("Total Cashier Summary");
 
     private final String displayName;
 

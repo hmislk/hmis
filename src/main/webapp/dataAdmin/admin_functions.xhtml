@@ -15,6 +15,18 @@
                 <h:form >
 
                     <div class='row' >
+
+
+                        <div class="col-12 col-md-4 col-lg-2 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                action="#{billController.addMissingBillTypeAtomics}"
+                                class="w-100 m-1"
+                                value="Add Bill Type Atomics"/>
+                        </div>
+
+
                         <div class="col-12 col-md-4 col-lg-2 p-1" >
                             <p:commandButton 
                                 class="w-100"
@@ -104,14 +116,7 @@
                                 value="Make All OPD Services and Investigations to Allow Discounts"/>
                         </div>
 
-                        <div class="col-12 col-md-4 col-lg-2 p-1">
-                            <p:commandButton 
-                                ajax="false"
-                                disabled="false"
-                                action="#{billController.addMissingBillTypeAtomics}"
-                                class="w-100 m-1"
-                                value="Add Bill Type Atomics"/>
-                        </div>
+
 
                         <div class="col-12 col-md-4 col-lg-2 p-1">
                             <p:commandButton 

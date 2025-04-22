@@ -37,6 +37,10 @@ import java.util.UUID;
  */
 public class CommonFunctions {
 
+    public static double abs(double value) {
+        return Math.abs(value);
+    }
+
     public static String changeTextCases(String nm, String tc) {
         if (tc == null) {
             return nm;

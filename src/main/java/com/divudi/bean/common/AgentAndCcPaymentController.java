@@ -257,9 +257,9 @@ public class AgentAndCcPaymentController implements Serializable {
         getCurrent().setNetTotal(getCurrent().getNetTotal());
 
         if (getCurrent().getId() == null) {
-            getBillFacade().create(getCurrent());
+            getBillFacade().createAndFlush(getCurrent());
         } else {
-            getBillFacade().edit(getCurrent());
+            getBillFacade().editAndFlush(getCurrent());
         }
         saveBillItem();
         if (getCurrent() != null) {
