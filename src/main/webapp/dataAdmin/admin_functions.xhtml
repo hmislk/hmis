@@ -25,8 +25,8 @@
                                 class="w-100 m-1"
                                 value="Add Bill Type Atomics"/>
                         </div>
-                        
-                         <div class="col-12 col-md-8 col-lg-6 p-1">
+
+                        <div class="col-12 col-md-8 col-lg-6 p-1">
                             <p:commandButton 
                                 ajax="false"
                                 disabled="false"
@@ -34,6 +34,16 @@
                                 class="w-100 m-1"
                                 value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS Bills"/>
                         </div>
+
+                        <div class="col-12 col-md-8 col-lg-6 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
+                                class="w-100 m-1"
+                                value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
+                        </div>
+
 
 
                         <div class="col-12 col-md-4 col-lg-2 p-1" >
