@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 
 /**
@@ -63,8 +64,27 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     @ManyToOne
     private Institution hospital;
     
+    @OneToOne(mappedBy = "onlineBooking")
+    private Bill bill;
+    
     @Enumerated(EnumType.STRING)
     private OnlineBookingStatus onlineBookingStatus;
+
+    public OnlineBookingStatus getOnlineBookingStatus() {
+        return onlineBookingStatus;
+    }
+
+    public void setOnlineBookingStatus(OnlineBookingStatus onlineBookingStatus) {
+        this.onlineBookingStatus = onlineBookingStatus;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
 
     public boolean isNeedSms() {
         return needSms;
