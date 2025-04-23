@@ -14,56 +14,72 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-
         <p:commandButton value="Download" ajax="false">
-            <p:dataExporter fileName="bill_items" target="tblBillItems" type="xlsx" ></p:dataExporter>
+            <p:dataExporter 
+                fileName="pharmaceutical_bill_items" 
+                target="tblBillItems" 
+                type="xlsx" />
         </p:commandButton>
 
         <p:dataTable 
             id="tblBillItems"
-            value="#{cc.attrs.pharmaceuticalBillItems}" var="bi" rowKey="#{bi.id}" >
-            <f:facet name="header" >
-                <h:outputText value="Pharmaceutical Bill Items" ></h:outputText>
+            value="#{cc.attrs.pharmaceuticalBillItems}" 
+            var="bi" 
+            rowKey="#{bi.id}" 
+            editable="true">
+
+            <f:facet name="header">
+                <h:outputText value="Pharmaceutical Bill Items" />
             </f:facet>
+
             <p:column headerText="ID">
-                <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>
+                <h:outputText value="#{bi.id}" class="w-100 m-1" />
             </p:column>
+
             <p:column headerText="Bill Item ID">
-                <h:outputText value="#{bi.billItem.id}" class="w-100 m-1"></h:outputText>
+                <h:outputText value="#{bi.billItem.id}" class="w-100 m-1" />
             </p:column>
+
             <p:column headerText="Item">
-                <h:outputText value="#{bi.itemBatch.item.name}" class="w-100 m-1"></h:outputText>
+                <h:outputText value="#{bi.itemBatch.item.name}" class="w-100 m-1" />
             </p:column>
+
             <p:column headerText="Qty">
-                <h:outputText value="#{bi.qty}" class="w-100 m-1">
+                <p:inputText value="#{bi.qty}" styleClass="text-end w-100 m-1">
                     <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
+                </p:inputText>
             </p:column>
-            <p:column headerText="Fee Qty">
-                <h:outputText value="#{bi.freeQty}" class="w-100 m-1">
+
+            <p:column headerText="Free Qty">
+                <p:inputText value="#{bi.freeQty}" styleClass="text-end w-100 m-1">
                     <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
+                </p:inputText>
             </p:column>
+
             <p:column headerText="Retail Rate">
-                <h:outputText value="#{bi.retailRate}" class="w-100 m-1">
+                <p:inputText value="#{bi.retailRate}" styleClass="text-end w-100 m-1">
                     <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
+                </p:inputText>
             </p:column>
+
             <p:column headerText="Retail Value">
-                <h:outputText value="#{bi.retailValue}" class="w-100 m-1">
+                <p:inputText value="#{bi.retailValue}" styleClass="text-end w-100 m-1">
                     <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
+                </p:inputText>
             </p:column>
+
             <p:column headerText="Purchase Rate">
-                <h:outputText value="#{bi.purchaseRate}" class="w-100 m-1">
+                <p:inputText value="#{bi.purchaseRate}" styleClass="text-end w-100 m-1">
                     <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
+                </p:inputText>
             </p:column>
+
             <p:column headerText="Purchase Value">
-                <h:outputText value="#{bi.purchaseValue}" class="w-100 m-1">
+                <p:inputText value="#{bi.purchaseValue}" styleClass="text-end w-100 m-1">
                     <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
+                </p:inputText>
             </p:column>
+
             <p:column headerText="Actions">
                 <p:commandButton 
                     value="Fix" 
@@ -75,8 +91,8 @@
                 </p:commandButton>
             </p:column>
 
-
         </p:dataTable>
+
 
     </cc:implementation>
 </html>
