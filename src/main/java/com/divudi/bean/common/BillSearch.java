@@ -55,6 +55,8 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.IssueReturnController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyIssueController;
+import com.divudi.bean.pharmacy.TransferIssueController;
+import com.divudi.bean.pharmacy.TransferReceiveController;
 import com.divudi.core.data.BillTypeAtomic;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_ISSUE_CANCELLED;
 import com.divudi.core.data.InstitutionType;
@@ -208,6 +210,10 @@ public class BillSearch implements Serializable {
     IssueReturnController issueReturnController;
     @Inject
     PharmacyIssueController pharmacyIssueController;
+    @Inject
+    TransferIssueController transferIssueController;
+    @Inject
+    TransferReceiveController transferReceiveController;
     /**
      * Class Variables
      */
@@ -3862,7 +3868,7 @@ public class BillSearch implements Serializable {
 
             case PHARMACY_DIRECT_ISSUE_CANCELLED:
             case PHARMACY_RECEIVE_PRE:
-            case PHARMACY_RECEIVE_CANCELLED:
+//            case PHARMACY_RECEIVE_CANCELLED:
             case MULTIPLE_PHARMACY_ORDER_CANCELLED_BILL:
             case PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION:
                 pharmacyBillSearch.setBill(bill);
@@ -3875,18 +3881,21 @@ public class BillSearch implements Serializable {
                 return navigateToViewCancelIncomeBill();
             case OPERATIONAL_EXPENSES_CANCELLED:
                 return navigateToViewCancelExpenseBill();
-                
+
             case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
             case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill();
-                
+
             case PHARMACY_ISSUE_RETURN:
                 return navigateToPharmacyIssueReturn();
             case PHARMACY_ISSUE:
             case PHARMACY_ISSUE_CANCELLED:
                 return navigateToPharmacyIssue();
-                
+
+            case PHARMACY_RECEIVE:
+            case PHARMACY_RECEIVE_CANCELLED:
+                return navigateToPharmayReceive();
 
         }
 
@@ -3899,10 +3908,29 @@ public class BillSearch implements Serializable {
             return null;
         }
         loadBillDetails(bill);
-        pharmacyIssueController.setBillPreview(true);
-        pharmacyIssueController.setPrintBill(bill);
-        return "/pharmacy/pharmacy_issue";
+        if (bill.getBillType() == billType.PharmacyTransferIssue) {
+            transferIssueController.setPrintPreview(true);
+            transferIssueController.setIssuedBill(bill);
+            return "/pharmacy/pharmacy_transfer_issue";
+        } else {
+            pharmacyIssueController.setBillPreview(true);
+            pharmacyIssueController.setPrintBill(bill);
+            return "/pharmacy/pharmacy_issue";
+        }
+
     }
+
+    public String navigateToPharmayReceive() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        transferReceiveController.setPrintPreview(true);
+        transferReceiveController.setReceivedBill(bill);
+        return "/pharmacy/pharmacy_transfer_receive";
+    }
+
     public String navigateToPharmacyIssueReturn() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -3913,7 +3941,7 @@ public class BillSearch implements Serializable {
         issueReturnController.setReturnBill(bill);
         return "/pharmacy/pharmacy_bill_return_issue";
     }
-    
+
     public String navigateToAdminBillByAtomicBillType() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -5308,8 +5336,6 @@ public class BillSearch implements Serializable {
     public void setViewingBillItems(List<BillItem> viewingBillItems) {
         this.viewingBillItems = viewingBillItems;
     }
-    
-    
 
     public List<BillFee> getViewingBillFees() {
         return viewingBillFees;
