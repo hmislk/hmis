@@ -290,7 +290,7 @@
                                             <h:panelGrid id="ad1" columns="1" class="my-1 w-100" >
                                                 <h:outputLabel for="acPrimRes" value="Primary Reason"/>
                                                 <p:autoComplete id="acPrimRes" forceSelection="true" placeholder="Search &amp; select the Reason"
-                                                                value="#{admissionController.current.referringStaff}"
+                                                                value="#{admissionController.current.primaryReason}"
                                                                 completeMethod="#{symptomController.items}" var="myItem"
                                                                 class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"
                                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}" />
