@@ -220,6 +220,21 @@ public class PharmacyBillSearch implements Serializable {
 
         return "/pharmacy/pharmacy_reprint_retail_cancelltion_bill?faces-redirect=true";
     }
+    public String navigateToViewPharmacyRetailCancellationPreBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_retail_cancelltion_bill?faces-redirect=true";
+    }
 
     public String navigateToReprintPharmacyTransferIssue() {
         if (bill == null) {
