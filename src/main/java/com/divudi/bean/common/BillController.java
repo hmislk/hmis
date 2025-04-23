@@ -2918,6 +2918,249 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     }
 
+    /**
+     * Entry point method to fix totals in
+     * PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS bills. This is a temporary
+     * data correction method and should be removed after affected bills are
+     * corrected.
+     *
+     * ChatGPT contributed - 2025-04
+     */
+    public void fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS() {
+        fixTotalsInBillsByAtomicType(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+    }
+
+    /**
+     * Entry point method to fix totals in
+     * PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY bills. This is a temporary data
+     * correction method and should be removed after affected bills are
+     * corrected.
+     *
+     * ChatGPT contributed - 2025-04
+     */
+    public void fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY() {
+        fixTotalsInBillsByAtomicType(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+    }
+
+    /**
+     * Recalculates and fixes the gross total in bills of the given atomic bill
+     * type. This method updates BillItem gross values (grossRate * quantity)
+     * and reassigns the bill's total only if net total is already accurate
+     * (difference < 1).
+     *
+     * This is a temporary cleanup utility and should be removed once all
+     * corrupted data is corrected.
+     *
+     * @param billTypeAtomic the atomic bill type to filter and process
+     */
+    public void fixTotalsInBillsByAtomicType(BillTypeAtomic billTypeAtomic) {
+        System.out.println("Starting temporary fix for bill type: " + billTypeAtomic);
+
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", billTypeAtomic);
+
+        List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
+
+        if (bills == null || bills.isEmpty()) {
+            System.out.println("No matching bills found for type: " + billTypeAtomic);
+            return;
+        }
+
+        System.out.println("Found " + bills.size() + " bills to process.");
+
+        for (Bill b : bills) {
+            System.out.println("Processing bill ID: " + b.getId());
+
+            double total = 0.0;
+            double netTotal = 0.0;
+
+            for (BillItem bi : b.getBillItems()) {
+                double grossRate = bi.getRate(); // 'rate' field stores gross rate
+                double qty = bi.getQty();
+                double grossValue = grossRate * qty;
+                bi.setGrossValue(grossValue);
+                billItemFacade.edit(bi);
+
+                total += grossValue;
+                netTotal += bi.getNetValue();
+            }
+
+            System.out.println("Calculated Gross Total: " + total + " | Existing: " + b.getTotal());
+            System.out.println("Calculated Net Total: " + netTotal + " | Existing: " + b.getNetTotal());
+
+            if (Math.abs(b.getNetTotal() - netTotal) >= 1.0) {
+                System.out.println("Skipping bill ID: " + b.getId() + ". Net total mismatch suggests deeper issue.");
+            } else {
+                System.out.println("Updating gross total for bill ID: " + b.getId());
+                b.setTotal(total);
+                getFacade().edit(b);
+            }
+        }
+
+        System.out.println("Completed processing for bill type: " + billTypeAtomic);
+    }
+
+    /**
+     * Temporary admin method to correct BillItem rate, netRate, grossValue, and
+     * netValue for PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY bills. These values
+     * should be negative to reflect a return transaction.
+     *
+     * Note: This method does not alter Bill-level totals as net total is
+     * already negative.
+     *
+     * ChatGPT contributed - 2025-04
+     */
+    public void correctBillItemRatesInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY() {
+        System.out.println("Starting BillItem correction for PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY");
+
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+
+        List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
+        if (bills == null || bills.isEmpty()) {
+            System.out.println("No matching bills found.");
+            return;
+        }
+
+        System.out.println("Number of bills found: " + bills.size());
+
+        for (Bill bill : bills) {
+            System.out.println("Processing bill ID: " + bill.getId());
+            for (BillItem bi : bill.getBillItems()) {
+                boolean updated = false;
+
+                if (bi.getRate() > 0) {
+                    bi.setRate(-bi.getRate());
+                    updated = true;
+                }
+
+                if (bi.getNetRate() > 0) {
+                    bi.setNetRate(-bi.getNetRate());
+                    updated = true;
+                }
+
+                if (bi.getGrossValue() > 0) {
+                    bi.setGrossValue(-bi.getGrossValue());
+                    updated = true;
+                }
+
+                if (bi.getNetValue() > 0) {
+                    bi.setNetValue(-bi.getNetValue());
+                    updated = true;
+                }
+
+                if (updated) {
+                    billItemFacade.edit(bi);
+                    System.out.println("Updated BillItem ID: " + bi.getId());
+                } else {
+                    System.out.println("No update needed for BillItem ID: " + bi.getId());
+                }
+            }
+        }
+
+        System.out.println("Completed correction of BillItem values.");
+    }
+
+    /**
+     * Temporary admin method to correct BillItem rate, netRate, grossValue, and
+     * netValue for DIRECT_ISSUE_INWARD_MEDICINE_RETURN bills. These values
+     * should be negative to reflect a return transaction.
+     *
+     * PharmaceuticalBillItem values (retailRate, retailValue, purchaseRate,
+     * purchaseValue) are also updated to ensure negative direction for returns.
+     *
+     * Note: This method does not alter Bill-level totals.
+     *
+     * ChatGPT contributed - 2025-04
+     */
+    public void correctBillItemRatesInDIRECT_ISSUE_INWARD_MEDICINE_RETURN() {
+        System.out.println("Starting BillItem correction for DIRECT_ISSUE_INWARD_MEDICINE_RETURN");
+
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+
+        List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
+        if (bills == null || bills.isEmpty()) {
+            System.out.println("No matching bills found.");
+            return;
+        }
+
+        System.out.println("Number of bills found: " + bills.size());
+
+        for (Bill bill : bills) {
+            System.out.println("Processing bill ID: " + bill.getId());
+            for (BillItem bi : bill.getBillItems()) {
+                boolean updated = false;
+
+                if (bi.getRate() > 0) {
+                    bi.setRate(-bi.getRate());
+                    updated = true;
+                }
+
+                if (bi.getNetRate() > 0) {
+                    bi.setNetRate(-bi.getNetRate());
+                    updated = true;
+                }
+
+                if (bi.getGrossValue() > 0) {
+                    bi.setGrossValue(-bi.getGrossValue());
+                    updated = true;
+                }
+
+                if (bi.getNetValue() > 0) {
+                    bi.setNetValue(-bi.getNetValue());
+                    updated = true;
+                }
+
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                if (pbi != null) {
+                    boolean pbiUpdated = false;
+
+                    if (pbi.getRetailRate() > 0) {
+                        pbi.setRetailRate(-pbi.getRetailRate());
+                        pbiUpdated = true;
+                    }
+
+                    if (pbi.getRetailValue() > 0) {
+                        pbi.setRetailValue(-pbi.getRetailValue());
+                        pbiUpdated = true;
+                    } else if (pbi.getRetailValue() == 0) {
+                        double value = Math.abs(pbi.getRetailRate() * pbi.getQty());
+                        pbi.setRetailValue(-value);
+                        pbiUpdated = true;
+                    }
+
+                    if (pbi.getPurchaseRate() > 0) {
+                        pbi.setPurchaseRate(-pbi.getPurchaseRate());
+                        pbiUpdated = true;
+                    }
+
+                    if (pbi.getPurchaseValue() == 0) {
+                        double value = Math.abs(pbi.getPurchaseRate() * pbi.getQty());
+                        pbi.setPurchaseValue(-value);
+                        pbiUpdated = true;
+                    }
+
+                    if (pbiUpdated) {
+                        pharmaceuticalBillItemFacade.edit(pbi);
+                    }
+                }
+
+                if (updated) {
+                    billItemFacade.edit(bi);
+                    System.out.println("Updated BillItem ID: " + bi.getId());
+                } else {
+                    System.out.println("No update needed for BillItem ID: " + bi.getId());
+                }
+            }
+        }
+
+        System.out.println("Completed correction of BillItem and PharmaceuticalBillItem values.");
+    }
+
     public void addMissingBillTypeAtomics() {
         System.out.println("addMissingBillTypeAtomics");
         String jpql = "select b "
@@ -2940,6 +3183,79 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             b.setBillTypeAtomic(BillTypeAtomic.getBillTypeAtomic(b.getBillType(), b.getBillClassType()));
             getFacade().edit(b);
         }
+    }
+
+//    /**
+//     * Administrative method to batch-correct all PharmaceuticalBillItems that
+//     * were wrongly assigned due to cancellation logic in
+//     * PHARMACY_RETAIL_SALE_CANCELLED bills.
+//     *
+//     * This method scans all non-retired bills of type
+//     * PHARMACY_RETAIL_SALE_CANCELLED, and for each BillItem in those bills,
+//     * attempts to fix the linked PharmaceuticalBillItem (if present) by calling
+//     * the correction method.
+//     *
+//     * ChatGPT contributed - 2025-04
+//     */
+//    public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills() {
+//        BillTypeAtomic billTypeAtomic = BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
+//
+//        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta "
+//                + " and b.createdAt between :fd and :td ";
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("bta", billTypeAtomic);
+//        params.put("fd", getFromDate());
+//        params.put("td", getToDate());
+//
+//        List<Bill> pharmacyRetailSaleCancellationBills = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+//
+//        if (pharmacyRetailSaleCancellationBills == null || pharmacyRetailSaleCancellationBills.isEmpty()) {
+//            System.out.println("No matching bills found for type: " + billTypeAtomic);
+//            return;
+//        }
+//
+//        System.out.println("Found " + pharmacyRetailSaleCancellationBills.size() + " cancelled bills to process...");
+//
+//        for (Bill cancelledBill : pharmacyRetailSaleCancellationBills) {
+//            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(cancelledBill);
+//
+//            if (pbis == null || pbis.isEmpty()) {
+//                System.out.println("Cancelled bill ID " + cancelledBill.getId() + " has no pharmaceutical bill items.");
+//                continue;
+//            }
+//
+//            for (PharmaceuticalBillItem pbi : pbis) {
+//                if (pbi != null) {
+//                    BillItem bi = pbi.getBillItem();
+//                    if (hasMoreThanOnePbi(bi)) {
+//                        convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(pbi);
+//                    }
+//                }
+//            }
+//        }
+//
+//        System.out.println("Completed batch correction of wrongly assigned PharmaceuticalBillItems.");
+//    }
+
+    /**
+     * Checks whether a BillItem has more than one associated
+     * PharmaceuticalBillItem.
+     *
+     * @param bi The BillItem to check
+     * @return true if more than one PharmaceuticalBillItem exists for the given
+     * BillItem; false otherwise
+     */
+    private boolean hasMoreThanOnePbi(BillItem bi) {
+        if (bi == null || bi.getId() == null) {
+            return false;
+        }
+
+        String jpql = "SELECT COUNT(pbi) FROM PharmaceuticalBillItem pbi WHERE pbi.billItem.id = :bid";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bid", bi.getId());
+
+        Long count = pharmaceuticalBillItemFacade.countByJpql(jpql, params);
+        return count != null && count > 1;
     }
 
     public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(PharmaceuticalBillItem pbi) {
@@ -3030,12 +3346,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         originalBillItemNowWonglyAssignedToCancelledBill.setPharmaceuticalBillItem(null);
         billItemFacade.edit(originalBillItemNowWonglyAssignedToCancelledBill);
         System.out.println("Reassigned original BillItem to Original Bill ID: " + originalBill.getId());
-        
-        
+
         pbiFromCancelledBill.setBillItem(billItemNeededToCreateForCancellationBill);
         pharmaceuticalBillItemFacade.edit(pbiFromCancelledBill);
-        
-        
+
         pbiFromOriginalBillItem.setBillItem(originalBillItemNowWonglyAssignedToCancelledBill);
         pharmaceuticalBillItemFacade.edit(pbiFromOriginalBillItem);
 
