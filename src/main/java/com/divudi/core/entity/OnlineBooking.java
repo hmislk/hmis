@@ -1,9 +1,12 @@
 package com.divudi.core.entity;
 
+import com.divudi.core.data.OnlineBookingStatus;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -59,6 +62,9 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     
     @ManyToOne
     private Institution hospital;
+    
+    @Enumerated(EnumType.STRING)
+    private OnlineBookingStatus onlineBookingStatus;
 
     public boolean isNeedSms() {
         return needSms;
