@@ -867,31 +867,16 @@ public class ChannelApi {
         }
 
     }
-
-    @POST
-    @Path("/save")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createBooking(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
-        String key = requestContext.getHeader("Token");
-        if (!isValidKey(key)) {
-            JSONObject responseError = errorMessageNotValidKey();
-            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
+    
+    private void validateAppoinmentSession(String sessionId){
+        if(sessionId == null || sessionId.isEmpty()){
+            throw new ValidationException("SessionID", " Missing SessionId field");
         }
-        Map<String, String> patientDetails = (Map<String, String>) requestBody.get("patient");
-        String sessionId = requestBody.get("sessionID").toString();
-        Map<String, String> payment = (Map<String, String>) requestBody.get("payment");
-
-        if (patientDetails == null || patientDetails.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("Patien details not in the request");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-
+        
         SessionInstance session = sessionInstanceFacade.find(Long.parseLong(sessionId));
-        System.out.println(session);
         if (session == null) {
-            JSONObject response = commonFunctionToErrorResponse("Session id is invalid");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            //JSONObject response = commonFunctionToErrorResponse("Session id is invalid");
+            throw new ValidationException("SessionID", " No session associate with this id"+sessionId);
         }
 
         if (session.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
@@ -914,26 +899,57 @@ public class ChannelApi {
                     totalPatientCount = bookedPatientCount;
                 }
                 if (maxNo <= totalPatientCount) {
-                    JSONObject response = commonFunctionToErrorResponse("No of appoinments has been reach to max appoinemtns amount. ");
-                    return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+                    //JSONObject response = commonFunctionToErrorResponse("No of appoinments has been reach to max appoinemtns amount. ");
+                    throw new ValidationException(null, " No of appoinments has been reach to max appoinemtns amount.");
                 }
             }
         }
 
         if (session.isCancelled()) {
-            JSONObject response = commonFunctionToErrorResponse("Sorry!. Session is calcelled due to unavoidable reason.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            //JSONObject response = commonFunctionToErrorResponse("Sorry!. Session is calcelled due to unavoidable reason.");
+            throw new ValidationException(null, " Sorry!. Session is calcelled due to unavoidable reason.");
         }
 
         if (session.isCompleted()) {
-            JSONObject response = commonFunctionToErrorResponse("Sorry!. You are Late. Session is already finished.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            //JSONObject response = commonFunctionToErrorResponse("Sorry!. You are Late. Session is already finished.");
+            throw new ValidationException(null, " Sorry!. You are Late. Session is already finished.");
         }
 
         String msgForStartSession = null;
         if (session.isStarted()) {
             msgForStartSession = "Session is starting now. Please complete booking and visit quickly";
         }
+        
+        
+    }
+
+    @POST
+    @Path("/save")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createBooking(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
+        String key = requestContext.getHeader("Token");
+        if (!isValidKey(key)) {
+            JSONObject responseError = errorMessageNotValidKey();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
+        }
+        Map<String, String> patientDetails = (Map<String, String>) requestBody.get("patient");
+        String sessionId = requestBody.get("sessionID").toString();
+        Map<String, String> payment = (Map<String, String>) requestBody.get("payment");
+
+        if (patientDetails == null || patientDetails.isEmpty()) {
+            JSONObject response = commonFunctionToErrorResponse("Patien details not in the request");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
+        try{
+            validateAppoinmentSession(sessionId);
+        }catch(ValidationException e){
+            String message = e.getField() == null ? e.getMessage(): e.getField()+e.getMessage();
+            JSONObject response = commonFunctionToErrorResponse(message);
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
 
         if (patientDetails.isEmpty()) {
             JSONObject response = new JSONObject();
@@ -947,6 +963,9 @@ public class ChannelApi {
         String patientPhoneNo = patientDetails.get("teleNo");
         String patientName = patientDetails.get("patientName");
         String patientType = patientDetails.get("foreign");
+        String patientTitle = patientDetails.get("title");
+        String nic = patientDetails.get("nid");
+        String clientsReferanceNo = patientDetails.get("clientRefNumber");
 
         try {
             isForeigner = validateForeignStatus(patientType);
@@ -955,12 +974,9 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-
-        String patientTitle = patientDetails.get("title");
-        String nic = patientDetails.get("nid");
-        String clientsReferanceNo = patientDetails.get("clientRefNumber");
-        Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
-        System.out.println(patientPhoneNumberLong + " size - " + (String.valueOf(patientPhoneNumberLong)).length());
+      
+        //Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
+        //System.out.println(patientPhoneNumberLong + " size - " + (String.valueOf(patientPhoneNumberLong)).length());
         if (clientsReferanceNo == null || clientsReferanceNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
