@@ -316,7 +316,7 @@
                                     style="width: 100px;"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
-                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
+                                    <f:setPropertyActionListener value="#{not empty f.pbItem.billItem.bill.cancelledBill ? f.pbItem.billItem.bill.cancelledBill : f.pbItem.billItem.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                                 <p:commandLink 
                                     rendered="#{pharmacyReportController.documentType eq 'opSaleDoc' or pharmacyReportController.documentType eq 'ipSaleDoc'}"
