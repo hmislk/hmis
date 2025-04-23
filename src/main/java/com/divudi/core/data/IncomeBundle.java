@@ -1,5 +1,10 @@
 package com.divudi.core.data;
 
+import static com.divudi.core.data.BillCategory.BILL;
+import static com.divudi.core.data.BillCategory.CANCELLATION;
+import static com.divudi.core.data.BillCategory.PAYMENTS;
+import static com.divudi.core.data.BillCategory.PREBILL;
+import static com.divudi.core.data.BillCategory.REFUND;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -266,10 +271,10 @@ public class IncomeBundle implements Serializable {
 
             Double q = b.getQty();
             Double rRate = b.getRetailRate();
-            if(bta==BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS){
-                rRate= b.getBillItem().getNetRate();
+            if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                rRate = b.getBillItem().getNetRate();
             }
-            
+
             Double pRate = b.getPurchaseRate();
 
             if (q == null || rRate == null || pRate == null) {
@@ -322,6 +327,102 @@ public class IncomeBundle implements Serializable {
         System.out.println("Total Sale Value: " + saleValue);
         System.out.println("Total Purchase Value: " + purchaseValue);
         System.out.println("Total Gross Profit: " + grossProfitValue);
+    }
+
+    public void generateRetailAndCostDetailsForPharmaceuticalBillType() {
+        System.out.println("generateRetailAndCostDetailsForPharmaceuticalBillType");
+        saleValue = 0;
+        purchaseValue = 0;
+        grossProfitValue = 0;
+
+        Map<BillTypeAtomic, IncomeRow> grouped = new HashMap<>();
+
+        for (IncomeRow r : getRows()) {
+            PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
+            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
+                continue;
+            }
+
+            BillTypeAtomic bta = Optional.ofNullable(b.getBillItem())
+                    .map(BillItem::getBill)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+
+            if (bta == null || bta.getBillCategory() == null) {
+                continue;
+            }
+
+            BillCategory bc = bta.getBillCategory();
+            Double q = b.getQty();
+            Double rRate = bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS
+                    ? b.getBillItem().getNetRate()
+                    : b.getRetailRate();
+            Double pRate = b.getPurchaseRate();
+
+            if (q == null || rRate == null || pRate == null) {
+                continue;
+            }
+
+            double qty = Math.abs(q);
+            double retail = Math.abs(rRate);
+            double purchase = Math.abs(pRate);
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+            double grossProfit = 0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    grossProfit = (retail - purchase) * qty;
+                    break;
+                case CANCELLATION:
+                case REFUND:
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    grossProfit = -(retail - purchase) * qty;
+                    break;
+                default:
+                    break;
+            }
+
+            IncomeRow groupRow = grouped.computeIfAbsent(bta, k -> {
+                IncomeRow ir = new IncomeRow();
+                ir.setBillTypeAtomic(k);
+                return ir;
+            });
+
+            groupRow.setRetailValue(groupRow.getRetailValue() + retailTotal);
+            groupRow.setPurchaseValue(groupRow.getPurchaseValue() + purchaseTotal);
+            groupRow.setGrossProfit(groupRow.getGrossProfit() + grossProfit);
+
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+            grossProfitValue += grossProfit;
+        }
+
+        // Replace old rows with grouped values
+        
+        System.out.println("Bafore getRows().size() = " + getRows().size());
+        
+        getRows().clear();
+        getRows().addAll(grouped.values());
+
+        System.out.println("grouped.size() = " + grouped.size());
+        
+        System.out.println("After getRows().size() = " + getRows().size());
+        
+        
+        
+        
+        System.out.println("==== Final Totals ====");
+        System.out.println("Total Sale Value: " + saleValue);
+        System.out.println("Total Purchase Value: " + purchaseValue);
+        System.out.println("Total Gross Profit: " + grossProfitValue);
+
     }
 
     public void generateProcurementDetailsForBillItems() {
