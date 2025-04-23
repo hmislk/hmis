@@ -950,65 +950,65 @@ public class ChannelApi {
 //            JSONObject response = commonFunctionToErrorResponse("Phone number must be 10 digits");
 //            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
 //        }
-        List<Patient> patients = null;
-        Patient newPatient = null;
-        boolean toSelectOneFromALot = false;
-        boolean toCreateNewOne = true;
+//        List<Patient> patients = null;
+//        Patient newPatient = null;
+//        boolean toSelectOneFromALot = false;
+//        boolean toCreateNewOne = true;
+//
+//        if (nic != null && !nic.isEmpty()) {
+//            patients = patientService.searchPatientsByNic(nic);
+//            if (patients == null || patients.isEmpty()) {
+//                toCreateNewOne = true;
+//            } else {
+//                toCreateNewOne = false;
+//                if (patients.size() > 1) {
+//                    toSelectOneFromALot = true;
+//                } else {
+//                    newPatient = patients.get(0);
+//                    toSelectOneFromALot = false;
+//                }
+//            }
+//        }
 
-        if (nic != null && !nic.isEmpty()) {
-            patients = patientService.searchPatientsByNic(nic);
-            if (patients == null || patients.isEmpty()) {
-                toCreateNewOne = true;
-            } else {
-                toCreateNewOne = false;
-                if (patients.size() > 1) {
-                    toSelectOneFromALot = true;
-                } else {
-                    newPatient = patients.get(0);
-                    toSelectOneFromALot = false;
-                }
-            }
-        }
-
-        if (newPatient == null && toSelectOneFromALot == false) {
-            if (patientPhoneNumberLong == null) {
-                JSONObject response = commonFunctionToErrorResponse("Not a Valid Phone number");
-                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-            }
-        } else if (newPatient == null && toSelectOneFromALot) {
-            if (patients != null) {
-                for (Patient pt : patients) {
-                    if (Objects.equals(pt.getPatientMobileNumber(), patientPhoneNumberLong) || pt.getPatientPhoneNumber() == patientPhoneNumberLong) {
-                        newPatient = pt;
-                        toSelectOneFromALot = false;
-                    }
-                }
-            }
-        }
-
-        if (newPatient == null && (patients == null || patients.isEmpty())) {
-            patients = patientService.searchPatientsByPhone(patientPhoneNumberLong);
-            if (patients == null || patients.isEmpty()) {
-                toCreateNewOne = true;
-            } else {
-                toCreateNewOne = false;
-                if (patients.size() > 1) {
-                    toSelectOneFromALot = true;
-                } else {
-                    newPatient = patients.get(0);
-                    toSelectOneFromALot = false;
-                }
-            }
-        } else if (newPatient == null && patients != null) {
-            List<Patient> temPts = patientService.searchPatientsByPhone(patientPhoneNumberLong);
-            if (temPts != null) {
-                patients.addAll(temPts);
-            }
-        }
-
-        if (toSelectOneFromALot) {
-            newPatient = patientService.findFirstMatchingPatientByName(patients, patientName);
-        }
+//        if (newPatient == null && toSelectOneFromALot == false) {
+//            if (patientPhoneNumberLong == null) {
+//                JSONObject response = commonFunctionToErrorResponse("Not a Valid Phone number");
+//                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+//            }
+//        } else if (newPatient == null && toSelectOneFromALot) {
+//            if (patients != null) {
+//                for (Patient pt : patients) {
+//                    if (Objects.equals(pt.getPatientMobileNumber(), patientPhoneNumberLong) || pt.getPatientPhoneNumber() == patientPhoneNumberLong) {
+//                        newPatient = pt;
+//                        toSelectOneFromALot = false;
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (newPatient == null && (patients == null || patients.isEmpty())) {
+//            patients = patientService.searchPatientsByPhone(patientPhoneNumberLong);
+//            if (patients == null || patients.isEmpty()) {
+//                toCreateNewOne = true;
+//            } else {
+//                toCreateNewOne = false;
+//                if (patients.size() > 1) {
+//                    toSelectOneFromALot = true;
+//                } else {
+//                    newPatient = patients.get(0);
+//                    toSelectOneFromALot = false;
+//                }
+//            }
+//        } else if (newPatient == null && patients != null) {
+//            List<Patient> temPts = patientService.searchPatientsByPhone(patientPhoneNumberLong);
+//            if (temPts != null) {
+//                patients.addAll(temPts);
+//            }
+//        }
+//
+//        if (toSelectOneFromALot) {
+//            newPatient = patientService.findFirstMatchingPatientByName(patients, patientName);
+//        }
 
         Title titleForPatienFromSystem = null;
 
@@ -1026,29 +1026,29 @@ public class ChannelApi {
 //            isForeigner = true;
 //        }
 
-        if (newPatient != null) {
-            if (nic != null && !nic.isEmpty()) {
-                if (newPatient.getPerson().getNic() != nic.trim()) {
-                    newPatient = patientService.findFirstMatchingPatientByName(patients, patientName);
-                }
-            }
-        }
-
-        if (newPatient == null) {
-            newPatient = new Patient();
-            Person p = new Person();
-            p.setName(patientName);
-            p.setTitle(titleForPatienFromSystem);
-            p.setNic(nic);
-            p.setPhone(patientPhoneNo);
-            p.setMobile(patientPhoneNo);
-            // p.setDob(new Date());
-            // p.setAddress();
-            p.setForeigner(isForeigner);
-            newPatient.setPerson(p);
-            newPatient.setPatientMobileNumber(patientPhoneNumberLong);
-            newPatient.setPatientPhoneNumber(patientPhoneNumberLong);
-        }
+//        if (newPatient != null) {
+//            if (nic != null && !nic.isEmpty()) {
+//                if (newPatient.getPerson().getNic() != nic.trim()) {
+//                    newPatient = patientService.findFirstMatchingPatientByName(patients, patientName);
+//                }
+//            }
+//        }
+//
+//        if (newPatient == null) {
+//            newPatient = new Patient();
+//            Person p = new Person();
+//            p.setName(patientName);
+//            p.setTitle(titleForPatienFromSystem);
+//            p.setNic(nic);
+//            p.setPhone(patientPhoneNo);
+//            p.setMobile(patientPhoneNo);
+//            // p.setDob(new Date());
+//            // p.setAddress();
+//            p.setForeigner(isForeigner);
+//            newPatient.setPerson(p);
+//            newPatient.setPatientMobileNumber(patientPhoneNumberLong);
+//            newPatient.setPatientPhoneNumber(patientPhoneNumberLong);
+//        }
 
         String paymentMode = payment.get("paymentMode");
         String bankCode = payment.get("bankCode");
