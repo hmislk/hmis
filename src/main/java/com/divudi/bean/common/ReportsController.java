@@ -2567,10 +2567,10 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY bill";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        List<?> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
+        b.setReportTemplateRows((List<ReportTemplateRow>) rs);
         b.createRowValuesFromBillItems();
         b.calculateTotalsWithCredit();
         return b;
@@ -5687,7 +5687,7 @@ public class ReportsController implements Serializable {
             title.setSpacingAfter(20);
             document.add(title);
 
-            PdfPTable table = new PdfPTable(2 + getYearMonths().size() * 2);
+            PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
 
             table.addCell(new PdfPCell(new Phrase("S. No")));
@@ -5722,7 +5722,7 @@ public class ReportsController implements Serializable {
             }
 
             PdfPCell totalCell = new PdfPCell(new Phrase("Total"));
-            totalCell.setColspan(2);
+            totalCell.setColspan(3);
             totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             table.addCell(totalCell);
 
@@ -5797,8 +5797,9 @@ public class ReportsController implements Serializable {
             Row totalRow = sheet.createRow(rowIndex++);
             totalRow.createCell(0).setCellValue("Total");
             totalRow.createCell(1).setCellValue("");
+            totalRow.createCell(2).setCellValue("");
 
-            cellIndex = 2;
+            cellIndex = 3;
             for (YearMonth yearMonth : yearMonths) {
                 totalRow.createCell(cellIndex++).setCellValue(
                         String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
