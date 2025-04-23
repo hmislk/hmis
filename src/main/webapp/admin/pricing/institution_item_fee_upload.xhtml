@@ -14,24 +14,26 @@
                 <f:facet name="header">
                     <div class="d-flex justify-content-between">
                         <p:outputLabel value="Upload Institution(Site) Fees " class="mt-2"></p:outputLabel>
-                        <p:commandButton 
-                            value="Download Template" 
-                            ajax="false" 
-                            icon="fas fa-file-excel"
-                            class="ui-button-success m-1"
-                            onclick="PrimeFaces.monitorDownload(start, stop);" >
-                            <p:fileDownload value="#{dataUploadController.getTemplateForItemFeeUploadToSite()}" />
-                        </p:commandButton>
+                        <h:form>
+                            <p:commandButton 
+                                value="Download Template" 
+                                ajax="false" 
+                                icon="fas fa-file-excel"
+                                class="ui-button-success m-1"
+                                onclick="PrimeFaces.monitorDownload(start, stop);" >
+                                <p:fileDownload value="#{dataUploadController.getTemplateForItemFeeUploadToSite()}" />
+                            </p:commandButton>
+                        </h:form>
                     </div>
                 </f:facet>
-                
+
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
                         <p:fileUpload 
                             value="#{dataUploadController.file}"
                             mode="simple"
                             label="Choose File"/>
-                        
+
                         <p:commandButton 
                             value="Upload"
                             icon="fas fa-upload"
@@ -85,23 +87,62 @@
                             </tr>
                         </tbody>
                     </table>
-                    
-                    <p:tabView orientation="top" >
-                        <p:tab title="Uploaded Completed Item" >
-                            <p:dataTable value="#{dataUploadController.uploadeditemFees}" var="b" rowIndexVar="i">
-                                <p:column headerText="#" width="5em;" >#{i+1}</p:column>
-                                <p:column headerText="Code" width="10em;">#{b.item.code}</p:column>
-                                <p:column headerText="Name" >#{b.item.name}</p:column>
-                            </p:dataTable>
-                        </p:tab>
-                        <p:tab title="Rejected Items Items" >
-                            <p:dataTable value="#{dataUploadController.rejecteditemFees}" var="rb"  rowIndexVar="i">
-                                <p:column headerText="#" width="5em;" >#{i+1}</p:column>
-                                <p:column headerText="Code" width="10em;">#{rb.code}</p:column>
-                                <p:column headerText="Name" >#{rb.name}</p:column>
-                            </p:dataTable>
-                        </p:tab>
-                    </p:tabView>
+
+                    <h:form>
+                        <p:tabView orientation="top" >
+                            <p:tab title="Uploaded Completed Item" >
+                                <div class="d-grid">
+                                    <div>
+                                        <p:commandButton 
+                                            value="Download Completed Fee List" 
+                                            ajax="false" 
+                                            style="float: right;"
+                                            icon="fas fa-file-excel"
+                                            class="ui-button-success my-2">
+                                            <p:dataExporter type="xlsx" target="comItms" fileName="download_completed_fee_list"  />
+                                        </p:commandButton>
+                                    </div>
+                                    <p:dataTable value="#{dataUploadController.uploadeditemFees}" id="comItms" var="b" rowIndexVar="i">
+                                        <p:column headerText="#" width="5em;" >
+                                            <p:outputLabel value="#{i+1}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code" width="10em;">
+                                            <p:outputLabel value="#{rb.code}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Name" >
+                                            <p:outputLabel value="#{rb.name}"></p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </p:tab>
+
+                            <p:tab title="Rejected Items" >
+                                <div class="d-grid">
+                                    <div>
+                                        <p:commandButton 
+                                            value="Download Rejected Items Fees" 
+                                            ajax="false" 
+                                            style="float: right;"
+                                            icon="fas fa-file-excel"
+                                            class="ui-button-warning my-2">
+                                            <p:dataExporter type="xlsx" target="rjItems" fileName="rejected_items_fees"  />
+                                        </p:commandButton>
+                                    </div>
+                                    <p:dataTable value="#{dataUploadController.rejecteditemFees}" var="rb" id="rjItems" rowIndexVar="i">
+                                        <p:column headerText="#" width="5em;" >
+                                            <p:outputLabel value="#{i+1}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code" width="10em;">
+                                            <p:outputLabel value="#{rb.code}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Name" >
+                                            <p:outputLabel value="#{rb.name}"></p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </p:tab>
+                        </p:tabView>
+                    </h:form>
                 </div>
             </p:panel>
         </div>
