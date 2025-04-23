@@ -937,6 +937,15 @@ public class ChannelApi {
         
         return creditCompany;
     }
+    
+    private void validateReferenceNumber(String refNo, Institution agency){
+        List<Bill> billList = channelService.findBillFromRefNo(refNo, agency, BillClassType.BilledBill);
+
+        if (billList != null && !billList.isEmpty()) {
+            JSONObject response = commonFunctionToErrorResponse("Duplicate Ref No occured");
+            throw new ValidationException("Client Ref No : ", "Duplicate Ref No occured. Please use unique ref no for each bookings");
+        }
+    }
 
     @POST
     @Path("/save")
@@ -1004,29 +1013,18 @@ public class ChannelApi {
         }
 
         String agencyName = payment.get("paymentMode");
-        //String bankCode = payment.get("bankCode");
         String agencyCode = payment.get("paymentChannel");
-        String channelForm = payment.get("channelFrom");
-        PaymentMethod paymentMethod = null;
-       // System.out.println(paymentChannel);
+        String bookingForm = payment.get("channelFrom");
 
-        if (!paymentChannel.toUpperCase().equals("WEB_DOC990")) {
-            JSONObject response = commonFunctionToErrorResponse("Invalid payment channel");
+       Institution bookingAgency;
+        try{
+            bookingAgency = validateAndFetchAgency(agencyName, agencyCode);
+            validateReferenceNumber(clientsReferanceNo, bookingAgency);
+        }catch(ValidationException e){
+            JSONObject response = commonFunctionToErrorResponse(e.getField()+e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        
-        System.out.println(creditCompany.getName());
-        List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
-        System.out.println(billList.size());
-
-        if (billList != null && !billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("Duplicate Ref No occured");
-            System.out.println("line");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-
-        //TODO : Handle Payment Method
         Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newPatient, session, clientsReferanceNo, null, creditCompany);
 
         if (bill == null) {
