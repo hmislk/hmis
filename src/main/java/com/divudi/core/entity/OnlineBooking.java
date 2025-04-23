@@ -20,7 +20,8 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
+    
+//    class level variables
     private String patientName;
     private String nic;
     private String phoneNo;
@@ -30,16 +31,107 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private double onlineBookingPayment;
     private double appoinmentTotalAmount;
     private double netTotalForOnlineBooking;
+    private boolean needSms;
+    private boolean nsr;
+    private boolean paid;
+    private boolean edited;
+    private String requestIp;
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date editedAt;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
 
+//    variables related to object retire
     private boolean retired;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     @ManyToOne
     private WebUser retirer;
     private String retireComments;
+    
+    @ManyToOne
+    private Institution agency;
+    
+    @ManyToOne
+    private Department department;
+    
+    @ManyToOne
+    private Institution hospital;
+
+    public boolean isNeedSms() {
+        return needSms;
+    }
+
+    public void setNeedSms(boolean needSms) {
+        this.needSms = needSms;
+    }
+
+    public boolean isNsr() {
+        return nsr;
+    }
+
+    public void setNsr(boolean nsr) {
+        this.nsr = nsr;
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+    }
+
+    public boolean isEdited() {
+        return edited;
+    }
+
+    public void setEdited(boolean edited) {
+        this.edited = edited;
+    }
+
+    public String getRequestIp() {
+        return requestIp;
+    }
+
+    public void setRequestIp(String requestIp) {
+        this.requestIp = requestIp;
+    }
+
+    public Date getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Date editedAt) {
+        this.editedAt = editedAt;
+    }
+
+    public Institution getAgency() {
+        return agency;
+    }
+
+    public void setAgency(Institution agency) {
+        this.agency = agency;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getHospital() {
+        return hospital;
+    }
+
+    public void setHospital(Institution hospital) {
+        this.hospital = hospital;
+    }
+
 
     @Override
     public int hashCode() {
