@@ -27,6 +27,7 @@ import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.OnlineBooking;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PriceMatrix;
@@ -410,8 +411,8 @@ public class ChannelService {
 
      }
 
-    public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
-        saveOrUpdatePatientDetails(patient);
+    public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, OnlineBooking newBooking, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
+        //saveOrUpdatePatientDetails(patient);
         Bill savingTemporaryBill = createAgentInitialBookingBill(patient, session);
         if (savingTemporaryBill == null) {
             return null;

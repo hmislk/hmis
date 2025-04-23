@@ -30,7 +30,7 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private String nic;
     private String phoneNo;
     private String title;
-    private Long referenceNo;
+    private String referenceNo;
     private boolean foreign;
     private double onlineBookingPayment;
     private double appoinmentTotalAmount;
@@ -263,11 +263,11 @@ public class OnlineBooking implements Serializable, RetirableEntity {
         this.title = title;
     }
 
-    public Long getReferenceNo() {
+    public String getReferenceNo() {
         return referenceNo;
     }
 
-    public void setReferenceNo(Long referenceNo) {
+    public void setReferenceNo(String referenceNo) {
         this.referenceNo = referenceNo;
     }
 

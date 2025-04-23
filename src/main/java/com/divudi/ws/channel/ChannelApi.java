@@ -35,6 +35,7 @@ import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.OnlineBooking;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.RefundBill;
@@ -860,23 +861,23 @@ public class ChannelApi {
     }
 
     private void validatePhoneNumber(String patientPhoneNo) {
-        if (patientPhoneNo == null || patientPhoneNo.isEmpty()) {          
-            throw new ValidationException("Phone Number : ", "Patient Phone number is mandotary.");          
+        if (patientPhoneNo == null || patientPhoneNo.isEmpty()) {
+            throw new ValidationException("Phone Number : ", "Patient Phone number is mandotary.");
         } else if (patientPhoneNo.length() < 10) {
-            throw new ValidationException("Phone Number : ", "Phone number must be 10 digits.");           
+            throw new ValidationException("Phone Number : ", "Phone number must be 10 digits.");
         }
 
     }
-    
-    private SessionInstance validateAndFetchAppoinmentSession(String sessionId){
-        if(sessionId == null || sessionId.isEmpty()){
+
+    private SessionInstance validateAndFetchAppoinmentSession(String sessionId) {
+        if (sessionId == null || sessionId.isEmpty()) {
             throw new ValidationException("SessionID", " Missing SessionId field");
         }
-        
+
         SessionInstance session = sessionInstanceFacade.find(Long.parseLong(sessionId));
         if (session == null) {
             //JSONObject response = commonFunctionToErrorResponse("Session id is invalid");
-            throw new ValidationException("SessionID", " No session associate with this id"+sessionId);
+            throw new ValidationException("SessionID", " No session associate with this id" + sessionId);
         }
 
         if (session.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
@@ -919,26 +920,26 @@ public class ChannelApi {
         if (session.isStarted()) {
             msgForStartSession = "Session is starting now. Please complete booking and visit quickly";
         }
-        
+
         return session;
     }
-    
-    private Institution validateAndFetchAgency(String agencyName, String agencyCode){
-        if((agencyName == null || agencyName.isEmpty()) && (agencyCode == null || agencyCode.isEmpty())){
+
+    private Institution validateAndFetchAgency(String agencyName, String agencyCode) {
+        if ((agencyName == null || agencyName.isEmpty()) && (agencyCode == null || agencyCode.isEmpty())) {
             throw new ValidationException("Agency attributes : ", "Missing agency code and name. Check fields");
         }
-        
-        Institution creditCompany = channelService.findCreditCompany(agencyCode,agencyName, InstitutionType.Agency);
+
+        Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.Agency);
 
         if (creditCompany == null) {
             JSONObject response = commonFunctionToErrorResponse("No channeling comapany still registered in the system.");
             throw new ValidationException("Agency : ", "Your agency not register in the hospital system. Contact Carecode.");
         }
-        
+
         return creditCompany;
     }
-    
-    private void validateReferenceNumber(String refNo, Institution agency){
+
+    private void validateReferenceNumber(String refNo, Institution agency) {
         List<Bill> billList = channelService.findBillFromRefNo(refNo, agency, BillClassType.BilledBill);
 
         if (billList != null && !billList.isEmpty()) {
@@ -965,13 +966,13 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse("Patien details not in the request");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         SessionInstance session = null;
 
-        try{
+        try {
             session = validateAndFetchAppoinmentSession(sessionId);
-        }catch(ValidationException e){
-            String message = e.getField() == null ? e.getMessage(): e.getField()+e.getMessage();
+        } catch (ValidationException e) {
+            String message = e.getField() == null ? e.getMessage() : e.getField() + e.getMessage();
             JSONObject response = commonFunctionToErrorResponse(message);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -999,7 +1000,7 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-      
+
         //Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
         //System.out.println(patientPhoneNumberLong + " size - " + (String.valueOf(patientPhoneNumberLong)).length());
         if (clientsReferanceNo == null || clientsReferanceNo.isEmpty()) {
@@ -1016,16 +1017,31 @@ public class ChannelApi {
         String agencyCode = payment.get("paymentChannel");
         String bookingForm = payment.get("channelFrom");
 
-       Institution bookingAgency;
-        try{
+        Institution bookingAgency;
+        try {
             bookingAgency = validateAndFetchAgency(agencyName, agencyCode);
             validateReferenceNumber(clientsReferanceNo, bookingAgency);
-        }catch(ValidationException e){
-            JSONObject response = commonFunctionToErrorResponse(e.getField()+e.getMessage());
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newPatient, session, clientsReferanceNo, null, creditCompany);
+        String ipAddress = requestContext.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = requestContext.getRemoteAddr();
+        }
+
+        OnlineBooking newBooking = new OnlineBooking();
+        newBooking.setPatientName(patientName);
+        newBooking.setPhoneNo(patientPhoneNo);
+        newBooking.setTitle(patientTitle);
+        newBooking.setNic(nic);
+        newBooking.setReferenceNo(clientsReferanceNo);
+        newBooking.setForeign(isForeigner);
+        newBooking.setAgency(bookingAgency);
+        newBooking.setRequestIp(ipAddress);
+
+        Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
 
         if (bill == null) {
             JSONObject response = commonFunctionToErrorResponse("Can't create booking. Session is not confirmed yet.");
