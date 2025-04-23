@@ -84,6 +84,7 @@ import com.divudi.core.facade.VtmFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.pharmacy.PharmacyPurchaseController;
+import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.SymanticHyrachi;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.dataStructure.PharmacyImportCol;
@@ -325,6 +326,11 @@ public class DataUploadController implements Serializable {
     private List<PharmacyImportCol> itemNotPresent;
     private List<String> itemsWithDifferentGenericName;
     private List<String> itemsWithDifferentCode;
+    
+    
+    
+    private List<ItemFee> uploadeditemFees;
+    private List<ItemLight> rejecteditemFees;
 
     private int startRow = 1;
 
@@ -5284,6 +5290,9 @@ public class DataUploadController implements Serializable {
         Iterator<Row> rowIterator = sheet.rowIterator();
 
         itemFees = new ArrayList<>();
+        
+        uploadeditemFees = new ArrayList<>();
+        rejecteditemFees = new ArrayList<>();
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -5293,8 +5302,7 @@ public class DataUploadController implements Serializable {
         Department runningDept = null;
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-            Institution institution;
-            Department department;
+
             Item item = null;
             Institution forInstitution = null;
 
@@ -5304,11 +5312,13 @@ public class DataUploadController implements Serializable {
             String itemCode = null;
             String itemName = null;
             String itemTypeName = null;
-            String feeListType = null;
-            Double price = 0.0;
+            Double localFee = 0.0;
+            Double foreignerFee = 0.0;
             String forInstitutionName = null;
+            
+            ItemLight currentUploadItem = new ItemLight();
 
-            Cell insCell = row.getCell(5);
+            Cell insCell = row.getCell(6);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
             }
@@ -5325,7 +5335,7 @@ public class DataUploadController implements Serializable {
                 runningIns = institution;
             }
 
-            Cell deptCell = row.getCell(6);
+            Cell deptCell = row.getCell(7);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
                 departmentName = deptCell.getStringCellValue();
             }
@@ -5342,54 +5352,34 @@ public class DataUploadController implements Serializable {
                 runningDept = department;
             }
 
-            // Column A: Department Code (Required)
+            // Column A: Item Code (Required)
             Cell itemCodeCell = row.getCell(0);
             if (itemCodeCell != null && itemCodeCell.getCellType() == CellType.STRING) {
                 itemCode = itemCodeCell.getStringCellValue();
             }
             if (itemCode != null) {
             }
-            if (itemCode == null || itemCode.trim().isEmpty()) {
-                continue;
-            }
-
-            // Column B: Department Name (Required)
+            
+            // Column B: Item Name (Required)
             Cell itemNameCell = row.getCell(1);
             if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
                 itemName = itemNameCell.getStringCellValue();
             }
+            
+            if (itemCode == null || itemCode.trim().isEmpty()) {
+                currentUploadItem.setCode(itemCode);
+                currentUploadItem.setName(itemName);
+                rejecteditemFees.add(currentUploadItem);
+                continue;
+            }
             if (itemName == null || itemName.trim().isEmpty()) {
+                currentUploadItem.setCode(itemCode);
+                currentUploadItem.setName(itemName);
+                rejecteditemFees.add(currentUploadItem);
                 continue;
             }
 
-            Cell itemTypeCell = row.getCell(3);
-            if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
-                itemTypeName = itemTypeCell.getStringCellValue();
-            }
-
-            if (itemTypeName != null) {
-                switch (itemTypeName) {
-                    case "Investigation":
-                        item = itemController.findAndCreateInvestigationByNameAndCode(itemName, itemCode);
-                        System.out.println("itemTypeCell = " + itemTypeName);
-                        break;
-
-                    case "Service":
-                        item = itemController.findAndCreateServiceByNameAndCode(itemName, itemCode);
-                        System.out.println("itemTypeCell = " + itemTypeName);
-                        break;
-
-                    default:
-                        throw new AssertionError();
-                }
-            }
-
-            // Column C: Bill Prefix (Optional)
-            Cell priceCell = row.getCell(4);
-            if (priceCell != null && priceCell.getCellType() == CellType.NUMERIC) {
-                price = priceCell.getNumericCellValue();
-            }
-
+            // Column C: Fee Site 
             Cell forInstitutionCell = row.getCell(2);
             if (forInstitutionCell != null && forInstitutionCell.getCellType() == CellType.STRING) {
                 forInstitutionName = forInstitutionCell.getStringCellValue();
@@ -5398,20 +5388,66 @@ public class DataUploadController implements Serializable {
                 forInstitution = institutionController.findAndSaveInstitutionByName(forInstitutionName);
                 System.out.println("forInstitution = " + forInstitution);
             }
+            
+            // Column D: Item Type 
+            Cell itemTypeCell = row.getCell(3);
+            if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
+                itemTypeName = itemTypeCell.getStringCellValue();
+            }
+            
+            if (itemTypeName != null) {
+                switch (itemTypeName) {
+                    case "Investigation":
+                        item = itemController.findAndCreateInvestigationByNameAndCode(itemName, itemCode);
+                        break;
+
+                    case "Service":
+                        item = itemController.findAndCreateServiceByNameAndCode(itemName, itemCode);
+                        break;
+
+                    default:
+                        item = itemController.findAndCreateInvestigationByNameAndCode(itemName, itemCode);
+                }
+            }
+
+            // Column E: Local Fee Value
+            Cell localFeeCell = row.getCell(4);
+            if (localFeeCell != null && localFeeCell.getCellType() == CellType.NUMERIC) {
+                localFee = localFeeCell.getNumericCellValue();
+            }else{
+                currentUploadItem.setCode(itemCode);
+                currentUploadItem.setName(itemName);
+                rejecteditemFees.add(currentUploadItem);
+                continue;
+            }
+            
+            // Column E: Foreigner Fee Value
+            Cell foreignerFeeCell = row.getCell(5);
+            if (foreignerFeeCell != null && foreignerFeeCell.getCellType() == CellType.NUMERIC) {
+                foreignerFee = foreignerFeeCell.getNumericCellValue();
+            }else{
+                currentUploadItem.setCode(itemCode);
+                currentUploadItem.setName(itemName);
+                rejecteditemFees.add(currentUploadItem);
+                continue;
+            }
 
             ItemFee fee = new ItemFee();
-            fee.setName(itemName);
+            fee.setName("Hospital Fee");
             fee.setCreatedAt(new Date());
             fee.setCreater(sessionController.getLoggedUser());
             fee.setForInstitution(forInstitution);
             fee.setForCategory(null);
             fee.setItem(item);
-            fee.setFee(price);
+            fee.setFee(localFee);
+            fee.setFfee(foreignerFee);
             fee.setInstitution(institution);
             fee.setDepartment(department);
             fee.setFeeType(FeeType.OwnInstitution);
             itemFeeFacade.create(fee);
-            System.out.println("fee = " + fee.getId());
+            System.out.println("Create Fee = " + fee.getId());
+            
+            uploadeditemFees.add(fee);
 
         }
         return itemFees;
@@ -7790,6 +7826,22 @@ public class DataUploadController implements Serializable {
 
     public void setItemsUpdated(List<Item> itemsUpdated) {
         this.itemsUpdated = itemsUpdated;
+    }
+
+    public List<ItemFee> getUploadeditemFees() {
+        return uploadeditemFees;
+    }
+
+    public void setUploadeditemFees(List<ItemFee> uploadeditemFees) {
+        this.uploadeditemFees = uploadeditemFees;
+    }
+
+    public List<ItemLight> getRejecteditemFees() {
+        return rejecteditemFees;
+    }
+
+    public void setRejecteditemFees(List<ItemLight> rejecteditemFees) {
+        this.rejecteditemFees = rejecteditemFees;
     }
 
 }

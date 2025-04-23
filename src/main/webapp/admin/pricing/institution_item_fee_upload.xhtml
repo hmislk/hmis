@@ -10,19 +10,28 @@
 
     <ui:define name="subcontent">
         <div class="container-fluid" >
-            <div class="card" >
-                <div class="card-header" >
-                    <h2>Upload Collecting Centre Price List</h2>
-                </div>
-
+            <p:panel >
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <p:outputLabel value="Upload Institution(Site) Fees " class="mt-2"></p:outputLabel>
+                    </div>
+                </f:facet>
+                
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
-                        <p:fileUpload value="#{dataUploadController.file}"
-                                      mode="simple"
-                                      label="Choose File"/>
-                        <p:commandButton value="Upload"
-                                         action="#{dataUploadController.uploadInstitutionItemFees()}"
-                                         ajax="false"/>
+                        <p:fileUpload 
+                            value="#{dataUploadController.file}"
+                            mode="simple"
+                            label="Choose File"/>
+                        
+                        <p:commandButton 
+                            value="Upload"
+                            icon="fas fa-upload"
+                            class="ui-button-warning"
+                            style="float: right; width: 200px;"
+                            action="#{dataUploadController.uploadInstitutionItemFees()}"
+                            ajax="false">
+                        </p:commandButton>
 
                     </h:form>
 
@@ -36,21 +45,28 @@
                         <tbody>
                             <tr>
                                 <td>A</td>
-                                <td>Item Code</td>
+                                <td>Item Code (Required)</td>
                             </tr>
                             <tr>
                                 <td>B</td>
-                                <td>Item Name</td>
+                                <td>Item Name (Required)</td>
                             </tr>
                             <tr>
                                 <td>C</td>
-                                <td>For Institution</td>
+                                <td>For Institution (Site)</td>
                             </tr>
                             <tr>
                                 <td>D</td>
-                                <td>Fee</td>
+                                <td>Item Type (Investigation or Service) Default - Investigation</td>
                             </tr>
-                            
+                            <tr>
+                                <td>E</td>
+                                <td>Local Fee</td>
+                            </tr>
+                            <tr>
+                                <td>F</td>
+                                <td>Foreigner Fee</td>
+                            </tr>
                             <tr>
                                 <td>G</td>
                                 <td>Institution</td>
@@ -61,11 +77,26 @@
                             </tr>
                         </tbody>
                     </table>
+                    
+                    <p:tabView orientation="top" >
+                        <p:tab title="Uploaded Completed Item" >
+                            <p:dataTable value="#{dataUploadController.uploadeditemFees}" var="b" rowIndexVar="i">
+                                <p:column headerText="#" width="5em;" >#{i+1}</p:column>
+                                <p:column headerText="Code" width="10em;">#{b.item.code}</p:column>
+                                <p:column headerText="Name" >#{b.item.name}</p:column>
+                            </p:dataTable>
+                        </p:tab>
+                        <p:tab title="Rejected Items Items" >
+                            <p:dataTable value="#{dataUploadController.rejecteditemFees}" var="rb"  rowIndexVar="i">
+                                <p:column headerText="#" width="5em;" >#{i+1}</p:column>
+                                <p:column headerText="Code" width="10em;">#{rb.code}</p:column>
+                                <p:column headerText="Name" >#{rb.name}</p:column>
+                            </p:dataTable>
+                        </p:tab>
+                    </p:tabView>
                 </div>
-            </div>
+            </p:panel>
         </div>
-
-       
 
     </ui:define>
 </ui:composition>
