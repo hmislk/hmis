@@ -6568,6 +6568,7 @@ public class PharmacySaleReportController implements Serializable {
     double billTotalWholeSale;
     double canTotalWholeSale;
     double refTotalWholeSale;
+    double discountTotal;
 
     @Inject
     PaymentSchemeController paymentSchemeController;
@@ -6594,6 +6595,14 @@ public class PharmacySaleReportController implements Serializable {
 
     public void setBillTotal(double billTotal) {
         this.billTotal = billTotal;
+    }
+
+    public double getDiscountTotal() {
+        return discountTotal;
+    }
+
+    public void setDiscountTotal(double discountTotal) {
+        this.discountTotal = discountTotal;
     }
 
     public double getCanTotal() {
@@ -6732,6 +6741,7 @@ public class PharmacySaleReportController implements Serializable {
         double billTotal;
         double cancelBillTotal;
         double refundBillTotal;
+        double discountTotal;
 
         public String getPaymentScheme() {
             return paymentScheme;
@@ -6747,6 +6757,14 @@ public class PharmacySaleReportController implements Serializable {
 
         public void setBillTotal(double billTotal) {
             this.billTotal = billTotal;
+        }
+
+        public double getDiscountTotal() {
+            return discountTotal;
+        }
+
+        public void setDiscountTotal(double discountTotal) {
+            this.discountTotal = discountTotal;
         }
 
         public double getCancelBillTotal() {
