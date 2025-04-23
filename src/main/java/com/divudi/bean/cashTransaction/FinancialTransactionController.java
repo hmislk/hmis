@@ -2575,42 +2575,11 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_start?faces-redirect=true";
     }
 
-//
-//    public String navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift() {
-//        resetClassVariables();
-//        handoverValuesCreated = false;
-//        Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
-//        if (startBill == null) {
-//            JsfUtil.addErrorMessage("No Shift Start");
-//            return null;
-//        }
-//        List<Payment> allPayments = new ArrayList<>();
-//        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, null);
-//        List<Payment> shiftFloatsAndOthersPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, null);
-//        if (shiftPayments != null) {
-//            allPayments.addAll(shiftPayments);
-//        }
-//        if (shiftFloatsAndOthersPayments != null) {
-//            allPayments.addAll(shiftFloatsAndOthersPayments);
-//        }
-//        boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
-//        if (selectAllHandoverPayments) {
-//            bundle = generatePaymentBundleForHandovers(startBill, null, allPayments, PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION);
-//        } else {
-//            bundle = generatePaymentBundleForHandovers(startBill, null, allPayments, PaymentSelectionMode.SELECT_NONE_FOR_HANDOVER_CREATION);
-//        }
-//        bundle.setUser(sessionController.getLoggedUser());
-//        bundle.aggregateTotalsFromAllChildBundles();
-//        bundle.collectDepartments();
-//        return "/cashier/handover_start_all?faces-redirect=true";
-//    }
-//
+
     public String navigateToHandoverCreateBillForCurrentShift() {
         resetClassVariables();
         Bill startBill = fetchNonClosedShiftStartFundBill();
-//        handoverValuesCreated = false;
         bundle = new ReportTemplateRowBundle();
-//        bundle.setDenominations(sessionController.findDefaultDenominations());
         if (startBill == null) {
             JsfUtil.addErrorMessage("Shift not yet started.");
             return null;
@@ -2687,6 +2656,87 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
+    
+     public String navigateToRecordShiftEndCash() {
+        resetClassVariables();
+        Bill startBill = fetchNonClosedShiftStartFundBill();
+        bundle = new ReportTemplateRowBundle();
+        if (startBill == null) {
+            JsfUtil.addErrorMessage("Shift not yet started.");
+            return null;
+        }
+
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
+        if (shiftPayments != null) {
+            shiftPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.USER_COLLECTED));
+        }
+
+        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+        if (shiftFloats != null) {
+            shiftFloats.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
+        }
+
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(startBill, sessionController.getLoggedUser());
+        if (othersPayments != null) {
+            othersPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
+        }
+
+        Set<Payment> uniquePaymentSet = new HashSet<>();
+
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+
+        List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
+        boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
+
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+
+        allUniquePayments = new ArrayList<>(uniquePaymentSet);
+
+        if (selectAllHandoverPayments) {
+            bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
+                    null,
+                    allUniquePayments,
+                    PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION
+            );
+        } else {
+            bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
+                    null,
+                    allUniquePayments,
+                    PaymentSelectionMode.SELECT_NONE_FOR_HANDOVER_CREATION
+            );
+        }
+
+        bundle.setUser(sessionController.getLoggedUser());
+        bundle.setStartBill(startBill);
+        bundle.selectAllChildBundles();
+//        bundle.aggregateTotalsFromAllChildBundles();
+        bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        bundle.sortByDateInstitutionSiteDepartmentType();
+
+        bundle.setPatientDepositsAreConsideredInHandingover(getPatientDepositsAreConsideredInHandingover());
+        bundle.calculateTotalsByChildBundlesForHandover();
+        return "/cashier/handover_start_all?faces-redirect=true";
+    }
+    
     public String navigateToHandoverCreateBillForSelectedPeriod() {
         return "/cashier/handover_start_for_period?faces-redirect=true";
     }
