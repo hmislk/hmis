@@ -171,6 +171,20 @@
                             <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
                         </p:selectOneMenu>
 
+                        <p:outputLabel for="reportViewType" value="Report View" />
+                        <p:selectOneMenu 
+                            id="reportViewType"
+                            filterMatchMode="contains"
+                            styleClass="w-100 mt-1 form-control"
+                            value="#{pharmacySummaryReportController.selectedReportViewType}">
+                            <f:selectItem itemLabel="-- Select Report View --" itemValue="" />
+                            <f:selectItems value="#{enumController.reportViewTypes}"
+                                           var="rvt"
+                                           itemLabel="#{rvt.label}"
+                                           itemValue="#{rvt}" />
+                        </p:selectOneMenu>
+
+
                     </h:panelGrid>
 
                     <p:commandButton 
