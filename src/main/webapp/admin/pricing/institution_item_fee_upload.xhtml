@@ -14,6 +14,14 @@
                 <f:facet name="header">
                     <div class="d-flex justify-content-between">
                         <p:outputLabel value="Upload Institution(Site) Fees " class="mt-2"></p:outputLabel>
+                        <p:commandButton 
+                            value="Download Template" 
+                            ajax="false" 
+                            icon="fas fa-file-excel"
+                            class="ui-button-success m-1"
+                            onclick="PrimeFaces.monitorDownload(start, stop);" >
+                            <p:fileDownload value="#{dataUploadController.getTemplateForItemFeeUploadToSite()}" />
+                        </p:commandButton>
                     </div>
                 </f:facet>
                 
