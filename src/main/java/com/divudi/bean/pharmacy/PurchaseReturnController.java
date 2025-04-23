@@ -300,6 +300,8 @@ public class PurchaseReturnController implements Serializable {
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
         returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         getBillFacade().edit(getReturnBill());
+        getBill().setReferenceBill(returnBill);
+        getBillFacade().edit(getBill());
 
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");

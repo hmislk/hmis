@@ -320,6 +320,16 @@ public class BillItem implements Serializable, RetirableEntity {
     public BillItem() {
     }
 
+    public static List<BillItem> copyBillItems(List<BillItem> billItems) {
+        List<BillItem> tmp = new ArrayList<>();
+        for (BillItem b : billItems) {
+            BillItem bi = new BillItem();
+            bi.copy(b);
+            tmp.add(bi);
+        }
+        return tmp;
+    }
+
     public void invertValue(BillItem billItem) {
         if (billItem.getQty() != null) {
             qty = 0 - billItem.getQty();
