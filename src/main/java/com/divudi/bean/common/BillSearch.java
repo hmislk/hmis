@@ -52,8 +52,11 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
+import com.divudi.bean.pharmacy.IssueReturnController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
+import com.divudi.bean.pharmacy.PharmacyIssueController;
 import com.divudi.core.data.BillTypeAtomic;
+import static com.divudi.core.data.BillTypeAtomic.PHARMACY_ISSUE_CANCELLED;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -201,6 +204,10 @@ public class BillSearch implements Serializable {
     DrawerController drawerController;
     @Inject
     FinancialTransactionController financialTransactionController;
+    @Inject
+    IssueReturnController issueReturnController;
+    @Inject
+    PharmacyIssueController pharmacyIssueController;
     /**
      * Class Variables
      */
@@ -3850,8 +3857,8 @@ public class BillSearch implements Serializable {
             case PHARMACY_TRANSFER_REQUEST:
             case PHARMACY_TRANSFER_REQUEST_PRE:
             case PHARMACY_TRANSFER_REQUEST_CANCELLED:
-            case PHARMACY_ISSUE:
-            case PHARMACY_ISSUE_CANCELLED:
+//            case PHARMACY_ISSUE:
+//            case PHARMACY_ISSUE_CANCELLED:
 
             case PHARMACY_DIRECT_ISSUE_CANCELLED:
             case PHARMACY_RECEIVE_PRE:
@@ -3873,12 +3880,40 @@ public class BillSearch implements Serializable {
             case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill();
+                
+            case PHARMACY_ISSUE_RETURN:
+                return navigateToPharmacyIssueReturn();
+            case PHARMACY_ISSUE:
+            case PHARMACY_ISSUE_CANCELLED:
+                return navigateToPharmacyIssue();
+                
 
         }
 
         return "";
     }
 
+    public String navigateToPharmacyIssue() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacyIssueController.setBillPreview(true);
+        pharmacyIssueController.setPrintBill(bill);
+        return "/pharmacy/pharmacy_issue";
+    }
+    public String navigateToPharmacyIssueReturn() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        issueReturnController.setPrintPreview(true);
+        issueReturnController.setReturnBill(bill);
+        return "/pharmacy/pharmacy_bill_return_issue";
+    }
+    
     public String navigateToAdminBillByAtomicBillType() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
