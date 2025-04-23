@@ -3868,6 +3868,11 @@ public class BillSearch implements Serializable {
                 return navigateToViewCancelIncomeBill();
             case OPERATIONAL_EXPENSES_CANCELLED:
                 return navigateToViewCancelExpenseBill();
+                
+            case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
+            case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill();
 
         }
 
