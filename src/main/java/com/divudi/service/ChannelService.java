@@ -579,10 +579,11 @@ public class ChannelService {
         return deptId;
     }
 
-    public Institution findCreditCompany(String code, InstitutionType type) {
+    public Institution findCreditCompany(String code, String name, InstitutionType type) {
 
         String jpql = "Select i from Institution i where i.retired = false "
                 + " and UPPER(i.code) = UPPER(:code) "
+                + " and i.name like %name% "
                 + " and i.institutionType = :type";
 
         Map params = new HashMap();

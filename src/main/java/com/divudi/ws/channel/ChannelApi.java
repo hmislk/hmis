@@ -868,7 +868,7 @@ public class ChannelApi {
 
     }
     
-    private void validateAppoinmentSession(String sessionId){
+    private SessionInstance validateAndFetchAppoinmentSession(String sessionId){
         if(sessionId == null || sessionId.isEmpty()){
             throw new ValidationException("SessionID", " Missing SessionId field");
         }
@@ -920,7 +920,22 @@ public class ChannelApi {
             msgForStartSession = "Session is starting now. Please complete booking and visit quickly";
         }
         
+        return session;
+    }
+    
+    private Institution validateAndFetchAgency(String agencyName, String agencyCode){
+        if((agencyName == null || agencyName.isEmpty()) && (agencyCode == null || agencyCode.isEmpty())){
+            throw new ValidationException("Agency attributes : ", "Missing agency code and name. Check fields");
+        }
         
+        Institution creditCompany = channelService.findCreditCompany(agencyCode,agencyName, InstitutionType.Agency);
+
+        if (creditCompany == null) {
+            JSONObject response = commonFunctionToErrorResponse("No channeling comapany still registered in the system.");
+            throw new ValidationException("Agency : ", "Your agency not register in the hospital system. Contact Carecode.");
+        }
+        
+        return creditCompany;
     }
 
     @POST
@@ -941,15 +956,16 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse("Patien details not in the request");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
+        
+        SessionInstance session = null;
 
         try{
-            validateAppoinmentSession(sessionId);
+            session = validateAndFetchAppoinmentSession(sessionId);
         }catch(ValidationException e){
             String message = e.getField() == null ? e.getMessage(): e.getField()+e.getMessage();
             JSONObject response = commonFunctionToErrorResponse(message);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
 
         if (patientDetails.isEmpty()) {
             JSONObject response = new JSONObject();
@@ -987,124 +1003,19 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-//        if ((String.valueOf(patientPhoneNumberLong)).length() != 10) {
-//            JSONObject response = commonFunctionToErrorResponse("Phone number must be 10 digits");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-//        }
-//        List<Patient> patients = null;
-//        Patient newPatient = null;
-//        boolean toSelectOneFromALot = false;
-//        boolean toCreateNewOne = true;
-//
-//        if (nic != null && !nic.isEmpty()) {
-//            patients = patientService.searchPatientsByNic(nic);
-//            if (patients == null || patients.isEmpty()) {
-//                toCreateNewOne = true;
-//            } else {
-//                toCreateNewOne = false;
-//                if (patients.size() > 1) {
-//                    toSelectOneFromALot = true;
-//                } else {
-//                    newPatient = patients.get(0);
-//                    toSelectOneFromALot = false;
-//                }
-//            }
-//        }
-//        if (newPatient == null && toSelectOneFromALot == false) {
-//            if (patientPhoneNumberLong == null) {
-//                JSONObject response = commonFunctionToErrorResponse("Not a Valid Phone number");
-//                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-//            }
-//        } else if (newPatient == null && toSelectOneFromALot) {
-//            if (patients != null) {
-//                for (Patient pt : patients) {
-//                    if (Objects.equals(pt.getPatientMobileNumber(), patientPhoneNumberLong) || pt.getPatientPhoneNumber() == patientPhoneNumberLong) {
-//                        newPatient = pt;
-//                        toSelectOneFromALot = false;
-//                    }
-//                }
-//            }
-//        }
-//
-//        if (newPatient == null && (patients == null || patients.isEmpty())) {
-//            patients = patientService.searchPatientsByPhone(patientPhoneNumberLong);
-//            if (patients == null || patients.isEmpty()) {
-//                toCreateNewOne = true;
-//            } else {
-//                toCreateNewOne = false;
-//                if (patients.size() > 1) {
-//                    toSelectOneFromALot = true;
-//                } else {
-//                    newPatient = patients.get(0);
-//                    toSelectOneFromALot = false;
-//                }
-//            }
-//        } else if (newPatient == null && patients != null) {
-//            List<Patient> temPts = patientService.searchPatientsByPhone(patientPhoneNumberLong);
-//            if (temPts != null) {
-//                patients.addAll(temPts);
-//            }
-//        }
-//
-//        if (toSelectOneFromALot) {
-//            newPatient = patientService.findFirstMatchingPatientByName(patients, patientName);
-//        }
-//        Title titleForPatienFromSystem = null;
-//
-//        for (Title title : Title.values()) {
-//            if (title.name().equalsIgnoreCase(patientTitle)) {
-//                titleForPatienFromSystem = title;
-//            }
-//        }
-//
-//        if (titleForPatienFromSystem == null) {
-//            JSONObject response = commonFunctionToErrorResponse("Invalid title for the patient");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-//        }
-//        if (patientType.toUpperCase().equals("YES")) {
-//            isForeigner = true;
-//        }
-//        if (newPatient != null) {
-//            if (nic != null && !nic.isEmpty()) {
-//                if (newPatient.getPerson().getNic() != nic.trim()) {
-//                    newPatient = patientService.findFirstMatchingPatientByName(patients, patientName);
-//                }
-//            }
-//        }
-//
-//        if (newPatient == null) {
-//            newPatient = new Patient();
-//            Person p = new Person();
-//            p.setName(patientName);
-//            p.setTitle(titleForPatienFromSystem);
-//            p.setNic(nic);
-//            p.setPhone(patientPhoneNo);
-//            p.setMobile(patientPhoneNo);
-//            // p.setDob(new Date());
-//            // p.setAddress();
-//            p.setForeigner(isForeigner);
-//            newPatient.setPerson(p);
-//            newPatient.setPatientMobileNumber(patientPhoneNumberLong);
-//            newPatient.setPatientPhoneNumber(patientPhoneNumberLong);
-//        }
-        String paymentMode = payment.get("paymentMode");
-        String bankCode = payment.get("bankCode");
-        String paymentChannel = payment.get("paymentChannel");
+        String agencyName = payment.get("paymentMode");
+        //String bankCode = payment.get("bankCode");
+        String agencyCode = payment.get("paymentChannel");
         String channelForm = payment.get("channelFrom");
         PaymentMethod paymentMethod = null;
-        System.out.println(paymentChannel);
+       // System.out.println(paymentChannel);
 
         if (!paymentChannel.toUpperCase().equals("WEB_DOC990")) {
             JSONObject response = commonFunctionToErrorResponse("Invalid payment channel");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
-
-        if (creditCompany == null) {
-            JSONObject response = commonFunctionToErrorResponse("No channeling comapany still registered in the system.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
+        
         System.out.println(creditCompany.getName());
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
         System.out.println(billList.size());
