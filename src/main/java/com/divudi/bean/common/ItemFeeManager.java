@@ -540,6 +540,10 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
+    public void fillFeesForAuditing() {
+        itemFees = fillFeesForAuditing(item);
+    }
+
     public void updateItemAndCollectingCentreFees() {
         itemFees = new ArrayList<>();
         if (item == null) {
@@ -715,6 +719,10 @@ public class ItemFeeManager implements Serializable {
         return fillFees(i, null, null);
     }
 
+    public List<ItemFee> fillFeesForAuditing(Item i) {
+        return fillFees(i, null, null, true);
+    }
+
     public List<ItemFee> fillFees(Item i, Institution ins) {
         return fillFees(i, ins, null);
     }
@@ -723,16 +731,20 @@ public class ItemFeeManager implements Serializable {
         return fillFees(i, null, cat);
     }
 
+    // Original method preserved
     public List<ItemFee> fillFees(Item i, Institution forInstitution, Category forCategory) {
-        System.out.println("fillFees");
-        System.out.println("i = " + i);
-        System.out.println("forInstitution = " + forInstitution);
-        System.out.println("forCategory = " + forCategory);
-        String jpql = "select f "
-                + " from ItemFee f "
-                + " where f.retired=:ret ";
+        return fillFees(i, forInstitution, forCategory, false);
+    }
+
+// Overloaded method that ignores 'retired' filtering if includeRetired is true
+    public List<ItemFee> fillFees(Item i, Institution forInstitution, Category forCategory, boolean includeRetired) {
+        String jpql = "select f from ItemFee f where 1=1";
         Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
+
+        if (!includeRetired) {
+            jpql += " and f.retired=:ret";
+            m.put("ret", false);
+        }
 
         if (i != null) {
             jpql += " and f.item=:i";
@@ -752,9 +764,8 @@ public class ItemFeeManager implements Serializable {
         } else {
             jpql += " and f.forCategory is null";
         }
-        System.out.println("m = " + m);
-        List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
-        return fs;
+
+        return itemFeeFacade.findByJpql(jpql, m);
     }
 
     public List<ItemFee> fillCollectingCentreSpecificFees(Institution cc) {
