@@ -2695,12 +2695,12 @@ public class ReportsController implements Serializable {
                 Bill bill = row.getBill();
 
                 if (bill.getBillClassType().equals(BillClassType.CancelledBill)) {
-                    if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() == 0) {
+                    if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() <= 0) {
                         removeList.add(row);
                     }
                 } else {
                     if (bill.getPatientEncounter().getFinalBill().getNetTotal() - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()
-                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() == 0) {
+                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor() <= 0) {
                         removeList.add(row);
                     }
                 }
@@ -2709,7 +2709,7 @@ public class ReportsController implements Serializable {
         } else if (visitType.equalsIgnoreCase("OP")) {
             for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
                 Bill bill = row.getBill();
-                if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() == 0) {
+                if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() <= 0) {
                     removeList.add(row);
                 }
             }
