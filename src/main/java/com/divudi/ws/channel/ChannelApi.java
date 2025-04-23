@@ -702,7 +702,7 @@ public class ChannelApi {
 
             session.put("sessionID", s.getId().intValue());
             session.put("appTimeInterval", null);
-            session.put("hosFee", localFees != null ? localFees.get("hosFee"):0);
+            session.put("hosFee", localFees != null ? localFees.get("hosFee") : 0);
             session.put("docName", s.getStaff().getPerson().getNameWithTitle());
             session.put("docNo", s.getStaff().getId());
             session.put("docForeignFee", foreignFees != null ? foreignFees.get("docForeignFee") : 0);
@@ -710,7 +710,7 @@ public class ChannelApi {
             session.put("hosId", s.getInstitution().getId().toString());
             session.put("remarks", s.getOriginatingSession().getSpecialNotice() == null ? "" : s.getOriginatingSession().getSpecialNotice());
             session.put("vatDocCharge", null);
-            session.put("docFee", localFees != null ? localFees.get("docFee"):0);
+            session.put("docFee", localFees != null ? localFees.get("docFee") : 0);
             session.put("hosName", s.getInstitution().getName());
             session.put("startTime", forTime.format(s.getStartingTime()));
             session.put("vatHosCharge", null);
@@ -799,7 +799,7 @@ public class ChannelApi {
         Map<String, Object> sessionData = new HashMap<>();
         sessionData.put("sessionID", session.getId().intValue());
         sessionData.put("appTimeInterval", null);
-        sessionData.put("hosFee", hosAndDocLocalFees != null ? hosAndDocLocalFees.get("hosFee"):(Object)0);
+        sessionData.put("hosFee", hosAndDocLocalFees != null ? hosAndDocLocalFees.get("hosFee") : (Object) 0);
         sessionData.put("docName", session.getStaff().getPerson().getNameWithTitle());
         sessionData.put("docNo", session.getStaff().getId().toString());
         sessionData.put("docForeignFee", hosAndDocForeignFees != null ? hosAndDocForeignFees.get("docForeignFee") : 0);
@@ -807,7 +807,7 @@ public class ChannelApi {
         sessionData.put("hosId", session.getInstitution().getId().toString());
         sessionData.put("remarks", remark);
         sessionData.put("vatDocCharge", null);
-        sessionData.put("docFee", hosAndDocLocalFees != null ? hosAndDocLocalFees.get("docFee"):(Object)0);
+        sessionData.put("docFee", hosAndDocLocalFees != null ? hosAndDocLocalFees.get("docFee") : (Object) 0);
         sessionData.put("hosName", session.getInstitution().getName());
         sessionData.put("startTime", forTime.format(session.getSessionTime()));
         sessionData.put("vatHosCharge", null);
@@ -832,6 +832,39 @@ public class ChannelApi {
         response.put("detailMessage", "Success");
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
+
+    }
+
+    private static class ValidationException extends RuntimeException {
+
+        private final String field;
+
+        ValidationException(String field, String message) {
+            super(message);
+            this.field = field;
+        }
+
+        public String getField() {
+            return field;
+        }
+    }
+
+    private boolean validateForeignStatus(String status) {
+        if (Integer.parseInt(status) == 1) {
+            return true;
+        } else if (Integer.parseInt(status) == 0) {
+            return false;
+        } else {
+            throw new ValidationException("Foreigner Status : ", "Invalid patient status(Foreign/Local) data.");
+        }
+    }
+
+    private void validatePhoneNumber(String patientPhoneNo) {
+        if (patientPhoneNo == null || patientPhoneNo.isEmpty()) {          
+            throw new ValidationException("Phone Number : ", "Patient Phone number is mandotary.");          
+        } else if (patientPhoneNo.length() < 10) {
+            throw new ValidationException("Phone Number : ", "Phone number must be 10 digits.");           
+        }
 
     }
 
@@ -914,20 +947,12 @@ public class ChannelApi {
         String patientPhoneNo = patientDetails.get("teleNo");
         String patientName = patientDetails.get("patientName");
         String patientType = patientDetails.get("foreign");
-        if (Integer.parseInt(patientType) == 1) {
-            isForeigner = true;
-        } else if (Integer.parseInt(patientType) == 0) {
-            isForeigner = false;
-        } else {
-            JSONObject response = commonFunctionToErrorResponse("Invalid patient status(Foreign/Local) data.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
 
-        if (patientPhoneNo == null || patientPhoneNo.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("Patient Phone number is mandotary.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        } else if (patientPhoneNo.length() != 10) {
-            JSONObject response = commonFunctionToErrorResponse("Phone number must be 10 digits");
+        try {
+            isForeigner = validateForeignStatus(patientType);
+            validatePhoneNumber(patientPhoneNo);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -969,7 +994,6 @@ public class ChannelApi {
 //                }
 //            }
 //        }
-
 //        if (newPatient == null && toSelectOneFromALot == false) {
 //            if (patientPhoneNumberLong == null) {
 //                JSONObject response = commonFunctionToErrorResponse("Not a Valid Phone number");
@@ -1009,23 +1033,21 @@ public class ChannelApi {
 //        if (toSelectOneFromALot) {
 //            newPatient = patientService.findFirstMatchingPatientByName(patients, patientName);
 //        }
-
-        Title titleForPatienFromSystem = null;
-
-        for (Title title : Title.values()) {
-            if (title.name().equalsIgnoreCase(patientTitle)) {
-                titleForPatienFromSystem = title;
-            }
-        }
-
-        if (titleForPatienFromSystem == null) {
-            JSONObject response = commonFunctionToErrorResponse("Invalid title for the patient");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
+//        Title titleForPatienFromSystem = null;
+//
+//        for (Title title : Title.values()) {
+//            if (title.name().equalsIgnoreCase(patientTitle)) {
+//                titleForPatienFromSystem = title;
+//            }
+//        }
+//
+//        if (titleForPatienFromSystem == null) {
+//            JSONObject response = commonFunctionToErrorResponse("Invalid title for the patient");
+//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+//        }
 //        if (patientType.toUpperCase().equals("YES")) {
 //            isForeigner = true;
 //        }
-
 //        if (newPatient != null) {
 //            if (nic != null && !nic.isEmpty()) {
 //                if (newPatient.getPerson().getNic() != nic.trim()) {
@@ -1049,7 +1071,6 @@ public class ChannelApi {
 //            newPatient.setPatientMobileNumber(patientPhoneNumberLong);
 //            newPatient.setPatientPhoneNumber(patientPhoneNumberLong);
 //        }
-
         String paymentMode = payment.get("paymentMode");
         String bankCode = payment.get("bankCode");
         String paymentChannel = payment.get("paymentChannel");
@@ -1064,7 +1085,7 @@ public class ChannelApi {
 
         Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
 
-        if(creditCompany == null){
+        if (creditCompany == null) {
             JSONObject response = commonFunctionToErrorResponse("No channeling comapany still registered in the system.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -1224,7 +1245,7 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-         Bill bill = billList.get(0);
+        Bill bill = billList.get(0);
 
         if (billList.size() > 1) {
             for (Bill b : billList) {
@@ -1256,7 +1277,6 @@ public class ChannelApi {
 //        } else if (bill.getPaidBill() != null && bill.getPaidBill().getBillType() == BillType.ChannelPaid) {
 //            status = "Booking details are edited for the complete booking";
 //        }
-
         Person p = bill.getPatient().getPerson();
         SessionInstance session = bill.getSingleBillSession().getSessionInstance();
 
@@ -1581,7 +1601,7 @@ public class ChannelApi {
         response.put("data", result);
         response.put("message", "Accepted");
         response.put("code", 202);
-        response.put("detailMessage", "All the appoinment details listed within "+ fromDate +" to "+ toDate);
+        response.put("detailMessage", "All the appoinment details listed within " + fromDate + " to " + toDate);
 
         System.out.println(billList.size());
 
@@ -1661,7 +1681,7 @@ public class ChannelApi {
 
         String patientStatus = bookingStatus;
 
-        if(bill.getSingleBillSession().isAbsent()){
+        if (bill.getSingleBillSession().isAbsent()) {
             patientStatus = "Patient is absent to the appoinment.";
         }
 
@@ -1709,7 +1729,7 @@ public class ChannelApi {
         patientDetails.put("patientFullName", p.getPerson().getNameWithTitle());
         patientDetails.put("nid", p.getPerson().getNic());
         patientDetails.put("memberId", p.getPerson().getId());
-        patientDetails.put("member",null);
+        patientDetails.put("member", null);
         patientDetails.put("needSMS", null);
         patientDetails.put("nsr", null);
 
@@ -1739,7 +1759,7 @@ public class ChannelApi {
 
         Map response = new HashMap();
         response.put("data", appoinment);
-        response.put("message", "Booking details for ref No: "+refNo);
+        response.put("message", "Booking details for ref No: " + refNo);
         response.put("detailMessage", bookingStatus);
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
@@ -1805,7 +1825,7 @@ public class ChannelApi {
             }
         }
 
-        if(bill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT){
+        if (bill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT) {
             JSONObject response = commonFunctionToErrorResponse("Temporary Bookings unable to cancel");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -1815,12 +1835,12 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if(bill.getSingleBillSession().getSessionInstance().isCompleted() == true){
+        if (bill.getSingleBillSession().getSessionInstance().isCompleted() == true) {
             JSONObject response = commonFunctionToErrorResponse("Session is already completed. Contact hospital for cancellation.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if(bill.getSingleBillSession().getSessionInstance().isCancelled() == true){
+        if (bill.getSingleBillSession().getSessionInstance().isCancelled() == true) {
             JSONObject response = commonFunctionToErrorResponse("Session is already cancelled. Contact hospital for cancellation.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -1912,7 +1932,7 @@ public class ChannelApi {
 
         Map response = new HashMap();
         response.put("data", appoinment);
-        response.put("message", "Booking details for ref No: "+refNo);
+        response.put("message", "Booking details for ref No: " + refNo);
         response.put("detailMessage", "Your booking is cancelled");
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
