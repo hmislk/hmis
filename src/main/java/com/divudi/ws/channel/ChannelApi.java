@@ -1040,6 +1040,7 @@ public class ChannelApi {
         newBooking.setForeign(isForeigner);
         newBooking.setAgency(bookingAgency);
         newBooking.setRequestIp(ipAddress);
+        newBooking.setCreatedAt(new Date());
 
         Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
 

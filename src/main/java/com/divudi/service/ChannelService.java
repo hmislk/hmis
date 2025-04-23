@@ -410,10 +410,16 @@ public class ChannelService {
         return fees;
 
      }
+     
+     public void updateAndSaveOnlineBooking(OnlineBooking newBooking, SessionInstance session){
+         newBooking.setHospital(session.getInstitution());
+         newBooking.setDepartment(session.getDepartment());
+     }
 
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, OnlineBooking newBooking, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         //saveOrUpdatePatientDetails(patient);
-        Bill savingTemporaryBill = createAgentInitialBookingBill(patient, session);
+        
+        Bill savingTemporaryBill = createAgentInitialBookingBill(newBooking, session);
         if (savingTemporaryBill == null) {
             return null;
         }
@@ -594,7 +600,7 @@ public class ChannelService {
         return institutionFacade.findFirstByJpql(jpql, params);
     }
 
-    private Bill createAgentInitialBookingBill(Patient patient, SessionInstance session) {
+    private Bill createAgentInitialBookingBill(OnlineBooking newBooking, SessionInstance session) {
         Bill bill = new BilledBill();
         bill.setStaff(session.getOriginatingSession().getStaff());
         //bill.setToStaff(toStaff);
@@ -602,7 +608,7 @@ public class ChannelService {
         bill.setTotal(session.getOriginatingSession().getTotal());
         bill.setNetTotal(session.getOriginatingSession().getTotal());
         bill.setPaymentMethod(PaymentMethod.OnCall);
-        bill.setPatient(patient);
+        bill.setOnlineBooking(newBooking);
         bill.setPaid(false);
         bill.setPaidAmount(0.0);
         bill.setPaidBill(null);
