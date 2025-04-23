@@ -10,6 +10,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -44,6 +45,7 @@ import com.divudi.core.facade.BillSessionFacade;
 import com.divudi.core.facade.ConsultantFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PersonFacade;
@@ -410,15 +412,25 @@ public class ChannelService {
         return fees;
 
      }
+     @EJB
+     private OnlineBookingFacade onlineBookingFacade;
      
      public void updateAndSaveOnlineBooking(OnlineBooking newBooking, SessionInstance session){
          newBooking.setHospital(session.getInstitution());
          newBooking.setDepartment(session.getDepartment());
+         newBooking.setPaid(false);
+         newBooking.setOnlineBookingStatus(OnlineBookingStatus.PENDING);
+         
+         if(newBooking.getId() == null){
+             onlineBookingFacade.create(newBooking);
+         }else{
+             onlineBookingFacade.edit(newBooking);
+         }
      }
 
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, OnlineBooking newBooking, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         //saveOrUpdatePatientDetails(patient);
-        
+        updateAndSaveOnlineBooking(newBooking, session);
         Bill savingTemporaryBill = createAgentInitialBookingBill(newBooking, session);
         if (savingTemporaryBill == null) {
             return null;
