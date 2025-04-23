@@ -3258,7 +3258,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return count != null && count > 1;
     }
 
-    public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(PharmaceuticalBillItem pbi) {
+    public void convertPharmaceuticalBillItemReferenceFromErroneouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill
+        (PharmaceuticalBillItem pbi) {
         Bill originalBill = null;
         Bill cancelledBill = null;
         BillItem originalBillItemNowWonglyAssignedToCancelledBill = null;
