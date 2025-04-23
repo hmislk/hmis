@@ -506,10 +506,10 @@
                                 <p:row>
                                     <p:column footerText="Total" colspan="4"/>
                                     <p:column
-                                            footerText="#{pharmacySaleReportController.refundedDetail.netTotal + pharmacySaleReportController.cancelledDetail.discount}">
+                                            footerText="#{pharmacySaleReportController.refundedDetail.netTotal + pharmacySaleReportController.refundedDetail.discount}">
                                         <f:facet name="footer">
                                             <h:outputLabel
-                                                    value="#{pharmacySaleReportController.refundedDetail.netTotal + pharmacySaleReportController.cancelledDetail.discount}">
+                                                    value="#{pharmacySaleReportController.refundedDetail.netTotal + pharmacySaleReportController.refundedDetail.discount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
