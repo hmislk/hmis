@@ -128,7 +128,7 @@
                                     </div>
                                     <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
                                         <h:outputText value="BHT Pharmacy Issue Report"/>
-                                        <h:panelGroup  rendered="#{laborataryReportController.department ne null}">
+                                        <h:panelGroup  rendered="#{reportsTransfer.fromDepartment ne null}">
                                             <div class="d-flex gap-2">
                                                 <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
                                                 <h:outputText value="#{reportsTransfer.fromDepartment.name}"/>
@@ -150,25 +150,6 @@
                                             </h:outputText>
                                         </div>
                                         <div></div>
-                                    </div>
-
-                                    <div class="d-flex justify-content-between mt-2 w-100 gap-2" style=" font-size: 16px;" id="toinsdept">
-                                        <div class="d-flex gap-2">
-                                            <h:outputText 
-                                                rendered="#{laborataryReportController.toInstitution ne null}"
-                                                value="#{laborataryReportController.toInstitution.name}" 
-                                                style="font-weight: 600;">
-                                            </h:outputText>
-                                            <h:outputText 
-                                                value="-" 
-                                                rendered="#{laborataryReportController.toInstitution ne null and laborataryReportController.toDepartment ne null}"
-                                                style="width: 2em!important; font-weight: 600; text-align: center;"/>
-                                            <h:outputText 
-                                                rendered="#{laborataryReportController.toInstitution ne null and laborataryReportController.toDepartment ne null}"
-                                                value="#{laborataryReportController.toDepartment.name}" 
-                                                style="font-weight: 600;">
-                                            </h:outputText>
-                                        </div>
                                     </div>
                                 </div>
 
