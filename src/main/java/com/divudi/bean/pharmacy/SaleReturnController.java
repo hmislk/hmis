@@ -448,7 +448,7 @@ public class SaleReturnController implements Serializable {
         savePreComponent();
 //        getReturnBill().setTotal(getReturnBill().getNetTotal()+getReturnBill().getDiscount());
 
-
+        getBill().setReferenceBill(getReturnBill());
         getBill().getReturnPreBills().add(getReturnBill());
         getBillFacade().edit(getBill());
 
@@ -458,7 +458,7 @@ public class SaleReturnController implements Serializable {
         Payment p = createPayment(b, getReturnPaymentMethod());
         drawerController.updateDrawerForOuts(p);
         saveSaleComponent(b, p);
-
+        getReturnBill().setReferenceBill(getBill());
         getReturnBill().getReturnCashBills().add(b);
         getBillFacade().edit(getReturnBill());
 

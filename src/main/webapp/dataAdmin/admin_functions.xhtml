@@ -15,6 +15,25 @@
                 <h:form >
 
                     <div class='row' >
+                        <div class="col-12 col-md-12 col-lg-12 p-1">
+                            <h:form>
+                                <h:outputLabel value="From Date" />
+                                <p:calendar id="calFrom" 
+                                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            value="#{billController.fromDate}">
+                                    <p:ajax event="dateSelect" process="calFrom" />
+                                </p:calendar>
+
+                                <p:spacer width="10em" />
+
+                                <h:outputLabel value="To Date" />
+                                <p:calendar id="calTo"
+                                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            value="#{billController.toDate}">
+                                    <p:ajax event="dateSelect" process="calTo" />
+                                </p:calendar>
+                            </h:form>
+                        </div>
 
 
                         <div class="col-12 col-md-4 col-lg-2 p-1">
@@ -36,17 +55,17 @@
                         </div>
 
 
-<div class="col-12 col-md-8 col-lg-6 p-1">
-    <p:commandButton 
-        ajax="false"
-        disabled="false"
-        onclick="return confirm('This will modify billing data. Proceed?');"
-        rendered="#{webUserController.hasPrivilege('Developers')}"
-        action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
-        update=":growl"
-        class="w-100 m-1"
-        value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
-</div>
+                        <div class="col-12 col-md-8 col-lg-6 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                onclick="return confirm('This will modify billing data. Proceed?');"
+                                rendered="#{webUserController.hasPrivilege('Developers')}"
+                                action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
+                                update=":growl"
+                                class="w-100 m-1"
+                                value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
+                        </div>
 
                         <div class="col-12 col-md-8 col-lg-6 p-1">
                             <p:commandButton 
@@ -66,6 +85,16 @@
                                 class="w-100 m-1"
                                 value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
                         </div>
+
+<!--                        <div class="col-12 col-md-8 col-lg-6 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                action="#{billController.convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills}"
+                                class="w-100 m-1"
+                                value="Fix Pharmaceutical BillItem Reference for All PHARMACY_RETAIL_SALE_CANCELLED Bills"/>
+                        </div>-->
+
 
 
 
