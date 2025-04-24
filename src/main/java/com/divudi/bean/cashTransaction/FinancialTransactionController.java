@@ -4830,8 +4830,6 @@ public class FinancialTransactionController implements Serializable {
 
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        currentBill.setTotal(bundle.getTotal());
-        currentBill.setNetTotal(bundle.getTotalOut());
 
         currentBill.setCreatedAt(new Date());
         currentBill.setCreater(sessionController.getLoggedUser());
