@@ -29,8 +29,8 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xddf.usermodel.chart.*;
+import org.apache.poi.xssf.usermodel.*;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -49,8 +49,6 @@ import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 import java.text.DecimalFormat;
-
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
 /**
  * @author safrin
@@ -5588,6 +5586,89 @@ public class ReportsController implements Serializable {
                         / calculateCollectionCenterWiseBillCount(yearMonth)));
             }
 
+            XSSFSheet countChartSheet = workbook.createSheet("Sample Count Chart");
+
+            Row chartHeader = countChartSheet.createRow(0);
+            chartHeader.createCell(0).setCellValue("Month");
+            chartHeader.createCell(1).setCellValue("Sample Count");
+
+            Map<YearMonth, Double> countData = getSampleCountChartData();
+            int chartRowIndex = 1;
+            for (Map.Entry<YearMonth, Double> entry : countData.entrySet()) {
+                Row row = countChartSheet.createRow(chartRowIndex++);
+                row.createCell(0).setCellValue(entry.getKey().toString());
+                row.createCell(1).setCellValue(entry.getValue());
+            }
+
+            XSSFDrawing drawing = countChartSheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 3, 1, 15, 20);
+
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleText("Sample Count Over Months");
+
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            bottomAxis.setTitle("Month");
+            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+            leftAxis.setTitle("Sample Count");
+            leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            XDDFDataSource<String> months = XDDFDataSourcesFactory.fromStringCellRange(countChartSheet,
+                    new CellRangeAddress(1, chartRowIndex - 1, 0, 0));
+            XDDFNumericalDataSource<Double> counts = XDDFDataSourcesFactory.fromNumericCellRange(countChartSheet,
+                    new CellRangeAddress(1, chartRowIndex - 1, 1, 1));
+
+            XDDFLineChartData chartData = (XDDFLineChartData) chart.createData(ChartTypes.LINE, bottomAxis, leftAxis);
+            XDDFLineChartData.Series series = (XDDFLineChartData.Series) chartData.addSeries(months, counts);
+            series.setTitle("Sample Count", null);
+            series.setSmooth(false);
+            series.setMarkerStyle(MarkerStyle.CIRCLE);
+
+            chart.plot(chartData);
+
+            XSSFSheet serviceChartSheet = workbook.createSheet("Service Amount Chart");
+
+            Row serviceHeader = serviceChartSheet.createRow(0);
+            serviceHeader.createCell(0).setCellValue("Month");
+            serviceHeader.createCell(1).setCellValue("Service Amount");
+
+            Map<YearMonth, Double> serviceData = getServiceAmountChartData();
+            int serviceRowIndex = 1;
+            for (Map.Entry<YearMonth, Double> entry : serviceData.entrySet()) {
+                Row row = serviceChartSheet.createRow(serviceRowIndex++);
+                row.createCell(0).setCellValue(entry.getKey().toString());
+                row.createCell(1).setCellValue(entry.getValue());
+            }
+
+            XSSFDrawing serviceDrawing = serviceChartSheet.createDrawingPatriarch();
+            XSSFClientAnchor serviceAnchor = serviceDrawing.createAnchor(0, 0, 0, 0, 3, 1, 15, 20);
+
+            XSSFChart serviceChart = serviceDrawing.createChart(serviceAnchor);
+            serviceChart.setTitleText("Service Amount Over Months");
+
+            XDDFChartLegend serviceLegend = serviceChart.getOrAddLegend();
+            serviceLegend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis serviceBottomAxis = serviceChart.createCategoryAxis(AxisPosition.BOTTOM);
+            serviceBottomAxis.setTitle("Month");
+            XDDFValueAxis serviceLeftAxis = serviceChart.createValueAxis(AxisPosition.LEFT);
+            serviceLeftAxis.setTitle("Service Amount");
+            serviceLeftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            XDDFDataSource<String> serviceMonths = XDDFDataSourcesFactory.fromStringCellRange(serviceChartSheet,
+                    new CellRangeAddress(1, serviceRowIndex - 1, 0, 0));
+            XDDFNumericalDataSource<Double> serviceValues = XDDFDataSourcesFactory.fromNumericCellRange(serviceChartSheet,
+                    new CellRangeAddress(1, serviceRowIndex - 1, 1, 1));
+
+            XDDFLineChartData serviceChartData = (XDDFLineChartData) serviceChart.createData(ChartTypes.LINE, serviceBottomAxis, serviceLeftAxis);
+            XDDFLineChartData.Series serviceSeries = (XDDFLineChartData.Series) serviceChartData.addSeries(serviceMonths, serviceValues);
+            serviceSeries.setTitle("Service Amount", null);
+            serviceSeries.setSmooth(false);
+            serviceSeries.setMarkerStyle(MarkerStyle.SQUARE);
+            serviceChart.plot(serviceChartData);
+
             workbook.write(out);
             context.responseComplete();
 
@@ -5808,6 +5889,89 @@ public class ReportsController implements Serializable {
                         String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
                                 / calculateRouteWiseBillCount(yearMonth)));
             }
+
+            XSSFSheet countChartSheet = workbook.createSheet("Sample Count Chart");
+
+            Row chartHeader = countChartSheet.createRow(0);
+            chartHeader.createCell(0).setCellValue("Month");
+            chartHeader.createCell(1).setCellValue("Sample Count");
+
+            Map<YearMonth, Double> countData = getSampleCountChartData();
+            int chartRowIndex = 1;
+            for (Map.Entry<YearMonth, Double> entry : countData.entrySet()) {
+                Row row = countChartSheet.createRow(chartRowIndex++);
+                row.createCell(0).setCellValue(entry.getKey().toString());
+                row.createCell(1).setCellValue(entry.getValue());
+            }
+
+            XSSFDrawing drawing = countChartSheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 3, 1, 15, 20);
+
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleText("Sample Count Over Months");
+
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            bottomAxis.setTitle("Month");
+            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+            leftAxis.setTitle("Sample Count");
+            leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            XDDFDataSource<String> months = XDDFDataSourcesFactory.fromStringCellRange(countChartSheet,
+                    new CellRangeAddress(1, chartRowIndex - 1, 0, 0));
+            XDDFNumericalDataSource<Double> counts = XDDFDataSourcesFactory.fromNumericCellRange(countChartSheet,
+                    new CellRangeAddress(1, chartRowIndex - 1, 1, 1));
+
+            XDDFLineChartData chartData = (XDDFLineChartData) chart.createData(ChartTypes.LINE, bottomAxis, leftAxis);
+            XDDFLineChartData.Series series = (XDDFLineChartData.Series) chartData.addSeries(months, counts);
+            series.setTitle("Sample Count", null);
+            series.setSmooth(false);
+            series.setMarkerStyle(MarkerStyle.CIRCLE);
+
+            chart.plot(chartData);
+
+            XSSFSheet serviceChartSheet = workbook.createSheet("Service Amount Chart");
+
+            Row serviceHeader = serviceChartSheet.createRow(0);
+            serviceHeader.createCell(0).setCellValue("Month");
+            serviceHeader.createCell(1).setCellValue("Service Amount");
+
+            Map<YearMonth, Double> serviceData = getServiceAmountChartData();
+            int serviceRowIndex = 1;
+            for (Map.Entry<YearMonth, Double> entry : serviceData.entrySet()) {
+                Row row = serviceChartSheet.createRow(serviceRowIndex++);
+                row.createCell(0).setCellValue(entry.getKey().toString());
+                row.createCell(1).setCellValue(entry.getValue());
+            }
+
+            XSSFDrawing serviceDrawing = serviceChartSheet.createDrawingPatriarch();
+            XSSFClientAnchor serviceAnchor = serviceDrawing.createAnchor(0, 0, 0, 0, 3, 1, 15, 20);
+
+            XSSFChart serviceChart = serviceDrawing.createChart(serviceAnchor);
+            serviceChart.setTitleText("Service Amount Over Months");
+
+            XDDFChartLegend serviceLegend = serviceChart.getOrAddLegend();
+            serviceLegend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis serviceBottomAxis = serviceChart.createCategoryAxis(AxisPosition.BOTTOM);
+            serviceBottomAxis.setTitle("Month");
+            XDDFValueAxis serviceLeftAxis = serviceChart.createValueAxis(AxisPosition.LEFT);
+            serviceLeftAxis.setTitle("Service Amount");
+            serviceLeftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            XDDFDataSource<String> serviceMonths = XDDFDataSourcesFactory.fromStringCellRange(serviceChartSheet,
+                    new CellRangeAddress(1, serviceRowIndex - 1, 0, 0));
+            XDDFNumericalDataSource<Double> serviceValues = XDDFDataSourcesFactory.fromNumericCellRange(serviceChartSheet,
+                    new CellRangeAddress(1, serviceRowIndex - 1, 1, 1));
+
+            XDDFLineChartData serviceChartData = (XDDFLineChartData) serviceChart.createData(ChartTypes.LINE, serviceBottomAxis, serviceLeftAxis);
+            XDDFLineChartData.Series serviceSeries = (XDDFLineChartData.Series) serviceChartData.addSeries(serviceMonths, serviceValues);
+            serviceSeries.setTitle("Service Amount", null);
+            serviceSeries.setSmooth(false);
+            serviceSeries.setMarkerStyle(MarkerStyle.SQUARE);
+            serviceChart.plot(serviceChartData);
 
             workbook.write(out);
             context.responseComplete();
