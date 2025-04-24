@@ -6,6 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:report="http://xmlns.jcp.org/jsf/composite/ezcomp/reports"
       xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -191,7 +192,7 @@
                             </p:selectOneMenu>
 
                         </p:panelGrid>
-                        <h:panelGrid columns="6">
+                        <div class="d-flex gap-3">
                             <p:commandButton
                                 ajax="false"
                                 value="Process"
@@ -199,9 +200,7 @@
                                 style="width: 150px"
                                 icon="fas fa-cogs"
                                 class="m-2 ui-button-warning">
-
                             </p:commandButton>
-
 
                             <p:commandButton
                                 ajax="false"
@@ -211,8 +210,6 @@
                                 class="m-2 ui-button-danger"
                                 onclick="return confirm('Are you sure you want to fix the billing department?');">
                             </p:commandButton>
-
-
 
                             <p:commandButton
                                 icon="fa-solid fa-print"
@@ -268,7 +265,7 @@
                                                 fileName="collection_center_bill_wise_detail_report.pdf"/>
                             </p:commandButton>
 
-                        </h:panelGrid>
+                        </div>
 
                         <h:panelGroup id="printPanel">
                             <h:panelGrid columns="2" class="my-3" rendered="#{reportsController.reportType eq 'Report'}">
@@ -422,103 +419,10 @@
                             </h:panelGroup>
 
                             <!--table 2 / report type - Summary With Letter-->
-                            <p:dataTable
-                                id="tblExport2"
-                                var="row"
-                                rowIndexVar="b"
-                                value="#{reportsController.bundle.reportTemplateRows}"
-                                rendered="#{reportsController.reportType eq 'SummaryWithLetter'}">
-
-                                <f:facet name="header">
-                                    <h:outputLabel value="#{reportsController.currentDate}"
-                                                   style="text-align: left; display: block;">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
-                                    <h:outputText value="#{reportsController.collectingCentre.name}"
-                                                  style="text-align: left; display: block;"/>
-                                    <h:outputText value="#{reportsController.collectingCentre.address}"
-                                                  style="text-align: left; display: block;"/>
-                                    <br/>
-                                    <h:outputText value="Dear Sir/Madam,"
-                                                  style="text-align: left; display: block;"/>
-                                    <h:outputText value="SETTLEMENT OF INVESTIGATION BILL"
-                                                  style="font-size: 18px; font-weight: bold; text-align: center; display: block;"/>
-                                    <h:outputLabel value="From  :  "/>
-                                    <h:outputLabel value="#{reportsController.fromDate}">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="To :  "/>
-                                    <h:outputLabel value="#{reportsController.toDate}">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
-                                </f:facet>
-
-                                <p:column headerText="S.No" width="3rem">
-                                    <h:outputText value="#{b+1}"/>
-                                </p:column>
-                                <p:column headerText="Bill No (Invoice No)" width="5rem">
-                                    <h:outputText value="#{row.billItem.bill.deptId}"/>
-                                </p:column>
-                                <p:column headerText="Ref No (Leaf No)" width="5rem">
-                                    <h:outputText value="#{ row.billItem.bill.billTypeAtomic eq 'CC_BILL_CANCELLATION' ?
-                                                            row.billItem.bill.billedBill.referenceNumber: row.billItem.bill.referenceNumber}"/>
-                                </p:column>
-                                <p:column headerText="Bill Date" width="5rem">
-                                    <h:outputText value="#{row.billItem.bill.createdAt}">
-                                        <f:convertDateTime
-                                            pattern="dd MM yyyy hh:mm:ss a"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Patient Name" width="5rem">
-                                    <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
-                                </p:column>
-                                <p:column headerText="Hospital Fee" width="5rem" style="text-align: right">
-                                    <h:outputText value="#{row.billItem.hospitalFee}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value="#{reportsController.bundle.hospitalTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </f:facet>
-                                </p:column>
-                                <p:column headerText="Professional Fee" width="5rem" style="text-align: right">
-                                    <h:outputText value="#{row.billItem.staffFee}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value="#{reportsController.bundle.staffTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </f:facet>
-                                </p:column>
-                                <p:column headerText="Net Amount" width="5rem" style="text-align: right">
-                                    <h:outputText value="#{row.billItem.netValue}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value="#{reportsController.bundle.total}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </f:facet>
-                                </p:column>
-
-                                <f:facet name="footer">
-                                    <h:outputText 
-                                        value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report')}" 
-                                        escape="false" ></h:outputText>
-                                    <h:outputLabel value="#{reportsController.currentDate}"
-                                                   style="text-align: right; display: block;">
-                                        <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:dataTable>
-
+                            <h:panelGroup rendered="#{reportsController.reportType eq 'SummaryWithLetter'}" class="mt-2">
+                                <report:cc_bill_wise_detail_summary_with_letter/>                               
+                            </h:panelGroup>
+                            
                             <!--table 3 / report type - Summary With Letter and Test Name-->
                             <p:dataTable
                                 id="tblExport3"
