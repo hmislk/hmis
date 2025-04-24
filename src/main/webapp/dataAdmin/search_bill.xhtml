@@ -123,7 +123,11 @@
                                 <h:outputLabel  value="#{bill.billClassType}" ></h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Atomic Type">
+                            <p:column 
+                                headerText="Atomic Type"
+                                sortBy="#{bill.billTypeAtomic}"
+                                filterBy="#{bill.billTypeAtomic}"
+                                filterMatchMode="contains">
                                 <h:outputLabel  value="#{bill.billTypeAtomic}" ></h:outputLabel>
                             </p:column>
 

@@ -954,7 +954,7 @@ public class ReportController implements Serializable {
             params.put("type", type);
         }
 
-        if (type.equalsIgnoreCase("cc")) {
+        if (type != null && type.equalsIgnoreCase("cc")) {
             if (collectingCentre != null) {
                 jpql += " AND bi.bill.collectingCentre = :cc";
                 params.put("cc", collectingCentre);
@@ -1018,6 +1018,11 @@ public class ReportController implements Serializable {
         if (institution != null) {
             jpql += " AND (bi.bill.institution = :ins or bi.bill.toInstitution=:ins) ";
             params.put("ins", institution);
+        }
+
+        if(department != null) {
+            jpql += "AND (bi.bill.department = :dep)";
+            params.put("dep", department);
         }
 
         if (site != null) {

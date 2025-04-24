@@ -288,6 +288,10 @@ public class EnumController implements Serializable {
         return Arrays.asList(LoginPage.values());
     }
 
+    public List<ReportViewType> getReportViewTypes() {
+        return Arrays.asList(ReportViewType.values());
+    }
+
     public ItemListingStrategy[] getItemListingStrategys() {
         return ItemListingStrategy.values();
     }
