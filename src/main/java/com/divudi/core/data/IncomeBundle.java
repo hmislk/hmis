@@ -335,7 +335,7 @@ public class IncomeBundle implements Serializable {
         purchaseValue = 0;
         grossProfitValue = 0;
 
-        Map<BillTypeAtomic, IncomeRow> grouped = new HashMap<>();
+        Map<BillTypeAtomic, IncomeRow> grouped = new LinkedHashMap<>();
 
         for (IncomeRow r : getRows()) {
             PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
@@ -681,6 +681,7 @@ public class IncomeBundle implements Serializable {
         // Replace with grouped rows
         getRows().clear();
         getRows().addAll(grouped.values());
+        populateSummaryRow();
     }
 
     public void generatePaymentDetailsForBillsAndBatchBills() {
