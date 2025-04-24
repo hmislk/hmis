@@ -31,6 +31,10 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.*;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -5695,6 +5699,22 @@ public class ReportsController implements Serializable {
             title.setSpacingAfter(20);
             document.add(title);
 
+            document.add(new Paragraph("Sample Count Over Months", titleFont));
+            Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months",
+                    getSampleCountChartData(), "Month", "Sample Count"));
+            countChartImage.scaleToFit(500, 300);
+            countChartImage.setAlignment(Element.ALIGN_CENTER);
+            document.add(countChartImage);
+
+            document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
+            Image amountChartImage = Image.getInstance(generateChartAsBytes("Service Amount Over Months",
+                    getServiceAmountChartData(), "Month", "Service Amount"));
+            amountChartImage.scaleToFit(500, 300);
+            amountChartImage.setAlignment(Element.ALIGN_CENTER);
+            document.add(amountChartImage);
+
+            document.newPage();
+
             PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
 
@@ -5719,13 +5739,8 @@ public class ReportsController implements Serializable {
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill bill = monthlyData.get(yearMonth);
-                    if (bill != null) {
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getQty()))));
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getTotalHospitalFee()))));
-                    } else {
-                        table.addCell(new PdfPCell(new Phrase("0")));
-                        table.addCell(new PdfPCell(new Phrase("0.0")));
-                    }
+                    table.addCell(new PdfPCell(new Phrase(bill != null ? String.valueOf(bill.getQty()) : "0")));
+                    table.addCell(new PdfPCell(new Phrase(bill != null ? String.valueOf(bill.getTotalHospitalFee()) : "0.0")));
                 }
             }
 
@@ -5768,6 +5783,20 @@ public class ReportsController implements Serializable {
             title.setSpacingAfter(20);
             document.add(title);
 
+            document.add(new Paragraph("Sample Count Over Months", titleFont));
+            Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months", getSampleCountChartData(), "Month", "Sample Count"));
+            countChartImage.scaleToFit(500, 300);
+            countChartImage.setAlignment(Element.ALIGN_CENTER);
+            document.add(countChartImage);
+
+            document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
+            Image serviceChartImage = Image.getInstance(generateChartAsBytes("Service Amount Over Months", getServiceAmountChartData(), "Month", "Service Amount"));
+            serviceChartImage.scaleToFit(500, 300);
+            serviceChartImage.setAlignment(Element.ALIGN_CENTER);
+            document.add(serviceChartImage);
+
+            document.newPage();
+
             PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
 
@@ -5792,13 +5821,8 @@ public class ReportsController implements Serializable {
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
-                    if (billData != null) {
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getQty()))));
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getTotalHospitalFee()))));
-                    } else {
-                        table.addCell(new PdfPCell(new Phrase("0")));
-                        table.addCell(new PdfPCell(new Phrase("0.0")));
-                    }
+                    table.addCell(new PdfPCell(new Phrase(billData != null ? String.valueOf(billData.getQty()) : "0")));
+                    table.addCell(new PdfPCell(new Phrase(billData != null ? String.valueOf(billData.getTotalHospitalFee()) : "0.0")));
                 }
             }
 
@@ -5808,10 +5832,8 @@ public class ReportsController implements Serializable {
             table.addCell(totalCell);
 
             for (YearMonth yearMonth : yearMonths) {
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
-                        / calculateRouteWiseBillCount(yearMonth)))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
-                        / calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth)))));
             }
 
             document.add(table);
@@ -5821,6 +5843,25 @@ public class ReportsController implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private byte[] generateChartAsBytes(String title, Map<YearMonth, Double> data, String categoryLabel, String valueLabel) throws IOException {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        for (Map.Entry<YearMonth, Double> entry : data.entrySet()) {
+            dataset.addValue(entry.getValue(), valueLabel, entry.getKey().toString());
+        }
+
+        JFreeChart chart = ChartFactory.createLineChart(
+                title,
+                categoryLabel,
+                valueLabel,
+                dataset
+        );
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ChartUtils.writeChartAsPNG(byteArrayOutputStream, chart, 600, 300);
+        return byteArrayOutputStream.toByteArray();
     }
 
     public void exportRouteAnalysisSummaryReportToExcel() {
