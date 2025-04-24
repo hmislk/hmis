@@ -39,6 +39,10 @@ public class IncomeRow implements Serializable {
     private boolean selected;
 
     private Item item;
+    
+    private double retailValue;
+    private double purchaseValue;
+    private double grossProfit;
 
     private Long categoryCount;
     private double categoryTotal;
@@ -1236,6 +1240,30 @@ public class IncomeRow implements Serializable {
 
     public void setPharmaceuticalBillItem(PharmaceuticalBillItem pharmaceuticalBillItem) {
         this.pharmaceuticalBillItem = pharmaceuticalBillItem;
+    }
+
+    public double getRetailValue() {
+        return retailValue;
+    }
+
+    public void setRetailValue(double retailValue) {
+        this.retailValue = retailValue;
+    }
+
+    public double getPurchaseValue() {
+        return purchaseValue;
+    }
+
+    public void setPurchaseValue(double purchaseValue) {
+        this.purchaseValue = purchaseValue;
+    }
+
+    public double getGrossProfit() {
+        return grossProfit;
+    }
+
+    public void setGrossProfit(double grossProfit) {
+        this.grossProfit = grossProfit;
     }
     
     
