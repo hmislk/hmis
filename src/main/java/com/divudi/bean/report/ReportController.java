@@ -1020,6 +1020,11 @@ public class ReportController implements Serializable {
             params.put("ins", institution);
         }
 
+        if(department != null) {
+            jpql += "AND (bi.bill.department = :dep)";
+            params.put("dep", department);
+        }
+
         if (site != null) {
             jpql += " AND bi.bill.department.site = :site";
             params.put("site", site);

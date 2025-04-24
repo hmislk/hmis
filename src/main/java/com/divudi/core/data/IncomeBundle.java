@@ -266,6 +266,10 @@ public class IncomeBundle implements Serializable {
 
             Double q = b.getQty();
             Double rRate = b.getRetailRate();
+            if(bta==BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS){
+                rRate= b.getBillItem().getNetRate();
+            }
+            
             Double pRate = b.getPurchaseRate();
 
             if (q == null || rRate == null || pRate == null) {
