@@ -191,16 +191,11 @@
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{b.toStaff.person.nameWithTitle}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{b.billType ne 'OpdBill'}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
-                                                        <h:outputText value="#{b.billType eq 'OpdBill'}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
+                                                        <h:outputText value="Pharmacy Bill" rendered="#{b.billType ne 'OpdBill'}" style="margin-right: 1mm;" />
+                                                        <h:outputText value="OPD Bill" rendered="#{b.billType eq 'OpdBill'}" style="margin-right: 1mm;" />
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
                                                         <h:outputText value="#{b.createdAt}" style="margin-left: 1mm;">
