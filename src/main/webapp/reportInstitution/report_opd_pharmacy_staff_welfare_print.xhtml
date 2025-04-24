@@ -178,7 +178,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{serviceSummery.bills}" var="row" varStatus="i">
+                                            <ui:repeat value="#{serviceSummery.bills}" var="b" varStatus="i">
                                                 <tr>
                                                     <td style="width: 8mm;" >
                                                         <h:outputText value="#{i+1}" style="margin-left: 1mm;"/>
@@ -194,8 +194,8 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="Pharmacy Bill" rendered="#{b.billType ne 'OpdBill'}" style="margin-right: 1mm;" />
-                                                        <h:outputText value="OPD Bill" rendered="#{b.billType eq 'OpdBill'}" style="margin-right: 1mm;" />
+                                                        <h:outputText value="Pharmacy Bill" rendered="#{b.billType ne 'OpdBill'}" style="margin-right: 1mm;"/>
+                                                        <h:outputText value="OPD Bill" rendered="#{b.billType eq 'OpdBill'}" style="margin-right: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
                                                         <h:outputText value="#{b.createdAt}" style="margin-left: 1mm;">
@@ -203,18 +203,18 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{b.netTotal+b.discount}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        <h:outputText value="#{b.netTotal + b.discount}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{b.discount}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
+                                                            <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{b.netTotal}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
+                                                            <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                 </tr>
