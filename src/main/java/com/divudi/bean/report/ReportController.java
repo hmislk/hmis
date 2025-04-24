@@ -954,7 +954,7 @@ public class ReportController implements Serializable {
             params.put("type", type);
         }
 
-        if (type.equalsIgnoreCase("cc")) {
+        if (type != null && type.equalsIgnoreCase("cc")) {
             if (collectingCentre != null) {
                 jpql += " AND bi.bill.collectingCentre = :cc";
                 params.put("cc", collectingCentre);
