@@ -151,7 +151,7 @@
                                     <th style="width: 10mm; font-weight: 700;">
                                         <h:outputText value="S.No" style="margin-left: 1mm;"/>
                                     </th>
-                                    <th style="width: 50mm;font-weight: 700;">
+                                    <th style="width: 45mm;font-weight: 700;">
                                         <h:outputText value="Bill No (Invoice No)" style="margin-left: 1mm;"/>
                                     </th>
                                     <th style="width: 30mm; font-weight: 700; text-align: left;">
@@ -160,8 +160,11 @@
                                     <th style="width: 40mm; font-weight: 700; text-align: left;">
                                         <h:outputText value="Bill Date" style="margin-left:  1mm;"/>
                                     </th>
-                                    <th style="width: 85mm; font-weight: 700;">
+                                    <th style="width: 55mm; font-weight: 700;">
                                         <h:outputText value="Patient Name" style="margin-left: 1mm;"/>
+                                    </th>
+                                    <th style="width: 35mm; font-weight: 700;">
+                                        <h:outputText value="Test Name" style="margin-left: 1mm;"/>
                                     </th>
                                     <th style="width: 25mm; font-weight: 700; text-align: right;">
                                         <h:outputText value="Hospital Fee" style="margin-right: 1mm;"/>
@@ -180,7 +183,7 @@
                                         <td style="width: 10mm;" >
                                             <h:outputText value="#{i.index +1}" style="margin-left: 1mm;"/>
                                         </td>
-                                        <td style="width: 50mm; text-align: left;">
+                                        <td style="width: 45mm; text-align: left;">
                                             <h:outputText value="#{row.billItem.bill.deptId}" style="margin-left: 1mm;"/>
                                         </td>
                                         <td style="width: 30mm; text-align: left;">
@@ -191,8 +194,11 @@
                                                 <f:convertDateTime pattern="dd MM yyyy hh:mm a" />
                                             </h:outputText>
                                         </td>
-                                        <td style="width: 85mm;">
+                                        <td style="width: 55mm;">
                                             <h:outputText value="#{row.billItem.bill.patient.person.name}" style="margin-left: 1mm;"></h:outputText>
+                                        </td>
+                                        <td style="width: 35mm;">
+                                            <h:outputText value="#{row.billItem.item.name}" style="margin-left: 1mm;"></h:outputText>
                                         </td>
                                         <td style="width: 25mm; text-align: right;">
                                             <h:outputText value="#{row.billItem.hospitalFee}" style="margin-right: 1mm;">
@@ -213,10 +219,11 @@
                             <tfoot>
                                 <tr>
                                     <td style="width: 10mm;" ></td>
-                                    <td style="width: 50mm; text-align: left;"></td>
+                                    <td style="width: 45mm; text-align: left;"></td>
                                     <td style="width: 30mm; text-align: left;"></td>
                                     <td style="width: 40mm; text-align: left;"></td>
-                                    <td style="width: 85mm; text-align: right;"></td>
+                                    <td style="width: 55mm; text-align: right;"></td>
+                                    <td style="width: 35mm; text-align: right;"></td>
                                     <td style="width: 25mm; text-align: right;">
                                         <h:outputText value="#{reportsController.bundle.hospitalTotal}" style="margin-right: 1mm;">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -241,15 +248,15 @@
                         <div>
                             <h:outputLabel
                                 class="data mt-2"
-                                value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report - Summary With Letter')}" 
+                                value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report - Summary With Letter and Test Name')}" 
                                 escape="false" >
                             </h:outputLabel>
                             <h:panelGroup 
-                                rendered="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Contact - Summary With Letter').length() ne 0.0}" 
+                                rendered="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Contact - Summary With Letter and Test Name').length() ne 0.0}" 
                                 class="d-flex gap-2">
                                 <h:outputLabel
                                     class="data"
-                                    value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Contact - Summary With Letter')}" 
+                                    value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Contact - Summary With Letter and Test Name')}" 
                                     escape="false" >
                                 </h:outputLabel>
                                 <h:outputLabel
@@ -266,7 +273,7 @@
 
                         <h:outputLabel
                             class="data"
-                            value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Address - Summary With Letter')}" 
+                            value="#{configOptionApplicationController.getLongTextValueByKey('Footer Text for Collection Centre Bill Wise Detail Report Address - Summary With Letter and Test Name')}" 
                             escape="false" >
                         </h:outputLabel>
 
