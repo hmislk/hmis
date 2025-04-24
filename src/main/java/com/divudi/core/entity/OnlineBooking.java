@@ -40,6 +40,8 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private boolean paid;
     private boolean edited;
     private String requestIp;
+    private double hospitalFee;
+    private double doctorFee;
     
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
@@ -72,6 +74,22 @@ public class OnlineBooking implements Serializable, RetirableEntity {
 
     public OnlineBookingStatus getOnlineBookingStatus() {
         return onlineBookingStatus;
+    }
+
+    public double getHospitalFee() {
+        return hospitalFee;
+    }
+
+    public void setHospitalFee(double hospitalFee) {
+        this.hospitalFee = hospitalFee;
+    }
+
+    public double getDoctorFee() {
+        return doctorFee;
+    }
+
+    public void setDoctorFee(double doctorFee) {
+        this.doctorFee = doctorFee;
     }
 
     public void setOnlineBookingStatus(OnlineBookingStatus onlineBookingStatus) {
