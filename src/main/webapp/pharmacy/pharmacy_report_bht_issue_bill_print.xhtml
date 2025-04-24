@@ -193,6 +193,9 @@
                                                         <h:outputText value="#{i.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 67mm; text-align: left;">
+                                                        <h:outputText value="#{i.cancelledBill.deptId}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
                                                         <h:outputText value="#{i.createdAt}" style="margin-left: 1mm;">
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                         </h:outputText>
