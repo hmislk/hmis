@@ -4,9 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ezb="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -20,6 +18,14 @@
                                 <div class="col">
                                     <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
                                     <p:outputLabel value="Shift Handover" />
+                                    <p:commandButton 
+                                        class="ui-button-success mx-2" 
+                                        ajax="false" 
+                                        value="&nbsp;&nbsp;Record Shift End Cash in Hand" 
+                                        icon="fa fa-handshake"
+                                        style="float: right;"
+                                        onclick="return confirm('Are you sure you want to handover this shift?');"
+                                        action="#{financialTransactionController.settleRecordingShiftEndCashInHand()}" />
                                 </div>
                             </div>
                         </f:facet>
@@ -92,37 +98,11 @@
                                             <i class="pi pi-dollar" style="margin-right:5px; color: #17a2b8;"></i>
                                             <p:outputLabel value="Total Collected Value" />
                                         </h:panelGroup>
-                                        <p:outputLabel value="#{financialTransactionController.bundle.total}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-
-                                        <h:panelGroup>
-                                            <i class="pi pi-dollar" style="margin-right:5px; color: #17a2b8;"></i>
-                                            <p:outputLabel value="Total Handed over Value" />
+                                        <h:panelGroup id="tblCashier">
+                                            <h:outputText value="#{financialTransactionController.bundle.denominatorValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
                                         </h:panelGroup>
-                                        <p:outputLabel value="#{financialTransactionController.bundle.totalOut}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-                                    </p:panelGrid>
-
-                                    <h:panelGroup id="tblCashier">
-                                        Cash in Hand
-                                        <h:outputText value="#{financialTransactionController.bundle.denominatorValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-
-                                    <p:panelGrid columns="3" layout="tabular" class="w-100 m-1" >
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Record Shift End Cash in Hand" class="font-weight-bold" ></p:outputLabel>
-                                        </f:facet>
-                                        <p:commandButton 
-                                            class="ui-button-success mx-2" 
-                                            ajax="false" 
-                                            value="&nbsp;&nbsp;Record Shift End Cash in Hand" 
-                                            icon="fa fa-handshake"
-                                            onclick="return confirm('Are you sure you want to handover this shift?');"
-                                            action="#{financialTransactionController.settleRecordingShiftEndCashInHand()}" />
                                     </p:panelGrid>
 
                                 </div>

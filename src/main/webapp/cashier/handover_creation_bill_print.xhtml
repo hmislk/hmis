@@ -15,7 +15,7 @@
                         <f:facet name="header">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <h:outputText value="Hand Over Bill Preview" ></h:outputText>
+                                    <h:outputText value="Shift End Cash" ></h:outputText>
                                 </div>
                                 <div>
                                     <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print">
@@ -26,7 +26,7 @@
                         </f:facet>
                         <h:panelGrid id="depositbill" class="w-100">
                             <div class="d-flex justify-content-center">
-                                <prints:five_five_paper_with_headings_for_handover 
+                                <prints:five_five_paper_with_headings_for_shift_end_cash 
                                     bundle="#{financialTransactionController.bundle}"/>  
                             </div>
                         </h:panelGrid>

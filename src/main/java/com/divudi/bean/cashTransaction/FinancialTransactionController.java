@@ -4797,20 +4797,8 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleRecordingShiftEndCashInHand() {
-        if (user == null) {
-            JsfUtil.addErrorMessage("Please select a user to handover the shift.");
-            return null;
-        }
         if (bundle == null) {
             JsfUtil.addErrorMessage("Error - Null Bundle");
-            return null;
-        }
-        if (bundle.getBundles() == null) {
-            JsfUtil.addErrorMessage("No Payments");
-            return null;
-        }
-        if (bundle.getBundles().isEmpty()) {
-            JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
 
