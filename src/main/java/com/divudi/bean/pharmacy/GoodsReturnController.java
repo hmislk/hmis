@@ -319,6 +319,9 @@ public class GoodsReturnController implements Serializable {
         
         getReturnBill().setToDepartment(getBill().getDepartment());
         getBillFacade().edit(getReturnBill());
+        
+        getBill().setReferenceBill(getReturnBill());
+        getBillFacade().edit(getBill());
 
         updateOriginalBill();
 

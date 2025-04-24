@@ -2005,10 +2005,9 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING_GRN);
             billTypes.add(BillType.PharmacyGrnBill);
             billTypes.add(BillType.PharmacyGrnReturn);
-            billTypes.add(BillType.PharmacyReturnWithoutTraising);
         } else if ("purchaseDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
@@ -2016,6 +2015,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING_DIRECT_PURCHASE);
         } else if ("consumptionDoc".equals(documentType)) {
             billTypes.add(BillType.PharmacyIssue);
 
@@ -2077,7 +2077,7 @@ public class PharmacyReportController implements Serializable {
         if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType)) {
             jpql += " and s.department IS NOT NULL ";
         }
-
+        
         jpql += " order by s.createdAt ";
         stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
