@@ -15,7 +15,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-     
+
 
         <div class="w-100" style="#{configOptionApplicationController.getLongTextValueByKey('CSS for Shift End Cash Receipt')}">
             <!-- Bill Header -->
@@ -57,7 +57,7 @@
                             </h:outputText>
 
                             <h:outputText value="Total :" styleClass="handover-label" style="font-weight: normal"/>
-                            <h:outputText value="#{cc.attrs.bundle.total}">
+                            <h:outputText value="#{cc.attrs.bundle.handoverBill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
 
@@ -67,29 +67,28 @@
 
                 </div>
 
-                <p:dataTable   value="#{financialTransactionController.bundle.denominationTransactions}" var="deno"  >
-                    <p:column title="Denomination">
+                <p:dataTable   
+                    value="#{financialTransactionController.bundle.denominationTransactions}" 
+                    var="deno"  >
+                    <p:column headerText="Denomination">
                         <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
                     </p:column>
-                    <p:column  title="Number">
-                        <p:inputText 
-                            class="text-end w-100" 
+                    <p:column 
+                        headerText="Number"
+                        class="text-end"
+                        title="Number">
+                        <p:outputLabel 
+                            class="w-100" 
                             id="txtDenoQtyHandover"
                             value="#{deno.denominationQty}" 
                             style="width: 100%;" 
-                            label="Cash Handover" 
-                            onfocus="this.select()">
-                            <f:convertNumber integerOnly="true" />
-                            <p:ajax 
-                                event="blur"
-                                process="txtDenoQtyHandover" 
-                                listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
-                                update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} " ></p:ajax>
-                        </p:inputText>  
+                            onfocus="this.select()"/>
                     </p:column>
-                    <p:column >
+                    <p:column
+                        headerText="Value"
+                        class="text-end">
                         <p:outputLabel
-                            class="ui-button text-end w-100"
+                            class="w-100"
                             id="txtDenoVal" value="#{deno.denominationValue}" >
                             <f:convertNumber pattern="#,##0.00" />
                         </p:outputLabel>
