@@ -15,139 +15,11 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <style >
-            .billDocument {
-                width: 100%;
-                margin: auto;
-                padding: 20px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                background-color: white;
-                font-family: 'Arial', sans-serif;
-                color: #333;
-            }
+     
 
-            .billHeader {
-                border-bottom: 2px solid #ccc;
-                padding-bottom: 10px;
-                margin-bottom: 20px;
-            }
-
-            .institutionName {
-                font-size: 18px;
-                font-weight: bold;
-                text-align: center;
-                margin-bottom: 5px;
-            }
-
-            .institutionContact div {
-                text-align: center;
-                font-size: 14px;
-            }
-
-            .headingBillFiveFive {
-                text-align: center;
-                font-weight: bold;
-                font-size: 16px;
-                color: #444;
-                margin-top: 10px;
-            }
-
-            .billBody {
-                min-height: 200px; /* Adjust based on content */
-            }
-
-            .billFooter {
-                margin-top: 20px;
-                border-top: 2px solid #ccc;
-                padding-top: 10px;
-                text-align: center;
-                font-size: 12px;
-            }
-
-            .handoverDetails {
-                margin-top: 20px;
-                font-size: 12pt;
-            }
-
-            .handover-grid {
-                width: 100%;
-                border-collapse: collapse;
-            }
-
-            .handover-grid .labelColumn {
-                width: 35%;
-                vertical-align: top;
-                font-weight: bold;
-                padding: 5px;
-            }
-
-            .handover-grid .valueColumn {
-                width: 65%;
-                padding: 5px;
-            }
-
-            .handover-header {
-                font-size: 16pt;
-                font-weight: bold;
-                text-align: left;
-                padding-bottom: 10px;
-                margin-bottom: 10px;
-                border-bottom: 1px solid #ccc;
-            }
-
-            .inner-grid {
-                width: 100%;
-                margin-top: 5px;
-            }
-
-            .inner-grid .labelColumn,
-            .inner-grid .valueColumn {
-                width: 50%;
-                padding: 3px;
-            }
-
-            .ui-badge {
-                display: inline-block;
-                padding: 4px 8px;
-                font-size: 10pt;
-                color: #fff;
-                background-color: #007bff;
-                border-radius: 10px;
-            }
-
-            .ui-badge-danger {
-                background-color: #dc3545;
-            }
-
-            .ui-badge-primary {
-                background-color: #007bff;
-            }
-
-            .handover-icon {
-                margin-right: 5px;
-            }
-
-            .handover-label {
-                font-weight: bold;
-            }
-
-            @media print {
-                /* Adjust colors for print if necessary */
-                .pi {
-                    color: black !important;
-                }
-                .ui-badge {
-                    color: black !important;
-                    background-color: lightgray !important;
-                }
-            }
-
-
-        </style>
-
-        <div class="billDocument w-100">
+        <div class="w-100" style="#{configOptionApplicationController.getLongTextValueByKey('CSS for Shift End Cash Receipt')}">
             <!-- Bill Header -->
-            <div class="billHeader col-12" >
+            <div class="col-12" >
                 <div class="institutionName">
                     <h:outputLabel value="#{cc.attrs.bundle.user.institution.name}" />
                 </div>
@@ -159,7 +31,7 @@
                         <h:outputLabel value="#{cc.attrs.bundle.user.department.name}" />
                     </div>
                 </div>
-                <div class="headingBillFiveFive" style="text-align: center; font-weight: bold;">
+                <div class="title" style="text-align: center; font-weight: bold;">
                     <h:outputLabel value="SHIFT END CASH" />
                 </div>
             </div>
@@ -229,7 +101,7 @@
 
             <!-- Bill Footer -->
             <div class="billFooter">
-                <!-- Contents for the footer will be added here later -->
+                <h:outputText escape="false" value="#{configOptionApplicationController.getLongTextValueByKey('Bill Footer for Shift End Cash Receipt')}" ></h:outputText>
             </div>
         </div>
 
