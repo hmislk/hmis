@@ -328,11 +328,11 @@ public class ChannelService {
         if (billSessionList != null && !billSessionList.isEmpty()) {
             for (BillSession bs : billSessionList) {
                 if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT) {
-                    if(!bs.getBill().isCancelled()){
+                    if (!bs.getBill().isCancelled()) {
                         activePatientCount++;
                     }
                 }
-                if(Integer.parseInt(bs.getBill().getSingleBillSession().getSerialNoStr()) > nextNumber){
+                if (Integer.parseInt(bs.getBill().getSingleBillSession().getSerialNoStr()) > nextNumber) {
                     nextNumber = Integer.parseInt(bs.getBill().getSingleBillSession().getSerialNoStr());
                 }
             }
@@ -382,7 +382,7 @@ public class ChannelService {
 //        fee.getName();
     }
 
-     public Map getLocalFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss) {
+    public Map getLocalFeesForDoctorAndInstitutionFromServiceSession(ServiceSession ss) {
 
         String sql = "Select fee From ItemFee fee "
                 + " where fee.retired = false "
@@ -411,22 +411,22 @@ public class ChannelService {
 
         return fees;
 
-     }
-     @EJB
-     private OnlineBookingFacade onlineBookingFacade;
-     
-     public void updateAndSaveOnlineBooking(OnlineBooking newBooking, SessionInstance session){
-         newBooking.setHospital(session.getInstitution());
-         newBooking.setDepartment(session.getDepartment());
-         newBooking.setPaid(false);
-         newBooking.setOnlineBookingStatus(OnlineBookingStatus.PENDING);
-         
-         if(newBooking.getId() == null){
-             onlineBookingFacade.create(newBooking);
-         }else{
-             onlineBookingFacade.edit(newBooking);
-         }
-     }
+    }
+    @EJB
+    private OnlineBookingFacade onlineBookingFacade;
+
+    public void updateAndSaveOnlineBooking(OnlineBooking newBooking, SessionInstance session) {
+        newBooking.setHospital(session.getInstitution());
+        newBooking.setDepartment(session.getDepartment());
+        newBooking.setPaid(false);
+        newBooking.setOnlineBookingStatus(OnlineBookingStatus.PENDING);
+
+        if (newBooking.getId() == null) {
+            onlineBookingFacade.create(newBooking);
+        } else {
+            onlineBookingFacade.edit(newBooking);
+        }
+    }
 
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, OnlineBooking newBooking, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         //saveOrUpdatePatientDetails(patient);
@@ -617,8 +617,15 @@ public class ChannelService {
         bill.setStaff(session.getOriginatingSession().getStaff());
         //bill.setToStaff(toStaff);
         bill.setAppointmentAt(session.getSessionDate());
-        bill.setTotal(session.getOriginatingSession().getTotal());
-        bill.setNetTotal(session.getOriginatingSession().getTotal());
+        
+        if (newBooking.isForeign()) {
+            bill.setTotal(session.getOriginatingSession().getTotalFfee());
+            bill.setNetTotal(session.getOriginatingSession().getTotalFfee());
+        } else {
+            bill.setTotal(session.getOriginatingSession().getTotal());
+            bill.setNetTotal(session.getOriginatingSession().getTotal());
+        }
+
         bill.setPaymentMethod(PaymentMethod.OnCall);
         bill.setOnlineBooking(newBooking);
         bill.setPaid(false);
@@ -995,7 +1002,7 @@ public class ChannelService {
         return cb;
     }
 
-     public List<Payment> createPaymentForChannelAppoinmentCancellation(Bill cancellationBill, PaymentMethod cancelPaymentMethod,PaymentMethodData paymentMethodData, SessionController loggedSession) {
+    public List<Payment> createPaymentForChannelAppoinmentCancellation(Bill cancellationBill, PaymentMethod cancelPaymentMethod, PaymentMethodData paymentMethodData, SessionController loggedSession) {
         List<Payment> ps = new ArrayList<>();
         if (cancelPaymentMethod == null) {
             List<Payment> originalBillPayments = billService.fetchBillPayments(cancellationBill.getBilledBill());
@@ -1103,7 +1110,6 @@ public class ChannelService {
         }
         return ps;
     }
-
 
     public List<Institution> findHospitals() {
         Map params = new HashMap();
@@ -1404,12 +1410,11 @@ public class ChannelService {
         if (pm == null) {
             pm = bill.getPaymentMethod();
         }
-        if(p.getId() == null){
+        if (p.getId() == null) {
             paymentFacade.create(p);
         }
         return p;
     }
-
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
