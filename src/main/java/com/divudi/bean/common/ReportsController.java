@@ -2288,13 +2288,29 @@ public class ReportsController implements Serializable {
                     Bill existingBill = monthMap.get(yearMonth);
                     existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
                     existingBill.setQty(existingBill.getQty() + billItemQty);
+
+                    if (existingBill.getTotalHospitalFee() == 0 && existingBill.getQty() == 0) {
+                        monthMap.remove(yearMonth);
+
+                        if (monthMap.isEmpty()) {
+                            map.remove(bill.getCollectingCentre().getRoute());
+                        }
+                    }
                 } else {
                     Bill cloneBill = new Bill();
                     cloneBill.clone(bill);
                     cloneBill.setQty(billItemQty);
                     cloneBill.setTotalHospitalFee(totalHospitalFee);
 
-                    monthMap.put(yearMonth, cloneBill);
+                    if (cloneBill.getTotalHospitalFee() == 0 && cloneBill.getQty() == 0) {
+                        monthMap.remove(yearMonth);
+
+                        if (monthMap.isEmpty()) {
+                            map.remove(bill.getCollectingCentre().getRoute());
+                        }
+                    } else {
+                        monthMap.put(yearMonth, cloneBill);
+                    }
                 }
             } else {
                 monthMap = new HashMap<>();
@@ -2303,10 +2319,14 @@ public class ReportsController implements Serializable {
                 cloneBill.setQty(billItemQty);
                 cloneBill.setTotalHospitalFee(totalHospitalFee);
 
-                monthMap.put(yearMonth, cloneBill);
+                if (cloneBill.getTotalHospitalFee() != 0 || cloneBill.getQty() != 0) {
+                    monthMap.put(yearMonth, cloneBill);
+                }
             }
 
-            map.put(bill.getCollectingCentre().getRoute(), monthMap);
+            if (!monthMap.isEmpty()) {
+                map.put(bill.getCollectingCentre().getRoute(), monthMap);
+            }
         }
 
         setGroupedRouteWiseBillsMonthly(map);
@@ -2358,15 +2378,30 @@ public class ReportsController implements Serializable {
                     Bill existingBill = monthMap.get(yearMonth);
                     existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
                     existingBill.setQty(existingBill.getQty() + billItemQty);
+
+                    if (existingBill.getTotalHospitalFee() == 0 && existingBill.getQty() == 0) {
+                        monthMap.remove(yearMonth);
+
+                        if (monthMap.isEmpty()) {
+                            map.remove(bill.getCollectingCentre());
+                        }
+                    }
                 } else {
                     Bill cloneBill = new Bill();
                     cloneBill.clone(bill);
                     cloneBill.setQty(billItemQty);
                     cloneBill.setTotalHospitalFee(totalHospitalFee);
 
-                    monthMap.put(yearMonth, cloneBill);
-                }
+                    if (cloneBill.getTotalHospitalFee() == 0 && cloneBill.getQty() == 0) {
+                        monthMap.remove(yearMonth);
 
+                        if (monthMap.isEmpty()) {
+                            map.remove(bill.getCollectingCentre());
+                        }
+                    } else {
+                        monthMap.put(yearMonth, cloneBill);
+                    }
+                }
             } else {
                 monthMap = new HashMap<>();
                 Bill cloneBill = new Bill();
@@ -2374,10 +2409,15 @@ public class ReportsController implements Serializable {
                 cloneBill.setQty(billItemQty);
                 cloneBill.setTotalHospitalFee(totalHospitalFee);
 
-                monthMap.put(yearMonth, cloneBill);
+                if (cloneBill.getTotalHospitalFee() != 0 || cloneBill.getQty() != 0) {
+                    monthMap.put(yearMonth, cloneBill);
+                }
 
             }
-            map.put(bill.getCollectingCentre(), monthMap);
+
+            if (!monthMap.isEmpty()) {
+                map.put(bill.getCollectingCentre(), monthMap);
+            }
         }
 
         setGroupedCollectingCenterWiseBillsMonthly(map);
@@ -2527,10 +2567,10 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY bill";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        List<?> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
+        b.setReportTemplateRows((List<ReportTemplateRow>) rs);
         b.createRowValuesFromBillItems();
         b.calculateTotalsWithCredit();
         return b;
@@ -3076,7 +3116,7 @@ public class ReportsController implements Serializable {
      * workflow that assigned the wrong Department and Institution values. That
      * workflow has been corrected, but older records remain invalid. This
      * method corrects those records for a given ReportBundle (bundle).
-     *
+     * <p>
      * Usage Notes: 1. The method iterates over the groupedBillItems map (key:
      * String, value: List of BillItem). 2. For each map entry, we only look at
      * the first BillItem in the list to fix that Bill. 3. We derive the correct
@@ -3085,7 +3125,7 @@ public class ReportsController implements Serializable {
      * occurred, referencing the old Department details. 5. The Bill is then
      * persisted via billFacade.edit(bill). 6. Once all records are corrected,
      * this method should be removed from the codebase.
-     *
+     * <p>
      * Limitations: - Assumes that the first BillItem in each list (entry.value)
      * is sufficient for determining which Bill to fix. - Only updates the Bill
      * at index 0; if there are multiple BillItems, they presumably share the
@@ -3873,7 +3913,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -4096,7 +4136,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "BHT No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -5366,8 +5406,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
@@ -5647,11 +5687,12 @@ public class ReportsController implements Serializable {
             title.setSpacingAfter(20);
             document.add(title);
 
-            PdfPTable table = new PdfPTable(2 + getYearMonths().size() * 2);
+            PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
 
             table.addCell(new PdfPCell(new Phrase("S. No")));
             table.addCell(new PdfPCell(new Phrase("Route")));
+            table.addCell(new PdfPCell(new Phrase("Route Code")));
 
             List<YearMonth> yearMonths = getYearMonths();
             for (YearMonth yearMonth : yearMonths) {
@@ -5666,6 +5707,7 @@ public class ReportsController implements Serializable {
 
                 table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
                 table.addCell(new PdfPCell(new Phrase(route.getName())));
+                table.addCell(new PdfPCell(new Phrase(route.getCode())));
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
@@ -5680,7 +5722,7 @@ public class ReportsController implements Serializable {
             }
 
             PdfPCell totalCell = new PdfPCell(new Phrase("Total"));
-            totalCell.setColspan(2);
+            totalCell.setColspan(3);
             totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             table.addCell(totalCell);
 
@@ -5720,6 +5762,7 @@ public class ReportsController implements Serializable {
             int cellIndex = 0;
             headerRow.createCell(cellIndex++).setCellValue("S. No");
             headerRow.createCell(cellIndex++).setCellValue("Route");
+            headerRow.createCell(cellIndex++).setCellValue("Route Code");
 
             List<YearMonth> yearMonths = getYearMonths();
             for (YearMonth yearMonth : yearMonths) {
@@ -5737,6 +5780,7 @@ public class ReportsController implements Serializable {
 
                 row.createCell(cellIndex++).setCellValue(serialNumber++);
                 row.createCell(cellIndex++).setCellValue(route.getName());
+                row.createCell(cellIndex++).setCellValue(route.getCode());
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
@@ -5753,8 +5797,9 @@ public class ReportsController implements Serializable {
             Row totalRow = sheet.createRow(rowIndex++);
             totalRow.createCell(0).setCellValue("Total");
             totalRow.createCell(1).setCellValue("");
+            totalRow.createCell(2).setCellValue("");
 
-            cellIndex = 2;
+            cellIndex = 3;
             for (YearMonth yearMonth : yearMonths) {
                 totalRow.createCell(cellIndex++).setCellValue(
                         String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
