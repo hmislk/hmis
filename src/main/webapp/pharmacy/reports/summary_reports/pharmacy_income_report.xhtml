@@ -149,7 +149,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf80d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Admission Type" for="cmbDept" class="mx-3"/>
+                                <h:outputLabel value="Admission Type" for="cmbAdmissionType" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu 
                                 id="cmbAdmissionType"
@@ -164,10 +164,10 @@
                             <p:spacer ></p:spacer>
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf80d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Discount Scheme" for="cmbDept" class="mx-3"/>
+                                <h:outputLabel value="Discount Scheme" for="cmbDiscountScheme" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu 
-                                id="cmdDiscount"
+                                id="cmbDiscountScheme"
                                 class="w-100"
                                 autoWidth="false"
                                 value="#{pharmacySummaryReportController.paymentScheme}" >
