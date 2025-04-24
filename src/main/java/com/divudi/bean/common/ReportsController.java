@@ -5859,9 +5859,10 @@ public class ReportsController implements Serializable {
                 dataset
         );
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ChartUtils.writeChartAsPNG(byteArrayOutputStream, chart, 600, 300);
-        return byteArrayOutputStream.toByteArray();
+        try (ByteArrayOutputStream bao = new ByteArrayOutputStream()) {
+            ChartUtils.writeChartAsPNG(bao, chart, 600, 300);
+            return bao.toByteArray();
+        }
     }
 
     public void exportRouteAnalysisSummaryReportToExcel() {
