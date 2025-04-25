@@ -564,13 +564,17 @@ public class ChannelService {
     }
 
     public Institution findCreditCompany(String code, String name, InstitutionType type) {
+         Map params = new HashMap();
 
         String jpql = "Select i from Institution i where i.retired = false "
                 + " and UPPER(i.code) = UPPER(:code) "
-                + " and i.name like %name% "
                 + " and i.institutionType = :type";
+        
+        if(name != null && !name.isEmpty()){
+            jpql += " and i.name = :name ";
+            params.put("name", name.trim());
+        }
 
-        Map params = new HashMap();
         params.put("code", code);
         params.put("type", type);
 
