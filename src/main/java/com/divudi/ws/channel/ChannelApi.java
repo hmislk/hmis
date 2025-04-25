@@ -771,8 +771,7 @@ public class ChannelApi {
 
         System.out.println(sessionId);
 
-        SessionInstance session = sessionInstanceFacade.find(sessionId);
-        System.out.println(session);
+        SessionInstance session = channelService.findActiveChannelSession(sessionId);
 
         if (session == null) {
             JSONObject responseError = commonFunctionToErrorResponse("Invalid Session id. Please check!");

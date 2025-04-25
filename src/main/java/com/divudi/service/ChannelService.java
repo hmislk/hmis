@@ -918,6 +918,28 @@ public class ChannelService {
         getOnlineBookingFacade().edit(booking);
 
     }
+    
+    public SessionInstance findActiveChannelSession(Long id){
+        
+        String sql = " select session from SessionInstance session"
+                + " where session.id = :id "
+                + " and session.cancelled = :cancel "
+                + " and session.completed = :complete"
+                + " and session.retired = :retire "
+                + " and session.sessionDate >= :date"
+                + " and session.originatingSession.total <> :total";
+        
+        Map params = new HashMap();
+        params.put("id", id);
+        params.put("cancel", false);
+        params.put("complete", false);
+        params.put("retire", false);
+        params.put("date", new Date());
+        params.put("total", 0);
+        
+        return getSessionInstanceFacade().findFirstByJpql(sql, params);
+        
+    }
 
     public BillSession cancelBookingBill(Bill bill, OnlineBooking bookingDetails) {
 
