@@ -880,26 +880,35 @@ public class ChannelService {
         }
         return null;
     }
+    
+    public void cancelOnlineBooking(OnlineBooking booking){
+        booking.setOnlineBookingStatus(OnlineBookingStatus.CANCEL);
+        
+        getOnlineBookingFacade().edit(booking);
+    
+    }
 
-    public BillSession cancelBookingBill(Bill bill) {
+    public BillSession cancelBookingBill(Bill bill, OnlineBooking bookingDetails) {
 
         BillSession bs = bill.getSingleBillSession();
         CancelledBill cb = createCancelBill1(bill);
 
         BillItem cItem = cancelBillItems(bs.getBillItem(), cb);
         BillSession cbs = cancelBillSession(bs, cb, cItem);
-        //  bill.getSingleBillSession().getBill().setCancelled(true);
         bill.setCancelled(true);
-        System.out.println(bill.getBillClass());
-        System.out.println(bs.getBill().getBillClass());
+        bill.getReferenceBill().setCancelled(true);
 
         if (bill.getPaidBill() != null) {
             bill.getPaidBill().setCancelled(true);
         }
         bs.getBill().setCancelledBill(cb);
         getBillFacade().edit(bill);
+        getBillFacade().edit(bill.getReferenceBill());
         bs.setReferenceBillSession(cbs);
         billSessionFacade.edit(bs);
+        
+        cancelOnlineBooking(bill.getReferenceBill().getOnlineBooking());
+        
         return cbs;
 
         //  sendSmsOnChannelCancellationBookings();
@@ -912,9 +921,9 @@ public class ChannelService {
         b.copy(bi);
         b.invertValue(bi);
         b.setCreatedAt(new Date());
-        // b.setCreater(getSessionController().getLoggedUser());
 
         getBillItemFacade().create(b);
+        
         String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
         List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
         cancelBillFee(can, b, tmp);
@@ -929,9 +938,7 @@ public class ChannelService {
             bf.invertValue(nB);
             bf.setBill(can);
             bf.setBillItem(bt);
-            System.out.println(nB.getBill().getBillClass() + "bf");
             bf.setCreatedAt(new Date());
-            //   bf.setCreater(getSessionController().getLoggedUser());
 
             getBillFeeFacade().create(bf);
         }
@@ -949,23 +956,18 @@ public class ChannelService {
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
         cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
-
-        // cb.setCreater(getSessionController().getLoggedUser());
-        // cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
-        //  cb.setInstitution(getSessionController().getInstitution());
-        // cb.setComments(comment);
-        //     cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(bill.getInstitution(), cb));
-        // String insId = bookingControllerViewScope.generateBillNumberInsId(cb);
+        cb.setInstitution(bill.getToInstitution());
+        cb.setDepartment(bill.getToDepartment());
+        
         String insId = billNumberBean.institutionChannelBillNumberGenerator(bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getInstitution(), cb);
-        System.out.println(insId);
+        
         if (insId.equals("")) {
             return null;
         }
         cb.setInsId(insId);
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        // String deptId = generateBillNumberDeptId(cb);
-        System.out.println(deptId);
+
         if (deptId.equals("")) {
             return null;
         }
@@ -975,14 +977,6 @@ public class ChannelService {
 
         createPaymentForCancellations(cb, cb.getPaymentMethod());
 
-//        if (bill.getPaymentMethod() == PaymentMethod.Agent) {
-//            cb.setPaymentMethod(cancelPaymentMethod);
-////            if (cancelPaymentMethod == PaymentMethod.Agent) {
-////                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
-////            }
-//        } else {
-//            cb.setPaymentMethod(bill.getPaymentMethod());
-//        }
         getBillFacade().edit(cb);
         return cb;
     }
