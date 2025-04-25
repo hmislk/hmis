@@ -2125,7 +2125,7 @@ public class PharmacyBillSearch implements Serializable {
 
             newlyCreatedRetailSaleCancellationBill.setDeptId(deptId);
             newlyCreatedRetailSaleCancellationBill.setInsId(deptId);
-
+            
             if (newlyCreatedRetailSaleCancellationBill.getId() == null) {
                 getBillFacade().create(newlyCreatedRetailSaleCancellationBill);
             }
@@ -2139,8 +2139,7 @@ public class PharmacyBillSearch implements Serializable {
             getBill().setCancelledBill(newlyCreatedRetailSaleCancellationBill);
             getBillFacade().edit(getBill());
 
-            newlyCreatedRetailSaleCancellationBillPre.setBackwardReferenceBill(getBill());
-            newlyCreatedRetailSaleCancellationBillPre.setForwardReferenceBill(newlyCreatedRetailSaleCancellationBill);
+            newlyCreatedRetailSaleCancellationBillPre.setReferenceBill(getBill());
             getBillFacade().edit(newlyCreatedRetailSaleCancellationBillPre);
 
             JsfUtil.addSuccessMessage("Cancelled");

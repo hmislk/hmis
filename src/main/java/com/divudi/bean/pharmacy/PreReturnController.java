@@ -219,7 +219,6 @@ public class PreReturnController implements Serializable {
         getBillFacade().edit(getReturnBill());
 
 //        getBill().getReturnPreBills().add(getReturnBill());
-        getBill().setReferenceBill(getReturnBill());
         getBillFacade().edit(getBill());
 
 //        if (getReturnBill().getPaymentMethod() == PaymentMethod.Credit) {

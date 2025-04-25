@@ -304,13 +304,15 @@
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{not empty f.pbItem.billItem.bill ? f.pbItem.billItem.bill : (f.pbItem.billItem.bill.referenceBill or f.pbItem.billItem.bill.backwardReferenceBill or f.pbItem.billItem.bill.forwardReferenceBill)}" target="#{billSearch.bill}" />
                                 </p:commandLink>
+                                <br/>
+                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill }" />
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">
                                 <h:outputText value="#{f.createdAt}" />
                             </p:column>
                             <p:column headerText="Ref Doc No." width="15em">
                                 <p:commandLink 
-                                    rendered="#{f.pbItem.billItem.bill.referenceBill.cancelledBill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_CANCELLED'}"
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE'}"
                                     value="#{not empty f.pbItem.billItem.bill.cancelledBill ? f.pbItem.billItem.bill.cancelledBill.deptId : f.pbItem.billItem.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
@@ -318,15 +320,15 @@
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{not empty f.pbItem.billItem.bill.cancelledBill ? f.pbItem.billItem.bill.cancelledBill : f.pbItem.billItem.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
-                                <p:commandLink 
+<!--                                <p:commandLink 
                                     rendered="#{pharmacyReportController.documentType eq 'opSaleDoc' or pharmacyReportController.documentType eq 'ipSaleDoc'}"
-                                    value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? f.pbItem.billItem.bill.forwardReferenceBill.deptId : f.pbItem.billItem.bill.backwardReferenceBill.deptId}"
+                                    value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? '' : f.pbItem.billItem.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? f.pbItem.billItem.bill.forwardReferenceBill : f.pbItem.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}" />
-                                </p:commandLink>
+                                </p:commandLink>-->
                             </p:column>
 
                             <p:column headerText="Ref Doc Date" width="5em">
