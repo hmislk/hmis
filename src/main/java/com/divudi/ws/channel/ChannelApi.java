@@ -1051,7 +1051,7 @@ public class ChannelApi {
         apoinmentDetailsResponse.put("patient", patientDetailsResponse);
         apoinmentDetailsResponse.put("price", priceDetailsResponse);
         apoinmentDetailsResponse.put("payment", paymentDetailsResponse);
-        apoinmentDetailsResponse.put("status", "Temporary booking is succeeded");
+        apoinmentDetailsResponse.put("status", "unpaid");
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "202");
@@ -1142,8 +1142,6 @@ public class ChannelApi {
         Bill temporaryBill = editedBooking.getBill();
         SessionInstance session = temporaryBill.getSingleBillSession().getSessionInstance();
 
-        String status = "Booking details editing is succeeded";
-
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
@@ -1212,7 +1210,7 @@ public class ChannelApi {
         apoinmentDetailsResponse.put("patient", patientDetailsResponse);
         apoinmentDetailsResponse.put("price", priceDetailsResponse);
         apoinmentDetailsResponse.put("payment", paymentDetailsResponse);
-        apoinmentDetailsResponse.put("status", status);
+        apoinmentDetailsResponse.put("status", "unpaid");
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "202");
@@ -1337,13 +1335,22 @@ public class ChannelApi {
 
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bookingDetails.getReferenceNo());
+        appoinment.put("patientNo", Integer.parseInt(completedBill.getSingleBillSession().getSerialNoStr()));
+        appoinment.put("allPatientNo", channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber"));
+        appoinment.put("showPno", true);
+        appoinment.put("showTime", true);
+        appoinment.put("givenTime", null);
+        appoinment.put("chRoom", session.getRoomNo());
+        appoinment.put("timeInterval", null);
+        appoinment.put("status", "Booking Reversed");
+        appoinment.put("isnew", false);
 
         Map<String, Object> sessionDetails = new HashMap<>();
         Item i = completedBill.getSingleBillSession().getItem();
 
         sessionDetails.put("hosId", completedBill.getToInstitution().getId());
         sessionDetails.put("docname", session.getStaff().getPerson().getNameWithTitle());
-        sessionDetails.put("amount", completedBill.getNetTotal());
+        sessionDetails.put("amount", bookingDetails.getNetTotalForOnlineBooking());
         sessionDetails.put("hosAmount", completedBill.getHospitalFee());
         sessionDetails.put("docAmount", completedBill.getStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
@@ -1366,7 +1373,7 @@ public class ChannelApi {
         patientDetails.put("nid", bookingDetails.getNic());
 
         Map<String, Object> priceDetails = new HashMap<>();
-        priceDetails.put("totalAmount", completedBill.getTotal());
+        priceDetails.put("totalAmount", bookingDetails.getNetTotalForOnlineBooking());
         priceDetails.put("docCharge", completedBill.getStaffFee());
         priceDetails.put("hosCharge", completedBill.getHospitalFee());
 
@@ -1383,6 +1390,7 @@ public class ChannelApi {
         Map response = new HashMap();
         response.put("data", appoinment);
         response.put("message", "Booking completed");
+        response.put("code", "202");
         response.put("detailMessage", "Your booking is setted");
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
@@ -1554,7 +1562,7 @@ public class ChannelApi {
         sessionDetails.put("status", sessionStatus);
 
         Map<String, Object> patientDetails = new HashMap<>();
-        patientDetails.put("titile", bookingDetails.getTitle());
+        patientDetails.put("title", bookingDetails.getTitle());
         patientDetails.put("foreign", bookingDetails.isForeignStatus());
         patientDetails.put("teleNo", bookingDetails.getPhoneNo());
         patientDetails.put("patientName", bookingDetails.getPatientName());
@@ -1591,6 +1599,7 @@ public class ChannelApi {
 
         Map response = new HashMap();
         response.put("data", appoinment);
+        response.put("code", "202");
         response.put("message", "Booking details for ref No: " + refNo);
         response.put("detailMessage", bookingStatus);
 
