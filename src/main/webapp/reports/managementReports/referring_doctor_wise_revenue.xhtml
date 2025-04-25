@@ -462,6 +462,10 @@
                             </f:facet>
                         </p:column>
 
+                        <p:column headerText="Agent Name" width="12em" rendered="#{reportController.type eq 'CC' or reportController.type eq null}">
+                            <h:outputText value="#{item.billItem.bill.collectingCentre.name}"/>
+                        </p:column>
+
                         <p:column headerText="Total Count" width="2em" class="text-end">
                             <h:outputText value="#{item.count}"/>
                             <f:facet name="footer">
