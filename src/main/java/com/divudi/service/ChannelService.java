@@ -59,6 +59,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -763,22 +764,16 @@ public class ChannelService {
         bs.setReservedBooking(forReservedNumbers);
         bs.setBillItem(billItem);
         bs.setCreatedAt(new Date());
-        // bs.setCreater(getSessionController().getLoggedUser());
         bs.setDepartment(session.getOriginatingSession().getDepartment());
         bs.setInstitution(session.getOriginatingSession().getInstitution());
         bs.setItem(session.getOriginatingSession());
-//        bs.setPresent(true);
-//        bs.setPresent(true);
-//        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
-
         bs.setServiceSession(session.getOriginatingSession());
         bs.setSessionInstance(session);
-//        bs.setServiceSession(getSelectedSessionInstance().getOriginatingSession());
         bs.setSessionDate(session.getSessionDate());
         bs.setSessionTime(session.getSessionTime());
         bs.setStaff(session.getStaff());
 
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
+        // List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(session.getOriginatingSession().getReserveNumbers());
         Integer count = null;
 
         List<Integer> availableReleasedApoinmentNumbers = getReleasedAppoinmentNumbersForApiBookings(session);
@@ -786,16 +781,9 @@ public class ChannelService {
         if (availableReleasedApoinmentNumbers != null && !availableReleasedApoinmentNumbers.isEmpty()) {
             count = availableReleasedApoinmentNumbers.get(rand.nextInt(availableReleasedApoinmentNumbers.size()));
         }
-
-        if (forReservedNumbers) {
-//            // Pass the selectedReservedBookingNumber to the service method
-//            count = serviceSessionBean.getNextAvailableReservedNumber(session, reservedNumbers, selectedReserverdBookingNumber);
-//            if (count == null) {
-//                count = serviceSessionBean.getNextNonReservedSerialNumber(session, reservedNumbers);
-//                JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
-//            }
-        } else if (count == null) {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(session, reservedNumbers);
+        
+        if (count == null) {
+            count = serviceSessionBean.getNextNonReservedSerialNumber(session, Collections.EMPTY_LIST);
         }
 
         if (count != null) {
@@ -803,7 +791,6 @@ public class ChannelService {
         } else {
             bs.setSerialNo(1);
         }
-        System.out.println(bs);
         getBillSessionFacade().create(bs);
 
         return bs;
