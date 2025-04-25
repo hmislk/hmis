@@ -328,7 +328,7 @@
                                         <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
                                             <f:selectItem itemLabel="Select" />
                                             <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                            <p:ajax process="@this" update="crd pg1" event="change" />
+                                            <p:ajax process="@this" update="crd pg1" event="change" listener="#{admissionController.findLastUsedCreditCompanies()}" />
                                         </p:selectOneMenu>
                                     </h:panelGrid>
                                 </div>
