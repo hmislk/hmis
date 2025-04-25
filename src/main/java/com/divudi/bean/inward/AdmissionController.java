@@ -321,7 +321,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
     }
 
-    public void findLastUsedCreditCompanies(){
+    public void findLastUsedCreditCompanies() {
         if (current.getPatient() == null) {
             return;
         }
@@ -349,7 +349,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             HashMap hm = new HashMap();
             hm.put("pEnc", a);
             encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(jpql, hm);
-            
+
             encounterCreditCompanies = new ArrayList<>();
 
             for (EncounterCreditCompany ecc : encounterCreditCompanys) {
@@ -360,6 +360,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 encounterCreditCompany.setPolicyNo(ecc.getPolicyNo());
                 current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
                 encounterCreditCompanies.add(encounterCreditCompany);
+                encounterCreditCompany = new EncounterCreditCompany();
             }
         }
 
@@ -885,7 +886,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         h.put("bt", BillTypeAtomic.INWARD_PROVISIONAL_BILL);
         h.put("pe", ad);
         ads = getBillFacade().findByJpql(sql, h);
-        
+
         System.out.println("ads.size() = " + ads.size());
 
         if (ads.size() > 0 || !ads.isEmpty()) {
@@ -1180,6 +1181,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 getCurrent().setCreditLimit(tec.getCreditLimit());
                 getCurrent().setPolicyNo(tec.getPolicyNo());
                 getCurrent().setReferanceNo(tec.getReferanceNo());
+
+                for (EncounterCreditCompany ecc : getEncounterCreditCompanies()) {
+                    if (configOptionApplicationController.getBooleanValueByKey("Inward Patient Admit - Credit Companies Require Reference Number", false)) {
+                        if (ecc.getReferanceNo() == null || ecc.getReferanceNo().isEmpty()) {
+                            JsfUtil.addErrorMessage("Please Add the Reference Number for " + ecc.getInstitution().getName() + " Company");
+                            return true;
+                        }
+                    }
+                }
+
                 //TO Do - add other fields
             }
 
