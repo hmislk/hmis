@@ -1349,7 +1349,7 @@ public class ChannelService {
 
     }
 
-    public Bill settleOnlineAgentInitialBooking(BillSession preBillSession, String refNo) {
+    public Bill settleOnlineAgentInitialBooking(BillSession preBillSession, String refNo, double agencyCharge) {
         Bill paidBill = saveAgentOnlinePaymentCompletionBill(preBillSession, refNo);
         BillItem paidBillItem = savePaidBillItem(paidBill, preBillSession);
         savePaidBillFee(paidBill, paidBillItem, preBillSession);
@@ -1370,6 +1370,8 @@ public class ChannelService {
         getBillFacade().editAndCommit(paidBill);
 
         List<Payment> p = createPayment(paidBill, paidBill.getPaymentMethod());
+        paidBill.getReferenceBill().getOnlineBooking().setOnlineBookingPayment(agencyCharge);
+        getOnlineBookingFacade().edit(paidBill.getReferenceBill().getOnlineBooking());
         return paidBill;
     }
 

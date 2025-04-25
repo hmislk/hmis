@@ -1369,7 +1369,7 @@ public class ChannelApi {
         try{
             agencyCharge = Double.parseDouble(agentChargeString);
         }catch(Exception e){
-            JSONObject response = commonFunctionToErrorResponse("There is a error in payment amount. Please check price field.");
+            JSONObject response = commonFunctionToErrorResponse("There is a error in the payment amount. Please check price field.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -1405,7 +1405,7 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo);
+        Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
 
         OnlineBooking bookingDetails = completedBill.getReferenceBill().getOnlineBooking();
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
