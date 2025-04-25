@@ -471,6 +471,17 @@
                             </f:facet>
                         </p:column>
 
+                        <p:column headerText="Gross Amount" class="text-end">
+                            <h:outputText value="#{item.total + item.discount}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{reportController.totalNetTotal + reportController.totalDiscount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+
                         <p:column headerText="Hospital Fee" class="text-end">
                             <h:outputText value="#{item.hosFee}">
                                 <f:convertNumber pattern="#,##0.00"/>
@@ -652,8 +663,7 @@
 
                         <p:column headerText="Date " width="14em">
                             <h:outputText value="#{bi.bill.createdAt}">
-                                <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputText>
                         </p:column>
 
