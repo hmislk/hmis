@@ -1586,7 +1586,7 @@ public class ChannelApi {
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bookingBill.getAgentRefNo());
         appoinment.put("patientNo", bookingBill.getSingleBillSession().getSerialNo());
-        appoinment.put("allPatientNo", channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber"));
+        appoinment.put("allPatientNo", channelService.nextAvailableAppoinmentNumberForSession(bookingBill.getSingleBillSession().getSessionInstance()).get("nextNumber"));
         appoinment.put("showPno", null);
         appoinment.put("showTime", null);
         appoinment.put("chRoom", bookingBill.getSingleBillSession().getSessionInstance().getRoomNo());
