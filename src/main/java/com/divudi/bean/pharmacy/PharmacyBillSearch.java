@@ -2265,7 +2265,7 @@ public class PharmacyBillSearch implements Serializable {
         newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
         newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         newlyCreatedCancellationBill.setDeptId(deptId);
-
+        newlyCreatedCancellationBill.setReferenceBill(getBill());
         getBillFacade().edit(newlyCreatedCancellationBill);
 
         getBill().setCancelled(true);
