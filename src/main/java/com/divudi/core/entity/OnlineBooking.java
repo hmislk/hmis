@@ -42,6 +42,7 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private String requestIp;
     private double hospitalFee;
     private double doctorFee;
+    private boolean isAbsent;
     
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
@@ -327,6 +328,14 @@ public class OnlineBooking implements Serializable, RetirableEntity {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isIsAbsent() {
+        return isAbsent;
+    }
+
+    public void setIsAbsent(boolean isAbsent) {
+        this.isAbsent = isAbsent;
     }
 
 }

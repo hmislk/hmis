@@ -1204,30 +1204,12 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
         
-        bookingDetails.setPhoneNo(patientPhoneNo);
-        bookingDetails.setPatientName(patientName);
-        bookingDetails.setTitle(title);
-        bookingDetails.setNic(patientNic);
+        OnlineBooking editedBooking = channelService.editOnlineBooking(bookingDetails, patientPhoneNo, title, patientName, patientNic);
+        
+        Bill temporaryBill = editedBooking.getBill();
+        SessionInstance session = temporaryBill.getSingleBillSession().getSessionInstance();
         
         String status = "Booking details editing is succeeded";
-
-        Person p = bill.getPatient().getPerson();
-        SessionInstance session = bill.getSingleBillSession().getSessionInstance();
-
-        p.setMobile(patientPhoneNo);
-        p.setPhone(patientPhoneNo);
-        p.setName(patientName);
-        p.setNic(patientNic);
-
-        if (titleForPerson != null) {
-            p.setTitle(titleForPerson);
-        }
-
-        bill.getPatient().setPatientMobileNumber(patientPhoneNumberLong);
-        bill.getPatient().setPatientPhoneNumber(patientPhoneNumberLong);
-
-        patientFacade.edit(bill.getPatient());
-        personFacade.edit(p);
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1235,11 +1217,11 @@ public class ChannelApi {
 
         Map<String, Object> sessionDetailsResponse = new HashMap<>();
         sessionDetailsResponse.put("hosId", session.getInstitution().getId().toString());
-        sessionDetailsResponse.put("amount", bill.getNetTotal());
+        sessionDetailsResponse.put("amount", temporaryBill.getNetTotal());
         sessionDetailsResponse.put("appTimeInterval", null);
-        sessionDetailsResponse.put("hosAmount", bill.getHospitalFee());
-        sessionDetailsResponse.put("docAmount", bill.getStaffFee());
-        sessionDetailsResponse.put("docId", session.getStaff().getId().toString());
+        sessionDetailsResponse.put("hosAmount", temporaryBill.getHospitalFee());
+        sessionDetailsResponse.put("docAmount", temporaryBill.getStaffFee());
+        sessionDetailsResponse.put("docId", temporaryBill.getStaff().getId().toString());
         sessionDetailsResponse.put("theDate", forDate.format(session.getSessionDate()));
         sessionDetailsResponse.put("theDay", forDay.format(session.getSessionDate()));
         sessionDetailsResponse.put("startTime", forTime.format(session.getSessionTime()));
@@ -1249,24 +1231,24 @@ public class ChannelApi {
 
         Map<String, Object> patientDetailsResponse = new HashMap<>();
         patientDetailsResponse.put("member", null);
-        patientDetailsResponse.put("needSMS", null);
-        patientDetailsResponse.put("nsr", null);
-        patientDetailsResponse.put("foreign", p.isForeigner());
-        patientDetailsResponse.put("teleNo", p.getMobile());
-        patientDetailsResponse.put("title", p.getTitle().toString());
-        patientDetailsResponse.put("patientName", p.getName());
-        patientDetailsResponse.put("nid", p.getNic());
-        patientDetailsResponse.put("memberId", p.getId().toString());
-        patientDetailsResponse.put("patientFullName", p.getNameWithTitle());
-        patientDetailsResponse.put("patientFullNameWithMobile", p.getNameWithTitle() + (p.getMobile().isEmpty() ? p.getPhone() : p.getMobile()));
+        patientDetailsResponse.put("needSMS", editedBooking.isNeedSms());
+        patientDetailsResponse.put("nsr", editedBooking.isNsr());
+        patientDetailsResponse.put("foreign", editedBooking.isForeign());
+        patientDetailsResponse.put("teleNo", editedBooking.getPhoneNo());
+        patientDetailsResponse.put("title", editedBooking.getTitle());
+        patientDetailsResponse.put("patientName", editedBooking.getPatientName());
+        patientDetailsResponse.put("nid", editedBooking.getNic());
+        patientDetailsResponse.put("memberId", editedBooking.getId());
+        patientDetailsResponse.put("patientFullName", editedBooking.getTitle()+" " + editedBooking.getPatientName());
+        patientDetailsResponse.put("patientFullNameWithMobile", editedBooking.getTitle()+" " + editedBooking.getPatientName()+" "+ editedBooking.getPhoneNo());
 
         Map<String, Object> priceDetailsResponse = new HashMap<>();
-        priceDetailsResponse.put("totalAmount", bill.getNetTotal());
+        priceDetailsResponse.put("totalAmount", temporaryBill.getNetTotal());
         priceDetailsResponse.put("nsrFee", null);
-        priceDetailsResponse.put("charge", null);
-        priceDetailsResponse.put("hosCharge", bill.getHospitalFee());
+        priceDetailsResponse.put("charge", temporaryBill.getNetTotal());
+        priceDetailsResponse.put("hosCharge", temporaryBill.getHospitalFee());
         priceDetailsResponse.put("hosChargeWithoutVat", 0);
-        priceDetailsResponse.put("docCharge", bill.getStaffFee());
+        priceDetailsResponse.put("docCharge", temporaryBill.getStaffFee());
         priceDetailsResponse.put("echCharge", 0);
         priceDetailsResponse.put("smsCharge", 0);
         priceDetailsResponse.put("nbtCharge", 0);
@@ -1280,14 +1262,14 @@ public class ChannelApi {
         priceDetailsResponse.put("locationPrice", 0);
 
         Map<String, Object> paymentDetailsResponse = new HashMap<>();
-        paymentDetailsResponse.put("paymentMode", bill.getCreditCompany().getName());
-        paymentDetailsResponse.put("paymentChannel", bill.getCreditCompany().getCode());
-        paymentDetailsResponse.put("branchCode", "");
-        paymentDetailsResponse.put("seqNo", "");
+        paymentDetailsResponse.put("paymentMode", editedBooking.getAgency().getName());
+        paymentDetailsResponse.put("paymentChannel", editedBooking.getAgency().getCode());
+        paymentDetailsResponse.put("branchCode", null);
+        paymentDetailsResponse.put("seqNo", null);
 
         Map<String, Object> apoinmentDetailsResponse = new HashMap<>();
         apoinmentDetailsResponse.put("refNo", clientsReferanceNo);
-        apoinmentDetailsResponse.put("patientNo", Integer.parseInt(bill.getSingleBillSession().getSerialNoStr()));
+        apoinmentDetailsResponse.put("patientNo", Integer.parseInt(temporaryBill.getSingleBillSession().getSerialNoStr()));
         apoinmentDetailsResponse.put("allPatientNo", session.getNextAvailableAppointmentNumber() != null ? session.getNextAvailableAppointmentNumber().intValue() - 1 : 0);
         apoinmentDetailsResponse.put("showPno", null);
         apoinmentDetailsResponse.put("showTime", null);
