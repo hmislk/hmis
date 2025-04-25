@@ -1191,7 +1191,6 @@ public class ChannelApi {
         }
 
         Bill temporarySavedBill = bookingDetails.getBill();
-        System.out.println(temporarySavedBill);
 
         try {
             validateBillForCompleteBooking(temporarySavedBill);
@@ -1372,7 +1371,7 @@ public class ChannelApi {
             OnlineBooking retiredBooking = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, true, creditCompany);
 
             if (retiredBooking != null) {
-                JSONObject response = commonFunctionToErrorResponse("Your appoinment is retired due to time out. Please readd appoinemnt : " + clientsReferanceNo);
+                JSONObject response = commonFunctionToErrorResponse("Your appoinment is retired due to time out. Please re-place the appoinemnt : " + clientsReferanceNo);
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             } else {
                 JSONObject response = commonFunctionToErrorResponse("No Appoinment available for the RefNo : " + clientsReferanceNo);
@@ -1710,7 +1709,7 @@ public class ChannelApi {
             }
         }
 
-        Bill completedSaveBill = bookingData.getBill();
+        Bill completedSaveBill = bookingData.getBill().getPaidBill();
 
         try {
             validateChannelingSession(completedSaveBill.getSingleBillSession().getSessionInstance());
