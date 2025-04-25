@@ -223,12 +223,11 @@
                                     fileName="pharmacy_income_by_bill_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}" />
                             </p:commandButton>
 
-                            <p:button 
+                            <p:commandButton
                                 value="To Print" 
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print"
-                                outcome="pharmacy_income_report_print"
-                                target="_blank"/>
+                                action="pharmacy_income_report_print_view"/>
 
                             <p:commandButton 
                                 value="Print" 
