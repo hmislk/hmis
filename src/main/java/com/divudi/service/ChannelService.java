@@ -1445,32 +1445,31 @@ public class ChannelService {
     }
 
     private Bill saveAgentOnlinePaymentCompletionBill(BillSession bs, String refNo) {
-        Bill newlyCreatedAgentOnlinePaymentCompletionBill = new BilledBill();
-        newlyCreatedAgentOnlinePaymentCompletionBill.setAgentRefNo(refNo);
-        newlyCreatedAgentOnlinePaymentCompletionBill.copy(bs.getBill());
-        newlyCreatedAgentOnlinePaymentCompletionBill.copyValue(bs.getBill());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setPaidAmount(bs.getBill().getNetTotal());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setBalance(0.0);
-        newlyCreatedAgentOnlinePaymentCompletionBill.setPaymentMethod(PaymentMethod.Agent);
-        newlyCreatedAgentOnlinePaymentCompletionBill.setReferenceBill(bs.getBill());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setBillType(BillType.ChannelAgent);
-        newlyCreatedAgentOnlinePaymentCompletionBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        Bill completedOnlineBookingBill = new BilledBill();
+        completedOnlineBookingBill.setAgentRefNo(refNo);
+        completedOnlineBookingBill.copy(bs.getBill());
+        completedOnlineBookingBill.copyValue(bs.getBill());
+        completedOnlineBookingBill.setPaidAmount(bs.getBill().getNetTotal());
+        completedOnlineBookingBill.setBalance(0.0);
+        completedOnlineBookingBill.setPaymentMethod(PaymentMethod.Agent);
+        completedOnlineBookingBill.setReferenceBill(bs.getBill());
+        completedOnlineBookingBill.setBillType(BillType.ChannelAgent);
+        completedOnlineBookingBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
-        // String deptId = generateBillNumberDeptId(temp);
-        System.out.println(deptId);
-        newlyCreatedAgentOnlinePaymentCompletionBill.setInsId(deptId);
-        newlyCreatedAgentOnlinePaymentCompletionBill.setDeptId(deptId);
-        newlyCreatedAgentOnlinePaymentCompletionBill.setBookingId(deptId);
-        newlyCreatedAgentOnlinePaymentCompletionBill.setDepartment(bs.getDepartment());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setInstitution(bs.getInstitution());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setBillDate(new Date());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setBillTime(new Date());
-        newlyCreatedAgentOnlinePaymentCompletionBill.setCreatedAt(new Date());
-        // temp.setCreater(getSessionController().getLoggedUser());
 
-        getBillFacade().create(newlyCreatedAgentOnlinePaymentCompletionBill);
+        completedOnlineBookingBill.setInsId(deptId);
+        completedOnlineBookingBill.setDeptId(deptId);
+        completedOnlineBookingBill.setBookingId(deptId);
+        completedOnlineBookingBill.setDepartment(bs.getDepartment());
+        completedOnlineBookingBill.setInstitution(bs.getInstitution());
+        completedOnlineBookingBill.setBillDate(new Date());
+        completedOnlineBookingBill.setBillTime(new Date());
+        completedOnlineBookingBill.setCreatedAt(new Date());
 
-        return newlyCreatedAgentOnlinePaymentCompletionBill;
+        getBillFacade().create(completedOnlineBookingBill);
+
+        return completedOnlineBookingBill;
     }
 
     private List<BillFee> createBillFeeForSessions(Bill bill, BillItem billItem, boolean thisIsAnAdditionalFee, PriceMatrix priceMatrix) {

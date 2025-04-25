@@ -1306,14 +1306,23 @@ public class ChannelApi {
 
     private void validateBillForCompleteBooking(Bill bill) {
         if (bill.isCancelled()) {
-            throw new ValidationException("Channel", "Appoinment is already cancelled. Cant complete the booking.");
+            throw new ValidationException("Appoinment : ", "Appoinment is already cancelled. Cant complete the booking.");
         }
         if (bill.isRefunded()) {
-            throw new ValidationException("Channel", "Appoinment is already refunded. Cant complete the booking.");
+            throw new ValidationException("Appoinment : ", "Appoinment is already refunded. Cant complete the booking.");
         }
 
         if (bill.isPaid()) {
-            throw new ValidationException("Channel", "Appoinment Booking for the ref no is already completed.");
+            throw new ValidationException("Appoinment : ", "Appoinment Booking for the ref no is already completed.");
+        }
+    }
+
+    private void validateChannelingSession(SessionInstance session) {
+        if (session.isCompleted()) {
+            throw new ValidationException("Channel : ", "Appoinment session is already finished now.");
+        }
+        if (session.isCancelled()) {
+            throw new ValidationException("Channel : ", "Channel session session is Cancelled from the Hospital. Please contact hospital for more info.");
         }
     }
 
@@ -1374,16 +1383,15 @@ public class ChannelApi {
 
         Bill temporarySavedBill = bookindData.getBill();
 
-        if (temporarySavedBill.getSingleBillSession().getSessionInstance().isCompleted()) {
-            JSONObject response = commonFunctionToErrorResponse("Appoinment session is already finished now.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-        if (temporarySavedBill.getSingleBillSession().getSessionInstance().isCancelled()) {
-            JSONObject response = commonFunctionToErrorResponse("Channel session session is Cancelled from the Hospital. Please contact hospital for more info.");
+        try {
+            validateBillForCompleteBooking(temporarySavedBill);
+            validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        bill = channelService.settleOnlineAgentInitialBooking(billList.get(0).getSingleBillSession(), clientsReferanceNo);
+        Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo);
         // List<SessionInstance> ss = channelService.findSessionInstanceFromId(bill.getSingleBillSession().getSessionInstance());
         SessionInstance session = bill.getSingleBillSession().getSessionInstance();
 
