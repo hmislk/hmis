@@ -118,6 +118,20 @@
                                             <p:commandButton class="w-100" value="Stock Taking Report(New)" action="pharmacy_report_adjustment_bill_for_stock_taking?faces-redirect=true" ajax="false" ></p:commandButton>                            
                                             <p:commandButton class="w-100" value="Stock With Movement" action="pharmacy_report_item_stock_sale?faces-redirect=true" ajax="false" ></p:commandButton>                            
 
+                                            <p:commandButton 
+                                                class="w-100 ui-button-warning"
+                                                value="Stock Summary (with Suppliers)" 
+                                                action="pharmacy_stock_summary_with_supplier?faces-redirect=true" 
+                                                ajax="false" >
+                                            </p:commandButton>   
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                rendered="false"
+                                                value="Supplier Stock Report" 
+                                                action="pharmacy_report_supplier_stock_by_batch?faces-redirect=true" 
+                                                ajax="false" >
+                                            </p:commandButton>       
                                         </div>
                                     </p:tab>
 
