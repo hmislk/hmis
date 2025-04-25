@@ -3185,57 +3185,88 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
     }
 
-//    /**
-//     * Administrative method to batch-correct all PharmaceuticalBillItems that
-//     * were wrongly assigned due to cancellation logic in
-//     * PHARMACY_RETAIL_SALE_CANCELLED bills.
-//     *
-//     * This method scans all non-retired bills of type
-//     * PHARMACY_RETAIL_SALE_CANCELLED, and for each BillItem in those bills,
-//     * attempts to fix the linked PharmaceuticalBillItem (if present) by calling
-//     * the correction method.
-//     *
-//     * ChatGPT contributed - 2025-04
-//     */
-//    public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills() {
-//        BillTypeAtomic billTypeAtomic = BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
-//
-//        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta "
-//                + " and b.createdAt between :fd and :td ";
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("bta", billTypeAtomic);
-//        params.put("fd", getFromDate());
-//        params.put("td", getToDate());
-//
-//        List<Bill> pharmacyRetailSaleCancellationBills = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-//
-//        if (pharmacyRetailSaleCancellationBills == null || pharmacyRetailSaleCancellationBills.isEmpty()) {
-//            System.out.println("No matching bills found for type: " + billTypeAtomic);
-//            return;
-//        }
-//
-//        System.out.println("Found " + pharmacyRetailSaleCancellationBills.size() + " cancelled bills to process...");
-//
-//        for (Bill cancelledBill : pharmacyRetailSaleCancellationBills) {
-//            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(cancelledBill);
-//
-//            if (pbis == null || pbis.isEmpty()) {
-//                System.out.println("Cancelled bill ID " + cancelledBill.getId() + " has no pharmaceutical bill items.");
-//                continue;
-//            }
-//
-//            for (PharmaceuticalBillItem pbi : pbis) {
-//                if (pbi != null) {
-//                    BillItem bi = pbi.getBillItem();
-//                    if (hasMoreThanOnePbi(bi)) {
-//                        convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(pbi);
-//                    }
-//                }
-//            }
-//        }
-//
-//        System.out.println("Completed batch correction of wrongly assigned PharmaceuticalBillItems.");
-//    }
+    /**
+     * Administrative method to batch-correct all PharmaceuticalBillItems that
+     * were wrongly assigned due to cancellation logic in
+     * PHARMACY_RETAIL_SALE_CANCELLED bills.
+     *
+     * This method scans all non-retired bills of type
+     * PHARMACY_RETAIL_SALE_CANCELLED, and for each BillItem in those bills,
+     * attempts to fix the linked PharmaceuticalBillItem (if present) by calling
+     * the correction method.
+     *
+     * ChatGPT contributed - 2025-04
+     */
+    public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills() {
+        if (getFromDate() == null || getToDate() == null) {
+            System.out.println("FromDate or ToDate is null. Aborting process.");
+            return;
+        }
+
+        BillTypeAtomic billTypeAtomic = BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
+
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta "
+                + "and b.createdAt between :fd and :td ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", billTypeAtomic);
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+
+        List<Bill> pharmacyRetailSaleCancellationBills = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (pharmacyRetailSaleCancellationBills == null || pharmacyRetailSaleCancellationBills.isEmpty()) {
+            System.out.println("No matching bills found for type: " + billTypeAtomic);
+            return;
+        }
+
+        System.out.println("Found " + pharmacyRetailSaleCancellationBills.size() + " cancelled bills to process...");
+
+        for (Bill cancelledBill : pharmacyRetailSaleCancellationBills) {
+            if (cancelledBill == null) {
+                continue;
+            }
+
+            billService.reloadBill(cancelledBill);
+
+            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(cancelledBill);
+            List<BillItem> bis = cancelledBill.getBillItems();
+
+            Long billId = cancelledBill.getId() != null ? cancelledBill.getId() : -1L;
+
+            if (pbis == null || pbis.isEmpty()) {
+                System.out.println("Cancelled bill ID " + billId + " has no pharmaceutical bill items.");
+                continue;
+            }
+
+            if (bis == null || bis.isEmpty()) {
+                System.out.println("Cancelled bill ID " + billId + " has no bill items.");
+                continue;
+            }
+
+            int numberOfBillItems = bis.size();
+            int numberOfPharmaceuticalBillItems = pbis.size();
+
+            if (numberOfPharmaceuticalBillItems != (numberOfBillItems * 2)) {
+                System.out.println("Cancelled bill ID " + billId
+                        + " skipped: Expected PBI count = " + (numberOfBillItems * 2)
+                        + ", Found = " + numberOfPharmaceuticalBillItems);
+                continue;
+            }
+
+            for (PharmaceuticalBillItem pbi : pbis) {
+                if (pbi == null) {
+                    continue;
+                }
+
+                BillItem bi = pbi.getBillItem();
+                if (bi != null && hasMoreThanOnePbi(bi)) {
+                    convertPharmaceuticalBillItemReferenceFromErroneouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(pbi);
+                }
+            }
+        }
+
+        System.out.println("Completed batch correction of wrongly assigned PharmaceuticalBillItems.");
+    }
 
     /**
      * Checks whether a BillItem has more than one associated
@@ -3258,8 +3289,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return count != null && count > 1;
     }
 
-    public void convertPharmaceuticalBillItemReferenceFromErroneouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill
-        (PharmaceuticalBillItem pbi) {
+    public void convertPharmaceuticalBillItemReferenceFromErroneouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(PharmaceuticalBillItem pbi) {
         Bill originalBill = null;
         Bill cancelledBill = null;
         BillItem originalBillItemNowWonglyAssignedToCancelledBill = null;
