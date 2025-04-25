@@ -407,13 +407,12 @@ public class ChannelApi {
             return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
         String type = (String) requestBody.get("type");
-        String bookingChannel = (String) requestBody.get("bookingChannel");
+        String agencyCode = (String) requestBody.get("bookingChannel");
         String hosIdStr = (String) requestBody.get("hosID");
         String specIDStr = (String) requestBody.get("specID");
         String dateStr = (String) requestBody.get("date");
         String name = (String) requestBody.get("name");
-//        Integer page = (Integer) requestBody.get("page");
-//        Integer offset = (Integer) requestBody.get("offset");
+
         Long hosId = channelService.checkSafeParseLong(hosIdStr);
         Long specId = channelService.checkSafeParseLong(specIDStr);
 
@@ -424,22 +423,7 @@ public class ChannelApi {
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
         }
-//
-//        if (hosId != null) {
-//            if (channelService.checkHospitalId(hosId)) {
-//                hospitals = channelService.findInstitutionFromId(hosId);
-//            } else if (hosId.toString().isEmpty()) {
-//                hospitals = channelService.findInstitutionFromId(hosId);
-//            } else {
-//                JSONObject response = commonFunctionToErrorResponse("No hospital with that Id.");
-//                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-//            }
-//        }
 
-//        if (hospital == null) {
-//            JSONObject response = commonFunctionToErrorResponse("Invalid hospital id");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-//        }
         List<Speciality> specialities = channelService.findSpecilityFromId(specId);
 
         if (specialities == null || specialities.isEmpty()) {
@@ -449,20 +433,6 @@ public class ChannelApi {
             }
         }
 
-//        if (hosId != null) {
-//            if (channelService.checkSpecialityId(specId)) {
-//                specialities = channelService.findSpecilityFromId(specId);
-//            } else if (hosId.toString().isEmpty()) {
-//                specialities = channelService.findSpecilityFromId(specId);
-//            } else {
-//                JSONObject response = commonFunctionToErrorResponse("No Speciality with that Id.");
-//                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-//            }
-//        }
-//        if (specialities == null) {
-//            JSONObject response = commonFunctionToErrorResponse("Invalid speciality id");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-//        }
         List<Doctor> doctorList = channelService.findDoctorsFromName(name, null);
 
         if (doctorList == null || doctorList.isEmpty()) {
@@ -472,10 +442,6 @@ public class ChannelApi {
             }
         }
 
-//        if (doctorList == null) {
-//            JSONObject response = commonFunctionToErrorResponse("NO doctor from this name");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-//        }
         // Convert dateStr to Date
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
         Date date = null;
@@ -489,8 +455,7 @@ public class ChannelApi {
         // Prepare the resultMap to hold doctor details
         List<Map<String, String>> resultMap = new ArrayList<>();
         List<SessionInstance> sessionInstances = channelService.findSessionInstance(hospitals, specialities, doctorList, date);
-        // List<SessionInstance> sessionInstances = sessionInstanceController.findSessionInstance(hospital, speciality, doctorList, date, date);
-        System.out.println(sessionInstances.size());
+
         if (sessionInstances == null || sessionInstances.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("No Data for this criterias.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -514,24 +479,17 @@ public class ChannelApi {
             doctorDetails.put("DoctorNo", si.getStaff().getId().toString());
             doctorDetails.put("SessionStart", timeFormat.format(si.getOriginatingSession().getStartingTime()));
             resultMap.add(doctorDetails);
-            //additionalProp1++;
         }
 
         // Construct the response JSON
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("resultMap", resultMap);
 
-        Map<String, Object> responsePage = new HashMap<>();
-//        responsePage.put("pageNo", page);
-//        responsePage.put("offset", offset);
-        responsePage.put("pages", 1); // Adjust this based on actual pagination logic
-
         Map<String, Object> response = new HashMap<>();
         response.put("code", "202");
         response.put("message", "Accepted");
         response.put("data", responseData);
         response.put("detailMessage", "Success");
-        response.put("page", responsePage);
 
         // Return the response
         return Response.status(Response.Status.ACCEPTED).entity(response).build();

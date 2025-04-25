@@ -108,6 +108,8 @@ public class ChannelService {
     private StaffFacade staffFacade;
     @EJB
     BillService billService;
+        @EJB
+    private WebUserFacade webUserFacade;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -1286,11 +1288,6 @@ public class ChannelService {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", new Date());
         }
-//
-//        if(fromDate != null){
-//            jpql.append(" and i.sessionDate >= :fd");
-//            m.put("fd", fromDate);
-//        }
 
         // Additional conditions for consultant, institution, and specialities
         if (doctorList != null && !doctorList.isEmpty()) {
@@ -1309,12 +1306,8 @@ public class ChannelService {
         m.put("ret", false);
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
-        // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
         return sessionInstances;
     }
-
-    @EJB
-    WebUserFacade webUserFacade;
 
     public WebUser checkUserCredentialForApi(String temUserName, String temPassword) {
 
