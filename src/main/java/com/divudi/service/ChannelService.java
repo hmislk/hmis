@@ -771,6 +771,17 @@ public class ChannelService {
         return itemFeeFacade.findByJpql(sql, m);
     }
 
+    public OnlineBooking editOnlineBooking(OnlineBooking bookingForEdit, String phoneNo, String title, String patientName, String nic) {
+        bookingForEdit.setPhoneNo(phoneNo);
+        bookingForEdit.setPatientName(patientName);
+        bookingForEdit.setTitle(title);
+        bookingForEdit.setNic(nic);
+        
+        getOnlineBookingFacade().edit(bookingForEdit);
+        
+        return bookingForEdit;
+    }
+
     public OnlineBooking findOnlineBookingFromRefNo(String refNo, boolean retiredStatus, Institution agency) {
 
         String sql = "Select ob from OnlineBooking ob "
@@ -1370,16 +1381,17 @@ public class ChannelService {
         getBillFacade().editAndCommit(paidBill);
 
         List<Payment> p = createPayment(paidBill, paidBill.getPaymentMethod());
-        
+
         OnlineBooking bookingDetails = paidBill.getReferenceBill().getOnlineBooking();
         bookingDetails.setOnlineBookingPayment(agencyCharge);
         bookingDetails.setHospitalFee(paidBill.getHospitalFee());
         bookingDetails.setDoctorFee(paidBill.getStaffFee());
-        bookingDetails.setNetTotalForOnlineBooking(paidBill.getNetTotal()+agencyCharge);
+        bookingDetails.setNetTotalForOnlineBooking(paidBill.getNetTotal() + agencyCharge);
         bookingDetails.setOnlineBookingStatus(OnlineBookingStatus.COMPLETED);
         bookingDetails.setAppoinmentTotalAmount(paidBill.getNetTotal());
+
         getOnlineBookingFacade().edit(paidBill.getReferenceBill().getOnlineBooking());
-        
+
         return paidBill;
     }
 
