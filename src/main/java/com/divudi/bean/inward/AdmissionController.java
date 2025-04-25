@@ -313,7 +313,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hash.put("pm", PaymentMethod.Credit);
         hash.put("pt", p);
         a = getFacade().findFirstByJpql(sql, hash);
-        System.out.println("a = " + a);
         if (a == null) {
             return false;
         } else {
@@ -323,14 +322,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void findLastUsedCreditCompanies(){
-        System.out.println("Method is Called = ");
-        System.out.println("current.getPatient() = " + current.getPatient());
         if (current.getPatient() == null) {
             return;
         }
-        System.out.println("Method is runing");
+
         Admission a = null;
-        lastCreditCompany = null;
         String sql;
         HashMap hash = new HashMap();
         sql = "select c from Admission c "
@@ -342,12 +338,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hash.put("pm", PaymentMethod.Credit);
         hash.put("pt", current.getPatient());
         a = getFacade().findFirstByJpql(sql, hash);
-        System.out.println("a = " + a);
 
         if (a == null) {
             return;
         } else {
-            System.out.println("in Company Find");
             List<EncounterCreditCompany> encounterCreditCompanys = new ArrayList<>();
             String jpql = "select ecc from EncounterCreditCompany ecc"
                     + "  where ecc.retired=false "
@@ -355,10 +349,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             HashMap hm = new HashMap();
             hm.put("pEnc", a);
             encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(jpql, hm);
-            System.out.println("Company Found = " + encounterCreditCompanys.size());
+            
+            encounterCreditCompanies = new ArrayList<>();
 
             for (EncounterCreditCompany ecc : encounterCreditCompanys) {
-                System.out.println("new Company = " + ecc);
                 encounterCreditCompany = new EncounterCreditCompany();
                 encounterCreditCompany.setPatientEncounter(current);
                 encounterCreditCompany.setInstitution(ecc.getInstitution());
@@ -367,7 +361,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
                 encounterCreditCompanies.add(encounterCreditCompany);
             }
-            System.out.println("new Credit Companies = " + encounterCreditCompanies.size());
         }
 
     }
