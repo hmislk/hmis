@@ -2,6 +2,7 @@ package com.divudi.core.data;
 
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 
@@ -23,6 +24,9 @@ public class IncomeRow implements Serializable {
     private Long counter;
     String rowType;
 
+    private PaymentScheme paymentScheme;
+    private AdmissionType admissionType;
+    
     private Category category;
     private Bill bill;
     private Bill batchBill;
@@ -1264,6 +1268,22 @@ public class IncomeRow implements Serializable {
 
     public void setGrossProfit(double grossProfit) {
         this.grossProfit = grossProfit;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
     }
     
     
