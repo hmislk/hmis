@@ -1001,8 +1001,6 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        //Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
-        //System.out.println(patientPhoneNumberLong + " size - " + (String.valueOf(patientPhoneNumberLong)).length());
         if (clientsReferanceNo == null || clientsReferanceNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -1364,7 +1362,16 @@ public class ChannelApi {
         Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
         String agencyCode = paymentDetails.get("paymentChannel");
         String agencyName = paymentDetails.get("paymentMode");
-        String agentCharge = (String) requestBody.get("price");
+        String agentChargeString = (String) requestBody.get("price");
+        
+        double agencyCharge = 0;
+
+        try{
+            agencyCharge = Double.parseDouble(agentChargeString);
+        }catch(Exception e){
+            JSONObject response = commonFunctionToErrorResponse("There is a error in payment amount. Please check price field.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         Institution creditCompany = null; 
         try {
@@ -1374,9 +1381,9 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        OnlineBooking bookindData = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, false, creditCompany);
+        OnlineBooking bookingData = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, false, creditCompany);
 
-        if (bookindData == null) {
+        if (bookingData == null) {
             OnlineBooking retiredBooking = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, true, creditCompany);
 
             if (retiredBooking != null) {
@@ -1388,7 +1395,7 @@ public class ChannelApi {
             }
         }
 
-        Bill temporarySavedBill = bookindData.getBill();
+        Bill temporarySavedBill = bookingData.getBill();
 
         try {
             validateBillForCompleteBooking(temporarySavedBill);
