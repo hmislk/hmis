@@ -78,6 +78,7 @@
                                         font-family: Arial, sans-serif;
                                         font-size: 10pt;
                                     }
+
                                 }
 
                                 body {
@@ -87,7 +88,7 @@
                                 .paper{
                                     position: static !important;
                                     width: 297mm!important;
-                                    size: A4 landscape!important;
+
 
                                 }
 
@@ -191,9 +192,7 @@
                                                         <h:outputText value="#{i.item.name}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{i.item.code}" style="margin-left: 1mm;">
-                                                            <f:convertDateTime pattern="dd/MM/YY" />
-                                                        </h:outputText>
+                                                        <h:outputText value="#{i.item.code}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
                                                         <h:outputText value="#{i.pharmaceuticalBillItem.qty}" style="margin-right: 1mm;">
