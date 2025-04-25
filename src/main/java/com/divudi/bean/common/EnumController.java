@@ -292,6 +292,15 @@ public class EnumController implements Serializable {
         return Arrays.asList(ReportViewType.values());
     }
 
+    public List<ReportViewType> getPharmacyIncomeReportViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+        );
+    }
+
     public ItemListingStrategy[] getItemListingStrategys() {
         return ItemListingStrategy.values();
     }
