@@ -313,13 +313,57 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hash.put("pm", PaymentMethod.Credit);
         hash.put("pt", p);
         a = getFacade().findFirstByJpql(sql, hash);
-        System.out.println("a = " + a);
         if (a == null) {
             return false;
         } else {
             lastCreditCompany = a.getCreditCompany();
             return true;
         }
+    }
+
+    public void findLastUsedCreditCompanies() {
+        if (current.getPatient() == null) {
+            return;
+        }
+
+        Admission a = null;
+        String sql;
+        HashMap hash = new HashMap();
+        sql = "select c from Admission c "
+                + " where c.patient=:pt "
+                + " and c.paymentMethod= :pm"
+                + " and c.retired=false "
+                + " order by c.id desc";
+
+        hash.put("pm", PaymentMethod.Credit);
+        hash.put("pt", current.getPatient());
+        a = getFacade().findFirstByJpql(sql, hash);
+
+        if (a == null) {
+            return;
+        } else {
+            List<EncounterCreditCompany> encounterCreditCompanys = new ArrayList<>();
+            String jpql = "select ecc from EncounterCreditCompany ecc"
+                    + "  where ecc.retired=false "
+                    + " and ecc.patientEncounter=:pEnc ";
+            HashMap hm = new HashMap();
+            hm.put("pEnc", a);
+            encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(jpql, hm);
+
+            encounterCreditCompanies = new ArrayList<>();
+
+            for (EncounterCreditCompany ecc : encounterCreditCompanys) {
+                encounterCreditCompany = new EncounterCreditCompany();
+                encounterCreditCompany.setPatientEncounter(current);
+                encounterCreditCompany.setInstitution(ecc.getInstitution());
+                encounterCreditCompany.setCreditLimit(ecc.getCreditLimit());
+                encounterCreditCompany.setPolicyNo(ecc.getPolicyNo());
+                current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
+                encounterCreditCompanies.add(encounterCreditCompany);
+                encounterCreditCompany = new EncounterCreditCompany();
+            }
+        }
+
     }
 
     public List<Admission> completeBhtCredit(String qry) {
@@ -842,7 +886,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         h.put("bt", BillTypeAtomic.INWARD_PROVISIONAL_BILL);
         h.put("pe", ad);
         ads = getBillFacade().findByJpql(sql, h);
-        
+
         System.out.println("ads.size() = " + ads.size());
 
         if (ads.size() > 0 || !ads.isEmpty()) {
@@ -1137,6 +1181,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 getCurrent().setCreditLimit(tec.getCreditLimit());
                 getCurrent().setPolicyNo(tec.getPolicyNo());
                 getCurrent().setReferanceNo(tec.getReferanceNo());
+
+                for (EncounterCreditCompany ecc : getEncounterCreditCompanies()) {
+                    if (configOptionApplicationController.getBooleanValueByKey("Inward Patient Admit - Credit Companies Require Reference Number", false)) {
+                        if (ecc.getReferanceNo() == null || ecc.getReferanceNo().isEmpty()) {
+                            JsfUtil.addErrorMessage("Please Add the Reference Number for " + ecc.getInstitution().getName() + " Company");
+                            return true;
+                        }
+                    }
+                }
+
                 //TO Do - add other fields
             }
 
