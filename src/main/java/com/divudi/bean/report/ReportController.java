@@ -920,7 +920,7 @@ public class ReportController implements Serializable {
         String jpql = "select bi"
                 + " from BillItem bi"
                 + " where bi.retired=:ret"
-                + " and bi.bill.referredBy IS NOT NULL";
+                + " and bi.bill.referredBy IS NOT NULL ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
@@ -928,6 +928,11 @@ public class ReportController implements Serializable {
         if (institution != null) {
             jpql += " AND (bi.bill.institution = :ins or bi.bill.toInstitution=:ins) ";
             params.put("ins", institution);
+        }
+
+        if(department != null) {
+            jpql += " AND (bi.bill.department = :dep)";
+            params.put("dep", department);
         }
 
         if (site != null) {
