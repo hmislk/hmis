@@ -682,7 +682,7 @@ public class ChannelApi {
             JSONObject json = commonFunctionToErrorResponse("No data for this criteria.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
         }
-        
+
         List<Object> sessionData = new ArrayList<>();
         Long additionalProp = 1L;
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
@@ -690,8 +690,8 @@ public class ChannelApi {
         SimpleDateFormat forDay = new SimpleDateFormat("E");
 
         for (SessionInstance s : sessions) {
-            
-            if(s.getOriginatingSession().getTotal() == 0){
+
+            if (s.getOriginatingSession().getTotal() == 0) {
                 continue;
             }
             Map<String, Object> session = new HashMap<>();
@@ -767,9 +767,14 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
 
-        String bookingChannel = requestBody.get("bookingChannel;");
+        String agencyCode = requestBody.get("bookingChannel");
 
-        System.out.println(sessionId);
+        try {
+            validateAndFetchAgency(null, agencyCode);
+        } catch (ValidationException e) {
+            JSONObject responseError = commonFunctionToErrorResponse(e.getField()+e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
+        }
 
         SessionInstance session = channelService.findActiveChannelSession(sessionId);
 
@@ -1495,7 +1500,7 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse("NO Appoinements for that Date Range");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (OnlineBooking ob : bookingList) {
@@ -1518,7 +1523,7 @@ public class ChannelApi {
         response.put("message", "Accepted");
         response.put("code", 202);
         response.put("detailMessage", "All the appoinment details listed within " + fromDate + " to " + toDate);
-        
+
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
     }
 
