@@ -613,7 +613,6 @@ public class ChannelApi {
         }
 
         List<Object> sessionData = new ArrayList<>();
-        Long additionalProp = 1L;
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
@@ -654,16 +653,21 @@ public class ChannelApi {
             session.put("appDay", forDay.format(s.getSessionDate()));
 
             sessionData.add(session);
-            additionalProp++;
         }
 
         Map<String, Object> sessionResults = new HashMap<>();
         sessionResults.put("result", sessionData);
+        
+        Map<String, Integer> pageData = new HashMap();
+        pageData.put("pageNo", 0);
+        pageData.put("offset", 0);
+        pageData.put("pages", 0);
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "202");
         response.put("message", "Accepted");
         response.put("data", sessionResults);
+        response.put("page", pageData);
         response.put("detailMessage", "Succeess");
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
