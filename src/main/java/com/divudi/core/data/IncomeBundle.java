@@ -1238,6 +1238,95 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
 
+    private void populateRowFromBill(IncomeRow r, Bill b) {
+        if (b == null) {
+            return;
+        }
+
+        r.setGrossTotal(b.getTotal());
+        r.setNetTotal(b.getNetTotal());
+        r.setDiscount(b.getDiscount());
+        r.setServiceCharge(b.getMargin());
+        r.setActualTotal(b.getTotal() - b.getServiceCharge());
+
+        PaymentMethod pm = b.getPaymentMethod();
+
+        if (pm == null) {
+            r.setCreditValue(b.getNetTotal());
+            if (b.getPatientEncounter() != null) {
+                r.setOpdCreditValue(0);
+                r.setInpatientCreditValue(b.getNetTotal());
+            } else {
+                r.setOpdCreditValue(0);
+                r.setInpatientCreditValue(0);
+                r.setNoneValue(b.getNetTotal());
+            }
+            return;
+        }
+
+        switch (pm) {
+            case Agent:
+                r.setAgentValue(b.getNetTotal());
+                break;
+            case Card:
+                r.setCardValue(b.getNetTotal());
+                break;
+            case Cash:
+                r.setCashValue(b.getNetTotal());
+                break;
+            case Cheque:
+                r.setChequeValue(b.getNetTotal());
+                break;
+            case IOU:
+                r.setIouValue(b.getNetTotal());
+                break;
+            case OnCall:
+                r.setOnCallValue(b.getNetTotal());
+                break;
+            case Credit:
+                r.setCreditValue(b.getNetTotal());
+                if (b.getPatientEncounter() != null) {
+                    r.setOpdCreditValue(0);
+                    r.setInpatientCreditValue(b.getNetTotal());
+                } else {
+                    r.setOpdCreditValue(b.getNetTotal());
+                    r.setInpatientCreditValue(0);
+                }
+                break;
+            case MultiplePaymentMethods:
+                calculateBillPaymentValuesFromPayments(r);
+                break;
+            case OnlineSettlement:
+                r.setOnlineSettlementValue(b.getNetTotal());
+                break;
+            case PatientDeposit:
+                r.setPatientDepositValue(b.getNetTotal());
+                break;
+            case PatientPoints:
+                r.setPatientPointsValue(b.getNetTotal());
+                break;
+            case Slip:
+                r.setSlipValue(b.getNetTotal());
+                break;
+            case Staff:
+                r.setStaffValue(b.getNetTotal());
+                break;
+            case Staff_Welfare:
+                r.setStaffWelfareValue(b.getNetTotal());
+                break;
+            case Voucher:
+                r.setVoucherValue(b.getNetTotal());
+                break;
+            case ewallet:
+                r.setEwalletValue(b.getNetTotal());
+                break;
+            case YouOweMe:
+                break;
+            case None:
+                break;
+        }
+    }
+
     /**
      * Helper method to allocate multiple-payment totals into the daily summary
      * row.

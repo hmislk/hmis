@@ -557,9 +557,6 @@ public class PharmacySummaryReportController implements Serializable {
                 if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
                     r.setPayments(billService.fetchBillPayments(r.getBill()));
                 }
-                if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                    r.setPayments(billService.fetchBillPayments(r.getBill()));
-                }
             }
             bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
