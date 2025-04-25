@@ -453,6 +453,9 @@
 
                         <p:column headerText="Referring Doctor " width="12em">
                             <h:outputText value="#{item.doctor.nameWithTitle}"/>
+                            <f:facet name="footer">
+                                <h:outputText value="Total Count" />
+                            </f:facet>
                         </p:column>
 
                         <p:column headerText="Total Count" width="2em" class="text-end">
@@ -632,6 +635,9 @@
                                         rendered="#{bi.refunded}"
                                         value="#{bi.bill.refundedBill.deptId}">
                                 </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total Count" />
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Referring Doctor" width="20em">
