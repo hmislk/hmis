@@ -1340,15 +1340,10 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
         Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
-        String paymentChannel = paymentDetails.get("paymentChannel");
+        String agencyCode = paymentDetails.get("paymentChannel");
+        String agencyName = paymentDetails.get("paymentMode");
 
-        if (!paymentChannel.toUpperCase().equals("WEB_DOC990")) {
-            JSONObject response = commonFunctionToErrorResponse("Invalid Payment Channel");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-
-        Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
-        System.out.println(creditCompany.getName());
+        Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.Agency);
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
 
         if (billList == null || billList.isEmpty()) {

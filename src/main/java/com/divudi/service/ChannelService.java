@@ -469,7 +469,7 @@ public class ChannelService {
         savingTemporaryBill.setSingleBillSession(savingTemporaryBillSession);
         savingTemporaryBill.setBillItems(savingBillItems);
         savingTemporaryBill.setBillFees(savingBillFees);
-        
+
         newBooking.setHospitalFee(savingTemporaryBill.getHospitalFee());
         newBooking.setDoctorFee(savingTemporaryBill.getStaffFee());
 
@@ -479,7 +479,7 @@ public class ChannelService {
         getBillFacade().edit(savingTemporaryBill);
         getBillSessionFacade().edit(savingTemporaryBillSession);
         getOnlineBookingFacade().edit(newBooking);
-        
+
         return savingTemporaryBill;
     }
 
@@ -769,6 +769,21 @@ public class ChannelService {
                 + " order by f.id";
         m.put("i", i);
         return itemFeeFacade.findByJpql(sql, m);
+    }
+
+    public OnlineBooking findOnlineBookingFromRefNo(String refNo) {
+
+        String sql = "Select ob from OnlineBooking ob "
+                + " where ob.referenceNo  = :refNo "
+                + " and ob.retired = :retired "
+                + " and ob.bill is not null";
+        
+        Map params = new HashMap();
+        params.put("refNo", refNo);
+        params.put("retired", false);
+        
+        return getOnlineBookingFacade().findFirstByJpql(sql, params);
+        
     }
 
     public List<Bill> findBillFromRefNo(String refNo, Institution creditCompany, BillClassType b) {
