@@ -1473,59 +1473,48 @@ public class ChannelApi {
         String agencyName = requestBody.get("paymentMode");
         String agencyCode = requestBody.get("paymentChannel");
 
-        Institution creditCompany = null;
+        Institution agency = null;
 
         try {
-            creditCompany = validateAndFetchAgency(agencyName, agencyCode);
+            agency = validateAndFetchAgency(agencyName, agencyCode);
         } catch (ValidationException e) {
-            JSONObject response = commonFunctionToErrorResponse(e.getField()+e.getMessage());
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        List<Bill> billList = channelService.viewBookingHistorybyDate(fromDate, toDate, creditCompany, BillClassType.BilledBill);
+        Date startDate = null;
+        Date endDate = null;
 
-        if (billList == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("NO bills for that Date Range");
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+            startDate = formatter.parse(fromDate);
+            endDate = formatter.parse(toDate);
+        } catch (Exception e) {
+            JSONObject response = commonFunctionToErrorResponse("Check date format again.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        List<Bill> billListForResponse = new ArrayList<>();
+        List<OnlineBooking> bookingList = channelService.fetchOnlineBookingWithingDateRange(startDate, endDate, agency);
 
-        for (Bill b : billList) {
-            boolean canAdd = true;
-            if (!billListForResponse.isEmpty()) {
-                for (Bill bl : billListForResponse) {
-                    if (b.getAgentRefNo().equals(bl.getAgentRefNo())) {
-                        canAdd = false;
-                        break;
-                    }
-                }
-            }
-            if (canAdd) {
-                billListForResponse.add(b);
-            }
-
+        if (bookingList == null || bookingList.isEmpty()) {
+            JSONObject response = commonFunctionToErrorResponse("NO Appoinements for that Date Range");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
+        
+        List<Map<String, Object>> result = new ArrayList<>();
 
-        List result = new ArrayList();
-        int count = 1;
+        for (OnlineBooking ob : bookingList) {
+            Bill bill = ob.getBill();
 
-        for (Bill b : billListForResponse) {
-//            if(b.isCancelled()){
-//                continue;
-//            }
-//            if(b.getBillType() == BillType.ChannelOnCall){
-//                continue;
-//            }
             Map<String, Object> mapDetail = new HashMap<>();
-            mapDetail.put("DoctorName", b.getStaff().getPerson().getNameWithTitle());
-            mapDetail.put("PatientName", b.getPatient().getPerson().getName());
-            mapDetail.put("HosTelephone", b.getToInstitution().getPhone());
-            mapDetail.put("NicNumber", b.getPatient().getPerson().getNic());
-            mapDetail.put("HosName", b.getToInstitution().getName());
-            mapDetail.put("RefNo", b.getAgentRefNo());
-            mapDetail.put("HosLocation", b.getToInstitution().getAddress());
-            mapDetail.put("AppointmentNumber", Integer.parseInt(b.getSingleBillSession().getSerialNoStr()));
+            mapDetail.put("DoctorName", bill.getStaff().getPerson().getNameWithTitle());
+            mapDetail.put("PatientName", ob.getPatientName());
+            mapDetail.put("HosTelephone", bill.getToInstitution().getPhone());
+            mapDetail.put("NicNumber", bill.getPatient().getPerson().getNic());
+            mapDetail.put("HosName", bill.getToInstitution().getName());
+            mapDetail.put("RefNo", bill.getAgentRefNo());
+            mapDetail.put("HosLocation", bill.getToInstitution().getAddress());
+            mapDetail.put("AppointmentNumber", Integer.parseInt(bill.getSingleBillSession().getSerialNoStr()));
             result.add(mapDetail);
         }
 
@@ -1534,9 +1523,7 @@ public class ChannelApi {
         response.put("message", "Accepted");
         response.put("code", 202);
         response.put("detailMessage", "All the appoinment details listed within " + fromDate + " to " + toDate);
-
-        System.out.println(billList.size());
-
+        
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
     }
 
