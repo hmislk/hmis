@@ -454,6 +454,7 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a report view type.");
             return;
         }
+
         switch (reportViewType) {
             case BY_BILL:
                 processPharmacyIncomeReportByBill();
@@ -464,8 +465,11 @@ public class PharmacySummaryReportController implements Serializable {
             case BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE:
                 processPharmacyIncomeReportByDiscountTypeAndAdmissionType();
                 break;
+            case BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE:
+                processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType();
+                break;
             default:
-                JsfUtil.addErrorMessage("Unsupported report view type.");
+                JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
                 break;
         }
     }
