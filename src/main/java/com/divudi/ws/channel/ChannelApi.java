@@ -1470,11 +1470,15 @@ public class ChannelApi {
 
         String fromDate = requestBody.get("fromDate");
         String toDate = requestBody.get("toDate");
-        String creditCompanyCode = requestBody.get("paymentChannel");
-        Institution creditCompany = channelService.findCreditCompany(creditCompanyCode, InstitutionType.Agency);
+        String agencyName = requestBody.get("paymentMode");
+        String agencyCode = requestBody.get("paymentChannel");
 
-        if (creditCompany == null) {
-            JSONObject response = commonFunctionToErrorResponse("NO credit company registered in the System");
+        Institution creditCompany = null;
+
+        try {
+            creditCompany = validateAndFetchAgency(agencyName, agencyCode);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField()+e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -1572,7 +1576,7 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse("No bill reference with Ref No. : " + refNo);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         Bill bookingBill = bookingDetails.getBill();
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
@@ -1601,7 +1605,7 @@ public class ChannelApi {
         appoinment.put("chRoom", bookingBill.getSingleBillSession().getSessionInstance().getRoomNo());
         appoinment.put("timeInterval", null);
         appoinment.put("status", patientStatus);
-        
+
         SessionInstance session = bookingBill.getSingleBillSession().getSessionInstance();
 
         String sessionStatus = "Session will have on time.";
@@ -1634,7 +1638,7 @@ public class ChannelApi {
         patientDetails.put("foreign", bookingDetails.isForeign());
         patientDetails.put("teleNo", bookingDetails.getPhoneNo());
         patientDetails.put("patientName", bookingDetails.getPatientName());
-        patientDetails.put("patientFullName", bookingDetails.getTitle()+" "+bookingDetails.getPatientName());
+        patientDetails.put("patientFullName", bookingDetails.getTitle() + " " + bookingDetails.getPatientName());
         patientDetails.put("nid", bookingDetails.getNic());
         patientDetails.put("memberId", bookingDetails.getId());
         patientDetails.put("member", null);

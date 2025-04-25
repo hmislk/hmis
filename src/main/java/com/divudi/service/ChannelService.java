@@ -564,13 +564,13 @@ public class ChannelService {
     }
 
     public Institution findCreditCompany(String code, String name, InstitutionType type) {
-         Map params = new HashMap();
+        Map params = new HashMap();
 
         String jpql = "Select i from Institution i where i.retired = false "
                 + " and UPPER(i.code) = UPPER(:code) "
                 + " and i.institutionType = :type";
-        
-        if(name != null && !name.isEmpty()){
+
+        if (name != null && !name.isEmpty()) {
             jpql += " and i.name = :name ";
             params.put("name", name.trim());
         }
@@ -780,9 +780,9 @@ public class ChannelService {
         bookingForEdit.setPatientName(patientName);
         bookingForEdit.setTitle(title);
         bookingForEdit.setNic(nic);
-        
+
         getOnlineBookingFacade().edit(bookingForEdit);
-        
+
         return bookingForEdit;
     }
 
@@ -853,6 +853,33 @@ public class ChannelService {
         return bs;
     }
 
+    public List<OnlineBooking> fetchOnlineBookingWithingDateRange(Date fromDate, Date toDate, Institution agency) {
+        Map params = new HashMap();
+
+        List<OnlineBookingStatus> requiredStatus = Arrays.asList(
+                OnlineBookingStatus.COMPLETED,
+                OnlineBookingStatus.CANCEL
+        );
+
+        String sql = "Select ob from OnlineBooking ob "
+                + " where ob.createdAt between :fromDate and :toDate"
+                + " and ob.retired = :ret"
+                + " and ob.onlineBookingStatus in :requiredStatus";
+
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ret", false);
+        params.put("requiredStatus", requiredStatus);
+
+        if (agency != null) {
+            sql += " and ob.agency = :agency";
+            params.put("agency", agency);
+        }
+        
+        return getOnlineBookingFacade().findByJpql(sql, params, TemporalType.DATE);
+
+    }
+
     public List<Bill> viewBookingHistorybyDate(String fromDate, String toDate, Institution cc, BillClassType b) {
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
@@ -884,12 +911,12 @@ public class ChannelService {
         }
         return null;
     }
-    
-    public void cancelOnlineBooking(OnlineBooking booking){
+
+    public void cancelOnlineBooking(OnlineBooking booking) {
         booking.setOnlineBookingStatus(OnlineBookingStatus.CANCEL);
-        
+
         getOnlineBookingFacade().edit(booking);
-    
+
     }
 
     public BillSession cancelBookingBill(Bill bill, OnlineBooking bookingDetails) {
@@ -910,9 +937,9 @@ public class ChannelService {
         getBillFacade().edit(bill.getReferenceBill());
         bs.setReferenceBillSession(cbs);
         billSessionFacade.edit(bs);
-        
+
         cancelOnlineBooking(bill.getReferenceBill().getOnlineBooking());
-        
+
         return cbs;
 
         //  sendSmsOnChannelCancellationBookings();
@@ -927,7 +954,7 @@ public class ChannelService {
         b.setCreatedAt(new Date());
 
         getBillItemFacade().create(b);
-        
+
         String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
         List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
         cancelBillFee(can, b, tmp);
@@ -962,9 +989,9 @@ public class ChannelService {
         cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
         cb.setInstitution(bill.getToInstitution());
         cb.setDepartment(bill.getToDepartment());
-        
+
         String insId = billNumberBean.institutionChannelBillNumberGenerator(bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getInstitution(), cb);
-        
+
         if (insId.equals("")) {
             return null;
         }
