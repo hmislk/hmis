@@ -123,8 +123,7 @@
                         <p:commandLink 
                             id="Collecting_Centre_Billing"
                             ajax="false"
-                            action="collecting_centre/bill?faces-redirect=true"
-                            actionListener="#{collectingCentreBillController.prepareNewBill()}"
+                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"
                             rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="image" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>

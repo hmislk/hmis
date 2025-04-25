@@ -2,6 +2,10 @@ package com.divudi.service;
 
 import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillTypeAtomic;
+import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
+import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
+import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL;
+import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.PaymentMethod;
@@ -1491,30 +1495,64 @@ public class BillService {
                     hasAtLeatOneError = true;
                 }
                 break;
+            case CC_BILL:
+            case CC_BILL_CANCELLATION:
+            case CC_BILL_REFUND:
+            case CC_PAYMENT_CANCELLATION_BILL:
+            case CC_PAYMENT_RECEIVED_BILL:
+            case CC_PAYMENT_MADE_BILL:
+            case CC_PAYMENT_MADE_CANCELLATION_BILL:
+                boolean billHasNoBillItems = billHasNoBillItems(bill);
+                if (billHasNoBillItems) {
+                    hasAtLeatOneError = true;
+                }
+                break;
+            case CC_CREDIT_NOTE:
+            case CC_CREDIT_NOTE_CANCELLATION:
+            case CC_DEBIT_NOTE:
+            case CC_DEBIT_NOTE_CANCELLATION:
+
             default:
                 hasAtLeatOneError = false;
 
         }
-        System.out.println("hasAtLeatOneError = " + hasAtLeatOneError);
+        if (hasAtLeatOneError) {
+            System.out.println("hasAtLeatOneError = " + hasAtLeatOneError);
+        }
         return hasAtLeatOneError;
     }
 
+    // ChatGPT contributed method to validate bill item net total consistency
     public boolean billNetTotalIsNotEqualToBillItemNetTotal(Bill bill) {
         if (bill == null || bill.getBillItems() == null) {
             return true;
         }
 
         double billNetTotal = Math.abs(bill.getNetTotal());
-        double billItemNetTotal = 0.0;
+        double billItemNetTotal = bill.getBillItems().stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(bi -> Math.abs(bi.getNetValue()))
+                .sum();
 
-        for (BillItem bi : bill.getBillItems()) {
-            if (bi != null) {
-                billItemNetTotal += Math.abs(bi.getNetValue());
-            }
+        boolean mismatch = Math.abs(billNetTotal - billItemNetTotal) >= 0.01;
+
+        if (mismatch) {
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "Bill net total (" + billNetTotal + ") does not match sum of bill item net totals (" + billItemNetTotal + "). ");
         }
-        boolean billNetTotalIsNotEqualToBillItemNetTotalError = Math.abs(billNetTotal - billItemNetTotal) >= 0.01;
-        System.out.println("billNetTotalIsNotEqualToBillItemNetTotalError = " + billNetTotalIsNotEqualToBillItemNetTotalError);
-        return billNetTotalIsNotEqualToBillItemNetTotalError;
+
+        return mismatch;
+    }
+
+// ChatGPT contributed method to check if bill has no bill items
+    public boolean billHasNoBillItems(Bill bill) {
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            System.out.println("bill = " + bill + " has NO Bill Items.");
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "This bill has no bill items. ");
+            return true;
+        }
+        return false;
     }
 
 }

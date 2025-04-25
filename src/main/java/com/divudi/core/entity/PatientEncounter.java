@@ -8,6 +8,7 @@ import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.inward.PatientEncounterType;
+import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.EncounterComponent;
@@ -166,6 +167,8 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     @ManyToOne
     private Staff referringStaff;
     private boolean convertedToAnotherEncounter;
+    @ManyToOne
+    private ClinicalEntity primaryReason;
 
     // Transient method for BP
     public String getBp() {
@@ -1035,6 +1038,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setConvertedToAnotherEncounter(boolean convertedToAnotherEncounter) {
         this.convertedToAnotherEncounter = convertedToAnotherEncounter;
+    }
+
+    public ClinicalEntity getPrimaryReason() {
+        return primaryReason;
+    }
+
+    public void setPrimaryReason(ClinicalEntity primaryReason) {
+        this.primaryReason = primaryReason;
     }
 
     public static Map<String, String> toMap(PatientEncounter e) {
