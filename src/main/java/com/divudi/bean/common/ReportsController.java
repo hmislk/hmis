@@ -5809,8 +5809,8 @@ public class ReportsController implements Serializable {
             table.setWidthPercentage(100);
 
             table.addCell(new PdfPCell(new Phrase("S. No")));
-            table.addCell(new PdfPCell(new Phrase("Route")));
             table.addCell(new PdfPCell(new Phrase("Route Code")));
+            table.addCell(new PdfPCell(new Phrase("Route")));
 
             List<YearMonth> yearMonths = getYearMonths();
             for (YearMonth yearMonth : yearMonths) {
@@ -5824,8 +5824,8 @@ public class ReportsController implements Serializable {
                 Map<YearMonth, Bill> monthlyData = entrySet.getValue();
 
                 table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
-                table.addCell(new PdfPCell(new Phrase(route.getName())));
                 table.addCell(new PdfPCell(new Phrase(route.getCode())));
+                table.addCell(new PdfPCell(new Phrase(route.getName())));
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
@@ -5894,8 +5894,8 @@ public class ReportsController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
             int cellIndex = 0;
             headerRow.createCell(cellIndex++).setCellValue("S. No");
-            headerRow.createCell(cellIndex++).setCellValue("Route");
             headerRow.createCell(cellIndex++).setCellValue("Route Code");
+            headerRow.createCell(cellIndex++).setCellValue("Route");
 
             List<YearMonth> yearMonths = getYearMonths();
             for (YearMonth yearMonth : yearMonths) {
@@ -5912,8 +5912,8 @@ public class ReportsController implements Serializable {
                 cellIndex = 0;
 
                 row.createCell(cellIndex++).setCellValue(serialNumber++);
-                row.createCell(cellIndex++).setCellValue(route.getName());
                 row.createCell(cellIndex++).setCellValue(route.getCode());
+                row.createCell(cellIndex++).setCellValue(route.getName());
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
