@@ -47,6 +47,8 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.*;
 import java.util.*;
 import java.util.List;
@@ -5569,7 +5571,10 @@ public class ReportsController implements Serializable {
 
                     if (bill != null) {
                         dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getQty());
-                        dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getTotalHospitalFee());
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(
+                                BigDecimal.valueOf(bill.getTotalHospitalFee()).setScale(2, RoundingMode.HALF_UP).doubleValue()
+                        );
+
                     } else {
                         dataRow.createCell(dynamicColumnIndex++).setCellValue(0);
                         dataRow.createCell(dynamicColumnIndex++).setCellValue(0.0);
@@ -5740,7 +5745,10 @@ public class ReportsController implements Serializable {
                 for (YearMonth yearMonth : yearMonths) {
                     Bill bill = monthlyData.get(yearMonth);
                     table.addCell(new PdfPCell(new Phrase(bill != null ? String.valueOf(bill.getQty()) : "0")));
-                    table.addCell(new PdfPCell(new Phrase(bill != null ? String.valueOf(bill.getTotalHospitalFee()) : "0.0")));
+                    table.addCell(new PdfPCell(new Phrase(
+                            bill != null ? String.format("%.2f", bill.getTotalHospitalFee()) : "0.00"
+                    )));
+
                 }
             }
 
@@ -5822,7 +5830,9 @@ public class ReportsController implements Serializable {
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
                     table.addCell(new PdfPCell(new Phrase(billData != null ? String.valueOf(billData.getQty()) : "0")));
-                    table.addCell(new PdfPCell(new Phrase(billData != null ? String.valueOf(billData.getTotalHospitalFee()) : "0.0")));
+                    table.addCell(new PdfPCell(new Phrase(
+                            billData != null ? String.format("%.2f", billData.getTotalHospitalFee()) : "0.00"
+                    )));
                 }
             }
 
@@ -5909,7 +5919,10 @@ public class ReportsController implements Serializable {
                     Bill billData = monthlyData.get(yearMonth);
                     if (billData != null) {
                         row.createCell(cellIndex++).setCellValue(billData.getQty());
-                        row.createCell(cellIndex++).setCellValue(billData.getTotalHospitalFee());
+                        row.createCell(cellIndex++).setCellValue(
+                                BigDecimal.valueOf(billData.getTotalHospitalFee()).setScale(2, RoundingMode.HALF_UP).doubleValue()
+                        );
+
                     } else {
                         row.createCell(cellIndex++).setCellValue(0);
                         row.createCell(cellIndex++).setCellValue(0.0);
