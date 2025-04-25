@@ -31,7 +31,7 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private String phoneNo;
     private String title;
     private String referenceNo;
-    private boolean foreign;
+    private boolean foreignStatus;
     private double onlineBookingPayment;
     private double appoinmentTotalAmount;
     private double netTotalForOnlineBooking;
@@ -290,12 +290,12 @@ public class OnlineBooking implements Serializable, RetirableEntity {
         this.referenceNo = referenceNo;
     }
 
-    public boolean isForeign() {
-        return foreign;
+    public boolean isForeignStatus() {
+        return foreignStatus;
     }
 
-    public void setForeign(boolean foreign) {
-        this.foreign = foreign;
+    public void setForeignStatus(boolean foreignStatus) {
+        this.foreignStatus = foreignStatus;
     }
 
     public double getOnlineBookingPayment() {

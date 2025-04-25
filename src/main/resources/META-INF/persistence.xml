@@ -3,11 +3,12 @@
     <persistence-unit name="hmisPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>jdbc/hmis</jta-data-source>
+        <class>com.divudi.core.entity.OnlineBooking</class>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level" value="SEVERE"/>
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
-            <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
             <!-- Use a relative path for the application location -->
             <property name="eclipselink.application-location" value="C:\Users\Chinthaka Prasad\Documents\sql script\New folder"/>
         </properties>
@@ -18,7 +19,7 @@
         <properties>
             <property name="eclipselink.logging.level" value="SEVERE"/>
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
-            <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
             <!-- Use a relative path for the application location -->
             <property name="eclipselink.application-location" value="C:\Users\Chinthaka Prasad\Documents\sql script\New folder"/>
         </properties>

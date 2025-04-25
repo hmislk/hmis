@@ -930,7 +930,6 @@ public class ChannelApi {
         Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.Agency);
 
         if (creditCompany == null) {
-            JSONObject response = commonFunctionToErrorResponse("No channeling comapany still registered in the system.");
             throw new ValidationException("Agency : ", "Your agency not register in the hospital system. Contact Carecode.");
         }
 
@@ -1033,7 +1032,7 @@ public class ChannelApi {
         newBooking.setTitle(patientTitle);
         newBooking.setNic(nic);
         newBooking.setReferenceNo(clientsReferanceNo);
-        newBooking.setForeign(isForeigner);
+        newBooking.setForeignStatus(isForeigner);
         newBooking.setAgency(bookingAgency);
         newBooking.setRequestIp(ipAddress);
         newBooking.setCreatedAt(new Date());
@@ -1069,7 +1068,7 @@ public class ChannelApi {
         patientDetailsResponse.put("member", null);
         patientDetailsResponse.put("needSMS", savedBooking.isNeedSms());
         patientDetailsResponse.put("nsr", savedBooking.isNsr());
-        patientDetailsResponse.put("foreign", savedBooking.isForeign());
+        patientDetailsResponse.put("foreign", savedBooking.isForeignStatus());
         patientDetailsResponse.put("teleNo", savedBooking.getPhoneNo());
         patientDetailsResponse.put("title", savedBooking.getTitle());
         patientDetailsResponse.put("patientName", savedBooking.getPatientName());
@@ -1192,6 +1191,7 @@ public class ChannelApi {
         }
 
         Bill temporarySavedBill = bookingDetails.getBill();
+        System.out.println(temporarySavedBill);
 
         try {
             validateBillForCompleteBooking(temporarySavedBill);
@@ -1230,7 +1230,7 @@ public class ChannelApi {
         patientDetailsResponse.put("member", null);
         patientDetailsResponse.put("needSMS", editedBooking.isNeedSms());
         patientDetailsResponse.put("nsr", editedBooking.isNsr());
-        patientDetailsResponse.put("foreign", editedBooking.isForeign());
+        patientDetailsResponse.put("foreign", editedBooking.isForeignStatus());
         patientDetailsResponse.put("teleNo", editedBooking.getPhoneNo());
         patientDetailsResponse.put("title", editedBooking.getTitle());
         patientDetailsResponse.put("patientName", editedBooking.getPatientName());
@@ -1423,7 +1423,7 @@ public class ChannelApi {
         patientDetails.put("member", null);
         patientDetails.put("needSMS", bookingDetails.isNeedSms());
         patientDetails.put("nsr", bookingDetails.isNsr());
-        patientDetails.put("foreign", bookingDetails.isForeign());
+        patientDetails.put("foreign", bookingDetails.isForeignStatus());
         patientDetails.put("teleNo", bookingDetails.getPhoneNo());
         patientDetails.put("patientName", bookingDetails.getPatientName());
         patientDetails.put("patientFullName", bookingDetails.getTitle() + " " + bookingDetails.getPatientName());
@@ -1619,7 +1619,7 @@ public class ChannelApi {
 
         Map<String, Object> patientDetails = new HashMap<>();
         patientDetails.put("titile", bookingDetails.getTitle());
-        patientDetails.put("foreign", bookingDetails.isForeign());
+        patientDetails.put("foreign", bookingDetails.isForeignStatus());
         patientDetails.put("teleNo", bookingDetails.getPhoneNo());
         patientDetails.put("patientName", bookingDetails.getPatientName());
         patientDetails.put("patientFullName", bookingDetails.getTitle() + " " + bookingDetails.getPatientName());
@@ -1764,7 +1764,7 @@ public class ChannelApi {
 
         Map<String, Object> patientDetails = new HashMap<>();
         patientDetails.put("titile", bookingData.getTitle());
-        patientDetails.put("foreign", bookingData.isForeign());
+        patientDetails.put("foreign", bookingData.isForeignStatus());
         patientDetails.put("teleNo", bookingData.getPhoneNo());
         patientDetails.put("patientName", bookingData.getPatientName());
         patientDetails.put("patientFullName", bookingData.getTitle() + " " + bookingData.getPatientName());

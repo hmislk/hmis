@@ -587,7 +587,7 @@ public class ChannelService {
         //bill.setToStaff(toStaff);
         bill.setAppointmentAt(session.getSessionDate());
 
-        if (newBooking.isForeign()) {
+        if (newBooking.isForeignStatus()) {
             bill.setTotal(session.getOriginatingSession().getTotalFfee());
             bill.setNetTotal(session.getOriginatingSession().getTotalFfee());
         } else {
@@ -649,7 +649,7 @@ public class ChannelService {
         bi.setQty(1.0);
         bi.setSessionDate(session.getSessionAt());
 
-        if (bill.getOnlineBooking().isForeign()) {
+        if (bill.getOnlineBooking().isForeignStatus()) {
             bi.setGrossValue(session.getOriginatingSession().getTotalFfee());
             bi.setNetRate(session.getOriginatingSession().getTotalFfee());
             bi.setNetValue(session.getOriginatingSession().getTotalFfee());
@@ -1580,7 +1580,7 @@ public class ChannelService {
             }
 
             double d = 0;
-            if (bill.getOnlineBooking().isForeign()) {
+            if (bill.getOnlineBooking().isForeignStatus()) {
                 bf.setFeeValue(f.getFfee());
                 bf.setFeeGrossValue(f.getFfee());
             } else {
