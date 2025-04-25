@@ -1150,9 +1150,11 @@ public class ItemFeeManager implements Serializable {
         }
         double t = 0.0;
         double tf = 0.0;
-        for (ItemFee f : itemFees) {
-            t += f.getFee();
-            tf += f.getFfee();
+        if (itemFees != null) {
+            for (ItemFee f : itemFees) {
+                t += f.getFee();
+                tf += f.getFfee();
+            }
         }
         getItem().setTotal(t);
         getItem().setTotalForForeigner(tf);
