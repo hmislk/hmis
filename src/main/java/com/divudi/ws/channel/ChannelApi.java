@@ -1364,6 +1364,7 @@ public class ChannelApi {
         Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
         String agencyCode = paymentDetails.get("paymentChannel");
         String agencyName = paymentDetails.get("paymentMode");
+        String agentCharge = (String)requestBody.get("price");
 
         Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.Agency);
 
@@ -1392,23 +1393,25 @@ public class ChannelApi {
         }
 
         Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo);
-        // List<SessionInstance> ss = channelService.findSessionInstanceFromId(bill.getSingleBillSession().getSessionInstance());
-        SessionInstance session = bill.getSingleBillSession().getSessionInstance();
+
+        OnlineBooking bookingDetails = completedBill.getReferenceBill().getOnlineBooking();
+        SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
 
         Map<String, Object> appoinment = new HashMap<>();
-        appoinment.put("refNo", bill.getAgentRefNo());
+        appoinment.put("refNo", bookingDetails.getReferenceNo());
 
         Map<String, Object> sessionDetails = new HashMap<>();
-        Item i = bill.getSingleBillSession().getItem();
-        sessionDetails.put("hosId", i.getInstitution().getId().toString());
+        Item i = completedBill.getSingleBillSession().getItem();
+        
+        sessionDetails.put("hosId", completedBill.getToInstitution().getId());
         sessionDetails.put("docname", session.getStaff().getPerson().getNameWithTitle());
-        sessionDetails.put("amount", bill.getNetTotal());
-        sessionDetails.put("hosAmount", bill.getHospitalFee());
-        sessionDetails.put("docAmount", bill.getStaffFee());
+        sessionDetails.put("amount", completedBill.getNetTotal());
+        sessionDetails.put("hosAmount", completedBill.getHospitalFee());
+        sessionDetails.put("docAmount", completedBill.getStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
         sessionDetails.put("theDate", forDate.format(session.getSessionDate()));
         sessionDetails.put("theDay", forDay.format(session.getSessionDate()));
@@ -1417,27 +1420,26 @@ public class ChannelApi {
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
 
-        Patient p = bill.getPatient();
         Map<String, Object> patientDetails = new HashMap<>();
-        patientDetails.put("titile", p.getPerson().getTitle().toString());
+        patientDetails.put("title", bookingDetails.getTitle());
         patientDetails.put("member", null);
-        patientDetails.put("needSMS", null);
-        patientDetails.put("nsr", null);
-        patientDetails.put("foreign", p.getPerson().isForeigner());
-        patientDetails.put("teleNo", bill.getPatient().getPatientMobileNumber() != null ? bill.getPatient().getPatientMobileNumber() : bill.getPatient().getPatientPhoneNumber());
-        patientDetails.put("patientName", p.getPerson().getName());
-        patientDetails.put("patientFullName", p.getPerson().getNameWithTitle());
-        patientDetails.put("nid", p.getPerson().getNic());
+        patientDetails.put("needSMS", bookingDetails.isNeedSms());
+        patientDetails.put("nsr", bookingDetails.isNsr());
+        patientDetails.put("foreign", bookingDetails.isForeign());
+        patientDetails.put("teleNo", bookingDetails.getPhoneNo());
+        patientDetails.put("patientName", bookingDetails.getPatientName());
+        patientDetails.put("patientFullName", bookingDetails.getTitle()+" " +bookingDetails.getPatientName());
+        patientDetails.put("nid", bookingDetails.getNic());
 
         Map<String, Object> priceDetails = new HashMap<>();
-        priceDetails.put("totalAmount", bill.getTotal());
-        priceDetails.put("docCharge", bill.getStaffFee());
-        priceDetails.put("hosCharge", bill.getHospitalFee());
+        priceDetails.put("totalAmount", completedBill.getTotal());
+        priceDetails.put("docCharge", completedBill.getStaffFee());
+        priceDetails.put("hosCharge", completedBill.getHospitalFee());
 
         Map<String, Object> paymentDetailsForResponse = new HashMap<>();
-        paymentDetailsForResponse.put("paymentMode", bill.getCreditCompany().getName());
-        paymentDetailsForResponse.put("paymentChannel", bill.getCreditCompany().getCode());
-        paymentDetailsForResponse.put("seqNo", "");
+        paymentDetailsForResponse.put("paymentMode", completedBill.getCreditCompany().getName());
+        paymentDetailsForResponse.put("paymentChannel", completedBill.getCreditCompany().getCode());
+        paymentDetailsForResponse.put("seqNo", null);
 
         appoinment.put("sessionDetails", sessionDetails);
         appoinment.put("patient", patientDetails);

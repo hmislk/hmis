@@ -777,13 +777,13 @@ public class ChannelService {
                 + " where ob.referenceNo  = :refNo "
                 + " and ob.retired = :retired "
                 + " and ob.bill is not null";
-        
+
         Map params = new HashMap();
         params.put("refNo", refNo);
         params.put("retired", retiredStatus);
-        
+
         return getOnlineBookingFacade().findFirstByJpql(sql, params);
-        
+
     }
 
     public List<Bill> findBillFromRefNo(String refNo, Institution creditCompany, BillClassType b) {
@@ -1352,16 +1352,16 @@ public class ChannelService {
         BillItem paidBillItem = savePaidBillItem(paidBill, preBillSession);
         savePaidBillFee(paidBill, paidBillItem, preBillSession);
         BillSession paidBillSession = savePaidBillSession(paidBill, paidBillItem, preBillSession);
-        preBillSession.setPaidBillSession(paidBillSession);
-        getBillSessionFacade().edit(paidBillSession);
-        getBillSessionFacade().edit(preBillSession);
 
+        preBillSession.setPaidBillSession(paidBillSession);
         preBillSession.getBill().setPaidAmount(paidBill.getPaidAmount());
         preBillSession.getBill().setBalance(0.0);
         preBillSession.getBill().setPaidBill(paidBill);
         preBillSession.getBill().setPaid(true);
 
         getBillFacade().edit(preBillSession.getBill());
+        getBillSessionFacade().edit(paidBillSession);
+        getBillSessionFacade().edit(preBillSession);
 
         paidBill.setSingleBillItem(paidBillItem);
         paidBill.setSingleBillSession(paidBillSession);
@@ -1369,7 +1369,6 @@ public class ChannelService {
 
         List<Payment> p = createPayment(paidBill, paidBill.getPaymentMethod());
         return paidBill;
-        // drawerController.updateDrawerForIns(p);
     }
 
     public Payment createPaymentForCancellations(Bill bill, PaymentMethod pm) {
@@ -1392,16 +1391,14 @@ public class ChannelService {
         List<Payment> ps = new ArrayList<>();
         Payment p = new Payment();
         p.setBill(bill);
-        // p.setInstitution(getSessionController().getInstitution());
-        // p.setDepartment(getSessionController().getDepartment());
+        p.setInstitution(bill.getInstitution());
+        p.setDepartment(bill.getDepartment());
         p.setCreatedAt(new Date());
-        // p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-        p.setPaidValue(p.getBill().getNetTotal());
+        p.setPaidValue(bill.getNetTotal());
         paymentFacade.create(p);
 
         ps.add(p);
-
         return ps;
 
     }
@@ -1410,7 +1407,6 @@ public class ChannelService {
         BillItem bi = new BillItem();
         bi.copy(bs.getBillItem());
         bi.setCreatedAt(new Date());
-        // bi.setCreater(getSessionController().getLoggedUser());
         bi.setBill(b);
         getBillItemFacade().create(bi);
 
@@ -1424,7 +1420,6 @@ public class ChannelService {
             BillFee bf = new BillFee();
             bf.copy(f);
             bf.setCreatedAt(Calendar.getInstance().getTime());
-            // bf.setCreater(getSessionController().getLoggedUser());
             bf.setBill(b);
             bf.setBillItem(bi);
             getBillFeeFacade().create(bf);
@@ -1437,7 +1432,6 @@ public class ChannelService {
         paidBillSession.setBill(paidBill);
         paidBillSession.setBillItem(paidBillItem);
         paidBillSession.setCreatedAt(new Date());
-        //  bs.setCreater(getSessionController().getLoggedUser());
 
         getBillSessionFacade().create(paidBillSession);
         return paidBillSession;
@@ -1455,7 +1449,7 @@ public class ChannelService {
         completedOnlineBookingBill.setReferenceBill(bs.getBill());
         completedOnlineBookingBill.setBillType(BillType.ChannelAgent);
         completedOnlineBookingBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
-        
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
 
         completedOnlineBookingBill.setInsId(deptId);
