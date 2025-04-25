@@ -771,7 +771,7 @@ public class ChannelService {
         return itemFeeFacade.findByJpql(sql, m);
     }
 
-    public OnlineBooking findOnlineBookingFromRefNo(String refNo) {
+    public OnlineBooking findOnlineBookingFromRefNo(String refNo, boolean retiredStatus) {
 
         String sql = "Select ob from OnlineBooking ob "
                 + " where ob.referenceNo  = :refNo "
@@ -780,7 +780,7 @@ public class ChannelService {
         
         Map params = new HashMap();
         params.put("refNo", refNo);
-        params.put("retired", false);
+        params.put("retired", retiredStatus);
         
         return getOnlineBookingFacade().findFirstByJpql(sql, params);
         

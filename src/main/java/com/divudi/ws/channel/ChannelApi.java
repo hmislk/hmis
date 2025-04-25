@@ -1068,7 +1068,7 @@ public class ChannelApi {
         sessionDetailsResponse.put("sessionStarted", session.isStarted());
 
         OnlineBooking savedBooking = bill.getOnlineBooking();
-        
+
         Map<String, Object> patientDetailsResponse = new HashMap<>();
         patientDetailsResponse.put("member", null);
         patientDetailsResponse.put("needSMS", savedBooking.isNeedSms());
@@ -1079,8 +1079,8 @@ public class ChannelApi {
         patientDetailsResponse.put("patientName", savedBooking.getPatientName());
         patientDetailsResponse.put("nid", savedBooking.getNic());
         patientDetailsResponse.put("memberId", savedBooking.getId());
-        patientDetailsResponse.put("patientFullName", savedBooking.getTitle()+". "+savedBooking.getPatientName());
-        patientDetailsResponse.put("patientFullNameWithMobile", savedBooking.getTitle()+". "+savedBooking.getPatientName() + " " + savedBooking.getPhoneNo());
+        patientDetailsResponse.put("patientFullName", savedBooking.getTitle() + ". " + savedBooking.getPatientName());
+        patientDetailsResponse.put("patientFullNameWithMobile", savedBooking.getTitle() + ". " + savedBooking.getPatientName() + " " + savedBooking.getPhoneNo());
 
         Map<String, Object> priceDetailsResponse = new HashMap<>();
         priceDetailsResponse.put("totalAmount", bill.getNetTotal());
@@ -1158,13 +1158,13 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse("Ref no is missing.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         Institution creditCompany = null;
-        try{
+        try {
             validatePhoneNumber(patientPhoneNo);
             creditCompany = validateAndFetchAgency(agencyName, agencyCode);
-        }catch(ValidationException e){
-            JSONObject response = commonFunctionToErrorResponse(e.getField()+e.getMessage());
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -1304,6 +1304,19 @@ public class ChannelApi {
 
     }
 
+    private void validateBillForCompleteBooking(Bill bill) {
+        if (bill.isCancelled()) {
+            throw new ValidationException("Channel", "Appoinment is already cancelled. Cant complete the booking.");
+        }
+        if (bill.isRefunded()) {
+            throw new ValidationException("Channel", "Appoinment is already refunded. Cant complete the booking.");
+        }
+
+        if (bill.isPaid()) {
+            throw new ValidationException("Channel", "Appoinment Booking for the ref no is already completed.");
+        }
+    }
+
     @POST
     @Path("/complete")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -1344,52 +1357,31 @@ public class ChannelApi {
         String agencyName = paymentDetails.get("paymentMode");
 
         Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.Agency);
-        List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
 
-        if (billList == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("No bill available for the RefNo : " + clientsReferanceNo);
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
+        OnlineBooking bookindData = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, false);
 
-        if (billList == null || billList.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("No bill available for the RefNo");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
+        if (bookindData == null) {
+            OnlineBooking retiredBooking = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, true);
 
-        Bill bill = billList.get(0);
-        if (billList.size() > 1) {
-            for (Bill b : billList) {
-                if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-                    bill = b;
-                }
+            if (retiredBooking != null) {
+                JSONObject response = commonFunctionToErrorResponse("Your appoinment is retired due to time out. Please readd appoinemnt : " + clientsReferanceNo);
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            } else {
+                JSONObject response = commonFunctionToErrorResponse("No Appoinment available for the RefNo : " + clientsReferanceNo);
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
         }
 
-        // System.out.println(billList.size());
-        if (bill.isCancelled()) {
-            JSONObject response = commonFunctionToErrorResponse("Bill is already cancelled. Cant complete the booking.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-        if (bill.isRefunded()) {
-            JSONObject response = commonFunctionToErrorResponse("Bill is already refunded. Cant complete the booking.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
+        Bill temporarySavedBill = bookindData.getBill();
 
-        if (bill.getBillType() == BillType.ChannelAgent && bill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-            JSONObject response = commonFunctionToErrorResponse("Booking for the ref no already completed.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-        if (bill.getSingleBillSession().getSessionInstance().isCompleted()) {
+        if (temporarySavedBill.getSingleBillSession().getSessionInstance().isCompleted()) {
             JSONObject response = commonFunctionToErrorResponse("Appoinment session is already finished now.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        if (bill.getSingleBillSession().getSessionInstance().isCancelled()) {
-            JSONObject response = commonFunctionToErrorResponse("Appoinment Dr session is Cancelled by the Dr.");
+        if (temporarySavedBill.getSingleBillSession().getSessionInstance().isCancelled()) {
+            JSONObject response = commonFunctionToErrorResponse("Channel session session is Cancelled from the Hospital. Please contact hospital for more info.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        System.out.println(billList.get(0));
-        System.out.println(billList.size());
-        System.out.println(billList.get(0).getAgentRefNo());
 
         bill = channelService.settleOnlineAgentInitialBooking(billList.get(0).getSingleBillSession(), clientsReferanceNo);
         // List<SessionInstance> ss = channelService.findSessionInstanceFromId(bill.getSingleBillSession().getSessionInstance());
