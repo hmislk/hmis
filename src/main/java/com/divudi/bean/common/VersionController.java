@@ -54,6 +54,11 @@ public class VersionController {
         }
     }
 
+    /**
+     * Retrieves the latest software version from a remote GitHub repository and updates the {@code latestVersion} field.
+     *
+     * If the remote version file is unavailable or an error occurs during retrieval, {@code latestVersion} is set to {@code null}.
+     */
     public void fetchLatestVersion() {
         try {
             // Create a URL object pointing to the VERSION.txt file in the GitHub repository
