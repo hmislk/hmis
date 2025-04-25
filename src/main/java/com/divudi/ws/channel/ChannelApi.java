@@ -649,13 +649,10 @@ public class ChannelApi {
             }
         }
 
-        String bookingChannel = (String) requestBody.get("bookingChannel");
+        String agencyCode = (String) requestBody.get("bookingChannel");
 
-//        Institution hospital = institutionController.findInstitution(hosId);
-//        Speciality speciality = specialityController.findSpeciality(doctorId);
-//        Consultant consultant = consultantController.getConsultantById(doctorId);
         List<Institution> hospitals = channelService.findInstitutionFromId(hospitalIdLong);
-//
+
         if (hospitals == null || hospitals.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid hospital id.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -680,16 +677,12 @@ public class ChannelApi {
             }
         }
 
-        //System.out.println(hospital.getName() + " " + " " + consultant.getName());
-        Date fromDate = new Date();
-        //System.out.println(hospital.getName() + " " + speciality.getName() + " " + consultant.getName());
-        // List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, speciality, consultant, fromDate, null);
         List<SessionInstance> sessions = channelService.findSessionInstance(hospitals, null, doctorList, null);
         if (sessions == null || sessions.isEmpty()) {
             JSONObject json = commonFunctionToErrorResponse("No data for this criteria.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
         }
-        System.out.println(sessions);
+        
         List<Object> sessionData = new ArrayList<>();
         Long additionalProp = 1L;
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
@@ -697,6 +690,10 @@ public class ChannelApi {
         SimpleDateFormat forDay = new SimpleDateFormat("E");
 
         for (SessionInstance s : sessions) {
+            
+            if(s.getOriginatingSession().getTotal() == 0){
+                continue;
+            }
             Map<String, Object> session = new HashMap<>();
 
             Map foreignFees = channelService.getForeignFeesForDoctorAndInstitutionFromServiceSession(s.getOriginatingSession());
