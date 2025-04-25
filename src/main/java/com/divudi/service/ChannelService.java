@@ -469,13 +469,26 @@ public class ChannelService {
         savingTemporaryBill.setSingleBillSession(savingTemporaryBillSession);
         savingTemporaryBill.setBillItems(savingBillItems);
         savingTemporaryBill.setBillFees(savingBillFees);
+        
+        newBooking.setHospitalFee(savingTemporaryBill.getHospitalFee());
+        newBooking.setDoctorFee(savingTemporaryBill.getStaffFee());
 
         savingTemporaryBill.setBalance(savingTemporaryBill.getNetTotal());
         calculateBillTotalsFromBillFees(savingTemporaryBill, savingBillFees);
 
         getBillFacade().edit(savingTemporaryBill);
         getBillSessionFacade().edit(savingTemporaryBillSession);
+        getOnlineBookingFacade().edit(newBooking);
+        
         return savingTemporaryBill;
+    }
+
+    public OnlineBookingFacade getOnlineBookingFacade() {
+        return onlineBookingFacade;
+    }
+
+    public void setOnlineBookingFacade(OnlineBookingFacade onlineBookingFacade) {
+        this.onlineBookingFacade = onlineBookingFacade;
     }
 
     public List<ItemFee> findServiceSessionFees(ServiceSession ss) {

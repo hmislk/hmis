@@ -1063,27 +1063,29 @@ public class ChannelApi {
         sessionDetailsResponse.put("theDate", forDate.format(session.getSessionDate()));
         sessionDetailsResponse.put("theDay", forDay.format(session.getSessionDate()));
         sessionDetailsResponse.put("startTime", forTime.format(session.getSessionTime()));
-        sessionDetailsResponse.put("arriveTime", "N/A");
+        sessionDetailsResponse.put("arriveTime", null);
         sessionDetailsResponse.put("hosLocation", session.getInstitution().getAddress());
         sessionDetailsResponse.put("sessionStarted", session.isStarted());
 
+        OnlineBooking savedBooking = bill.getOnlineBooking();
+        
         Map<String, Object> patientDetailsResponse = new HashMap<>();
-        patientDetailsResponse.put("member", "N/A");
-        patientDetailsResponse.put("needSMS", "N/A");
-        patientDetailsResponse.put("nsr", "N/A");
-        patientDetailsResponse.put("foreign", newPatient.getPerson().isForeigner());
-        patientDetailsResponse.put("teleNo", newPatient.getPerson().getMobile());
-        patientDetailsResponse.put("title", titleForPatienFromSystem);
-        patientDetailsResponse.put("patientName", newPatient.getPerson().getName());
-        patientDetailsResponse.put("nid", newPatient.getPerson().getNic());
-        patientDetailsResponse.put("memberId", newPatient.getPerson().getId());
-        patientDetailsResponse.put("patientFullName", newPatient.getPerson().getNameWithTitle());
-        patientDetailsResponse.put("patientFullNameWithMobile", newPatient.getPerson().getNameWithTitle() + " " + newPatient.getPerson().getMobile());
+        patientDetailsResponse.put("member", null);
+        patientDetailsResponse.put("needSMS", savedBooking.isNeedSms());
+        patientDetailsResponse.put("nsr", savedBooking.isNsr());
+        patientDetailsResponse.put("foreign", savedBooking.isForeign());
+        patientDetailsResponse.put("teleNo", savedBooking.getPhoneNo());
+        patientDetailsResponse.put("title", savedBooking.getTitle());
+        patientDetailsResponse.put("patientName", savedBooking.getPatientName());
+        patientDetailsResponse.put("nid", savedBooking.getNic());
+        patientDetailsResponse.put("memberId", savedBooking.getId());
+        patientDetailsResponse.put("patientFullName", savedBooking.getTitle()+". "+savedBooking.getPatientName());
+        patientDetailsResponse.put("patientFullNameWithMobile", savedBooking.getTitle()+". "+savedBooking.getPatientName() + " " + savedBooking.getPhoneNo());
 
         Map<String, Object> priceDetailsResponse = new HashMap<>();
         priceDetailsResponse.put("totalAmount", bill.getNetTotal());
-        priceDetailsResponse.put("nsrFee", "N/A");
-        priceDetailsResponse.put("charge", "N/A");
+        priceDetailsResponse.put("nsrFee", null);
+        priceDetailsResponse.put("charge", bill.getNetTotal());
         priceDetailsResponse.put("hosCharge", bill.getHospitalFee());
         priceDetailsResponse.put("hosChargeWithoutVat", 0);
         priceDetailsResponse.put("docCharge", bill.getStaffFee());
@@ -1101,9 +1103,9 @@ public class ChannelApi {
 
         Map<String, Object> paymentDetailsResponse = new HashMap<>();
         paymentDetailsResponse.put("paymentMode", bill.getCreditCompany().getName());
-        paymentDetailsResponse.put("paymentChannel", paymentChannel);
-        paymentDetailsResponse.put("branchCode", "");
-        paymentDetailsResponse.put("seqNo", "");
+        paymentDetailsResponse.put("paymentChannel", agencyCode);
+        paymentDetailsResponse.put("branchCode", null);
+        paymentDetailsResponse.put("seqNo", null);
 
         Map<String, Object> apoinmentDetailsResponse = new HashMap<>();
         apoinmentDetailsResponse.put("refNo", clientsReferanceNo);
@@ -1147,17 +1149,8 @@ public class ChannelApi {
         String patientNic = patientDetailsFromRequest.get("nid");
         String title = patientDetailsFromRequest.get("title");
         Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
-        String paymentChannel = paymentDetails.get("paymentChannel");
-
-        Title titleForPerson = null;
-
-        if (title != null && !title.isEmpty()) {
-            for (Title t : Title.values()) {
-                if (t.toString().equalsIgnoreCase(title)) {
-                    titleForPerson = t;
-                }
-            }
-        }
+        String agencyCode = paymentDetails.get("paymentChannel");
+        String agencyName = paymentDetails.get("paymentMode");
 
         Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
 
@@ -1165,21 +1158,16 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse("Ref no is missing.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-
-        if (patientPhoneNo == null || patientPhoneNo.isEmpty()) {
-            JSONObject response = commonFunctionToErrorResponse("Phone Number is missing.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        } else if (patientPhoneNo.length() != 10) {
-            JSONObject response = commonFunctionToErrorResponse("Phone Number digits should be 10.(07xxxxxxxx)");
+        
+        Institution creditCompany = null;
+        try{
+            validatePhoneNumber(patientPhoneNo);
+            creditCompany = validateAndFetchAgency(agencyName, agencyCode);
+        }catch(ValidationException e){
+            JSONObject response = commonFunctionToErrorResponse(e.getField()+e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-//
-//        if (String.valueOf(patientPhoneNumberLong).length() != 10) {
-//            JSONObject response = commonFunctionToErrorResponse("Phone Number digits should be 10.(07xxxxxxxx)");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-//        }
 
-        Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
 
         if (billList == null || billList.isEmpty()) {
