@@ -441,7 +441,6 @@ public class ChannelService {
         savingTemporaryBill.setCreditCompany(creditCompany);
 
         BillSession savingTemporaryBillSession = createBillSession(savingTemporaryBill, savingBillItemForSession, forReservedNumbers, session);
-        System.out.println(savingTemporaryBillSession);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -449,14 +448,6 @@ public class ChannelService {
 
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
 
-//        if (!additionalBillItems.isEmpty()) {
-//            for (BillItem abi : additionalBillItems) {
-//                List<BillFee> blf = createBillFeeForSessions(savingBill, abi, addedItemFees, priceMatrix);
-//                for (BillFee bf : blf) {
-//                    savingBillFeesFromAdditionalItems.add(bf);
-//                }
-//            }
-//        }
         if (savingBillFeesFromSession != null) {
             savingBillFees.addAll(savingBillFeesFromSession);
         }
@@ -478,41 +469,8 @@ public class ChannelService {
         savingTemporaryBill.setSingleBillSession(savingTemporaryBillSession);
         savingTemporaryBill.setBillItems(savingBillItems);
         savingTemporaryBill.setBillFees(savingBillFees);
-        // savingBill.setCashPaid(cashPaid);
-        // savingBill.setCashBalance(cashBalance);
-        savingTemporaryBill.setBalance(savingTemporaryBill.getNetTotal());
 
-//        if (savingBill.getBillType() == BillType.ChannelAgent) {
-//            updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItemForSession, savingBillSession, savingBillItemForSession.getAgentRefNo());
-//            savingBill.setBalance(0.0);
-//            savingBillSession.setPaidBillSession(savingBillSession);
-//        } else if (savingBill.getBillType() == BillType.ChannelCash) {
-//            savingBill.setBalance(0.0);
-//            savingBillSession.setPaidBillSession(savingBillSession);
-//        } else if (savingBill.getBillType() == BillType.ChannelOnCall) {
-//            savingBill.setBalance(savingBill.getNetTotal());
-//        } else if (savingBill.getBillType() == BillType.ChannelStaff) {
-//            savingBill.setBalance(0.0);
-//            savingBillSession.setPaidBillSession(savingBillSession);
-//        }
-//        if (referredBy != null) {
-//            savingBill.setReferredBy(referredBy);
-//        }
-//        if (referredByInstitution != null) {
-//            savingBill.setReferenceInstitution(referredByInstitution);
-//        }
-//        if (collectingCentre != null) {
-//            savingBill.setCollectingCentre(collectingCentre);
-//        }
-//        if (savingBill.getPaidAmount() == 0.0) {
-//            if (!(savingBill.getPaymentMethod() == PaymentMethod.OnCall)) {
-//                savingBill.setPaidAmount(feeNetTotalForSelectedBill);
-//            } else {
-//                if (feeNetTotalForSelectedBill != null) {
-//                    savingBill.setNetTotal(feeNetTotalForSelectedBill);
-//                }
-//            }
-//        }
+        savingTemporaryBill.setBalance(savingTemporaryBill.getNetTotal());
         calculateBillTotalsFromBillFees(savingTemporaryBill, savingBillFees);
 
         getBillFacade().edit(savingTemporaryBill);
@@ -534,27 +492,20 @@ public class ChannelService {
     }
 
     private void calculateBillTotalsFromBillFees(Bill billToCaclculate, List<BillFee> billfeesAvailable) {
-//        System.out.println("calculateBillTotalsFromBillFees");
-//        System.out.println("billToCaclculate = " + billToCaclculate);
-//        System.out.println("billfeesAvailable = " + billfeesAvailable);
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
 
         for (BillFee iteratingBillFee : billfeesAvailable) {
-//            System.out.println("iteratingBillFee = " + iteratingBillFee);
             if (iteratingBillFee.getFee() == null) {
                 continue;
             }
 
             calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
-//            System.out.println("calculatingGrossBillTotal = " + calculatingGrossBillTotal);
             calculatingNetBillTotal += iteratingBillFee.getFeeValue();
-//            System.out.println("calculatingNetBillTotal = " + calculatingNetBillTotal);
 
         }
         billToCaclculate.setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
-        System.out.println(calculatingNetBillTotal + " g " + calculatingGrossBillTotal);
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
     }
@@ -781,7 +732,7 @@ public class ChannelService {
         if (availableReleasedApoinmentNumbers != null && !availableReleasedApoinmentNumbers.isEmpty()) {
             count = availableReleasedApoinmentNumbers.get(rand.nextInt(availableReleasedApoinmentNumbers.size()));
         }
-        
+
         if (count == null) {
             count = serviceSessionBean.getNextNonReservedSerialNumber(session, Collections.EMPTY_LIST);
         }
@@ -1559,7 +1510,7 @@ public class ChannelService {
             }
 
             double d = 0;
-            if (bill.getPatient().getPerson().isForeigner()) {
+            if (bill.getOnlineBooking().isForeign()) {
                 bf.setFeeValue(f.getFfee());
                 bf.setFeeGrossValue(f.getFfee());
             } else {
