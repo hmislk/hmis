@@ -295,6 +295,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
     }
 
+    /**
+     * Checks if the given patient has a previous non-retired admission with a credit payment method and sets the last used credit company.
+     *
+     * @param p the patient to check for previous credit admissions
+     * @return true if a previous credit admission exists and the last credit company is set; false otherwise
+     */
     public boolean isPatientHaveALastUsedCreditCompany(Patient p) {
         if (p == null) {
             return false;
@@ -321,6 +327,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
     }
 
+    /**
+     * Retrieves the most recent credit-based admission for the current patient and populates the current encounter's credit companies list with associated institutions and credit limits.
+     *
+     * If the current patient has a previous admission with credit payment, copies each linked, non-retired credit company to the current encounter and accumulates their credit limits.
+     */
     public void findLastUsedCreditCompanies() {
         if (current.getPatient() == null) {
             return;
@@ -366,6 +377,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     }
 
+    /**
+     * Returns a list of discharged credit admissions with outstanding credit balances matching the given query.
+     *
+     * The query matches against BHT number, patient name, or credit company name. Only admissions with a positive credit balance, payment method set to credit, and not retired are included.
+     *
+     * @param qry the search string to match against BHT number, patient name, or credit company name
+     * @return a list of matching admissions with outstanding credit balances
+     */
     public List<Admission> completeBhtCredit(String qry) {
         List<Admission> a = null;
         String sql;
@@ -875,6 +894,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     }
 
+    /**
+     * Checks if the given admission has any non-retired, non-canceled provisional bills.
+     *
+     * @param ad the admission to check for provisional bills
+     * @return true if at least one provisional bill exists for the admission; false otherwise
+     */
     public boolean isAddmissionHaveProvisionalBill(Admission ad) {
         List<Bill> ads = new ArrayList<>();
         String sql;
@@ -1151,6 +1176,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     }
 
+    /**
+     * Validates the current admission for required fields and configuration-based constraints.
+     *
+     * Checks admission type, payment method, admission date, credit company details, room assignment, referring consultant, patient, and guardian information as per application settings. Returns {@code true} if any validation fails and an error message is added; otherwise, returns {@code false}.
+     *
+     * @return {@code true} if validation errors are found; {@code false} otherwise
+     */
     private boolean errorCheck() {
         if (getCurrent().getAdmissionType() == null) {
             JsfUtil.addErrorMessage("Please select Admission Type");
