@@ -1364,14 +1364,20 @@ public class ChannelApi {
         Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
         String agencyCode = paymentDetails.get("paymentChannel");
         String agencyName = paymentDetails.get("paymentMode");
-        String agentCharge = (String)requestBody.get("price");
+        String agentCharge = (String) requestBody.get("price");
 
-        Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.Agency);
+        Institution creditCompany = null; 
+        try {
+            creditCompany = validateAndFetchAgency(agencyName, agencyCode);
+        } catch (ValidationException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getField()+ e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
-        OnlineBooking bookindData = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, false);
+        OnlineBooking bookindData = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, false, creditCompany);
 
         if (bookindData == null) {
-            OnlineBooking retiredBooking = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, true);
+            OnlineBooking retiredBooking = channelService.findOnlineBookingFromRefNo(clientsReferanceNo, true, creditCompany);
 
             if (retiredBooking != null) {
                 JSONObject response = commonFunctionToErrorResponse("Your appoinment is retired due to time out. Please readd appoinemnt : " + clientsReferanceNo);
@@ -1406,7 +1412,7 @@ public class ChannelApi {
 
         Map<String, Object> sessionDetails = new HashMap<>();
         Item i = completedBill.getSingleBillSession().getItem();
-        
+
         sessionDetails.put("hosId", completedBill.getToInstitution().getId());
         sessionDetails.put("docname", session.getStaff().getPerson().getNameWithTitle());
         sessionDetails.put("amount", completedBill.getNetTotal());
@@ -1428,7 +1434,7 @@ public class ChannelApi {
         patientDetails.put("foreign", bookingDetails.isForeign());
         patientDetails.put("teleNo", bookingDetails.getPhoneNo());
         patientDetails.put("patientName", bookingDetails.getPatientName());
-        patientDetails.put("patientFullName", bookingDetails.getTitle()+" " +bookingDetails.getPatientName());
+        patientDetails.put("patientFullName", bookingDetails.getTitle() + " " + bookingDetails.getPatientName());
         patientDetails.put("nid", bookingDetails.getNic());
 
         Map<String, Object> priceDetails = new HashMap<>();

@@ -771,15 +771,17 @@ public class ChannelService {
         return itemFeeFacade.findByJpql(sql, m);
     }
 
-    public OnlineBooking findOnlineBookingFromRefNo(String refNo, boolean retiredStatus) {
+    public OnlineBooking findOnlineBookingFromRefNo(String refNo, boolean retiredStatus, Institution agency) {
 
         String sql = "Select ob from OnlineBooking ob "
                 + " where ob.referenceNo  = :refNo "
                 + " and ob.retired = :retired "
+                + " and ob.agency = :agency "
                 + " and ob.bill is not null";
 
         Map params = new HashMap();
         params.put("refNo", refNo);
+        params.put("agency", agency);
         params.put("retired", retiredStatus);
 
         return getOnlineBookingFacade().findFirstByJpql(sql, params);
