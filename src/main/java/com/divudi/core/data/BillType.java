@@ -309,6 +309,8 @@ public enum BillType {
                 return "Financial Auditing Bill";
             case FundTransferReceivedBill:
                 return "Fund Transfer Received Bill";
+            case RecordShiftEndCash:
+                return "Shift End Cash Record";
             default:
                 return this.toString();
         }
