@@ -172,7 +172,7 @@
                         </p:selectOneMenu>
 
                         <p:spacer></p:spacer>
-                        
+
                         <!-- Report View Type Filter -->
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf080;" styleClass="fa mr-2" /> <!-- FontAwesome chart bar icon -->
@@ -251,11 +251,11 @@
                             <p:column headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" >
                                 <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
                             </p:column>
-<p:column 
-    rendered="#{webUserController.hasPrivilege('Developers')}"
-    headerText="Bill Type"  style="padding: 0px!important; margin: 0px!important;" >
-    <h:outputText value="#{row.bill.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
-</p:column>
+                            <p:column 
+                                rendered="#{webUserController.hasPrivilege('Developers')}"
+                                headerText="Bill Type"  style="padding: 0px!important; margin: 0px!important;" >
+                                <h:outputText value="#{row.bill.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
+                            </p:column>
                             <p:column headerText="Date"   width="10em" >
                                 <h:outputText value="#{row.bill.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
@@ -437,6 +437,125 @@
 
                             <p:column headerText="Bill Type" width="18em">
                                 <h:outputText value="#{row.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Net Total" width="10em" class="text-end">
+                                <h:outputText value="#{row.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Cash" width="10em" class="text-end">
+                                <h:outputText value="#{row.cashValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Card" width="10em" class="text-end">
+                                <h:outputText value="#{row.cardValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Cheque" width="10em" class="text-end">
+                                <h:outputText value="#{row.chequeValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Inpatient Credit" width="10em" class="text-end">
+                                <h:outputText value="#{row.inpatientCreditValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Outpatient Credit" width="10em" class="text-end">
+                                <h:outputText value="#{row.opdCreditValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Staff Credit" width="10em" class="text-end">
+                                <h:outputText value="#{row.staffValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Agent Credit" width="10em" class="text-end">
+                                <h:outputText value="#{row.agentValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Total" width="10em" class="text-end">
+                                <h:outputText value="#{row.grossTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Discount" width="10em" class="text-end">
+                                <h:outputText value="#{row.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Service Charge" width="10em" class="text-end">
+                                <h:outputText value="#{row.serviceCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Actual Total" width="10em" class="text-end">
+                                <h:outputText value="#{row.actualTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL_TYPE'}">
+
+                        <p:commandButton 
+                            value="Download" 
+                            ajax="false"
+                            styleClass="ui-button-info m-1"
+                            icon="pi pi-download">
+                            <p:dataExporter 
+                                type="xlsx" 
+                                target="tblBillType1"
+                                fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Print" 
+                            ajax="false"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print">
+                            <p:printer target="tblBillType1" />
+                        </p:commandButton>
+
+                        <p:dataTable
+                            id="tblBillType1"
+                            style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
+                            styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                            value="#{pharmacySummaryReportController.bundle.rows}" var="row"
+                            paginator="true"
+                            rows="#{pharmacySummaryReportController.rowsPerPageForScreen}" 
+                            rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
+                            paginatorPosition="bottom">
+
+                            <p:column headerText="Bill Type" width="18em">
+                                <h:outputText value="#{row.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Admission" width="18em">
+                            </p:column>
+
+                            <p:column headerText="Discount Scheme" width="18em">
+                            </p:column>
+
+                            <p:column headerText="Bill Type" width="18em">
                             </p:column>
 
                             <p:column headerText="Net Total" width="10em" class="text-end">
