@@ -712,10 +712,6 @@ public class ReportsStock implements Serializable {
     }
 
     public String fillDistributorStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (department == null || institution == null) {
             JsfUtil.addErrorMessage("Please select a department && Dealor");
             return "";
@@ -747,7 +743,40 @@ public class ReportsStock implements Serializable {
 
         return "/pharmacy/pharmacy_report_supplier_stock_by_batch";
     }
-    
+
+    public String fillSupplierStocks() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return "";
+        }
+        Map m;
+        String sql;
+        records = new ArrayList<>();
+
+        m = new HashMap();
+
+        m.put("dep", department);
+        m.put("st", 0.0);
+        sql = "select s "
+                + " from Stock s "
+                + " where s.department=:dep "
+                + " and s.stock > :st ";
+
+        if (institution != null) {
+            sql += "and s.itemBatch.lastPurchaseBillItem.bill.fromInstitution =:ins";
+            m.put("ins", institution);
+        }
+        stocks = getStockFacade().findByJpql(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+        }
+
+        return "/pharmacy/pharmacy_report_stock_report_with_supplier?faces-redirect=true";
+    }
+
     public void fillCategoryStocks() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -961,14 +990,14 @@ public class ReportsStock implements Serializable {
         }
 
     }
-    
+
     public void fillAllSuppliersStocks() {
 
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
         }
-        
+
         Map m;
         String sql;
         records = new ArrayList<>();
