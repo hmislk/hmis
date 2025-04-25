@@ -1370,8 +1370,16 @@ public class ChannelService {
         getBillFacade().editAndCommit(paidBill);
 
         List<Payment> p = createPayment(paidBill, paidBill.getPaymentMethod());
-        paidBill.getReferenceBill().getOnlineBooking().setOnlineBookingPayment(agencyCharge);
+        
+        OnlineBooking bookingDetails = paidBill.getReferenceBill().getOnlineBooking();
+        bookingDetails.setOnlineBookingPayment(agencyCharge);
+        bookingDetails.setHospitalFee(paidBill.getHospitalFee());
+        bookingDetails.setDoctorFee(paidBill.getStaffFee());
+        bookingDetails.setNetTotalForOnlineBooking(paidBill.getNetTotal()+agencyCharge);
+        bookingDetails.setOnlineBookingStatus(OnlineBookingStatus.COMPLETED);
+        bookingDetails.setAppoinmentTotalAmount(paidBill.getNetTotal());
         getOnlineBookingFacade().edit(paidBill.getReferenceBill().getOnlineBooking());
+        
         return paidBill;
     }
 
