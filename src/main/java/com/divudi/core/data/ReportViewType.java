@@ -14,6 +14,7 @@ public enum ReportViewType {
     BY_PAYMENT_METHOD("By Payment Method"),
     BY_INSTITUTION("By Institution"),
     BY_DEPARTMENT("By Department"),
+    BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE("By Discount Type and Admission Type"),
     BY_STAFF("By Staff"),
     BY_PATIENT_CATEGORY("By Patient Category"),
     BY_ITEM_CATEGORY("By Item Category"),
