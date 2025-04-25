@@ -617,7 +617,7 @@ public class ChannelService {
         bill.setStaff(session.getOriginatingSession().getStaff());
         //bill.setToStaff(toStaff);
         bill.setAppointmentAt(session.getSessionDate());
-        
+
         if (newBooking.isForeign()) {
             bill.setTotal(session.getOriginatingSession().getTotalFfee());
             bill.setNetTotal(session.getOriginatingSession().getTotalFfee());
@@ -676,15 +676,21 @@ public class ChannelService {
         bi.setBill(bill);
         bi.setBillTime(new Date());
         bi.setCreatedAt(new Date());
-        // bi.setCreater(getSessionController().getLoggedUser());
-        bi.setGrossValue(session.getOriginatingSession().getTotal());
         bi.setItem(session.getOriginatingSession());
-//        bi.setItem(getSelectedSessionInstance().getOriginatingSession());
-        bi.setNetRate(session.getOriginatingSession().getTotal());
-        bi.setNetValue(session.getOriginatingSession().getTotal());
         bi.setQty(1.0);
-        bi.setRate(session.getOriginatingSession().getTotal());
         bi.setSessionDate(session.getSessionAt());
+
+        if (bill.getOnlineBooking().isForeign()) {
+            bi.setGrossValue(session.getOriginatingSession().getTotalFfee());
+            bi.setNetRate(session.getOriginatingSession().getTotalFfee());
+            bi.setNetValue(session.getOriginatingSession().getTotalFfee());
+            bi.setRate(session.getOriginatingSession().getTotalFfee());
+        } else {
+            bi.setGrossValue(session.getOriginatingSession().getTotal());
+            bi.setNetRate(session.getOriginatingSession().getTotal());
+            bi.setNetValue(session.getOriginatingSession().getTotal());
+            bi.setRate(session.getOriginatingSession().getTotal());
+        }
 
         billItemFacade.create(bi);
         return bi;
