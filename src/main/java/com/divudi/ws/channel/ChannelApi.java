@@ -516,36 +516,14 @@ public class ChannelApi {
             return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
 
-        System.out.println("searchDoctors");
-        // Validate the input parameters
-//        if (hosID == null && docNo == null && (docName == null || docName.isEmpty()) && specID == null) {
-//            JSONObject errorResponse = commonFunctionToErrorResponse("At least one search parameter must be provided");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE)
-//                    .entity(errorResponse.toString())
-//                    .build();
-//        }
-
         if ((docName == null || docName.isEmpty()) && docNo == null) {
             JSONObject json = commonFunctionToErrorResponse("Both Doctor name and Doctor number are missing.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
         }
 
-//        if (specID == null) {
-//            JSONObject json = commonFunctionToErrorResponse("Specilization id is missing.");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
-//        }
-//        if (hosID == null) {
-//            JSONObject json = commonFunctionToErrorResponse("Hospital id is missing.");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
-//        }
-//        if (sessionDate == null) {
-//            JSONObject json = commonFunctionToErrorResponse("Session date is missing.");
-//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
-//        }
-        System.out.println(sessionDate);
         // Search logic and build the JSON response
         JSONObject results = searchDoctor(hosID, docNo, docName, specID, offset, page, sessionDate);
-        //System.out.println(results.get("code"));
+
         try {
             if (results.get("code") != null) {
                 if ((Integer) results.get("code") == 406) {
@@ -567,13 +545,6 @@ public class ChannelApi {
         response.put("message", "OK");
         response.put("data", results);
         response.put("detailMessage", "Success");
-
-        // Implementing pagination details
-        JSONObject paginationDetails = new JSONObject();
-        paginationDetails.put("pageNo", 0);
-        paginationDetails.put("offset", 0);  // Assuming a fixed number of items per page
-        paginationDetails.put("pages", 0); //(int) Math.ceil((double) results.getInt("totalCount") / 10
-        response.put("page", paginationDetails);
 
         return Response.status(Response.Status.OK)
                 .entity(response.toString())
@@ -1794,7 +1765,6 @@ public class ChannelApi {
             Integer page,
             String sessionDate) {
         // Parse the sessionDate
-        System.out.println("searchDoctor");
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         Date date = null;
 
@@ -1802,7 +1772,6 @@ public class ChannelApi {
             try {
                 date = dateFormat.parse(sessionDate);
             } catch (ParseException e) {
-                System.err.println("Invalid date format: " + sessionDate);
                 return commonFunctionToErrorResponse("Invalid Date format.");
 
             }
@@ -1828,12 +1797,6 @@ public class ChannelApi {
             speciality = specialityFacade.find(specIdLong);
         }
 
-//        if (speciality == null) {
-//            return commonFunctionToErrorResponse("No specialization for given id.");
-//        }
-//        if (docName == null && docNo == null) {
-//            return commonFunctionToErrorResponse("At least one parameter needed from doctorNo and doctorName");
-//        }
         Long docNoLong = null;
 
         if (docNo != null) {
@@ -1844,10 +1807,6 @@ public class ChannelApi {
         if (doctorList == null || doctorList.isEmpty()) {
             return commonFunctionToErrorResponse("No doctor with given parameters.");
         }
-        // Fetch necessary entities based on IDs
-//        Institution hospital = institutionController.findInstitution(hosID);
-//        Speciality speciality = specialityController.findSpeciality(specID);
-//        Consultant consultant = consultantController.getConsultantById(docNo);
 
         // Create a list of specialities if needed (assuming single speciality search)
         List<Speciality> specialities = (speciality != null) ? Arrays.asList(speciality) : channelService.findAllSpecilities();
@@ -1855,35 +1814,10 @@ public class ChannelApi {
         // Call the method to find session instances
         List<SessionInstance> sessions = channelService.findSessionInstance(hospialList, specialities, doctorList, date);
 
-        //List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, specialities, consultant, null, null, date);
-        // Process the results
-        // JSONArray hospitalArray = new JSONArray();
-        //JSONArray doctorArray = new JSONArray();
-        //JSONObject hospitalObject = new JSONObject();
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
 
-//        List<JSONObject> hospitals = new ArrayList<>();
-//        List<Long> hosIds = new ArrayList<>();
-//
-//        if (hospialList != null && !hospialList.isEmpty()) {
-//            if (hospialList.size() > 1) {
-//                for (Institution i : hospialList) {
-//                    hosIds.add(i.getId());
-//                    JSONObject hos = new JSONObject();
-//                    hos.put("hosId", i.getId().toString());
-//                    hos.put("displayName", i.getName());
-//                    hospitals.add(hos);
-//
-//                }
-//            } else if (hospialList.size() == 1) {
-//                JSONObject hos = new JSONObject();
-//                hos.put("hosId", hospialList.get(0).getId());
-//                hos.put("displayName", hospialList.get(0).getName());
-//                hospitals.add(hos);
-//            }
-//        }
         JSONArray resultArray = new JSONArray();
 
         Map<String, List<SessionInstance>> groupedByInstitution = sessions.stream()
@@ -1911,34 +1845,6 @@ public class ChannelApi {
             resultArray.put(hospitalObject);
         }
 
-//        for (SessionInstance session : sessions) {
-//
-//            if (hospitals.size() > 1) {
-//
-//            }
-//
-//            if (hosID != null) {
-//                hospitalObject.put("hosId", session.getOriginatingSession().getInstitution().getId() != null ? session.getOriginatingSession().getInstitution().getId().toString() : "N/A");
-//            }
-//            if (hospital != null) {
-//                hospitalObject.put("displayName", session.getOriginatingSession().getInstitution() != null ? session.getOriginatingSession().getInstitution().getName() : "N/A");
-//            }
-//            SessionInstance nextSession = channelService.findNextSessionInstance(hospialList, specialities, doctorList, session.getSessionDate());
-//            JSONObject doctor = new JSONObject();
-//            doctor.put("docNo", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getId().toString() : "N/A");
-//            doctor.put("displayName", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() : "N/A");
-//            doctor.put("title", session.getOriginatingSession().getStaff().getPerson().getTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getTitle().toString() : "N/A");
-//            doctor.put("nextAvailableDate", nextSession == null ? "Not yet shedule next session by the Hospital." : forDate.format(nextSession.getSessionDate()) + " at " + forTime.format(nextSession.getStartingTime()) + " on " + forDay.format(nextSession.getSessionDate()));
-//            doctorArray.put(doctor);
-//
-//        }
-//
-//        if (doctorArray.isEmpty()) {
-//            return commonFunctionToErrorResponse("No data for this criterias.");
-//
-//        }
-//        hospitalObject.put("doctor", doctorArray);
-//        hospitalArray.put(hospitalObject);
         JSONObject results = new JSONObject();
         //results.put("totalCount", sessions.size()); // Total count of sessions
         results.put("data", resultArray);
