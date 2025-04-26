@@ -56,7 +56,10 @@ import com.divudi.bean.pharmacy.BhtIssueReturnController;
 import com.divudi.bean.pharmacy.IssueReturnController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyIssueController;
+import com.divudi.bean.pharmacy.PharmacyPurchaseController;
+import com.divudi.bean.pharmacy.PharmacyReturnwithouttresing;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
+import com.divudi.bean.pharmacy.PurchaseReturnController;
 import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.bean.pharmacy.TransferReceiveController;
 import com.divudi.core.data.BillTypeAtomic;
@@ -64,6 +67,7 @@ import static com.divudi.core.data.BillTypeAtomic.PHARMACY_ISSUE_CANCELLED;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.facade.FeeFacade;
@@ -220,6 +224,12 @@ public class BillSearch implements Serializable {
     PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     BhtIssueReturnController bhtIssueReturnController;
+    @Inject
+    PharmacyPurchaseController pharmacyPurchaseController;
+    @Inject
+    PurchaseReturnController purchaseReturnController;
+    @Inject
+    PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     /**
      * Class Variables
      */
@@ -3851,9 +3861,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_ORDER_CANCELLED:
             case PHARMACY_ORDER_APPROVAL:
             case PHARMACY_ORDER_APPROVAL_CANCELLED:
-            case PHARMACY_DIRECT_PURCHASE:
-            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
-            case PHARMACY_DIRECT_PURCHASE_REFUND:
+//            case PHARMACY_DIRECT_PURCHASE:
+//            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
+//            case PHARMACY_DIRECT_PURCHASE_REFUND:
             case PHARMACY_GRN:
             case PHARMACY_GRN_PRE:
             case PHARMACY_GRN_WHOLESALE:
@@ -3901,6 +3911,15 @@ public class BillSearch implements Serializable {
             case PHARMACY_RECEIVE_CANCELLED:
                 return navigateToPharmayReceive();
 
+            case PHARMACY_DIRECT_PURCHASE:
+                return navigateToDirectPurchaseBillView();
+            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
+                return navigateToDirectPurchaseCancellationBillView();
+            case PHARMACY_DIRECT_PURCHASE_REFUND:
+                return navigateToDirectPurchaseReturnBillView();
+            case PHARMACY_RETURN_WITHOUT_TREASING:
+                return navigateToPharmacyReturnWithoutTreasingBillView();
+
         }
 
         return "";
@@ -3940,6 +3959,45 @@ public class BillSearch implements Serializable {
             return "/pharmacy/pharmacy_issue";
         }
 
+    }
+
+    public String navigateToDirectPurchaseBillView() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        BilledBill bb = (BilledBill) bill;
+        viewingBill = billBean.fetchBill(bb.getId());
+        loadBillDetails(bb);
+        pharmacyPurchaseController.setPrintPreview(true);
+        pharmacyPurchaseController.setBill(bb);
+        return "/pharmacy/pharmacy_purchase";
+    }
+
+    public String navigateToDirectPurchaseCancellationBillView() {
+        prepareToPharmacyCancellationBill();
+        return "/pharmacy/pharmacy_cancel_purchase";
+    }
+
+    public String navigateToDirectPurchaseReturnBillView() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        purchaseReturnController.setPrintPreview(true);
+        purchaseReturnController.setReturnBill(bill);
+        return "/pharmacy/pharmacy_return_purchase";
+    }
+    public String navigateToPharmacyReturnWithoutTreasingBillView() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacyReturnwithouttresing.setBillPreview(true);
+        pharmacyReturnwithouttresing.setPrintBill(bill);
+        return "/pharmacy/pharmacy_return_withouttresing";
     }
 
     public String navigateToViewPharmacyDirectIssueForInpatientBill() {

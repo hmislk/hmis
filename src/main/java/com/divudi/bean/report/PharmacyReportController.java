@@ -2005,7 +2005,6 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING_GRN);
             billTypes.add(BillType.PharmacyGrnBill);
             billTypes.add(BillType.PharmacyGrnReturn);
         } else if ("purchaseDoc".equals(documentType)) {
@@ -2015,7 +2014,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING_DIRECT_PURCHASE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
         } else if ("consumptionDoc".equals(documentType)) {
             billTypes.add(BillType.PharmacyIssue);
 
