@@ -53,6 +53,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
+import com.divudi.bean.pharmacy.GoodsReturnController;
 import com.divudi.bean.pharmacy.IssueReturnController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyIssueController;
@@ -230,6 +231,8 @@ public class BillSearch implements Serializable {
     PurchaseReturnController purchaseReturnController;
     @Inject
     PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
+    @Inject
+    GoodsReturnController goodsReturnController;
     /**
      * Class Variables
      */
@@ -3867,9 +3870,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_GRN:
             case PHARMACY_GRN_PRE:
             case PHARMACY_GRN_WHOLESALE:
-            case PHARMACY_GRN_CANCELLED:
+//            case PHARMACY_GRN_CANCELLED:
             case PHARMACY_GRN_REFUND:
-            case PHARMACY_GRN_RETURN:
+//            case PHARMACY_GRN_RETURN:
             case PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL:
             case PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED:
             case PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND:
@@ -3920,6 +3923,11 @@ public class BillSearch implements Serializable {
                 return navigateToDirectPurchaseReturnBillView();
             case PHARMACY_RETURN_WITHOUT_TREASING:
                 return navigateToPharmacyReturnWithoutTreasingBillView();
+                
+            case PHARMACY_GRN_RETURN:
+                return navigateToPharmacyGrnReturnBillView();
+            case PHARMACY_GRN_CANCELLED:
+                return navigateToPharmacyGrnCancellationBillView();
 
         }
 
@@ -3946,6 +3954,21 @@ public class BillSearch implements Serializable {
     public String navigateToPharmacyIssueCancelled() {
         prepareToPharmacyCancellationBill();
         return "/pharmacy/pharmacy_cancel_bill_unit_issue";
+    }
+    public String navigateToPharmacyGrnCancellationBillView() {
+        prepareToPharmacyCancellationBill();
+        return "/pharmacy/pharmacy_cancel_grn";
+    }
+    
+    public String navigateToPharmacyGrnReturnBillView() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        goodsReturnController.setReturnBill(bill);
+        goodsReturnController.setPrintPreview(true);
+        return "/pharmacy/pharmacy_return_good";
     }
 
     public String navigateToPharmacyIssue() {
