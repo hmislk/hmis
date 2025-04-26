@@ -15,7 +15,7 @@
                         <f:facet name="header"  >
                             <div class="d-flex justify-content-between">
                                 <h:outputText value="OPD And Pharmacy Staff Welfare Bills Print" class="mt-2"/>
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-3">
                                     <p:commandButton 
                                         icon="fa-solid fa-print"
                                         class="ui-button-info"
@@ -181,7 +181,7 @@
                                             <ui:repeat value="#{serviceSummery.bills}" var="b" varStatus="i">
                                                 <tr>
                                                     <td style="width: 8mm;" >
-                                                        <h:outputText value="#{i+1}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{i.index+1}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 25mm; text-align: left;">
                                                         <h:outputText value="#{b.deptId}" style="margin-left: 1mm;"/>
@@ -203,7 +203,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{b.netTotal + b.discount}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{b.total}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
@@ -229,7 +229,7 @@
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{serviceSummery.totalBill+serviceSummery.discountBill}" style="margin-right: 1mm;">
+                                                    <h:outputText value="#{serviceSummery.totalBill}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
@@ -239,7 +239,7 @@
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{serviceSummery.totalBill}" style="margin-right: 1mm;">
+                                                    <h:outputText value="#{serviceSummery.netTotalBill}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
