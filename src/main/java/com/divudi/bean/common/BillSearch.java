@@ -3935,12 +3935,13 @@ public class BillSearch implements Serializable {
     }
 
     private void prepareToPharmacyCancellationBill() {
-        if (bill == null) {
-            JsfUtil.addErrorMessage("No Bill is Selected");
+        Bill original = bill.getReferenceBill();
+        if (original == null) {
+            JsfUtil.addErrorMessage("Original bill not found for this cancellation / return.");
             return;
         }
-        loadBillDetails(bill.getReferenceBill());
-        pharmacyBillSearch.setBill(bill.getReferenceBill());
+        loadBillDetails(original);
+        pharmacyBillSearch.setBill(original);
         loadBillDetails(bill);
         pharmacyBillSearch.getBill().setCancelledBill(bill);
         pharmacyBillSearch.setPrintPreview(true);
@@ -3954,7 +3955,7 @@ public class BillSearch implements Serializable {
 
     public String navigateToPharmacyIssueCancelled() {
         prepareToPharmacyCancellationBill();
-        if (bill.getBillType() == billType.PharmacyTransferIssue) {
+        if (bill.getBillType() == BillType.PharmacyTransferIssue) {
             return "/pharmacy/pharmacy_cancel_transfer_issue";
         } else {
             return "/pharmacy/pharmacy_cancel_bill_unit_issue";
@@ -3983,7 +3984,7 @@ public class BillSearch implements Serializable {
             return null;
         }
         loadBillDetails(bill);
-        if (bill.getBillType() == billType.PharmacyTransferIssue) {
+        if (bill.getBillType() == BillType.PharmacyTransferIssue) {
             transferIssueController.setPrintPreview(true);
             transferIssueController.setIssuedBill(bill);
             return "/pharmacy/pharmacy_transfer_issue";
