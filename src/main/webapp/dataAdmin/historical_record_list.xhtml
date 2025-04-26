@@ -29,7 +29,6 @@
                             <p:calendar id="toDate" value="#{historicalRecordController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" styleClass="w-100" inputStyleClass="w-100 form-control" />
 
                             <p:spacer width="50"/>
-                            <p:spacer width="50"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
@@ -40,8 +39,6 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax update="site department"/>
                             </p:selectOneMenu>
-
-                            <p:spacer width="50"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
