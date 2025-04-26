@@ -333,45 +333,47 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * If the current patient has a previous admission with credit payment, copies each linked, non-retired credit company to the current encounter and accumulates their credit limits.
      */
     public void findLastUsedCreditCompanies() {
-        if (current.getPatient() == null) {
-            return;
-        }
+        if(configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient",false)) {
+            if (current.getPatient() == null) {
+                return;
+            }
 
-        Admission a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        sql = "select c from Admission c "
-                + " where c.patient=:pt "
-                + " and c.paymentMethod= :pm"
-                + " and c.retired=false "
-                + " order by c.id desc";
+            Admission a = null;
+            String sql;
+            HashMap hash = new HashMap();
+            sql = "select c from Admission c "
+                    + " where c.patient=:pt "
+                    + " and c.paymentMethod= :pm"
+                    + " and c.retired=false "
+                    + " order by c.id desc";
 
-        hash.put("pm", PaymentMethod.Credit);
-        hash.put("pt", current.getPatient());
-        a = getFacade().findFirstByJpql(sql, hash);
+            hash.put("pm", PaymentMethod.Credit);
+            hash.put("pt", current.getPatient());
+            a = getFacade().findFirstByJpql(sql, hash);
 
-        if (a == null) {
-            return;
-        } else {
-            List<EncounterCreditCompany> encounterCreditCompanys = new ArrayList<>();
-            String jpql = "select ecc from EncounterCreditCompany ecc"
-                    + "  where ecc.retired=false "
-                    + " and ecc.patientEncounter=:pEnc ";
-            HashMap hm = new HashMap();
-            hm.put("pEnc", a);
-            encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(jpql, hm);
+            if (a == null) {
+                return;
+            } else {
+                List<EncounterCreditCompany> encounterCreditCompanys = new ArrayList<>();
+                String jpql = "select ecc from EncounterCreditCompany ecc"
+                        + "  where ecc.retired=false "
+                        + " and ecc.patientEncounter=:pEnc ";
+                HashMap hm = new HashMap();
+                hm.put("pEnc", a);
+                encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(jpql, hm);
 
-            encounterCreditCompanies = new ArrayList<>();
+                encounterCreditCompanies = new ArrayList<>();
 
-            for (EncounterCreditCompany ecc : encounterCreditCompanys) {
-                encounterCreditCompany = new EncounterCreditCompany();
-                encounterCreditCompany.setPatientEncounter(current);
-                encounterCreditCompany.setInstitution(ecc.getInstitution());
-                encounterCreditCompany.setCreditLimit(ecc.getCreditLimit());
-                encounterCreditCompany.setPolicyNo(ecc.getPolicyNo());
-                current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
-                encounterCreditCompanies.add(encounterCreditCompany);
-                encounterCreditCompany = new EncounterCreditCompany();
+                for (EncounterCreditCompany ecc : encounterCreditCompanys) {
+                    encounterCreditCompany = new EncounterCreditCompany();
+                    encounterCreditCompany.setPatientEncounter(current);
+                    encounterCreditCompany.setInstitution(ecc.getInstitution());
+                    encounterCreditCompany.setCreditLimit(ecc.getCreditLimit());
+                    encounterCreditCompany.setPolicyNo(ecc.getPolicyNo());
+                    current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
+                    encounterCreditCompanies.add(encounterCreditCompany);
+                    encounterCreditCompany = new EncounterCreditCompany();
+                }
             }
         }
 
