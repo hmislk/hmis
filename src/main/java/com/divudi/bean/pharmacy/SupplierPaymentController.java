@@ -146,6 +146,7 @@ public class SupplierPaymentController implements Serializable {
     private int tabIndex = 0;
     private List<String> supplierPaymentStatusList;
     private String supplierPaymentStatus;
+    boolean changed = false;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -616,6 +617,24 @@ public class SupplierPaymentController implements Serializable {
 
         getCurrent().setTotal(-methodTotal);  // Keep total negative
         getCurrent().setNetTotal(-methodNetTotal);  // Keep net total negative
+    }
+
+    public void calTotal(Bill b) {
+        if (b.getBillItems() == null || b == null) {
+            return;
+        }
+
+        double methodTotal = 0.0;
+        for (BillItem bi : b.getBillItems()) {
+            methodTotal += Math.abs(bi.getNetValue()); // Ensure positive sum
+        }
+
+        double discount = Math.abs(b.getDiscount()); // Ensure discount is positive
+        double methodNetTotal = methodTotal - discount;
+
+        b.setTotal(-methodTotal);  // Keep total negative
+        b.setNetTotal(-methodNetTotal);  // Keep net total negative
+        changed = true;
     }
 
     public void calculateTotal(List<BillItem> billItemsWithReferanceToSettlingBills) {
@@ -2554,6 +2573,19 @@ public class SupplierPaymentController implements Serializable {
         printPreview = true;
 
     }
+    public void saveSupplierPayment(Bill b) {
+        if(b == null){
+            return;
+        }
+        getBillFacade().edit(b);
+
+        for(BillItem bi : b.getBillItems()){
+            billItemFacade.edit(bi);
+        }
+        changed = false;
+        JsfUtil.addSuccessMessage("Bill Saved Successfully");
+    }
+
 
     public void settleCheckingSupplierPayment() {
         if (errorCheckForCheckingSupplierPayment()) {
@@ -3392,4 +3424,11 @@ public class SupplierPaymentController implements Serializable {
         this.currentPayment = currentPayment;
     }
 
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public void setChanged(boolean changed) {
+        this.changed = changed;
+    }
 }
