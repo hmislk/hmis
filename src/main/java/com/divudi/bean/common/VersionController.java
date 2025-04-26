@@ -57,7 +57,7 @@ public class VersionController {
     public void fetchLatestVersion() {
         try {
             // Create a URL object pointing to the VERSION.txt file in the GitHub repository
-            URL url = new URL("https://raw.githubusercontent.com/hmislk/hmis/development/src/main/resources/VERSION.txt");
+            URL url = new URL("https://raw.githubusercontent.com/hmislk/hmis/staging/src/main/resources/VERSION.txt");
 
             // Open a connection to the URL
             try ( Scanner scanner = new Scanner(url.openStream(), StandardCharsets.UTF_8.name())) {
