@@ -448,7 +448,6 @@ public class SaleReturnController implements Serializable {
         savePreComponent();
 //        getReturnBill().setTotal(getReturnBill().getNetTotal()+getReturnBill().getDiscount());
 
-        getBill().setReferenceBill(getReturnBill());
         getBill().getReturnPreBills().add(getReturnBill());
         getBillFacade().edit(getBill());
 
