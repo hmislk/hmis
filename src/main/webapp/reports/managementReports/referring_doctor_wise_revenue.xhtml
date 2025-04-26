@@ -178,7 +178,6 @@
                         </h:panelGroup>
                         <h:panelGroup id="gpItem">
                             <p:autoComplete
-                                    rendered="#{reportController.category eq null}"
                                     completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
                                     var="i"
                                     itemLabel="#{i.name}"
@@ -188,24 +187,10 @@
                                     inputStyleClass="w-100"
                                     class="w-100"
                                     maxResults="15"
-                                    id="inves"
-                            >
+                                    id="inves">
                                 <p:column style="padding: 4px!important">#{i.name}</p:column>
                                 <p:column style="padding: 4px!important">#{i.code}</p:column>
                             </p:autoComplete>
-
-                            <p:selectOneMenu
-                                    value="#{reportController.item}"
-                                    styleClass="w-100"
-                                    rendered="#{reportController.category ne null}">
-                                <f:selectItem itemLabel="Select"/>
-                                <f:selectItems
-                                        value="#{itemController.getServicesPlusInvestigationsOfSelectedCategory(reportController.category)}"
-                                        var="i"
-                                        itemLabel="#{i.name}"
-                                        itemValue="#{i}">
-                                </f:selectItems>
-                            </p:selectOneMenu>
                         </h:panelGroup>
 
                         <p:spacer width="2em"/>
@@ -366,80 +351,40 @@
             <h:panelGroup id="printPanel">
                 <p:panel header="Referring Doctor Summary Report "
                          rendered="#{reportController.reportType eq 'Summary'}">
-                    <h:panelGroup>
-                        <div class="row w-50">
-                            <div class="col-3">
-                                <h:outputLabel
-                                        style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
-                            </div>
-                            <div class="col-3">
-                                <h:outputLabel value="#{reportController.fromDate}">
-                                    <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                </h:outputLabel>
-                            </div>
-                        </div>
+                    <h:outputText value="From Date: " style="font-weight:bold; width:100px; display:inline-block;"/>
+                    <h:outputText value="#{reportController.fromDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                    </h:outputText>
+                    <br/>
+                    <h:outputText value="To Date: " style="font-weight:bold; width:100px; display:inline-block;"/>
+                    <h:outputText value="#{reportController.toDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                    </h:outputText>
+                    <br/>
+                    <h:panelGroup rendered="#{reportController.collectingCentre ne null}">
+                        <h:outputText value="C. Center: "
+                                      style="font-weight:bold; width:100px; display:inline-block;"/>
+                        <h:outputLabel value="#{reportController.collectingCentre.name}"/>
+                        <br/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{reportController.department ne null}">
+                        <h:outputText value="Department: "
+                                      style="font-weight:bold; width:100px; display:inline-block;"/>
+                        <h:outputLabel value="#{reportController.department.name}"/>
+                        <br/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{reportController.institution ne null}">
+                        <h:outputText value="Institution: "
+                                      style="font-weight:bold; width:100px; display:inline-block;"/>
+                        <h:outputLabel value="#{reportController.institution.name}"/>
+                        <br/>
+                    </h:panelGroup>
 
-                        <div class="row w-50">
-                            <div class="col-3">
-                                <h:outputLabel
-                                        style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
-                            </div>
-                            <div class="col-3">
-                                <h:outputLabel value="#{reportController.toDate}">
-                                    <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                </h:outputLabel>
-                            </div>
-                        </div>
-                        <h:panelGroup rendered="#{reportController.collectingCentre ne null}">
-                            <div class="row w-50">
-                                <div class="col-3">
-                                    <h:outputLabel
-                                            style="width: 100px; font-weight:bold ">C. Center</h:outputLabel><span>:</span>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.collectingCentre.name}">
-                                    </h:outputLabel>
-                                </div>
-                            </div>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{reportController.department ne null}">
-                            <div class="row w-50">
-                                <div class="col-3">
-                                    <h:outputLabel
-                                            style="width: 100px ; font-weight:bold ">Department</h:outputLabel><span>:</span>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.department.name}">
-                                    </h:outputLabel>
-                                </div>
-                            </div>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{reportController.institution ne null}">
-                            <div class="row w-50">
-                                <div class="col-3">
-                                    <h:outputLabel
-                                            style="width: 100px; font-weight:bold ">Institution</h:outputLabel><span>:</span>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.institution.name}">
-                                    </h:outputLabel>
-                                </div>
-                            </div>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{reportController.site ne null}">
-                            <div class="row w-50">
-                                <div class="col-3">
-                                    <h:outputLabel
-                                            style="width: 100px ; font-weight:bold ">Site</h:outputLabel><span>:</span>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.site.name}"/>
-                                </div>
-                            </div>
-                        </h:panelGroup>
+                    <h:panelGroup rendered="#{reportController.site ne null}">
+                        <h:outputText value="Site: "
+                                      style="font-weight:bold; width:100px; display:inline-block;"/>
+                        <h:outputLabel value="#{reportController.site.name}"/>
+                        <br/>
                     </h:panelGroup>
 
                     <p:dataTable
@@ -462,7 +407,8 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column headerText="Agent Name" width="12em" rendered="#{reportController.type eq 'CC' or reportController.type eq null}">
+                        <p:column headerText="Agent Name" width="12em"
+                                  rendered="#{reportController.type eq 'CC' or reportController.type eq null}">
                             <h:outputText value="#{item.billItem.bill.collectingCentre.name}"/>
                         </p:column>
 
@@ -480,7 +426,8 @@
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{reportController.totalNetTotal + reportController.totalDiscount}">
+                                <h:outputText
+                                        value="#{reportController.totalNetTotal + reportController.totalDiscount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </f:facet>
@@ -546,78 +493,40 @@
                 <p:panel header="Referring Doctor Detail Report "
                          rendered="#{reportController.reportType eq 'Detail'}">
                     <h:panelGroup>
-                        <div class="row w-50">
-                            <div class="col-3">
-                                <h:outputLabel
-                                        style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
-                            </div>
-                            <div class="col-3">
-                                <h:outputLabel value="#{reportController.fromDate}">
-                                    <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                </h:outputLabel>
-                            </div>
-                        </div>
-
-                        <div class="row w-50">
-                            <div class="col-3">
-                                <h:outputLabel
-                                        style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
-                            </div>
-                            <div class="col-3">
-                                <h:outputLabel value="#{reportController.toDate}">
-                                    <f:convertDateTime
-                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                </h:outputLabel>
-                            </div>
-                        </div>
+                        <h:outputText value="From Date: " style="font-weight:bold; width:100px; display:inline-block;"/>
+                        <h:outputText value="#{reportController.fromDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                        </h:outputText>
+                        <br/>
+                        <h:outputText value="To Date: " style="font-weight:bold; width:100px; display:inline-block;"/>
+                        <h:outputText value="#{reportController.toDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                        </h:outputText>
+                        <br/>
                         <h:panelGroup rendered="#{reportController.collectingCentre ne null}">
-                            <div class="row w-50">
-                                <div class="col-3">
-                                    <h:outputLabel
-                                            style="width: 100px; font-weight:bold ">C. Center</h:outputLabel><span>:</span>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.collectingCentre.name}">
-                                    </h:outputLabel>
-                                </div>
-                            </div>
+                            <h:outputText value="C. Center: "
+                                          style="font-weight:bold; width:100px; display:inline-block;"/>
+                            <h:outputLabel value="#{reportController.collectingCentre.name}"/>
+                            <br/>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{reportController.department ne null}">
-                            <div class="row w-50">
-                                <div class="col-3">
-                                    <h:outputLabel
-                                            style="width: 100px ; font-weight:bold ">Department</h:outputLabel><span>:</span>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.department.name}">
-                                    </h:outputLabel>
-                                </div>
-                            </div>
+                            <h:outputText value="Department: "
+                                          style="font-weight:bold; width:100px; display:inline-block;"/>
+                            <h:outputLabel value="#{reportController.department.name}"/>
+                            <br/>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{reportController.institution ne null}">
-                            <div class="row w-50">
-                                <div class="col-3">
-                                    <h:outputLabel
-                                            style="width: 100px; font-weight:bold ">Institution</h:outputLabel><span>:</span>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.institution.name}">
-                                    </h:outputLabel>
-                                </div>
-                            </div>
+                            <h:outputText value="Institution: "
+                                          style="font-weight:bold; width:100px; display:inline-block;"/>
+                            <h:outputLabel value="#{reportController.institution.name}"/>
+                            <br/>
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{reportController.site ne null}">
-                            <div class="row w-50">
-                                <div class="col-3">
-                                    <h:outputLabel
-                                            style="width: 100px ; font-weight:bold ">Site</h:outputLabel><span>:</span>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="#{reportController.site.name}"/>
-                                </div>
-                            </div>
+                            <h:outputText value="Site: "
+                                          style="font-weight:bold; width:100px; display:inline-block;"/>
+                            <h:outputLabel value="#{reportController.site.name}"/>
+                            <br/>
                         </h:panelGroup>
                     </h:panelGroup>
 
@@ -667,7 +576,8 @@
 
                         <p:column headerText="Date " width="14em">
                             <h:outputText value="#{bi.bill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputText>
                         </p:column>
 
