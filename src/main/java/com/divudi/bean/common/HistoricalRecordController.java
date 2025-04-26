@@ -65,8 +65,6 @@ public class HistoricalRecordController implements Serializable {
         return variableNames;
     }
 
-
-
     public HistoricalRecordController() {
     }
 
@@ -87,45 +85,14 @@ public class HistoricalRecordController implements Serializable {
     }
 
     public void processHistoricalRecordList() {
-        String jpql = "select hr "
-                + " from HistoricalRecord hr "
-                + " where hr.retired=false ";
-
-        Map<String, Object> parameters = new HashMap<>();
-
-        if (variableName != null && !variableName.trim().isEmpty()) {
-            jpql += " and hr.variableName = :vn ";
-            parameters.put("vn", variableName);
-        }
-
-        if (institution != null) {
-            jpql += " and hr.institution = :ins ";
-            parameters.put("ins", institution);
-        }
-
-        if (site != null) {
-            jpql += " and hr.site = :site ";
-            parameters.put("site", site);
-        }
-
-        if (department != null) {
-            jpql += " and hr.department = :dep ";
-            parameters.put("dep", department);
-        }
-
-        if (fromDate != null) {
-            jpql += " and hr.recordDate >= :fd ";
-            parameters.put("fd", fromDate);
-        }
-
-        if (toDate != null) {
-            jpql += " and hr.recordDate <= :td ";
-            parameters.put("td", toDate);
-        }
-
-        jpql += " order by hr.recordDate desc";
-
-        items = getFacade().findByJpql(jpql, parameters, TemporalType.DATE);
+        items = historicalRecordService.findRecords(
+                variableName,
+                institution,
+                site,
+                department,
+                fromDate,
+                toDate
+        );
     }
 
     public HistoricalRecord getCurrent() {
