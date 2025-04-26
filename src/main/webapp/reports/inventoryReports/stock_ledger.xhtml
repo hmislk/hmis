@@ -307,8 +307,6 @@
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">
                                 <h:outputText value="#{f.createdAt}" />
-                                <br/>
-                                <h:outputText value="#{f.pbItem.billItem.bill.billTypeAtomic}" />
                             </p:column>
                             <p:column headerText="Ref Doc No." width="15em">
                                 <p:commandLink 
@@ -320,20 +318,10 @@
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
-<!--                not empty f.pbItem.billItem.bill.cancelledBill ? f.pbItem.billItem.bill.cancelledBill :                 
-<p:commandLink 
-                                    rendered="#{pharmacyReportController.documentType eq 'opSaleDoc' or pharmacyReportController.documentType eq 'ipSaleDoc'}"
-                                    value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? '' : f.pbItem.billItem.bill.referenceBill.deptId}"
-                                    class="m-1 ui-button-info"
-                                    style="width: 100px;"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                    ajax="false">
-                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill.cancelled ? f.pbItem.billItem.bill.forwardReferenceBill : f.pbItem.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}" />
-                                </p:commandLink>-->
                             </p:column>
 
                             <p:column headerText="Ref Doc Date" width="5em">
-                                <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE'}"
+                                <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE'}"
                                               value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
 
                             </p:column>
