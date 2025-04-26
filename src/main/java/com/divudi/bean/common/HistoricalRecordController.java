@@ -203,7 +203,7 @@ public class HistoricalRecordController implements Serializable {
             try {
                 key = Long.valueOf(value);
             } catch (NumberFormatException e) {
-                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Invalid ID format: " + value, e);
+//                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Invalid ID format: " + value, e); No Logger is Implemented yet. Will be done later
                 return null;
             }
             return key;

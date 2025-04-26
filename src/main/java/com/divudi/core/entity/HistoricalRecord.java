@@ -11,6 +11,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -30,9 +32,12 @@ public class HistoricalRecord implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @NotNull
+    @Size(min = 1, max = 255)
     private String variableName;
 
-    private Double value;
+    @NotNull
+    private Double recordValue;
 
     @ManyToOne
     private Institution institution;
@@ -101,12 +106,12 @@ public class HistoricalRecord implements Serializable {
         this.variableName = variableName;
     }
 
-    public Double getValue() {
-        return value;
+    public Double getRecordValue() {
+        return recordValue;
     }
 
-    public void setValue(Double value) {
-        this.value = value;
+    public void setRecordValue(Double recordValue) {
+        this.recordValue = recordValue;
     }
 
     public Institution getInstitution() {
