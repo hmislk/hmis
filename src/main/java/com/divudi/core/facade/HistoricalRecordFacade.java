@@ -15,12 +15,13 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 public class HistoricalRecordFacade extends AbstractFacade<HistoricalRecord> {
+
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
     @Override
     protected EntityManager getEntityManager() {
-        if(em == null){}return em;
+        return em;
     }
 
     public HistoricalRecordFacade() {
