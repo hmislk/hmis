@@ -108,7 +108,7 @@ public class ChannelService {
     private StaffFacade staffFacade;
     @EJB
     BillService billService;
-        @EJB
+    @EJB
     private WebUserFacade webUserFacade;
 
     @Inject
@@ -877,7 +877,7 @@ public class ChannelService {
             sql += " and ob.agency = :agency";
             params.put("agency", agency);
         }
-        
+
         return getOnlineBookingFacade().findByJpql(sql, params, TemporalType.DATE);
 
     }
@@ -920,9 +920,9 @@ public class ChannelService {
         getOnlineBookingFacade().edit(booking);
 
     }
-    
-    public SessionInstance findActiveChannelSession(Long id){
-        
+
+    public SessionInstance findActiveChannelSession(Long id) {
+
         String sql = " select session from SessionInstance session"
                 + " where session.id = :id "
                 + " and session.cancelled = :cancel "
@@ -930,7 +930,7 @@ public class ChannelService {
                 + " and session.retired = :retire "
                 + " and session.sessionDate >= :date"
                 + " and session.originatingSession.total <> :total";
-        
+
         Map params = new HashMap();
         params.put("id", id);
         params.put("cancel", false);
@@ -938,9 +938,9 @@ public class ChannelService {
         params.put("retire", false);
         params.put("date", new Date());
         params.put("total", 0);
-        
+
         return getSessionInstanceFacade().findFirstByJpql(sql, params);
-        
+
     }
 
     public BillSession cancelBookingBill(Bill bill, OnlineBooking bookingDetails) {
