@@ -207,6 +207,9 @@ public class HistoricalRecordController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
+            if (value == null) {
+                return null;
+            }
             StringBuilder sb = new StringBuilder();
             sb.append(value);
             return sb.toString();
