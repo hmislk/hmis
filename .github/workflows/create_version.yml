@@ -8,9 +8,6 @@ on:
       - 'development'  # Optional: include if development updates also need versioning
   workflow_dispatch:   # Allow manual trigger from GitHub UI
 
-permissions:
-  contents: write  # Needed for pushing commits
-
 jobs:
   update_version_and_readme:
     runs-on: ubuntu-latest
@@ -69,7 +66,7 @@ jobs:
 
       - name: Stage changes
         run: |
-          git add src/main/resources/VERSION.txt src/main/resources/version.txt README.md .github/counter.txt .github/last_date.txt
+          git add -f src/main/resources/VERSION.txt src/main/resources/version.txt README.md .github/counter.txt .github/last_date.txt
 
       - name: Commit changes
         run: |
