@@ -197,7 +197,12 @@ public class HistoricalRecordController implements Serializable {
 
         java.lang.Long getKey(String value) {
             java.lang.Long key;
-            key = Long.valueOf(value);
+            try {
+                key = Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Invalid ID format: " + value, e);
+                return null;
+            }
             return key;
         }
 
