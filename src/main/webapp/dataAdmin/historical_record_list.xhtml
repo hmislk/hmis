@@ -90,51 +90,52 @@
                                 <p:dataExporter fileName="Historical_Records" type="xlsx" target="tblRecords" />
                             </p:commandButton>
                         </h:panelGrid>
-                        <div style="width: 100%; overflow-x: auto;">
-                            <p:dataTable 
-                                rowIndexVar="i" 
-                                id="tblRecords" 
-                                value="#{historicalRecordController.items}" 
-                                var="rec" 
-                                scrollable="true"
-                                rows="10"
-                                paginatorAlwaysVisible="false"
-                                paginator="true"
-                                paginatorPosition="top"
-                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="5,10,15,50">
+<div style="width: 100%; overflow-x: auto;">
+    <p:dataTable 
+        rowIndexVar="i" 
+        id="tblRecords" 
+        value="#{historicalRecordController.items}" 
+        var="rec" 
+        scrollable="true"
+        rows="10"
+        paginatorAlwaysVisible="false"
+        paginator="true"
+        paginatorPosition="top"
+        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+        rowsPerPageTemplate="5,10,15,50">
 
-                                <p:column headerText="No" exportable="false">
-                                    <h:outputText value="#{i+1}" />
-                                </p:column>
+        <p:column headerText="No" exportable="false">
+            <h:outputText value="#{i+1}" />
+        </p:column>
 
-                                <p:column headerText="Variable">
-                                    <h:outputText value="#{rec.variableName}" />
-                                </p:column>
+        <p:column headerText="Variable">
+            <h:outputText value="#{rec.variableName}" />
+        </p:column>
 
-                                <p:column headerText="Value">
-                                    <h:outputText value="#{rec.value}" />
-                                </p:column>
+        <p:column headerText="Value">
+            <h:outputText value="#{rec.value}" />
+        </p:column>
 
-                                <p:column headerText="Institution">
-                                    <h:outputText value="#{rec.institution.name}" />
-                                </p:column>
+        <p:column headerText="Institution">
+            <h:outputText value="#{rec.institution == null ? 'N/A' : rec.institution.name}" />
+        </p:column>
 
-                                <p:column headerText="Site">
-                                    <h:outputText value="#{rec.site.name}" />
-                                </p:column>
+        <p:column headerText="Site">
+            <h:outputText value="#{rec.site == null ? 'N/A' : rec.site.name}" />
+        </p:column>
 
-                                <p:column headerText="Department">
-                                    <h:outputText value="#{rec.department.name}" />
-                                </p:column>
+        <p:column headerText="Department">
+            <h:outputText value="#{rec.department == null ? 'N/A' : rec.department.name}" />
+        </p:column>
 
-                                <p:column headerText="Record Date">
-                                    <h:outputText value="#{rec.recordDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputText>
-                                </p:column>
+        <p:column headerText="Record Date">
+            <h:outputText value="#{rec.recordDate}">
+                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+            </h:outputText>
+        </p:column>
 
-                            </p:dataTable>
+    </p:dataTable>
+</div>
                         </div>
                     </p:panel>
                 </h:form>
