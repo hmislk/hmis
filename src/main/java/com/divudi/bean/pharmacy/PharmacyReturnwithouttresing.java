@@ -543,11 +543,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
             //   ////System.out.println("Error for sale bill");
             return;
         }
-        if (hasMixedBillTypeAtomics(getPreBill().getBillItems())) {
-            JsfUtil.addErrorMessage("Cannot process items with mixed GRN and Direct Purchase types together");
-            return;
-        }
-        setBillTypeBasedOnItems(getPreBill().getBillItems());
+        
 
         calculateAllRates();
 
@@ -558,6 +554,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
         getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
@@ -567,53 +564,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         billPreview = true;
 
-    }
-
-    private void setBillTypeBasedOnItems(List<BillItem> items) {
-        if (items == null || items.isEmpty()) {
-            return;
-        }
-
-        for (BillItem item : items) {
-            if (!onBillTypeCheck(item)) {
-                if (item.getPharmaceuticalBillItem().getBillItem().getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
-                    getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING_GRN);
-                } else {
-                    getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING_DIRECT_PURCHASE);
-                }
-                break;
-            }
-        }
-    }
-
-    private boolean onBillTypeCheck(BillItem item) {
-        return item == null
-                || item.getPharmaceuticalBillItem() == null
-                || item.getPharmaceuticalBillItem().getBillItem() == null
-                || item.getPharmaceuticalBillItem().getBillItem().getBill() == null;
-    }
-
-    private boolean hasMixedBillTypeAtomics(List<BillItem> items) {
-        if (items == null || items.isEmpty()) {
-            return false;
-        }
-
-        BillTypeAtomic firstType = null;
-
-        for (BillItem item : items) {
-            if (onEdit(item)) {
-                continue;
-            }
-
-            BillTypeAtomic currentType = item.getPharmaceuticalBillItem().getBillItem().getBill().getBillTypeAtomic();
-
-            if (firstType == null) {
-                firstType = currentType;
-            } else if (!firstType.equals(currentType)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean checkItemBatch() {
