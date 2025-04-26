@@ -3904,8 +3904,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_ISSUE_RETURN:
                 return navigateToPharmacyIssueReturn();
             case PHARMACY_ISSUE:
-            case PHARMACY_ISSUE_CANCELLED:
                 return navigateToPharmacyIssue();
+            case PHARMACY_ISSUE_CANCELLED:
+                return navigateToPharmacyIssueCancelled();
 
             case PHARMACY_RECEIVE:
             case PHARMACY_RECEIVE_CANCELLED:
@@ -3941,6 +3942,10 @@ public class BillSearch implements Serializable {
     public String navigateToViewPharmacyDirectIssueCancellationForInpatientBill() {
         prepareToPharmacyCancellationBill();
         return "/inward/pharmacy_cancel_bill_retail_bht";
+    }
+    public String navigateToPharmacyIssueCancelled() {
+        prepareToPharmacyCancellationBill();
+        return "/pharmacy/pharmacy_cancel_bill_unit_issue";
     }
 
     public String navigateToPharmacyIssue() {
@@ -3989,6 +3994,7 @@ public class BillSearch implements Serializable {
         purchaseReturnController.setReturnBill(bill);
         return "/pharmacy/pharmacy_return_purchase";
     }
+
     public String navigateToPharmacyReturnWithoutTreasingBillView() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");

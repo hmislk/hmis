@@ -493,7 +493,6 @@ public class PharmacyBillSearch implements Serializable {
         bill.setForwardReferenceBill(c);
         bill.setCancelled(true);
         bill.setCancelledBill(c);
-        bill.setReferenceBill(c);
         getBillFacade().edit(bill);
     }
 
