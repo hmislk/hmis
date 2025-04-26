@@ -69,6 +69,9 @@ public class HistoricalRecordController implements Serializable {
     }
 
     public HistoricalRecord findRecord(String variableName, Date recordDate) {
+        if (variableName == null || recordDate == null) {
+            return null;
+        }
         return findRecord(variableName, null, null, null, recordDate);
     }
 
