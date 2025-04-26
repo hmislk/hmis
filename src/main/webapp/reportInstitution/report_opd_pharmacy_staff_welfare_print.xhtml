@@ -78,7 +78,7 @@
                                         font-family: Arial, sans-serif;
                                         font-size: 10pt;
                                     }
-                                    size: A4 landscape!important;
+                                    size: A4 portrait!important;
                                 }
 
                                 body {
@@ -181,7 +181,7 @@
                                             <ui:repeat value="#{serviceSummery.bills}" var="b" varStatus="i">
                                                 <tr>
                                                     <td style="width: 8mm;" >
-                                                        <h:outputText value="#{i+1}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{i.index+1}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 25mm; text-align: left;">
                                                         <h:outputText value="#{b.deptId}" style="margin-left: 1mm;"/>
