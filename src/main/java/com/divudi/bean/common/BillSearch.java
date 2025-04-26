@@ -3923,7 +3923,7 @@ public class BillSearch implements Serializable {
                 return navigateToDirectPurchaseReturnBillView();
             case PHARMACY_RETURN_WITHOUT_TREASING:
                 return navigateToPharmacyReturnWithoutTreasingBillView();
-                
+
             case PHARMACY_GRN_RETURN:
                 return navigateToPharmacyGrnReturnBillView();
             case PHARMACY_GRN_CANCELLED:
@@ -3951,15 +3951,21 @@ public class BillSearch implements Serializable {
         prepareToPharmacyCancellationBill();
         return "/inward/pharmacy_cancel_bill_retail_bht";
     }
+
     public String navigateToPharmacyIssueCancelled() {
         prepareToPharmacyCancellationBill();
-        return "/pharmacy/pharmacy_cancel_bill_unit_issue";
+        if (bill.getBillType() == billType.PharmacyTransferIssue) {
+            return "/pharmacy/pharmacy_cancel_transfer_issue";
+        } else {
+            return "/pharmacy/pharmacy_cancel_bill_unit_issue";
+        }
     }
+
     public String navigateToPharmacyGrnCancellationBillView() {
         prepareToPharmacyCancellationBill();
         return "/pharmacy/pharmacy_cancel_grn";
     }
-    
+
     public String navigateToPharmacyGrnReturnBillView() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
