@@ -178,7 +178,6 @@
                         </h:panelGroup>
                         <h:panelGroup id="gpItem">
                             <p:autoComplete
-                                    rendered="#{reportController.category eq null}"
                                     completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
                                     var="i"
                                     itemLabel="#{i.name}"
@@ -188,24 +187,10 @@
                                     inputStyleClass="w-100"
                                     class="w-100"
                                     maxResults="15"
-                                    id="inves"
-                            >
+                                    id="inves">
                                 <p:column style="padding: 4px!important">#{i.name}</p:column>
                                 <p:column style="padding: 4px!important">#{i.code}</p:column>
                             </p:autoComplete>
-
-                            <p:selectOneMenu
-                                    value="#{reportController.item}"
-                                    styleClass="w-100"
-                                    rendered="#{reportController.category ne null}">
-                                <f:selectItem itemLabel="Select"/>
-                                <f:selectItems
-                                        value="#{itemController.getServicesPlusInvestigationsOfSelectedCategory(reportController.category)}"
-                                        var="i"
-                                        itemLabel="#{i.name}"
-                                        itemValue="#{i}">
-                                </f:selectItems>
-                            </p:selectOneMenu>
                         </h:panelGroup>
 
                         <p:spacer width="2em"/>
