@@ -1428,12 +1428,17 @@ public class ChannelService {
         BillItem paidBillItem = savePaidBillItem(paidBill, preBillSession);
         savePaidBillFee(paidBill, paidBillItem, preBillSession);
         BillSession paidBillSession = savePaidBillSession(paidBill, paidBillItem, preBillSession);
+        paidBillItem.setBillSession(paidBillSession);
 
         preBillSession.setPaidBillSession(paidBillSession);
         preBillSession.getBill().setPaidAmount(paidBill.getPaidAmount());
         preBillSession.getBill().setBalance(0.0);
         preBillSession.getBill().setPaidBill(paidBill);
         preBillSession.getBill().setPaid(true);
+        
+        List<BillItem> savingBillItems = new ArrayList<>();
+        savingBillItems.add(paidBillItem);
+        paidBill.setBillItems(savingBillItems);
 
         getBillFacade().edit(preBillSession.getBill());
         getBillSessionFacade().edit(paidBillSession);
@@ -1442,6 +1447,7 @@ public class ChannelService {
         paidBill.setSingleBillItem(paidBillItem);
         paidBill.setSingleBillSession(paidBillSession);
         getBillFacade().editAndCommit(paidBill);
+        getBillItemFacade().edit(paidBillItem);
 
         List<Payment> p = createPayment(paidBill, paidBill.getPaymentMethod());
 
@@ -1496,8 +1502,7 @@ public class ChannelService {
         bi.setCreatedAt(new Date());
         bi.setBill(b);
         getBillItemFacade().create(bi);
-
-        return bi;
+        return getBillItemFacade().find(bi.getId());
     }
 
     private void savePaidBillFee(Bill b, BillItem bi, BillSession bs) {
@@ -1529,6 +1534,8 @@ public class ChannelService {
         Bill completedOnlineBookingBill = new BilledBill();
         completedOnlineBookingBill.setAgentRefNo(refNo);
         completedOnlineBookingBill.copy(bs.getBill());
+        completedOnlineBookingBill.setDepartment(bs.getBill().getDepartment());
+        completedOnlineBookingBill.setInstitution(bs.getBill().getInstitution());
         completedOnlineBookingBill.copyValue(bs.getBill());
         completedOnlineBookingBill.setPaidAmount(bs.getBill().getNetTotal());
         completedOnlineBookingBill.setBalance(0.0);
