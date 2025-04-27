@@ -95,6 +95,24 @@ public class CommonFunctions {
         }
     }
 
+    // ChatGPT Contribution: Safe rounding method for financial calculations
+    public static double roundToTwoDecimals(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return 0.0;
+        }
+        return Math.round(value * 100.0) / 100.0;
+    }
+
+    // ChatGPT Contribution
+    public static double roundToTwoDecimalsBigDecimal(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return 0.0;
+        }
+        return new java.math.BigDecimal(value)
+                .setScale(2, java.math.RoundingMode.HALF_UP)
+                .doubleValue();
+    }
+
     public static boolean checkOnlyNumeric(String text) {
         String cleandtext = text.replaceAll("[\\s+\\-()]", "");
         String regex = "^[0-9]+$";

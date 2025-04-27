@@ -37,9 +37,9 @@ public class AgentHistory implements Serializable {
     @ManyToOne
     BillSession billSession;
 
-    double balanceBeforeTransaction;
-    double balanceAfterTransaction;
-    double transactionValue;
+    private double balanceBeforeTransaction;
+    private double balanceAfterTransaction;
+    private double transactionValue;
 
     private Double adjustmentToAgencyBalance;
     private Double paidAmountToAgency;
