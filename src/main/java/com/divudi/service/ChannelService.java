@@ -718,7 +718,7 @@ public class ChannelService {
 
         List<Integer> reservedSerialNumbers = allBillSessions.stream()
                 .map(BillSession::getSerialNo)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());       
 
         for (int i = 1; i < nextNumber; ++i) {
             boolean isAssign = false;
@@ -795,6 +795,18 @@ public class ChannelService {
         getOnlineBookingFacade().edit(bookingForEdit);
 
         return bookingForEdit;
+    }
+    
+    public Bill findBillFromOnlineBooking(OnlineBooking booking){
+        String sql = "select bill from Bill bill"
+                + " where bill.onlineBooking = :ob"
+                + " and bill.retired = false";
+        
+        Map params = new HashMap();
+        params.put("ob", booking);
+        
+        return getBillFacade().findFirstByJpql(sql, params);
+        
     }
 
     public OnlineBooking findOnlineBookingFromRefNo(String refNo, boolean retiredStatus, Institution agency) {

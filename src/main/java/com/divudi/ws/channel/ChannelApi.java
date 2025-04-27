@@ -1314,7 +1314,8 @@ public class ChannelApi {
             }
         }
 
-        Bill temporarySavedBill = bookingData.getBill();
+        //Bill temporarySavedBill = bookingData.getBill();
+        Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingData);
 
         try {
             validateBillForCompleteBooking(temporarySavedBill);
@@ -1451,7 +1452,7 @@ public class ChannelApi {
             mapDetail.put("DoctorName", bill.getStaff().getPerson().getNameWithTitle());
             mapDetail.put("PatientName", ob.getPatientName());
             mapDetail.put("HosTelephone", bill.getToInstitution().getPhone());
-            mapDetail.put("NicNumber", bill.getPatient().getPerson().getNic());
+            mapDetail.put("NicNumber", ob.getNic());
             mapDetail.put("HosName", bill.getToInstitution().getName());
             mapDetail.put("RefNo", bill.getAgentRefNo());
             mapDetail.put("HosLocation", bill.getToInstitution().getAddress());
@@ -1506,6 +1507,7 @@ public class ChannelApi {
         }
 
         Bill bookingBill = bookingDetails.getBill();
+        System.out.println(bookingBill);
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
