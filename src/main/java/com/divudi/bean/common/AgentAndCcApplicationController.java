@@ -7,6 +7,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.AgentHistoryFacade;
 import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.google.gson.Gson;
 import javax.inject.Named;
 import java.util.Date;
@@ -173,8 +174,12 @@ public class AgentAndCcApplicationController {
 
             double balanceAfterTx = balanceBeforeTx;
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
