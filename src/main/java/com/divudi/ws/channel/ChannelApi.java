@@ -1653,15 +1653,6 @@ public class ChannelApi {
 
         SessionInstance session = bs.getSessionInstance();
 
-        String sessionStatus = "Session will have on time.";
-        if (session.isCompleted()) {
-            sessionStatus = "Session is alredy finished now.";
-        } else if (session.isCancelled()) {
-            sessionStatus = "Session is cancelled.";
-        } else if (session.isStarted()) {
-            sessionStatus = "Session is already started now.";
-        }
-
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
@@ -1674,7 +1665,7 @@ public class ChannelApi {
         appoinment.put("showTime", null);
         appoinment.put("chRoom", completedSaveBill.getSingleBillSession().getSessionInstance().getRoomNo());
         appoinment.put("timeInterval", null);
-        appoinment.put("status", null);
+        appoinment.put("status", "Patient-canceled");
 
         Map<String, Object> sessionDetails = new HashMap<>();
         Item i = completedSaveBill.getSingleBillSession().getItem();
@@ -1690,7 +1681,7 @@ public class ChannelApi {
         sessionDetails.put("hosLocation", session.getInstitution().getAddress());
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
-        sessionDetails.put("status", sessionStatus);
+        sessionDetails.put("status", "success");
 
         Map<String, Object> patientDetails = new HashMap<>();
         patientDetails.put("titile", bookingData.getTitle());
@@ -1731,7 +1722,7 @@ public class ChannelApi {
         Map response = new HashMap();
         response.put("data", appoinment);
         response.put("message", "Booking details for ref No: " + refNo);
-        response.put("detailMessage", "Your booking is cancelled");
+        response.put("detailMessage", "Success");
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
 
