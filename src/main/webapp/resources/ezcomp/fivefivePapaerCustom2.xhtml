@@ -277,7 +277,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputLabel>
                             
-                            <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null}" style="font-weight: bolder" value="#{cc.attrs.bill.referenceBill.onlineBooking.netTotalForOnlineBooking}" >
+                            <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null}" style="font-weight: bolder" value="#{cc.attrs.bill.total}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputLabel>
                         </td>

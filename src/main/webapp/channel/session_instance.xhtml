@@ -242,7 +242,7 @@
 <!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="acBookings" onactivated="console.log('poll started')"></p:poll>-->
                                     </p:tab>
                                     <!--                                    temporary bookings tab-->
-                                    <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount"></p:ajax>
+                                    <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:ajax>
                                     <p:tab >
 
                                         <f:facet name="title">
