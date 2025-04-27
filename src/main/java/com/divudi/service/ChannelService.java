@@ -627,7 +627,9 @@ public class ChannelService {
         bill.setCreatedAt(new Date());
 
         bill.setToDepartment(session.getDepartment());
+        bill.setDepartment(session.getDepartment());
         bill.setToInstitution(session.getInstitution());
+        bill.setInstitution(session.getInstitution());
 
         getBillFacade().create(bill);
 
