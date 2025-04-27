@@ -147,14 +147,30 @@
                                     <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.openingStockValue}" ></h:outputLabel>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <h:outputLabel value="Opening Stock" ></h:outputLabel>
-                                </td>
-                                <td>
-                                    <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.closingStockValue}" ></h:outputLabel>
-                                </td>
-                            </tr>
+
+
+                            <ui:repeat value="#{pharmacySummaryReportController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountScheme}"
+                                       var="sale">
+                                <tr >
+                                    <td>
+                                        <h:outputLabel value="#{sale.rowType}" ></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value="#{sale.grossTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                                </h:dataTable>
+
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="Opening Stock" ></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.closingStockValue}" ></h:outputLabel>
+                                    </td>
+                                </tr>
                         </table>
 
                     </h:panelGrid>

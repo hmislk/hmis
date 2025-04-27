@@ -1,6 +1,6 @@
 package com.divudi.core.data.pharmacy;
 
-import com.divudi.core.data.IncomeRow;
+import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.entity.Department;
 import java.util.Date;
 import java.util.List;
@@ -18,7 +18,7 @@ public class DailyStockBalanceReport {
     private double stockTransactionValue;
     private double closingStockValue;
 
-    private List<IncomeRow> pharmacySalesByAdmissionTypeAndDiscountScheme;
+    private List<PharmacyRow> pharmacySalesByAdmissionTypeAndDiscountScheme;
     
     private double purchasesOfDrugsPrevious;
     private double purchasesOfDrugsTransaction;
@@ -639,11 +639,11 @@ public class DailyStockBalanceReport {
         this.internalTransfersList = internalTransfersList;
     }
 
-    public List<IncomeRow> getPharmacySalesByAdmissionTypeAndDiscountScheme() {
+    public List<PharmacyRow> getPharmacySalesByAdmissionTypeAndDiscountScheme() {
         return pharmacySalesByAdmissionTypeAndDiscountScheme;
     }
 
-    public void setPharmacySalesByAdmissionTypeAndDiscountScheme(List<IncomeRow> pharmacySalesByAdmissionTypeAndDiscountScheme) {
+    public void setPharmacySalesByAdmissionTypeAndDiscountScheme(List<PharmacyRow> pharmacySalesByAdmissionTypeAndDiscountScheme) {
         this.pharmacySalesByAdmissionTypeAndDiscountScheme = pharmacySalesByAdmissionTypeAndDiscountScheme;
     }
 

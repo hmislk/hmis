@@ -33,6 +33,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.IncomeBundle;
 import com.divudi.core.data.IncomeRow;
+import com.divudi.core.data.PharmacyBundle;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ReportViewType;
@@ -47,6 +48,7 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.ejb.PharmacyService;
 import com.divudi.service.BillService;
 import com.divudi.service.HistoricalRecordService;
 import com.divudi.service.StockHistoryService;
@@ -102,6 +104,8 @@ public class PharmacySummaryReportController implements Serializable {
     StockHistoryService stockHistoryService;
     @EJB
     HistoricalRecordService historicalRecordService;
+    @EJB
+    PharmacyService pharmacyService;
 
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -279,12 +283,18 @@ public class PharmacySummaryReportController implements Serializable {
         cal.add(Calendar.DATE, 1);
         toDate = cal.getTime();
 
+        Date startOfTheDay = CommonFunctions.getStartOfBeforeDay(fromDate);
+        Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
+
+        PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+
+        dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountScheme(saleBundle.getRows());
+
         HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
         if (closingBalance != null) {
             dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
         }
-        
-        
+
     }
 
     public void listBillTypes() {
