@@ -352,9 +352,9 @@
                                                         <i class="fa fa-user fa-fw mx-3" style="color: #007bff;" title="Name" />
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.title}. #{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.patientName}" />
                                                         <br></br>
-                                                        
-                                                         <i class="fa fa-user fa-fw mx-3" style="color: #007bff;" title="Foreigner" />
-                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.foreignStatus eq true ? 'Foreign Patient' : 'Local Patient'}" />
+
+                                                        <i class="fa fa-user fa-fw mx-3" style="color: #007bff;" title="Foreigner" />
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.foreignStatus eq true ? 'Foreign Patient' : 'Local Patient'}" />
                                                         <br></br>
 
                                                         <i class="fa fa-phone fa-fw mx-3" style="color: #007bff;" title="Phone" />
@@ -364,7 +364,7 @@
                                                         <i class="fa fa-id-card fa-fw mx-3" style="color: #007bff;" title="NIC" />
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.nic}" />
                                                         <br></br>
-                                                        
+
                                                         <i class="fa fa-flag fa-fw mx-3" style="color: #007bff;" title="Ref No" />
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.referenceNo}" />
 
@@ -1311,7 +1311,11 @@
 
                             <h:panelGroup rendered="#{!bookingControllerViewScope.printPreviewC}" >
                                 #{bookingControllerViewScope.selectedBillSession.bill.paymentMethod}
-                                <h:panelGroup>
+                                <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill ne null ? (bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking ne null ? true : false):false}">
+                                    <ch:bill_fees bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill.referenceBill}" />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill eq null}">
                                     <ch:bill_fees bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                 </h:panelGroup>
 
@@ -1446,7 +1450,12 @@
                                                                     <h:outputLabel value="Refundable Total : "/>
                                                                     <h:outputLabel id="tot" value="#{bookingControllerViewScope.refundableTotal}"/>
                                                                 </h:panelGrid>-->
-                                <p:dataTable value="#{bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
+                                <p:dataTable value="#{bookingControllerViewScope.billSession.bill.referenceBill ne null ? 
+                                                      (bookingControllerViewScope.billSession.bill.referenceBill.onlineBooking ne null ? 
+                                                      bookingControllerViewScope.billSession.bill.referenceBill.billFeesWIthoutZeroValue : 
+                                                      bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue):
+                                                      bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue}" 
+                                             var="bi">
                                     <p:column headerText="Fee Name">
                                         <p:outputLabel value="#{bi.fee.name}"/>
                                     </p:column>
@@ -1527,7 +1536,7 @@
                         <p:tab 
                             title="Change Patient"
                             id="change" 
-                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange') and bookingControllerViewScope.selectedBillSession.bill.referenceBill eq null}">
                             <p:panelGrid columns="2" class="w-100">
                                 <f:facet name="header" >
                                     <p:outputLabel class="mx-2" value="Change Current Patient with a new Patient" ></p:outputLabel>
@@ -1543,7 +1552,7 @@
                         <p:tab 
                             title="Change Appointment Details"
                             id="changeNumber" 
-                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange') and bookingControllerViewScope.selectedBillSession.bill.referenceBill eq null}">
 
                             <h:panelGrid columns="2" class="my-2">
                                 <p:outputLabel value="Patient Name"/>
@@ -1760,7 +1769,7 @@
                                 </h:panelGrid>
                             </p:panel>
                         </p:tab>
-                        <p:tab title="Reshedule">
+                        <p:tab title="Reshedule" rendered="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill eq null}">
                             <p:panel>
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between align-items-center">

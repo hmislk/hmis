@@ -3409,6 +3409,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else {
             billSessionFacade.edit(selectedBillSession);
         }
+        if(selectedBillSession.getBill().getReferenceBill() != null){
+            if(selectedBillSession.getBill().getReferenceBill().getOnlineBooking() != null){
+                selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setIsAbsent(true);
+            }
+        }
     }
 
     public boolean patientErrorPresent(Patient p) {
