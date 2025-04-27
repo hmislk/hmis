@@ -1720,9 +1720,10 @@ public class ChannelApi {
         appoinment.put("payment", paymentDetails);
 
         Map response = new HashMap();
+        response.put("code", "202");
         response.put("data", appoinment);
-        response.put("message", "Booking details for ref No: " + refNo);
-        response.put("detailMessage", "Success");
+        response.put("message", "Accepted");
+        response.put("detailMessage", "Booking details for ref No: " + refNo);
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
 
