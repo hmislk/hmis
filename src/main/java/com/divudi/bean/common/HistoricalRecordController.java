@@ -55,7 +55,7 @@ public class HistoricalRecordController implements Serializable {
 
     public String navigateToHistoricalRecordList() {
         recreateModel();
-        return "/dataAdmin/historical_record_list?faces-redirect=true;";
+        return "/dataAdmin/historical_record_list?faces-redirect=true";
     }
 
     public List<String> getVariableNames() {
