@@ -1139,7 +1139,7 @@ public class ChannelApi {
 
         OnlineBooking editedBooking = channelService.editOnlineBooking(bookingDetails, patientPhoneNo, title, patientName, patientNic);
 
-        Bill temporaryBill = editedBooking.getBill();
+        Bill temporaryBill = channelService.findBillFromOnlineBooking(editedBooking);
         SessionInstance session = temporaryBill.getSingleBillSession().getSessionInstance();
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
