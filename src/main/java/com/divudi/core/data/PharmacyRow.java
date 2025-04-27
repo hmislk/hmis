@@ -1322,10 +1322,6 @@ public class PharmacyRow implements Serializable {
         this.retailValue = retailValue;
     }
 
-    public void setPurchaseValue(double purchaseValue) {
-        this.purchaseValue = purchaseValue;
-    }
-
     public double getGrossProfit() {
         return grossProfit;
     }
