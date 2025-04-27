@@ -101,7 +101,12 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     double opdBillDiscount;
     double inwardDiscount;
     double pharmacyDiscount;
-
+    
+    /**
+     * Spelling mistake. Should be balance. This field is kept for
+     * backward compatibility with existing MySQL databases. Use carefully.
+     * Planned for correction in a future major version.
+     */
     double ballance;
 
     private double companyBalance;
