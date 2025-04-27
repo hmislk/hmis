@@ -316,24 +316,12 @@ public class PharmacyRow implements Serializable {
         }
         PharmacyRow that = (PharmacyRow) o;
 
-        if (this.id != null && that.id != null) {
-            return this.id.equals(that.id);
-        }
-        if (this.uuid != null && that.uuid != null) {
-            return this.uuid.equals(that.uuid);
-        }
-        return false;
+        return Objects.equals(this.uuid, that.uuid);
     }
 
     @Override
     public int hashCode() {
-        if (id != null) {
-            return id.hashCode();
-        }
-        if (uuid != null) {
-            return uuid.hashCode();
-        }
-        return 0;
+        return Objects.hashCode(uuid);
     }
 
     @Override
