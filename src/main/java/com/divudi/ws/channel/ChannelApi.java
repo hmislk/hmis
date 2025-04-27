@@ -1127,7 +1127,7 @@ public class ChannelApi {
             }
         }
 
-        Bill temporarySavedBill = bookingDetails.getBill();
+        Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingDetails);
 
         try {
             validateBillForCompleteBooking(temporarySavedBill);
@@ -1506,8 +1506,7 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        Bill bookingBill = bookingDetails.getBill();
-        System.out.println(bookingBill);
+        Bill bookingBill = channelService.findBillFromOnlineBooking(bookingDetails);
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1642,7 +1641,7 @@ public class ChannelApi {
             }
         }
 
-        Bill completedSaveBill = bookingData.getBill().getPaidBill();
+        Bill completedSaveBill = channelService.findBillFromOnlineBooking(bookingData).getPaidBill();
 
         try {
             validateChannelingSession(completedSaveBill.getSingleBillSession().getSessionInstance());
