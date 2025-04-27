@@ -1,5 +1,6 @@
 package com.divudi.core.data.pharmacy;
 
+import com.divudi.core.data.IncomeRow;
 import com.divudi.core.entity.Department;
 import java.util.Date;
 import java.util.List;
@@ -13,10 +14,12 @@ public class DailyStockBalanceReport {
     private Date date;
     private Department department;
 
-    private double openingStock;
+    private double openingStockValue;
     private double stockTransactionValue;
-    private double closingStock;
+    private double closingStockValue;
 
+    private List<IncomeRow> pharmacySalesByAdmissionTypeAndDiscountScheme;
+    
     private double purchasesOfDrugsPrevious;
     private double purchasesOfDrugsTransaction;
     private double purchasesOfDrugsClosing;
@@ -116,12 +119,12 @@ public class DailyStockBalanceReport {
         this.department = department;
     }
 
-    public double getOpeningStock() {
-        return openingStock;
+    public double getOpeningStockValue() {
+        return openingStockValue;
     }
 
-    public void setOpeningStock(double openingStock) {
-        this.openingStock = openingStock;
+    public void setOpeningStockValue(double openingStockValue) {
+        this.openingStockValue = openingStockValue;
     }
 
     public double getStockTransactionValue() {
@@ -132,12 +135,12 @@ public class DailyStockBalanceReport {
         this.stockTransactionValue = stockTransactionValue;
     }
 
-    public double getClosingStock() {
-        return closingStock;
+    public double getClosingStockValue() {
+        return closingStockValue;
     }
 
-    public void setClosingStock(double closingStock) {
-        this.closingStock = closingStock;
+    public void setClosingStockValue(double closingStockValue) {
+        this.closingStockValue = closingStockValue;
     }
 
     public double getPurchasesOfDrugsPrevious() {
@@ -634,6 +637,14 @@ public class DailyStockBalanceReport {
 
     public void setInternalTransfersList(List<DepartmentTransaction> internalTransfersList) {
         this.internalTransfersList = internalTransfersList;
+    }
+
+    public List<IncomeRow> getPharmacySalesByAdmissionTypeAndDiscountScheme() {
+        return pharmacySalesByAdmissionTypeAndDiscountScheme;
+    }
+
+    public void setPharmacySalesByAdmissionTypeAndDiscountScheme(List<IncomeRow> pharmacySalesByAdmissionTypeAndDiscountScheme) {
+        this.pharmacySalesByAdmissionTypeAndDiscountScheme = pharmacySalesByAdmissionTypeAndDiscountScheme;
     }
 
 

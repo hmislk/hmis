@@ -13,30 +13,20 @@
                     <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
-                            <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            <h:outputLabel value="Date" for="fromDate" class="mx-3"/>
                         </h:panelGroup>
                         <p:calendar 
-                            styleClass="w-100" 
+                            styleClass="w-100 m-1" 
                             inputStyleClass="w-100 form-control" 
                             id="fromDate" 
                             value="#{pharmacySummaryReportController.fromDate}" 
-                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                            pattern="#{sessionController.applicationPreference.longDateFormat}" 
                             />
 
                         <p:spacer width="50" ></p:spacer>
+                        <p:spacer width="50" ></p:spacer>
+                        <p:spacer width="50" ></p:spacer>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
-                            <h:outputLabel value="To" for="toDate" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:calendar 
-                            styleClass="w-100" 
-                            inputStyleClass="w-100 form-control" 
-                            id="toDate" 
-                            value="#{pharmacySummaryReportController.toDate}" 
-                            navigator="false" 
-                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                            />
 
                         <p:spacer width="50" ></p:spacer>
                         <p:spacer width="50" ></p:spacer>
@@ -154,7 +144,7 @@
                                     <h:outputLabel value="Opening Stock" ></h:outputLabel>
                                 </td>
                                 <td>
-                                    <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.openingStock}" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.openingStockValue}" ></h:outputLabel>
                                 </td>
                             </tr>
                             <tr>
@@ -162,7 +152,7 @@
                                     <h:outputLabel value="Opening Stock" ></h:outputLabel>
                                 </td>
                                 <td>
-                                    <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.closingStock}" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.closingStockValue}" ></h:outputLabel>
                                 </td>
                             </tr>
                         </table>

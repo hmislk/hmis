@@ -39,6 +39,7 @@ import com.divudi.core.data.ReportViewType;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -47,10 +48,12 @@ import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.HistoricalRecordService;
 import com.divudi.service.StockHistoryService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +100,8 @@ public class PharmacySummaryReportController implements Serializable {
     private BillService billService;
     @EJB
     StockHistoryService stockHistoryService;
+    @EJB
+    HistoricalRecordService historicalRecordService;
 
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -253,13 +258,33 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
+        Date today = new Date();
+        if (!fromDate.before(today)) {
+            JsfUtil.addErrorMessage("Selected date must be earlier than today");
+            return;
+        }
+
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
 
-        dailyStockBalanceReport.setOpeningStock(stockHistoryService.fetchOpeningStockQuantity(department, toDate));
-        dailyStockBalanceReport.setClosingStock(stockHistoryService.fetchClosingStockQuantity(department, toDate));
+        HistoricalRecord openingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, fromDate);
+        if (openingBalance != null) {
+            dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
+        }
 
+        // Calculate toDate as fromDate + 1 day
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fromDate);
+        cal.add(Calendar.DATE, 1);
+        toDate = cal.getTime();
+
+        HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
+        if (closingBalance != null) {
+            dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
+        }
+        
+        
     }
 
     public void listBillTypes() {
