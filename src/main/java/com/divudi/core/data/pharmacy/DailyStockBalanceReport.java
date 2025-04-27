@@ -1,5 +1,7 @@
 package com.divudi.core.data.pharmacy;
 
+import com.divudi.core.data.PharmacyBundle;
+import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.entity.Department;
 import java.util.Date;
 import java.util.List;
@@ -13,10 +15,15 @@ public class DailyStockBalanceReport {
     private Date date;
     private Department department;
 
-    private double openingStock;
+    private double openingStockValue;
     private double stockTransactionValue;
-    private double closingStock;
+    private double closingStockValue;
 
+    private PharmacyBundle pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
+    private PharmacyBundle pharmacyPurchaseByBillTypeBundle;
+    private PharmacyBundle pharmacyTransferByBillTypeBundle;
+    private PharmacyBundle pharmacyAdjustmentsByBillTypeBundle;
+    
     private double purchasesOfDrugsPrevious;
     private double purchasesOfDrugsTransaction;
     private double purchasesOfDrugsClosing;
@@ -116,12 +123,12 @@ public class DailyStockBalanceReport {
         this.department = department;
     }
 
-    public double getOpeningStock() {
-        return openingStock;
+    public double getOpeningStockValue() {
+        return openingStockValue;
     }
 
-    public void setOpeningStock(double openingStock) {
-        this.openingStock = openingStock;
+    public void setOpeningStockValue(double openingStockValue) {
+        this.openingStockValue = openingStockValue;
     }
 
     public double getStockTransactionValue() {
@@ -132,12 +139,12 @@ public class DailyStockBalanceReport {
         this.stockTransactionValue = stockTransactionValue;
     }
 
-    public double getClosingStock() {
-        return closingStock;
+    public double getClosingStockValue() {
+        return closingStockValue;
     }
 
-    public void setClosingStock(double closingStock) {
-        this.closingStock = closingStock;
+    public void setClosingStockValue(double closingStockValue) {
+        this.closingStockValue = closingStockValue;
     }
 
     public double getPurchasesOfDrugsPrevious() {
@@ -636,7 +643,39 @@ public class DailyStockBalanceReport {
         this.internalTransfersList = internalTransfersList;
     }
 
+    public PharmacyBundle getPharmacySalesByAdmissionTypeAndDiscountSchemeBundle() {
+        return pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
+    }
 
+    public void setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(PharmacyBundle pharmacySalesByAdmissionTypeAndDiscountSchemeBundle) {
+        this.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle = pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
+    }
 
+    public PharmacyBundle getPharmacyPurchaseByBillTypeBundle() {
+        return pharmacyPurchaseByBillTypeBundle;
+    }
+
+    public void setPharmacyPurchaseByBillTypeBundle(PharmacyBundle pharmacyPurchaseByBillTypeBundle) {
+        this.pharmacyPurchaseByBillTypeBundle = pharmacyPurchaseByBillTypeBundle;
+    }
+
+    public PharmacyBundle getPharmacyTransferByBillTypeBundle() {
+        return pharmacyTransferByBillTypeBundle;
+    }
+
+    public void setPharmacyTransferByBillTypeBundle(PharmacyBundle pharmacyTransferByBillTypeBundle) {
+        this.pharmacyTransferByBillTypeBundle = pharmacyTransferByBillTypeBundle;
+    }
+
+    public PharmacyBundle getPharmacyAdjustmentsByBillTypeBundle() {
+        return pharmacyAdjustmentsByBillTypeBundle;
+    }
+
+    public void setPharmacyAdjustmentsByBillTypeBundle(PharmacyBundle pharmacyAdjustmentsByBillTypeBundle) {
+        this.pharmacyAdjustmentsByBillTypeBundle = pharmacyAdjustmentsByBillTypeBundle;
+    }
+
+    
+    
 
 }
