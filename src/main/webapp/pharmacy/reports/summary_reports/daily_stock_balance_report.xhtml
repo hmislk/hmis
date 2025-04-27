@@ -161,16 +161,16 @@
                                         </h:outputLabel>
                                     </td>
                                 </tr>
-                                </h:dataTable>
+                            </ui:repeat>
 
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Opening Stock" ></h:outputLabel>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.closingStockValue}" ></h:outputLabel>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>
+                                    <h:outputLabel value="Opening Stock" ></h:outputLabel>
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.closingStockValue}" ></h:outputLabel>
+                                </td>
+                            </tr>
                         </table>
 
                     </h:panelGrid>
