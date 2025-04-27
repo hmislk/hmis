@@ -110,7 +110,8 @@
                         <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="text-transform: capitalize!important;" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null}" value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="text-transform: capitalize!important;" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }" value="#{cc.attrs.bill.referenceBill.onlineBooking.title}. #{cc.attrs.bill.referenceBill.onlineBooking.patientName}" style="text-transform: capitalize!important;" ></h:outputLabel>
                     </td>
 
                 </tr>
@@ -125,7 +126,8 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null}" value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }" value="#{cc.attrs.bill.referenceBill.onlineBooking.phoneNo}" style="text-transform: capitalize!important;" ></h:outputLabel>
                     </td>
                 </tr>
                 <tr>
