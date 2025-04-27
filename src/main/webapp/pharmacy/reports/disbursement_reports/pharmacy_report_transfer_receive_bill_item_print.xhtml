@@ -11,11 +11,11 @@
             <ui:define name="content">
 
                 <h:form >
-                    <p:panel header="OPD And Pharmacy Staff Welfare Bills" styleClass="w-100">
+                    <p:panel header="Transfer Receive By Bill Item Print View" styleClass="w-100">
                         <f:facet name="header"  >
                             <div class="d-flex justify-content-between">
-                                <h:outputText value="OPD And Pharmacy Staff Welfare Bills Print" class="mt-2"/>
-                                <div class="d-flex gap-3">
+                                <h:outputText value="Transfer Receive By Bill Item Print View" class="mt-2"/>
+                                <div class="d-flex gap-2">
                                     <p:commandButton 
                                         icon="fa-solid fa-print"
                                         class="ui-button-info"
@@ -30,7 +30,7 @@
                                         style="width: 200px"
                                         icon="fa fa-arrow-left"
                                         class="ui-button-warning"
-                                        action="report_opd_pharmacy_staff_welfare?faces-redirect=true;" >
+                                        action="pharmacy_report_transfer_receive_bill_item?faces-redirect=true" >
                                     </p:commandButton>
                                 </div>
 
@@ -89,6 +89,7 @@
                                     position: static !important;
                                     width: 297mm!important;
 
+
                                 }
 
                                 .header{
@@ -123,24 +124,29 @@
                         <h:panelGroup id="reportView" class="d-flex justify-content-center">
                             <div class="paper">
                                 <div class="header" >
-                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
-                                        <h:outputText value="Staff Welfare Report"/>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
                                     </div>
-                                    <div class="d-flex justify-content-center mt-2" style=" font-size: 12px;">
-                                        <div class="d-flex gap-3">
-                                            <h:outputText value="From Date" style="width: 5em!important; font-weight: 600;"/>
-                                            <h:outputText value="#{serviceSummery.fromDate}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                            </h:outputText>
-                                        </div>
-                                        <h:outputText value="" style="width: 15mm!important;"/>
-                                        <div class="d-flex gap-3">
-                                            <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
-                                            <h:outputText value="#{serviceSummery.toDate}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                            </h:outputText>
-                                        </div>
-                                        <div></div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                        <h:outputText value="Transfer Receive By Bill Item"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="From - "/>
+                                        <h:outputText value="#{reportsTransfer.fromDepartment.name}"/>
+                                        <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="To - "/>
+                                        <h:outputText value="#{reportsTransfer.toDepartment.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="From Date - "/>
+                                        <h:outputText value="#{reportsTransfer.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                        <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="To Date - "/>
+                                        <h:outputText value="#{reportsTransfer.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
                                     </div>
                                 </div>
 
@@ -148,74 +154,66 @@
                                     <table>
                                         <thead>
                                             <tr>
-                                                <th style="width: 7mm; font-weight: 700;">
-                                                    <h:outputText value="No" style="margin-left: 1mm;"/>
-                                                </th>
-                                                <th style="width: 25mm;font-weight: 700;">
+                                                <th style="width: 15mm; font-weight: 700;">
                                                     <h:outputText value="Bill No" style="margin-left: 1mm;"/>
                                                 </th>
+                                                <th style="width: 25mm;font-weight: 700;">
+                                                    <h:outputText value="Ref. Bill No" style="margin-left: 1mm;"/>
+                                                </th>
                                                 <th style="width: 67mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="Staff Code" style="margin-left:  1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="Staff Name" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="Bill Type" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Date" style="margin-left:  1mm;"/>
                                                 </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="Total Amount" style="margin-right: 1mm;"/>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Item Description" style="margin-left:  1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="Discount" style="margin-right: 1mm;"/>
+                                                    <h:outputText value="Code" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
-                                                    <h:outputText value="Net Amount" style="margin-right: 1mm;"/>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Quantity" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Cost Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Cost Value" style="margin-right: 1mm;"/>
                                                 </th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{serviceSummery.bills}" var="b" varStatus="i">
+                                            <ui:repeat value="#{reportsTransfer.transferItems}" var="i">
                                                 <tr>
                                                     <td style="width: 8mm;" >
-                                                        <h:outputText value="#{i.index+1}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{i.bill.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 25mm; text-align: left;">
-                                                        <h:outputText value="#{b.deptId}" style="margin-left: 1mm;"/>
+                                                        <h:outputLabel value="#{i.bill.backwardReferenceBill.deptId}" />
                                                     </td>
                                                     <td style="width: 67mm; text-align: left;">
-                                                        <h:outputText value="#{b.toStaff.code}" style="margin-left: 1mm;"></h:outputText>
-                                                    </td>
-                                                    <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{b.toStaff.person.nameWithTitle}" style="margin-right: 1mm;">
-                                                        </h:outputText>
-                                                    </td>
-                                                    <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="Pharmacy Bill" rendered="#{b.billType ne 'OpdBill'}" style="margin-right: 1mm;"/>
-                                                        <h:outputText value="OPD Bill" rendered="#{b.billType eq 'OpdBill'}" style="margin-right: 1mm;"/>
+                                                        <h:outputLabel value="#{i.bill.createdAt}"  >
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                        </h:outputLabel>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{b.createdAt}" style="margin-left: 1mm;">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                                        </h:outputText>
+                                                        <h:outputLabel value="#{i.item.name}" />
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{b.total}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
+                                                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.item.code}" style="width: 100px!important;" />
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{b.discount}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
+                                                        <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}"  >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{b.netTotal}" style="margin-right: 1mm;">
+                                                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}"  >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}" >
                                                             <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
+                                                        </h:outputLabel>
                                                     </td>
                                                 </tr>
                                             </ui:repeat>
@@ -228,20 +226,11 @@
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: left;"></td>
+                                                <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{serviceSummery.totalBill}" style="margin-right: 1mm;">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </td>
-                                                <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{serviceSummery.discountBill}" style="margin-right: 1mm;">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </td>
-                                                <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{serviceSummery.netTotalBill}" style="margin-right: 1mm;">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
+                                                    <h:outputLabel value="#{reportsTransfer.purchaseValue}" >
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
                                                 </td>
                                             </tr>
                                         </tfoot>

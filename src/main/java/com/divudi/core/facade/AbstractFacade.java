@@ -1147,6 +1147,7 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    @Deprecated // please use findStringListByJpql
     public List<String> findString(String strJQL) {
         Query q = getEntityManager().createQuery(strJQL);
         try {
@@ -1157,10 +1158,12 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    @Deprecated // please use findStringListByJpql
     public List<String> findString(String strJQL, Map map) {
         return findString(strJQL, map, TemporalType.DATE);
     }
 
+    @Deprecated // please use findStringListByJpql
     public List<String> findString(String strJQL, Map map, TemporalType tt, int noOfRows) {
         Query q = getEntityManager().createQuery(strJQL);
         Set s = map.entrySet();
@@ -1186,8 +1189,33 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    @Deprecated // please use findStringListByJpql
     public List<String> findString(String strJQL, Map map, TemporalType tt) {
         return findString(strJQL, map, tt, 0);
+    }
+
+    public List<String> findStringListByJpql(String jpql) {
+        try {
+            return getEntityManager().createQuery(jpql, String.class).getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public List<String> findStringListByJpql(String jpql, Map<String, Object> parameters) {
+        try {
+            javax.persistence.TypedQuery<String> qry = getEntityManager().createQuery(jpql, String.class);
+
+            if (parameters != null) {
+                for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                    qry.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+
+            return qry.getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     public List<Object[]> findAggregates(String jpql, Map<String, Object> parameters) {

@@ -1,6 +1,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.*;
+import com.divudi.core.entity.*;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillItemStatus;
 import com.divudi.core.data.BillType;
@@ -19,24 +20,6 @@ import com.divudi.core.data.dataStructure.ItemDetailsCell;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.reports.CollectionCenterReport;
 import com.divudi.core.data.reports.LaboratoryReport;
-import com.divudi.core.entity.AgentHistory;
-import com.divudi.core.entity.Bill;
-import com.divudi.core.entity.BillItem;
-import com.divudi.core.entity.CancelledBill;
-import com.divudi.core.entity.Category;
-import com.divudi.core.entity.Department;
-import com.divudi.core.entity.Doctor;
-import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.Item;
-import com.divudi.core.entity.Patient;
-import com.divudi.core.entity.PatientDepositHistory;
-import com.divudi.core.entity.Person;
-import com.divudi.core.entity.RefundBill;
-import com.divudi.core.entity.Route;
-import com.divudi.core.entity.Service;
-import com.divudi.core.entity.Speciality;
-import com.divudi.core.entity.Staff;
-import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.Machine;
@@ -920,7 +903,7 @@ public class ReportController implements Serializable {
         String jpql = "select bi"
                 + " from BillItem bi"
                 + " where bi.retired=:ret"
-                + " and bi.bill.referredBy IS NOT NULL";
+                + " and bi.bill.referredBy IS NOT NULL ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
@@ -928,6 +911,11 @@ public class ReportController implements Serializable {
         if (institution != null) {
             jpql += " AND (bi.bill.institution = :ins or bi.bill.toInstitution=:ins) ";
             params.put("ins", institution);
+        }
+
+        if(department != null) {
+            jpql += " AND (bi.bill.department = :dep)";
+            params.put("dep", department);
         }
 
         if (site != null) {
@@ -949,8 +937,13 @@ public class ReportController implements Serializable {
             params.put("item", item);
         }
 
-        if (type != null) {
+        if (type != null && (type.equalsIgnoreCase("cc") || type.equalsIgnoreCase("ip"))) {
             jpql += " AND bi.bill.ipOpOrCc = :type";
+            params.put("type", type);
+        }
+
+        if (type != null && type.equalsIgnoreCase("op")) {
+            jpql += " AND (bi.bill.ipOpOrCc = :type OR bi.bill.ipOpOrCc IS NULL)";
             params.put("type", type);
         }
 
@@ -977,7 +970,7 @@ public class ReportController implements Serializable {
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
 
-        billItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        billItems = (List<BillItem>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         // Initialize totals
         hospitalFeeTotal = 0.0;
@@ -1044,8 +1037,13 @@ public class ReportController implements Serializable {
             params.put("item", item);
         }
 
-        if (type != null) {
+        if (type != null && (type.equalsIgnoreCase("cc") || type.equalsIgnoreCase("ip"))) {
             jpql += " AND bi.bill.ipOpOrCc = :type";
+            params.put("type", type);
+        }
+
+        if (type != null && type.equalsIgnoreCase("op")) {
+            jpql += " AND (bi.bill.ipOpOrCc = :type OR bi.bill.ipOpOrCc IS NULL)";
             params.put("type", type);
         }
 
