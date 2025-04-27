@@ -132,41 +132,41 @@
                                                 <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
                                                          toggleOrientation="vertical" toggleable="true"  >
                                                     <p:tooltip for="@parent" value="(R-#{bs.bill.referenceBill.onlineBooking.referenceNo})" rendered="#{bs.bill.referenceBill.onlineBooking ne null}"/>
-                                                <f:facet name="header" >
-                                                    <h:outputText rendered="#{bs.bill.referenceBill.onlineBooking eq null}" class="mr-5" value="#{bs.bill.patient.person.nameWithTitle}" />
-                                                    <h:outputText rendered="#{bs.bill.referenceBill.onlineBooking ne null}" class="mr-5" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" />
-                                                    <p:spacer width="12" ></p:spacer>
-                                                    <h:outputText class="ml-5" rendered="#{bs.bill.referenceBill.onlineBooking eq null}" style="font-size: 0.9em" value="(#{bs.bill.patient.person.smsNumber})" />
-                                                    <h:outputText class="ml-5" rendered="#{bs.bill.referenceBill.onlineBooking ne null}" style="font-size: 0.9em" value="(#{bs.bill.referenceBill.onlineBooking.phoneNo})" />
-                                                    <p:tag class="mr-2 mx-2 " style="font-size: 0.8rem" severity="warning" value="OB" rendered="#{bs.bill.referenceBill.onlineBooking ne null}"/>
-                                                    
-                                                </f:facet>
-                                                    
-                                                <h:panelGrid columns="2" >
-                                                    <h:outputLabel value="Institution Code" ></h:outputLabel>
-                                                    <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
-                                                    <h:outputLabel value="Bill Session ID" ></h:outputLabel>
-                                                    <h:outputLabel value="#{bs.id}" ></h:outputLabel>
-                                                    <h:outputLabel value="Bill ID" ></h:outputLabel>
-                                                    <h:outputLabel value="#{bs.bill.id}" ></h:outputLabel>
-                                                    <h:outputLabel value="Bill Type" ></h:outputLabel>
-                                                    <h:outputLabel value="#{bs.bill.billType}" ></h:outputLabel>
-                                                    <h:outputLabel value="Bill Type Atomic" ></h:outputLabel>
-                                                    <h:outputLabel value="#{bs.bill.billTypeAtomic}" ></h:outputLabel>
-                                                    <h:outputLabel value="Paid Bill ID" ></h:outputLabel>
-                                                    <h:outputLabel value="#{bs.bill.paidBill}" ></h:outputLabel>
-                                                    <h:panelGroup rendered="#{bs.bill.agentRefNo ne null and bs.bill.creditCompany ne null}">
-                                                        <h:outputLabel value="Booking Agent" ></h:outputLabel>
-                                                        <br></br>
-                                                        <h:outputLabel value="Booking Ref No" ></h:outputLabel>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup rendered="#{bs.bill.agentRefNo ne null and bs.bill.creditCompany ne null}">
-                                                        <h:outputLabel value="#{bs.bill.creditCompany.name}" ></h:outputLabel>
-                                                        <br></br>
-                                                        <h:outputLabel value="#{bs.bill.agentRefNo}" ></h:outputLabel>
-                                                    </h:panelGroup>
+                                                    <f:facet name="header" >
+                                                        <h:outputText rendered="#{bs.bill.referenceBill.onlineBooking eq null}" class="mr-5" value="#{bs.bill.patient.person.nameWithTitle}" />
+                                                        <h:outputText rendered="#{bs.bill.referenceBill.onlineBooking ne null}" class="mr-5" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" />
+                                                        <p:spacer width="12" ></p:spacer>
+                                                        <h:outputText class="ml-5" rendered="#{bs.bill.referenceBill.onlineBooking eq null}" style="font-size: 0.9em" value="(#{bs.bill.patient.person.smsNumber})" />
+                                                        <h:outputText class="ml-5" rendered="#{bs.bill.referenceBill.onlineBooking ne null}" style="font-size: 0.9em" value="(#{bs.bill.referenceBill.onlineBooking.phoneNo})" />
+                                                        <p:tag class="mr-2 mx-2 " style="font-size: 0.8rem" severity="warning" value="OB" rendered="#{bs.bill.referenceBill.onlineBooking ne null}"/>
 
-                                                </h:panelGrid>
+                                                    </f:facet>
+
+                                                    <h:panelGrid columns="2" >
+                                                        <h:outputLabel value="Institution Code" ></h:outputLabel>
+                                                        <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                                        <h:outputLabel value="Bill Session ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.id}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.id}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill Type" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.billType}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill Type Atomic" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.billTypeAtomic}" ></h:outputLabel>
+                                                        <h:outputLabel value="Paid Bill ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.paidBill}" ></h:outputLabel>
+                                                        <h:panelGroup rendered="#{bs.bill.agentRefNo ne null and bs.bill.creditCompany ne null}">
+                                                            <h:outputLabel value="Booking Agent" ></h:outputLabel>
+                                                            <br></br>
+                                                            <h:outputLabel value="Booking Ref No" ></h:outputLabel>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{bs.bill.agentRefNo ne null and bs.bill.creditCompany ne null}">
+                                                            <h:outputLabel value="#{bs.bill.creditCompany.name}" ></h:outputLabel>
+                                                            <br></br>
+                                                            <h:outputLabel value="#{bs.bill.agentRefNo}" ></h:outputLabel>
+                                                        </h:panelGroup>
+
+                                                    </h:panelGrid>
                                                 </p:panel>  
                                             </p:column>
 
@@ -239,7 +239,7 @@
 
 
                                         </p:dataTable>
-<!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="acBookings" onactivated="console.log('poll started')"></p:poll>-->
+                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount" onactivated="console.log('poll started')"></p:poll>
                                     </p:tab>
                                     <!--                                    temporary bookings tab-->
                                     <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:ajax>
@@ -340,7 +340,7 @@
                                             value="Download" 
                                             ajax="fasle" 
                                             icon="fa fa-print"
-                                            class="ui-button-info"
+                                            class="ui-button-info mx-2"
                                             action="#">
                                             <p:dataExporter type="xlsx" fileName="nurse_view" target="nurseView"/>
                                         </p:commandButton>
@@ -388,7 +388,8 @@
 
                                             <p:column headerText="Patient Name" style="font-size: 12px; width: 70%; padding: 1px" >
                                                 <div class="d-flex align-items-center justify-content-between">
-                                                    <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
+                                                    <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
+                                                    <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.patientName}" style="font-size: 12px;" />
                                                     <p:badge rendered="#{bs.recheduledSession}" value="Resheduled" class="m-1" severity="warning">
 
                                                     </p:badge>
@@ -401,7 +402,8 @@
 
                                             </p:column>
                                             <p:column headerText="Mobile Number" style="font-size: 12px; width: 28%!important; padding: 1px">
-                                                <p:outputLabel value="#{bs.bill.patient.person.phone}" style="font-size: 12px;" />
+                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.phone}" style="font-size: 12px;" />
+                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.phoneNo}" style="font-size: 12px;" />
                                             </p:column>
                                             <p:column headerText="Remarks" style="font-size: 12px; width: 20%!important; padding: 1px" >
                                                 <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or bs.bill.paymentMethod eq 'OnCall'}" value="Not Paid" style="color: red;font-size: 12px;font-weight: bold" />
@@ -466,7 +468,7 @@
                                             value="Download" 
                                             ajax="fasle" 
                                             icon="fa fa-print"
-                                            class="ui-button-info"
+                                            class="ui-button-info mx-2"
                                             action="#">
                                             <p:dataExporter type="xlsx" fileName="nurse_view_items" target="nurseViewItems"/>
                                         </p:commandButton>
@@ -512,7 +514,8 @@
                                             </p:column>
 
                                             <p:column headerText="Patient Name" style="font-size: 12px; width: 30%; padding: 1px" >
-                                                <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
+                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
+                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.patientName}" style="font-size: 12px;" />
                                             </p:column>
                                             <!--                            <p:column headerText="Booked At" style="font-size: 12px; width: 23%!important; padding: 1px" >
                                                                             <p:outputLabel value="#{bs.createdAt}" style="font-size: 12px;" >
@@ -521,18 +524,19 @@
                                             
                                                                         </p:column>-->
                                             <p:column headerText="Mobile Number" style="font-size: 12px; width: 18%!important; padding: 1px">
-                                                <p:outputLabel value="#{bs.bill.patient.person.phone}" style="font-size: 12px;" />
+                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.phone}" style="font-size: 12px;" />
+                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.phoneNo}" style="font-size: 12px;" />
                                             </p:column>
 
                                             <p:column headerText="Items" style="font-size: 12px; width: 50%!important; padding: 1px">
                                                 <ui:repeat value="#{bs.bill.billItems}" var="bi" varStatus="loop">
-                                                    <p:outputLabel value="#{bi.item.name}" style="font-size: 12px;" rendered="#{not loop.first}" /><br/>
+                                                    <p:outputLabel value="#{bi.item.name}" style="font-size: 12px;" /><br/>
                                                 </ui:repeat>
                                             </p:column>
 
                                             <p:column headerText="Value" style="font-size: 12px; width: 10%!important; padding: 1px">
                                                 <ui:repeat value="#{bs.bill.billItems}" var="bi" varStatus="loop">
-                                                    <p:outputLabel value="#{bi.netValue}" style="font-size: 12px;" rendered="#{not loop.first}" /><br/>
+                                                    <p:outputLabel value="#{bi.netValue}" style="font-size: 12px;"  /><br/>
                                                 </ui:repeat>
                                             </p:column>
 
@@ -606,6 +610,8 @@
                                             value="#{bookingControllerViewScope.billSessions}" 
                                             style="margin-left: 1%; margin-right: 1%;"
                                             var="bs" 
+                                            scrollable="true"
+                                            scrollWidth="100%"
                                             sortBy="#{bs.bill.billClass}">
                                             <f:facet name="header">
                                                 <div style="text-align: center;">
@@ -618,61 +624,62 @@
 
                                                 <div class="d-flex gap-2">
                                                     <p:outputLabel value="Consultant : "/>
-                                                    <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}"/>
+                                                    <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}"/>
                                                 </div>
 
                                                 <div class="d-flex gap-2">
                                                     <p:outputLabel value="Session Name : "/>
-                                                    <h:outputLabel value="#{bookingController.selectedSessionInstance.name}" />
+                                                    <h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.name}" />
                                                 </div>
 
                                                 <div class="d-flex gap-2">
                                                     <p:outputLabel value="Date : "/>
-                                                    <h:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
+                                                    <h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}" >
                                                         <f:convertDateTime pattern="dd-MM-yyyy"/>
                                                     </h:outputLabel>
                                                 </div>
 
                                             </f:facet>
-                                            <p:column headerText="No" width="1%;">
+                                            <p:column headerText="No" width="1em">
                                                 <p:outputLabel value="#{bs.serialNo}" />
                                             </p:column>               
-                                            <p:column headerText="Patient Name" width="22%;">
-                                                <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 8pt;font-weight: bold" />
+                                            <p:column headerText="Patient Name" width="8em">
+                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 8pt;font-weight: bold" />
+                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName} " style="font-size: 8pt;font-weight: bold" />
                                             </p:column>
-                                            <p:column headerText="Bill No" exportable="false">
+                                            <p:column headerText="Bill No" exportable="false" width="6em">
                                                 <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}"  style="font-size: 8pt;font-weight: bold"/>
                                                 <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}"  style="font-size: 8pt;font-weight: bold"/>
                                             </p:column>
-                                            <p:column headerText="Agent" width="8%" exportable="false" style="text-align: center;">
-                                                <p:outputLabel value="#{bs.bill.creditCompany}" rendered="#{bs.bill.creditCompany.institutionCode} ne null" style="font-size: 8pt;font-weight: bold; text-align: center;"/>
+                                            <p:column headerText="Agent" width="6em" exportable="false" style="text-align: center;">
+                                                <p:outputLabel value="#{bs.bill.creditCompany.name}" rendered="#{bs.bill.creditCompany.institutionCode ne null}" style="font-size: 8pt;font-weight: bold; text-align: center;"/>
                                                 <p:outputLabel value="-" rendered="#{bs.bill.creditCompany eq null}" style="text-align: center;"/>
                                             </p:column> 
 
-                                            <p:column headerText="Paid or Not" >
+                                            <p:column headerText="Paid/Not" width="3em">
                                                 <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Credit" style="color: red;font-size: 10pt;font-weight: bold" />
                                                 <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;font-size: 10pt;font-weight: bold"/>
                                             </p:column> 
 
-                                            <p:column headerText="C / R" style="text-align: center;" >
+                                            <p:column headerText="C/R (Cancel/Refund)" style="text-align: center;" width="3em">
 
-                                                <p:outputLabel value="CANCELLED" rendered="#{bs.bill.cancelled eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
-                                                <p:outputLabel value="REFUNDED" rendered="#{bs.bill.refunded eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                                                <p:outputLabel value="C" rendered="#{bs.bill.cancelled eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                                                <p:outputLabel value="R" rendered="#{bs.bill.refunded eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
                                                 <p:outputLabel value="-" rendered="#{bs.bill.refunded eq false and bs.bill.cancelled eq false}"/>
                                             </p:column>
-                                            <p:column headerText="P / A">
-                                                <p:outputLabel value="ABSENT"  rendered="#{bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: red;font-size: 10pt;font-weight: bold"/>
-                                                <p:outputLabel value="PRESENT"  rendered="#{!bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: green;font-size: 10pt;font-weight: bold"/>
+                                            <p:column headerText="P/A (Absent/Present)" width="3em">
+                                                <p:outputLabel value="A"  rendered="#{bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                                                <p:outputLabel value="P"  rendered="#{!bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: green;font-size: 10pt;font-weight: bold"/>
                                                 <p:outputLabel value="-"  rendered="#{bs.bill.cancelled or bs.bill.refunded}"/>
                                             </p:column>
-                                            <p:column headerText="Payment Method">
+                                            <p:column headerText="Payment Method" width="6em">
                                                 <p:outputLabel value="#{bs.bill.paymentMethod}"/>
                                             </p:column>
                                             <p:column headerText="Bill Type" rendered="false">
                                                 <p:outputLabel value="#{bs.bill.billType}"/>
                                             </p:column>
 
-                                            <p:column headerText="Doctor Fee" styleClass="numberCol" width="10%;" style="text-align: right;">
+                                            <p:column headerText="Doctor Fee" styleClass="numberCol" width="4em" style="text-align: right;">
                                                 <h:outputLabel value="#{bs.bill.staffFee}" rendered="#{bs.bill.balance eq 0.0 and bs.bill.cancelled ne true and bs.bill.refunded ne true and bs.serviceSession.originatingSession.refundable eq false}" style="float: right;text-align: center">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>

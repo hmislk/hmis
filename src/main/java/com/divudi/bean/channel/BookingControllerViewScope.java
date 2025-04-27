@@ -2552,7 +2552,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
-
+        
         //cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         sendSmsOnChannelCancellationBookings();
@@ -3409,7 +3409,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else {
             billSessionFacade.edit(selectedBillSession);
         }
-        if(selectedBillSession.getBill().getReferenceBill() != null){
+        if(selectedBillSession.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && selectedBillSession.getBill().getReferenceBill() != null){
             if(selectedBillSession.getBill().getReferenceBill().getOnlineBooking() != null){
                 selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setIsAbsent(true);
             }

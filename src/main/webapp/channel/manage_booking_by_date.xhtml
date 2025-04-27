@@ -1536,7 +1536,7 @@
                         <p:tab 
                             title="Change Patient"
                             id="change" 
-                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange') and bookingControllerViewScope.selectedBillSession.bill.referenceBill eq null}">
+                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange') and bookingControllerViewScope.selectedBillSession.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
                             <p:panelGrid columns="2" class="w-100">
                                 <f:facet name="header" >
                                     <p:outputLabel class="mx-2" value="Change Current Patient with a new Patient" ></p:outputLabel>
@@ -1769,7 +1769,7 @@
                                 </h:panelGrid>
                             </p:panel>
                         </p:tab>
-                        <p:tab title="Reshedule" rendered="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill eq null}">
+                        <p:tab title="Reshedule" rendered="#{bookingControllerViewScope.selectedBillSession.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
                             <p:panel>
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between align-items-center">
