@@ -147,6 +147,26 @@
                             ajax="false" 
                             action="#{pharmacySummaryReportController.processDailyStockBalanceReport}" ></p:commandButton>
 
+
+                        <table >
+                            <tr>
+                                <td>
+                                    <h:outputLabel value="Opening Stock" ></h:outputLabel>
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.openingStock}" ></h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h:outputLabel value="Opening Stock" ></h:outputLabel>
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.closingStock}" ></h:outputLabel>
+                                </td>
+                            </tr>
+                        </table>
+
                     </h:panelGrid>
 
                 </h:form>
