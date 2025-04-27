@@ -76,26 +76,21 @@ public class HistoricalRecordController implements Serializable {
     }
 
     public HistoricalRecord findRecord(String variableName, Institution institution, Date recordDate) {
+        if (variableName == null || recordDate == null) {
+            return null;
+        }
         return findRecord(variableName, institution, null, null, recordDate);
     }
 
     public HistoricalRecord findRecord(String variableName, Institution institution, Department department, Date recordDate) {
+        if (variableName == null || recordDate == null) {
+            return null;
+        }
         return findRecord(variableName, institution, null, department, recordDate);
     }
 
     public HistoricalRecord findRecord(String variableName, Institution institution, Institution site, Department department, Date recordDate) {
         return historicalRecordService.findRecord(variableName, institution, site, department, recordDate);
-    }
-
-    public void processHistoricalRecordList() {
-        items = historicalRecordService.findRecords(
-                variableName,
-                institution,
-                site,
-                department,
-                fromDate,
-                toDate
-        );
     }
 
     public HistoricalRecord getCurrent() {
