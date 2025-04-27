@@ -42,8 +42,15 @@ public class PharmacyRow {
     private Double quantity;
     private Double purchaseValue;
     private Double saleValue;
+import java.util.UUID;
+import java.io.Serializable;
+// … other imports
+
+public class PharmacyRow implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    // … rest of the class
+}
     private Long counter;
     String rowType;
 
