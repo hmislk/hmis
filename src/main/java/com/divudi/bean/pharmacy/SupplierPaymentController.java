@@ -2988,6 +2988,38 @@ public class SupplierPaymentController implements Serializable {
         return currentBillItem;
     }
 
+    public String fillFooterDataOfPaymentVoucher(String s, Bill b) {
+        if(configOptionApplicationController.getBooleanValueByKey("Supplier Payment - Fill Footer Data",false)){
+            Payment p = findPaymentFromBill(b.getReferenceBill());
+            
+            String filledFooter;
+           
+            String bankName = (p != null ? p.getBank().getName() : "");
+            String chequeDate = (p != null ? CommonFunctions.getDateFormat(p.getChequeDate(), sessionController.getApplicationPreference().getShortDateFormat()) : "");
+            String chequeNo = (p != null ? p.getChequeRefNo() : "");
+            Double amount = (p != null ? Math.abs(p.getPaidValue()) : 0.0);
+
+            filledFooter = s.replace("{{bank_name}}", bankName)
+                    .replace("{{cheque_date}}", chequeDate)
+                    .replace("{{cheque_no}}", chequeNo)
+                    .replace("{{amount}}", String.valueOf(amount));
+
+            return filledFooter;
+        }else{
+            return s;
+        }
+    }
+
+    public Payment findPaymentFromBill(Bill b){
+        String jpql = "Select p From Payment p Where " +
+                "p.bill = :bill and " +
+                "p.retired = false";
+        HashMap hm = new HashMap();
+        hm.put("bill", b);
+
+        return getPaymentFacade().findFirstByJpql(jpql,hm);
+    }
+
     public void setCurrentBillItem(BillItem currentBillItem) {
         this.currentBillItem = currentBillItem;
     }
