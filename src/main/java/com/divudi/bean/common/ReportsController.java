@@ -2249,184 +2249,297 @@ public class ReportsController implements Serializable {
 
     private void groupRouteWiseBillsMonthly() {
         Map<Route, Map<YearMonth, Bill>> map = new HashMap<>();
-        List<YearMonth> yearMonths = new ArrayList<>();
+        Set<YearMonth> yearMonthsSet = new HashSet<>();
 
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             Bill bill = row.getBill();
+            if (bill == null || bill.getCollectingCentre() == null || bill.getCreatedAt() == null) continue;
 
-            double billItemQty = Optional.ofNullable(bill.getBillItems())
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .mapToDouble(BillItem::getQty)
-                    .sum();
-
-            double totalHospitalFee = Optional.ofNullable(bill.getBillItems())
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .mapToDouble(BillItem::getHospitalFee)
-                    .sum();
-
-            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
-                if (billItemQty > 0) {
-                    billItemQty = -billItemQty;
-                }
-                if (totalHospitalFee > 0) {
-                    totalHospitalFee = -totalHospitalFee;
-                }
+            double qtySum = 0;
+            double feeSum = 0;
+            for (BillItem bi : Optional.ofNullable(bill.getBillItems()).orElse(Collections.emptyList())) {
+                qtySum += bi.getQty();
+                feeSum += bi.getHospitalFee();
             }
 
-            final Calendar cal = Calendar.getInstance();
-            cal.setTime(bill.getCreatedAt());
-
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
-
-            if (!yearMonths.contains(yearMonth)) {
-                yearMonths.add(yearMonth);
+            // Handle refund/cancellation
+            if (bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL_REFUND ||
+                    bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL_CANCELLATION) {
+                qtySum = -Math.abs(qtySum);
+                feeSum = -Math.abs(feeSum);
             }
 
-            Map<YearMonth, Bill> monthMap;
-            if (map.containsKey(bill.getCollectingCentre().getRoute())) {
-                monthMap = map.get(bill.getCollectingCentre().getRoute());
+            YearMonth ym = YearMonth.from(bill.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            yearMonthsSet.add(ym);
 
-                if (monthMap.containsKey(yearMonth)) {
-                    Bill existingBill = monthMap.get(yearMonth);
-                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
-                    existingBill.setQty(existingBill.getQty() + billItemQty);
-
-                    if (existingBill.getTotalHospitalFee() == 0 && existingBill.getQty() == 0) {
-                        monthMap.remove(yearMonth);
-
-                        if (monthMap.isEmpty()) {
-                            map.remove(bill.getCollectingCentre().getRoute());
+            Route route = bill.getCollectingCentre().getRoute();
+            double finalQtySum = qtySum;
+            double finalFeeSum = feeSum;
+            map.computeIfAbsent(route, r -> new HashMap<>())
+                    .compute(ym, (y, existingBill) -> {
+                        if (existingBill == null) {
+                            Bill newBill = new Bill();
+                            newBill.clone(bill);
+                            newBill.setQty(finalQtySum);
+                            newBill.setTotalHospitalFee(finalFeeSum);
+                            return (finalQtySum == 0 && finalFeeSum == 0) ? null : newBill;
+                        } else {
+                            existingBill.setQty(existingBill.getQty() + finalQtySum);
+                            existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + finalFeeSum);
+                            return (existingBill.getQty() == 0 && existingBill.getTotalHospitalFee() == 0) ? null : existingBill;
                         }
-                    }
-                } else {
-                    Bill cloneBill = new Bill();
-                    cloneBill.clone(bill);
-                    cloneBill.setQty(billItemQty);
-                    cloneBill.setTotalHospitalFee(totalHospitalFee);
+                    });
 
-                    if (cloneBill.getTotalHospitalFee() == 0 && cloneBill.getQty() == 0) {
-                        monthMap.remove(yearMonth);
-
-                        if (monthMap.isEmpty()) {
-                            map.remove(bill.getCollectingCentre().getRoute());
-                        }
-                    } else {
-                        monthMap.put(yearMonth, cloneBill);
-                    }
-                }
-            } else {
-                monthMap = new HashMap<>();
-                Bill cloneBill = new Bill();
-                cloneBill.clone(bill);
-                cloneBill.setQty(billItemQty);
-                cloneBill.setTotalHospitalFee(totalHospitalFee);
-
-                if (cloneBill.getTotalHospitalFee() != 0 || cloneBill.getQty() != 0) {
-                    monthMap.put(yearMonth, cloneBill);
-                }
-            }
-
-            if (!monthMap.isEmpty()) {
-                map.put(bill.getCollectingCentre().getRoute(), monthMap);
+            // Clean up null entries
+            map.get(route).values().removeIf(Objects::isNull);
+            if (map.get(route).isEmpty()) {
+                map.remove(route);
             }
         }
 
         setGroupedRouteWiseBillsMonthly(map);
-        setYearMonths(yearMonths);
+        setYearMonths(new ArrayList<>(yearMonthsSet));
     }
 
     private void groupCollectingCenterWiseBillsMonthly() {
         Map<Institution, Map<YearMonth, Bill>> map = new HashMap<>();
-        List<YearMonth> yearMonths = new ArrayList<>();
+        Set<YearMonth> yearMonthSet = new HashSet<>();
 
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             Bill bill = row.getBill();
+            if (bill == null || bill.getCollectingCentre() == null || bill.getCreatedAt() == null) continue;
 
-            double billItemQty = Optional.ofNullable(bill.getBillItems())
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .mapToDouble(BillItem::getQty)
-                    .sum();
+            double qtySum = 0;
+            double feeSum = 0;
+            List<BillItem> billItems = bill.getBillItems() != null ? bill.getBillItems() : Collections.emptyList();
 
-            double totalHospitalFee = Optional.ofNullable(bill.getBillItems())
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .mapToDouble(BillItem::getHospitalFee)
-                    .sum();
-
-            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
-                if (billItemQty > 0) {
-                    billItemQty = -billItemQty;
-                }
-                if (totalHospitalFee > 0) {
-                    totalHospitalFee = -totalHospitalFee;
-                }
+            for (BillItem bi : billItems) {
+                qtySum += bi.getQty();
+                feeSum += bi.getHospitalFee();
             }
 
-            final Calendar cal = Calendar.getInstance();
-            cal.setTime(bill.getCreatedAt());
-
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
-
-            if (!yearMonths.contains(yearMonth)) {
-                yearMonths.add(yearMonth);
+            if (bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL_REFUND ||
+                    bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL_CANCELLATION) {
+                qtySum = -Math.abs(qtySum);
+                feeSum = -Math.abs(feeSum);
             }
 
-            Map<YearMonth, Bill> monthMap;
-            if (map.containsKey(bill.getCollectingCentre())) {
-                monthMap = map.get(bill.getCollectingCentre());
+            final YearMonth ym = YearMonth.from(bill.getCreatedAt().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate());
 
-                if (monthMap.containsKey(yearMonth)) {
-                    Bill existingBill = monthMap.get(yearMonth);
-                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
-                    existingBill.setQty(existingBill.getQty() + billItemQty);
+            final Institution centre = bill.getCollectingCentre();
+            yearMonthSet.add(ym);
 
-                    if (existingBill.getTotalHospitalFee() == 0 && existingBill.getQty() == 0) {
-                        monthMap.remove(yearMonth);
-
-                        if (monthMap.isEmpty()) {
-                            map.remove(bill.getCollectingCentre());
+            double finalQtySum = qtySum;
+            double finalFeeSum = feeSum;
+            map.computeIfAbsent(centre, c -> new HashMap<>())
+                    .compute(ym, (y, existingBill) -> {
+                        if (existingBill == null) {
+                            Bill newBill = new Bill();
+                            newBill.clone(bill);
+                            newBill.setQty(finalQtySum);
+                            newBill.setTotalHospitalFee(finalFeeSum);
+                            return (finalQtySum == 0 && finalFeeSum == 0) ? null : newBill;
+                        } else {
+                            double newQty = existingBill.getQty() + finalQtySum;
+                            double newFee = existingBill.getTotalHospitalFee() + finalFeeSum;
+                            existingBill.setQty(newQty);
+                            existingBill.setTotalHospitalFee(newFee);
+                            return (newQty == 0 && newFee == 0) ? null : existingBill;
                         }
-                    }
-                } else {
-                    Bill cloneBill = new Bill();
-                    cloneBill.clone(bill);
-                    cloneBill.setQty(billItemQty);
-                    cloneBill.setTotalHospitalFee(totalHospitalFee);
+                    });
 
-                    if (cloneBill.getTotalHospitalFee() == 0 && cloneBill.getQty() == 0) {
-                        monthMap.remove(yearMonth);
-
-                        if (monthMap.isEmpty()) {
-                            map.remove(bill.getCollectingCentre());
-                        }
-                    } else {
-                        monthMap.put(yearMonth, cloneBill);
-                    }
-                }
-            } else {
-                monthMap = new HashMap<>();
-                Bill cloneBill = new Bill();
-                cloneBill.clone(bill);
-                cloneBill.setQty(billItemQty);
-                cloneBill.setTotalHospitalFee(totalHospitalFee);
-
-                if (cloneBill.getTotalHospitalFee() != 0 || cloneBill.getQty() != 0) {
-                    monthMap.put(yearMonth, cloneBill);
-                }
-
-            }
-
-            if (!monthMap.isEmpty()) {
-                map.put(bill.getCollectingCentre(), monthMap);
-            }
+            map.computeIfPresent(centre, (c, monthMap) -> {
+                monthMap.values().removeIf(Objects::isNull);
+                return monthMap.isEmpty() ? null : monthMap;
+            });
         }
 
         setGroupedCollectingCenterWiseBillsMonthly(map);
-        setYearMonths(yearMonths);
+        setYearMonths(new ArrayList<>(yearMonthSet));
     }
+
+//    private void groupRouteWiseBillsMonthly() {
+//        Map<Route, Map<YearMonth, Bill>> map = new HashMap<>();
+//        List<YearMonth> yearMonths = new ArrayList<>();
+//
+//        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+//            Bill bill = row.getBill();
+//
+//            double billItemQty = Optional.ofNullable(bill.getBillItems())
+//                    .orElse(Collections.emptyList())
+//                    .stream()
+//                    .mapToDouble(BillItem::getQty)
+//                    .sum();
+//
+//            double totalHospitalFee = Optional.ofNullable(bill.getBillItems())
+//                    .orElse(Collections.emptyList())
+//                    .stream()
+//                    .mapToDouble(BillItem::getHospitalFee)
+//                    .sum();
+//
+//            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
+//                if (billItemQty > 0) {
+//                    billItemQty = -billItemQty;
+//                }
+//                if (totalHospitalFee > 0) {
+//                    totalHospitalFee = -totalHospitalFee;
+//                }
+//            }
+//
+//            final Calendar cal = Calendar.getInstance();
+//            cal.setTime(bill.getCreatedAt());
+//
+//            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
+//
+//            if (!yearMonths.contains(yearMonth)) {
+//                yearMonths.add(yearMonth);
+//            }
+//
+//            Map<YearMonth, Bill> monthMap;
+//            if (map.containsKey(bill.getCollectingCentre().getRoute())) {
+//                monthMap = map.get(bill.getCollectingCentre().getRoute());
+//
+//                if (monthMap.containsKey(yearMonth)) {
+//                    Bill existingBill = monthMap.get(yearMonth);
+//                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
+//                    existingBill.setQty(existingBill.getQty() + billItemQty);
+//
+//                    if (existingBill.getTotalHospitalFee() == 0 && existingBill.getQty() == 0) {
+//                        monthMap.remove(yearMonth);
+//
+//                        if (monthMap.isEmpty()) {
+//                            map.remove(bill.getCollectingCentre().getRoute());
+//                        }
+//                    }
+//                } else {
+//                    Bill cloneBill = new Bill();
+//                    cloneBill.clone(bill);
+//                    cloneBill.setQty(billItemQty);
+//                    cloneBill.setTotalHospitalFee(totalHospitalFee);
+//
+//                    if (cloneBill.getTotalHospitalFee() == 0 && cloneBill.getQty() == 0) {
+//                        monthMap.remove(yearMonth);
+//
+//                        if (monthMap.isEmpty()) {
+//                            map.remove(bill.getCollectingCentre().getRoute());
+//                        }
+//                    } else {
+//                        monthMap.put(yearMonth, cloneBill);
+//                    }
+//                }
+//            } else {
+//                monthMap = new HashMap<>();
+//                Bill cloneBill = new Bill();
+//                cloneBill.clone(bill);
+//                cloneBill.setQty(billItemQty);
+//                cloneBill.setTotalHospitalFee(totalHospitalFee);
+//
+//                if (cloneBill.getTotalHospitalFee() != 0 || cloneBill.getQty() != 0) {
+//                    monthMap.put(yearMonth, cloneBill);
+//                }
+//            }
+//
+//            if (!monthMap.isEmpty()) {
+//                map.put(bill.getCollectingCentre().getRoute(), monthMap);
+//            }
+//        }
+//
+//        setGroupedRouteWiseBillsMonthly(map);
+//        setYearMonths(yearMonths);
+//    }
+//
+//    private void groupCollectingCenterWiseBillsMonthly() {
+//        Map<Institution, Map<YearMonth, Bill>> map = new HashMap<>();
+//        List<YearMonth> yearMonths = new ArrayList<>();
+//
+//        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+//            Bill bill = row.getBill();
+//
+//            double billItemQty = Optional.ofNullable(bill.getBillItems())
+//                    .orElse(Collections.emptyList())
+//                    .stream()
+//                    .mapToDouble(BillItem::getQty)
+//                    .sum();
+//
+//            double totalHospitalFee = Optional.ofNullable(bill.getBillItems())
+//                    .orElse(Collections.emptyList())
+//                    .stream()
+//                    .mapToDouble(BillItem::getHospitalFee)
+//                    .sum();
+//
+//            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
+//                if (billItemQty > 0) {
+//                    billItemQty = -billItemQty;
+//                }
+//                if (totalHospitalFee > 0) {
+//                    totalHospitalFee = -totalHospitalFee;
+//                }
+//            }
+//
+//            final Calendar cal = Calendar.getInstance();
+//            cal.setTime(bill.getCreatedAt());
+//
+//            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
+//
+//            if (!yearMonths.contains(yearMonth)) {
+//                yearMonths.add(yearMonth);
+//            }
+//
+//            Map<YearMonth, Bill> monthMap;
+//            if (map.containsKey(bill.getCollectingCentre())) {
+//                monthMap = map.get(bill.getCollectingCentre());
+//
+//                if (monthMap.containsKey(yearMonth)) {
+//                    Bill existingBill = monthMap.get(yearMonth);
+//                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
+//                    existingBill.setQty(existingBill.getQty() + billItemQty);
+//
+//                    if (existingBill.getTotalHospitalFee() == 0 && existingBill.getQty() == 0) {
+//                        monthMap.remove(yearMonth);
+//
+//                        if (monthMap.isEmpty()) {
+//                            map.remove(bill.getCollectingCentre());
+//                        }
+//                    }
+//                } else {
+//                    Bill cloneBill = new Bill();
+//                    cloneBill.clone(bill);
+//                    cloneBill.setQty(billItemQty);
+//                    cloneBill.setTotalHospitalFee(totalHospitalFee);
+//
+//                    if (cloneBill.getTotalHospitalFee() == 0 && cloneBill.getQty() == 0) {
+//                        monthMap.remove(yearMonth);
+//
+//                        if (monthMap.isEmpty()) {
+//                            map.remove(bill.getCollectingCentre());
+//                        }
+//                    } else {
+//                        monthMap.put(yearMonth, cloneBill);
+//                    }
+//                }
+//            } else {
+//                monthMap = new HashMap<>();
+//                Bill cloneBill = new Bill();
+//                cloneBill.clone(bill);
+//                cloneBill.setQty(billItemQty);
+//                cloneBill.setTotalHospitalFee(totalHospitalFee);
+//
+//                if (cloneBill.getTotalHospitalFee() != 0 || cloneBill.getQty() != 0) {
+//                    monthMap.put(yearMonth, cloneBill);
+//                }
+//
+//            }
+//
+//            if (!monthMap.isEmpty()) {
+//                map.put(bill.getCollectingCentre(), monthMap);
+//            }
+//        }
+//
+//        setGroupedCollectingCenterWiseBillsMonthly(map);
+//        setYearMonths(yearMonths);
+//    }
 
     public double getCollectionCenterWiseTotalSampleCount(YearMonth yearmonth) {
         double total = 0;
@@ -5809,8 +5922,8 @@ public class ReportsController implements Serializable {
             table.setWidthPercentage(100);
 
             table.addCell(new PdfPCell(new Phrase("S. No")));
-            table.addCell(new PdfPCell(new Phrase("Route")));
             table.addCell(new PdfPCell(new Phrase("Route Code")));
+            table.addCell(new PdfPCell(new Phrase("Route")));
 
             List<YearMonth> yearMonths = getYearMonths();
             for (YearMonth yearMonth : yearMonths) {
@@ -5824,8 +5937,8 @@ public class ReportsController implements Serializable {
                 Map<YearMonth, Bill> monthlyData = entrySet.getValue();
 
                 table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
-                table.addCell(new PdfPCell(new Phrase(route.getName())));
                 table.addCell(new PdfPCell(new Phrase(route.getCode())));
+                table.addCell(new PdfPCell(new Phrase(route.getName())));
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
@@ -5894,8 +6007,8 @@ public class ReportsController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
             int cellIndex = 0;
             headerRow.createCell(cellIndex++).setCellValue("S. No");
-            headerRow.createCell(cellIndex++).setCellValue("Route");
             headerRow.createCell(cellIndex++).setCellValue("Route Code");
+            headerRow.createCell(cellIndex++).setCellValue("Route");
 
             List<YearMonth> yearMonths = getYearMonths();
             for (YearMonth yearMonth : yearMonths) {
@@ -5912,8 +6025,8 @@ public class ReportsController implements Serializable {
                 cellIndex = 0;
 
                 row.createCell(cellIndex++).setCellValue(serialNumber++);
-                row.createCell(cellIndex++).setCellValue(route.getName());
                 row.createCell(cellIndex++).setCellValue(route.getCode());
+                row.createCell(cellIndex++).setCellValue(route.getName());
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
