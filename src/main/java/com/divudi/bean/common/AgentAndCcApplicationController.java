@@ -216,8 +216,12 @@ public class AgentAndCcApplicationController {
             double balanceBeforeTx = collectingCentre.getBallance();
             double balanceAfterTx = balanceBeforeTx + Math.abs(hospitalFee);
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
@@ -256,8 +260,12 @@ public class AgentAndCcApplicationController {
             System.out.println("Before Balance = " + collectingCentre.getBallance());
             System.out.println("Refund Value = " + hospitalFee);
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
@@ -296,8 +304,12 @@ public class AgentAndCcApplicationController {
             double balanceBeforeTx = collectingCentre.getBallance();
             double balanceAfterTx = balanceBeforeTx + Math.abs(transactionValue);
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
@@ -333,8 +345,12 @@ public class AgentAndCcApplicationController {
             double balanceBeforeTx = collectingCentre.getBallance();
             double balanceAfterTx = balanceBeforeTx + Math.abs(transactionValue);
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
@@ -372,8 +388,12 @@ public class AgentAndCcApplicationController {
             double balanceBeforeTx = collectingCentre.getBallance();
             double balanceAfterTx = balanceBeforeTx + transactionValue;
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
@@ -411,8 +431,12 @@ public class AgentAndCcApplicationController {
             double balanceBeforeTx = collectingCentre.getBallance();
             double balanceAfterTx = balanceBeforeTx + Math.abs(transactionValue);
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
@@ -449,8 +473,12 @@ public class AgentAndCcApplicationController {
             double balanceBeforeTx = collectingCentre.getBallance();
             double balanceAfterTx = balanceBeforeTx - Math.abs(transactionValue);
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
@@ -487,8 +515,12 @@ public class AgentAndCcApplicationController {
 
             double balanceAfterTx = balanceBeforeTx + collectingCentreFee;
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
@@ -527,8 +559,12 @@ public class AgentAndCcApplicationController {
 
             double balanceAfterTx = balanceBeforeTx + collectingCentreFee;
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
@@ -570,8 +606,12 @@ public class AgentAndCcApplicationController {
 
             double balanceAfterTx = balanceBeforeTx - hospitalFee;
 
-            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
-            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+            agentHistory.setBalanceBeforeTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
+            );
+            agentHistory.setBalanceAfterTransaction(
+                    CommonFunctions.roundToTwoDecimalsBigDecimal(balanceAfterTx)
+            );
 
             agentHistoryFacade.create(agentHistory);
 
