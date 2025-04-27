@@ -27,7 +27,8 @@ public class ControllerTemplate implements Serializable {
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes Static Converter">
+    // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Inner Classes">
     // </editor-fold>  
-
 }
