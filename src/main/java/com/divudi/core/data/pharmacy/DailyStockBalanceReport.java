@@ -19,6 +19,9 @@ public class DailyStockBalanceReport {
     private double closingStockValue;
 
     private List<PharmacyRow> pharmacySalesByAdmissionTypeAndDiscountScheme;
+    private List<PharmacyRow> pharmacyPurchaseByBillType;
+    private List<PharmacyRow> pharmacyTransferByBillType;
+    private List<PharmacyRow> pharmacyAdjustmentsByBillType;
     
     private double purchasesOfDrugsPrevious;
     private double purchasesOfDrugsTransaction;
@@ -645,6 +648,30 @@ public class DailyStockBalanceReport {
 
     public void setPharmacySalesByAdmissionTypeAndDiscountScheme(List<PharmacyRow> pharmacySalesByAdmissionTypeAndDiscountScheme) {
         this.pharmacySalesByAdmissionTypeAndDiscountScheme = pharmacySalesByAdmissionTypeAndDiscountScheme;
+    }
+
+    public List<PharmacyRow> getPharmacyPurchaseByBillType() {
+        return pharmacyPurchaseByBillType;
+    }
+
+    public void setPharmacyPurchaseByBillType(List<PharmacyRow> pharmacyPurchaseByBillType) {
+        this.pharmacyPurchaseByBillType = pharmacyPurchaseByBillType;
+    }
+
+    public List<PharmacyRow> getPharmacyTransferByBillType() {
+        return pharmacyTransferByBillType;
+    }
+
+    public void setPharmacyTransferByBillType(List<PharmacyRow> pharmacyTransferByBillType) {
+        this.pharmacyTransferByBillType = pharmacyTransferByBillType;
+    }
+
+    public List<PharmacyRow> getPharmacyAdjustmentsByBillType() {
+        return pharmacyAdjustmentsByBillType;
+    }
+
+    public void setPharmacyAdjustmentsByBillType(List<PharmacyRow> pharmacyAdjustmentsByBillType) {
+        this.pharmacyAdjustmentsByBillType = pharmacyAdjustmentsByBillType;
     }
 
 

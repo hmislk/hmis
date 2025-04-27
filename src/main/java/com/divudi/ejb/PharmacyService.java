@@ -39,8 +39,7 @@ public class PharmacyService {
 
     @EJB
     private ClinicalFindingValueFacade clinicalFindingValueFacade;
-    
-    
+
     @EJB
     BillService billService;
 
@@ -183,7 +182,7 @@ public class PharmacyService {
         billItem.setInstructions(instrcutions);
     }
 
-      public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+    public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         System.out.println("processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType");
 
@@ -206,6 +205,33 @@ public class PharmacyService {
 
         return bundle;
 
+    }
+
+    public PharmacyBundle fetchPharmacyStockPurchaseValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();
+        List<Bill> pharmacyIncomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBills);
+        bundle.generatePharmacyPurchaseGroupedByBillType();
+        return bundle;
+    }
+
+    public PharmacyBundle fetchPharmacyTransferValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyInternalTransferBillTypes();
+        List<Bill> pharmacyIncomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBills);
+        bundle.generatePharmacyPurchaseGroupedByBillType();
+        return bundle;
+    }
+
+    public PharmacyBundle fetchPharmacyAdjustmentValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
+        List<Bill> pharmacyIncomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBills);
+        bundle.generatePharmacyPurchaseGroupedByBillType();
+        return bundle;
     }
 
     public List<BillTypeAtomic> getPharmacyIncomeBillTypes() {
@@ -234,5 +260,30 @@ public class PharmacyService {
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
         );
     }
-    
+
+    public List<BillTypeAtomic> getPharmacyPurchaseBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+                BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_GRN_RETURN,
+                BillTypeAtomic.PHARMACY_GRN_CANCELLED
+        );
+    }
+
+    public List<BillTypeAtomic> getPharmacyInternalTransferBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_ISSUE,
+                BillTypeAtomic.PHARMACY_RECEIVE
+        );
+    }
+
+    public List<BillTypeAtomic> getPharmacyAdjustmentBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
+        );
+    }
+
 }
