@@ -1511,17 +1511,11 @@ public class ChannelApi {
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
 
-        String bookingStatus = "This is a temporary booking.";
+        String bookingStatus = "Unpaid";
         if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.CANCEL) {
-            bookingStatus = "This booking is already Cancelled.";
+            bookingStatus = "Patient-canceled";
         } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
-            bookingStatus = "This booking is completed.";
-        }
-
-        String patientStatus = bookingStatus;
-
-        if (bookingBill.getSingleBillSession().isAbsent()) {
-            patientStatus = "Patient is absent to the appoinment.";
+            bookingStatus = "Complete";
         }
 
         Map<String, Object> appoinment = new HashMap<>();
@@ -1532,18 +1526,9 @@ public class ChannelApi {
         appoinment.put("showTime", null);
         appoinment.put("chRoom", bookingBill.getSingleBillSession().getSessionInstance().getRoomNo());
         appoinment.put("timeInterval", null);
-        appoinment.put("status", patientStatus);
+        appoinment.put("status", bookingStatus);
 
         SessionInstance session = bookingBill.getSingleBillSession().getSessionInstance();
-
-        String sessionStatus = "Session will have on time.";
-        if (session.isCompleted()) {
-            sessionStatus = "Session is alredy finished now.";
-        } else if (session.isCancelled()) {
-            sessionStatus = "Session is cancelled.";
-        } else if (session.isStarted()) {
-            sessionStatus = "Session is already started now.";
-        }
 
         Map<String, Object> sessionDetails = new HashMap<>();
         Item i = bookingBill.getSingleBillSession().getItem();
@@ -1559,7 +1544,7 @@ public class ChannelApi {
         sessionDetails.put("hosLocation", session.getInstitution().getAddress());
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
-        sessionDetails.put("status", sessionStatus);
+        sessionDetails.put("status", "Success");
 
         Map<String, Object> patientDetails = new HashMap<>();
         patientDetails.put("title", bookingDetails.getTitle());
@@ -1601,7 +1586,7 @@ public class ChannelApi {
         response.put("data", appoinment);
         response.put("code", "202");
         response.put("message", "Booking details for ref No: " + refNo);
-        response.put("detailMessage", bookingStatus);
+        response.put("detailMessage", "Success");
 
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
 

@@ -614,7 +614,6 @@ public class ChannelService {
         bill.setPaidBill(null);
         bill.setBillType(BillType.ChannelOnCall);
         bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        System.out.println(bill);
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(session.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 
         if (deptId.equals("")) {
