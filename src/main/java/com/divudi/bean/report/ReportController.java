@@ -937,8 +937,13 @@ public class ReportController implements Serializable {
             params.put("item", item);
         }
 
-        if (type != null) {
+        if (type != null && (type.equalsIgnoreCase("cc") || type.equalsIgnoreCase("ip"))) {
             jpql += " AND bi.bill.ipOpOrCc = :type";
+            params.put("type", type);
+        }
+
+        if (type != null && type.equalsIgnoreCase("op")) {
+            jpql += " AND (bi.bill.ipOpOrCc = :type OR bi.bill.ipOpOrCc IS NULL)";
             params.put("type", type);
         }
 
@@ -1032,8 +1037,13 @@ public class ReportController implements Serializable {
             params.put("item", item);
         }
 
-        if (type != null) {
+        if (type != null && (type.equalsIgnoreCase("cc") || type.equalsIgnoreCase("ip"))) {
             jpql += " AND bi.bill.ipOpOrCc = :type";
+            params.put("type", type);
+        }
+
+        if (type != null && type.equalsIgnoreCase("op")) {
+            jpql += " AND (bi.bill.ipOpOrCc = :type OR bi.bill.ipOpOrCc IS NULL)";
             params.put("type", type);
         }
 

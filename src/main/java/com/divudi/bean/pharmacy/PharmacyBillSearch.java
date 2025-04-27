@@ -493,7 +493,6 @@ public class PharmacyBillSearch implements Serializable {
         bill.setForwardReferenceBill(c);
         bill.setCancelled(true);
         bill.setCancelledBill(c);
-        bill.setReferenceBill(c);
         getBillFacade().edit(bill);
     }
 
@@ -2125,7 +2124,7 @@ public class PharmacyBillSearch implements Serializable {
 
             newlyCreatedRetailSaleCancellationBill.setDeptId(deptId);
             newlyCreatedRetailSaleCancellationBill.setInsId(deptId);
-
+            
             if (newlyCreatedRetailSaleCancellationBill.getId() == null) {
                 getBillFacade().create(newlyCreatedRetailSaleCancellationBill);
             }
@@ -2139,8 +2138,7 @@ public class PharmacyBillSearch implements Serializable {
             getBill().setCancelledBill(newlyCreatedRetailSaleCancellationBill);
             getBillFacade().edit(getBill());
 
-            newlyCreatedRetailSaleCancellationBillPre.setBackwardReferenceBill(getBill());
-            newlyCreatedRetailSaleCancellationBillPre.setForwardReferenceBill(newlyCreatedRetailSaleCancellationBill);
+            newlyCreatedRetailSaleCancellationBillPre.setReferenceBill(getBill());
             getBillFacade().edit(newlyCreatedRetailSaleCancellationBillPre);
 
             JsfUtil.addSuccessMessage("Cancelled");
@@ -2266,7 +2264,7 @@ public class PharmacyBillSearch implements Serializable {
         newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
         newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         newlyCreatedCancellationBill.setDeptId(deptId);
-
+        newlyCreatedCancellationBill.setReferenceBill(getBill());
         getBillFacade().edit(newlyCreatedCancellationBill);
 
         getBill().setCancelled(true);
@@ -2630,6 +2628,7 @@ public class PharmacyBillSearch implements Serializable {
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
             cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
+            cb.setReferenceBill(getBill());
             cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
