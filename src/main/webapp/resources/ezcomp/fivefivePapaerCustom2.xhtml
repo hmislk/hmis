@@ -238,6 +238,28 @@
                         </td>
                     </tr>
                 </ui:repeat>
+                
+                <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }" >
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Agent fee" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <p:spacer width="10" ></p:spacer>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel  value="#{cc.attrs.bill.referenceBill.onlineBooking.onlineBookingPayment}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+ 
+                        </td>
+
+                    </tr>
+
+                </h:panelGroup>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.discount lt 1}" >
                     <tr>
@@ -251,7 +273,11 @@
                             <h:outputLabel value=":" ></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel style="font-weight: bolder" value="#{cc.attrs.bill.total}" >
+                            <h:outputLabel rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }" style="font-weight: bolder" value="#{cc.attrs.bill.referenceBill.onlineBooking.netTotalForOnlineBooking}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                            
+                            <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null}" style="font-weight: bolder" value="#{cc.attrs.bill.referenceBill.onlineBooking.netTotalForOnlineBooking}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputLabel>
                         </td>
