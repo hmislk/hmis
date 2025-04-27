@@ -114,30 +114,34 @@
                                                      var="bs" 
                                                      selection="#{bookingControllerViewScope.selectedBillSession}" 
                                                      selectionMode="single"
+                                                     scrollable="true"
+                                                     scrollWidth="100%"
                                                      styleClass="w-100 fullHeightListbox">
 
 
-                                            <p:column headerText="Serial No" width="5em">
+                                            <p:column headerText="No" width="3em">
                                                 <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
                                             </p:column>
 
                                             <p:column 
                                                 filterPlaceholder="Patient's Name"
                                                 filterMatchMode="contains"
-                                                filterBy="#{bs.bill.patient.person.name}"
+                                                filterBy="#{bs.bill.patient.person.name ne null ? bs.bill.patient.person.name : bs.bill.referenceBill.onlineBooking.patientName}"
                                                 width="25em">
 
                                                 <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
                                                          toggleOrientation="vertical" toggleable="true"  >
+                                                    <p:tooltip for="@parent" value="(R-#{bs.bill.referenceBill.onlineBooking.referenceNo})" rendered="#{bs.bill.referenceBill.onlineBooking ne null}"/>
                                                 <f:facet name="header" >
                                                     <h:outputText rendered="#{bs.bill.referenceBill.onlineBooking eq null}" class="mr-5" value="#{bs.bill.patient.person.nameWithTitle}" />
                                                     <h:outputText rendered="#{bs.bill.referenceBill.onlineBooking ne null}" class="mr-5" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" />
                                                     <p:spacer width="12" ></p:spacer>
                                                     <h:outputText class="ml-5" rendered="#{bs.bill.referenceBill.onlineBooking eq null}" style="font-size: 0.9em" value="(#{bs.bill.patient.person.smsNumber})" />
                                                     <h:outputText class="ml-5" rendered="#{bs.bill.referenceBill.onlineBooking ne null}" style="font-size: 0.9em" value="(#{bs.bill.referenceBill.onlineBooking.phoneNo})" />
-                                                    <p:tag class="mr-2 mx-2" style="font-size: 0.8rem" severity="warning" value="OB" rendered="#{bs.bill.referenceBill.onlineBooking ne null}"/>
+                                                    <p:tag class="mr-2 mx-2 " style="font-size: 0.8rem" severity="warning" value="OB" rendered="#{bs.bill.referenceBill.onlineBooking ne null}"/>
+                                                    
                                                 </f:facet>
-
+                                                    
                                                 <h:panelGrid columns="2" >
                                                     <h:outputLabel value="Institution Code" ></h:outputLabel>
                                                     <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
@@ -166,7 +170,7 @@
                                                 </p:panel>  
                                             </p:column>
 
-                                            <p:column headerText="Status">
+                                            <p:column headerText="Status" width="5em">
                                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
                                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="default" value="OnGoing" rendered="#{bs.currentlyConsulted}"/>
                                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="Next" rendered="#{bs.nextInLine}"/>
@@ -175,7 +179,7 @@
                                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Absent" rendered="#{bs.absent}"/>
                                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Recheduled" rendered="#{bs.recheduledSession}"/>
                                             </p:column>
-                                            <p:column headerText="Payment" >
+                                            <p:column headerText="Payment" width="5em">
                                                 <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
                                                 <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
                                                 <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
@@ -186,7 +190,7 @@
                                                 <p:outputLabel value="-Online Payment" rendered="#{bs.bill.paymentMethod eq 'OnlineSettlement'}" style="color: #0062cc;" />
                                             </p:column>
 
-                                            <p:column headerText="Actions">
+                                            <p:column headerText="Actions" width="5em">
                                                 <div class="d-flex">
                                                     <p:commandButton 
                                                         icon="fa-solid fa-book" 
