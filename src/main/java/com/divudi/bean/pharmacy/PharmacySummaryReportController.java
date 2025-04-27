@@ -287,16 +287,16 @@ public class PharmacySummaryReportController implements Serializable {
         Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
 
         PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-        dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountScheme(saleBundle.getRows());
+        dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
 
         PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-        dailyStockBalanceReport.setPharmacyPurchaseByBillType(purchaseBundle.getRows());
+        dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
 
         PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-        dailyStockBalanceReport.setPharmacyTransferByBillType(transferBundle.getRows());
+        dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
 
         PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-        dailyStockBalanceReport.setPharmacyAdjustmentsByBillType(adjustmentBundle.getRows());
+        dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
         HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
         if (closingBalance != null) {

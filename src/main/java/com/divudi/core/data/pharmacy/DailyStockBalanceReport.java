@@ -1,5 +1,6 @@
 package com.divudi.core.data.pharmacy;
 
+import com.divudi.core.data.PharmacyBundle;
 import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.entity.Department;
 import java.util.Date;
@@ -18,10 +19,10 @@ public class DailyStockBalanceReport {
     private double stockTransactionValue;
     private double closingStockValue;
 
-    private List<PharmacyRow> pharmacySalesByAdmissionTypeAndDiscountScheme;
-    private List<PharmacyRow> pharmacyPurchaseByBillType;
-    private List<PharmacyRow> pharmacyTransferByBillType;
-    private List<PharmacyRow> pharmacyAdjustmentsByBillType;
+    private PharmacyBundle pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
+    private PharmacyBundle pharmacyPurchaseByBillTypeBundle;
+    private PharmacyBundle pharmacyTransferByBillTypeBundle;
+    private PharmacyBundle pharmacyAdjustmentsByBillTypeBundle;
     
     private double purchasesOfDrugsPrevious;
     private double purchasesOfDrugsTransaction;
@@ -642,39 +643,39 @@ public class DailyStockBalanceReport {
         this.internalTransfersList = internalTransfersList;
     }
 
-    public List<PharmacyRow> getPharmacySalesByAdmissionTypeAndDiscountScheme() {
-        return pharmacySalesByAdmissionTypeAndDiscountScheme;
+    public PharmacyBundle getPharmacySalesByAdmissionTypeAndDiscountSchemeBundle() {
+        return pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
     }
 
-    public void setPharmacySalesByAdmissionTypeAndDiscountScheme(List<PharmacyRow> pharmacySalesByAdmissionTypeAndDiscountScheme) {
-        this.pharmacySalesByAdmissionTypeAndDiscountScheme = pharmacySalesByAdmissionTypeAndDiscountScheme;
+    public void setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(PharmacyBundle pharmacySalesByAdmissionTypeAndDiscountSchemeBundle) {
+        this.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle = pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
     }
 
-    public List<PharmacyRow> getPharmacyPurchaseByBillType() {
-        return pharmacyPurchaseByBillType;
+    public PharmacyBundle getPharmacyPurchaseByBillTypeBundle() {
+        return pharmacyPurchaseByBillTypeBundle;
     }
 
-    public void setPharmacyPurchaseByBillType(List<PharmacyRow> pharmacyPurchaseByBillType) {
-        this.pharmacyPurchaseByBillType = pharmacyPurchaseByBillType;
+    public void setPharmacyPurchaseByBillTypeBundle(PharmacyBundle pharmacyPurchaseByBillTypeBundle) {
+        this.pharmacyPurchaseByBillTypeBundle = pharmacyPurchaseByBillTypeBundle;
     }
 
-    public List<PharmacyRow> getPharmacyTransferByBillType() {
-        return pharmacyTransferByBillType;
+    public PharmacyBundle getPharmacyTransferByBillTypeBundle() {
+        return pharmacyTransferByBillTypeBundle;
     }
 
-    public void setPharmacyTransferByBillType(List<PharmacyRow> pharmacyTransferByBillType) {
-        this.pharmacyTransferByBillType = pharmacyTransferByBillType;
+    public void setPharmacyTransferByBillTypeBundle(PharmacyBundle pharmacyTransferByBillTypeBundle) {
+        this.pharmacyTransferByBillTypeBundle = pharmacyTransferByBillTypeBundle;
     }
 
-    public List<PharmacyRow> getPharmacyAdjustmentsByBillType() {
-        return pharmacyAdjustmentsByBillType;
+    public PharmacyBundle getPharmacyAdjustmentsByBillTypeBundle() {
+        return pharmacyAdjustmentsByBillTypeBundle;
     }
 
-    public void setPharmacyAdjustmentsByBillType(List<PharmacyRow> pharmacyAdjustmentsByBillType) {
-        this.pharmacyAdjustmentsByBillType = pharmacyAdjustmentsByBillType;
+    public void setPharmacyAdjustmentsByBillTypeBundle(PharmacyBundle pharmacyAdjustmentsByBillTypeBundle) {
+        this.pharmacyAdjustmentsByBillTypeBundle = pharmacyAdjustmentsByBillTypeBundle;
     }
 
-
-
+    
+    
 
 }
