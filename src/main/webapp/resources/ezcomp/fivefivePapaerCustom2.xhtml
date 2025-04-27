@@ -50,6 +50,7 @@
             </div>
 
             <table style="margin-left: 6%;font-size: 12px; margin-top: -2mm" >
+                
                 <tr style="font-size: 12pt;">
                     <td>
                         <b>
@@ -75,6 +76,28 @@
                         </ui:repeat>
                     </td>
 
+                </tr>
+                
+                <tr>
+                    <td>
+                        <h:outputLabel value="Booking Type"></h:outputLabel>
+                    </td>
+                    
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill ne null ? (cc.attrs.bill.referenceBill.onlineBooking ne null ? true : false) : false }"
+                                       value="Online Booking from #{cc.attrs.bill.referenceBill.onlineBooking.agency.name}"
+                                       ></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.referenceBill eq null and cc.attrs.bill.billType ne 'ChannelAgent'}" value="System Booking"></h:outputLabel>
+                        <h:outputLabel rendered="#{cc.attrs.bill.billType eq 'ChannelAgent' and cc.attrs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_WITH_PAYMENT'}"
+                                       value="Agent Booking from #{cc.attrs.bill.creditCompany.name}"
+                                       ></h:outputLabel>
+                    </td>
                 </tr>
                 <tr>
                     <td>
