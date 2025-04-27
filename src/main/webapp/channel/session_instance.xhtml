@@ -283,15 +283,15 @@
                                                         <h:outputLabel value="#{bs.bill.billTypeAtomic}" ></h:outputLabel>
                                                         <h:outputLabel value="Paid Bill ID" ></h:outputLabel>
                                                         <h:outputLabel value="#{bs.bill.paidBill}" ></h:outputLabel>
-                                                        <h:panelGroup rendered="#{bs.bill.agentRefNo ne null and bs.bill.creditCompany ne null}">
+                                                        <h:panelGroup rendered="#{bs.bill.onlineBooking ne null}">
                                                             <h:outputLabel value="Booking Agent" ></h:outputLabel>
                                                             <br></br>
                                                             <h:outputLabel value="Booking Ref No" ></h:outputLabel>
                                                         </h:panelGroup>
-                                                        <h:panelGroup rendered="#{bs.bill.agentRefNo ne null and bs.bill.creditCompany ne null}">
-                                                            <h:outputLabel value="#{bs.bill.creditCompany.name}" ></h:outputLabel>
+                                                        <h:panelGroup rendered="#{bs.bill.onlineBooking ne null}">
+                                                            <h:outputLabel value="#{bs.bill.onlineBooking.agency.name}" ></h:outputLabel>
                                                             <br></br>
-                                                            <h:outputLabel value="#{bs.bill.agentRefNo}" ></h:outputLabel>
+                                                            <h:outputLabel value="#{bs.bill.onlineBooking.referenceNo}" ></h:outputLabel>
                                                         </h:panelGroup>
 
                                                     </h:panelGrid>

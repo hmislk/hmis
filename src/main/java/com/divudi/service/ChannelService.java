@@ -122,9 +122,11 @@ public class ChannelService {
         jpql += " and b.billTypeAtomic=:bta ";
         jpql += " and b.createdAt < :createdAt ";
         jpql += " and b.paid=:paid ";
+        
         Map params = new HashMap();
         params.put("ret", false);
         params.put("paid", false);
+        
         Long minutesToCancelOnlineBooking = configOptionApplicationController.getLongValueByKey("Number of Minutes to keep online channel bookings active without finalizing the payment", 20L);
         params.put("createdAt", CommonFunctions.deductMinutesFromCurrentTime(minutesToCancelOnlineBooking.intValue()));
         params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
@@ -137,20 +139,28 @@ public class ChannelService {
         }
         for (Bill b : unpaidBills) {
             b.setRetired(true);
-            b.setRetireComments("Online Agent Payment NOT completed");
+            b.setRetireComments("Online Booking is NOT completed.");
             b.setRetiredAt(new Date());
             billFacade.edit(b);
+            
             b.getSingleBillSession().setRetired(true);
-            b.getSingleBillSession().setRetireComments("Online Agent Payment NOT completed");
+            b.getSingleBillSession().setRetireComments("Online Booking is NOT completed.");
             b.getSingleBillSession().setRetiredAt(new Date());
             billSessionFacade.edit(b.getSingleBillSession());
+            
             b.getSingleBillItem().setRetired(true);
-            b.getSingleBillItem().setRetireComments("Online Agent Payment NOT completed");
+            b.getSingleBillItem().setRetireComments("Online Booking is NOT completed.");
             billItemFacade.edit(b.getSingleBillItem());
+            
+            b.getOnlineBooking().setRetired(true);
+            b.getOnlineBooking().setRetiredAt(new Date());
+            b.getOnlineBooking().setRetireComments("Online Booking is NOT completed.");
+            getOnlineBookingFacade().edit(b.getOnlineBooking());
+            
             if (b.getBillFees() != null) {
                 for (BillFee bf : b.getBillFees()) {
                     bf.setRetired(true);
-                    bf.setRetireComments("Online Agent Payment NOT completed");
+                    bf.setRetireComments("Online Booking is NOT completed.");
                     billFeeFacade.edit(bf);
                 }
             }
