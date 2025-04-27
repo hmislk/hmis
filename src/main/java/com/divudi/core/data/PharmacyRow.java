@@ -44,7 +44,7 @@ public class PharmacyRow  implements Serializable{
     private Double saleValue;
 
     private Long counter;
-    String rowType;
+    private String rowType;
 
     private PaymentScheme paymentScheme;
     private AdmissionType admissionType;
