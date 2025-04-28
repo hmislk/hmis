@@ -1010,14 +1010,14 @@ public class ChannelApi {
         patientDetailsResponse.put("title", savedBooking.getTitle());
         patientDetailsResponse.put("patientName", savedBooking.getPatientName());
         patientDetailsResponse.put("nid", savedBooking.getNic());
-        patientDetailsResponse.put("memberId", savedBooking.getId());
+        patientDetailsResponse.put("memberId", null);
         patientDetailsResponse.put("patientFullName", savedBooking.getTitle() + ". " + savedBooking.getPatientName());
         patientDetailsResponse.put("patientFullNameWithMobile", savedBooking.getTitle() + ". " + savedBooking.getPatientName() + " " + savedBooking.getPhoneNo());
 
         Map<String, Object> priceDetailsResponse = new HashMap<>();
         priceDetailsResponse.put("totalAmount", bill.getNetTotal());
         priceDetailsResponse.put("nsrFee", null);
-        priceDetailsResponse.put("charge", bill.getNetTotal());
+        priceDetailsResponse.put("charge", savedBooking.getOnlineBookingPayment());
         priceDetailsResponse.put("hosCharge", bill.getHospitalFee());
         priceDetailsResponse.put("hosChargeWithoutVat", 0);
         priceDetailsResponse.put("docCharge", bill.getStaffFee());
@@ -1043,8 +1043,8 @@ public class ChannelApi {
         apoinmentDetailsResponse.put("refNo", clientsReferanceNo);
         apoinmentDetailsResponse.put("patientNo", Integer.parseInt(bill.getSingleBillSession().getSerialNoStr()));
         apoinmentDetailsResponse.put("allPatientNo", channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber"));
-        apoinmentDetailsResponse.put("showPno", null);
-        apoinmentDetailsResponse.put("showTime", null);
+        apoinmentDetailsResponse.put("showPno", true);
+        apoinmentDetailsResponse.put("showTime", true);
         apoinmentDetailsResponse.put("chRoom", session.getRoomNo());
         apoinmentDetailsResponse.put("timeInterval", null);
         apoinmentDetailsResponse.put("sessionDetails", sessionDetailsResponse);
@@ -1176,7 +1176,7 @@ public class ChannelApi {
         Map<String, Object> priceDetailsResponse = new HashMap<>();
         priceDetailsResponse.put("totalAmount", temporaryBill.getNetTotal());
         priceDetailsResponse.put("nsrFee", null);
-        priceDetailsResponse.put("charge", temporaryBill.getNetTotal());
+        priceDetailsResponse.put("charge", editedBooking.getOnlineBookingPayment());
         priceDetailsResponse.put("hosCharge", temporaryBill.getHospitalFee());
         priceDetailsResponse.put("hosChargeWithoutVat", 0);
         priceDetailsResponse.put("docCharge", temporaryBill.getStaffFee());
@@ -1202,8 +1202,8 @@ public class ChannelApi {
         apoinmentDetailsResponse.put("refNo", clientsReferanceNo);
         apoinmentDetailsResponse.put("patientNo", Integer.parseInt(temporaryBill.getSingleBillSession().getSerialNoStr()));
         apoinmentDetailsResponse.put("allPatientNo", session.getNextAvailableAppointmentNumber() != null ? session.getNextAvailableAppointmentNumber().intValue() - 1 : 0);
-        apoinmentDetailsResponse.put("showPno", null);
-        apoinmentDetailsResponse.put("showTime", null);
+        apoinmentDetailsResponse.put("showPno", true);
+        apoinmentDetailsResponse.put("showTime", true);
         apoinmentDetailsResponse.put("chRoom", session.getRoomNo());
         apoinmentDetailsResponse.put("timeInterval", null);
         apoinmentDetailsResponse.put("sessionDetails", sessionDetailsResponse);
@@ -1554,7 +1554,7 @@ public class ChannelApi {
         patientDetails.put("patientName", bookingDetails.getPatientName());
         patientDetails.put("patientFullName", bookingDetails.getTitle() + " " + bookingDetails.getPatientName());
         patientDetails.put("nid", bookingDetails.getNic());
-        patientDetails.put("memberId", bookingDetails.getId());
+        patientDetails.put("memberId", null);
         patientDetails.put("member", null);
         patientDetails.put("needSMS", bookingDetails.isNeedSms());
         patientDetails.put("nsr", bookingDetails.isNsr());
@@ -1563,6 +1563,7 @@ public class ChannelApi {
         priceDetails.put("totalAmount", bookingBill.getTotal());
         priceDetails.put("docCharge", bookingBill.getStaffFee());
         priceDetails.put("hosCharge", bookingBill.getHospitalFee());
+        priceDetails.put("charge", bookingDetails.getOnlineBookingPayment());
         priceDetails.put("nsrFee", 0);
         priceDetails.put("hosChargeWithoutVat", 0);
         priceDetails.put("echCharge", 0);
@@ -1662,8 +1663,8 @@ public class ChannelApi {
         appoinment.put("refNo", completedSaveBill.getAgentRefNo());
         appoinment.put("patientNo", completedSaveBill.getSingleBillSession().getSerialNo());
         appoinment.put("allPatientNo", channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber"));
-        appoinment.put("showPno", null);
-        appoinment.put("showTime", null);
+        appoinment.put("showPno", true);
+        appoinment.put("showTime", true);
         appoinment.put("chRoom", completedSaveBill.getSingleBillSession().getSessionInstance().getRoomNo());
         appoinment.put("timeInterval", null);
         appoinment.put("status", "Patient-canceled");
@@ -1691,7 +1692,7 @@ public class ChannelApi {
         patientDetails.put("patientName", bookingData.getPatientName());
         patientDetails.put("patientFullName", bookingData.getTitle() + " " + bookingData.getPatientName());
         patientDetails.put("nid", bookingData.getNic());
-        patientDetails.put("memberId", bookingData.getId());
+        patientDetails.put("memberId", null);
         patientDetails.put("member", null);
         patientDetails.put("needSMS", bookingData.isNeedSms());
         patientDetails.put("nsr", bookingData.isNsr());
@@ -1700,6 +1701,7 @@ public class ChannelApi {
         priceDetails.put("totalAmount", completedSaveBill.getTotal());
         priceDetails.put("docCharge", completedSaveBill.getStaffFee());
         priceDetails.put("hosCharge", completedSaveBill.getHospitalFee());
+        priceDetails.put("charge", bookingData.getOnlineBookingPayment());
         priceDetails.put("nsrFee", 0);
         priceDetails.put("hosChargeWithoutVat", 0);
         priceDetails.put("echCharge", 0);
