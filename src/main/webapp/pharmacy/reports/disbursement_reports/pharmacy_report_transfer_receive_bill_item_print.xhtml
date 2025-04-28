@@ -157,16 +157,16 @@
                                                 <th style="width: 15mm; font-weight: 700;">
                                                     <h:outputText value="Bill No" style="margin-left: 1mm;"/>
                                                 </th>
-                                                <th style="width: 25mm;font-weight: 700;">
+                                                <th style="width: 17mm;font-weight: 700;">
                                                     <h:outputText value="Ref. Bill No" style="margin-left: 1mm;"/>
                                                 </th>
-                                                <th style="width: 67mm; font-weight: 700; text-align: left;">
+                                                <th style="width: 25mm; font-weight: 700; ">
                                                     <h:outputText value="Date" style="margin-left:  1mm;"/>
                                                 </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                <th style="width: 67mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Item Description" style="margin-left:  1mm;"/>
                                                 </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 17mm; font-weight: 700;">
                                                     <h:outputText value="Code" style="margin-right: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: right;">
@@ -183,18 +183,18 @@
                                         <tbody>
                                             <ui:repeat value="#{reportsTransfer.transferItems}" var="i">
                                                 <tr>
-                                                    <td style="width: 8mm;" >
+                                                    <td style="width: 15mm;" >
                                                         <h:outputText value="#{i.bill.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
-                                                    <td style="width: 25mm; text-align: left;">
+                                                    <td style="width: 17mm; text-align: left;">
                                                         <h:outputLabel value="#{i.bill.backwardReferenceBill.deptId}" />
                                                     </td>
-                                                    <td style="width: 67mm; text-align: left;">
+                                                    <td style="width: 25mm; text-align: left;">
                                                         <h:outputLabel value="#{i.bill.createdAt}"  >
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                         </h:outputLabel>
                                                     </td>
-                                                    <td style="width: 17mm; text-align: left;">
+                                                    <td style="width: 67mm; text-align: left;">
                                                         <h:outputLabel value="#{i.item.name}" />
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
