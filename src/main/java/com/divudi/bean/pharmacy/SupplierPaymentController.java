@@ -2278,6 +2278,50 @@ public class SupplierPaymentController implements Serializable {
 
         return "/dealerPayment/complete_approved_and_settled_supplier_payment?faces-redirect=true";
     }
+    
+    public String findAndnavigateToViewSupplierPaymentVoucher(Bill b){
+        String jpql = "Select bi from BillItem bi where "
+                + " bi.bill.billTypeAtomic =:bta "
+                + " and bi.referenceBill =:bill "
+                + " and bi.retired = false";
+        HashMap hm = new HashMap();
+        hm.put("bta", BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION);
+        hm.put("bill", b);
+        BillItem supBillItem = getBillItemFacade().findFirstByJpql(jpql,hm);
+        Bill supplierPaymentBill = supBillItem.getBill();
+        
+        if (supplierPaymentBill == null) {
+            JsfUtil.addErrorMessage("No Bill Is Selected");
+            return null;
+        }
+        if (supplierPaymentBill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return null;
+        }
+        if (supplierPaymentBill.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION) {
+            if (supplierPaymentBill.getReferenceBill() != null) {
+                current = supplierPaymentBill.getReferenceBill();
+            } else if (supplierPaymentBill.getBackwardReferenceBill() != null) {
+                current = supplierPaymentBill.getBackwardReferenceBill();
+            } else {
+                JsfUtil.addErrorMessage("Not a supplier bill");
+                return null;
+            }
+        } else {
+            current = supplierPaymentBill;
+        }
+        if (current.getBillTypeAtomic() != BillTypeAtomic.SUPPLIER_PAYMENT) {
+            JsfUtil.addErrorMessage("Not a supplier bill");
+            return null;
+        }
+        current = billService.reloadBill(supplierPaymentBill);
+        if (!current.isPaymentApproved()) {
+            JsfUtil.addErrorMessage("Not Approved. Can not complete.");
+            return null;
+        }
+
+        return "/dealerPayment/view_supplier_payment_voucher?faces-redirect=true";
+    }
 
     public String navigateToViewSupplierPaymentVoucher(Bill supplierPaymentBill) {
         if (supplierPaymentBill == null) {

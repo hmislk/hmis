@@ -16,7 +16,7 @@
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview">
-                    <bi:grn_payment billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current}"/>
+                    <bi:grn_payment_with_pre_bill billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current}"/>
                 </p:panel>
             </ui:define>
         </ui:composition>
