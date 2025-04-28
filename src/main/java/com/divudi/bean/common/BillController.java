@@ -3192,10 +3192,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      *
      * This method scans all non-retired bills of type
      * PHARMACY_RETAIL_SALE_CANCELLED, and for each BillItem in those bills,
-     * attempts to fix the linked PharmaceuticalBillItem (if present) by calling
-     * the correction method.
+     * processes only the second set of PharmaceuticalBillItems, skipping the
+     * first set which is known to be incorrect.
      *
-     * ChatGPT contributed - 2025-04
+     * ChatGPT contributed - 2025-04, updated 2025-04
      */
     public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills() {
         if (getFromDate() == null || getToDate() == null) {
@@ -3206,7 +3206,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         BillTypeAtomic billTypeAtomic = BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
 
         String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta "
-                + "and b.createdAt between :fd and :td ";
+                + "AND b.createdAt BETWEEN :fd AND :td";
         Map<String, Object> params = new HashMap<>();
         params.put("bta", billTypeAtomic);
         params.put("fd", getFromDate());
@@ -3253,7 +3253,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 continue;
             }
 
-            for (PharmaceuticalBillItem pbi : pbis) {
+            // Skip the first half of PharmaceuticalBillItems
+            for (int i = numberOfBillItems; i < numberOfPharmaceuticalBillItems; i++) {
+                PharmaceuticalBillItem pbi = pbis.get(i);
                 if (pbi == null) {
                     continue;
                 }

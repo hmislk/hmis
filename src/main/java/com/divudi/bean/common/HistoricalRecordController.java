@@ -1,0 +1,231 @@
+/*
+ * Created by ChatGPT on request by Dr. M. H. B. Ariyaratne
+ *
+ */
+package com.divudi.bean.common;
+
+import com.divudi.core.entity.HistoricalRecord;
+import com.divudi.core.facade.HistoricalRecordFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.service.HistoricalRecordService;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
+import javax.inject.Inject;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
+import javax.persistence.TemporalType;
+
+/**
+ *
+ * @author Dr M H B Ariyaratne
+ */
+@Named
+@SessionScoped
+public class HistoricalRecordController implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Inject
+    private SessionController sessionController;
+
+    @EJB
+    private HistoricalRecordFacade ejbFacade;
+    @EJB
+    HistoricalRecordService historicalRecordService;
+
+    private HistoricalRecord current;
+    private List<HistoricalRecord> items = null;
+    private List<String> variableNames;
+
+    private Date fromDate;
+    private Date toDate;
+    private Institution institution;
+    private Institution site;
+    private Department department;
+    private String variableName;
+
+    public String navigateToHistoricalRecordList() {
+        recreateModel();
+        return "/dataAdmin/historical_record_list?faces-redirect=true";
+    }
+
+    public List<String> getVariableNames() {
+        if (variableNames == null) {
+            variableNames = historicalRecordService.fetchVariableNames();
+        }
+        return variableNames;
+    }
+
+    public HistoricalRecordController() {
+    }
+
+    public HistoricalRecord findRecord(String variableName, Date recordDate) {
+        if (variableName == null || recordDate == null) {
+            return null;
+        }
+        return findRecord(variableName, null, null, null, recordDate);
+    }
+
+    public HistoricalRecord findRecord(String variableName, Institution institution, Date recordDate) {
+        if (variableName == null || recordDate == null) {
+            return null;
+        }
+        return findRecord(variableName, institution, null, null, recordDate);
+    }
+
+    public HistoricalRecord findRecord(String variableName, Institution institution, Department department, Date recordDate) {
+        if (variableName == null || recordDate == null) {
+            return null;
+        }
+        return findRecord(variableName, institution, null, department, recordDate);
+    }
+
+    public HistoricalRecord findRecord(String variableName, Institution institution, Institution site, Department department, Date recordDate) {
+        return historicalRecordService.findRecord(variableName, institution, site, department, recordDate);
+    }
+
+    public HistoricalRecord getCurrent() {
+        if (current == null) {
+            current = new HistoricalRecord();
+        }
+        return current;
+    }
+
+    public void setCurrent(HistoricalRecord current) {
+        this.current = current;
+    }
+
+    private HistoricalRecordFacade getFacade() {
+        return ejbFacade;
+    }
+
+    public List<HistoricalRecord> getItems() {
+        return items;
+    }
+
+    public void recreateModel() {
+        items = null;
+    }
+
+    public HistoricalRecordFacade getEjbFacade() {
+        return ejbFacade;
+    }
+
+    public void setEjbFacade(HistoricalRecordFacade ejbFacade) {
+        this.ejbFacade = ejbFacade;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public String getVariableName() {
+        return variableName;
+    }
+
+    public void setVariableName(String variableName) {
+        this.variableName = variableName;
+    }
+
+    @FacesConverter(forClass = HistoricalRecord.class)
+    public static class HistoricalRecordConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            HistoricalRecordController controller = (HistoricalRecordController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "historicalRecordController");
+            return controller.getEjbFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            try {
+                key = Long.valueOf(value);
+            } catch (NumberFormatException e) {
+//                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Invalid ID format: " + value, e); No Logger is Implemented yet. Will be done later
+                return null;
+            }
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            if (value == null) {
+                return null;
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof HistoricalRecord) {
+                HistoricalRecord o = (HistoricalRecord) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + HistoricalRecord.class.getName());
+            }
+        }
+    }
+
+}
