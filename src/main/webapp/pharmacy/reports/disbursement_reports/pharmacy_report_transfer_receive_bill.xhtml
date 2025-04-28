@@ -13,16 +13,16 @@
                 <h:form>
                     <p:panel header="Pharmacy Transfer Received Bills" >
                         <p:panelGrid columns="4" class="w-100">
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="Transfer From" ></h:outputLabel>
+                            <h:outputLabel value="From" />
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                            <h:outputLabel value="To"/>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <h:outputLabel value="Transfer From" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="Transfer To" ></h:outputLabel>
+                            <h:outputLabel value="Transfer To" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.toDepartment}"  >
@@ -49,8 +49,7 @@
                                 ajax="false"
                                 icon="fas fa-print"
                                 class="ui-button-info"
-                                action="#" >
-                                <p:printer target="gpBillPreviewPrinting" ></p:printer>
+                                action="pharmacy_report_transfer_receive_bill_print?faces-redirect=true" >
                             </p:commandButton>
 
 
@@ -133,7 +132,7 @@
                                     </h:outputLabel> 
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{reportsTransfer.netTotalValues}" style="padding: 0px!important; margin: 0px!important;" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -143,11 +142,11 @@
                                         <h:outputLabel value="Sale Value" style="padding: 0px!important; margin: 0px!important;"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.saleValue}" style="padding: 0px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>   
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{reportsTransfer.totalsValue}" style="padding: 0px!important; margin: 0px!important;">
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
