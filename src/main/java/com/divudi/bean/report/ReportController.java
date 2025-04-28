@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1944,6 +1945,25 @@ public class ReportController implements Serializable {
 
         List<AgentHistory> histories = loadHistories(collectingCentre);
         agentHistories = detectBalanceContinuationErrors(histories);
+    }
+
+    public List<Institution> findCollectingCentresFromAgentHistories() {
+        String jpql = "select distinct ah.agency "
+                + " from AgentHistory ah "
+                + " where ah.retired = false "
+                + " and ah.agency is not null ";
+
+        Map<String, Object> params = new HashMap<>();
+
+        if (fromDate != null && toDate != null) {
+            jpql += " and ah.createdAt between :fd and :td ";
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+        }
+
+        jpql += " order by ah.agency.name";
+
+        return institutionFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void processAllCollectingCentresBalanceContinuationErrors() {
