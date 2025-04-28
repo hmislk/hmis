@@ -583,7 +583,9 @@
 
                         <p:column headerText="Status" width="10em">
                             <h:outputText
-                                    value="#{bi.bill.status}"/>
+                                    value="#{patientInvestigationController.getPatientInvestigationFromBillItem(bi) ne null ?
+                                    patientInvestigationController.getPatientInvestigationFromBillItem(bi).status :
+                                    '-'}"/>
                         </p:column>
 
                         <p:column headerText="CC Amt" width="5em">
