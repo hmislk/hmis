@@ -68,11 +68,10 @@ jobs:
           git commit -m "Update version to ${{ steps.version_string.outputs.version }}"
 
       - name: Push branch
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@v0.6.0
         with:
           branch: update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v5
