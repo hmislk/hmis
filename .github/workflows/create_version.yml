@@ -64,7 +64,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
-          git add src/main/resources/VERSION.txt src/main/resources/version.txt README.md .github/counter.txt .github/last_date.txt
+          git add -f src/main/resources/VERSION.txt src/main/resources/version.txt README.md .github/counter.txt .github/last_date.txt
           git commit -m "Update version to ${{ steps.version_string.outputs.version }}"
 
       - name: Push branch
