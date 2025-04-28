@@ -239,8 +239,8 @@ public class OpdReportController implements Serializable {
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
 
-        dailyStockBalanceReport.setOpeningStock(stockHistoryService.fetchOpeningStockQuantity(department, toDate));
-        dailyStockBalanceReport.setClosingStock(stockHistoryService.fetchClosingStockQuantity(department, toDate));
+        dailyStockBalanceReport.setOpeningStockValue(stockHistoryService.fetchOpeningStockQuantity(department, toDate));
+        dailyStockBalanceReport.setClosingStockValue(stockHistoryService.fetchClosingStockQuantity(department, toDate));
 
     }
 
