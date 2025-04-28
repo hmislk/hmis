@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.*;
 import com.divudi.core.data.analytics.ReportTemplateType;
@@ -99,6 +100,8 @@ public class ReportsController implements Serializable {
     TransferController transferController;
     @Inject
     private DepartmentController departmentController;
+    @Inject
+    CollectingCentreBillController collectingCentreBillController;
 
     /**
      * Properties
@@ -3177,10 +3180,10 @@ public class ReportsController implements Serializable {
             parameters.put("cc", collectingCentre);
         }
 
-        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
-            jpql += "AND bill.referenceNumber LIKE :cbn ";
-            parameters.put("cbn", "%" + cashBookNumber + "%");
-        }
+//        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
+//            jpql += "AND bill.referenceNumber LIKE :cbn ";
+//            parameters.put("cbn", "%" + cashBookNumber + "%");
+//        }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
@@ -3189,6 +3192,15 @@ public class ReportsController implements Serializable {
         jpql += "GROUP BY bill";
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
+            rs = rs.stream()
+                    .filter(r -> {
+                        String bookNumber = collectingCentreBillController.generateBookNumberFromReference(r.getBill().getReferenceNumber());
+                        return bookNumber != null && bookNumber.contains(cashBookNumber);
+                    })
+                    .collect(Collectors.toList());
+        }
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
