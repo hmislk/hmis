@@ -59,7 +59,7 @@ jobs:
         run: |
           sed -i "s/Current Version:.*/Current Version: ${{ steps.version_string.outputs.version }} (This line will be automatically updated to reflect the latest version)/" README.md
 
-      -- name: Commit version bump changes
+      - name: Commit version bump changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
