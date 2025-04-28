@@ -2289,7 +2289,6 @@ public class SupplierPaymentController implements Serializable {
         hm.put("bill", b);
         BillItem supBillItem = getBillItemFacade().findFirstByJpql(jpql,hm);
         Bill supplierPaymentBill = supBillItem.getBill();
-        System.out.println("supplierPaymentBill = " + supplierPaymentBill);
         
         if (supplierPaymentBill == null) {
             JsfUtil.addErrorMessage("No Bill Is Selected");
