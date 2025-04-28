@@ -2008,6 +2008,7 @@ public class ReportController implements Serializable {
         }
     }
 
+    
     public void processCollectingCentreStatementReport() {
         String jpql = "select bi "
                 + " from BillItem bi "
