@@ -279,7 +279,6 @@ public class SupplierPaymentController implements Serializable {
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
-
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>
@@ -714,6 +713,16 @@ public class SupplierPaymentController implements Serializable {
         }
         getCurrent().setNetTotal(0 - n);
     }
+    
+    public void calTotalWithResetingIndexSelected() {
+        int index = 0;
+        double n = 0.0;
+        for (BillItem b : selectedBillItems) {
+            b.setSearialNo(index++);
+            n += b.getNetValue();
+        }
+        getCurrent().setNetTotal(0 - n);
+    }
 
     public void removeAll() {
         for (BillItem b : selectedBillItems) {
@@ -740,13 +749,38 @@ public class SupplierPaymentController implements Serializable {
 //        }
 //    }
     public void remove(BillItem billItem) {
-        getBillItems().remove(billItem.getSearialNo());
+        getBillItems().remove(billItem); // removes by object, not by index
         calTotalWithResetingIndex();
+    }
+    
+    public void removeselected(BillItem billItem) {
+        getSelectedBillItems().remove(billItem); // removes by object, not by index
+        calTotalWithResetingIndexSelected();
+        calculateTotalBySelectedBillItems();
+    }
+    
+    public void removeFromCurrent(BillItem billItem) {
+        getCurrent().getBillItems().remove(billItem); // removes by object, not by index
+        updateReferanceBillAsNotPaymentGenerated(billItem);
+        calTotal(current);
+        billItem.setRetired(true);
     }
 
     public void removeWithoutIndex(BillItem billItem) {
         getBillItems().remove(billItem.getSearialNo());
 
+    }
+    
+    public void updateReferanceBillAsNotPaymentGenerated(BillItem billItemsWithReferanceToSettlingBills){
+            Bill originalBill = billItemsWithReferanceToSettlingBills.getReferenceBill();
+
+            originalBill.setPaymentGenerated(false);
+            originalBill.setPaymentGeneratedAt(null);
+            originalBill.setPaymentGeneratedBy(null);
+
+            originalBill.setPaymentApproved(false);
+
+            billFacade.edit(originalBill);
     }
 
     private boolean errorCheck() {
@@ -921,7 +955,7 @@ public class SupplierPaymentController implements Serializable {
             return true;
         }
 
-        if(!getCurrent().isCompleted()){
+        if (!getCurrent().isCompleted()) {
             JsfUtil.addErrorMessage("Need to check before Approving");
             return true;
         }
@@ -952,7 +986,7 @@ public class SupplierPaymentController implements Serializable {
             JsfUtil.addErrorMessage("Select Cant settle without Dealor");
             return true;
         }
-         if (getCurrent().isCompleted()) {
+        if (getCurrent().isCompleted()) {
             JsfUtil.addErrorMessage("Already Checked, Cano not mark as checked again.");
             return true;
         }
@@ -1043,7 +1077,6 @@ public class SupplierPaymentController implements Serializable {
                 + "AND (b.paymentGenerated = 0 OR b.paymentGenerated IS NULL)";
         // Logging
 
-
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         netTotal = 0.0;
@@ -1071,7 +1104,6 @@ public class SupplierPaymentController implements Serializable {
         params.put("bts", billTypesListBilled);
         // Logging
 
-
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         netTotal = 0.0;
@@ -1097,7 +1129,6 @@ public class SupplierPaymentController implements Serializable {
 
         jpql += " AND (b.billTypeAtomic IN :bts)";
         params.put("bts", billTypesListBilled);
-
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1128,7 +1159,6 @@ public class SupplierPaymentController implements Serializable {
 
         jpql += " AND (b.paymentApproved = true OR b.paymentApproved = 1 ) ";
         // Logging
-
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -2278,8 +2308,8 @@ public class SupplierPaymentController implements Serializable {
 
         return "/dealerPayment/complete_approved_and_settled_supplier_payment?faces-redirect=true";
     }
-    
-    public String findAndnavigateToViewSupplierPaymentVoucher(Bill b){
+
+    public String findAndnavigateToViewSupplierPaymentVoucher(Bill b) {
         String jpql = "Select bi from BillItem bi where "
                 + " bi.bill.billTypeAtomic =:bta "
                 + " and bi.referenceBill =:bill "
@@ -2287,9 +2317,9 @@ public class SupplierPaymentController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bta", BillTypeAtomic.SUPPLIER_PAYMENT_PREPERATION);
         hm.put("bill", b);
-        BillItem supBillItem = getBillItemFacade().findFirstByJpql(jpql,hm);
+        BillItem supBillItem = getBillItemFacade().findFirstByJpql(jpql, hm);
         Bill supplierPaymentBill = supBillItem.getBill();
-        
+
         if (supplierPaymentBill == null) {
             JsfUtil.addErrorMessage("No Bill Is Selected");
             return null;
@@ -2617,19 +2647,19 @@ public class SupplierPaymentController implements Serializable {
         printPreview = true;
 
     }
+
     public void saveSupplierPayment(Bill b) {
-        if(b == null){
+        if (b == null) {
             return;
         }
         getBillFacade().edit(b);
 
-        for(BillItem bi : b.getBillItems()){
+        for (BillItem bi : b.getBillItems()) {
             billItemFacade.edit(bi);
         }
         changed = false;
         JsfUtil.addSuccessMessage("Bill Saved Successfully");
     }
-
 
     public void settleCheckingSupplierPayment() {
         if (errorCheckForCheckingSupplierPayment()) {
