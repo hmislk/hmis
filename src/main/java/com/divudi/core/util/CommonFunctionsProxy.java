@@ -19,6 +19,14 @@ public class CommonFunctionsProxy {
         return CommonFunctions.convertToWord(number);
     }
 
+    public static double roundToTwoDecimals(double value) {
+        return CommonFunctions.roundToTwoDecimals(value);
+    }
+
+    public static double roundToTwoDecimalsBigDecimal(double value) {
+        return CommonFunctions.roundToTwoDecimalsBigDecimal(value);
+    }
+
     public String formatToLongDate(Date date, String dateFormat) {
         return CommonFunctions.formatToLongDate(date, dateFormat);
     }

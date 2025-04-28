@@ -33,12 +33,14 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.IncomeBundle;
 import com.divudi.core.data.IncomeRow;
+import com.divudi.core.data.PharmacyBundle;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ReportViewType;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -46,10 +48,14 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.ejb.PharmacyService;
 import com.divudi.service.BillService;
+import com.divudi.service.HistoricalRecordService;
 import com.divudi.service.StockHistoryService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -96,6 +102,10 @@ public class PharmacySummaryReportController implements Serializable {
     private BillService billService;
     @EJB
     StockHistoryService stockHistoryService;
+    @EJB
+    HistoricalRecordService historicalRecordService;
+    @EJB
+    PharmacyService pharmacyService;
 
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -227,8 +237,8 @@ public class PharmacySummaryReportController implements Serializable {
         return "/pharmacy/reports/summary_reports/pharmacy_income_and_cost_report?faces-redirect=true";
     }
 
-    public String navigateToDailyStockBalanceReport() {
-        return "/pharmacy/reports/summary_reports/daily_stock_balance_report?faces-redirect=true";
+    public String navigateToDailyStockValuesReport() {
+        return "/pharmacy/reports/summary_reports/daily_stock_values_report?faces-redirect=true";
     }
 
     public String navigateToBillTypeIncome() {
@@ -252,12 +262,46 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
+        Date today = new Date();
+        if (!fromDate.before(today)) {
+            JsfUtil.addErrorMessage("Selected date must be earlier than today");
+            return;
+        }
+
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
 
-        dailyStockBalanceReport.setOpeningStock(stockHistoryService.fetchOpeningStockQuantity(department, toDate));
-        dailyStockBalanceReport.setClosingStock(stockHistoryService.fetchClosingStockQuantity(department, toDate));
+        HistoricalRecord openingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, fromDate);
+        if (openingBalance != null) {
+            dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
+        }
+
+        // Calculate toDate as fromDate + 1 day
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fromDate);
+        cal.add(Calendar.DATE, 1);
+        toDate = cal.getTime();
+
+        Date startOfTheDay = CommonFunctions.getStartOfBeforeDay(fromDate);
+        Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
+
+        PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
+
+        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
+
+        PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
+
+        PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
+
+        HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
+        if (closingBalance != null) {
+            dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
+        }
 
     }
 
@@ -454,6 +498,7 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a report view type.");
             return;
         }
+
         switch (reportViewType) {
             case BY_BILL:
                 processPharmacyIncomeReportByBill();
@@ -461,8 +506,14 @@ public class PharmacySummaryReportController implements Serializable {
             case BY_BILL_TYPE:
                 processPharmacyIncomeReportByBillType();
                 break;
+            case BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE:
+                processPharmacyIncomeReportByDiscountTypeAndAdmissionType();
+                break;
+            case BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE:
+                processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType();
+                break;
             default:
-                JsfUtil.addErrorMessage("Unsupported report view type.");
+                JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
                 break;
         }
     }
@@ -470,29 +521,7 @@ public class PharmacySummaryReportController implements Serializable {
     public void processPharmacyIncomeReportByBillType() {
         reportTimerController.trackReportExecution(() -> {
             System.out.println("processPharmacyIncomeReportByBillType");
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
-            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
             List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(incomeBills);
@@ -511,32 +540,81 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
+    public List<BillTypeAtomic> getPharmacyIncomeBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_WHOLESALE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_REFUND,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
+        );
+    }
+
+    public void processPharmacyIncomeReportByDiscountTypeAndAdmissionType() {
+        reportTimerController.trackReportExecution(() -> {
+            System.out.println("processPharmacyIncomeReportByBillType");
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+
+            List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            bundle = new IncomeBundle(incomeBills);
+            for (IncomeRow r : bundle.getRows()) {
+                if (r.getBill() == null) {
+                    continue;
+                }
+                if (r.getBill().getPaymentMethod() == null) {
+                    continue;
+                }
+                if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                    r.setPayments(billService.fetchBillPayments(r.getBill()));
+                }
+            }
+            bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType() {
+        reportTimerController.trackReportExecution(() -> {
+            System.out.println("processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType");
+
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+
+            List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            bundle = new IncomeBundle(incomeBills);
+
+            for (IncomeRow r : bundle.getRows()) {
+                Bill b = r.getBill();
+                if (b == null || b.getPaymentMethod() == null) {
+                    continue;
+                }
+                if (b.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                    r.setPayments(billService.fetchBillPayments(b));
+                }
+            }
+
+            bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionType();
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+    }
+
     public void processPharmacyIncomeReportByBill() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReport");
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
-            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
             List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(bills);
@@ -578,29 +656,7 @@ public class PharmacySummaryReportController implements Serializable {
     public void processPharmacyIncomeAndCostReportByBillItem() {
         reportTimerController.trackReportExecution(() -> {
             System.out.println("processPharmacyIncomeReport");
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
-            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
             List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(pbis);
@@ -611,29 +667,7 @@ public class PharmacySummaryReportController implements Serializable {
     public void processPharmacyIncomeAndCostReportByBillType() {
         reportTimerController.trackReportExecution(() -> {
             System.out.println("processPharmacyIncomeReport");
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE);
-            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
-            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
             List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(pbis);

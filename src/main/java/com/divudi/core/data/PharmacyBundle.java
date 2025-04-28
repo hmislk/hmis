@@ -41,7 +41,7 @@ import java.util.*;
 /**
  * @author buddhika
  */
-public class IncomeBundle implements Serializable {
+public class PharmacyBundle implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -51,10 +51,10 @@ public class IncomeBundle implements Serializable {
     //    private SessionController sessionController;
     private List<com.divudi.core.entity.cashTransaction.Denomination> denominations;
 
-    private List<IncomeBundle> bundles;
+    private List<PharmacyBundle> bundles;
     private ReportTemplate reportTemplate;
-    private List<IncomeRow> rows;
-    private IncomeRow summaryRow;
+    private List<PharmacyRow> rows;
+    private PharmacyRow summaryRow;
     private Map<String, List<BillItem>> groupedBillItems;
     private Map<Institution, List<Bill>> groupedBillItemsByInstitution;
 
@@ -132,7 +132,7 @@ public class IncomeBundle implements Serializable {
     private Double freeQuantityValueAtRetailSaleRate;
     private Double quantityPlusFreeQuantityValueAtRetailSaleRate;
 
-    public IncomeBundle() {
+    public PharmacyBundle() {
         this.id = UUID.randomUUID();
         this.rows = new ArrayList<>();
     }
@@ -166,7 +166,7 @@ public class IncomeBundle implements Serializable {
         double sumOfNetTotal = 0.0;
 
         // Aggregate all rows
-        for (IncomeRow r : rows) {
+        for (PharmacyRow r : rows) {
             sumOfCashValues += r.getCashValue();
             sumOfCardValues += r.getCardValue();
             sumOfMultiplePaymentMethodsValues += r.getMultiplePaymentMethodsValue();
@@ -222,7 +222,7 @@ public class IncomeBundle implements Serializable {
         getSummaryRow().setNetTotal(sumOfNetTotal);
     }
 
-    public IncomeBundle(List<?> entries) {
+    public PharmacyBundle(List<?> entries) {
         this(); // Initialize id and rows list
         if (entries != null && !entries.isEmpty()) {
             Object firstElement = entries.get(0);
@@ -231,7 +231,7 @@ public class IncomeBundle implements Serializable {
                 for (Object obj : entries) {
                     if (obj instanceof Bill) {
                         Bill bill = (Bill) obj;
-                        IncomeRow ir = new IncomeRow(bill);
+                        PharmacyRow ir = new PharmacyRow(bill);
 
                         rows.add(ir);
                     }
@@ -241,7 +241,7 @@ public class IncomeBundle implements Serializable {
                 for (Object obj : entries) {
                     if (obj instanceof BillItem) {
                         BillItem billItem = (BillItem) obj;
-                        IncomeRow ir = new IncomeRow(billItem, true);
+                        PharmacyRow ir = new PharmacyRow(billItem, true);
                         rows.add(ir);
                     }
                 }
@@ -250,15 +250,15 @@ public class IncomeBundle implements Serializable {
                 for (Object obj : entries) {
                     if (obj instanceof PharmaceuticalBillItem) {
                         PharmaceuticalBillItem pbi = (PharmaceuticalBillItem) obj;
-                        IncomeRow ir = new IncomeRow(pbi);
+                        PharmacyRow ir = new PharmacyRow(pbi);
                         rows.add(ir);
                     }
                 }
-            } else if (firstElement instanceof IncomeRow) {
-                // Process list as IncomeRows
+            } else if (firstElement instanceof PharmacyRow) {
+                // Process list as PharmacyRows
                 for (Object obj : entries) {
-                    if (obj instanceof IncomeRow) {
-                        IncomeRow incomeRow = (IncomeRow) obj;
+                    if (obj instanceof PharmacyRow) {
+                        PharmacyRow incomeRow = (PharmacyRow) obj;
                         rows.add(incomeRow);
                     }
                 }
@@ -271,7 +271,7 @@ public class IncomeBundle implements Serializable {
         purchaseValue = 0;
         grossProfitValue = 0;
 
-        for (IncomeRow r : getRows()) {
+        for (PharmacyRow r : getRows()) {
             PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
             if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
                 continue;
@@ -353,9 +353,9 @@ public class IncomeBundle implements Serializable {
         purchaseValue = 0;
         grossProfitValue = 0;
 
-        Map<BillTypeAtomic, IncomeRow> grouped = new LinkedHashMap<>();
+        Map<BillTypeAtomic, PharmacyRow> grouped = new LinkedHashMap<>();
 
-        for (IncomeRow r : getRows()) {
+        for (PharmacyRow r : getRows()) {
             PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
             if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
                 continue;
@@ -408,8 +408,8 @@ public class IncomeBundle implements Serializable {
                     break;
             }
 
-            IncomeRow groupRow = grouped.computeIfAbsent(bta, k -> {
-                IncomeRow ir = new IncomeRow();
+            PharmacyRow groupRow = grouped.computeIfAbsent(bta, k -> {
+                PharmacyRow ir = new PharmacyRow();
                 ir.setBillTypeAtomic(k);
                 return ir;
             });
@@ -452,7 +452,7 @@ public class IncomeBundle implements Serializable {
         freeQuantityValueAtRetailSaleRate = 0.0;
         quantityPlusFreeQuantityValueAtRetailSaleRate = 0.0;
 
-        for (IncomeRow r : getRows()) {
+        for (PharmacyRow r : getRows()) {
             BillItem bi = r.getBillItem();
             if (bi == null || bi.getPharmaceuticalBillItem() == null) {
                 continue;
@@ -481,7 +481,7 @@ public class IncomeBundle implements Serializable {
     }
 
     public void generatePaymentDetailsForBills() {
-        for (IncomeRow r : getRows()) {
+        for (PharmacyRow r : getRows()) {
             Bill b = r.getBill();
             populateRowFromBill(r, b);
         }
@@ -489,9 +489,9 @@ public class IncomeBundle implements Serializable {
     }
 
     public void generatePaymentDetailsGroupedByBillType() {
-        Map<BillTypeAtomic, IncomeRow> grouped = new LinkedHashMap<>();
+        Map<BillTypeAtomic, PharmacyRow> grouped = new LinkedHashMap<>();
 
-        for (IncomeRow r : getRows()) {
+        for (PharmacyRow r : getRows()) {
             Bill b = r.getBill();
             if (b == null || b.getBillTypeAtomic() == null) {
                 continue;
@@ -580,8 +580,8 @@ public class IncomeBundle implements Serializable {
 
             // Now group by BillTypeAtomic
             BillTypeAtomic bta = b.getBillTypeAtomic();
-            IncomeRow groupRow = grouped.computeIfAbsent(bta, k -> {
-                IncomeRow ir = new IncomeRow();
+            PharmacyRow groupRow = grouped.computeIfAbsent(bta, k -> {
+                PharmacyRow ir = new PharmacyRow();
                 ir.setBillTypeAtomic(k);
                 return ir;
             });
@@ -616,16 +616,16 @@ public class IncomeBundle implements Serializable {
         // Replace with grouped rows
         getRows().clear();
         grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getBillTypeAtomic, Comparator.nullsLast(Comparator.naturalOrder())))
+                .sorted(Comparator.comparing(PharmacyRow::getBillTypeAtomic, Comparator.nullsLast(Comparator.naturalOrder())))
                 .forEachOrdered(getRows()::add);
         populateSummaryRow();
     }
 
 // Contribution by ChatGPT - adapted based on provided instructions
     public void generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType() {
-        Map<String, IncomeRow> grouped = new LinkedHashMap<>();
+        Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
 
-        for (IncomeRow r : getRows()) {
+        for (PharmacyRow r : getRows()) {
             Bill b = r.getBill();
             if (b == null) {
                 continue;
@@ -656,8 +656,8 @@ public class IncomeBundle implements Serializable {
                 }
             }
 
-            IncomeRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
-                IncomeRow ir = new IncomeRow();
+            PharmacyRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
+                PharmacyRow ir = new PharmacyRow();
                 ir.setRowType(k);
                 return ir;
             });
@@ -692,16 +692,16 @@ public class IncomeBundle implements Serializable {
         // Replace with grouped rows
         getRows().clear();
         grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
+                .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
                 .forEachOrdered(getRows()::add);
         populateSummaryRow();
     }
 
     // Contribution by ChatGPT - combines grouping by BillTypeAtomic + (Admission Type / Discount Scheme)
     public void generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionType() {
-        Map<String, IncomeRow> grouped = new LinkedHashMap<>();
+        Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
 
-        for (IncomeRow r : getRows()) {
+        for (PharmacyRow r : getRows()) {
             Bill b = r.getBill();
             if (b == null || b.getBillTypeAtomic() == null) {
                 continue;
@@ -730,8 +730,8 @@ public class IncomeBundle implements Serializable {
             String groupKey = bta.name() + " - " + detail;
             r.setRowType(groupKey);  // Optional: if needed in JSF display
 
-            IncomeRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
-                IncomeRow ir = new IncomeRow();
+            PharmacyRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
+                PharmacyRow ir = new PharmacyRow();
                 ir.setBillTypeAtomic(bta);
                 ir.setRowType(k);
                 return ir;
@@ -767,13 +767,56 @@ public class IncomeBundle implements Serializable {
         // Replace with grouped rows, sorted by combined key
         getRows().clear();
         grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
+                .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
                 .forEachOrdered(getRows()::add);
         populateSummaryRow();
     }
 
+    
+    // Contribution by ChatGPT - combines grouping by BillTypeAtomic
+    public void generatePharmacyPurchaseGroupedByBillType() {
+        Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
+
+        for (PharmacyRow r : getRows()) {
+            Bill b = r.getBill();
+            if (b == null || b.getBillTypeAtomic() == null) {
+                continue;
+            }
+
+            populateRowFromBill(r, b);
+
+            BillTypeAtomic bta = b.getBillTypeAtomic();
+
+            String groupKey = bta.name();
+            r.setRowType(groupKey);  // Optional: if needed in JSF display
+
+            PharmacyRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
+                PharmacyRow ir = new PharmacyRow();
+                ir.setBillTypeAtomic(bta);
+                ir.setRowType(k);
+                return ir;
+            });
+
+            groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
+            groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
+            groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
+            groupRow.setServiceCharge(groupRow.getServiceCharge() + r.getServiceCharge());
+            groupRow.setActualTotal(groupRow.getActualTotal() + r.getActualTotal());
+
+        }
+
+        // Replace with grouped rows, sorted by combined key
+        getRows().clear();
+        grouped.values().stream()
+                .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
+                .forEachOrdered(getRows()::add);
+        populateSummaryRow();
+    }
+
+    
+    
     public void generatePaymentDetailsForBillsAndBatchBills() {
-        for (IncomeRow r : getRows()) {
+        for (PharmacyRow r : getRows()) {
             Bill b = r.getBill();
             Bill bb = r.getBatchBill();
             Bill rb = r.getReferanceBill();
@@ -881,9 +924,9 @@ public class IncomeBundle implements Serializable {
         }
 
         // This map will accumulate totals keyed by the date portion of bill.getCreatedAt().
-        Map<Date, IncomeRow> dailySummaries = new HashMap<>();
+        Map<Date, PharmacyRow> dailySummaries = new HashMap<>();
 
-        for (IncomeRow originalRow : getRows()) {
+        for (PharmacyRow originalRow : getRows()) {
             Bill bill = originalRow.getBill();
             if (bill == null) {
                 continue;
@@ -894,11 +937,11 @@ public class IncomeBundle implements Serializable {
             Date billDate = truncateToDateOnly(bill.getCreatedAt());
 
             // Fetch or create the summary row for this date.
-            IncomeRow dailyRow = dailySummaries.get(billDate);
+            PharmacyRow dailyRow = dailySummaries.get(billDate);
             if (dailyRow == null) {
-                dailyRow = new IncomeRow();
+                dailyRow = new PharmacyRow();
                 dailyRow.setDate(billDate);
-                // If your IncomeRow has a date property, set it here.
+                // If your PharmacyRow has a date property, set it here.
                 // dailyRow.setSomeDateField(billDate);
                 dailySummaries.put(billDate, dailyRow);
             }
@@ -989,15 +1032,15 @@ public class IncomeBundle implements Serializable {
         }
 
         // Replace the original rows with our date-based summaries.
-        List<IncomeRow> summarizedRows = new ArrayList<>(dailySummaries.values());
-        summarizedRows.sort(Comparator.comparing(IncomeRow::getDate));
+        List<PharmacyRow> summarizedRows = new ArrayList<>(dailySummaries.values());
+        summarizedRows.sort(Comparator.comparing(PharmacyRow::getDate));
 
         setRows(summarizedRows);
         // If you need additional overall calculations across all dates:
         populateSummaryRow();
     }
 
-    private void populateRowFromBill(IncomeRow r, Bill b) {
+    private void populateRowFromBill(PharmacyRow r, Bill b) {
         if (b == null) {
             return;
         }
@@ -1090,7 +1133,7 @@ public class IncomeBundle implements Serializable {
      * Helper method to allocate multiple-payment totals into the daily summary
      * row.
      */
-    private void calculateBillAndBatchBillPaymentValuesFromPaymentsByDate(IncomeRow originalRow, IncomeRow dailyRow) {
+    private void calculateBillAndBatchBillPaymentValuesFromPaymentsByDate(PharmacyRow originalRow, PharmacyRow dailyRow) {
         Bill batchBill = originalRow.getBatchBill();
         Bill individualBill = originalRow.getBill();
         if (individualBill == null
@@ -1194,7 +1237,7 @@ public class IncomeBundle implements Serializable {
         return cal.getTime();
     }
 
-    private void calculateBillPaymentValuesFromPayments(IncomeRow r) {
+    private void calculateBillPaymentValuesFromPayments(PharmacyRow r) {
         if (r == null || r.getBill() == null || r.getBill().getPaymentMethod() == null
                 || r.getBill().getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
             return;
@@ -1272,7 +1315,7 @@ public class IncomeBundle implements Serializable {
         }
     }
 
-    private void calculateBillAndBatchBillPaymentValuesFromPayments(IncomeRow r) {
+    private void calculateBillAndBatchBillPaymentValuesFromPayments(PharmacyRow r) {
         // Validate the row and Bill.
         if (r == null || r.getBill() == null || r.getBill().getPaymentMethod() == null
                 || r.getBill().getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
@@ -1417,7 +1460,7 @@ public class IncomeBundle implements Serializable {
     public void collectDepartments() {
         Set<Department> uniqueDepartments = new HashSet<>();
         if (bundles != null) {
-            for (IncomeBundle b : bundles) {
+            for (PharmacyBundle b : bundles) {
                 if (b.getDepartment() != null) {
                     uniqueDepartments.add(b.getDepartment());
                 }
@@ -1430,7 +1473,7 @@ public class IncomeBundle implements Serializable {
         resetTotals(); // Resets all totals before computation
 
         if (bundles != null) {
-            for (IncomeBundle childBundle : bundles) {
+            for (PharmacyBundle childBundle : bundles) {
 
                 // Payment values
                 onCallValue += childBundle.onCallValue;
@@ -1490,7 +1533,7 @@ public class IncomeBundle implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        IncomeBundle that = (IncomeBundle) o;
+        PharmacyBundle that = (PharmacyBundle) o;
         return Objects.equals(getId(), that.id);
     }
 
@@ -1514,11 +1557,11 @@ public class IncomeBundle implements Serializable {
         this.denominations = denominations;
     }
 
-    public List<IncomeBundle> getBundles() {
+    public List<PharmacyBundle> getBundles() {
         return bundles;
     }
 
-    public void setBundles(List<IncomeBundle> bundles) {
+    public void setBundles(List<PharmacyBundle> bundles) {
         this.bundles = bundles;
     }
 
@@ -1530,14 +1573,14 @@ public class IncomeBundle implements Serializable {
         this.reportTemplate = reportTemplate;
     }
 
-    public List<IncomeRow> getRows() {
+    public List<PharmacyRow> getRows() {
         if (rows == null) {
             rows = new ArrayList<>();
         }
         return rows;
     }
 
-    public void setRows(List<IncomeRow> rows) {
+    public void setRows(List<PharmacyRow> rows) {
         this.rows = rows;
     }
 
@@ -1941,14 +1984,14 @@ public class IncomeBundle implements Serializable {
         this.patientDepositsAreConsideredInHandingover = patientDepositsAreConsideredInHandingover;
     }
 
-    public IncomeRow getSummaryRow() {
+    public PharmacyRow getSummaryRow() {
         if (summaryRow == null) {
-            summaryRow = new IncomeRow();
+            summaryRow = new PharmacyRow();
         }
         return summaryRow;
     }
 
-    public void setSummaryRow(IncomeRow summaryRow) {
+    public void setSummaryRow(PharmacyRow summaryRow) {
         this.summaryRow = summaryRow;
     }
 
