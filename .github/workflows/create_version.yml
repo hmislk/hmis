@@ -1,11 +1,10 @@
 # .github/workflows/create-version.yml
 name: Update Version and README
 
-on:
-  push:
-    branches:
-      - 'master'
-      - 'development'  # Optional: include if development updates also need versioning
+#on:
+#  push:
+  #  branches:
+   #   - 'development'  # Optional: include if development updates also need versioning
   workflow_dispatch:   # Allow manual trigger from GitHub UI
 
 jobs:
@@ -14,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # 🔄 Changed from v2 to v3
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -59,20 +58,35 @@ jobs:
         run: |
           sed -i "s/Current Version:.*/Current Version: ${{ steps.version_string.outputs.version }} (This line will be automatically updated to reflect the latest version)/" README.md
 
-      - name: Set Git user name and email
+      - name: Commit version bump changes
         run: |
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-
-      - name: Stage changes
-        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          #git checkout -b update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
           git add -f src/main/resources/VERSION.txt src/main/resources/version.txt README.md .github/counter.txt .github/last_date.txt
+          git commit -m "Update version to ${{ steps.version_string.outputs.version }}"
 
-      - name: Commit changes
-        run: |
-          git diff --cached --quiet || git commit -m "Update version to ${{ steps.version_string.outputs.version }}"
+#      - name: Push branch
+#        uses: ad-m/github-push-action@v0.6.0
+#        with:
+#          branch: update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
         with:
-          branch: ${{ github.ref_name }}
+          title: "Update version to ${{ steps.version_string.outputs.version }}"
+          commit-message: "[version bump] Update version to ${{ steps.version_string.outputs.version }}"  # 🔄 Match commit message above
+          branch: update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
+          base: development
+          body: "Automated version bump and README update."
+          delete-branch: true
+          labels: auto-merge
+
+      - name: Enable auto-merge
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: merge
+
