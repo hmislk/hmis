@@ -4,7 +4,6 @@ name: Update Version and README
 on:
   push:
     branches:
-      - 'master'
       - 'development'  # Optional: include if development updates also need versioning
   workflow_dispatch:   # Allow manual trigger from GitHub UI
 
@@ -14,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # 🔄 Changed from v2 to v3
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -63,21 +62,22 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
+          #git checkout -b update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
           git add -f src/main/resources/VERSION.txt src/main/resources/version.txt README.md .github/counter.txt .github/last_date.txt
           git commit -m "Update version to ${{ steps.version_string.outputs.version }}"
 
-      - name: Push branch
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          branch: update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Push branch
+#        uses: ad-m/github-push-action@v0.6.0
+#        with:
+#          branch: update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v5
         with:
           title: "Update version to ${{ steps.version_string.outputs.version }}"
-          commit-message: "Update version to ${{ steps.version_string.outputs.version }}"
+          commit-message: "[version bump] Update version to ${{ steps.version_string.outputs.version }}"  # 🔄 Match commit message above
           branch: update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
           base: development
           body: "Automated version bump and README update."
