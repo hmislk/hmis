@@ -280,6 +280,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         this.agentReferenceBooks = agentReferenceBooks;
     }
 
+    public String generateBookNumberFromReference(String referenceNumber) {
+        if (referenceNumber != null && referenceNumber.length() > 2) {
+            return referenceNumber.substring(0, referenceNumber.length() - 2);
+        } else {
+            return null;
+        }
+    }
+
     public void selectCollectingCentre() {
         if (collectingCentre == null) {
             JsfUtil.addErrorMessage("Please select a collecting centre");
