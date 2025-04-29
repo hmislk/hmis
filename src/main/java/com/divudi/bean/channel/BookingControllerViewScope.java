@@ -1177,9 +1177,26 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setCancelledAt(new Date());
         selectedSessionInstance.setCancelledBy(sessionController.getLoggedUser());
         sessionInstanceController.save(selectedSessionInstance);
+        cancelAllOnlineBookings(getBillSessions());
         sendSmsChannelSessionCancelNotification();
         JsfUtil.addErrorMessage("Cancelled");
 
+    }
+    
+    public void cancelAllOnlineBookings(List<BillSession> allBillSessions){
+        for(BillSession bs : allBillSessions){
+            if(bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+                continue;
+            }
+            
+            OnlineBooking booking = bs.getBill().getReferenceBill().getOnlineBooking();
+            booking.setIsCanceled(true);
+            booking.setCancelledBy("From System : "+getSessionController().getLoggedUser().getName());
+            booking.setOnlineBookingStatus(OnlineBookingStatus.DOCTOR_CANCELED);
+            getOnlineBookingFacade().edit(booking);
+            
+            
+        }
     }
 
     public void sendSmsChannelSessionCancelNotification() {
@@ -2571,6 +2588,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (getBillSession().getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             getBillSession().getBill().getReferenceBill().setCancelled(true);
+            getBillSession().getBill().getCancelledBill().setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
             OnlineBooking booking = getBillSession().getBill().getReferenceBill().getOnlineBooking();
             booking.setOnlineBookingStatus(OnlineBookingStatus.PATIENT_CANCELED);
             booking.setIsCanceled(true);
