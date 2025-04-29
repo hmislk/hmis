@@ -3756,11 +3756,14 @@ public class ReportsController implements Serializable {
                 continue;
             }
 
-            boolean hasMatchingItem = originalBill.getBillItems().stream()
-                    .anyMatch(originalItem ->
-                            originalItem.getItem().equals(currentItem.getItem()) &&
-                                    originalItem.getPatientInvestigation() == null
-                    );
+            List<BillItem> originalItems = Optional.ofNullable(originalBill.getBillItems())
+                    .orElse(Collections.emptyList());
+
+            boolean hasMatchingItem = originalItems.stream()
+                    .filter(oi -> oi.getItem() != null)
+                    .anyMatch(oi ->
+                            oi.getItem().equals(currentItem.getItem()) &&
+                                    oi.getPatientInvestigation() == null);
 
             if (hasMatchingItem) {
                 iterator.remove();
