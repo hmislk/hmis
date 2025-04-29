@@ -37,6 +37,10 @@ import com.divudi.core.data.PharmacyBundle;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ReportViewType;
+import static com.divudi.core.data.ReportViewType.BY_BILL;
+import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE;
+import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
+import static com.divudi.core.data.ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Category;
@@ -215,6 +219,7 @@ public class PharmacySummaryReportController implements Serializable {
     private SearchKeyword searchKeyword;
     private ReportKeyWord reportKeyWord;
     private IncomeBundle bundle;
+    private PharmacyBundle pharmacyBundle;
     private ReportTemplateRowBundle bundleReport;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
@@ -231,6 +236,10 @@ public class PharmacySummaryReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
         return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
+    }
+    
+    public String navigateToPharmacyProcurementReport() {
+        return "/pharmacy/reports/procurement_reports/pharmacy_procurement_report?faces-redirect=true";
     }
 
     public String navigateToPharmacyIncomeAndCostReport() {
@@ -518,6 +527,33 @@ public class PharmacySummaryReportController implements Serializable {
         }
     }
 
+    
+    public void processPharmacyProcurementReport() {
+        if (reportViewType == null) {
+            JsfUtil.addErrorMessage("Please select a report view type.");
+            return;
+        }
+
+        switch (reportViewType) {
+            case BY_BILL:
+                processPharmacyProcurementReportByBill();
+                break;
+            default:
+                JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
+                break;
+        }
+    }
+    
+    public void processPharmacyProcurementReportByBill() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyProcurementBillTypes();
+            List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
+            pharmacyBundle = new PharmacyBundle(bills);
+            bundle.generateProcurementForBills();
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+    }
+
+    
     public void processPharmacyIncomeReportByBillType() {
         reportTimerController.trackReportExecution(() -> {
             System.out.println("processPharmacyIncomeReportByBillType");
@@ -564,6 +600,19 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
+        );
+    }
+    
+    public List<BillTypeAtomic> getPharmacyProcurementBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_GRN_CANCELLED,
+                BillTypeAtomic.PHARMACY_GRN_REFUND,
+                BillTypeAtomic.PHARMACY_GRN_RETURN,
+                BillTypeAtomic.PHARMACY_GRN_WHOLESALE,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED
         );
     }
 
@@ -1696,4 +1745,14 @@ public class PharmacySummaryReportController implements Serializable {
         this.reportViewType = reportViewType;
     }
 
+    public PharmacyBundle getPharmacyBundle() {
+        return pharmacyBundle;
+    }
+
+    public void setPharmacyBundle(PharmacyBundle pharmacyBundle) {
+        this.pharmacyBundle = pharmacyBundle;
+    }
+
+    
+    
 }
