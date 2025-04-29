@@ -116,7 +116,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="GRN No"/>                                  
                                 </f:facet> 
-                                <p:outputLabel value=" #{b.referenceBill.invoiceNumber}" ></p:outputLabel>
+                                <p:outputLabel value=" #{b.referenceBill.deptId}" ></p:outputLabel>
                             </p:column> 
                             <p:column >  
                                 <f:facet name="header">
@@ -157,9 +157,17 @@
                                     value="View" 
                                     icon="pi pi-eye"
                                     style="width: 6em;"
-                                    class="ui-button-primary mx-1"
+                                    class="ui-button-primary mx-1 my-2"
                                     action="#{supplierPaymentController.navigateToViewProcurementBill(b.referenceBill)}" 
                                     ajax="false" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    class="ui-button-danger mx-1"
+                                    icon="pi pi-trash"
+                                    style="width: 7em;"
+                                    action="#{supplierPaymentController.removeFromCurrent(b)}" 
+                                    value="Remove">
                                 </p:commandButton>
                             </p:column>
 
