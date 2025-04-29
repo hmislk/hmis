@@ -1,6 +1,6 @@
 package com.divudi.core.data.reports;
 
-import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
+
 
 public enum SummaryReports implements IReportType {
     PHARMACY_INCOME_REPORT("Pharmacy Income Report"),
