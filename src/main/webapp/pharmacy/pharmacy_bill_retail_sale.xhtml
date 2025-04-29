@@ -977,16 +977,17 @@
                                                     </f:facet>
                                                     <div class="row" >
                                                         <div class="col-md-5" >
-                                                            <p:outputLabel value="Payment Method" for="pay" ></p:outputLabel>
-                                                            <p:selectOneMenu   id="pay"
-                                                                               required="true"
-                                                                               value="#{pharmacySaleController.paymentMethod}">
-                                                                <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}"
-                                                                               itemValue="#{p}"/>
-                                                                <p:ajax process="pay"
+                                                            <p:outputLabel value="Payment Method" for="cmbPaymentMethod" ></p:outputLabel>
+                                                            <p:selectOneMenu id="cmbPaymentMethod" value="#{pharmacySaleController.paymentMethod}" required="true">
+                                                                <p:ajax event="valueChange" 
+                                                                        listener="#{pharmacySaleController.listnerForPaymentMethodChange}" 
                                                                         update="panelBillDetails panelPaymentDetails"
-                                                                        event="blur"
-                                                                        listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
+                                                                        process="@this" 
+                                                                        partialSubmit="true"/>
+                                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" 
+                                                                               var="pmt" 
+                                                                               itemLabel="#{pmt.label}" 
+                                                                               itemValue="#{pmt}" />
                                                             </p:selectOneMenu>
 
                                                             <p:outputLabel value="Discount Scheme" for="cmbPs" ></p:outputLabel>
