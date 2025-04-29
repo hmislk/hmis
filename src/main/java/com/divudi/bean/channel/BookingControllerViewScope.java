@@ -76,6 +76,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.OptionScope;
 
 import static com.divudi.core.data.PaymentMethod.Cash;
@@ -84,12 +85,14 @@ import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.service.StaffService;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.OnlineBooking;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.UserPreference;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.entity.channel.AppointmentActivity;
 import com.divudi.core.entity.channel.SessionInstanceActivity;
 import com.divudi.core.facade.AgentReferenceBookFacade;
+import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -2508,6 +2511,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
     }
+    @EJB
+    private OnlineBookingFacade onlineBookingFacade;
+
+    public OnlineBookingFacade getOnlineBookingFacade() {
+        return onlineBookingFacade;
+    }
+
+    public void setOnlineBookingFacade(OnlineBookingFacade onlineBookingFacade) {
+        this.onlineBookingFacade = onlineBookingFacade;
+    }
 
     public void cancelAgentPaidBill() {
         if (getBillSession() == null) {
@@ -2555,6 +2568,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         
         //cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+        
+        if(getBillSession().getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+            getBillSession().getBill().getReferenceBill().setCancelled(true);
+            OnlineBooking booking = getBillSession().getBill().getReferenceBill().getOnlineBooking();
+            booking.setOnlineBookingStatus(OnlineBookingStatus.PATIENT_CANCELED);
+            booking.setIsCanceled(true);
+            booking.setCancelledBy("From system : "+getSessionController().getLoggedUser().getName());
+            onlineBookingFacade.edit(booking);
+            getBillFacade().edit(getBillSession().getBill().getReferenceBill());
+        }
         sendSmsOnChannelCancellationBookings();
         cancelPaymentMethod = null;
         comment = null;

@@ -941,7 +941,8 @@ public class ChannelService {
 
     public void cancelOnlineBooking(OnlineBooking booking) {
         booking.setOnlineBookingStatus(OnlineBookingStatus.PATIENT_CANCELED);
-
+        booking.setIsCanceled(true);
+        booking.setCancelledBy("From API :"+ booking.getAgency().getName());
         getOnlineBookingFacade().edit(booking);
 
     }
