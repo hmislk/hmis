@@ -7,6 +7,7 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
+import com.divudi.core.data.reports.CashierReports;
 import com.divudi.core.data.reports.CollectionCenterReport;
 import com.divudi.core.data.reports.SummaryReports;
 import com.divudi.core.util.JsfUtil;
@@ -263,125 +264,127 @@ public class PharmacySummaryReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
     public void processDailyStockBalanceReport() {
-        if (department == null) {
-            JsfUtil.addErrorMessage("Please select a department");
-            return;
-        }
-        if (fromDate == null) {
-            JsfUtil.addErrorMessage("Please select a date");
-            return;
-        }
-        Date today = new Date();
-        if (!fromDate.before(today)) {
-            JsfUtil.addErrorMessage("Selected date must be earlier than today");
-            return;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            if (department == null) {
+                JsfUtil.addErrorMessage("Please select a department");
+                return;
+            }
+            if (fromDate == null) {
+                JsfUtil.addErrorMessage("Please select a date");
+                return;
+            }
+            Date today = new Date();
+            if (!fromDate.before(today)) {
+                JsfUtil.addErrorMessage("Selected date must be earlier than today");
+                return;
+            }
 
-        dailyStockBalanceReport = new DailyStockBalanceReport();
-        dailyStockBalanceReport.setDate(fromDate);
-        dailyStockBalanceReport.setDepartment(department);
+            dailyStockBalanceReport = new DailyStockBalanceReport();
+            dailyStockBalanceReport.setDate(fromDate);
+            dailyStockBalanceReport.setDepartment(department);
 
-        HistoricalRecord openingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, fromDate);
-        if (openingBalance != null) {
-            dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
-        }
+            HistoricalRecord openingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, fromDate);
+            if (openingBalance != null) {
+                dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
+            }
 
-        // Calculate toDate as fromDate + 1 day
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(fromDate);
-        cal.add(Calendar.DATE, 1);
-        toDate = cal.getTime();
+            // Calculate toDate as fromDate + 1 day
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(fromDate);
+            cal.add(Calendar.DATE, 1);
+            toDate = cal.getTime();
 
-        Date startOfTheDay = CommonFunctions.getStartOfBeforeDay(fromDate);
-        Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
+            Date startOfTheDay = CommonFunctions.getStartOfBeforeDay(fromDate);
+            Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
 
-        PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-        dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
+            PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+            dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
 
-        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-        dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
+            PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+            dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
 
-        PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-        dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
+            PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+            dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
 
-        PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-        dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
+            PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+            dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
-        HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
-        if (closingBalance != null) {
-            dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
-        }
-
+            HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
+            if (closingBalance != null) {
+                dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
+            }
+        }, SummaryReports.DAILY_STOCK_BALANCE_REPORT, sessionController.getLoggedUser());
     }
 
     public void listBillTypes() {
-        bundleReport = new ReportTemplateRowBundle();
-        Map<String, Object> params = new HashMap<>();
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.ReportTemplateRow("
-                + "b.billType, b.billClassType, b.billTypeAtomic, count(b), sum(b.total), sum(b.discount), sum(b.netTotal))"
-                + " from Bill b where b.retired=:ret ");
-        params.put("ret", false);
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        reportTimerController.trackReportExecution(() -> {
+            bundleReport = new ReportTemplateRowBundle();
+            Map<String, Object> params = new HashMap<>();
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.ReportTemplateRow("
+                    + "b.billType, b.billClassType, b.billTypeAtomic, count(b), sum(b.total), sum(b.discount), sum(b.netTotal))"
+                    + " from Bill b where b.retired=:ret ");
+            params.put("ret", false);
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
 
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-        btas.add(BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+            btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            btas.add(BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
 
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
 
-        btas.add(BillTypeAtomic.PHARMACY_GRN);
-        btas.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-        btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
-        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-        btas.add(BillTypeAtomic.PHARMACY_GRN_PAYMENT);
-        btas.add(BillTypeAtomic.PHARMACY_GRN_PAYMENT_CANCELLED);
+            btas.add(BillTypeAtomic.PHARMACY_GRN);
+            btas.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            btas.add(BillTypeAtomic.PHARMACY_GRN_PAYMENT);
+            btas.add(BillTypeAtomic.PHARMACY_GRN_PAYMENT_CANCELLED);
 
-        params.put("btas", btas);
-        jpql.append(" and b.billTypeAtomic in :btas ");
+            params.put("btas", btas);
+            jpql.append(" and b.billTypeAtomic in :btas ");
 
-        if (toDate != null && fromDate != null) {
-            jpql.append(" and b.createdAt between :fromDate and :toDate ");
-            params.put("toDate", toDate);
-            params.put("fromDate", fromDate);
-        }
+            if (toDate != null && fromDate != null) {
+                jpql.append(" and b.createdAt between :fromDate and :toDate ");
+                params.put("toDate", toDate);
+                params.put("fromDate", fromDate);
+            }
 
-        if (institution != null) {
-            params.put("ins", institution);
-            jpql.append(" and b.department.institution = :ins ");
-        }
+            if (institution != null) {
+                params.put("ins", institution);
+                jpql.append(" and b.department.institution = :ins ");
+            }
 
-        if (department != null) {
-            params.put("dep", department);
-            jpql.append(" and b.department = :dept ");
-        }
+            if (department != null) {
+                params.put("dep", department);
+                jpql.append(" and b.department = :dept ");
+            }
 
-        if (site != null) {
-            params.put("site", site);
-            jpql.append(" and b.department = :site ");
-        }
+            if (site != null) {
+                params.put("site", site);
+                jpql.append(" and b.department = :site ");
+            }
 
-        if (webUser != null) {
-            jpql.append(" and b.creater=:wu ");
-            params.put("wu", webUser);
-        }
+            if (webUser != null) {
+                jpql.append(" and b.creater=:wu ");
+                params.put("wu", webUser);
+            }
 
-        jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
+            jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
 
-        // System.out.println("jpql.toString() = " + jpql.toString());
-        // System.out.println("params = " + params);
-        // Execute the query
-        List<ReportTemplateRow> rows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            // System.out.println("jpql.toString() = " + jpql.toString());
+            // System.out.println("params = " + params);
+            // Execute the query
+            List<ReportTemplateRow> rows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        bundleReport.setReportTemplateRows(rows);
-        bundleReport.calculateTotalByValues();
-
+            bundleReport.setReportTemplateRows(rows);
+            bundleReport.calculateTotalByValues();
+        }, SummaryReports.BILL_TYPE_LIST_REPORT, sessionController.getLoggedUser());
     }
 
     public void listBills() {
@@ -503,28 +506,30 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeReport() {
-        if (reportViewType == null) {
-            JsfUtil.addErrorMessage("Please select a report view type.");
-            return;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            if (reportViewType == null) {
+                JsfUtil.addErrorMessage("Please select a report view type.");
+                return;
+            }
 
-        switch (reportViewType) {
-            case BY_BILL:
-                processPharmacyIncomeReportByBill();
-                break;
-            case BY_BILL_TYPE:
-                processPharmacyIncomeReportByBillType();
-                break;
-            case BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE:
-                processPharmacyIncomeReportByDiscountTypeAndAdmissionType();
-                break;
-            case BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE:
-                processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType();
-                break;
-            default:
-                JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
-                break;
-        }
+            switch (reportViewType) {
+                case BY_BILL:
+                    processPharmacyIncomeReportByBill();
+                    break;
+                case BY_BILL_TYPE:
+                    processPharmacyIncomeReportByBillType();
+                    break;
+                case BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE:
+                    processPharmacyIncomeReportByDiscountTypeAndAdmissionType();
+                    break;
+                case BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE:
+                    processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType();
+                    break;
+                default:
+                    JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
+                    break;
+            }
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
     public void processPharmacyProcurementReport() {
@@ -679,23 +684,25 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReport() {
-        System.out.println("processPharmacyIncomeAndCostReport");
-        if (reportViewType == null) {
-            JsfUtil.addErrorMessage("Please select a report view type.");
-            return;
-        }
-        System.out.println("reportViewType = " + reportViewType);
-        switch (reportViewType) {
-            case BY_BILL_ITEM:
-                processPharmacyIncomeAndCostReportByBillItem();
-                break;
-            case BY_BILL_TYPE:
-                processPharmacyIncomeAndCostReportByBillType();
-                break;
-            default:
-                JsfUtil.addErrorMessage("Unsupported report view type.");
-                break;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            System.out.println("processPharmacyIncomeAndCostReport");
+            if (reportViewType == null) {
+                JsfUtil.addErrorMessage("Please select a report view type.");
+                return;
+            }
+            System.out.println("reportViewType = " + reportViewType);
+            switch (reportViewType) {
+                case BY_BILL_ITEM:
+                    processPharmacyIncomeAndCostReportByBillItem();
+                    break;
+                case BY_BILL_TYPE:
+                    processPharmacyIncomeAndCostReportByBillType();
+                    break;
+                default:
+                    JsfUtil.addErrorMessage("Unsupported report view type.");
+                    break;
+            }
+        }, SummaryReports.PHARMACY_INCOME_AND_COST_REPORT, sessionController.getLoggedUser());
     }
 
     public void processPharmacyIncomeAndCostReportByBillItem() {
