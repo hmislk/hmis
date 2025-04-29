@@ -51,6 +51,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BillValidation;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.service.StaffService;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.PatientDeposit;
@@ -122,11 +123,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Injects">
     @Inject
+    EnumController enumController;
+    @Inject
     SessionController sessionController;
     @Inject
     private BillBeanController billBean;
     @Inject
     private BillSearch billSearch;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     ItemApplicationController itemApplicationController;
     @Inject
@@ -139,8 +144,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     OpdBillController opdBillController;
     @Inject
     ApplicationController applicationController;
-    @Inject
-    WebUserController webUserController;
     @Inject
     PatientDepositController patientDepositController;
     //</editor-fold>
@@ -195,6 +198,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private double remainAmount;
 
     //</editor-fold>
+    
     private void savePatient() {
         if (getPatient().getId() == null) {
             if (getPatient().getPerson().getName() != null) {
@@ -666,6 +670,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBillCancellationStarted = false;
         return null;
     }
+    
+    public boolean checkCancelBill(Bill originalBill) {
+        List<PatientInvestigationStatus> availableStatus = enumController.getAvailableStatusforCancel();
+        boolean canCancelBill = false;
+        if (availableStatus.contains(originalBill.getStatus())) {
+            canCancelBill = true;
+        }
+        return canCancelBill;
+    }
 
     public String cancelPackageBatchBill() {
         batchBillCancellationStarted = true;
@@ -679,11 +692,34 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        if (!webUserController.hasPrivilege("OpdCancel")) {
-            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
-            batchBillCancellationStarted = false;
-            return "";
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", true)) {
+            for (Bill bill : billBean.validBillsOfBatchBill(getBatchBill())) {
+                if (!checkCancelBill(bill)) {
+                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                    if (getWebUserController().hasPrivilege("BillCancel")) {
+                        JsfUtil.addErrorMessage("You have Speacial privilege to cancel This Bill");
+                    } else {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        batchBillCancellationStarted = false;
+                        return "";
+                    }
+                } else {
+                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        batchBillCancellationStarted = false;
+                        return "";
+                    }
+                }
+            }
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
         }
+        
         if (errorsPresentOnOpdBatchBillCancellation()) {
             batchBillCancellationStarted = false;
             return "";
@@ -2428,6 +2464,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setRemainAmount(double remainAmount) {
         this.remainAmount = remainAmount;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
     }
 
 }
