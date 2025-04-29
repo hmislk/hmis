@@ -3107,7 +3107,7 @@ public class SupplierPaymentController implements Serializable {
             String filledFooter;
            
             String bankName = (p != null ? p.getBank().getName() : "");
-            String chequeDate = (p != null ? CommonFunctions.getDateFormat(p.getChequeDate(), sessionController.getApplicationPreference().getShortDateFormat()) : "");
+            String chequeDate = (p != null ? CommonFunctions.getDateFormat(p.getChequeDate(), sessionController.getApplicationPreference().getLongDateFormat()) : "");
             String chequeNo = (p != null ? p.getChequeRefNo() : "");
             Double amount = (p != null ? Math.abs(p.getPaidValue()) : 0.0);
 
