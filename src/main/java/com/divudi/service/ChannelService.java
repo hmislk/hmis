@@ -883,7 +883,9 @@ public class ChannelService {
 
         List<OnlineBookingStatus> requiredStatus = Arrays.asList(
                 OnlineBookingStatus.COMPLETED,
-                OnlineBookingStatus.CANCEL
+                OnlineBookingStatus.DOCTOR_CANCELED,
+                OnlineBookingStatus.PATIENT_CANCELED,
+                OnlineBookingStatus.ACTIVE
         );
 
         String sql = "Select ob from OnlineBooking ob "
@@ -938,7 +940,7 @@ public class ChannelService {
     }
 
     public void cancelOnlineBooking(OnlineBooking booking) {
-        booking.setOnlineBookingStatus(OnlineBookingStatus.CANCEL);
+        booking.setOnlineBookingStatus(OnlineBookingStatus.PATIENT_CANCELED);
 
         getOnlineBookingFacade().edit(booking);
 
@@ -1456,7 +1458,7 @@ public class ChannelService {
         bookingDetails.setHospitalFee(paidBill.getHospitalFee());
         bookingDetails.setDoctorFee(paidBill.getStaffFee());
         bookingDetails.setNetTotalForOnlineBooking(paidBill.getNetTotal() + agencyCharge);
-        bookingDetails.setOnlineBookingStatus(OnlineBookingStatus.COMPLETED);
+        bookingDetails.setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
         bookingDetails.setAppoinmentTotalAmount(paidBill.getNetTotal());
 
         getOnlineBookingFacade().edit(paidBill.getReferenceBill().getOnlineBooking());

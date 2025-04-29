@@ -1343,8 +1343,8 @@ public class ChannelApi {
         appoinment.put("givenTime", null);
         appoinment.put("chRoom", session.getRoomNo());
         appoinment.put("timeInterval", null);
-        appoinment.put("status", "Booking Reversed");
-        appoinment.put("isnew", false);
+        appoinment.put("status", "Active");
+        appoinment.put("isnew", null);
 
         Map<String, Object> sessionDetails = new HashMap<>();
         Item i = completedBill.getSingleBillSession().getItem();
@@ -1512,11 +1512,13 @@ public class ChannelApi {
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
 
-        String bookingStatus = "Unpaid";
-        if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.CANCEL) {
-            bookingStatus = "Patient-canceled";
+        String bookingStatus = "Active";
+        if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.PATIENT_CANCELED) {
+            bookingStatus = "Patient Canceled";
+        } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.DOCTOR_CANCELED) {
+            bookingStatus = "Doctor Canceled";
         } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
-            bookingStatus = "Complete";
+            bookingStatus = "Completed";
         }
 
         Map<String, Object> appoinment = new HashMap<>();
@@ -1636,7 +1638,7 @@ public class ChannelApi {
             if (bookingData.getOnlineBookingStatus() == OnlineBookingStatus.PENDING) {
                 JSONObject response = commonFunctionToErrorResponse("Temporary Bookings no need to cancel. They are cancelled automatically if not completed.");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-            } else if (bookingData.getOnlineBookingStatus() == OnlineBookingStatus.CANCEL) {
+            } else if (bookingData.getOnlineBookingStatus() == OnlineBookingStatus.PATIENT_CANCELED || bookingData.getOnlineBookingStatus() == OnlineBookingStatus.DOCTOR_CANCELED) {
                 JSONObject response = commonFunctionToErrorResponse("Appoinment available for : " + refNo + " is already cancelled");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
