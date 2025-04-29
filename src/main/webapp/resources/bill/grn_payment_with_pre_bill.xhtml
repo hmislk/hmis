@@ -11,16 +11,18 @@
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="billItems" />
     </cc:interface>
-    
+
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <style>
 
             @media screen{
+                @page {
+                    size: A4 portrait;
+                }
                 .paper{
                     position: static !important;
                     width: 210mm!important;
-                    zoom: 1.3;
                 }
 
                 table {
