@@ -2429,7 +2429,7 @@ public class BillSearch implements Serializable {
             if (!checkCancelBill(getBill())) {
                 JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
                 if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Speacial privilege to cancel This Bill");
+                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
                 } else {
                     JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
                     return;
@@ -2508,7 +2508,7 @@ public class BillSearch implements Serializable {
             if (!checkCancelBill(getBill())) {
                 JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
                 if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Speacial privilege to cancel This Bill");
+                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
                 } else {
                     JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
                     return;

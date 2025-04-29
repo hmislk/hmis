@@ -1852,7 +1852,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 if (!checkCancelBill(bill)) {
                     JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
                     if (getWebUserController().hasPrivilege("BillCancel")) {
-                        JsfUtil.addErrorMessage("You have Speacial privilege to cancel This Bill");
+                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
                     } else {
                         JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
                         batchBillCancellationStarted = false;
