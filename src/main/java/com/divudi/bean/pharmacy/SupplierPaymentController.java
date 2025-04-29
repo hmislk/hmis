@@ -3096,7 +3096,13 @@ public class SupplierPaymentController implements Serializable {
 
     public String fillFooterDataOfPaymentVoucher(String s, Bill b) {
         if(configOptionApplicationController.getBooleanValueByKey("Supplier Payment - Fill Footer Data",false)){
-            Payment p = findPaymentFromBill(b.getReferenceBill());
+            Payment p; 
+            
+            if(b.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT){
+                p = findPaymentFromBill(b);
+            }else{
+                p = findPaymentFromBill(b.getReferenceBill());
+            }
             
             String filledFooter;
            

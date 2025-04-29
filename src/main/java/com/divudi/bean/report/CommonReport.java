@@ -4889,6 +4889,8 @@ public class CommonReport implements Serializable {
 
     }
 
+    
+    @Deprecated
     public void createGrnDetailTable() {
         reportTimerController.trackReportExecution(() -> {
             FacesContext context = FacesContext.getCurrentInstance();

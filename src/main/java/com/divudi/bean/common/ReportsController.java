@@ -3630,6 +3630,7 @@ public class ReportsController implements Serializable {
                 BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION,
                 BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
                 BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION,
                 BillTypeAtomic.OPD_BILL_REFUND,
                 BillTypeAtomic.PACKAGE_OPD_BILL_REFUND,
                 BillTypeAtomic.CC_BILL_CANCELLATION,
@@ -3741,13 +3742,31 @@ public class ReportsController implements Serializable {
 
         while (iterator.hasNext()) {
             ReportTemplateRow row = iterator.next();
-            BillItem bi = row.getBillItem();
-            Bill b = bi.getBill();
+            BillItem currentItem = row.getBillItem();
+            Bill currentBill = currentItem.getBill();
 
-            if (cancelAndRefundBillTypeAtomics.contains(b.getBillTypeAtomic())) {
-                if (bi.getReferanceBillItem() == null || bi.getReferanceBillItem().getPatientInvestigation() == null) {
-                    iterator.remove();
-                }
+            if (!cancelAndRefundBillTypeAtomics.contains(currentBill.getBillTypeAtomic())) {
+                continue;
+            }
+
+            currentItem.setNetValue(-Math.abs(currentItem.getNetValue()));
+
+            Bill originalBill = currentBill.getBilledBill();
+            if (originalBill == null) {
+                continue;
+            }
+
+            List<BillItem> originalItems = Optional.ofNullable(originalBill.getBillItems())
+                    .orElse(Collections.emptyList());
+
+            boolean hasMatchingItem = originalItems.stream()
+                    .filter(oi -> oi.getItem() != null)
+                    .anyMatch(oi ->
+                            oi.getItem().equals(currentItem.getItem()) &&
+                                    oi.getPatientInvestigation() == null);
+
+            if (hasMatchingItem) {
+                iterator.remove();
             }
         }
     }
