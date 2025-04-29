@@ -123,9 +123,8 @@
                                     icon="fa-solid fa-file-pdf"
                                     ajax="false"
                                     style="width: 150px"
-                                    value="PDF">
-                                <p:dataExporter type="pdf" target="tbl"
-                                                fileName="collection_center_book_wise_detail_report"/>
+                                    value="PDF"
+                                    action="#{reportsController.exportCollectionCenterBookWiseDetailToPdf}">
                             </p:commandButton>
                         </div>
                     </div>
@@ -134,6 +133,7 @@
                         <p:dataTable id="tbl"
                                      class="w-100 m-2"
                                      value="#{reportsController.bundle.reportTemplateRows}"
+                                     filteredValue="#{reportsController.filteredReportTemplateRows}"
                                      var="c"
                                      rowIndexVar="b"
                                      paginator="true"
