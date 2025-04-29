@@ -182,7 +182,7 @@
                                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
+                                                        <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  ></p:ajax>
                                                         <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
                                                         <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
                                                     </p:autoComplete>
@@ -230,7 +230,7 @@
                                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
+                                                        <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  ></p:ajax>
                                                         <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
                                                         <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
                                                     </p:autoComplete>
@@ -249,8 +249,8 @@
                                                     class="w-100"
                                                     style="text-align: right;"
                                                     value="#{pharmacySaleController.intQty}">
-                                                    <p:ajax event="keyup" listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}" update="txtRate txtVal"></p:ajax>
-                                                    <p:ajax event="blur" listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}" update="txtRate txtVal"></p:ajax>
+                                                    <p:ajax event="keyup" listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal"></p:ajax>
+                                                    <p:ajax event="blur" listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal"></p:ajax>
                                                 </p:inputText>
 
                                             </div>
@@ -265,7 +265,7 @@
                                                             value="Add"
                                                             styleClass="ui-button-success"
                                                             action="#{pharmacySaleController.addBillItem()}"
-                                                            process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId} focusForAcIx"
+                                                            process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} focusForAcIx"
                                                             update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtItemInstructions" >
                                                         </p:commandButton>
 
@@ -977,23 +977,38 @@
                                                     </f:facet>
                                                     <div class="row" >
                                                         <div class="col-md-5" >
+                                                            <p:outputLabel value="Payment Method" for="pay" ></p:outputLabel>
                                                             <p:selectOneMenu   id="pay"
                                                                                value="#{pharmacySaleController.paymentMethod}">
                                                                 <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}"
                                                                                itemValue="#{p}"/>
-                                                                <p:ajax process="@this cmbPs cmbPaymentScheme"
+                                                                <p:ajax process="pay"
                                                                         update="panelBillDetails panelPaymentDetails"
                                                                         event="change"
                                                                         listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
                                                             </p:selectOneMenu>
 
+<!--                                                            <p:outputLabel value="Payment Scheme" for="cmbPaymentScheme" ></p:outputLabel>
                                                             <p:selectOneMenu   id="cmbPaymentScheme" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}">
                                                                 <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                                <p:ajax process="@this pay "
+                                                                <p:ajax process="cmbPaymentScheme"
+                                                                        update="panelBillDetails panelPaymentDetails"
+                                                                        event="change"
+                                                                        listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
+                                                            </p:selectOneMenu>-->
+
+
+                                                            <p:outputLabel value="Discount Scheme" for="cmbPs" ></p:outputLabel>
+                                                            <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" class="my-1">
+                                                                <f:selectItem itemLabel="Discount Scheme"/>
+                                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                                <p:ajax process="cmbPs"
                                                                         update="panelBillDetails panelPaymentDetails"
                                                                         event="change"
                                                                         listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
                                                             </p:selectOneMenu>
+
+
                                                         </div>
                                                     </div>
                                                     <div class="row" >
@@ -1166,16 +1181,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-5">
-                                                        <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" class="my-1">
-                                                            <f:selectItem itemLabel="Discount Scheme"/>
-                                                            <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                            <p:ajax process="@this pay "
-                                                                    update="panelBillDetails panelPaymentDetails"
-                                                                    event="change"
-                                                                    listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
-                                                        </p:selectOneMenu>
-                                                    </div>
+
 
                                                     <h:panelGrid columns="2" class="my-2">
                                                         <p:outputLabel value="Referring Doctor" ></p:outputLabel>
