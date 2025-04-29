@@ -848,6 +848,11 @@ public class ServiceSummery implements Serializable {
 
     double totalBill;
     double discountBill;
+    double netTotalBill;
+
+    public double getNetTotalBill(){return netTotalBill;}
+
+    public void setNetTotalBill(double netTotalBill){this.netTotalBill = netTotalBill;}
 
     public double getDiscountBill() {
         return discountBill;
@@ -901,9 +906,11 @@ public class ServiceSummery implements Serializable {
     public void calTotal(List<Bill> bills) {
         totalBill = 0.0;
         discountBill = 0.0;
+        netTotalBill = 0.0;
         for (Bill bill : bills) {
-            totalBill += bill.getNetTotal();
+            totalBill += bill.getTotal();
             discountBill += bill.getDiscount();
+            netTotalBill += bill.getNetTotal();
 
         }
     }

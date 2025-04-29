@@ -18,16 +18,16 @@
                     <p:panel header="Detailed Transfer Listing - (Consider after receiving)" >
 
                         <h:panelGrid columns="4" class="w-100">
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="Transfer From" ></h:outputLabel>
+                            <h:outputLabel value="From" />
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <h:outputLabel value="To"/>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <h:outputLabel value="Transfer From"/>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="Transfer To" ></h:outputLabel>
+                            <h:outputLabel value="Transfer To" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.toDepartment}"  >
@@ -55,8 +55,7 @@
                                 ajax="false"
                                 icon="fas fa-print"
                                 class="ui-button-info"
-                                action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                                action="pharmacy_report_transfer_receive_bill_item_print?faces-redirect=true" >
                             </p:commandButton>
                             
                            
@@ -75,11 +74,11 @@
                                     <br/>
                                     <h:outputLabel value="From  "/>&nbsp;
                                     <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     <h:outputLabel value="To  "/>&nbsp;
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         </h:outputLabel>
                                     
                                 </f:facet>
@@ -89,11 +88,10 @@
                                           filterBy="#{i.bill.deptId}"
                                           filterMatchMode="contains"
                                           >
-                                    <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.bill.deptId}" />
                                 </p:column>
-                                <p:column headerText="Ref. Bill No"
-                                          >
-                                    <h:outputLabel value="#{i.bill.backwardReferenceBill.deptId}" ></h:outputLabel>
+                                <p:column headerText="Ref. Bill No">
+                                    <h:outputLabel value="#{i.bill.backwardReferenceBill.deptId}" />
                                 </p:column>
                                 <p:column headerText="Date"
                                           sortBy="#{i.bill.createdAt}"
@@ -101,12 +99,11 @@
                                           filterMatchMode="contains"
                                           >
                                     <h:outputLabel value="#{i.bill.createdAt}"  >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Item Description">
-                                    <h:outputLabel value="#{i.item.name}"  >                                      
-                                    </h:outputLabel>
+                                    <h:outputLabel value="#{i.item.name}" />
                                 </p:column>
 
                                 <p:column headerText="Code"
@@ -117,33 +114,33 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>                           
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.item.code}" style="width: 100px!important;" />
                                 </p:column>
 
                                 <p:column headerText="Qty" style="text-align: right;">
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                                                    </p:column>
+                                </p:column>
                                 <p:column headerText="Cost Rate" style="text-align: right;">
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>                                  
                                 </p:column>
 
                                 <p:column headerText="Cost Value" style="text-align: right;">
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>                                  
                                 </p:column>
 
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="6"/>
+                                        <p:column colspan="7"/>
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{reportsTransfer.purchaseValue}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>                                        

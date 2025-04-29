@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" ></cc:attribute>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+
+        <div class="w-100" style="#{configOptionApplicationController.getLongTextValueByKey('CSS for Shift End Cash Receipt')}">
+            <!-- Bill Header -->
+            <div class="col-12" >
+                <div class="institutionName">
+                    <h:outputLabel value="#{cc.attrs.bundle.user.institution.name}" />
+                </div>
+                <div class="institutionContact">
+                    <div>
+                        <h:outputLabel value="#{cc.attrs.bundle.user.institution.address}" />
+                    </div>
+                    <div>
+                        <h:outputLabel value="#{cc.attrs.bundle.user.department.name}" />
+                    </div>
+                </div>
+                <div class="title" style="text-align: center; font-weight: bold;">
+                    <h:outputLabel value="SHIFT END CASH" />
+                </div>
+            </div>
+
+            <!-- Bill Body -->
+            <div class="billBody">
+
+                <div class="row" >
+
+                    <div class="col-6" >
+                        <h:panelGrid columns="2" styleClass="handover-grid" columnClasses="labelColumn,valueColumn">
+
+
+                            <h:outputText value="User:" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText value="#{cc.attrs.bundle.user.webUserPerson.nameWithTitle}" styleClass="handover-value" />
+
+                            <h:outputText value="Shift Start Bill ID:" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText value="#{cc.attrs.bundle.startBill.deptId}" styleClass="handover-value" />
+
+                            <h:outputText value="Shift Started At:" styleClass="handover-label" style="font-weight: normal" />
+                            <h:outputText value="#{cc.attrs.bundle.startBill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputText>
+
+                            <h:outputText value="Total :" styleClass="handover-label" style="font-weight: normal"/>
+                            <h:outputText value="#{cc.attrs.bundle.handoverBill.total}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+
+                        </h:panelGrid>
+                    </div>
+
+
+                </div>
+
+                <p:dataTable   
+                    value="#{financialTransactionController.bundle.denominationTransactions}" 
+                    var="deno"  >
+                    <p:column headerText="Denomination">
+                        <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
+                    </p:column>
+                    <p:column 
+                        headerText="Number"
+                        class="text-end"
+                        title="Number">
+                        <p:outputLabel 
+                            class="w-100" 
+                            id="txtDenoQtyHandover"
+                            value="#{deno.denominationQty}" 
+                            style="width: 100%;" 
+                            onfocus="this.select()"/>
+                    </p:column>
+                    <p:column
+                        headerText="Value"
+                        class="text-end">
+                        <p:outputLabel
+                            class="w-100"
+                            id="txtDenoVal" value="#{deno.denominationValue}" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                    </p:column>
+                </p:dataTable>
+
+
+            </div>
+
+            <!-- Bill Footer -->
+            <div class="billFooter">
+                <h:outputText escape="false" value="#{configOptionApplicationController.getLongTextValueByKey('Bill Footer for Shift End Cash Receipt')}" ></h:outputText>
+            </div>
+        </div>
+
+    </cc:implementation>
+</html>
