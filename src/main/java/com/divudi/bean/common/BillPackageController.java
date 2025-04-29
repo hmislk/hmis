@@ -714,8 +714,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
-            for (Bill bill : billBean.validBillsOfBatchBill(getBatchBill())) {
-                if (!checkCancelBill(bill)) {
+            for (Bill singleBill : billBean.validBillsOfBatchBill(getBatchBill())) {
+                if (!checkCancelBill(singleBill)) {
                     JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
                     if (getWebUserController().hasPrivilege("BillCancel")) {
                         JsfUtil.addErrorMessage("You have Speacial privilege to cancel This Bill");
