@@ -1847,7 +1847,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             return "";
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", true)) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", false)) {
             for (Bill bill : billBean.validBillsOfBatchBill(getBatchBill())) {
                 if (!checkCancelBill(bill)) {
                     JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");

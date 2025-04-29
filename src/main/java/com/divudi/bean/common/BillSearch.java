@@ -2425,7 +2425,7 @@ public class BillSearch implements Serializable {
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", true)) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", false)) {
             if (!checkCancelBill(getBill())) {
                 JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
                 if (getWebUserController().hasPrivilege("BillCancel")) {
@@ -2504,7 +2504,7 @@ public class BillSearch implements Serializable {
             return;
         }
         
-        if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", true)) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
             if (!checkCancelBill(getBill())) {
                 JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
                 if (getWebUserController().hasPrivilege("BillCancel")) {
