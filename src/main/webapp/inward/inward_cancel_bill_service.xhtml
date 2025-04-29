@@ -113,14 +113,14 @@
 
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')}">
                                     <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill">
-                                        <bi:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
+                                        <bi:inwardBillPrintPos bill="#{bill}" duplicate="false" cancelled="true"/>
                                     </ui:repeat>
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFive paper',true)}">
                                     <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="ffb">
                                         <div style="page-break-after: always;">
-                                            <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>
+                                            <print:five_five_paper_with_headings_inward_service bill="#{ffb}" cancelled="true"/>
                                         </div>
                                         <br/>
                                     </ui:repeat>
@@ -128,7 +128,7 @@
 
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')}">
                                     <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="pp">
-                                        <print:five_five_custom_3_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.cancelledBil.size()}"/>
+                                        <print:five_five_custom_3_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}" cancelled="true"/>
                                         <br/>
                                     </ui:repeat>
                                 </h:panelGroup>

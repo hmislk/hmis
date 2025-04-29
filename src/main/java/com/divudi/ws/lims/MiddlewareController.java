@@ -177,6 +177,7 @@ public class MiddlewareController {
                     case SmartLytePlus:
                     case SwelabLumi:
                     case HumaCount5D:
+                    case HumaLyte:
                         return processResultsCommon(dataBundle);
                     default:
                         throw new IllegalArgumentException("Unsupported analyzer type: " + analyzerDetails.getAnalyzerName());

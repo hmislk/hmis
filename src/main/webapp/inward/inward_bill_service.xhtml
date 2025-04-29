@@ -530,6 +530,13 @@
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>
+                                                    
+                                                    <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')}" >
+                                                        <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                            <print:five_eight_opd_bill bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
 
                                                 </h:panelGroup>
                                             </p:panel>

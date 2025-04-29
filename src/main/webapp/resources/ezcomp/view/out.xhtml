@@ -78,11 +78,35 @@
                     <p:inputText  class="text-end  text-white bg-warning" value="#{cc.attrs.bill.invoiceNumber}" ></p:inputText>
 
                     <h:outputLabel value="Credit Company" ></h:outputLabel>
-                    <p:autoComplete value="#{cc.attrs.bill.creditCompany}" completeMethod="#{institutionController.completeIns}" var="i" itemLabel="#{i.name}"
-                                    itemValue="#{i}" rendered="false"></p:autoComplete><h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" rendered="true"></h:outputLabel>
+                    <p:autoComplete 
+                        value="#{cc.attrs.bill.creditCompany}" 
+                        completeMethod="#{institutionController.completeIns}" 
+                        var="i" 
+                        inputStyleClass="form-control"
+                        class="w-75"
+                        itemLabel="#{i.name}"
+                        itemValue="#{i}">
+                    </p:autoComplete>
 
                     <h:outputLabel value="Referred By" ></h:outputLabel>
-                    <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" ></h:outputLabel>
+                    <p:autoComplete 
+                        forceSelection="true" 
+                        value="#{cc.attrs.bill.referredBy}" 
+                        completeMethod="#{doctorController.completeDoctor}" 
+                        var="ix" 
+                        itemLabel="#{ix.person.nameWithTitle}" 
+                        itemValue="#{ix}" 
+                        inputStyleClass="form-control"
+                        class="w-75" 
+                        scrollHeight="500">
+                        <p:column headerText="Name" style="padding: 2px;">
+                            <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Code" style="padding: 2px;">
+                            <h:outputText value="#{ix.code}" ></h:outputText>
+                        </p:column>
+                    </p:autoComplete>
+
 
                     <h:outputLabel value="Referring Institution" ></h:outputLabel>
                     <h:outputLabel value="#{cc.attrs.bill.referenceInstitution.name}" ></h:outputLabel>

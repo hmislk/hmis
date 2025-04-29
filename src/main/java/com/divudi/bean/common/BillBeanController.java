@@ -2336,6 +2336,11 @@ public class BillBeanController implements Serializable {
         Bill bill = getBillFacade().findFirstByJpql(sql, hm);
         return bill;
     }
+    
+    public Bill fetchBillBypassingCache(Long billId) {
+        Bill bill = getBillFacade().findWithoutCache(billId);
+        return bill;
+    }
 
     public double getTotalByBillFee(BillItem billItem) {
         String sql = "Select sum(bf.feeValue) from BillFee bf where "

@@ -1,7 +1,8 @@
 package com.divudi.core.data.reports;
 
 public enum FinancialReport implements IReportType {
-    STAFF_WELFARE_REPORT("Staff Welfare Report");
+    STAFF_WELFARE_REPORT("Staff Welfare Report"),
+    DAILY_RETURN("Daily Return");
 
     private final String displayName;
 

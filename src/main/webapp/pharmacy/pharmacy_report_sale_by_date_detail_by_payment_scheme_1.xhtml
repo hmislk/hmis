@@ -101,24 +101,38 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill Total"/>
                                 </f:facet>
-                                <h:outputLabel value="#{pss.billTotal}" style="float: right;">
+                                <h:outputLabel value="#{pss.billTotal}" style="float: left;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReportController.billTotal}" style="float: right;">
+                                    <h:outputLabel value="#{pharmacySaleReportController.billTotal}" style="float: left;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
-                            </p:column>                           
+                            </p:column>
+                            <p:column headerText="Discount Total">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount Total"/>
+                                </f:facet>
+                                <h:outputLabel value="#{pss.discountTotal}" style="float: left;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReportController.discountTotal}" style="float: left;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
                             <p:column headerText="Cancelled Total">
                                 <f:facet name="header">
                                     <h:outputLabel value="Cancelled Total"/>
                                 </f:facet>
-                                <h:outputLabel value="#{pss.cancelBillTotal}" style="float: right;" >
+                                <h:outputLabel value="#{pss.cancelBillTotal}" style="float: left;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReportController.canTotal}" style="float: right;">
+                                    <h:outputLabel value="#{pharmacySaleReportController.canTotal}" style="float: left;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -127,11 +141,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Refund Total"/>
                                 </f:facet>
-                                <h:outputLabel value="#{pss.refundBillTotal}" style="float: right;">
+                                <h:outputLabel value="#{pss.refundBillTotal}" style="float: left;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReportController.refTotal}" style="float: right;">
+                                    <h:outputLabel value="#{pharmacySaleReportController.refTotal}" style="float: left;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -140,11 +154,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Grand Total"/>
                                 </f:facet>
-                                <h:outputLabel value="#{pss.billTotal+pss.cancelBillTotal+pss.refundBillTotal}" style="float: right;">
+                                <h:outputLabel value="#{pss.billTotal+pss.cancelBillTotal+pss.refundBillTotal}" style="float: left;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReportController.billTotal+pharmacySaleReport.canTotal+pharmacySaleReport.refTotal}" style="float: right;">
+                                    <h:outputLabel value="#{pharmacySaleReportController.billTotal+pharmacySaleReportController.canTotal+pharmacySaleReportController.refTotal}" style="float: left;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -175,24 +189,38 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill Total"/>
                                 </f:facet>
-                                <h:outputLabel value="#{pss.billTotal}" style="float: right;">
+                                <h:outputLabel value="#{pss.billTotal}" style="float: left;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReportController.billTotalWholeSale}" style="float: right;">
+                                    <h:outputLabel value="#{pharmacySaleReportController.billTotalWholeSale}" style="float: left;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
-                            </p:column>                           
+                            </p:column>
+                            <p:column headerText="Discount Total">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount Total"/>
+                                </f:facet>
+                                <h:outputLabel value="#{pss.discountTotal}" style="float: left;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReportController.discountTotal}" style="float: left;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
                             <p:column headerText="Cancelled Total">
                                 <f:facet name="header">
                                     <h:outputLabel value="Cancelled Total"/>
                                 </f:facet>
-                                <h:outputLabel value="#{pss.cancelBillTotal}" style="float: right;" >
+                                <h:outputLabel value="#{pss.cancelBillTotal}" style="float: left;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReportController.canTotalWholeSale}" style="float: right;">
+                                    <h:outputLabel value="#{pharmacySaleReportController.canTotalWholeSale}" style="float: left;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -201,11 +229,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Refund Total"/>
                                 </f:facet>
-                                <h:outputLabel value="#{pss.refundBillTotal}" style="float: right;">
+                                <h:outputLabel value="#{pss.refundBillTotal}" style="float: left;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReportController.refTotalWholeSale}" style="float: right;">
+                                    <h:outputLabel value="#{pharmacySaleReportController.refTotalWholeSale}" style="float: left;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -214,11 +242,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Grand Total"/>
                                 </f:facet>
-                                <h:outputLabel value="#{pss.billTotal+pwss.cancelBillTotal+pss.refundBillTotal}" style="float: right;">
+                                <h:outputLabel value="#{pss.billTotal+pss.cancelBillTotal+pss.refundBillTotal}" style="float: left;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReportController.billTotalWholeSale+pharmacySaleReport.canTotalWholeSale+pharmacySaleReport.refTotalWholeSale}" style="float: right;">
+                                    <h:outputLabel value="#{pharmacySaleReportController.billTotalWholeSale+pharmacySaleReportController.canTotalWholeSale+pharmacySaleReportController.refTotalWholeSale}" style="float: left;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>

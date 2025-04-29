@@ -37,6 +37,10 @@ import java.util.UUID;
  */
 public class CommonFunctions {
 
+    public static double abs(double value) {
+        return Math.abs(value);
+    }
+
     public static String changeTextCases(String nm, String tc) {
         if (tc == null) {
             return nm;
@@ -89,6 +93,24 @@ public class CommonFunctions {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    // ChatGPT Contribution: Safe rounding method for financial calculations
+    public static double roundToTwoDecimals(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return 0.0;
+        }
+        return Math.round(value * 100.0) / 100.0;
+    }
+
+    // ChatGPT Contribution
+    public static double roundToTwoDecimalsBigDecimal(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return 0.0;
+        }
+        return new java.math.BigDecimal(value)
+                .setScale(2, java.math.RoundingMode.HALF_UP)
+                .doubleValue();
     }
 
     public static boolean checkOnlyNumeric(String text) {

@@ -41,16 +41,16 @@
 
             <div class="headingBillFiveFive mt-2" style="text-align: center;font-weight: bold;">
                 <div class="d-flex align-items-center justify-content-center">
-                    <h:panelGroup >
-                        <h:outputLabel value="OPD" />
+                    <!-- Dynamic Header -->
+                    <h:panelGroup rendered="#{cc.attrs.bill.billType eq 'OpdBill'}">
+                        <h:outputLabel value="OPD Receipt" />
                     </h:panelGroup>
-
-                    <h:panelGroup>
-                        <h:outputLabel value="&nbsp;&nbsp;" />
-                        <h:outputLabel value=" Receipt"/>
+                    <h:panelGroup rendered="#{cc.attrs.bill.billType eq 'CollectingCentreBill'}">
+                        <h:outputLabel value="Collecting Centre Receipt" />
                     </h:panelGroup>
                 </div>
-                <h:panelGroup  rendered="#{cc.attrs.duplicate eq true}"  >
+                <!-- Duplicate Indicator -->
+                <h:panelGroup rendered="#{cc.attrs.duplicate}">
                     <h:outputLabel value="**Duplicate**" />
                 </h:panelGroup>
             </div>
@@ -139,25 +139,29 @@
                     </tr>
 
                     <!-- Only the modified section is shown -->
-                    <ui:repeat value="#{billController.billItemsOfBill(cc.attrs.bill)}" var="billItem">
+                    <ui:repeat value="#{billController.billItemsOfBill(cc.attrs.bill)}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td style="width:80%!important;">
                                 <h:outputLabel value="#{billItem.item.name}"></h:outputLabel>
-                                <h:outputLabel value=" (N)" rendered="#{billItem.item.special}"/>
+                                <h:outputLabel value=" (N)" rendered="#{billItem.item.speciality}"/>
                             </td>
                             <td style="width:10%!important;">
-                                <h:panelGroup rendered="#{billItem.item.printSessionNumber}">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}">
-                                        <h:outputLabel value="#{billItem.billSession.serialNo}"/>
+                                <h:panelGroup rendered="#{billItem.item.printSessionNumber}" >
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
+                                        <td>
+                                            <h:outputLabel  value="#{billItem.billSession.serialNo}"    >
+                                            </h:outputLabel>
+                                        </td>
                                     </h:panelGroup>
                                 </h:panelGroup>
                             </td>
-                            <td style="width:10%!important;text-align: right;">
-                                <h:outputLabel value="#{billItem.netValue}" style="text-align: right;" class="w-100">
-                                    <f:convertNumber pattern="#,##0.00"/>
+                            <td   style="width:10%!important;text-align: right;">
+                                <h:outputLabel value="#{billItem.grossValue}" style="text-align: right;" class="w-100">
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
+
                     </ui:repeat>
 
                     <tr class="totalsBlock mt-3" style="font-weight: 600" >

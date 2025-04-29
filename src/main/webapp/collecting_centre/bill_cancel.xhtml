@@ -16,7 +16,15 @@
                     <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop">
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputText value="Cancellation" class="mt-5"/>
+                                <h:panelGroup>
+                                    <h:outputText class="fa-solid fa-warehouse mt-2"  />
+                                    <h:outputLabel class="mx-2 mt-2">
+                                        <h:outputText value="Collecting Centre Bill"
+                                                      rendered="#{collectingCentreBillController.bill.billType eq 'CollectingCentreBill'}" />
+                                        <h:outputText value="OPD Bill"
+                                                      rendered="#{collectingCentreBillController.bill.billType eq 'OpdBill'}" />
+                                    </h:outputLabel>
+                                </h:panelGroup>
                                 <h:panelGrid columns="3" style="float: right" class="w-50">
                                     <p:selectOneMenu 
                                         id="commentsMenu" 

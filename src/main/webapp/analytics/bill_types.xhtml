@@ -159,8 +159,8 @@
                                 <p:column headerText="Bill Class" >                                
                                     <h:outputLabel value="#{row.billClassType}"/>
                                 </p:column>
-                                <p:column headerText="Bill Type (Atomic)" >                                
-                                    <h:outputLabel value="#{row.billTypeAtomic.label}"/>
+                                <p:column headerText="Bill Type (Atomic)" sortBy="#{row.billTypeAtomic}" filterBy="#{row.billTypeAtomic}" filterMatchMode="contains">                                
+                                    <h:outputLabel value="#{row.billTypeAtomic}"/>
                                 </p:column>
                                  <p:column headerText="Bill Type (Atomic)" >                                
                                      <h:outputLabel value="#{row.billTypeAtomic.billFinanceType}"/>

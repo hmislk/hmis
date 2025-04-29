@@ -115,8 +115,14 @@
 
                             <p:column headerText="Issued" style="text-align: center;" >                   
                                 <p:dataTable var="b" value="#{p.forwardReferenceBills}">                           
-                                    <p:column headerText="Issue No." >                                                               
-                                        <h:outputLabel  value="#{b.deptId}"/>                                   
+                                    <p:column headerText="Issue No." >  
+                                        <p:commandLink 
+                                            ajax="false"
+                                            value="#{b.deptId}" 
+                                            class="ui-button-info"
+                                            action="pharmacy_reprint_transfer_isssue?faces-redirect=true" >
+                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                        </p:commandLink>                                
                                     </p:column>
                                     <p:column headerText="Date/Time" >
                                         <h:outputLabel value="#{b.createdAt}" >
@@ -148,17 +154,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                  
                                     </p:column>
-                                    <p:column headerText="Action">
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            icon="far fa-eye"
-                                            value="View Issued Note" 
-                                            class="ui-button-info"
-                                            action="pharmacy_reprint_transfer_isssue" >
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                        </p:commandButton>
-                                    </p:column>
-
+                                    
                                 </p:dataTable>
                             </p:column>
                         </p:dataTable>
