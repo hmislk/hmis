@@ -1200,35 +1200,49 @@
                                                         <h:outputText styleClass="fas fa-list" />
                                                         <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                                     </f:facet>
-                                                    <h:panelGrid columns="2" columnClasses="numberCol, textCol"  >
-                                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                                        <h:outputLabel class="mx-4 my-1" id="total" value="#{pharmacySaleController.preBill.total}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Discount" ></h:outputLabel>
-                                                        <h:outputLabel class="mx-4 my-1" id="dis" value="#{pharmacySaleController.preBill.discount}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                                        <h:outputLabel class="mx-4 my-1" id="netTotal" value="#{pharmacySaleController.preBill.netTotal}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel  value="Tendered" ></h:outputLabel>
-                                                        <p:inputText
-                                                            class="mx-4 my-1"
-                                                            autocomplete="off"
-                                                            accesskey="t"
-                                                            id="paid"
-                                                            value="#{pharmacySaleController.cashPaid}"
-                                                            onfocus="this.select()">
-                                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
-                                                        </p:inputText>
-                                                        <h:outputLabel  value="Balance" ></h:outputLabel>
-                                                        <h:outputLabel class="mx-4 my-1" id="balance" value="#{pharmacySaleController.balance}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
+                                                    <h:panelGrid columns="2" columnClasses="numberCol, textCol">
+                                                        <h:outputLabel value="Total" />
+                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                            <h:outputLabel id="total" value="#{pharmacySaleController.preBill.total}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </h:panelGroup>
+
+                                                        <h:outputLabel value="Discount" />
+                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                            <h:outputLabel id="dis" value="#{pharmacySaleController.preBill.discount}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </h:panelGroup>
+
+                                                        <h:outputLabel value="Net Total" />
+                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                            <h:outputLabel id="netTotal" value="#{pharmacySaleController.preBill.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </h:panelGroup>
+
+                                                        <h:outputLabel value="Tendered" />
+                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                            <p:inputText
+                                                                id="paid"
+                                                                value="#{pharmacySaleController.cashPaid}"
+                                                                class="form-control text-end"
+                                                                autocomplete="off"
+                                                                accesskey="t"
+                                                                onfocus="this.select()">
+                                                                <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup" />
+                                                            </p:inputText>
+                                                        </h:panelGroup>
+
+                                                        <h:outputLabel value="Balance" />
+                                                        <h:panelGroup layout="block" class="text-end mx-4 my-1">
+                                                            <h:outputLabel id="balance" value="#{pharmacySaleController.balance}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </h:panelGroup>
                                                     </h:panelGrid>
+
 
                                                 </p:panel>
 

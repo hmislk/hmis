@@ -219,6 +219,21 @@ public class SymptomController implements Serializable {
         return items;
     }
 
+    public List<ClinicalEntity> completeSymptom(String query) {
+        List<ClinicalEntity> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c from ClinicalEntity c where c.retired=false and c.symanticType=:t  and c.name like :q";
+            hm.put("q", "%" + query.toUpperCase() + "%");
+            hm.put("t", SymanticType.Symptom);
+            suggestions = getFacade().findByJpql(sql, hm, 20);
+        }
+        return suggestions;
+    }
+
     /**
      *
      */

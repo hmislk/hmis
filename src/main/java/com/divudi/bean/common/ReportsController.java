@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.*;
 import com.divudi.core.data.analytics.ReportTemplateType;
@@ -29,8 +30,12 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xddf.usermodel.chart.*;
+import org.apache.poi.xssf.usermodel.*;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -43,14 +48,14 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.*;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 import java.text.DecimalFormat;
-
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
 /**
  * @author safrin
@@ -95,6 +100,8 @@ public class ReportsController implements Serializable {
     TransferController transferController;
     @Inject
     private DepartmentController departmentController;
+    @Inject
+    CollectingCentreBillController collectingCentreBillController;
 
     /**
      * Properties
@@ -2245,144 +2252,297 @@ public class ReportsController implements Serializable {
 
     private void groupRouteWiseBillsMonthly() {
         Map<Route, Map<YearMonth, Bill>> map = new HashMap<>();
-        List<YearMonth> yearMonths = new ArrayList<>();
+        Set<YearMonth> yearMonthsSet = new HashSet<>();
 
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             Bill bill = row.getBill();
+            if (bill == null || bill.getCollectingCentre() == null || bill.getCreatedAt() == null) continue;
 
-            double billItemQty = Optional.ofNullable(bill.getBillItems())
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .mapToDouble(BillItem::getQty)
-                    .sum();
-
-            double totalHospitalFee = Optional.ofNullable(bill.getBillItems())
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .mapToDouble(BillItem::getHospitalFee)
-                    .sum();
-
-            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
-                if (billItemQty > 0) {
-                    billItemQty = -billItemQty;
-                }
-                if (totalHospitalFee > 0) {
-                    totalHospitalFee = -totalHospitalFee;
-                }
+            double qtySum = 0;
+            double feeSum = 0;
+            for (BillItem bi : Optional.ofNullable(bill.getBillItems()).orElse(Collections.emptyList())) {
+                qtySum += bi.getQty();
+                feeSum += bi.getHospitalFee();
             }
 
-            final Calendar cal = Calendar.getInstance();
-            cal.setTime(bill.getCreatedAt());
-
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
-
-            if (!yearMonths.contains(yearMonth)) {
-                yearMonths.add(yearMonth);
+            // Handle refund/cancellation
+            if (bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL_REFUND ||
+                    bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL_CANCELLATION) {
+                qtySum = -Math.abs(qtySum);
+                feeSum = -Math.abs(feeSum);
             }
 
-            Map<YearMonth, Bill> monthMap;
-            if (map.containsKey(bill.getCollectingCentre().getRoute())) {
-                monthMap = map.get(bill.getCollectingCentre().getRoute());
+            YearMonth ym = YearMonth.from(bill.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            yearMonthsSet.add(ym);
 
-                if (monthMap.containsKey(yearMonth)) {
-                    Bill existingBill = monthMap.get(yearMonth);
-                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
-                    existingBill.setQty(existingBill.getQty() + billItemQty);
-                } else {
-                    Bill cloneBill = new Bill();
-                    cloneBill.clone(bill);
-                    cloneBill.setQty(billItemQty);
-                    cloneBill.setTotalHospitalFee(totalHospitalFee);
+            Route route = bill.getCollectingCentre().getRoute();
+            double finalQtySum = qtySum;
+            double finalFeeSum = feeSum;
+            map.computeIfAbsent(route, r -> new HashMap<>())
+                    .compute(ym, (y, existingBill) -> {
+                        if (existingBill == null) {
+                            Bill newBill = new Bill();
+                            newBill.clone(bill);
+                            newBill.setQty(finalQtySum);
+                            newBill.setTotalHospitalFee(finalFeeSum);
+                            return (finalQtySum == 0 && finalFeeSum == 0) ? null : newBill;
+                        } else {
+                            existingBill.setQty(existingBill.getQty() + finalQtySum);
+                            existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + finalFeeSum);
+                            return (existingBill.getQty() == 0 && existingBill.getTotalHospitalFee() == 0) ? null : existingBill;
+                        }
+                    });
 
-                    monthMap.put(yearMonth, cloneBill);
-                }
-            } else {
-                monthMap = new HashMap<>();
-                Bill cloneBill = new Bill();
-                cloneBill.clone(bill);
-                cloneBill.setQty(billItemQty);
-                cloneBill.setTotalHospitalFee(totalHospitalFee);
-
-                monthMap.put(yearMonth, cloneBill);
+            // Clean up null entries
+            map.get(route).values().removeIf(Objects::isNull);
+            if (map.get(route).isEmpty()) {
+                map.remove(route);
             }
-
-            map.put(bill.getCollectingCentre().getRoute(), monthMap);
         }
 
         setGroupedRouteWiseBillsMonthly(map);
-        setYearMonths(yearMonths);
+        setYearMonths(new ArrayList<>(yearMonthsSet));
     }
 
     private void groupCollectingCenterWiseBillsMonthly() {
         Map<Institution, Map<YearMonth, Bill>> map = new HashMap<>();
-        List<YearMonth> yearMonths = new ArrayList<>();
+        Set<YearMonth> yearMonthSet = new HashSet<>();
 
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             Bill bill = row.getBill();
+            if (bill == null || bill.getCollectingCentre() == null || bill.getCreatedAt() == null) continue;
 
-            double billItemQty = Optional.ofNullable(bill.getBillItems())
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .mapToDouble(BillItem::getQty)
-                    .sum();
+            double qtySum = 0;
+            double feeSum = 0;
+            List<BillItem> billItems = bill.getBillItems() != null ? bill.getBillItems() : Collections.emptyList();
 
-            double totalHospitalFee = Optional.ofNullable(bill.getBillItems())
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .mapToDouble(BillItem::getHospitalFee)
-                    .sum();
-
-            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
-                if (billItemQty > 0) {
-                    billItemQty = -billItemQty;
-                }
-                if (totalHospitalFee > 0) {
-                    totalHospitalFee = -totalHospitalFee;
-                }
+            for (BillItem bi : billItems) {
+                qtySum += bi.getQty();
+                feeSum += bi.getHospitalFee();
             }
 
-            final Calendar cal = Calendar.getInstance();
-            cal.setTime(bill.getCreatedAt());
-
-            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
-
-            if (!yearMonths.contains(yearMonth)) {
-                yearMonths.add(yearMonth);
+            if (bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL_REFUND ||
+                    bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL_CANCELLATION) {
+                qtySum = -Math.abs(qtySum);
+                feeSum = -Math.abs(feeSum);
             }
 
-            Map<YearMonth, Bill> monthMap;
-            if (map.containsKey(bill.getCollectingCentre())) {
-                monthMap = map.get(bill.getCollectingCentre());
+            final YearMonth ym = YearMonth.from(bill.getCreatedAt().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate());
 
-                if (monthMap.containsKey(yearMonth)) {
-                    Bill existingBill = monthMap.get(yearMonth);
-                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
-                    existingBill.setQty(existingBill.getQty() + billItemQty);
-                } else {
-                    Bill cloneBill = new Bill();
-                    cloneBill.clone(bill);
-                    cloneBill.setQty(billItemQty);
-                    cloneBill.setTotalHospitalFee(totalHospitalFee);
+            final Institution centre = bill.getCollectingCentre();
+            yearMonthSet.add(ym);
 
-                    monthMap.put(yearMonth, cloneBill);
-                }
+            double finalQtySum = qtySum;
+            double finalFeeSum = feeSum;
+            map.computeIfAbsent(centre, c -> new HashMap<>())
+                    .compute(ym, (y, existingBill) -> {
+                        if (existingBill == null) {
+                            Bill newBill = new Bill();
+                            newBill.clone(bill);
+                            newBill.setQty(finalQtySum);
+                            newBill.setTotalHospitalFee(finalFeeSum);
+                            return (finalQtySum == 0 && finalFeeSum == 0) ? null : newBill;
+                        } else {
+                            double newQty = existingBill.getQty() + finalQtySum;
+                            double newFee = existingBill.getTotalHospitalFee() + finalFeeSum;
+                            existingBill.setQty(newQty);
+                            existingBill.setTotalHospitalFee(newFee);
+                            return (newQty == 0 && newFee == 0) ? null : existingBill;
+                        }
+                    });
 
-            } else {
-                monthMap = new HashMap<>();
-                Bill cloneBill = new Bill();
-                cloneBill.clone(bill);
-                cloneBill.setQty(billItemQty);
-                cloneBill.setTotalHospitalFee(totalHospitalFee);
-
-                monthMap.put(yearMonth, cloneBill);
-
-            }
-            map.put(bill.getCollectingCentre(), monthMap);
+            map.computeIfPresent(centre, (c, monthMap) -> {
+                monthMap.values().removeIf(Objects::isNull);
+                return monthMap.isEmpty() ? null : monthMap;
+            });
         }
 
         setGroupedCollectingCenterWiseBillsMonthly(map);
-        setYearMonths(yearMonths);
+        setYearMonths(new ArrayList<>(yearMonthSet));
     }
+
+//    private void groupRouteWiseBillsMonthly() {
+//        Map<Route, Map<YearMonth, Bill>> map = new HashMap<>();
+//        List<YearMonth> yearMonths = new ArrayList<>();
+//
+//        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+//            Bill bill = row.getBill();
+//
+//            double billItemQty = Optional.ofNullable(bill.getBillItems())
+//                    .orElse(Collections.emptyList())
+//                    .stream()
+//                    .mapToDouble(BillItem::getQty)
+//                    .sum();
+//
+//            double totalHospitalFee = Optional.ofNullable(bill.getBillItems())
+//                    .orElse(Collections.emptyList())
+//                    .stream()
+//                    .mapToDouble(BillItem::getHospitalFee)
+//                    .sum();
+//
+//            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
+//                if (billItemQty > 0) {
+//                    billItemQty = -billItemQty;
+//                }
+//                if (totalHospitalFee > 0) {
+//                    totalHospitalFee = -totalHospitalFee;
+//                }
+//            }
+//
+//            final Calendar cal = Calendar.getInstance();
+//            cal.setTime(bill.getCreatedAt());
+//
+//            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
+//
+//            if (!yearMonths.contains(yearMonth)) {
+//                yearMonths.add(yearMonth);
+//            }
+//
+//            Map<YearMonth, Bill> monthMap;
+//            if (map.containsKey(bill.getCollectingCentre().getRoute())) {
+//                monthMap = map.get(bill.getCollectingCentre().getRoute());
+//
+//                if (monthMap.containsKey(yearMonth)) {
+//                    Bill existingBill = monthMap.get(yearMonth);
+//                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
+//                    existingBill.setQty(existingBill.getQty() + billItemQty);
+//
+//                    if (existingBill.getTotalHospitalFee() == 0 && existingBill.getQty() == 0) {
+//                        monthMap.remove(yearMonth);
+//
+//                        if (monthMap.isEmpty()) {
+//                            map.remove(bill.getCollectingCentre().getRoute());
+//                        }
+//                    }
+//                } else {
+//                    Bill cloneBill = new Bill();
+//                    cloneBill.clone(bill);
+//                    cloneBill.setQty(billItemQty);
+//                    cloneBill.setTotalHospitalFee(totalHospitalFee);
+//
+//                    if (cloneBill.getTotalHospitalFee() == 0 && cloneBill.getQty() == 0) {
+//                        monthMap.remove(yearMonth);
+//
+//                        if (monthMap.isEmpty()) {
+//                            map.remove(bill.getCollectingCentre().getRoute());
+//                        }
+//                    } else {
+//                        monthMap.put(yearMonth, cloneBill);
+//                    }
+//                }
+//            } else {
+//                monthMap = new HashMap<>();
+//                Bill cloneBill = new Bill();
+//                cloneBill.clone(bill);
+//                cloneBill.setQty(billItemQty);
+//                cloneBill.setTotalHospitalFee(totalHospitalFee);
+//
+//                if (cloneBill.getTotalHospitalFee() != 0 || cloneBill.getQty() != 0) {
+//                    monthMap.put(yearMonth, cloneBill);
+//                }
+//            }
+//
+//            if (!monthMap.isEmpty()) {
+//                map.put(bill.getCollectingCentre().getRoute(), monthMap);
+//            }
+//        }
+//
+//        setGroupedRouteWiseBillsMonthly(map);
+//        setYearMonths(yearMonths);
+//    }
+//
+//    private void groupCollectingCenterWiseBillsMonthly() {
+//        Map<Institution, Map<YearMonth, Bill>> map = new HashMap<>();
+//        List<YearMonth> yearMonths = new ArrayList<>();
+//
+//        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+//            Bill bill = row.getBill();
+//
+//            double billItemQty = Optional.ofNullable(bill.getBillItems())
+//                    .orElse(Collections.emptyList())
+//                    .stream()
+//                    .mapToDouble(BillItem::getQty)
+//                    .sum();
+//
+//            double totalHospitalFee = Optional.ofNullable(bill.getBillItems())
+//                    .orElse(Collections.emptyList())
+//                    .stream()
+//                    .mapToDouble(BillItem::getHospitalFee)
+//                    .sum();
+//
+//            if (bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.CC_BILL_CANCELLATION)) {
+//                if (billItemQty > 0) {
+//                    billItemQty = -billItemQty;
+//                }
+//                if (totalHospitalFee > 0) {
+//                    totalHospitalFee = -totalHospitalFee;
+//                }
+//            }
+//
+//            final Calendar cal = Calendar.getInstance();
+//            cal.setTime(bill.getCreatedAt());
+//
+//            final YearMonth yearMonth = YearMonth.of(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
+//
+//            if (!yearMonths.contains(yearMonth)) {
+//                yearMonths.add(yearMonth);
+//            }
+//
+//            Map<YearMonth, Bill> monthMap;
+//            if (map.containsKey(bill.getCollectingCentre())) {
+//                monthMap = map.get(bill.getCollectingCentre());
+//
+//                if (monthMap.containsKey(yearMonth)) {
+//                    Bill existingBill = monthMap.get(yearMonth);
+//                    existingBill.setTotalHospitalFee(existingBill.getTotalHospitalFee() + totalHospitalFee);
+//                    existingBill.setQty(existingBill.getQty() + billItemQty);
+//
+//                    if (existingBill.getTotalHospitalFee() == 0 && existingBill.getQty() == 0) {
+//                        monthMap.remove(yearMonth);
+//
+//                        if (monthMap.isEmpty()) {
+//                            map.remove(bill.getCollectingCentre());
+//                        }
+//                    }
+//                } else {
+//                    Bill cloneBill = new Bill();
+//                    cloneBill.clone(bill);
+//                    cloneBill.setQty(billItemQty);
+//                    cloneBill.setTotalHospitalFee(totalHospitalFee);
+//
+//                    if (cloneBill.getTotalHospitalFee() == 0 && cloneBill.getQty() == 0) {
+//                        monthMap.remove(yearMonth);
+//
+//                        if (monthMap.isEmpty()) {
+//                            map.remove(bill.getCollectingCentre());
+//                        }
+//                    } else {
+//                        monthMap.put(yearMonth, cloneBill);
+//                    }
+//                }
+//            } else {
+//                monthMap = new HashMap<>();
+//                Bill cloneBill = new Bill();
+//                cloneBill.clone(bill);
+//                cloneBill.setQty(billItemQty);
+//                cloneBill.setTotalHospitalFee(totalHospitalFee);
+//
+//                if (cloneBill.getTotalHospitalFee() != 0 || cloneBill.getQty() != 0) {
+//                    monthMap.put(yearMonth, cloneBill);
+//                }
+//
+//            }
+//
+//            if (!monthMap.isEmpty()) {
+//                map.put(bill.getCollectingCentre(), monthMap);
+//            }
+//        }
+//
+//        setGroupedCollectingCenterWiseBillsMonthly(map);
+//        setYearMonths(yearMonths);
+//    }
 
     public double getCollectionCenterWiseTotalSampleCount(YearMonth yearmonth) {
         double total = 0;
@@ -2527,10 +2687,10 @@ public class ReportsController implements Serializable {
 
         jpql += "GROUP BY bill";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        List<?> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
+        b.setReportTemplateRows((List<ReportTemplateRow>) rs);
         b.createRowValuesFromBillItems();
         b.calculateTotalsWithCredit();
         return b;
@@ -2650,9 +2810,14 @@ public class ReportsController implements Serializable {
 //
 //        bundle = generateDebtorBalanceReportBills(opdBts, paymentMethods, onlyDueBills);
         if (visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+//            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+//            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+
+            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
         } else if (visitType.equalsIgnoreCase("OP")) {
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -3020,10 +3185,10 @@ public class ReportsController implements Serializable {
             parameters.put("cc", collectingCentre);
         }
 
-        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
-            jpql += "AND bill.referenceNumber LIKE :cbn ";
-            parameters.put("cbn", "%" + cashBookNumber + "%");
-        }
+//        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
+//            jpql += "AND bill.referenceNumber LIKE :cbn ";
+//            parameters.put("cbn", "%" + cashBookNumber + "%");
+//        }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
@@ -3032,6 +3197,15 @@ public class ReportsController implements Serializable {
         jpql += "GROUP BY bill";
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
+            rs = rs.stream()
+                    .filter(r -> {
+                        String bookNumber = collectingCentreBillController.generateBookNumberFromReference(r.getBill().getReferenceNumber());
+                        return bookNumber != null && bookNumber.contains(cashBookNumber);
+                    })
+                    .collect(Collectors.toList());
+        }
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
@@ -3076,7 +3250,7 @@ public class ReportsController implements Serializable {
      * workflow that assigned the wrong Department and Institution values. That
      * workflow has been corrected, but older records remain invalid. This
      * method corrects those records for a given ReportBundle (bundle).
-     *
+     * <p>
      * Usage Notes: 1. The method iterates over the groupedBillItems map (key:
      * String, value: List of BillItem). 2. For each map entry, we only look at
      * the first BillItem in the list to fix that Bill. 3. We derive the correct
@@ -3085,7 +3259,7 @@ public class ReportsController implements Serializable {
      * occurred, referencing the old Department details. 5. The Bill is then
      * persisted via billFacade.edit(bill). 6. Once all records are corrected,
      * this method should be removed from the codebase.
-     *
+     * <p>
      * Limitations: - Assumes that the first BillItem in each list (entry.value)
      * is sufficient for determining which Bill to fix. - Only updates the Bill
      * at index 0; if there are multiple BillItems, they presumably share the
@@ -3709,9 +3883,13 @@ public class ReportsController implements Serializable {
 //            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
 //            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
 //            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+//            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+//            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
         } else if (visitType.equalsIgnoreCase("OP")) {
 //            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
 //            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -3873,7 +4051,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -4096,7 +4274,7 @@ public class ReportsController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S. No", "BHT No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
+                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -4416,13 +4594,13 @@ public class ReportsController implements Serializable {
                 Bill bill1 = row.getBill();
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
-                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) != 0) {
+                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) > 0) {
                         continue;
                     }
                 }
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
-                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) == 0) {
+                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) <= 0) {
                         continue;
                     }
                 }
@@ -4442,11 +4620,11 @@ public class ReportsController implements Serializable {
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
                     if (bill1.getPatientEncounter() != null && bill1.getPatientEncounter().getFinalBill() != null) {
                         if ((bill1.getPatientEncounter().getFinalBill().getNetTotal() - bill1.getPatientEncounter().getFinalBill().getSettledAmountByPatient()
-                                - bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) != 0) {
+                                - bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) > 0) {
                             continue;
                         }
                     } else {
-                        if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) != 0) {
+                        if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) > 0) {
                             continue;
                         }
                     }
@@ -4455,11 +4633,11 @@ public class ReportsController implements Serializable {
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
                     if (bill1.getPatientEncounter() != null && bill1.getPatientEncounter().getFinalBill() != null) {
                         if ((bill1.getPatientEncounter().getFinalBill().getNetTotal() - bill1.getPatientEncounter().getFinalBill().getSettledAmountByPatient()
-                                - bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) == 0) {
+                                - bill1.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()) <= 0) {
                             continue;
                         }
                     } else {
-                        if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) == 0) {
+                        if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) <= 0) {
                             continue;
                         }
                     }
@@ -5366,8 +5544,8 @@ public class ReportsController implements Serializable {
     }
 
     private void addWeeklyReportSection(Document document, String sectionTitle, List<String> itemList,
-            List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
-            int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
+                                        List<Integer> daysOfWeek, Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap,
+                                        int week, com.itextpdf.text.Font headerFont, com.itextpdf.text.Font regularFont) throws DocumentException {
         document.add(new com.itextpdf.text.Paragraph(sectionTitle, headerFont));
         document.add(com.itextpdf.text.Chunk.NEWLINE);
 
@@ -5527,7 +5705,10 @@ public class ReportsController implements Serializable {
 
                     if (bill != null) {
                         dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getQty());
-                        dataRow.createCell(dynamicColumnIndex++).setCellValue(bill.getTotalHospitalFee());
+                        dataRow.createCell(dynamicColumnIndex++).setCellValue(
+                                BigDecimal.valueOf(bill.getTotalHospitalFee()).setScale(2, RoundingMode.HALF_UP).doubleValue()
+                        );
+
                     } else {
                         dataRow.createCell(dynamicColumnIndex++).setCellValue(0);
                         dataRow.createCell(dynamicColumnIndex++).setCellValue(0.0);
@@ -5547,6 +5728,89 @@ public class ReportsController implements Serializable {
                 totalRow.createCell(dynamicColumnIndex++).setCellValue(String.format("%.2f", getCollectionCenterWiseTotalServiceAmount(yearMonth)
                         / calculateCollectionCenterWiseBillCount(yearMonth)));
             }
+
+            XSSFSheet countChartSheet = workbook.createSheet("Sample Count Chart");
+
+            Row chartHeader = countChartSheet.createRow(0);
+            chartHeader.createCell(0).setCellValue("Month");
+            chartHeader.createCell(1).setCellValue("Sample Count");
+
+            Map<YearMonth, Double> countData = getSampleCountChartData();
+            int chartRowIndex = 1;
+            for (Map.Entry<YearMonth, Double> entry : countData.entrySet()) {
+                Row row = countChartSheet.createRow(chartRowIndex++);
+                row.createCell(0).setCellValue(entry.getKey().toString());
+                row.createCell(1).setCellValue(entry.getValue());
+            }
+
+            XSSFDrawing drawing = countChartSheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 3, 1, 15, 20);
+
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleText("Sample Count Over Months");
+
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            bottomAxis.setTitle("Month");
+            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+            leftAxis.setTitle("Sample Count");
+            leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            XDDFDataSource<String> months = XDDFDataSourcesFactory.fromStringCellRange(countChartSheet,
+                    new CellRangeAddress(1, chartRowIndex - 1, 0, 0));
+            XDDFNumericalDataSource<Double> counts = XDDFDataSourcesFactory.fromNumericCellRange(countChartSheet,
+                    new CellRangeAddress(1, chartRowIndex - 1, 1, 1));
+
+            XDDFLineChartData chartData = (XDDFLineChartData) chart.createData(ChartTypes.LINE, bottomAxis, leftAxis);
+            XDDFLineChartData.Series series = (XDDFLineChartData.Series) chartData.addSeries(months, counts);
+            series.setTitle("Sample Count", null);
+            series.setSmooth(false);
+            series.setMarkerStyle(MarkerStyle.CIRCLE);
+
+            chart.plot(chartData);
+
+            XSSFSheet serviceChartSheet = workbook.createSheet("Service Amount Chart");
+
+            Row serviceHeader = serviceChartSheet.createRow(0);
+            serviceHeader.createCell(0).setCellValue("Month");
+            serviceHeader.createCell(1).setCellValue("Service Amount");
+
+            Map<YearMonth, Double> serviceData = getServiceAmountChartData();
+            int serviceRowIndex = 1;
+            for (Map.Entry<YearMonth, Double> entry : serviceData.entrySet()) {
+                Row row = serviceChartSheet.createRow(serviceRowIndex++);
+                row.createCell(0).setCellValue(entry.getKey().toString());
+                row.createCell(1).setCellValue(entry.getValue());
+            }
+
+            XSSFDrawing serviceDrawing = serviceChartSheet.createDrawingPatriarch();
+            XSSFClientAnchor serviceAnchor = serviceDrawing.createAnchor(0, 0, 0, 0, 3, 1, 15, 20);
+
+            XSSFChart serviceChart = serviceDrawing.createChart(serviceAnchor);
+            serviceChart.setTitleText("Service Amount Over Months");
+
+            XDDFChartLegend serviceLegend = serviceChart.getOrAddLegend();
+            serviceLegend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis serviceBottomAxis = serviceChart.createCategoryAxis(AxisPosition.BOTTOM);
+            serviceBottomAxis.setTitle("Month");
+            XDDFValueAxis serviceLeftAxis = serviceChart.createValueAxis(AxisPosition.LEFT);
+            serviceLeftAxis.setTitle("Service Amount");
+            serviceLeftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            XDDFDataSource<String> serviceMonths = XDDFDataSourcesFactory.fromStringCellRange(serviceChartSheet,
+                    new CellRangeAddress(1, serviceRowIndex - 1, 0, 0));
+            XDDFNumericalDataSource<Double> serviceValues = XDDFDataSourcesFactory.fromNumericCellRange(serviceChartSheet,
+                    new CellRangeAddress(1, serviceRowIndex - 1, 1, 1));
+
+            XDDFLineChartData serviceChartData = (XDDFLineChartData) serviceChart.createData(ChartTypes.LINE, serviceBottomAxis, serviceLeftAxis);
+            XDDFLineChartData.Series serviceSeries = (XDDFLineChartData.Series) serviceChartData.addSeries(serviceMonths, serviceValues);
+            serviceSeries.setTitle("Service Amount", null);
+            serviceSeries.setSmooth(false);
+            serviceSeries.setMarkerStyle(MarkerStyle.SQUARE);
+            serviceChart.plot(serviceChartData);
 
             workbook.write(out);
             context.responseComplete();
@@ -5574,6 +5838,22 @@ public class ReportsController implements Serializable {
             title.setSpacingAfter(20);
             document.add(title);
 
+            document.add(new Paragraph("Sample Count Over Months", titleFont));
+            Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months",
+                    getSampleCountChartData(), "Month", "Sample Count"));
+            countChartImage.scaleToFit(500, 300);
+            countChartImage.setAlignment(Element.ALIGN_CENTER);
+            document.add(countChartImage);
+
+            document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
+            Image amountChartImage = Image.getInstance(generateChartAsBytes("Service Amount Over Months",
+                    getServiceAmountChartData(), "Month", "Service Amount"));
+            amountChartImage.scaleToFit(500, 300);
+            amountChartImage.setAlignment(Element.ALIGN_CENTER);
+            document.add(amountChartImage);
+
+            document.newPage();
+
             PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
 
@@ -5598,13 +5878,11 @@ public class ReportsController implements Serializable {
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill bill = monthlyData.get(yearMonth);
-                    if (bill != null) {
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getQty()))));
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(bill.getTotalHospitalFee()))));
-                    } else {
-                        table.addCell(new PdfPCell(new Phrase("0")));
-                        table.addCell(new PdfPCell(new Phrase("0.0")));
-                    }
+                    table.addCell(new PdfPCell(new Phrase(bill != null ? String.valueOf(bill.getQty()) : "0")));
+                    table.addCell(new PdfPCell(new Phrase(
+                            bill != null ? String.format("%.2f", bill.getTotalHospitalFee()) : "0.00"
+                    )));
+
                 }
             }
 
@@ -5647,10 +5925,25 @@ public class ReportsController implements Serializable {
             title.setSpacingAfter(20);
             document.add(title);
 
-            PdfPTable table = new PdfPTable(2 + getYearMonths().size() * 2);
+            document.add(new Paragraph("Sample Count Over Months", titleFont));
+            Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months", getSampleCountChartData(), "Month", "Sample Count"));
+            countChartImage.scaleToFit(500, 300);
+            countChartImage.setAlignment(Element.ALIGN_CENTER);
+            document.add(countChartImage);
+
+            document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
+            Image serviceChartImage = Image.getInstance(generateChartAsBytes("Service Amount Over Months", getServiceAmountChartData(), "Month", "Service Amount"));
+            serviceChartImage.scaleToFit(500, 300);
+            serviceChartImage.setAlignment(Element.ALIGN_CENTER);
+            document.add(serviceChartImage);
+
+            document.newPage();
+
+            PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
 
             table.addCell(new PdfPCell(new Phrase("S. No")));
+            table.addCell(new PdfPCell(new Phrase("Route Code")));
             table.addCell(new PdfPCell(new Phrase("Route")));
 
             List<YearMonth> yearMonths = getYearMonths();
@@ -5665,30 +5958,26 @@ public class ReportsController implements Serializable {
                 Map<YearMonth, Bill> monthlyData = entrySet.getValue();
 
                 table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++))));
+                table.addCell(new PdfPCell(new Phrase(route.getCode())));
                 table.addCell(new PdfPCell(new Phrase(route.getName())));
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
-                    if (billData != null) {
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getQty()))));
-                        table.addCell(new PdfPCell(new Phrase(String.valueOf(billData.getTotalHospitalFee()))));
-                    } else {
-                        table.addCell(new PdfPCell(new Phrase("0")));
-                        table.addCell(new PdfPCell(new Phrase("0.0")));
-                    }
+                    table.addCell(new PdfPCell(new Phrase(billData != null ? String.valueOf(billData.getQty()) : "0")));
+                    table.addCell(new PdfPCell(new Phrase(
+                            billData != null ? String.format("%.2f", billData.getTotalHospitalFee()) : "0.00"
+                    )));
                 }
             }
 
             PdfPCell totalCell = new PdfPCell(new Phrase("Total"));
-            totalCell.setColspan(2);
+            totalCell.setColspan(3);
             totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             table.addCell(totalCell);
 
             for (YearMonth yearMonth : yearMonths) {
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
-                        / calculateRouteWiseBillCount(yearMonth)))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
-                        / calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth) / calculateRouteWiseBillCount(yearMonth)))));
+                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth) / calculateRouteWiseBillCount(yearMonth)))));
             }
 
             document.add(table);
@@ -5697,6 +5986,26 @@ public class ReportsController implements Serializable {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private byte[] generateChartAsBytes(String title, Map<YearMonth, Double> data, String categoryLabel, String valueLabel) throws IOException {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        for (Map.Entry<YearMonth, Double> entry : data.entrySet()) {
+            dataset.addValue(entry.getValue(), valueLabel, entry.getKey().toString());
+        }
+
+        JFreeChart chart = ChartFactory.createLineChart(
+                title,
+                categoryLabel,
+                valueLabel,
+                dataset
+        );
+
+        try (ByteArrayOutputStream bao = new ByteArrayOutputStream()) {
+            ChartUtils.writeChartAsPNG(bao, chart, 600, 300);
+            return bao.toByteArray();
         }
     }
 
@@ -5719,6 +6028,7 @@ public class ReportsController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
             int cellIndex = 0;
             headerRow.createCell(cellIndex++).setCellValue("S. No");
+            headerRow.createCell(cellIndex++).setCellValue("Route Code");
             headerRow.createCell(cellIndex++).setCellValue("Route");
 
             List<YearMonth> yearMonths = getYearMonths();
@@ -5736,13 +6046,17 @@ public class ReportsController implements Serializable {
                 cellIndex = 0;
 
                 row.createCell(cellIndex++).setCellValue(serialNumber++);
+                row.createCell(cellIndex++).setCellValue(route.getCode());
                 row.createCell(cellIndex++).setCellValue(route.getName());
 
                 for (YearMonth yearMonth : yearMonths) {
                     Bill billData = monthlyData.get(yearMonth);
                     if (billData != null) {
                         row.createCell(cellIndex++).setCellValue(billData.getQty());
-                        row.createCell(cellIndex++).setCellValue(billData.getTotalHospitalFee());
+                        row.createCell(cellIndex++).setCellValue(
+                                BigDecimal.valueOf(billData.getTotalHospitalFee()).setScale(2, RoundingMode.HALF_UP).doubleValue()
+                        );
+
                     } else {
                         row.createCell(cellIndex++).setCellValue(0);
                         row.createCell(cellIndex++).setCellValue(0.0);
@@ -5753,8 +6067,9 @@ public class ReportsController implements Serializable {
             Row totalRow = sheet.createRow(rowIndex++);
             totalRow.createCell(0).setCellValue("Total");
             totalRow.createCell(1).setCellValue("");
+            totalRow.createCell(2).setCellValue("");
 
-            cellIndex = 2;
+            cellIndex = 3;
             for (YearMonth yearMonth : yearMonths) {
                 totalRow.createCell(cellIndex++).setCellValue(
                         String.format("%.2f", calculateRouteWiseTotalSampleCount(yearMonth)
@@ -5763,6 +6078,89 @@ public class ReportsController implements Serializable {
                         String.format("%.2f", calculateRouteWiseTotalServiceAmount(yearMonth)
                                 / calculateRouteWiseBillCount(yearMonth)));
             }
+
+            XSSFSheet countChartSheet = workbook.createSheet("Sample Count Chart");
+
+            Row chartHeader = countChartSheet.createRow(0);
+            chartHeader.createCell(0).setCellValue("Month");
+            chartHeader.createCell(1).setCellValue("Sample Count");
+
+            Map<YearMonth, Double> countData = getSampleCountChartData();
+            int chartRowIndex = 1;
+            for (Map.Entry<YearMonth, Double> entry : countData.entrySet()) {
+                Row row = countChartSheet.createRow(chartRowIndex++);
+                row.createCell(0).setCellValue(entry.getKey().toString());
+                row.createCell(1).setCellValue(entry.getValue());
+            }
+
+            XSSFDrawing drawing = countChartSheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 3, 1, 15, 20);
+
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleText("Sample Count Over Months");
+
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            bottomAxis.setTitle("Month");
+            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+            leftAxis.setTitle("Sample Count");
+            leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            XDDFDataSource<String> months = XDDFDataSourcesFactory.fromStringCellRange(countChartSheet,
+                    new CellRangeAddress(1, chartRowIndex - 1, 0, 0));
+            XDDFNumericalDataSource<Double> counts = XDDFDataSourcesFactory.fromNumericCellRange(countChartSheet,
+                    new CellRangeAddress(1, chartRowIndex - 1, 1, 1));
+
+            XDDFLineChartData chartData = (XDDFLineChartData) chart.createData(ChartTypes.LINE, bottomAxis, leftAxis);
+            XDDFLineChartData.Series series = (XDDFLineChartData.Series) chartData.addSeries(months, counts);
+            series.setTitle("Sample Count", null);
+            series.setSmooth(false);
+            series.setMarkerStyle(MarkerStyle.CIRCLE);
+
+            chart.plot(chartData);
+
+            XSSFSheet serviceChartSheet = workbook.createSheet("Service Amount Chart");
+
+            Row serviceHeader = serviceChartSheet.createRow(0);
+            serviceHeader.createCell(0).setCellValue("Month");
+            serviceHeader.createCell(1).setCellValue("Service Amount");
+
+            Map<YearMonth, Double> serviceData = getServiceAmountChartData();
+            int serviceRowIndex = 1;
+            for (Map.Entry<YearMonth, Double> entry : serviceData.entrySet()) {
+                Row row = serviceChartSheet.createRow(serviceRowIndex++);
+                row.createCell(0).setCellValue(entry.getKey().toString());
+                row.createCell(1).setCellValue(entry.getValue());
+            }
+
+            XSSFDrawing serviceDrawing = serviceChartSheet.createDrawingPatriarch();
+            XSSFClientAnchor serviceAnchor = serviceDrawing.createAnchor(0, 0, 0, 0, 3, 1, 15, 20);
+
+            XSSFChart serviceChart = serviceDrawing.createChart(serviceAnchor);
+            serviceChart.setTitleText("Service Amount Over Months");
+
+            XDDFChartLegend serviceLegend = serviceChart.getOrAddLegend();
+            serviceLegend.setPosition(LegendPosition.BOTTOM);
+
+            XDDFCategoryAxis serviceBottomAxis = serviceChart.createCategoryAxis(AxisPosition.BOTTOM);
+            serviceBottomAxis.setTitle("Month");
+            XDDFValueAxis serviceLeftAxis = serviceChart.createValueAxis(AxisPosition.LEFT);
+            serviceLeftAxis.setTitle("Service Amount");
+            serviceLeftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            XDDFDataSource<String> serviceMonths = XDDFDataSourcesFactory.fromStringCellRange(serviceChartSheet,
+                    new CellRangeAddress(1, serviceRowIndex - 1, 0, 0));
+            XDDFNumericalDataSource<Double> serviceValues = XDDFDataSourcesFactory.fromNumericCellRange(serviceChartSheet,
+                    new CellRangeAddress(1, serviceRowIndex - 1, 1, 1));
+
+            XDDFLineChartData serviceChartData = (XDDFLineChartData) serviceChart.createData(ChartTypes.LINE, serviceBottomAxis, serviceLeftAxis);
+            XDDFLineChartData.Series serviceSeries = (XDDFLineChartData.Series) serviceChartData.addSeries(serviceMonths, serviceValues);
+            serviceSeries.setTitle("Service Amount", null);
+            serviceSeries.setSmooth(false);
+            serviceSeries.setMarkerStyle(MarkerStyle.SQUARE);
+            serviceChart.plot(serviceChartData);
 
             workbook.write(out);
             context.responseComplete();
@@ -5879,10 +6277,11 @@ public class ReportsController implements Serializable {
         double discountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
-
-            discountNetTotal += calculateIpDiscountSubTotalByBills(bills);
+        if (billMap != null) {
+            for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+                List<Bill> bills = entry.getValue();
+                discountNetTotal += calculateIpDiscountSubTotalByBills(bills);
+            }
         }
 
         return discountNetTotal;
@@ -5892,10 +6291,12 @@ public class ReportsController implements Serializable {
         double netAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
+        if (billMap != null) {
+            for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+                List<Bill> bills = entry.getValue();
 
-            netAmountNetTotal += calculateIpNetAmountSubTotalByBills(bills);
+                netAmountNetTotal += calculateIpNetAmountSubTotalByBills(bills);
+            }
         }
 
         return netAmountNetTotal;
@@ -5905,10 +6306,12 @@ public class ReportsController implements Serializable {
         double patientShareNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
+        if (billMap != null) {
+            for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+                List<Bill> bills = entry.getValue();
 
-            patientShareNetTotal += calculateIpPatientShareSubTotalByBills(bills);
+                patientShareNetTotal += calculateIpPatientShareSubTotalByBills(bills);
+            }
         }
 
         return patientShareNetTotal;
@@ -5918,11 +6321,12 @@ public class ReportsController implements Serializable {
         double sponsorShareNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
+        if (billMap != null) {
+            for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+                List<Bill> bills = entry.getValue();
 
-            sponsorShareNetTotal += calculateIpSponsorShareSubTotalByBills(bills);
-
+                sponsorShareNetTotal += calculateIpSponsorShareSubTotalByBills(bills);
+            }
         }
 
         return sponsorShareNetTotal;
@@ -5932,10 +6336,12 @@ public class ReportsController implements Serializable {
         double dueAmountNetTotal = 0.0;
         Map<Institution, List<Bill>> billMap = bundle.getGroupedBillItemsByInstitution();
 
-        for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
-            List<Bill> bills = entry.getValue();
+        if (billMap != null) {
+            for (Map.Entry<Institution, List<Bill>> entry : billMap.entrySet()) {
+                List<Bill> bills = entry.getValue();
 
-            dueAmountNetTotal += calculateIpDueAmountSubTotalByBills(bills);
+                dueAmountNetTotal += calculateIpDueAmountSubTotalByBills(bills);
+            }
         }
 
         return dueAmountNetTotal;

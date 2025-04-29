@@ -22,13 +22,29 @@
             </div>
 
 
+
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+            </div>
+            <div class="institutionContact" >
+                <div >
+                    <h:outputLabel value="Telephone : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.phone} / #{cc.attrs.bill.referenceBill.creater.department.telephone1}"/>
+                </div>
+                <!--                <div >
+                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.department.telephone1} "/>
+                                </div>-->
+                <div >
+                    <h:outputLabel value="Fax : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.fax}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="Email : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.department.email}"/>
+                </div>
             </div>
 
             <div >
                 <h4 style="color: #000000; text-align: center " >
-                    <h:outputLabel value="Payment Voucher" style="text-decoration: underline;"/>
+                    <h:outputLabel value="Payment Voucher" style="text-decoration: underline; font-size: 0.9em"/>
                 </h4>
             </div>
 
@@ -158,7 +174,7 @@
 
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer CSS')}" >
-                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text')}" escape="false" ></h:outputText>
+                <h:outputText value="#{supplierPaymentController.fillFooterDataOfPaymentVoucher(configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text'), cc.attrs.bill)}" escape="false" ></h:outputText>
             </div>
         </div>
     </cc:implementation>
