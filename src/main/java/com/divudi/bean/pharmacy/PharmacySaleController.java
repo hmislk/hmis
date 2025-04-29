@@ -3063,7 +3063,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         stock = null;
         editingQty = null;
         errorMessage = "";
-        paymentMethod = PaymentMethod.Cash;
+        // paymentMethod = PaymentMethod.Cash; // Never do this. It shold be done in clear bill item
         paymentMethodData = null;
         setCashPaid(0.0);
         allergyListOfPatient = null;
