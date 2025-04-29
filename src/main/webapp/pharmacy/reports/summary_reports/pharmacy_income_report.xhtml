@@ -224,7 +224,7 @@
                                 value="To Print" 
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print"
-                                action="pharmacy_income_report_print_view"/>
+                                action="pharmacy_income_report_print_view?faces-redirect=true"/>
 
                             <p:commandButton 
                                 value="Print" 
@@ -353,7 +353,7 @@
                                 </p:column>
                                 <p:column headerText="Total"    width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
                                     <h:outputText value="#{row.grossTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer" >
                                         <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.grossTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
@@ -363,7 +363,7 @@
                                 </p:column>
                                 <p:column headerText="Discount"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
                                     <h:outputText value="#{row.discount}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer" >
                                         <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
@@ -374,7 +374,7 @@
                                 </p:column>
                                 <p:column headerText="Service Charge"  width="10em"   class="text-end"  style="padding: 0px!important; margin: 0px!important;" >
                                     <h:outputText value="#{row.serviceCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer" >
                                         <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.serviceCharge}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >

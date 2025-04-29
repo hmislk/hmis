@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1895,14 +1896,30 @@ public class ReportController implements Serializable {
         }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
 
-    public void processCollectingCentreBalanceContinuationErrors() {
-        agentHistories = new ArrayList<>();
+    private List<AgentHistory> detectBalanceContinuationErrors(List<AgentHistory> histories) {
+        List<AgentHistory> errors = new ArrayList<>();
+        AgentHistory previous = null;
 
-        if (collectingCentre == null) {
-            JsfUtil.addErrorMessage("Please select a Collecting Centre before processing balance continuation errors.");
-            return;
+        if (histories != null) {
+            for (AgentHistory current : histories) {
+                if (previous != null) {
+                    double expectedBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(previous.getBalanceAfterTransaction());
+                    double actualBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
+
+                    double diff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
+
+                    if (diff > 1.0) { // Significant error
+                        errors.add(previous);
+                        errors.add(current);
+                    }
+                }
+                previous = current;
+            }
         }
+        return errors;
+    }
 
+    private List<AgentHistory> loadHistories(Institution collectingCentre) {
         Map<String, Object> m = new HashMap<>();
         String jpql = "select ah "
                 + " from AgentHistory ah "
@@ -1915,29 +1932,19 @@ public class ReportController implements Serializable {
         m.put("td", toDate);
         m.put("cc", collectingCentre);
 
-        List<AgentHistory> allHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        return agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
 
-        AgentHistory previous = null;
-        if (allHistories != null) {
-            for (AgentHistory current : allHistories) {
-                if (previous != null) {
-                    double expectedBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(previous.getBalanceAfterTransaction());
-                    double actualBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
+    public void processCollectingCentreBalanceContinuationErrors() {
+        agentHistories = new ArrayList<>();
 
-                    double diff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
-
-                    if (diff > 1.0) { // Allow small rounding errors
-                        if (!agentHistories.contains(previous)) {
-                            agentHistories.add(previous);
-                        }
-                        if (!agentHistories.contains(current)) {
-                            agentHistories.add(current);
-                        }
-                    }
-                }
-                previous = current;
-            }
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select a Collecting Centre before processing balance continuation errors.");
+            return;
         }
+
+        List<AgentHistory> histories = loadHistories(collectingCentre);
+        agentHistories = detectBalanceContinuationErrors(histories);
     }
 
     public List<Institution> findCollectingCentresFromAgentHistories() {
@@ -1956,11 +1963,11 @@ public class ReportController implements Serializable {
 
         jpql += " order by ah.agency.name";
 
-        return institutionFacade.findByJpql(jpql, params);
+        return institutionFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void processAllCollectingCentresBalanceContinuationErrors() {
-        agentHistories = new ArrayList<>();
+        Set<AgentHistory> allErrors = new LinkedHashSet<>(); // To avoid duplicates and maintain order
 
         List<Institution> collectingCentres = findCollectingCentresFromAgentHistories();
 
@@ -1970,42 +1977,11 @@ public class ReportController implements Serializable {
         }
 
         for (Institution cc : collectingCentres) {
-            Map<String, Object> m = new HashMap<>();
-            String jpql = "select ah "
-                    + " from AgentHistory ah "
-                    + " where ah.retired = false "
-                    + " and ah.createdAt between :fd and :td "
-                    + " and ah.agency = :cc "
-                    + " order by ah.createdAt";
-
-            m.put("fd", fromDate);
-            m.put("td", toDate);
-            m.put("cc", cc);
-
-            List<AgentHistory> histories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-
-            AgentHistory previous = null;
-            if (histories != null) {
-                for (AgentHistory current : histories) {
-                    if (previous != null) {
-                        double expectedBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(previous.getBalanceAfterTransaction());
-                        double actualBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
-
-                        double diff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
-
-                        if (diff > 1.0) {
-                            if (!agentHistories.contains(previous)) {
-                                agentHistories.add(previous);
-                            }
-                            if (!agentHistories.contains(current)) {
-                                agentHistories.add(current);
-                            }
-                        }
-                    }
-                    previous = current;
-                }
-            }
+            List<AgentHistory> histories = loadHistories(cc);
+            allErrors.addAll(detectBalanceContinuationErrors(histories));
         }
+
+        agentHistories = new ArrayList<>(allErrors);
     }
 
     public void processCollectingCentreStatementReport() {
