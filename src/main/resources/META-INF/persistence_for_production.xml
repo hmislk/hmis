@@ -14,6 +14,7 @@
     <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
+        <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
       <property name="eclipselink.logging.level" value="WARNING"/>
       <property name="eclipselink.logging.level.sql" value="WARNING"/>
       <property name="eclipselink.logging.parameters" value="false"/>

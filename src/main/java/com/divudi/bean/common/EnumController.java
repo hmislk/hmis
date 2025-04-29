@@ -262,6 +262,10 @@ public class EnumController implements Serializable {
         return Arrays.asList(Priority.values());
     }
 
+    public List<CategoryType> getCategoryTypes() {
+        return Arrays.asList(CategoryType.values());
+    }
+
     public List<HistoryType> getHistoryTypes() {
         return Arrays.asList(HistoryType.values());
     }
@@ -282,6 +286,19 @@ public class EnumController implements Serializable {
 
     public List<LoginPage> getLoginPages() {
         return Arrays.asList(LoginPage.values());
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        return Arrays.asList(ReportViewType.values());
+    }
+
+    public List<ReportViewType> getPharmacyIncomeReportViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+        );
     }
 
     public ItemListingStrategy[] getItemListingStrategys() {

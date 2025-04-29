@@ -1,18 +1,18 @@
-name: Production Merge Validation
+name: Branch Merge Validation
 
 on:
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    types: [ opened, synchronize, reopened, edited ]
     branches:
       - '*-prod'
-      - '-staging'
-      - '*-stg'
+      - 'staging'
+      - 'hims-qa*'
 
 jobs:
   check-branch:
     runs-on: ubuntu-latest
     steps:
-      - name: Production Merge Validation
+      - name: Branch Merge Validation
         env:
           HEAD_BRANCH: ${{ github.head_ref }}
           BASE_BRANCH: ${{ github.base_ref }}
@@ -23,11 +23,16 @@ jobs:
           TARGET="$BASE_BRANCH"
 
           if [[ "$TARGET" == *-prod ]]; then
-            if [[ "$SOURCE" == *-dev || "$SOURCE" == *-stg || "$SOURCE" == "hims-qa1" || "$SOURCE" == "hims-qa2" || "$SOURCE" == "development" ]]; then
-              echo "❌ Merging from $SOURCE to $TARGET is not allowed."
+            if [[ "$SOURCE" != *-hotfix && "$SOURCE" != "staging" ]]; then
+              echo "❌ Merging from $SOURCE to $TARGET is not allowed. If this is a hot-fix, please check if branch name ends with '-hotfix'."
               exit 1
             fi
-          elif [[ "$TARGET" == *-stg || "$TARGET" == "-staging" ]]; then
+          elif [[ "$TARGET" == "hims-qa*" ]]; then
+            if [[ "$SOURCE" != "development" ]]; then
+              echo "❌ Only development can merge to $TARGET (qa restriction)."
+              exit 1
+            fi
+          elif [[ "$TARGET" == "staging" ]]; then
             if [[ "$SOURCE" != "hims-qa1" && "$SOURCE" != "hims-qa2" ]]; then
               echo "❌ Only hims-qa1 and hims-qa2 can merge to $TARGET (staging restriction)."
               exit 1

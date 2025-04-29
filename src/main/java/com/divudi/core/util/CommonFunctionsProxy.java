@@ -11,8 +11,20 @@ import java.util.List;
 @ApplicationScoped
 public class CommonFunctionsProxy {
 
+    public double abs(double value) {
+        return CommonFunctions.abs(value);
+    }
+
     public String convertToWordJSF(double number) {
         return CommonFunctions.convertToWord(number);
+    }
+
+    public static double roundToTwoDecimals(double value) {
+        return CommonFunctions.roundToTwoDecimals(value);
+    }
+
+    public static double roundToTwoDecimalsBigDecimal(double value) {
+        return CommonFunctions.roundToTwoDecimalsBigDecimal(value);
     }
 
     public String formatToLongDate(Date date, String dateFormat) {

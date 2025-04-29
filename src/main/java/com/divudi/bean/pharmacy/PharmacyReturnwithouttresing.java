@@ -11,6 +11,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -444,7 +445,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
-
+            
             if (tbi.getId() == null) {
                 getBillItemFacade().create(tbi);
             }
@@ -542,6 +543,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
             //   ////System.out.println("Error for sale bill");
             return;
         }
+        
 
         calculateAllRates();
 
@@ -552,6 +554,8 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -586,7 +590,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
 //    @EJB
 //    IssueRateMarginsFacade issueRateMarginsFacade;
-
     public void addBillItem() {
         errorMessage = null;
 
@@ -682,14 +685,14 @@ public class PharmacyReturnwithouttresing implements Serializable {
             netTot = netTot + b.getNetValue();
             grossTot = grossTot + b.getGrossValue();
 //            discount = discount + b.getDiscount();
-            retailValue = retailValue + b.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * b.getPharmaceuticalBillItem().getQty() ;
+            retailValue = retailValue + b.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * b.getPharmaceuticalBillItem().getQty();
             //margin += b.getMarginValue();
 
         }
 
         netTot = netTot + getPreBill().getServiceCharge();
 
-         getPreBill().setTotal(grossTot);
+        getPreBill().setTotal(grossTot);
 
         getPreBill().setNetTotal(netTot - Math.abs(getPreBill().getDiscount()));
 

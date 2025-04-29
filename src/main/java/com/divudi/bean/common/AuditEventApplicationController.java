@@ -51,7 +51,7 @@ public class AuditEventApplicationController {
         }
     }
 
-    public void saveAutitEvent(AuditEvent auditEvent) {
+    public void saveAuditEvent(AuditEvent auditEvent) {
         if (auditEvent == null) {
             return;
         }

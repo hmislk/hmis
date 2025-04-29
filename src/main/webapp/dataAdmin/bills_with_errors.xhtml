@@ -126,7 +126,7 @@
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
                                 <f:selectItems 
                                     var="billTypeAtomic"
-                                    itemLabel="#{billTypeAtomic.label}"           
+                                    itemLabel="#{billTypeAtomic}"           
                                     itemValue="#{billTypeAtomic}" 
                                     value="#{enumController.billTypesAtomic}" ></f:selectItems>
                             </p:selectOneMenu>
@@ -165,14 +165,7 @@
                                 id="btnSearchBillsWithErrors"
                                 ajax="false" 
                                 value="List Bills with Errors" 
-                                action="#{searchController.findBillsWithErrors}"/>
-                            <p:commandButton 
-                                class="ui-button-success" 
-                                icon="fas fa-magnifying-glass" 
-                                id="btnSearch"
-                                ajax="false" 
-                                value="List All Bills" 
-                                action="#{searchController.listBills()}"/>
+                                action="#{searchController.findAllBillsWithErrors}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
                                 <p:dataExporter fileName="Bill With Errors" type="xlsx" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
@@ -192,19 +185,14 @@
                                          rowsPerPageTemplate="5,10,15,50"
                                          >
 
-<!--                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
-                                    <h:outputLabel value="#{bill.id}"/>
-                                </p:column>-->
+
                                 <p:column
                                     headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" 
                                     filterMatchMode="contains" >                                
                                     <h:outputLabel value="#{bill.deptId}"/>
                                 </p:column>
-<!--                                <p:column headerText="Bill Class" >                                
-                                    <h:outputLabel value="#{bill.billClass}"/>
-                                </p:column>-->
                                 <p:column headerText="Bill Type" >                                
-                                    <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
+                                    <h:outputLabel value="#{bill.billTypeAtomic}"/>
                                 </p:column>
                                 <p:column headerText="Date/Time">
                                     <p:outputLabel value="#{bill.createdAt}" >

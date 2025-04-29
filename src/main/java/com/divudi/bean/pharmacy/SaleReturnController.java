@@ -186,7 +186,7 @@ public class SaleReturnController implements Serializable {
 
         getReturnBill().setTotal(0 - getReturnBill().getTotal());
         getReturnBill().setNetTotal(0 - getReturnBill().getNetTotal());
-        getReturnBill().setDiscount(0-getReturnBill().getDiscount());
+        getReturnBill().setDiscount(0 - getReturnBill().getDiscount());
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -256,9 +256,10 @@ public class SaleReturnController implements Serializable {
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             //   i.getBillItem().setQty(i.getPharmaceuticalBillItem().getQty());
-            double value = i.getNetRate() * i.getQty();
-            i.setGrossValue(0 - value);
-            i.setNetValue(0 - value);
+            double grossValue = i.getRate() * i.getQty();
+            double netValue = i.getNetRate() * i.getQty();
+            i.setGrossValue(0 - grossValue);
+            i.setNetValue(0 - netValue);
 
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
@@ -445,8 +446,7 @@ public class SaleReturnController implements Serializable {
 
         savePreReturnBill();
         savePreComponent();
-        getReturnBill().setTotal(getReturnBill().getNetTotal()+getReturnBill().getDiscount());
-
+//        getReturnBill().setTotal(getReturnBill().getNetTotal()+getReturnBill().getDiscount());
 
         getBill().getReturnPreBills().add(getReturnBill());
         getBillFacade().edit(getBill());
@@ -457,7 +457,7 @@ public class SaleReturnController implements Serializable {
         Payment p = createPayment(b, getReturnPaymentMethod());
         drawerController.updateDrawerForOuts(p);
         saveSaleComponent(b, p);
-
+        getReturnBill().setReferenceBill(getBill());
         getReturnBill().getReturnCashBills().add(b);
         getBillFacade().edit(getReturnBill());
 
@@ -471,6 +471,14 @@ public class SaleReturnController implements Serializable {
                 //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
                 getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
+                getReturnBill().setFromStaff(getBill().getToStaff());
+                getBillFacade().edit(getReturnBill());
+            }
+        }
+        if (getBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            if (getBill().getToStaff() != null) {
+                getStaffBean().updateStaffWelfare(getBill().getToStaff(), getReturnBill().getNetTotal());
+                JsfUtil.addSuccessMessage("Staff Welfare Updated");
                 getReturnBill().setFromStaff(getBill().getToStaff());
                 getBillFacade().edit(getReturnBill());
             }
@@ -495,7 +503,7 @@ public class SaleReturnController implements Serializable {
 
         for (BillItem p : getBillItems()) {
             grossTotal += p.getNetRate() * p.getQty();
-            discount += p.getDiscountRate()*p.getQty();
+            discount += p.getDiscountRate() * p.getQty();
 
         }
         getReturnBill().setDiscount(discount);

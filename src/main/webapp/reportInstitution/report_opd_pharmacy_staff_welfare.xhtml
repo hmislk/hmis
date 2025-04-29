@@ -26,13 +26,16 @@
                 </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2" >
                     <p:commandButton id="btnRefresh" value="Process" ajax="false" 
-                                     class="ui-button-warning" icon="fas fa-cogs"
+                                     class="ui-button-info m-1" icon="fas fa-cogs"
                                      action="#{serviceSummery.opdPharmacyStaffWelfarebills}"/>
                     <p:defaultCommand target="btnRefresh"/>
 
-                    <p:commandButton ajax="false" value="Print"  
-                                     class="ui-button-info mx-2" icon="fas fa-print" >
-                        <p:printer target="panelPrint" />
+                    <p:commandButton
+                            value="To Print"
+                            ajax="false"
+                            styleClass="ui-button-warning m-1"
+                            action="report_opd_pharmacy_staff_welfare_print?faces-redirect=true;"
+                            icon="pi pi-print">
                     </p:commandButton>
 
                     <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >

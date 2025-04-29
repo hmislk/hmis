@@ -123,7 +123,7 @@
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false"
-                                                value="Upload Institution Item Fees"
+                                                value="Upload Institution (Site) Item Fees"
                                                 action="#{itemFeeManager.navigateToInstitutionItemFeeUpload()}">
                                             </p:commandButton>
 
@@ -304,17 +304,17 @@
 
                                     <p:tab title="Discounts for Payment Method" >
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodDiscountOpdByDepartment()}" value="Payment Method Discoun by Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>                                            
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodDiscountOpdByCategory()}" value="Payment Method Discoun by Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodDiscountOpdByItem()}" value="Payment Method Discoun by Item " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
+                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodDiscountOpdByDepartment()}" value="Payment Method Discount by Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>
+                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodDiscountOpdByCategory()}" value="Payment Method Discount by OPD Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
+                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodDiscountOpdByItem()}" value="Payment Method Discounts by item" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
                                         </div>
                                     </p:tab>
 
                                     <p:tab title="Reports" >
                                         <div class="d-grid gap-2">
 
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToReportInward()}" value="Inward MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipInwardMemberShipReport')}"/>
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToReportOpd()}" value="Opd MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisOpdMemberShipReport')}"/>
+                                            <p:commandButton class="w-100" action="#{navigationController.navigateToReportInward()}" value="Inward Membership Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipInwardMemberShipReport')}"/>
+                                            <p:commandButton class="w-100" action="#{navigationController.navigateToReportOpd()}" value="Opd Membership Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisOpdMemberShipReport')}"/>
 
                                         </div>
                                     </p:tab>

@@ -348,7 +348,12 @@
                             ajax="false" 
                             action="#{billBhtController.navigateToAddServicesFromMenu}"
                             value="Add Services &amp; Investigations" 
-                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" ></p:menuitem>                                            
+                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" />
+                        <p:menuitem
+                                ajax="false"
+                                action="#{opdBillController.navigateToNewInwardServiceBill}"
+                                value="Add Services &amp; Investigations with Payments"
+                                rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices') and configOptionApplicationController.getBooleanValueByKey('Enable Collecting Payments on Add Services &amp; Investigations on Inward',false)}" />
                         <p:menuitem 
                             ajax="false"
                             action="#{inwardAdditionalChargeController.navigateToAddOutsideChargeFromMenu()}" 
@@ -1673,7 +1678,7 @@
                     <p:menuitem  
                         ajax="false"  
                         action="#{dataAdministrationController.navigateToAdminDataAdministration()}" 
-                        value="Manage Data, Workflows &amp; Templates " 
+                        value="Manage Metadata " 
                         icon="fa fa-database"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>

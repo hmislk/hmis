@@ -257,9 +257,9 @@ public class AgentAndCcPaymentController implements Serializable {
         getCurrent().setNetTotal(getCurrent().getNetTotal());
 
         if (getCurrent().getId() == null) {
-            getBillFacade().create(getCurrent());
+            getBillFacade().createAndFlush(getCurrent());
         } else {
-            getBillFacade().edit(getCurrent());
+            getBillFacade().editAndFlush(getCurrent());
         }
         saveBillItem();
         if (getCurrent() != null) {
@@ -271,7 +271,6 @@ public class AgentAndCcPaymentController implements Serializable {
         }
 
         List<Payment> ps = paymentService.createPayment(current, paymentMethodData);
-//        drawerController.updateDrawerForIns(ps); //Done through bill service
         collectingCentreApplicationController.updateCcBalance(
                 current.getFromInstitution(),
                 0,
@@ -281,24 +280,13 @@ public class AgentAndCcPaymentController implements Serializable {
                 HistoryType.CollectingCentreDeposit,
                 getCurrent());
 
-        if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
-            getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
-            getInstitutionFacade().edit(getCurrent().getFromInstitution());
+        Institution ccToResetAllowedCredit = getCurrent().getFromInstitution();
+        ccToResetAllowedCredit = institutionFacade.findWithoutCache(ccToResetAllowedCredit.getId());
+        
+        if ((getCurrent().getNetTotal() > (ccToResetAllowedCredit.getMaxCreditLimit() - ccToResetAllowedCredit.getStandardCreditLimit())) && (ccToResetAllowedCredit.getMaxCreditLimit() != ccToResetAllowedCredit.getStandardCreditLimit())) {
+            ccToResetAllowedCredit.setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
+            getInstitutionFacade().edit(ccToResetAllowedCredit);
         }
-
-//        if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
-//            getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
-//            getInstitutionFacade().edit(getCurrent().getFromInstitution());
-//            collectingCentreApplicationController.updateCcBalance(
-//                    current.getFromInstitution(),
-//                    0,
-//                    0,
-//                    0,
-//                    0,
-//                    HistoryType.CollectingCentreBalanceUpdateBill,
-//                    getCurrent(),
-//                    "Agent Payment Allowed Credit Limit Reset");
-//        }
         JsfUtil.addSuccessMessage("Bill Saved");
         ccDepositSettlingStarted = false;
         printPreview = true;
