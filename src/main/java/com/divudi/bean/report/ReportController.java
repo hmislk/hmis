@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -913,7 +914,7 @@ public class ReportController implements Serializable {
             params.put("ins", institution);
         }
 
-        if(department != null) {
+        if (department != null) {
             jpql += " AND (bi.bill.department = :dep)";
             params.put("dep", department);
         }
@@ -1013,7 +1014,7 @@ public class ReportController implements Serializable {
             params.put("ins", institution);
         }
 
-        if(department != null) {
+        if (department != null) {
             jpql += "AND (bi.bill.department = :dep)";
             params.put("dep", department);
         }
@@ -1608,28 +1609,28 @@ public class ReportController implements Serializable {
 
         // Unchecked cast here
         List<ItemCount> allLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
-        if(allLabTestCounts == null){
+
+        if (allLabTestCounts == null) {
             allLabTestCounts = new ArrayList<>();
         }
-        
+
         m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
         List<ItemCount> cancelTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
-        if(cancelTestCounts == null){
+
+        if (cancelTestCounts == null) {
             cancelTestCounts = new ArrayList<>();
         }
-        
+
         // Now fetch results for OpdBillRefund (use a list for single bType)
         m.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND, BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
         List<ItemCount> refundTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
-        if(refundTestCounts == null){
+
+        if (refundTestCounts == null) {
             refundTestCounts = new ArrayList<>();
         }
-        
+
         Map<String, CategoryCount> categoryReports = new HashMap<>();
-        
+
         List<ItemCount> adjustmentsList = new ArrayList<>();
         adjustmentsList.addAll(cancelTestCounts);
         adjustmentsList.addAll(refundTestCounts);
@@ -1893,6 +1894,94 @@ public class ReportController implements Serializable {
             }
             agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
+    }
+
+    private List<AgentHistory> detectBalanceContinuationErrors(List<AgentHistory> histories) {
+        List<AgentHistory> errors = new ArrayList<>();
+        AgentHistory previous = null;
+
+        if (histories != null) {
+            for (AgentHistory current : histories) {
+                if (previous != null) {
+                    double expectedBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(previous.getBalanceAfterTransaction());
+                    double actualBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
+
+                    double diff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
+
+                    if (diff > 1.0) { // Significant error
+                        errors.add(previous);
+                        errors.add(current);
+                    }
+                }
+                previous = current;
+            }
+        }
+        return errors;
+    }
+
+    private List<AgentHistory> loadHistories(Institution collectingCentre) {
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "select ah "
+                + " from AgentHistory ah "
+                + " where ah.retired = false "
+                + " and ah.createdAt between :fd and :td "
+                + " and ah.agency = :cc "
+                + " order by ah.createdAt";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("cc", collectingCentre);
+
+        return agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void processCollectingCentreBalanceContinuationErrors() {
+        agentHistories = new ArrayList<>();
+
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select a Collecting Centre before processing balance continuation errors.");
+            return;
+        }
+
+        List<AgentHistory> histories = loadHistories(collectingCentre);
+        agentHistories = detectBalanceContinuationErrors(histories);
+    }
+
+    public List<Institution> findCollectingCentresFromAgentHistories() {
+        String jpql = "select distinct ah.agency "
+                + " from AgentHistory ah "
+                + " where ah.retired = false "
+                + " and ah.agency is not null ";
+
+        Map<String, Object> params = new HashMap<>();
+
+        if (fromDate != null && toDate != null) {
+            jpql += " and ah.createdAt between :fd and :td ";
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+        }
+
+        jpql += " order by ah.agency.name";
+
+        return institutionFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void processAllCollectingCentresBalanceContinuationErrors() {
+        Set<AgentHistory> allErrors = new LinkedHashSet<>(); // To avoid duplicates and maintain order
+
+        List<Institution> collectingCentres = findCollectingCentresFromAgentHistories();
+
+        if (collectingCentres == null || collectingCentres.isEmpty()) {
+            JsfUtil.addErrorMessage("No Collecting Centres found from Agent Histories.");
+            return;
+        }
+
+        for (Institution cc : collectingCentres) {
+            List<AgentHistory> histories = loadHistories(cc);
+            allErrors.addAll(detectBalanceContinuationErrors(histories));
+        }
+
+        agentHistories = new ArrayList<>(allErrors);
     }
 
     public void processCollectingCentreStatementReport() {

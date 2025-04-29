@@ -2150,6 +2150,14 @@ public class PharmacyBillSearch implements Serializable {
                     getBillFacade().edit(newlyCreatedRetailSaleCancellationBill);
                 }
             }
+            if (getBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                if (getBill().getToStaff() != null) {
+                    getStaffBean().updateStaffWelfare(getBill().getToStaff(), 0 - getBill().getNetTotal());
+                    JsfUtil.addSuccessMessage("Staff Welfare Updated");
+                    newlyCreatedRetailSaleCancellationBill.setFromStaff(getBill().getToStaff());
+                    getBillFacade().edit(newlyCreatedRetailSaleCancellationBill);
+                }
+            }
 
             printPreview = true;
 
