@@ -10,7 +10,7 @@
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
 
-                <p:panel header="Pharmacy Income Report" >
+                <p:panel header="Pharmacy Procurement Report" >
 
 
 
@@ -211,7 +211,7 @@
                                 id="tbl"
                                 style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
                                 styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                                value="#{pharmacySummaryReportController.bundle.rows}" var="row"
+                                value="#{pharmacySummaryReportController.pharmacyBundle.rows}" var="row"
                                 paginator="true" 
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}" 
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
@@ -245,7 +245,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer" >
-                                        <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.grossTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                        <h:outputText value="#{pharmacySummaryReportController.pharmacyBundle.summaryRow.grossTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
@@ -255,7 +255,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer" >
-                                        <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                        <h:outputText value="#{pharmacySummaryReportController.pharmacyBundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
@@ -266,7 +266,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer" >
-                                        <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                        <h:outputText value="#{pharmacySummaryReportController.pharmacyBundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>

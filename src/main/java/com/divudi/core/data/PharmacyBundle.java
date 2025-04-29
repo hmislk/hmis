@@ -266,6 +266,14 @@ public class PharmacyBundle implements Serializable {
         }
     }
 
+    public void generateProcurementForBills() {
+        for (PharmacyRow r : getRows()) {
+            Bill b = r.getBill();
+            populateRowFromBill(r, b);
+        }
+        populateSummaryRow();
+    }
+
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;
@@ -772,7 +780,6 @@ public class PharmacyBundle implements Serializable {
         populateSummaryRow();
     }
 
-    
     // Contribution by ChatGPT - combines grouping by BillTypeAtomic
     public void generatePharmacyPurchaseGroupedByBillType() {
         Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
@@ -813,8 +820,6 @@ public class PharmacyBundle implements Serializable {
         populateSummaryRow();
     }
 
-    
-    
     public void generatePaymentDetailsForBillsAndBatchBills() {
         for (PharmacyRow r : getRows()) {
             Bill b = r.getBill();

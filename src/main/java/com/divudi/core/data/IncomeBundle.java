@@ -488,11 +488,6 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
 
-    public void generateProcurementForBills() {
-        populateSummaryRow();
-    }
-
-    
     public void generatePaymentDetailsGroupedByBillType() {
         Map<BillTypeAtomic, IncomeRow> grouped = new LinkedHashMap<>();
 

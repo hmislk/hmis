@@ -237,7 +237,7 @@ public class PharmacySummaryReportController implements Serializable {
     public String navigateToPharmacyIncomeReport() {
         return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
     }
-    
+
     public String navigateToPharmacyProcurementReport() {
         return "/pharmacy/reports/procurement_reports/pharmacy_procurement_report?faces-redirect=true";
     }
@@ -527,7 +527,6 @@ public class PharmacySummaryReportController implements Serializable {
         }
     }
 
-    
     public void processPharmacyProcurementReport() {
         if (reportViewType == null) {
             JsfUtil.addErrorMessage("Please select a report view type.");
@@ -543,17 +542,14 @@ public class PharmacySummaryReportController implements Serializable {
                 break;
         }
     }
-    
+
     public void processPharmacyProcurementReportByBill() {
-        reportTimerController.trackReportExecution(() -> {
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyProcurementBillTypes();
-            List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
-            pharmacyBundle = new PharmacyBundle(bills);
-            bundle.generateProcurementForBills();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyProcurementBillTypes();
+        List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
+        pharmacyBundle = new PharmacyBundle(bills);
+        pharmacyBundle.generateProcurementForBills();
     }
 
-    
     public void processPharmacyIncomeReportByBillType() {
         reportTimerController.trackReportExecution(() -> {
             System.out.println("processPharmacyIncomeReportByBillType");
@@ -602,7 +598,7 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
         );
     }
-    
+
     public List<BillTypeAtomic> getPharmacyProcurementBillTypes() {
         return Arrays.asList(
                 BillTypeAtomic.PHARMACY_GRN,
@@ -1753,6 +1749,4 @@ public class PharmacySummaryReportController implements Serializable {
         this.pharmacyBundle = pharmacyBundle;
     }
 
-    
-    
 }
