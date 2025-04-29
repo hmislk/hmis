@@ -1750,7 +1750,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 sendChannellingStatusUpdateNotificationSms(bs);
 //                System.out.println("bs = " + bs);
             }
-            if (!firstIncompleteFound && !bs.isCompleted()) {
+            if (!firstIncompleteFound && !bs.isCompleted() && (!bs.getBill().isCancelled() && !bs.getBill().isRefunded())) {
                 bs.setNextInLine(true);
                 billSessionFacade.edit(bs);
                 selectedSessionInstance.setNextInLineBillSession(bs);
