@@ -1182,20 +1182,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         JsfUtil.addErrorMessage("Cancelled");
 
     }
-    
-    public void cancelAllOnlineBookings(List<BillSession> allBillSessions){
-        for(BillSession bs : allBillSessions){
-            if(bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+
+    public void cancelAllOnlineBookings(List<BillSession> allBillSessions) {
+        for (BillSession bs : allBillSessions) {
+            if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
                 continue;
             }
-            
+
             OnlineBooking booking = bs.getBill().getReferenceBill().getOnlineBooking();
             booking.setIsCanceled(true);
-            booking.setCancelledBy("From System : "+getSessionController().getLoggedUser().getName());
+            booking.setCancelledBy("From System : " + getSessionController().getLoggedUser().getName());
             booking.setOnlineBookingStatus(OnlineBookingStatus.DOCTOR_CANCELED);
             getOnlineBookingFacade().edit(booking);
-            
-            
+
         }
     }
 
@@ -2278,6 +2277,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getSelectedBillSession().setAbsent(true);
         getSelectedBillSession().setAbsentMarkedAt(new Date());
         getSelectedBillSession().setAbsentMarkedUser(sessionController.getLoggedUser());
+        if (getSelectedBillSession().getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+            getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking().setIsAbsent(true);
+        }
         billSessionFacade.edit(getSelectedBillSession());
     }
 
@@ -3892,14 +3894,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (bs.getBill() == null) {
                 continue;
             }
-            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
-                continue;
+            
+            String mobile;
+            if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                    continue;
+                }
+                mobile = bs.getBill().getPatient().getPerson().getSmsNumber();
+            }else{
+                mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
             }
+
             Sms e = new Sms();
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
             e.setBill(bs.getBill());
-            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
+            e.setReceipientNumber(mobile);
             e.setSendingMessage(createChanellBookingDoctorArrivalSms(bs.getBill()));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -3971,7 +3981,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
-        }else{
+        } else {
             e.setReceipientNumber(bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo());
         }
 
