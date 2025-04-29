@@ -150,6 +150,7 @@
                     <artifactId>bcprov-jdk15on</artifactId>
                 </exclusion>
             </exclusions>
+            <type>jar</type>
         </dependency>
 
         <!-- Optional: If you need to convert DOCX to HTML -->
