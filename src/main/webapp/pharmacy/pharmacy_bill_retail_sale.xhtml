@@ -979,24 +979,15 @@
                                                         <div class="col-md-5" >
                                                             <p:outputLabel value="Payment Method" for="pay" ></p:outputLabel>
                                                             <p:selectOneMenu   id="pay"
+                                                                               required="true"
                                                                                value="#{pharmacySaleController.paymentMethod}">
                                                                 <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}"
                                                                                itemValue="#{p}"/>
                                                                 <p:ajax process="pay"
                                                                         update="panelBillDetails panelPaymentDetails"
-                                                                        event="change"
+                                                                        event="blur"
                                                                         listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
                                                             </p:selectOneMenu>
-
-<!--                                                            <p:outputLabel value="Payment Scheme" for="cmbPaymentScheme" ></p:outputLabel>
-                                                            <p:selectOneMenu   id="cmbPaymentScheme" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}">
-                                                                <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                                <p:ajax process="cmbPaymentScheme"
-                                                                        update="panelBillDetails panelPaymentDetails"
-                                                                        event="change"
-                                                                        listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
-                                                            </p:selectOneMenu>-->
-
 
                                                             <p:outputLabel value="Discount Scheme" for="cmbPs" ></p:outputLabel>
                                                             <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" class="my-1">
