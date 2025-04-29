@@ -140,7 +140,7 @@
                             <div class="d-flex">
                                 <h:outputText value="Voucher Date" style="width: 35mm;"/>
                                 <h:outputText value="#{cc.attrs.bill.createdAt}">
-                                    <f:convertDateTime pattern="dd/mm/yyyy"/>
+                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
                                 </h:outputText>
                             </div>
                         </div>
@@ -188,7 +188,7 @@
                                     </td>
                                     <td style="width: 20mm; text-align: right;">
                                         <h:outputText value="#{item.referenceBill.createdAt}" style="margin-right: 3mm;">
-                                            <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
                                         </h:outputText>
                                     </td>
                                     <td style="width: 28mm; text-align: right;">
