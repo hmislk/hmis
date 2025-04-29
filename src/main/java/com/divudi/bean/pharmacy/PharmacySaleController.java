@@ -1267,7 +1267,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 System.out.println("Set Rate from ItemBatch: " + bi.getRate());
             }
 
-            double discountPercent = calculateBillItemDiscountRate(bi);  // Now returns just 7.5 for 7.5%
+            double discountPercent = calculateBillItemDiscountRate(bi); // Now returns percentage (e.g., 7.5)
             bi.setDiscountRate(discountPercent);
             System.out.println("Discount Percent: " + discountPercent);
 
@@ -1283,8 +1283,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             bi.setNetValue(netValue);
             System.out.println("Net Value (GrossValue - Discount): " + netValue);
 
-            bi.setNetRate(bi.getRate() - ((bi.getRate() * discountPercent) / 100));
-            System.out.println("Net Rate (Rate - DiscountPercent): " + bi.getNetRate());
+            double netRate = bi.getRate() * (1 - discountPercent / 100);
+            bi.setNetRate(netRate);
+            System.out.println("Net Rate (Rate * (1 - DiscountPercent / 100)): " + netRate);
         } else {
             System.out.println("PharmaceuticalBillItem or Stock or ItemBatch is NULL");
         }
