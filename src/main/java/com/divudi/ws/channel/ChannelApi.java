@@ -1598,7 +1598,7 @@ public class ChannelApi {
         sessionDetails.put("hosLocation", session.getInstitution().getAddress());
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
-        sessionDetails.put("status", "Success");
+        sessionDetails.put("status", sessionStatus);
 
         Map<String, Object> patientDetails = new HashMap<>();
         patientDetails.put("title", bookingDetails.getTitle());
@@ -1707,6 +1707,17 @@ public class ChannelApi {
         BillSession bs = channelService.cancelBookingBill(completedSaveBill, bookingData);
 
         SessionInstance session = bs.getSessionInstance();
+        
+        String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
+        if(session.isCompleted()){
+            sessionStatus = SessionStatusForOnlineBooking.Ended.toString();
+        }else if(session.isCancelled()){
+            sessionStatus = SessionStatusForOnlineBooking.Cancelled.toString();
+        }else if(!session.isAcceptOnlineBookings()){
+            sessionStatus = SessionStatusForOnlineBooking.Hold.toString();
+        }else if(channelService.isFullyBookedSession(session)){
+            sessionStatus = SessionStatusForOnlineBooking.Full.toString();
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1736,7 +1747,7 @@ public class ChannelApi {
         sessionDetails.put("hosLocation", session.getInstitution().getAddress());
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
-        sessionDetails.put("status", "success");
+        sessionDetails.put("status", sessionStatus);
 
         Map<String, Object> patientDetails = new HashMap<>();
         patientDetails.put("titile", bookingData.getTitle());
