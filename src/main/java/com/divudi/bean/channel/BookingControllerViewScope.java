@@ -3894,14 +3894,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (bs.getBill() == null) {
                 continue;
             }
-            
+
             String mobile;
             if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
                 if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
                     continue;
                 }
                 mobile = bs.getBill().getPatient().getPerson().getSmsNumber();
-            }else{
+            } else {
                 mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
             }
 
@@ -5296,11 +5296,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         b.getBillTypeAtomic();
         hh.put("bts", bts);
         hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        hh
-                .put("class", BilledBill.class
-                );
-        hh.put(
-                "ss", getSelectedSessionInstance());
+        hh.put("class", BilledBill.class);
+        hh.put("ss", getSelectedSessionInstance());
+
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
         // Initialize counts
@@ -5324,8 +5322,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             sessionStartingNumber = 1; // Use 1 instead of 01 since it's an integer
         }
 
-        if (billSessions
-                == null) {
+        if (billSessions == null) {
             selectedSessionInstance.setBookedPatientCount(0l);
             selectedSessionInstance.setPaidPatientCount(0l);
             selectedSessionInstance.setCompletedPatientCount(0l);
@@ -5362,6 +5359,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
                 // Additional check for paid status
                 try {
+                    if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                        paidPatientCount++;
+                    }
                     if (bs.getPaidBillSession() != null) {
                         paidPatientCount++;
                     }
@@ -5391,7 +5391,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
                 // Additional check for Oncall status
                 try {
-                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled() && bs.getBill().getBillTypeAtomic() !=BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT ) {
                         onCallPatientCount++;
                     }
                 } catch (NullPointerException npe) {

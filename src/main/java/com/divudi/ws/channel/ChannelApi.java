@@ -712,7 +712,7 @@ public class ChannelApi {
         SessionInstance session = channelService.findActiveChannelSession(sessionId);
 
         if (session == null) {
-            JSONObject responseError = commonFunctionToErrorResponse("Invalid Session id. Please check!");
+            JSONObject responseError = commonFunctionToErrorResponse("NO session available for online booking!");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
 
