@@ -19,6 +19,7 @@ import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PersonInstitutionType;
+import com.divudi.core.data.SessionStatusForOnlineBooking;
 import com.divudi.core.data.Title;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
@@ -622,6 +623,13 @@ public class ChannelApi {
             if (s.getOriginatingSession().getTotal() == 0) {
                 continue;
             }
+
+            String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
+            if (!s.isAcceptOnlineBookings()) {
+                sessionStatus = SessionStatusForOnlineBooking.Hold.toString();
+            } else if (channelService.isFullyBookedSession(s)) {
+                sessionStatus = SessionStatusForOnlineBooking.Full.toString();
+            }
             Map<String, Object> session = new HashMap<>();
 
             Map foreignFees = channelService.getForeignFeesForDoctorAndInstitutionFromServiceSession(s.getOriginatingSession());
@@ -651,13 +659,14 @@ public class ChannelApi {
             session.put("appDate", forDate.format(s.getSessionDate()));
             session.put("vatHosForeignCharge", null);
             session.put("appDay", forDay.format(s.getSessionDate()));
+            session.put("status", sessionStatus);
 
             sessionData.add(session);
         }
 
         Map<String, Object> sessionResults = new HashMap<>();
         sessionResults.put("result", sessionData);
-        
+
         Map<String, Integer> pageData = new HashMap();
         pageData.put("pageNo", 0);
         pageData.put("offset", 0);
@@ -705,7 +714,7 @@ public class ChannelApi {
         try {
             validateAndFetchAgency(null, agencyCode);
         } catch (ValidationException e) {
-            JSONObject responseError = commonFunctionToErrorResponse(e.getField()+e.getMessage());
+            JSONObject responseError = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
 
@@ -714,6 +723,13 @@ public class ChannelApi {
         if (session == null) {
             JSONObject responseError = commonFunctionToErrorResponse("NO session available for online booking!");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
+        }
+
+        String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
+        if (!session.isAcceptOnlineBookings()) {
+            sessionStatus = SessionStatusForOnlineBooking.Hold.toString();
+        } else if (channelService.isFullyBookedSession(session)) {
+            sessionStatus = SessionStatusForOnlineBooking.Full.toString();
         }
 
         String remark = "Session will have on time";
@@ -757,6 +773,7 @@ public class ChannelApi {
         sessionData.put("appDate", forDate.format(session.getSessionDate()));
         sessionData.put("vatHosForeignCharge", null);
         sessionData.put("appDay", forDay.format(session.getSessionDate()));
+        sessionData.put("status", sessionStatus);
 
         Map<String, Object> allSessionData = new HashMap<>();
         allSessionData.put("result", sessionData);
@@ -908,6 +925,14 @@ public class ChannelApi {
         } catch (ValidationException e) {
             String message = e.getField() == null ? e.getMessage() : e.getField() + e.getMessage();
             JSONObject response = commonFunctionToErrorResponse(message);
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
+        if (!session.isAcceptOnlineBookings()) {
+            JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        } else if (channelService.isFullyBookedSession(session)) {
+            JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -1323,11 +1348,20 @@ public class ChannelApi {
         //Bill temporarySavedBill = bookingData.getBill();
         Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingData);
 
+
         try {
             validateBillForCompleteBooking(temporarySavedBill);
             validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
         } catch (ValidationException e) {
             JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
+        if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
+            JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        } else if (channelService.isFullyBookedSession(temporarySavedBill.getSingleBillSession().getSessionInstance())) {
+            JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
@@ -1530,7 +1564,7 @@ public class ChannelApi {
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bookingBill.getAgentRefNo());
         appoinment.put("patientNo", bookingBill.getSingleBillSession().getSerialNo());
-        appoinment.put("allPatientNo", (Integer)channelService.nextAvailableAppoinmentNumberForSession(bookingBill.getSingleBillSession().getSessionInstance()).get("nextNumber")-1);
+        appoinment.put("allPatientNo", (Integer) channelService.nextAvailableAppoinmentNumberForSession(bookingBill.getSingleBillSession().getSessionInstance()).get("nextNumber") - 1);
         appoinment.put("showPno", true);
         appoinment.put("showTime", true);
         appoinment.put("chRoom", bookingBill.getSingleBillSession().getSessionInstance().getRoomNo());
@@ -1670,7 +1704,7 @@ public class ChannelApi {
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", completedSaveBill.getAgentRefNo());
         appoinment.put("patientNo", completedSaveBill.getSingleBillSession().getSerialNo());
-        appoinment.put("allPatientNo", (Integer)channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber")-1);
+        appoinment.put("allPatientNo", (Integer) channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber") - 1);
         appoinment.put("showPno", true);
         appoinment.put("showTime", true);
         appoinment.put("chRoom", completedSaveBill.getSingleBillSession().getSessionInstance().getRoomNo());

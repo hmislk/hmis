@@ -54,6 +54,7 @@ import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1298,6 +1299,36 @@ public class ChannelService {
         }
 
         return consultantFacade.findByJpql(jpql.toString(), m);
+    }
+    
+    public boolean isFullyBookedSession(SessionInstance ss){
+        if (ss.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
+            if (ss.getBookedPatientCount() != null) {
+                int maxNo = ss.getMaxNo();
+                long bookedPatientCount = ss.getBookedPatientCount();
+                long totalPatientCount;
+
+                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(ss.getReserveNumbers());
+                if (false) {
+                    bookedPatientCount = bookedPatientCount;
+                } else {
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                }
+
+                if (ss.getCancelPatientCount() != null) {
+                    long canceledPatientCount = ss.getCancelPatientCount();
+                    totalPatientCount = bookedPatientCount - canceledPatientCount;
+                } else {
+                    totalPatientCount = bookedPatientCount;
+                }
+                if (maxNo <= totalPatientCount) {  
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+        
     }
 
     public List<SessionInstance> findSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
