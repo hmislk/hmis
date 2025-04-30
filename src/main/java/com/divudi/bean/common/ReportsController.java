@@ -139,6 +139,7 @@ public class ReportsController implements Serializable {
     private BillClassType billClassType;
     private Institution collectingCentre;
     private RoomCategory roomCategory;
+    private List<ReportTemplateRow> filteredReportTemplateRows;
 
     private StreamedContent downloadingExcel;
 
@@ -592,6 +593,17 @@ public class ReportsController implements Serializable {
 
     public List<Department> getDepartments() {
         return departments;
+    }
+
+    public List<ReportTemplateRow> getFilteredReportTemplateRows() {
+        if (filteredReportTemplateRows == null) {
+            filteredReportTemplateRows = new ArrayList<>();
+        }
+        return filteredReportTemplateRows;
+    }
+
+    public void setFilteredReportTemplateRows(List<ReportTemplateRow> filteredReportTemplateRows) {
+        this.filteredReportTemplateRows = filteredReportTemplateRows;
     }
 
     public void setDepartments(List<Department> departments) {
@@ -3152,6 +3164,97 @@ public class ReportsController implements Serializable {
         bundle = generateCollectionCenterBookWiseBills(opdBts);
     }
 
+    public void exportCollectionCenterBookWiseDetailToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_center_book_wise_detail_report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4);
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            Paragraph title = new Paragraph("Collection Center Book Wise Detail", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(10f);
+            document.add(title);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+
+            if (getCollectingCentre() != null) {
+                Paragraph centerName = new Paragraph("Collection Center: " + getCollectingCentre().getName(), cellFont);
+                centerName.setSpacingAfter(10f);
+                document.add(centerName);
+            }
+
+            PdfPTable table = new PdfPTable(7);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{2f, 1f, 2f, 3f, 3f, 3f, 2f});
+
+            String[] headers = {
+                    "Bill No", "Book No", "Book Ref No", "Patient",
+                    "Creator", "Created Date", "Bill Value"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            List<ReportTemplateRow> exportRows;
+            if (filteredReportTemplateRows != null && !filteredReportTemplateRows.isEmpty()) {
+                exportRows = filteredReportTemplateRows;
+            } else {
+                exportRows = getBundle().getReportTemplateRows();
+            }
+
+            for (ReportTemplateRow c : exportRows) {
+                table.addCell(new PdfPCell(new Phrase(c.getBill().getDeptId(), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        collectingCentreBillController.generateBookNumberFromReference(c.getBill().getReferenceNumber()), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(c.getBill().getReferenceNumber(), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        c.getBill().getPatient().getPerson().getNameWithTitle(), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        c.getBill().getCreater().getWebUserPerson().getName(), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        dateFormat.format(c.getBill().getCreatedAt()), cellFont)));
+
+                PdfPCell netTotalCell = new PdfPCell(new Phrase(
+                        df.format(c.getBill().getNetTotal()), cellFont));
+                netTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(netTotalCell);
+            }
+
+            PdfPCell totalLabel = new PdfPCell(new Phrase("Gross Total", headerFont));
+            totalLabel.setColspan(6);
+            totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalLabel);
+
+            PdfPCell totalValue = new PdfPCell(new Phrase(
+                    df.format(getBundle().getGrossTotal()), cellFont));
+            totalValue.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalValue);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public ReportTemplateRowBundle generateCollectionCenterBookWiseBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
@@ -3630,6 +3733,7 @@ public class ReportsController implements Serializable {
                 BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION,
                 BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
                 BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION,
                 BillTypeAtomic.OPD_BILL_REFUND,
                 BillTypeAtomic.PACKAGE_OPD_BILL_REFUND,
                 BillTypeAtomic.CC_BILL_CANCELLATION,
@@ -3741,13 +3845,31 @@ public class ReportsController implements Serializable {
 
         while (iterator.hasNext()) {
             ReportTemplateRow row = iterator.next();
-            BillItem bi = row.getBillItem();
-            Bill b = bi.getBill();
+            BillItem currentItem = row.getBillItem();
+            Bill currentBill = currentItem.getBill();
 
-            if (cancelAndRefundBillTypeAtomics.contains(b.getBillTypeAtomic())) {
-                if (bi.getReferanceBillItem() == null || bi.getReferanceBillItem().getPatientInvestigation() == null) {
-                    iterator.remove();
-                }
+            if (!cancelAndRefundBillTypeAtomics.contains(currentBill.getBillTypeAtomic())) {
+                continue;
+            }
+
+            currentItem.setNetValue(-Math.abs(currentItem.getNetValue()));
+
+            Bill originalBill = currentBill.getBilledBill();
+            if (originalBill == null) {
+                continue;
+            }
+
+            List<BillItem> originalItems = Optional.ofNullable(originalBill.getBillItems())
+                    .orElse(Collections.emptyList());
+
+            boolean hasMatchingItem = originalItems.stream()
+                    .filter(oi -> oi.getItem() != null)
+                    .anyMatch(oi ->
+                            oi.getItem().equals(currentItem.getItem()) &&
+                                    oi.getPatientInvestigation() == null);
+
+            if (hasMatchingItem) {
+                iterator.remove();
             }
         }
     }
