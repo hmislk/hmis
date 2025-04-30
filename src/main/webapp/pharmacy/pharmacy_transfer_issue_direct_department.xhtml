@@ -204,6 +204,10 @@
                                     itemValue="#{w}"
                                     value="#{transferIssueController.issuedBill.toStaff}" >
                                 </p:autoComplete>
+                                
+                                <h:outputLabel value="Comment" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:inputTextarea value="#{transferIssueController.issuedBill.comments}" rows="3" cols="20"/>
 
                             </h:panelGrid>
                         </p:panel>
