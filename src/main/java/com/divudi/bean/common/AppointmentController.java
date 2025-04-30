@@ -30,10 +30,14 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.inward.Reservation;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -68,6 +72,8 @@ public class AppointmentController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -118,7 +124,6 @@ public class AppointmentController implements Serializable {
 //        }
 //        return a;
 //    }
-
     private Patient savePatient(Patient p) {
 
         if (p == null) {
@@ -310,6 +315,30 @@ public class AppointmentController implements Serializable {
         }
 //
         return false;
+    }
+
+    public List<Reservation> checkAppoimentsForRoom(RoomFacilityCharge r) {
+        String jpql = "SELECT res FROM Reservation res "
+                + "WHERE res.Room = :room "
+                + "AND res.reservedFrom BETWEEN :today AND :endDate "
+                + "ORDER BY res.reservedFrom";
+
+        Double lookupDays = configOptionApplicationController.getDoubleValueByKey("Inward - Appoiment Lookup Duration (Days)", 30.0);
+
+        Date today = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(today);
+        cal.add(Calendar.DAY_OF_YEAR, lookupDays.intValue());
+        Date endDate = cal.getTime();
+        
+        HashMap hm = new HashMap();
+        hm.put("room", r);
+        hm.put("today", today);
+        hm.put("endDate", endDate);
+        
+        List<Reservation> reservations = reservationFacade.findByJpql(jpql,hm);
+        
+        return reservations;
     }
 
     public String prepareNewBill() {
