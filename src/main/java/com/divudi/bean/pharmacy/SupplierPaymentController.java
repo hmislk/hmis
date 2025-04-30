@@ -147,6 +147,7 @@ public class SupplierPaymentController implements Serializable {
     private List<String> supplierPaymentStatusList;
     private String supplierPaymentStatus;
     boolean changed = false;
+    private boolean acPayeeOnly;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -3107,7 +3108,7 @@ public class SupplierPaymentController implements Serializable {
             String filledFooter;
            
             String bankName = (p != null ? p.getBank().getName() : "");
-            String chequeDate = (p != null ? CommonFunctions.getDateFormat(p.getChequeDate(), sessionController.getApplicationPreference().getShortDateFormat()) : "");
+            String chequeDate = (p != null ? CommonFunctions.getDateFormat(p.getChequeDate(), sessionController.getApplicationPreference().getLongDateFormat()) : "");
             String chequeNo = (p != null ? p.getChequeRefNo() : "");
             Double amount = (p != null ? Math.abs(p.getPaidValue()) : 0.0);
 
@@ -3120,6 +3121,10 @@ public class SupplierPaymentController implements Serializable {
         }else{
             return s;
         }
+    }
+    
+    public String convertToWord(Double d){
+        return CommonFunctions.convertToWord(d);
     }
 
     public Payment findPaymentFromBill(Bill b){
@@ -3542,5 +3547,13 @@ public class SupplierPaymentController implements Serializable {
 
     public void setChanged(boolean changed) {
         this.changed = changed;
+    }
+
+    public boolean isAcPayeeOnly() {
+        return acPayeeOnly;
+    }
+
+    public void setAcPayeeOnly(boolean acPayeeOnly) {
+        this.acPayeeOnly = acPayeeOnly;
     }
 }
