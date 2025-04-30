@@ -147,6 +147,7 @@ public class SupplierPaymentController implements Serializable {
     private List<String> supplierPaymentStatusList;
     private String supplierPaymentStatus;
     boolean changed = false;
+    private boolean acPayeeOnly;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -3121,6 +3122,10 @@ public class SupplierPaymentController implements Serializable {
             return s;
         }
     }
+    
+    public String convertToWord(Double d){
+        return CommonFunctions.convertToWord(d);
+    }
 
     public Payment findPaymentFromBill(Bill b){
         String jpql = "Select p From Payment p Where " +
@@ -3542,5 +3547,13 @@ public class SupplierPaymentController implements Serializable {
 
     public void setChanged(boolean changed) {
         this.changed = changed;
+    }
+
+    public boolean isAcPayeeOnly() {
+        return acPayeeOnly;
+    }
+
+    public void setAcPayeeOnly(boolean acPayeeOnly) {
+        this.acPayeeOnly = acPayeeOnly;
     }
 }
