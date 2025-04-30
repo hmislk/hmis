@@ -4044,47 +4044,46 @@ public class ReportsController implements Serializable {
     private List<ReportTemplateRow> filterByCreditCompanyPaymentMethod(List<ReportTemplateRow> rows) {
         List<ReportTemplateRow> filteredRows = new ArrayList<>();
 
+        Set<Long> billIds = rows.stream()
+                .map(ReportTemplateRow::getBill)
+                .filter(Objects::nonNull)
+                .map(Bill::getId)
+                .collect(Collectors.toSet());
+
+        Map<Long, Bill> billIdToCreditCompanyBill = new HashMap<>();
+
+        if ("OP".equalsIgnoreCase(visitType)) {
+            String jpql = "SELECT bi FROM BillItem bi WHERE bi.referenceBill.id IN :billIds";
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", billIds);
+            List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
+
+            for (BillItem bi : billItems) {
+                if (bi.getReferenceBill() != null && bi.getBill() != null) {
+                    billIdToCreditCompanyBill.put(bi.getReferenceBill().getId(), bi.getBill());
+                }
+            }
+        } else if ("IP".equalsIgnoreCase(visitType)) {
+            String jpql = "SELECT b FROM Bill b WHERE b.forwardReferenceBill.id IN :billIds";
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", billIds);
+            List<Bill> bills = billFacade.findByJpql(jpql, params);
+
+            for (Bill b : bills) {
+                if (b.getForwardReferenceBill() != null) {
+                    billIdToCreditCompanyBill.put(b.getForwardReferenceBill().getId(), b);
+                }
+            }
+        } else {
+            return filteredRows;
+        }
+
         for (ReportTemplateRow row : rows) {
             Bill bill = row.getBill();
+            if (bill == null) continue;
 
-            if (bill == null) {
-                continue;
-            }
-
-            Bill creditCompanyBill = null;
-            Map<String, Object> parameters = new HashMap<>();
-
-            if (visitType.equalsIgnoreCase("OP")) {
-                String jpql = "SELECT bi FROM BillItem bi WHERE bi.referenceBill.id = :billId";
-
-                parameters.put("billId", bill.getId());
-
-                List<BillItem> billItems = billItemFacade.findByJpql(jpql, parameters);
-
-                if (billItems == null || billItems.isEmpty()) {
-                    continue;
-                }
-
-                creditCompanyBill = billItems.get(0).getBill();
-            } else if (visitType.equalsIgnoreCase("IP")) {
-                String jpql = "SELECT b FROM Bill b WHERE b.forwardReferenceBill.id = :billId";
-
-                parameters.put("billId", bill.getId());
-
-                List<Bill> bills = billFacade.findByJpql(jpql, parameters);
-
-                if (bills == null || bills.isEmpty()) {
-                    continue;
-                }
-
-                creditCompanyBill = bills.get(0);
-            } else {
-                break;
-            }
-
-            if (creditCompanyBill == null || creditCompanyBill.getPaymentMethod() == null) {
-                continue;
-            }
+            Bill creditCompanyBill = billIdToCreditCompanyBill.get(bill.getId());
+            if (creditCompanyBill == null || creditCompanyBill.getPaymentMethod() == null) continue;
 
             if (creditCompanyBill.getPaymentMethod().equals(paymentMethod)) {
                 filteredRows.add(row);
@@ -4166,8 +4165,8 @@ public class ReportsController implements Serializable {
         }
 
         if (collectingCentre != null) {
-            jpql += "AND bill.collectingCentre = :cc ";
-            parameters.put("cc", collectingCentre);
+            jpql += "AND bill.collectingCentre = :ccc ";
+            parameters.put("ccc", collectingCentre);
         }
 
         if (creditCompany != null) {
