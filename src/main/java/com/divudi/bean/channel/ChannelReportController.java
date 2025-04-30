@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
@@ -17,6 +18,7 @@ import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
@@ -152,6 +154,8 @@ public class ChannelReportController implements Serializable {
     SmsManagerEjb smsManagerEjb;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    private ReportTimerController reportTimerController;
 
     private Speciality speciality;
 
@@ -1208,32 +1212,34 @@ public class ChannelReportController implements Serializable {
     BillsTotals refundBillList;
 
     public void createChannelCashierBillList() {
+        reportTimerController.trackReportExecution(() -> {
 
-        getBilledBillList().setBills(createUserChannelBills(new BilledBill(), getWebUser(), getDepartment()));
-        getCanceledBillList().setBills(createUserChannelBills(new CancelledBill(), getWebUser(), getDepartment()));
-        getRefundBillList().setBills(createUserChannelBills(new RefundBill(), getWebUser(), getDepartment()));
+            getBilledBillList().setBills(createUserChannelBills(new BilledBill(), getWebUser(), getDepartment()));
+            getCanceledBillList().setBills(createUserChannelBills(new CancelledBill(), getWebUser(), getDepartment()));
+            getRefundBillList().setBills(createUserChannelBills(new RefundBill(), getWebUser(), getDepartment()));
 
-        getBilledBillList().setAgent(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
-        getCanceledBillList().setAgent(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
-        getRefundBillList().setAgent(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+            getBilledBillList().setAgent(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+            getCanceledBillList().setAgent(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+            getRefundBillList().setAgent(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
 
-        getBilledBillList().setCash(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
-        getCanceledBillList().setCash(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
-        getRefundBillList().setCash(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+            getBilledBillList().setCash(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+            getCanceledBillList().setCash(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+            getRefundBillList().setCash(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
 
-        getBilledBillList().setCard(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
-        getCanceledBillList().setCard(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
-        getRefundBillList().setCard(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+            getBilledBillList().setCard(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+            getCanceledBillList().setCard(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+            getRefundBillList().setCard(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
 
-        getBilledBillList().setSlip(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
-        getCanceledBillList().setSlip(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
-        getRefundBillList().setSlip(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+            getBilledBillList().setSlip(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+            getCanceledBillList().setSlip(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+            getRefundBillList().setSlip(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
 
-        getBilledBillList().setCheque(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
-        getCanceledBillList().setCheque(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
-        getRefundBillList().setCheque(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+            getBilledBillList().setCheque(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+            getCanceledBillList().setCheque(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+            getRefundBillList().setCheque(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
 
-        createSummary();
+            createSummary();
+        }, PharmacyReports.CASHIER_REPORT, sessionController.getLoggedUser());
     }
 
     public void createCashierBillList() {

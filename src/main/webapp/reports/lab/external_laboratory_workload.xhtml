@@ -383,7 +383,7 @@
                                 <h:outputText value="#{row.billItem.bill.patient.phn}"/>
                             </p:column>
                             <p:column headerText="Name" width="8rem">
-                                <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
+                                <h:outputText value="#{row.billItem.bill.patient.person.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Age" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.patient.person.ageAsString}"/>
@@ -414,18 +414,18 @@
                             </p:column>
                             <p:column headerText="Invoiced By" width="5rem">
                                 <h:outputText value="#{row.billItem.patientEncounter != null ?
-                                                    row.billItem.patientEncounter.finalBill.creater.webUserPerson.name :
-                                                    row.billItem.bill.creater.webUserPerson.name}"/>
+                                                    row.billItem.patientEncounter.finalBill.creater.webUserPerson.nameWithTitle :
+                                                    row.billItem.bill.creater.webUserPerson.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Received Date" width="5rem">
-                                <h:outputText value="#{row.billItem.patientInvestigation.receivedAt}">
+                                <h:outputText value="#{row.billItem.patientInvestigation.sampleAcceptedAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Recieved By" width="5rem">
+                            <p:column headerText="Received By" width="5rem">
                                 <h:outputText
-                                        value="#{row.billItem.patientInvestigation.sampleCollectedBy.webUserPerson.name}"/>
+                                        value="#{row.billItem.patientInvestigation.sampleAcceptedBy.webUserPerson.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Remarks" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.comments}"/>
