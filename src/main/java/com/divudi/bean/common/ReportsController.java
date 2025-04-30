@@ -2846,7 +2846,7 @@ public class ReportsController implements Serializable {
         bundle.setName("Bills");
         bundle.setBundleType("billList");
 
-        bundle = generateOpdAndInwardDueBills(opdBts, paymentMethods);
+        bundle = generateDebtorBalanceBills(opdBts, paymentMethods);
 
         if (visitType.equalsIgnoreCase("IP")) {
             updateSettledAmountsForIP();
@@ -4041,6 +4041,160 @@ public class ReportsController implements Serializable {
         groupBills();
     }
 
+    private List<ReportTemplateRow> filterByCreditCompanyPaymentMethod(List<ReportTemplateRow> rows) {
+        List<ReportTemplateRow> filteredRows = new ArrayList<>();
+
+        Set<Long> billIds = rows.stream()
+                .map(ReportTemplateRow::getBill)
+                .filter(Objects::nonNull)
+                .map(Bill::getId)
+                .collect(Collectors.toSet());
+
+        Map<Long, Bill> billIdToCreditCompanyBill = new HashMap<>();
+
+        if ("OP".equalsIgnoreCase(visitType)) {
+            String jpql = "SELECT bi FROM BillItem bi WHERE bi.referenceBill.id IN :billIds";
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", billIds);
+            List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
+
+            for (BillItem bi : billItems) {
+                if (bi.getReferenceBill() != null && bi.getBill() != null) {
+                    billIdToCreditCompanyBill.put(bi.getReferenceBill().getId(), bi.getBill());
+                }
+            }
+        } else if ("IP".equalsIgnoreCase(visitType)) {
+            String jpql = "SELECT b FROM Bill b WHERE b.forwardReferenceBill.id IN :billIds";
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", billIds);
+            List<Bill> bills = billFacade.findByJpql(jpql, params);
+
+            for (Bill b : bills) {
+                if (b.getForwardReferenceBill() != null) {
+                    billIdToCreditCompanyBill.put(b.getForwardReferenceBill().getId(), b);
+                }
+            }
+        } else {
+            return filteredRows;
+        }
+
+        for (ReportTemplateRow row : rows) {
+            Bill bill = row.getBill();
+            if (bill == null) continue;
+
+            Bill creditCompanyBill = billIdToCreditCompanyBill.get(bill.getId());
+            if (creditCompanyBill == null || creditCompanyBill.getPaymentMethod() == null) continue;
+
+            if (creditCompanyBill.getPaymentMethod().equals(paymentMethod)) {
+                filteredRows.add(row);
+            }
+        }
+
+        return filteredRows;
+    }
+
+    public ReportTemplateRowBundle generateOpdAndInwardDueBills(List<BillTypeAtomic> bts, List<PaymentMethod> paymentMethods) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.creditCompany is not null ";
+
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (paymentMethods != null) {
+            jpql += "AND bill.paymentMethod in :bpms ";
+            parameters.put("bpms", paymentMethods);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
+            jpql += "AND bill.patientEncounter.admissionType = :type ";
+            parameters.put("type", admissionType);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
+            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
+            parameters.put("category", roomCategory);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && dischargedStatus != null && !dischargedStatus.trim().isEmpty())) {
+            if (dischargedStatus.equalsIgnoreCase("notDischarged")) {
+                jpql += "AND bill.patientEncounter.discharged = :status ";
+                parameters.put("status", false);
+            } else if (dischargedStatus.equalsIgnoreCase("discharged")) {
+                jpql += "AND bill.patientEncounter.discharged = :status ";
+                parameters.put("status", true);
+            }
+        }
+
+        if (institution != null) {
+            if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.department.institution = :ins ";
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.patientEncounter.department.institution = :ins ";
+            }
+
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.department = :dep ";
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.patientEncounter.department = :dep ";
+            }
+
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.department.site = :site ";
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.patientEncounter.department.site = :site ";
+            }
+
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :ccc ";
+            parameters.put("ccc", collectingCentre);
+        }
+
+        if (creditCompany != null) {
+            jpql += "AND bill.creditCompany = :cc ";
+            parameters.put("cc", creditCompany);
+        }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill, bill.creditCompany";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+
+        if (paymentMethod != null) {
+            b.setReportTemplateRows(filterByCreditCompanyPaymentMethod(rs));
+        } else {
+            b.setReportTemplateRows(rs);
+        }
+
+        b.createRowValuesFromBill();
+        b.calculateTotalsWithCredit();
+        return b;
+    }
+
     public void exportOpdAndInwardOPToExcel() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
@@ -4472,7 +4626,7 @@ public class ReportsController implements Serializable {
         }
     }
 
-    public ReportTemplateRowBundle generateOpdAndInwardDueBills(List<BillTypeAtomic> bts, List<PaymentMethod> paymentMethods) {
+    public ReportTemplateRowBundle generateDebtorBalanceBills(List<BillTypeAtomic> bts, List<PaymentMethod> paymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
