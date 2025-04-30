@@ -1572,6 +1572,17 @@ public class ChannelApi {
         appoinment.put("status", bookingStatus);
 
         SessionInstance session = bookingBill.getSingleBillSession().getSessionInstance();
+        
+        String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
+        if(session.isCompleted()){
+            sessionStatus = SessionStatusForOnlineBooking.Ended.toString();
+        }else if(session.isCancelled()){
+            sessionStatus = SessionStatusForOnlineBooking.Cancelled.toString();
+        }else if(!session.isAcceptOnlineBookings()){
+            sessionStatus = SessionStatusForOnlineBooking.Hold.toString();
+        }else if(channelService.isFullyBookedSession(session)){
+            sessionStatus = SessionStatusForOnlineBooking.Full.toString();
+        }
 
         Map<String, Object> sessionDetails = new HashMap<>();
         Item i = bookingBill.getSingleBillSession().getItem();
