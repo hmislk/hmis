@@ -49,6 +49,7 @@ import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
@@ -123,11 +124,11 @@ public class ChannelService {
         jpql += " and b.billTypeAtomic=:bta ";
         jpql += " and b.createdAt < :createdAt ";
         jpql += " and b.paid=:paid ";
-        
+
         Map params = new HashMap();
         params.put("ret", false);
         params.put("paid", false);
-        
+
         Long minutesToCancelOnlineBooking = configOptionApplicationController.getLongValueByKey("Number of Minutes to keep online channel bookings active without finalizing the payment", 20L);
         params.put("createdAt", CommonFunctions.deductMinutesFromCurrentTime(minutesToCancelOnlineBooking.intValue()));
         params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
@@ -143,21 +144,21 @@ public class ChannelService {
             b.setRetireComments("Online Booking is NOT completed.");
             b.setRetiredAt(new Date());
             billFacade.edit(b);
-            
+
             b.getSingleBillSession().setRetired(true);
             b.getSingleBillSession().setRetireComments("Online Booking is NOT completed.");
             b.getSingleBillSession().setRetiredAt(new Date());
             billSessionFacade.edit(b.getSingleBillSession());
-            
+
             b.getSingleBillItem().setRetired(true);
             b.getSingleBillItem().setRetireComments("Online Booking is NOT completed.");
             billItemFacade.edit(b.getSingleBillItem());
-            
+
             b.getOnlineBooking().setRetired(true);
             b.getOnlineBooking().setRetiredAt(new Date());
             b.getOnlineBooking().setRetireComments("Online Booking is NOT completed.");
             getOnlineBookingFacade().edit(b.getOnlineBooking());
-            
+
             if (b.getBillFees() != null) {
                 for (BillFee bf : b.getBillFees()) {
                     bf.setRetired(true);
@@ -721,7 +722,7 @@ public class ChannelService {
 
         List<Integer> reservedSerialNumbers = allBillSessions.stream()
                 .map(BillSession::getSerialNo)
-                .collect(Collectors.toList());       
+                .collect(Collectors.toList());
 
         for (int i = 1; i < nextNumber; ++i) {
             boolean isAssign = false;
@@ -801,17 +802,17 @@ public class ChannelService {
 
         return bookingForEdit;
     }
-    
-    public Bill findBillFromOnlineBooking(OnlineBooking booking){
+
+    public Bill findBillFromOnlineBooking(OnlineBooking booking) {
         String sql = "select bill from Bill bill"
                 + " where bill.onlineBooking = :ob"
                 + " and bill.retired = false";
-        
+
         Map params = new HashMap();
         params.put("ob", booking);
-        
+
         return getBillFacade().findFirstByJpql(sql, params);
-        
+
     }
 
     public OnlineBooking findOnlineBookingFromRefNo(String refNo, boolean retiredStatus, Institution agency) {
@@ -945,8 +946,29 @@ public class ChannelService {
     public void cancelOnlineBooking(OnlineBooking booking) {
         booking.setOnlineBookingStatus(OnlineBookingStatus.PATIENT_CANCELED);
         booking.setIsCanceled(true);
-        booking.setCancelledBy("From API :"+ booking.getAgency().getName());
+        booking.setCancelledBy("From API :" + booking.getAgency().getName());
         getOnlineBookingFacade().edit(booking);
+
+    }
+
+    @EJB
+    private ServiceSessionFacade serviceSessionFacade;
+
+    public void makeAllSessionsAvailableForOnlineBookings(boolean accept) throws Exception {
+
+        String sqlForServiceSession = "";
+        String sqlForSessionInstace = "";
+        if (accept) {
+            sqlForSessionInstace = "update SessionInstance set acceptOnlineBookings = true";
+            sqlForServiceSession = "update ServiceSession set acceptOnlineBookings = true";
+        }else{
+            sqlForSessionInstace = "update SessionInstance set acceptOnlineBookings = false";
+            sqlForServiceSession = "update ServiceSession set acceptOnlineBookings = false";
+        }
+
+        getSessionInstanceFacade().executeNativeSql(sqlForSessionInstace);
+        serviceSessionFacade.executeNativeSql(sqlForServiceSession);
+        JsfUtil.addSuccessMessage("All bookings are now available");
 
     }
 
@@ -1300,8 +1322,8 @@ public class ChannelService {
 
         return consultantFacade.findByJpql(jpql.toString(), m);
     }
-    
-    public boolean isFullyBookedSession(SessionInstance ss){
+
+    public boolean isFullyBookedSession(SessionInstance ss) {
         if (ss.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (ss.getBookedPatientCount() != null) {
                 int maxNo = ss.getMaxNo();
@@ -1321,14 +1343,14 @@ public class ChannelService {
                 } else {
                     totalPatientCount = bookedPatientCount;
                 }
-                if (maxNo <= totalPatientCount) {  
+                if (maxNo <= totalPatientCount) {
                     return true;
                 }
             }
             return false;
         }
         return false;
-        
+
     }
 
     public List<SessionInstance> findSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
@@ -1471,7 +1493,7 @@ public class ChannelService {
         preBillSession.getBill().setBalance(0.0);
         preBillSession.getBill().setPaidBill(paidBill);
         preBillSession.getBill().setPaid(true);
-        
+
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(paidBillItem);
         paidBill.setBillItems(savingBillItems);

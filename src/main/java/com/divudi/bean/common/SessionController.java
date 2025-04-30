@@ -44,6 +44,7 @@ import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.cashTransaction.Denomination;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.service.ChannelService;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -203,6 +204,13 @@ public class SessionController implements Serializable, HttpSessionListener {
                 // Handle the exception (e.g., logging)
             }
         }
+    }
+    
+    @EJB
+    private ChannelService channelService;
+    
+    public void acceptOnlineBookingForAllSessions(boolean accept){
+        channelService.makeAllSessionsAvailableForOnlineBookings(accept);
     }
 
     public String getLandingPageOld() {

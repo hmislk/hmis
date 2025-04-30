@@ -41,7 +41,7 @@ public class ServiceSession extends Item implements Serializable {
     int maxNo;
 
     boolean continueNumbers;
-    private boolean acceptOnlineBookings;
+    private boolean acceptOnlineBookings = true;
 
     @OneToOne
     ServiceSession afterSession;

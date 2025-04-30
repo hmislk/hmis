@@ -66,7 +66,7 @@ public class SessionInstance implements Serializable {
     Institution forInstitution;
     @ManyToOne
     Department forDepartment;
-    private boolean acceptOnlineBookings;
+    private boolean acceptOnlineBookings = true;
 
     @Transient
     private boolean currentlyOngoing;
