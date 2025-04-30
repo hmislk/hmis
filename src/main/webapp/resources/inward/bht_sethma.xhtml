@@ -245,31 +245,61 @@
 
                 <h:panelGroup rendered="#{cc.attrs.admission.paymentMethod eq 'Credit'}">
                     <div class="mt-3" style="font-weight: bold;">
-                    <p:outputLabel   value="CREDIT COMPANY DETAILS" />
-                </div>
+                        <p:outputLabel   value="CREDIT COMPANY DETAILS" />
+                    </div>
 
-                <div class="row">
-                    <table style="margin-left: 5%">
-                        <tr>
-                            <td style="width: 17%"><h:outputLabel value="Credit Company "></h:outputLabel></td>
-                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.creditCompany.name}" ></h:outputLabel></td>
-                            <td style="width: 3%"></td>
-                            <td style="width: 17%"><h:outputLabel value="Policy Number "></h:outputLabel></td>
-                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.policyNo}" ></h:outputLabel></td>
-                        </tr>
-                        <tr>
-                            <td><h:outputLabel value="Reference Number "></h:outputLabel></td>
-                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="#{cc.attrs.admission.referanceNo}" ></h:outputLabel></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </table>
-                </div>
+                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show Multiple Credit Companies on Ward Admission',false)}">
+                        <div class="row">
+                            <table style="margin-left: 5%">
+                                <tr>
+                                    <td style="width: 17%"><h:outputLabel value="Credit Company "></h:outputLabel></td>
+                                    <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                                    <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.creditCompany.name}" ></h:outputLabel></td>
+                                    <td style="width: 3%"></td>
+                                    <td style="width: 17%"><h:outputLabel value="Policy Number "></h:outputLabel></td>
+                                    <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                                    <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.policyNo}" ></h:outputLabel></td>
+                                </tr>
+                                <tr>
+                                    <td><h:outputLabel value="Reference Number "></h:outputLabel></td>
+                                    <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                                    <td><h:outputLabel value="#{cc.attrs.admission.referanceNo}" ></h:outputLabel></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Multiple Credit Companies on Ward Admission',false)}">
+                        <div class="row">
+                            <table style="margin-left: 5%">
+                                <ui:repeat value="#{bhtSummeryController.fillCreditCompaniesByPatient(cc.attrs.admission)}" var="ec">
+                                    <tr>
+                                    <td style="width: 17%"><h:outputLabel value="Credit Company "></h:outputLabel></td>
+                                    <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                                    <td style="width: 25%"><h:outputLabel value="#{ec.institution.name}" ></h:outputLabel></td>
+                                    <td style="width: 3%"></td>
+                                    <td style="width: 17%"><h:outputLabel value="Policy Number "></h:outputLabel></td>
+                                    <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                                    <td style="width: 25%"><h:outputLabel value="#{ec.policyNo}" ></h:outputLabel></td>
+                                </tr>
+                                <tr>
+                                    <td><h:outputLabel value="Reference Number "></h:outputLabel></td>
+                                    <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                                    <td><h:outputLabel value="#{ec.referanceNo}" ></h:outputLabel></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                
+                                </ui:repeat>
+                                
+                            </table>
+                        </div>
+                    </h:panelGroup>
                 </h:panelGroup>
 
                 <div class="mt-3" style="font-weight: bold; font-size: 15px">
