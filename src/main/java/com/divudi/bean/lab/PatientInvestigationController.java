@@ -3103,10 +3103,8 @@ public class PatientInvestigationController implements Serializable {
 
             params.put("ret", false);
 
-
             billItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-            
             // Initialize totals
             hospitalFeeTotal = 0.0;
             ccFeeTotal = 0.0;
@@ -5353,7 +5351,9 @@ public class PatientInvestigationController implements Serializable {
             ptix.setSampleDepartment(wu.getDepartment());
             ptix.setSampleInstitution(wu.getInstitution());
             ptix.setSampledAt(new Date());
-            ptix.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+            if (ptix.getBillItem().getBill().getStatus() == PatientInvestigationStatus.ORDERED || ptix.getBillItem().getBill().getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
+                ptix.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+            }
             ejbFacade.edit(ptix);
 
             List<InvestigationItem> ixis = getIvestigationItemsForInvestigation(ix);
@@ -5423,7 +5423,9 @@ public class PatientInvestigationController implements Serializable {
                         pts.setBarcodeGeneratedInstitution(wu.getInstitution());
                         pts.setBarcodeGenerator(wu);
                         pts.setBarcodeGeneratedAt(new Date());
-                        pts.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+                        if (pts.getBill().getStatus() == PatientInvestigationStatus.ORDERED || pts.getBill().getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
+                            pts.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+                        }
 
                         pts.setCreatedAt(new Date());
                         pts.setCreater(wu);
@@ -5453,7 +5455,6 @@ public class PatientInvestigationController implements Serializable {
                     m.put("ixc", ixi.getSampleComponent());
                     m.put("pts", pts);
 
-                    //System.out.println("j = " + j);
                     ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                     if (ptsc == null) {
                         ptsc = new PatientSampleComponant();
@@ -5470,7 +5471,10 @@ public class PatientInvestigationController implements Serializable {
             }
         }
 
-        barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+        if (barcodeBill.getStatus() == PatientInvestigationStatus.ORDERED || barcodeBill.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
+            barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+        }
+
         billFacade.edit(barcodeBill);
 
         List<PatientSample> rPatientSamples = new ArrayList<>(rPatientSamplesMap.values());
