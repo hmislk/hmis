@@ -29,6 +29,7 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -36,6 +37,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.util.ArrayList;
@@ -79,6 +81,8 @@ public class BillService {
     DrawerService drawerService;
     @EJB
     ItemFacade itemFacade;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
 
     private static final Gson gson = new Gson();
 
@@ -390,6 +394,16 @@ public class BillService {
                 + " order by b.id";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
+        return billFacade.findFirstByJpql(jpql, parameters);
+    }
+    
+    public Bill fetchBillById(Long id) {
+        String jpql = "SELECT b "
+                + " FROM Bill b "
+                + " where b.id=:bid "
+                + " order by b.id";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("bid", id);
         return billFacade.findFirstByJpql(jpql, parameters);
     }
 
@@ -1555,6 +1569,17 @@ public class BillService {
             return true;
         }
         return false;
+    }
+
+    public List<PatientInvestigation> fetchPatientInvestigations(Bill bill) {
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "SELECT pbi "
+                + " FROM PatientInvestigation pbi "
+                + " WHERE pbi.billItem.bill=:bl "
+                + " order by pbi.id";
+        params.put("bl", bill);
+        return patientInvestigationFacade.findByJpql(jpql, params);
     }
 
 }
