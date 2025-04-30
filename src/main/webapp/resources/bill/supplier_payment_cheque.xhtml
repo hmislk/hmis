@@ -10,7 +10,7 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="billItems" />
-        <cc:attribute name="acpayeeonly" />
+        <cc:attribute name="acPayeeOnly" type="boolean" required="false"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -31,7 +31,7 @@
             transform-origin: left top;
         }
 
-        .vertical-text-boader {
+        .vertical-text-border {
             position: absolute;
             transform: rotate(270deg);
             transform-origin: left top;
@@ -69,7 +69,7 @@
                     <f:convertDateTime pattern="ddMMyyyy" />
                 </h:outputLabel>
             </div>
-            <div class="vertical-text-boader" style="left: 135mm; top: 100mm; text-transform: uppercase !important;  font-size: 10pt;">
+            <div class="vertical-text-border" style="left: 135mm; top: 100mm; text-transform: uppercase !important;  font-size: 10pt;">
                 <h:outputLabel value="A/C PAYEE ONLY"  rendered="#{cc.attrs.acpayeeonly}"/>
             </div>
             <div class="vertical-text" style="left: 148mm; top: 158mm; text-transform: uppercase !important;  font-size: 10pt;">
@@ -90,7 +90,7 @@
                 <h:outputLabel value="............................................................................................................." />
             </div>
             <div class="vertical-text" style="left: 197mm; top: 65mm; font-size: 8pt; font-family: 'Times New Roman'; width: 80mm">
-                <h:outputLabel value="Chairman   Vise Chairman   General Manager   Accuntant" />
+                <h:outputLabel value="Chairman   Vice Chairman   General Manager   Accountant" />
             </div>
         </div>
     </cc:implementation>
