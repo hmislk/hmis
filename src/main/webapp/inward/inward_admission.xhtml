@@ -55,6 +55,9 @@
 
 
                     <div class="row">
+                        <p:messages id="messages" showDetail="true" closable="true">
+                            <p:autoUpdate/>
+                        </p:messages>
                         <div class="col-md-3 p-2">
                             <p:outputLabel 
                                 class="m-1 form-label"
@@ -93,7 +96,9 @@
                                 var="rf"
                                 itemLabel="#{rf.name}"
                                 itemValue="#{rf}"
-                                size="30" />
+                                size="30" >
+                                <p:ajax event="itemSelect" listener="#{admissionController.onRoomFacilityChargeSelected}" update="@all" />
+                            </p:autoComplete>
                         </div>
                         <div class="col-md-3 p-2">
                             <p:outputLabel 
@@ -286,16 +291,16 @@
                                             </p:tabView>
                                         </p:panel>
                                     </div>
-                                        <p:panel header="Additonal Info" style="margin-top: 10px;">
-                                            <h:panelGrid id="ad1" columns="1" class="my-1 w-100" >
-                                                <h:outputLabel for="acPrimRes" value="Primary Reason"/>
-                                                <p:autoComplete id="acPrimRes" forceSelection="true" placeholder="Search &amp; select the Reason"
-                                                                value="#{admissionController.current.primaryReason}"
-                                                                completeMethod="#{symptomController.completeSymptom}" var="myItem"
-                                                                class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"
-                                                                itemValue="#{myItem}" itemLabel="#{myItem.name}" />
-                                            </h:panelGrid>
-                                        </p:panel>
+                                    <p:panel header="Additonal Info" style="margin-top: 10px;">
+                                        <h:panelGrid id="ad1" columns="1" class="my-1 w-100" >
+                                            <h:outputLabel for="acPrimRes" value="Primary Reason"/>
+                                            <p:autoComplete id="acPrimRes" forceSelection="true" placeholder="Search &amp; select the Reason"
+                                                            value="#{admissionController.current.primaryReason}"
+                                                            completeMethod="#{symptomController.completeSymptom}" var="myItem"
+                                                            class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"
+                                                            itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                        </h:panelGrid>
+                                    </p:panel>
                                 </div>
                             </div>
                         </div>
@@ -322,7 +327,7 @@
                                         <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
                                         <p:badge value="#{admissionController.lastCreditCompany.name}"
                                                  rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
-                                        />
+                                                 />
 
                                         <p:outputLabel value="Payment Method*"/>
                                         <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
