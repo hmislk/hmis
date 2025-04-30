@@ -170,6 +170,7 @@ public class BhtSummeryController implements Serializable {
     boolean changed = false;
     boolean showOrginalBill = false;
     private String duration;
+    private List<EncounterCreditCompany> encounterCreditCompanies;
 
     public String navigateToIntrimBillEstimate() {
         createTablesWithEstimatedProfessionalFees();
@@ -1285,6 +1286,12 @@ public class BhtSummeryController implements Serializable {
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
         getBillFacade().edit(originalBill);
+        
+        if (encounterCreditCompanies != null || !encounterCreditCompanies.isEmpty()) {
+            for (EncounterCreditCompany ecc : encounterCreditCompanies) {
+                encounterCreditCompanyFacade.edit(ecc);
+            }
+        }
 
         saveBill();
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PROVISIONAL_BILL);
@@ -1306,6 +1313,12 @@ public class BhtSummeryController implements Serializable {
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
         getBillFacade().edit(originalBill);
+
+        if (encounterCreditCompanies != null || !encounterCreditCompanies.isEmpty()) {
+            for (EncounterCreditCompany ecc : encounterCreditCompanies) {
+                encounterCreditCompanyFacade.edit(ecc);
+            }
+        }
 
         saveBill();
         saveBillItem();
@@ -1331,21 +1344,21 @@ public class BhtSummeryController implements Serializable {
         printPreview = true;
         originalBill = null;
     }
-    
+
     public String settleProvisionalBill(Bill b) {
-        
-        if(b == null){
+
+        if (b == null) {
             JsfUtil.addErrorMessage("Error : Bill Not Found!");
             return "";
         }
-        
+
         setPatientEncounter(b.getPatientEncounter());
-        
+
         originalBill = b.getBackwardReferenceBill();
         originalBill.setDiscount(b.getDiscount());
         originalBill.setNetTotal(originalBill.getGrantTotal() - b.getDiscount());
         getBillFacade().edit(originalBill);
-        
+
 //        current = new BilledBill();
 //        getCurrent().copy(b);
 //        getCurrent().copyValue(b);
@@ -1377,13 +1390,11 @@ public class BhtSummeryController implements Serializable {
 //                }
 //            }
 //        }
-
         setCurrent(b);
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
         getCurrent().setBillType(BillType.InwardFinalBill);
-       
+
         getBillFacade().edit(current);
-       
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
@@ -1405,7 +1416,7 @@ public class BhtSummeryController implements Serializable {
         showOrginalBill = false;
         printPreview = true;
         originalBill = null;
-        
+
         return "inward_bill_final?faces-redirect=true";
     }
 
@@ -1740,6 +1751,7 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         updateTotal();
         settleOriginalBill();
+        encounterCreditCompanies = fillCreditCompaniesByPatient(getPatientEncounter());
 
         return "inward_bill_final?faces-redirect=true;";
 
@@ -1950,7 +1962,6 @@ public class BhtSummeryController implements Serializable {
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {
                 saveTempRoomBillFee(getPatientRooms(), temBi);
             }
-
 
             getTempBill().getBillItems().add(temBi);
         }
@@ -3134,6 +3145,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setDuration(String duration) {
         this.duration = duration;
+    }
+
+    public List<EncounterCreditCompany> getEncounterCreditCompanies() {
+        return encounterCreditCompanies;
+    }
+
+    public void setEncounterCreditCompanies(List<EncounterCreditCompany> encounterCreditCompanies) {
+        this.encounterCreditCompanies = encounterCreditCompanies;
     }
 
 }
