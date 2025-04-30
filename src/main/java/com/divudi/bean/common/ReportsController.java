@@ -4030,8 +4030,7 @@ public class ReportsController implements Serializable {
         bundle.setName("Bills");
         bundle.setBundleType("billList");
 
-        bundle = paymentMethod == null ? generateDebtorBalanceBills(opdBts, null) :
-                generateOpdAndInwardDueBills(opdBts, null);
+        bundle = generateOpdAndInwardDueBills(opdBts, null);
 
         if (visitType.equalsIgnoreCase("IP")) {
             updateSettledAmountsForIP();
@@ -4042,7 +4041,7 @@ public class ReportsController implements Serializable {
         groupBills();
     }
 
-    private List<ReportTemplateRow> filterByCreditCompanyPaymentMethodForOp(List<ReportTemplateRow> rows) {
+    private List<ReportTemplateRow> filterByCreditCompanyPaymentMethod(List<ReportTemplateRow> rows) {
         List<ReportTemplateRow> filteredRows = new ArrayList<>();
 
         for (ReportTemplateRow row : rows) {
@@ -4052,55 +4051,36 @@ public class ReportsController implements Serializable {
                 continue;
             }
 
+            Bill creditCompanyBill = null;
             Map<String, Object> parameters = new HashMap<>();
 
-            String jpql = "SELECT bi FROM BillItem bi WHERE bi.referenceBill.id = :billId";
+            if (visitType.equalsIgnoreCase("OP")) {
+                String jpql = "SELECT bi FROM BillItem bi WHERE bi.referenceBill.id = :billId";
 
-            parameters.put("billId", bill.getId());
+                parameters.put("billId", bill.getId());
 
-            List<BillItem> billItems = billItemFacade.findByJpql(jpql, parameters);
+                List<BillItem> billItems = billItemFacade.findByJpql(jpql, parameters);
 
-            if (billItems == null || billItems.isEmpty()) {
-                continue;
+                if (billItems == null || billItems.isEmpty()) {
+                    continue;
+                }
+
+                creditCompanyBill = billItems.get(0).getBill();
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                String jpql = "SELECT b FROM Bill b WHERE b.forwardReferenceBill.id = :billId";
+
+                parameters.put("billId", bill.getId());
+
+                List<Bill> bills = billFacade.findByJpql(jpql, parameters);
+
+                if (bills == null || bills.isEmpty()) {
+                    continue;
+                }
+
+                creditCompanyBill = bills.get(0);
+            } else {
+                break;
             }
-
-            Bill creditCompanyBill = billItems.get(0).getBill();
-
-            if (creditCompanyBill == null || creditCompanyBill.getPaymentMethod() == null) {
-                continue;
-            }
-
-            if (creditCompanyBill.getPaymentMethod().equals(paymentMethod)) {
-                filteredRows.add(row);
-            }
-        }
-
-        return filteredRows;
-    }
-
-    private List<ReportTemplateRow> filterByCreditCompanyPaymentMethodForIp(List<ReportTemplateRow> rows) {
-        List<ReportTemplateRow> filteredRows = new ArrayList<>();
-
-        for (ReportTemplateRow row : rows) {
-            Bill bill = row.getBill();
-
-            if (bill == null) {
-                continue;
-            }
-
-            Map<String, Object> parameters = new HashMap<>();
-
-            String jpql = "SELECT b FROM Bill b WHERE b.forwardReferenceBill.id = :billId";
-
-            parameters.put("billId", bill.getId());
-
-            List<Bill> bills = billFacade.findByJpql(jpql, parameters);
-
-            if (bills == null || bills.isEmpty()) {
-                continue;
-            }
-
-            Bill creditCompanyBill = bills.get(0);
 
             if (creditCompanyBill == null || creditCompanyBill.getPaymentMethod() == null) {
                 continue;
@@ -4205,12 +4185,9 @@ public class ReportsController implements Serializable {
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
 
-        if (visitType.equalsIgnoreCase("OP")) {
-            b.setReportTemplateRows(filterByCreditCompanyPaymentMethodForOp(rs));
-        } else if (visitType.equalsIgnoreCase("IP")) {
-            b.setReportTemplateRows(filterByCreditCompanyPaymentMethodForIp(rs));
-        }
-        else {
+        if (paymentMethod != null) {
+            b.setReportTemplateRows(filterByCreditCompanyPaymentMethod(rs));
+        } else {
             b.setReportTemplateRows(rs);
         }
 
