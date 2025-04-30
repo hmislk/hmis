@@ -960,14 +960,16 @@ public class ChannelService {
         String sqlForSessionInstace = "";
         if (accept) {
             sqlForSessionInstace = "update SessionInstance set acceptOnlineBookings = true";
-            sqlForServiceSession = "update ServiceSession set acceptOnlineBookings = true";
+            sqlForServiceSession = "update Item set acceptOnlineBookings = true where Dtype = 'ServiceSession'";
         }else{
             sqlForSessionInstace = "update SessionInstance set acceptOnlineBookings = false";
-            sqlForServiceSession = "update ServiceSession set acceptOnlineBookings = false";
+            sqlForServiceSession = "update Item set acceptOnlineBookings = false where Dtype = 'ServiceSession'";
         }
 
         getSessionInstanceFacade().executeNativeSql(sqlForSessionInstace);
         serviceSessionFacade.executeNativeSql(sqlForServiceSession);
+        getSessionInstanceFacade().flush();
+        serviceSessionFacade.flush();
         JsfUtil.addSuccessMessage("All bookings are now available");
 
     }
@@ -990,7 +992,7 @@ public class ChannelService {
         params.put("date", new Date());
         params.put("total", 0);
 
-        return getSessionInstanceFacade().findFirstByJpql(sql, params);
+        return (SessionInstance)getSessionInstanceFacade().findByJpqlWithoutCache(sql, params).get(0);
 
     }
 
@@ -1386,7 +1388,7 @@ public class ChannelService {
 
         m.put("ret", false);
 
-        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        sessionInstances = sessionInstanceFacade.findByJpqlWithoutCache(jpql.toString(), m, TemporalType.TIMESTAMP);
         return sessionInstances;
     }
 

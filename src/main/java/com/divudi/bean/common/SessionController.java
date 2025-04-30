@@ -209,7 +209,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     @EJB
     private ChannelService channelService;
     
-    public void acceptOnlineBookingForAllSessions(boolean accept){
+    public void acceptOnlineBookingForAllSessions(boolean accept) throws Exception{
         channelService.makeAllSessionsAvailableForOnlineBookings(accept);
     }
 
