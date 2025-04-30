@@ -926,6 +926,8 @@ public class ChannelApi {
         String patientTitle = patientDetails.get("title");
         String nic = patientDetails.get("nid");
         String clientsReferanceNo = patientDetails.get("clientRefNumber");
+        String email = patientDetails.get("email");
+        String address = patientDetails.get("address");
 
         try {
             isForeigner = validateForeignStatus(patientType);
@@ -973,6 +975,8 @@ public class ChannelApi {
         newBooking.setAgency(bookingAgency);
         newBooking.setRequestIp(ipAddress);
         newBooking.setCreatedAt(new Date());
+        newBooking.setEmail(email);
+        newBooking.setAddress(address);
 
         Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
 
@@ -1083,6 +1087,8 @@ public class ChannelApi {
         Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
         String agencyCode = paymentDetails.get("paymentChannel");
         String agencyName = paymentDetails.get("paymentMode");
+        String email = patientDetailsFromRequest.get("email");
+        String address = patientDetailsFromRequest.get("address");
 
         if (clientsReferanceNo == null || clientsReferanceNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Ref no is missing.");
@@ -1137,7 +1143,7 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        OnlineBooking editedBooking = channelService.editOnlineBooking(bookingDetails, patientPhoneNo, title, patientName, patientNic);
+        OnlineBooking editedBooking = channelService.editOnlineBooking(bookingDetails, patientPhoneNo, title, patientName, patientNic, email, address);
 
         Bill temporaryBill = channelService.findBillFromOnlineBooking(editedBooking);
         SessionInstance session = temporaryBill.getSingleBillSession().getSessionInstance();
@@ -1664,7 +1670,7 @@ public class ChannelApi {
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", completedSaveBill.getAgentRefNo());
         appoinment.put("patientNo", completedSaveBill.getSingleBillSession().getSerialNo());
-        appoinment.put("allPatientNo", channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber"));
+        appoinment.put("allPatientNo", (Integer)channelService.nextAvailableAppoinmentNumberForSession(session).get("nextNumber")-1);
         appoinment.put("showPno", true);
         appoinment.put("showTime", true);
         appoinment.put("chRoom", completedSaveBill.getSingleBillSession().getSessionInstance().getRoomNo());

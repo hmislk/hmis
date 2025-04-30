@@ -32,6 +32,8 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private String phoneNo;
     private String title;
     private String referenceNo;
+    private String email;
+    private String address;
     private boolean foreignStatus;
     private double onlineBookingPayment;
     private double appoinmentTotalAmount;
@@ -75,6 +77,22 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     
     @Enumerated(EnumType.STRING)
     private OnlineBookingStatus onlineBookingStatus;
+    
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     public OnlineBookingStatus getOnlineBookingStatus() {
         return onlineBookingStatus;

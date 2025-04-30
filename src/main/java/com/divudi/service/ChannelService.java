@@ -788,11 +788,13 @@ public class ChannelService {
         return itemFeeFacade.findByJpql(sql, m);
     }
 
-    public OnlineBooking editOnlineBooking(OnlineBooking bookingForEdit, String phoneNo, String title, String patientName, String nic) {
+    public OnlineBooking editOnlineBooking(OnlineBooking bookingForEdit, String phoneNo, String title, String patientName, String nic, String email, String address) {
         bookingForEdit.setPhoneNo(phoneNo);
         bookingForEdit.setPatientName(patientName);
         bookingForEdit.setTitle(title);
         bookingForEdit.setNic(nic);
+        bookingForEdit.setEmail(email);
+        bookingForEdit.setAddress(address);
 
         getOnlineBookingFacade().edit(bookingForEdit);
 
