@@ -1847,6 +1847,16 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             return "";
         }
 
+        if (getBatchBill().getPaymentMethod() == PaymentMethod.Credit) {
+            List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBatchBill());
+
+            if (items != null && items.size() > 0) {
+                batchBillCancellationStarted = false;
+                JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be canceled.");
+                return "";
+            }
+        }
+
         if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", false)) {
             for (Bill bill : billBean.validBillsOfBatchBill(getBatchBill())) {
                 if (!checkCancelBill(bill)) {
