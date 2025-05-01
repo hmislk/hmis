@@ -10717,7 +10717,7 @@ public class SearchController implements Serializable {
         if (billClassType != null) {
             jpql.append(" and type(b)=:billClassType ");
             switch (billClassType) {
-             case   BillClassType.Bill:
+             case   Bill:
                     params.put("billClassType", com.divudi.core.entity.Bill.class);
                     break;
                 case BilledBill:
