@@ -1850,7 +1850,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (getBatchBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBatchBill());
 
-            if (items != null && items.size() > 0) {
+            if (items != null && !items.isEmpty()) {
                 batchBillCancellationStarted = false;
                 JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be canceled.");
                 return "";
