@@ -62,7 +62,9 @@ import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.FamilyMember;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -117,6 +119,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     private BillItemFacade billItemFacade;
     @EJB
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     private InstitutionFacade institutionFacade;
     @EJB
@@ -267,6 +271,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     @Inject
     SearchController searchController;
+
+    private Long billIdToAssignBillItems;
 
     public String toAddNewCollectingCentre() {
         return "/admin/institutions/collecting_centre";
@@ -3326,6 +3332,39 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return count != null && count > 1;
     }
 
+    public void createNewBillItemAndAssignPatientInvestigation(PatientInvestigation ptix) {
+        if (billIdToAssignBillItems == null) {
+            JsfUtil.addErrorMessage("No ID for a Bill to assign newly created Bill Items");
+            return;
+        }
+        if (ptix == null) {
+            JsfUtil.addErrorMessage("No patient investigation");
+            return;
+        }
+        if (ptix.getBillItem() == null) {
+            JsfUtil.addErrorMessage("No Bill Item for Patient investigation");
+            return;
+        }
+        Bill selectedBillToAssignNewlyCreatedBillItems;
+        BillItem originalBillItemToDuplicate=ptix.getBillItem();
+        BillItem duplicateBillItem = new BillItem();
+        
+        
+        selectedBillToAssignNewlyCreatedBillItems = billService.fetchBillById(billIdToAssignBillItems);
+        if (selectedBillToAssignNewlyCreatedBillItems == null) {
+            JsfUtil.addErrorMessage("No Bill Found for the ID given for a Bill to assign newly created Bill Items");
+            return;
+        }
+        duplicateBillItem.copy(originalBillItemToDuplicate);
+        duplicateBillItem.setBill(selectedBillToAssignNewlyCreatedBillItems);
+        billItemFacade.create(duplicateBillItem);
+        duplicateBillItem.setPatientInvestigation(ptix);
+        billItemFacade.edit(duplicateBillItem);
+        ptix.setBillItem(duplicateBillItem);
+        patientInvestigationFacade.edit(ptix);
+        JsfUtil.addSuccessMessage("New Bill Item Created and Referances Assigned");
+    }
+
     public void convertPharmaceuticalBillItemReferenceFromErroneouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(PharmaceuticalBillItem pbi) {
         Bill originalBill = null;
         Bill cancelledBill = null;
@@ -4863,6 +4902,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     public void setBatchBillCancellationStarted(boolean batchBillCancellationStarted) {
         this.batchBillCancellationStarted = batchBillCancellationStarted;
+    }
+
+    public Long getBillIdToAssignBillItems() {
+        return billIdToAssignBillItems;
+    }
+
+    public void setBillIdToAssignBillItems(Long billIdToAssignBillItems) {
+        this.billIdToAssignBillItems = billIdToAssignBillItems;
     }
 
     /**
