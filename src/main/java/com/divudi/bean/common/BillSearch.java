@@ -311,6 +311,7 @@ public class BillSearch implements Serializable {
     private List<Bill> viewingReferanceBills;
     private List<BillItem> viewingBillItems;
     private List<PharmaceuticalBillItem> viewingPharmaceuticalBillItems;
+    private List<PatientInvestigation> viewingPatientInvestigations;
     private List<BillFee> viewingBillFees;
     private List<BillComponent> viewingBillComponents;
     private List<Payment> viewingBillPayments;
@@ -1841,6 +1842,7 @@ public class BillSearch implements Serializable {
         billController.save(viewingBill);
         billItemController.save(viewingBillItems);
         billItemController.savePharmaceuticalItems(viewingPharmaceuticalBillItems);
+        billItemController.savePatientInvestigations(viewingPatientInvestigations);
         billFeeController.save(viewingBillFees);
         paymentController.save(viewingBillPayments);
     }
@@ -3538,6 +3540,14 @@ public class BillSearch implements Serializable {
             return "";
         }
         return "/opd/view/bill_admin?faces-redirect=true;";
+    }
+    
+    public String navigateToBillListFromAdminBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill selected");
+            return "";
+        }
+        return searchController.navigateToBillListFromBill(viewingBill);
     }
 
     public String navigateToViewOpdRefundBill() {
@@ -5478,6 +5488,7 @@ public class BillSearch implements Serializable {
         viewingRefundBills = billBean.fetchRefundBillsOfBilledBill(bill);
         viewingBillItems = billService.fetchBillItems(bill);
         viewingPharmaceuticalBillItems = billService.fetchPharmaceuticalBillItems(bill);
+        viewingPatientInvestigations = billService.fetchPatientInvestigations(bill);
         viewingBillFees = billService.fetchBillFees(bill);
         viewingBillComponents = billBean.fetchBillComponents(bill);
         viewingBillPayments = billBean.fetchBillPayments(bill);
@@ -5579,6 +5590,16 @@ public class BillSearch implements Serializable {
     public void setViewingPharmaceuticalBillItems(List<PharmaceuticalBillItem> viewingPharmaceuticalBillItems) {
         this.viewingPharmaceuticalBillItems = viewingPharmaceuticalBillItems;
     }
+
+    public List<PatientInvestigation> getViewingPatientInvestigations() {
+        return viewingPatientInvestigations;
+    }
+
+    public void setViewingPatientInvestigations(List<PatientInvestigation> viewingPatientInvestigations) {
+        this.viewingPatientInvestigations = viewingPatientInvestigations;
+    }
+    
+    
 
     public class PaymentSummary {
 
