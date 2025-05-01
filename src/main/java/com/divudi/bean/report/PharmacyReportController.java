@@ -1,14 +1,7 @@
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.DoctorController;
-import com.divudi.bean.common.InstitutionController;
-import com.divudi.bean.common.ItemApplicationController;
-import com.divudi.bean.common.ItemController;
-import com.divudi.bean.common.PatientController;
-import com.divudi.bean.common.PersonController;
-import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.common.*;
+import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.StockHistoryController;
 import com.divudi.core.data.BillFinanceType;
@@ -171,6 +164,8 @@ public class PharmacyReportController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     SessionController sessionController;
+    @EJB
+    private ReportTimerController reportTimerController;
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,##0.00");
     private int reportIndex;
@@ -316,6 +311,7 @@ public class PharmacyReportController implements Serializable {
 
     private Institution fromSite;
     private Institution toSite;
+
 
     //Constructor
     public PharmacyReportController() {
@@ -1250,27 +1246,29 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void generatePharmacyCashInOutLedger() {
-        netTotal = 0.0;
-        bills = new ArrayList<>();
-        unifiedBundle = new ArrayList<>();
-        List<BillTypeAtomic> allBillTypes = new ArrayList<>();
-        Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
+        reportTimerController.trackReportExecution(() -> {
+            netTotal = 0.0;
+            bills = new ArrayList<>();
+            unifiedBundle = new ArrayList<>();
+            List<BillTypeAtomic> allBillTypes = new ArrayList<>();
+            Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
 
-        // Combine all relevant BillTypeAtomic
-        List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
-        List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
-        List<BillTypeAtomic> btasShiftStart = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE);
-        List<BillTypeAtomic> btasShiftEnd = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE);
+            // Combine all relevant BillTypeAtomic
+            List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+            List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
+            List<BillTypeAtomic> btasShiftStart = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE);
+            List<BillTypeAtomic> btasShiftEnd = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE);
 
-        allBillTypes.addAll(btasCashIn);
-        allBillTypes.addAll(btasCashOut);
-        allBillTypes.addAll(btasShiftStart);
-        allBillTypes.addAll(btasShiftEnd);
+            allBillTypes.addAll(btasCashIn);
+            allBillTypes.addAll(btasCashOut);
+            allBillTypes.addAll(btasShiftStart);
+            allBillTypes.addAll(btasShiftEnd);
 
-        allBillTypes.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
-        allBillTypes.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
+            allBillTypes.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+            allBillTypes.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
 
-        createPharmacyCashInOutLedger(allBillTypes);
+            createPharmacyCashInOutLedger(allBillTypes);
+        }, PharmacyReports.CASH_IN_OUT_REPORT, sessionController.getLoggedUser());
     }
 
     public void createPharmacyCashInOutLedger(List<BillTypeAtomic> billTypeAtomics) {
