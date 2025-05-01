@@ -77,13 +77,17 @@
                                 </p:column>
 
 
-                                <p:column headerText="Returning Qty in Unit" class="text-end">                     
-                                    <p:inputText autocomplete="off" value="#{ph.qty}" onfocus="this.select();" class="text-end w-100">
+                                <p:column headerText="Returning Qty" class="text-end">                     
+                                    <p:inputText
+                                        converter="javax.faces.Integer"
+                                        autocomplete="off" value="#{ph.qty}" onfocus="this.select();" class="text-end w-100">
                                         <f:ajax 
                                             event="blur"
-                                            render="@this :#{p:resolveFirstComponentWithId('totalPanel',view).clientId}"  
+                                            delay="500"
+                                            render=":#{p:resolveFirstComponentWithId('totalPanel',view).clientId}"  
                                             execute="@this" 
                                             listener="#{saleReturnController.onEdit(ph)}" ></f:ajax>
+                                            <f:validateDoubleRange minimum="0" maximum="#{ph.pharmaceuticalBillItem.qty}" />
                                     </p:inputText>
                                 </p:column>  
 
