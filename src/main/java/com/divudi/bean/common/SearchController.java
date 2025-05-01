@@ -58,11 +58,6 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
-import static com.divudi.core.data.BillClassType.BilledBill;
-import static com.divudi.core.data.BillClassType.CancelledBill;
-import static com.divudi.core.data.BillClassType.OtherBill;
-import static com.divudi.core.data.BillClassType.PreBill;
-import static com.divudi.core.data.BillClassType.RefundBill;
 
 import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -10689,7 +10684,7 @@ public class SearchController implements Serializable {
     public void listPharmaceuticalBillItems() {
         pharmaceuticalBillItems = null;
         Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select b from PharmaceuticalBillItem pbi "
+        StringBuilder jpql = new StringBuilder("select pbi from PharmaceuticalBillItem pbi "
                 + " join pbi.billItem bi join bi.bill b "
                 + " where 1=1 "
                 + " ");
@@ -10722,7 +10717,7 @@ public class SearchController implements Serializable {
         if (billClassType != null) {
             jpql.append(" and type(b)=:billClassType ");
             switch (billClassType) {
-                case Bill:
+             case   BillClassType.Bill:
                     params.put("billClassType", com.divudi.core.entity.Bill.class);
                     break;
                 case BilledBill:
