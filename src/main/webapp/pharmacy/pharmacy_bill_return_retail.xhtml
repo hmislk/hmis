@@ -78,11 +78,13 @@
 
 
                                 <p:column headerText="Returning Qty" class="text-end">                     
-                                    <p:inputText autocomplete="off" value="#{ph.qty}" onfocus="this.select();" class="text-end w-100">
+                                    <p:inputText
+                                        converter="javax.faces.Integer"
+                                        autocomplete="off" value="#{ph.qty}" onfocus="this.select();" class="text-end w-100">
                                         <f:ajax 
                                             event="blur"
                                             delay="500"
-                                            render="@this :#{p:resolveFirstComponentWithId('totalPanel',view).clientId}"  
+                                            render=":#{p:resolveFirstComponentWithId('totalPanel',view).clientId}"  
                                             execute="@this" 
                                             listener="#{saleReturnController.onEdit(ph)}" ></f:ajax>
                                             <f:validateDoubleRange minimum="0" maximum="#{ph.pharmaceuticalBillItem.qty}" />
