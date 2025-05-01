@@ -1643,6 +1643,12 @@ public class BillService {
     }
 
     public List<BillItem> checkCreditBillPaymentReciveFromCreditCompany(Bill bill) {
+        List<BillItem> billItems = new ArrayList<>();
+        
+        if (bill == null) {
+            return billItems;
+        }
+        
         Map params = new HashMap();
         String jpql = "select bi "
                 + " from BillItem bi"
@@ -1655,8 +1661,7 @@ public class BillService {
         params.put("bta", BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         params.put("b", bill);
         
-        List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
-        System.out.println("Credit Company Payment Bill Items = " + billItems);
+        billItems = billItemFacade.findByJpql(jpql, params);
         return billItems ;
 
     }
