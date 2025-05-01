@@ -693,6 +693,22 @@ public class SearchController implements Serializable {
         return "/analytics/bills?faces-redirect=true";
     }
 
+    public String navigateToBillListFromBill(Bill bill) {
+        resetAllFilters();
+        fromDate = CommonFunctions.getStartOfBeforeDay(bill.getCreatedAt());
+        toDate = CommonFunctions.getEndOfDay(bill.getCreatedAt());
+        webUser = bill.getCreater();
+        institution = bill.getInstitution();
+        department = bill.getDepartment();
+        if (bill.getDepartment() != null) {
+            site = bill.getDepartment().getSite();
+        }
+        billTypeAtomic = bill.getBillTypeAtomic();
+        billType = bill.getBillType();
+        listBills();
+        return "/analytics/bills?faces-redirect=true";
+    }
+
     public String navigateToBillTypeList() {
         resetAllFiltersExceptDateRange();
         return "/analytics/bill_types?faces-redirect=true";

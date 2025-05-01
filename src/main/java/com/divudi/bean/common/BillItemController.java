@@ -9,8 +9,10 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.Date;
@@ -40,6 +42,8 @@ public class BillItemController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
 
     @Inject
     SessionController sessionController;
@@ -89,6 +93,24 @@ public class BillItemController implements Serializable {
         }
     }
 
+    public void save(PatientInvestigation sbi) {
+        if (sbi == null) {
+            return;
+        }
+        if (sbi.getId() == null) {
+            if (sbi.getCreatedAt() == null) {
+                sbi.setCreatedAt(new Date());
+            }
+            if (sbi.getCreater() == null) {
+                sbi.setCreater(sessionController.getLoggedUser());
+            }
+            patientInvestigationFacade.create(sbi);
+        } else {
+            patientInvestigationFacade.edit(sbi);
+        }
+    }
+
+    
     public void save(List<BillItem> billItems) {
         if (billItems == null || billItems.isEmpty()) {
             return;
@@ -136,6 +158,16 @@ public class BillItemController implements Serializable {
 
     private BillItemFacade getFacade() {
         return billItemFacade;
+    }
+
+    void savePatientInvestigations(List<PatientInvestigation> viewingPatientInvestigations) {
+        if (viewingPatientInvestigations == null || viewingPatientInvestigations.isEmpty()) {
+            return;
+        }
+        for (PatientInvestigation sbi : viewingPatientInvestigations) {
+            save(sbi);
+        }
+
     }
 
 //    @FacesConverter("temBillItemConverter")
