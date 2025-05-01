@@ -504,7 +504,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
-
         return false;
     }
 
