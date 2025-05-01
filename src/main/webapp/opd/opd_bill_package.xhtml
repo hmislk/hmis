@@ -843,13 +843,14 @@
                                                 itemLabel="#{ri.name}" 
                                                 itemValue="#{ri}"
                                                 size="10"
+                                                maxResults="15"
                                                 minQueryLength="4"
                                                 inputStyleClass="form-control"
                                                 placeholder="Type at least 4 letters to search"
                                                 class="w-100 my-1">
                                                 <f:ajax  event="itemSelect" execute="creditCom"  />
-                                                <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
-                                                <p:column headerText="Code">#{ri.institutionCode}</p:column>
+                                                <p:column headerText="Referring Institution Name" style="padding: 5px;">#{ri.name}</p:column>
+                                                <p:column headerText="Code" style="padding: 5px;">#{ri.institutionCode}</p:column>
                                             </p:autoComplete>
 
                                             <h:panelGroup class="w-100">
@@ -903,15 +904,16 @@
                                                 completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                 minQueryLength="4"
                                                 placeholder="Type at least 4 letters to search"
-                                                itemLabel="#{ix.person.name}" 
+                                                itemLabel="#{ix.person.nameWithTitle}" 
                                                 itemValue="#{ix}" 
+                                                maxResults="15"
                                                 inputStyleClass="form-control"
                                                 class="w-100 my-1" 
                                                 size="10">
-                                                <p:column headerText="Name" >
+                                                <p:column headerText="Name" style="padding: 6px;">
                                                     <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
                                                 </p:column>
-                                                <p:column headerText="Code" >
+                                                <p:column headerText="Code" style="padding: 6px;" >
                                                     <h:outputText value="#{ix.code}" ></h:outputText>
                                                 </p:column>
                                             </p:autoComplete>
@@ -935,15 +937,16 @@
                                                 placeholder="Type at least 4 letters to search"
                                                 inputStyleClass="form-control"
                                                 minQueryLength="4"
+                                                maxResults="15"
                                                 itemLabel="#{ix.name}" 
                                                 itemValue="#{ix}" 
                                                 size="10"
                                                 >
                                                 <f:ajax  event="itemSelect" execute="creditCom"  />
-                                                <p:column headerText="Collecting Centre Name">
+                                                <p:column headerText="Collecting Centre Name" style="padding: 6px;">
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
                                                 </p:column>
-                                                <p:column headerText="Code">
+                                                <p:column headerText="Code" style="padding: 6px;">
                                                     <h:outputText value="#{ix.institutionCode}" ></h:outputText>
                                                 </p:column>
 

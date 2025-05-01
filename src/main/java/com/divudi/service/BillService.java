@@ -1642,4 +1642,23 @@ public class BillService {
         return ptix;
     }
 
+    public List<BillItem> checkCreditBillPaymentReciveFromCreditCompany(Bill bill) {
+        Map params = new HashMap();
+        String jpql = "select bi "
+                + " from BillItem bi"
+                + " where bi.retired=:ret "
+                + " and bi.referenceBill =:b "
+                + " and bi.bill.cancelled =:can "
+                + " and bi.bill.billTypeAtomic =:bta ";
+        params.put("ret", false);
+        params.put("can", false);
+        params.put("bta", BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        params.put("b", bill);
+        
+        List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
+        System.out.println("Credit Company Payment Bill Items = " + billItems);
+        return billItems ;
+
+    }
+
 }
