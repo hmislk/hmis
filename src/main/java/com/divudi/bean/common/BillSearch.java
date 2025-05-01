@@ -3541,6 +3541,14 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/bill_admin?faces-redirect=true;";
     }
+    
+    public String navigateToBillListFromAdminBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill selected");
+            return "";
+        }
+        return searchController.navigateToBillListFromBill(viewingBill);
+    }
 
     public String navigateToViewOpdRefundBill() {
         if (viewingBill == null) {

@@ -315,6 +315,58 @@ public class BillService {
         billItemFacade.edit(bi);
     }
 
+    
+    public void createBillItemFeesAndAssignToNewBillItem(BillItem originalBillItem, BillItem duplicateBillItem) {
+        double staffFeesCalculatedByBillFees = 0.0;
+        double collectingCentreFeesCalculateByBillFees = 0.0;
+        double hospitalFeeCalculatedByBillFess = 0.0;
+        double reagentFeeCalculatedByBillFees = 0.0;
+        double additionalFeeCalculatedByBillFees = 0.0;
+
+        List<BillFee> originalBillfess = fetchBillFees(originalBillItem);
+        
+        List<BillFee> duplicateBillfess = new ArrayList<>();
+
+        for (BillFee bf : originalBillfess) {
+            BillFee duplicateBillFee = new BillFee();
+            duplicateBillFee.copy(bf);
+            duplicateBillFee.setBillItem(duplicateBillItem);
+            duplicateBillFee.setBill(duplicateBillItem.getBill());
+            duplicateBillFee.setCreatedAt(new Date());
+            billFeeFacade.create(duplicateBillFee);
+            duplicateBillfess.add(duplicateBillFee);
+        }
+
+        for (BillFee bf : duplicateBillfess) {
+            if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
+            } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
+                staffFeesCalculatedByBillFees += bf.getFeeGrossValue();
+            } else {
+                hospitalFeeCalculatedByBillFess += bf.getFeeGrossValue();
+            }
+            if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                reagentFeeCalculatedByBillFees += bf.getFeeGrossValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Additional) {
+                additionalFeeCalculatedByBillFees += bf.getFeeGrossValue();
+            }
+
+        }
+
+        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
+        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
+        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
+        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
+
+        duplicateBillItem.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
+        duplicateBillItem.setStaffFee(staffFeesCalculatedByBillFees);
+        duplicateBillItem.setHospitalFee(hospitalFeeCalculatedByBillFess);
+        duplicateBillItem.setReagentFee(reagentFeeCalculatedByBillFees);
+        duplicateBillItem.setOtherFee(additionalFeeCalculatedByBillFees);
+        billItemFacade.edit(duplicateBillItem);
+    }
+
+    
     public void createBillItemFeeBreakdownFromBill(Bill bill) {
         List<BillItem> billItems = fetchBillItems(bill);
         createBillItemFeeBreakdownAsHospitalFeeItemDiscount(billItems);

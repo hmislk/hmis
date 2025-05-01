@@ -3346,15 +3346,35 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             return;
         }
         Bill selectedBillToAssignNewlyCreatedBillItems;
-        BillItem originalBillItemToDuplicate=ptix.getBillItem();
+        BillItem originalBillItemToDuplicate = ptix.getBillItem();
         BillItem duplicateBillItem = new BillItem();
-        
-        
+
         selectedBillToAssignNewlyCreatedBillItems = billService.fetchBillById(billIdToAssignBillItems);
         if (selectedBillToAssignNewlyCreatedBillItems == null) {
             JsfUtil.addErrorMessage("No Bill Found for the ID given for a Bill to assign newly created Bill Items");
             return;
         }
+
+        try {
+            duplicateBillItem.copy(originalBillItemToDuplicate);
+            duplicateBillItem.setBill(selectedBillToAssignNewlyCreatedBillItems);
+            duplicateBillItem.setCreatedAt(new Date());
+            duplicateBillItem.setCreater(getSessionController().getLoggedUser());
+            billItemFacade.create(duplicateBillItem);
+
+            duplicateBillItem.setPatientInvestigation(ptix);
+            billItemFacade.edit(duplicateBillItem);
+
+            ptix.setBillItem(duplicateBillItem);
+            patientInvestigationFacade.edit(ptix);
+
+            // Can NOT Recalculate bill totals after adding the new item. Bill Totals are correc. We are fixing Bill Items. Have have to double check bill totlas are equal to the total of the bill item values
+            // calTotals();
+            JsfUtil.addSuccessMessage("New Bill Item Created and References Assigned");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error creating bill item: " + e.getMessage());
+        }
+
         duplicateBillItem.copy(originalBillItemToDuplicate);
         duplicateBillItem.setBill(selectedBillToAssignNewlyCreatedBillItems);
         billItemFacade.create(duplicateBillItem);
@@ -3362,6 +3382,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         billItemFacade.edit(duplicateBillItem);
         ptix.setBillItem(duplicateBillItem);
         patientInvestigationFacade.edit(ptix);
+
+        billService.createBillItemFeesAndAssignToNewBillItem(originalBillItemToDuplicate, duplicateBillItem);
+
         JsfUtil.addSuccessMessage("New Bill Item Created and Referances Assigned");
     }
 
