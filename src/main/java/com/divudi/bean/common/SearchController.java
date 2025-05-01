@@ -10753,20 +10753,6 @@ public class SearchController implements Serializable {
         jpql.append(" order by b.id ");
 
         pharmaceuticalBillItems = pharmaceuticalBillItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-        total = 0.0;
-        netTotal = 0.0;
-        discount = 0.0;
-        if (pharmaceuticalBillItems != null) {
-            for (PharmaceuticalBillItem pbi : pharmaceuticalBillItems) {
-                if (pbi != null) {
-                    total += pbi.getRetailValue();
-                    // netTotal += bill.getNetTotal(); - To Do After PBI Improvements
-                    // discount += pbi.getRetailValue();  - To Do After PBI Improvements
-                }
-            }
-        }
-
     }
 
     public void listBillsOpdCreditCompanySettle() {

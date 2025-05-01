@@ -224,20 +224,9 @@
                                     <h:panelGroup>
                                         <p:badge value="Bill Item Retired" styleClass="ui-badge-info" rendered="#{pbi.billItem.retired}"/>
                                         <p:badge value="Bill Retired" styleClass="ui-badge-info" rendered="#{pbi.billItem.bill.retired}"/>
-                                        <p:badge value="Bill Cancelled" styleClass="ui-badge-danger" rendered="#{pbi.cancelled}"/>
-                                        <p:badge value="Bill Returned" styleClass="ui-badge-warning" rendered="#{pbi.refunded}"/>
+                                        <p:badge value="Bill Cancelled" styleClass="ui-badge-danger" rendered="#{pbi.billItem.bill.cancelled}"/>
+                                        <p:badge value="Bill Returned" styleClass="ui-badge-warning" rendered="#{pbi.billItem.bill.refunded}"/>
                                     </h:panelGroup>
-                                </p:column>
-
-                                <p:column headerText="Gross Value" styleClass="averageNumericColumn" sortBy="#{pbi.retailValue}" filterBy="#{pbi.retailValue}">
-                                    <h:outputText value="#{pbi.retailValue}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value="#{searchController.total}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Actions" exportable="false" width="9em">
