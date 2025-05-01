@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.store.StoreBean;
@@ -52,6 +53,8 @@ public class StockController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private StockFacade ejbFacade;
     @EJB
@@ -185,8 +188,10 @@ public class StockController implements Serializable {
             stockSet.addAll(initialStocks);
         }
 
+        Integer minItemsForContainsSearch = configOptionApplicationController.getIntegerValueByKey("Minimum number of items before switching from 'starts with' to 'contains' search", 3);
+
         // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
-        if (stockSet.size() <= 10) {
+        if (stockSet.size() <= minItemsForContainsSearch) {
             List<Stock> additionalStocks = completeAvailableStocksContains(qry);
             if (additionalStocks != null) {
                 stockSet.addAll(additionalStocks);
@@ -199,23 +204,29 @@ public class StockController implements Serializable {
     }
 
     public void addItemStockToStocks(Set<Stock> inputStocks) {
-        if (inputStocks == null) {
+        if (inputStocks == null || inputStocks.isEmpty()) {
             return;
         }
         if (inputStocks.size() > 20) {
             return;
         }
-        // Map to store the total stock quantity for each item
+
         Map<Item, Double> itemStockTotals = new HashMap<>();
 
         // First pass: calculate the total stock quantity for each item
         for (Stock s : inputStocks) {
+            if (s == null || s.getItemBatch() == null || s.getItemBatch().getItem() == null) {
+                continue;
+            }
             Item item = s.getItemBatch().getItem();
             itemStockTotals.put(item, itemStockTotals.getOrDefault(item, 0.0) + s.getStock());
         }
 
         // Second pass: set the total stock quantity for each stock
         for (Stock s : inputStocks) {
+            if (s == null || s.getItemBatch() == null || s.getItemBatch().getItem() == null) {
+                continue;
+            }
             Item item = s.getItemBatch().getItem();
             s.setTransItemStockQty(itemStockTotals.get(item));
         }
