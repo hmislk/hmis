@@ -36,6 +36,7 @@ public class Token implements Serializable {
     private TokenType tokenType;
     @ManyToOne
     private Category caterory;
+    @ManyToOne
     private Bill bill;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date issuedAt;

@@ -1,7 +1,6 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -97,15 +96,12 @@ public class StaffPaymentBillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     DrawerController drawerController;
-    @Inject
-    FinancialTransactionController financialTransactionController;
 
     private List<BillComponent> billComponents;
     private List<BillItem> billItems;
     private static final long serialVersionUID = 1L;
     private Date fromDate;
     private Date toDate;
-    private CommonFunctions commonFunctions;
     List<Bill> selectedItems;
     private Bill current;
     private List<Bill> items = null;
@@ -885,7 +881,7 @@ public class StaffPaymentBillController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -897,7 +893,7 @@ public class StaffPaymentBillController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -905,14 +901,6 @@ public class StaffPaymentBillController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
         //  resetLists();
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<BillFee> getDueBillFeeReport() {

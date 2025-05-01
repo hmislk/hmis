@@ -244,11 +244,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.currentToken = currentToken;
     }
 
-    public String navigateToPharmacySaleWithoutStocks() {
-        prepareForPharmacySaleWithoutStock();
-        return "/pharmacy/pharmacy_sale_without_stock";
-    }
-
+//    public String navigateToPharmacySaleWithoutStocks() {
+//        prepareForPharmacySaleWithoutStock();
+//        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true;";
+//    }
     public String navigateToPharmacyBillForCashier() {
         if (sessionController.getPharmacyBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
@@ -590,21 +589,27 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     private Patient savePatient() {
-        if (!getPatient().getPerson().getName().trim().isEmpty()) {
-            getPatient().setCreater(getSessionController().getLoggedUser());
-            getPatient().setCreatedAt(new Date());
-            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPatient().getPerson().setCreatedAt(new Date());
-            if (getPatient().getPerson().getId() == null) {
-                getPersonFacade().create(getPatient().getPerson());
-            }
-            if (getPatient().getId() == null) {
-                getPatientFacade().create(getPatient());
-            }
-            return getPatient();
-        } else {
+        Patient pat = getPatient();
+        // Check for null references and empty name
+        if (pat == null
+                || pat.getPerson() == null
+                || pat.getPerson().getName() == null
+                || pat.getPerson().getName().trim().isEmpty()) {
             return null;
         }
+
+        pat.setCreater(getSessionController().getLoggedUser());
+        pat.setCreatedAt(new Date());
+        pat.getPerson().setCreater(getSessionController().getLoggedUser());
+        pat.getPerson().setCreatedAt(new Date());
+
+        if (pat.getPerson().getId() == null) {
+            getPersonFacade().create(pat.getPerson());
+        }
+        if (pat.getId() == null) {
+            getPatientFacade().create(pat);
+        }
+        return pat;
     }
 
 //    private Patient savePatient() {
@@ -2067,6 +2072,21 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 false
         );
 
+        if (configOptionApplicationController.getBooleanValueByKey("Patient Phone number is mandotary in sale for cashier", true)) {
+            if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
+                JsfUtil.addErrorMessage("Please enter phone number of the patient");
+                return;
+            } else if (getPatient().getId() == null) {
+                if (getPatient().getPatientPhoneNumber() != null && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
+                    JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
+                    return;
+                } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
+                    JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
+                    return;
+                }
+            }
+        }
+
         Patient pt = null;
         if (patientRequiredForPharmacySale) {
             if (getPatient() == null
@@ -2362,10 +2382,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         if ((getPatient().getMobileNumberStringTransient() == null
-                || getPatient().getMobileNumberStringTransient().trim().isEmpty())
+                || getPatient().getMobileNumberStringTransient().trim().isEmpty() || getPatient().getPerson().getName().trim().isEmpty())
                 && configOptionApplicationController.getBooleanValueByKey("Patient details are required for retail sale")) {
             billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Please enter pateint details to the bill.");
+            JsfUtil.addErrorMessage("Please enter patient name and mobile number.");
             return;
         }
         if (getPaymentMethod() == PaymentMethod.Card) {
@@ -3043,7 +3063,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         stock = null;
         editingQty = null;
         errorMessage = "";
-        paymentMethod = PaymentMethod.Cash;
+        // paymentMethod = PaymentMethod.Cash; // Never do this. It shold be done in clear bill item
         paymentMethodData = null;
         setCashPaid(0.0);
         allergyListOfPatient = null;

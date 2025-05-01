@@ -19,10 +19,10 @@
                         <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                         <h:outputLabel value="From Date"  class="mx-3"/>
                     </h:panelGroup>
-                    <p:datePicker  
-                        showTime="true" 
+                    <p:calendar  
                         class="w-100"
                         inputStyleClass="w-100"
+                        navigator="true"
                         value="#{reportController.fromDate}" 
                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
@@ -30,8 +30,8 @@
                         <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
                         <h:outputLabel value="To Date"  class="mx-3"/>
                     </h:panelGroup>
-                    <p:datePicker 
-                        showTime="true" 
+                    <p:calendar 
+                        navigator="true"
                         class="w-100"
                         inputStyleClass="w-100"
                         value="#{reportController.toDate}" 
@@ -94,6 +94,8 @@
                     class="mx-2 ui-button-warning"
                     action="#{reportController.processCollectingCentreStatementReportNew()}"  />
 
+
+
                 <p:commandButton 
                     icon="fa-solid fa-print"
                     style="width: 150px"
@@ -124,7 +126,23 @@
                     <p:dataExporter type="pdf" target="tbl"  fileName="cc_statement.pdf" ></p:dataExporter>
                 </p:commandButton>
 
+                <div  style="float: right;">
 
+
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Process for Selected Centre Errors"
+                        icon="fas fa-cogs"
+                        class="mx-2 ui-button-dark"
+                        action="#{reportController.processCollectingCentreBalanceContinuationErrors()}"  />
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Process for All Errors"
+                        icon="fas fa-cogs"
+                        class="mx-2 ui-button-dark"
+                        action="#{reportController.processAllCollectingCentresBalanceContinuationErrors()}"  />
+
+                </div>
                 <h:panelGrid columns="2" styleClass="mt-4">
                     <h:outputLabel value="From Date :" />
                     <h:outputLabel value="#{reportController.fromDate}">
@@ -203,9 +221,9 @@
                     headerText="Bill Type" 
                     sortBy="#{agentHx.bill.billTypeAtomic.label}" 
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
-                    filterBy="#{agentHx.bill.billTypeAtomic.label}" 
+                    filterBy="#{agentHx.bill.billTypeAtomic}" 
                     filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.bill.billTypeAtomic.label}" />
+                    <h:outputText value="#{agentHx.bill.billTypeAtomic}" />
                 </p:column>
 
                 <p:column 

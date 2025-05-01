@@ -22,7 +22,7 @@
             </p:inputText>
 
             <p:outputLabel for="bankSelect" value="Bank:"/>
-            <p:selectOneMenu id="bankSelect" value="#{cc.attrs.paymentMethodData.cheque.institution}" style="width: auto; max-width: 200px;" class="form-control">
+            <p:selectOneMenu id="bankSelect" value="#{cc.attrs.paymentMethodData.cheque.institution}" style="width: auto; max-width: 200px;" class="form-control" filter="true" filterMatchMode="contains">
                 <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:tooltip value="Select the bank for the cheque."/>

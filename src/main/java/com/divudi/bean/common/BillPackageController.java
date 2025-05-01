@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.ItemLight;
@@ -52,13 +51,13 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BillValidation;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.service.StaffService;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.PaymentFacade;
-import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -92,7 +91,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private BillItemFacade billItemFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -125,11 +123,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Injects">
     @Inject
+    EnumController enumController;
+    @Inject
     SessionController sessionController;
     @Inject
     private BillBeanController billBean;
     @Inject
     private BillSearch billSearch;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     ItemApplicationController itemApplicationController;
     @Inject
@@ -139,13 +141,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
-    DrawerController drawerController;
-    @Inject
     OpdBillController opdBillController;
     @Inject
     ApplicationController applicationController;
-    @Inject
-    WebUserController webUserController;
     @Inject
     PatientDepositController patientDepositController;
     //</editor-fold>
@@ -522,11 +520,32 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        if (!webUserController.hasPrivilege("OpdCancel")) {
-            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
-            batchBillCancellationStarted = false;
-            return "";
+
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
+            if (!checkCancelBill(getBill())) {
+                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                if (getWebUserController().hasPrivilege("BillCancel")) {
+                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+                } else {
+                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                    batchBillCancellationStarted = false;
+                    return "";
+                }
+            } else {
+                if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                    batchBillCancellationStarted = false;
+                    return "";
+                }
+            }
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
         }
+
         if (errorsPresentOnOpdBillCancellation()) {
             batchBillCancellationStarted = false;
             return "";
@@ -672,6 +691,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return null;
     }
 
+    public boolean checkCancelBill(Bill originalBill) {
+        List<PatientInvestigationStatus> availableStatus = enumController.getAvailableStatusforCancel();
+        boolean canCancelBill = false;
+        if (availableStatus.contains(originalBill.getStatus())) {
+            canCancelBill = true;
+        }
+        return canCancelBill;
+    }
+
     public String cancelPackageBatchBill() {
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
@@ -684,11 +712,34 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        if (!webUserController.hasPrivilege("OpdCancel")) {
-            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
-            batchBillCancellationStarted = false;
-            return "";
+
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
+            for (Bill singleBill : billBean.validBillsOfBatchBill(getBatchBill())) {
+                if (!checkCancelBill(singleBill)) {
+                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                    if (getWebUserController().hasPrivilege("BillCancel")) {
+                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+                    } else {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        batchBillCancellationStarted = false;
+                        return "";
+                    }
+                } else {
+                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        batchBillCancellationStarted = false;
+                        return "";
+                    }
+                }
+            }
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
         }
+
         if (errorsPresentOnOpdBatchBillCancellation()) {
             batchBillCancellationStarted = false;
             return "";
@@ -2018,14 +2069,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         calTotals();
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public void setLstBillEntries(List<BillEntry> lstBillEntries) {
         this.lstBillEntries = lstBillEntries;
     }
@@ -2441,6 +2484,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setRemainAmount(double remainAmount) {
         this.remainAmount = remainAmount;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
     }
 
 }

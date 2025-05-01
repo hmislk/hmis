@@ -113,6 +113,7 @@ public class BillItem implements Serializable, RetirableEntity {
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
+    @Lob
     String retireComments;
     String insId;
     String deptId;
@@ -317,6 +318,16 @@ public class BillItem implements Serializable, RetirableEntity {
     }
 
     public BillItem() {
+    }
+
+    public static List<BillItem> copyBillItems(List<BillItem> billItems) {
+        List<BillItem> tmp = new ArrayList<>();
+        for (BillItem b : billItems) {
+            BillItem bi = new BillItem();
+            bi.copy(b);
+            tmp.add(bi);
+        }
+        return tmp;
     }
 
     public void invertValue(BillItem billItem) {

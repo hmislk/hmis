@@ -23,34 +23,12 @@ import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.entity.*;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.service.StaffService;
-import com.divudi.core.entity.Bill;
-import com.divudi.core.entity.BillComponent;
-import com.divudi.core.entity.BillEntry;
-import com.divudi.core.entity.BillFee;
-import com.divudi.core.entity.BillFeePayment;
-import com.divudi.core.entity.BillItem;
-import com.divudi.core.entity.BillSession;
-import com.divudi.core.entity.BilledBill;
-import com.divudi.core.entity.CancelledBill;
-import com.divudi.core.entity.Category;
-import com.divudi.core.entity.Department;
-import com.divudi.core.entity.Doctor;
-import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.Item;
-import com.divudi.core.entity.Patient;
-import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.PaymentScheme;
-import com.divudi.core.entity.Person;
-import com.divudi.core.entity.PriceMatrix;
-import com.divudi.core.entity.Sms;
-import com.divudi.core.entity.Staff;
-import com.divudi.core.entity.UserPreference;
-import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.hr.WorkingTime;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.facade.BillComponentFacade;
@@ -71,9 +49,6 @@ import com.divudi.core.data.BillFeeBundleEntry;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.OptionScope;
-import com.divudi.core.entity.FeeValue;
-import com.divudi.core.entity.PatientDeposit;
-import com.divudi.core.entity.Token;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -214,7 +189,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     /**
      * Class Variables
      */
-    private CommonFunctions commonFunctions;
     private ItemLight itemLight;
     private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
@@ -319,6 +293,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private String refNo;
     private double remainAmount;
     private Double currentBillItemQty;
+    private PatientEncounter patientEncounter;
 
     /**
      *
@@ -1548,14 +1523,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.bills = bills;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public String changeTextCases(String nm, String tc) {
         if (tc == null) {
             return nm;
@@ -1885,7 +1852,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         auditEventController.updateAuditEvent(eventUuid);
         billSettlingStarted = false;
-        return "/opd/opd_batch_bill_print?faces-redirect=true";
+        
+        if(patientEncounter != null){
+            return "/inward/inward_service_batch_bill_print?faces-redirect=true";
+        }else{
+            return "/opd/opd_batch_bill_print?faces-redirect=true";
+        }
     }
 
     private boolean executeSettleBillActions() {
@@ -1913,7 +1885,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             newSingleBill.setBillItems(list);
             newSingleBill.setBillTotal(newSingleBill.getNetTotal());
-            newSingleBill.setIpOpOrCc("OP");
+            if(patientEncounter != null){
+                newSingleBill.setIpOpOrCc("IP");
+                newSingleBill.setPatientEncounter(patientEncounter);
+            }else{
+                newSingleBill.setIpOpOrCc("OP");
+            }
             getBillFacade().edit(newSingleBill);
             getBillBean().calculateBillItemsForOpdBill(newSingleBill, getLstBillEntries(), getBillFeeBundleEntrys());
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
@@ -1945,6 +1922,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         saveBatchBill();
+        if(patientEncounter != null){
+            getBatchBill().setIpOpOrCc("IP");
+            getBatchBill().setPatientEncounter(patientEncounter);
+            getFacade().edit(getBatchBill());
+        }
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
 
         drawerController.updateDrawerForIns(payments);
@@ -2094,6 +2076,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //        duplicatePrint = false;
 //        return true;
 //    }
+
     public void markToken(Bill b) {
         Token t = getToken();
         if (t == null) {
@@ -3292,6 +3275,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 paymentMethodData = null;
                 paymentScheme = null;
                 paymentMethod = PaymentMethod.Cash;
+                patientEncounter = null;
                 collectingCentreBillController.setCollectingCentre(null);
                 if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                     return "/opd/opd_bill_ac?faces-redirect=true";
@@ -3308,11 +3292,48 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             paymentMethodData = null;
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
+            patientEncounter = null;
             collectingCentreBillController.setCollectingCentre(null);
             if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                 return "/opd/opd_bill_ac?faces-redirect=true";
             } else {
                 return "/opd/opd_bill?faces-redirect=true";
+            }
+        }
+    }
+
+    public String navigateToNewInwardServiceBill() {
+        if (sessionController.getInwardServiceBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                clearBillItemValues();
+                clearBillValues();
+                paymentMethodData = null;
+                paymentScheme = null;
+                paymentMethod = PaymentMethod.Cash;
+                collectingCentreBillController.setCollectingCentre(null);
+                patientEncounter = null;
+                if (sessionController.getInwardServiceBillItemSearchByAutocomplete()) {
+                    return "/inward/inward_service_bill_ac?faces-redirect=true";
+                } else {
+                    return "/inward/inward_service_bill?faces-redirect=true";
+                }
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            clearBillItemValues();
+            clearBillValues();
+            paymentMethodData = null;
+            paymentScheme = null;
+            paymentMethod = PaymentMethod.Cash;
+            collectingCentreBillController.setCollectingCentre(null);
+            patientEncounter = null;
+            if (sessionController.getInwardServiceBillItemSearchByAutocomplete()) {
+                return "/inward/inward_service_bill_ac?faces-redirect=true";
+            } else {
+                return "/inward/inward_service_bill?faces-redirect=true";
             }
         }
     }
@@ -4158,6 +4179,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     }
 
+    public void selectPatientEncounter(){
+        if (patientEncounter != null) {
+            setPatient(patientEncounter.getPatient());
+        } else {
+            JsfUtil.addErrorMessage("Please select an encounter first.");
+        }
+    }
+
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
     }
@@ -4679,4 +4708,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.currentBillItemQty = currentBillItemQty;
     }
 
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
 }

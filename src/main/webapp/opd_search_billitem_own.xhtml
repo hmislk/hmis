@@ -15,19 +15,36 @@
                             <div class="col-md-2">
 
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" 
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            class="w-100" inputStyleClass="w-100"
-                                            maxdate="#{sessionController.currentDate}"
-                                            >      
+                                <p:calendar 
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100"
+                                    maxdate="#{sessionController.currentDate}"
+                                    >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            class="w-100" inputStyleClass="w-100"
-                                            maxdate="#{sessionController.currentDate}"
-                                            >                                                                              
+                                <p:calendar 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100" 
+                                    inputStyleClass="w-100"
+                                    maxdate="#{sessionController.currentDate}"
+                                    >                                                                              
                                 </p:calendar>
+
+                                <hr/>
+                                <p:selectBooleanButton 
+                                    onLabel="Logged Department Only" 
+                                    offLabel="Any Department"
+                                    value="#{searchController.showLoggedDepartmentOnly}"
+                                    class="w-100">
+                                </p:selectBooleanButton>
+                                <hr/>
 
                                 <p:commandButton 
                                     id="btnSearch"
@@ -35,9 +52,14 @@
                                     icon="fas fa-search" 
                                     ajax="false" 
                                     value="Search" 
-                                    action="#{searchController.createBillItemTableByKeyword()}"/>
-                                <p:commandButton id="btnSearchAll" class="my-1 w-100 ui-button-warning" icon="fas fa-search" ajax="false" value="Search All" action="#{searchController.createBillItemTableByKeywordAll()}" rendered="#{webUserController.hasPrivilege('SearchAll')}"/>
-                                <p:commandButton value="Excel" class="my-1 w-100 ui-button-success" icon="fas fa-file-excel" ajax="false">
+                                    action="#{searchController.createBillItemTableByKeyword()}">
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    value="Excel" 
+                                    class="my-1 w-100 ui-button-success" 
+                                    icon="fas fa-file-excel" 
+                                    ajax="false">
                                     <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
                                 </p:commandButton>
 

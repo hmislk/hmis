@@ -335,7 +335,6 @@
                                                             <p:column >
                                                                 <f:facet name="header">Category</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.item.category.name}"/>
-
                                                             </p:column>
 
                                                             <p:column width="8em">
@@ -348,7 +347,7 @@
                                                                                 return false;"
                                                                     class="ui-button-danger"
                                                                     action="#{billBhtController.removeBillItem(bi)}" >
-                                                                    <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
+                                                                    <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.entriesIndex}" />
                                                                 </p:commandButton>
                                                             </p:column>
                                                         </p:dataTable>
@@ -528,6 +527,13 @@
                                                     <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                             <print:five_five_custom_3_inward bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
+                                                            <br/>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+                                                    
+                                                    <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')}" >
+                                                        <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                            <print:five_eight_opd_bill bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>

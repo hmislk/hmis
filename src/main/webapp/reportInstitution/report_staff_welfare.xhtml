@@ -9,60 +9,88 @@
                 >
 
     <ui:define name="subcontent">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:outputStylesheet ></h:outputStylesheet>
         <h:form>
             <p:panel>
                 <f:facet name="header" >                
-                    <div class="d-flex justify-content-between align-items-center" >
+                    <div class="d-flex justify-content-between align-items-center col-1-large" >
                         <h:outputLabel value="OPD And Pharmacy Staff Welfare Bills"/>
-                        <h:panelGrid columns="3" >
-                            <p:commandButton id="btnRefresh" value="Process" ajax="false" 
-                                             class="ui-button-warning" icon="fas fa-cogs"
-                                         action="#{serviceSummery.createStaffWelfare()}"/>
-                            <p:commandButton ajax="false" value="Print"  
-                                             class="ui-button-info mx-2" icon="fas fa-print"  >
-                                <p:printer target="panelPrint" />
-                            </p:commandButton>
-
-                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
-                                <p:dataExporter type="xlsx" target="opd" fileName="report_staff_welfare"  />
-                            </p:commandButton>
-                    </h:panelGrid>
                     </div>
                 </f:facet>
+                <div>
+                    <h:panelGrid columns="5" class="my-2">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-people-carry ml-5" />
+                            <p:outputLabel value="Staff Name" class="mx-2" >
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:autoComplete
+                            completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                            class="w-100"
+                            id="acStaff" 
+                            style="width: 400px!important"
+                            inputStyleClass="w-100"
+                            value="#{serviceSummery.staff}" 
+                            var="user"
+                            scrollHeight="450"
+                            itemLabel="#{user.person.name}" 
+                            itemValue="#{user}" >
+
+                            <p:column headerText="Name" >
+                                <h:outputText value="#{user.person.name}" ></h:outputText>
+                            </p:column>
+                        </p:autoComplete>
+                    </h:panelGrid>
+                    <h:panelGrid columns="3" >
+                        <p:commandButton id="btnRefresh" value="Process" ajax="false" 
+                                         class="ui-button-warning" icon="fas fa-cogs"
+                                         action="#{serviceSummery.createStaffWelfare()}"/>
+                        <p:commandButton ajax="false" value="Print"  
+                                         class="ui-button-info mx-2" icon="fas fa-print"  >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+
+                        <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
+                            <p:dataExporter type="xlsx" target="opd" fileName="report_staff_welfare"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+                </div>
                 <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
 
 
                     <p:dataTable id="opd" rowIndexVar="i" 
-                                 value="#{serviceSummery.staffs}" var="s">                   
+                                 value="#{serviceSummery.staffs}" var="s"
+                                 rowKey="#{entry.key}" rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">                   
                         <f:facet name="header">
                             <h:outputLabel value="Staff Welfare Summary"/>
                         </f:facet>
 
-                        <p:column headerText="No">
+                        <p:column headerText="No" width="2em">
                             <f:facet name="header">
                                 <p:outputLabel value="No"/>
                             </f:facet>
                             <h:outputLabel value="#{i+1}"/>
                         </p:column>
 
-                        <p:column headerText="Staff Code">
+                        <p:column headerText="Staff EPF No" width="6em">
                             <f:facet name="header">
-                                <p:outputLabel value="Staff Code"/>
+                                <p:outputLabel value="Staff EPF No"/>
                             </f:facet>
-                            <p:outputLabel value="#{s.code}" />
+                            <p:outputLabel value="#{s.epfNo}" />
                         </p:column>
 
-                        <p:column headerText="Staff Name">
+                        <p:column headerText="Staff Name" width="10em">
                             <f:facet name="header">
-                                <p:outputLabel value="Staff Name"/>
+                                <p:outputLabel value="Staff Name" />
                             </f:facet>
                             <p:outputLabel value="#{s.person.nameWithTitle}" />
                         </p:column>
 
                         <p:column headerText="Annual Entitlement" >
                             <f:facet name="header">
-                                <p:outputLabel value="Annual Entitlement"/>
+                                <p:outputLabel value="Annual Entitlement" style="float: right;"/>
                             </f:facet>
                             <p:outputLabel value="#{s.annualWelfareQualified}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -71,9 +99,18 @@
 
                         <p:column headerText="Annual Utilized Value">
                             <f:facet name="header">
-                                <p:outputLabel value="Annual Utilized Value"/>
+                                <p:outputLabel value="Annual Utilized Value" style="float: right;"/>
                             </f:facet>
                             <p:outputLabel value="#{s.annualWelfareUtilized}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Annual Remaining Balance">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Remaining Balance" style="float: right;"/>
+                            </f:facet>
+                            <p:outputLabel value="#{s.annualWelfareQualified - s.annualWelfareUtilized}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </p:outputLabel>
                         </p:column>

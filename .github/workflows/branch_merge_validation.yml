@@ -1,0 +1,42 @@
+name: Branch Merge Validation
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened, edited ]
+    branches:
+      - '*-prod'
+      - 'staging'
+      - 'hims-qa*'
+
+jobs:
+  check-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Branch Merge Validation
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+          BASE_BRANCH: ${{ github.base_ref }}
+        run: |
+          echo "Source branch: $HEAD_BRANCH"
+          echo "Target branch: $BASE_BRANCH"
+          SOURCE="$HEAD_BRANCH"
+          TARGET="$BASE_BRANCH"
+
+          if [[ "$TARGET" == *-prod ]]; then
+            if [[ "$SOURCE" != *-hotfix && "$SOURCE" != "staging" ]]; then
+              echo "❌ Merging from $SOURCE to $TARGET is not allowed. If this is a hot-fix, please check if branch name ends with '-hotfix'."
+              exit 1
+            fi
+          elif [[ "$TARGET" == "hims-qa*" ]]; then
+            if [[ "$SOURCE" != "development" ]]; then
+              echo "❌ Only development can merge to $TARGET (qa restriction)."
+              exit 1
+            fi
+          elif [[ "$TARGET" == "staging" ]]; then
+            if [[ "$SOURCE" != "hims-qa1" && "$SOURCE" != "hims-qa2" ]]; then
+              echo "❌ Only hims-qa1 and hims-qa2 can merge to $TARGET (staging restriction)."
+              exit 1
+            fi
+          fi
+
+          echo "✅ Merge is allowed."

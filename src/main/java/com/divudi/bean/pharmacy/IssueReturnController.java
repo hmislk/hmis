@@ -104,9 +104,8 @@ public class IssueReturnController implements Serializable {
         if (getBill().getPatientEncounter() != null) {
             updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
         }
-
+        getReturnBill().setReferenceBill(getBill());
         getBillFacade().edit(getReturnBill());
-
         getBill().setRefundedBill(getReturnBill());
         getBill().setRefunded(true);
         getBill().getRefundBills().add(getReturnBill());

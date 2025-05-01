@@ -191,7 +191,7 @@
             </div>
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Footer Header CSS')}" >
-                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text')}" escape="false" ></h:outputText>
+                <h:outputText value="#{supplierPaymentController.fillFooterDataOfPaymentVoucher(configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text'), cc.attrs.bill)}" escape="false" ></h:outputText>
             </div>
         </div>
     </cc:implementation>

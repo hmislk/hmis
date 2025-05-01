@@ -41,6 +41,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.entity.Department;
@@ -118,7 +119,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
 
     ////////////////////////////
-    private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;
     private Admission current;
@@ -295,6 +295,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
     }
 
+    /**
+     * Checks if the given patient has a previous non-retired admission with a credit payment method and sets the last used credit company.
+     *
+     * @param p the patient to check for previous credit admissions
+     * @return true if a previous credit admission exists and the last credit company is set; false otherwise
+     */
     public boolean isPatientHaveALastUsedCreditCompany(Patient p) {
         if (p == null) {
             return false;
@@ -313,7 +319,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hash.put("pm", PaymentMethod.Credit);
         hash.put("pt", p);
         a = getFacade().findFirstByJpql(sql, hash);
-        System.out.println("a = " + a);
         if (a == null) {
             return false;
         } else {
@@ -322,6 +327,66 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
     }
 
+    /**
+     * Retrieves the most recent credit-based admission for the current patient and populates the current encounter's credit companies list with associated institutions and credit limits.
+     *
+     * If the current patient has a previous admission with credit payment, copies each linked, non-retired credit company to the current encounter and accumulates their credit limits.
+     */
+    public void findLastUsedCreditCompanies() {
+        if(configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient",false)) {
+            if (current.getPatient() == null) {
+                return;
+            }
+
+            Admission a = null;
+            String sql;
+            HashMap hash = new HashMap();
+            sql = "select c from Admission c "
+                    + " where c.patient=:pt "
+                    + " and c.paymentMethod= :pm"
+                    + " and c.retired=false "
+                    + " order by c.id desc";
+
+            hash.put("pm", PaymentMethod.Credit);
+            hash.put("pt", current.getPatient());
+            a = getFacade().findFirstByJpql(sql, hash);
+
+            if (a == null) {
+                return;
+            } else {
+                List<EncounterCreditCompany> encounterCreditCompanys = new ArrayList<>();
+                String jpql = "select ecc from EncounterCreditCompany ecc"
+                        + "  where ecc.retired=false "
+                        + " and ecc.patientEncounter=:pEnc ";
+                HashMap hm = new HashMap();
+                hm.put("pEnc", a);
+                encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(jpql, hm);
+
+                encounterCreditCompanies = new ArrayList<>();
+
+                for (EncounterCreditCompany ecc : encounterCreditCompanys) {
+                    encounterCreditCompany = new EncounterCreditCompany();
+                    encounterCreditCompany.setPatientEncounter(current);
+                    encounterCreditCompany.setInstitution(ecc.getInstitution());
+                    encounterCreditCompany.setCreditLimit(ecc.getCreditLimit());
+                    encounterCreditCompany.setPolicyNo(ecc.getPolicyNo());
+                    current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
+                    encounterCreditCompanies.add(encounterCreditCompany);
+                    encounterCreditCompany = new EncounterCreditCompany();
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Returns a list of discharged credit admissions with outstanding credit balances matching the given query.
+     *
+     * The query matches against BHT number, patient name, or credit company name. Only admissions with a positive credit balance, payment method set to credit, and not retired are included.
+     *
+     * @param qry the search string to match against BHT number, patient name, or credit company name
+     * @return a list of matching admissions with outstanding credit balances
+     */
     public List<Admission> completeBhtCredit(String qry) {
         List<Admission> a = null;
         String sql;
@@ -553,50 +618,52 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().isEmpty()) {
+        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
             j += " and c.patient.person.name like :name ";
             m.put("name", "%" + patientNameForSearch + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().isEmpty()) {
+        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
             j += "  and c.bhtNo like :bht ";
             m.put("bht", "%" + bhtNumberForSearch + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().isEmpty()) {
+        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
             m.put("phn", patientNumberForSearch);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().isEmpty()) {
+        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
             m.put("phone", patientPhoneNumberForSearch);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().isEmpty()) {
+        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
             j += " and c.patient.person.nic =:nic";
             m.put("nic", patientIdentityNumberForSearch);
         }
 
         if (admissionStatusForSearch != null) {
-            switch (admissionStatusForSearch) {
-                case ADMITTED_BUT_NOT_DISCHARGED:
-                    j += "  and c.discharged=:dis ";
-                    m.put("dis", false);
-                    break;
-                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
-                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                    m.put("dis", true);
-                    m.put("bf", false);
-                    break;
-                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                    m.put("dis", true);
-                    m.put("bf", true);
-                    break;
-                case ANY_STATUS:
-                    break;
-                default:
-                    break;
+            if (null != admissionStatusForSearch) {
+                switch (admissionStatusForSearch) {
+                    case ADMITTED_BUT_NOT_DISCHARGED:
+                        j += "  and c.discharged=:dis ";
+                        m.put("dis", false);
+                        break;
+                    case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", false);
+                        break;
+                    case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", true);
+                        break;
+                    case ANY_STATUS:
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         if (institutionForSearch != null) {
@@ -638,50 +705,52 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        if (patientNameForSearch != null && !patientNameForSearch.trim().isEmpty()) {
+        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
             j += " and c.patient.person.name like :name ";
             m.put("name", "%" + patientNameForSearch + "%");
         }
-        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().isEmpty()) {
+        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
             j += "  and c.bhtNo like :bht ";
             m.put("bht", "%" + bhtNumberForSearch + "%");
         }
 
-        if (patientNumberForSearch != null && !patientNumberForSearch.trim().isEmpty()) {
+        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
             j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
             m.put("phn", patientNumberForSearch);
         }
 
-        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().isEmpty()) {
+        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
             j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
             m.put("phone", patientPhoneNumberForSearch);
         }
 
-        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().isEmpty()) {
+        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
             j += " and c.patient.person.nic =:nic";
             m.put("nic", patientIdentityNumberForSearch);
         }
 
         if (admissionStatusForSearch != null) {
-            switch (admissionStatusForSearch) {
-                case ADMITTED_BUT_NOT_DISCHARGED:
-                    j += "  and c.discharged=:dis ";
-                    m.put("dis", false);
-                    break;
-                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
-                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                    m.put("dis", true);
-                    m.put("bf", false);
-                    break;
-                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                    j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                    m.put("dis", true);
-                    m.put("bf", true);
-                    break;
-                case ANY_STATUS:
-                    break;
-                default:
-                    break;
+            if (null != admissionStatusForSearch) {
+                switch (admissionStatusForSearch) {
+                    case ADMITTED_BUT_NOT_DISCHARGED:
+                        j += "  and c.discharged=:dis ";
+                        m.put("dis", false);
+                        break;
+                    case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", false);
+                        break;
+                    case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", true);
+                        break;
+                    case ANY_STATUS:
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         if (institutionForSearch != null) {
@@ -809,12 +878,49 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Provisional Admission From showing completePatientDishcargedNotFinalized")) {
+            List<Admission> toRemove = new ArrayList<>();
+            for (Admission a : suggestions) {
+                if (isAddmissionHaveProvisionalBill(a)) {
+                    toRemove.add(a);
+                }
+            }
+            suggestions.removeAll(toRemove);
+        }
         return suggestions;
     }
 
     public String navigateToListCurrentInpatients() {
         listCurrentInpatients();
         return "";
+
+    }
+
+    /**
+     * Checks if the given admission has any non-retired, non-canceled provisional bills.
+     *
+     * @param ad the admission to check for provisional bills
+     * @return true if at least one provisional bill exists for the admission; false otherwise
+     */
+    public boolean isAddmissionHaveProvisionalBill(Admission ad) {
+        List<Bill> ads = new ArrayList<>();
+        String sql;
+        HashMap h = new HashMap();
+        sql = "select b from Bill b where b.retired=false "
+                + " and b.billTypeAtomic=:bt "
+                + " and b.cancelled=false"
+                + " and b.patientEncounter=:pe";
+        h.put("bt", BillTypeAtomic.INWARD_PROVISIONAL_BILL);
+        h.put("pe", ad);
+        ads = getBillFacade().findByJpql(sql, h);
+
+        System.out.println("ads.size() = " + ads.size());
+
+        if (ads.size() > 0 || !ads.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
@@ -1072,6 +1178,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     }
 
+    /**
+     * Validates the current admission for required fields and configuration-based constraints.
+     *
+     * Checks admission type, payment method, admission date, credit company details, room assignment, referring consultant, patient, and guardian information as per application settings. Returns {@code true} if any validation fails and an error message is added; otherwise, returns {@code false}.
+     *
+     * @return {@code true} if validation errors are found; {@code false} otherwise
+     */
     private boolean errorCheck() {
         if (getCurrent().getAdmissionType() == null) {
             JsfUtil.addErrorMessage("Please select Admission Type");
@@ -1102,6 +1215,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 getCurrent().setCreditLimit(tec.getCreditLimit());
                 getCurrent().setPolicyNo(tec.getPolicyNo());
                 getCurrent().setReferanceNo(tec.getReferanceNo());
+
+                for (EncounterCreditCompany ecc : getEncounterCreditCompanies()) {
+                    if (configOptionApplicationController.getBooleanValueByKey("Inward Patient Admit - Credit Companies Require Reference Number", false)) {
+                        if (ecc.getReferanceNo() == null || ecc.getReferanceNo().isEmpty()) {
+                            JsfUtil.addErrorMessage("Please Add the Reference Number for " + ecc.getInstitution().getName() + " Company");
+                            return true;
+                        }
+                    }
+                }
+
                 //TO Do - add other fields
             }
 
@@ -1590,15 +1713,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(ageText));
     }
 
     public PatientRoomFacade getPatientRoomFacade() {

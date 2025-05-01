@@ -30,6 +30,7 @@ public enum BillType {
     InwardPaymentBill,
     InwardFinalBill,
     InwardOriginalFinalBill,
+    InwardProvisionalBill,
     InwardFinalBillCCPayment,
     InwardAppointmentBill,
     InwardBill,
@@ -157,6 +158,7 @@ public enum BillType {
     ShiftEndFundBill, // For summarising and finalising all transaction types, balances, and notes at the end of a cashier's shift
     CashHandoverCreateBill,
     CashHandoverAcceptBill,
+    RecordShiftEndCash,
     FundTransferBill, // For transferring the total balance from one shift to another
     FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
     DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
@@ -307,6 +309,8 @@ public enum BillType {
                 return "Financial Auditing Bill";
             case FundTransferReceivedBill:
                 return "Fund Transfer Received Bill";
+            case RecordShiftEndCash:
+                return "Shift End Cash Record";
             default:
                 return this.toString();
         }

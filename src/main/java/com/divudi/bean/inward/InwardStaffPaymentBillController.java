@@ -13,6 +13,8 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.IncomeBundle;
+import com.divudi.core.data.IncomeRow;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillComponent;
 import com.divudi.core.entity.BillFee;
@@ -60,9 +62,9 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardStaffPaymentBillController implements Serializable {
 
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private RefundBillFacade refundBillFacade;
-    private List<BillComponent> billComponents;
     @EJB
     private CancelledBillFacade cancelledBillFacade;
     @EJB
@@ -77,34 +79,42 @@ public class InwardStaffPaymentBillController implements Serializable {
     private PaymentFacade paymentFacade;
     @EJB
     private BillFeePaymentFacade BillFeePaymentFacade;
-
-    private List<BillItem> billItems;
-    private List<BillItem> docPayDischarged;
-    private List<BillItem> docPayNotDischarged;
-    List<Speciality> selectedItems;
-    private static final long serialVersionUID = 1L;
-    private Date fromDate;
-    private Date toDate;
+    @EJB
+    private BillFacade billFacade;
+    @EJB
+    private BillItemFacade billItemFacade;
+    @EJB
+    BillNumberGenerator billNumberBean;
+    @EJB
+    StaffFacade staffFacade;
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     DrawerController drawerController;
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private List<BillComponent> billComponents;
 
-    private CommonFunctions commonFunctions;
-    @EJB
-    private BillFacade billFacade;
-    @EJB
-    private BillItemFacade billItemFacade;
+    private List<BillItem> billItems;
+    private List<BillItem> docPayDischarged;
+    private List<BillItem> docPayNotDischarged;
+    private List<Speciality> selectedItems;
+    private static final long serialVersionUID = 1L;
+    private Date fromDate;
+    private Date toDate;
+
     private Bill current;
     private List<Bill> items = null;
-    List<Bill> bills;
-    List<Bill> billsCan;
+    private List<Bill> bills;
+    private List<Bill> billsCan;
 
-    Staff currentStaff;
-    List<BillFee> dueBillFees;
-    List<BillFee> payingBillFees;
+    private Staff currentStaff;
+    private List<BillFee> dueBillFees;
+    private List<BillFee> payingBillFees;
     double totalPayingCan;
     private boolean allowUserToSelectPayWithholdingTaxDuringProfessionalPayments;
     private String withholdingTaxCalculationStatus;
@@ -113,46 +123,58 @@ public class InwardStaffPaymentBillController implements Serializable {
     private double totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute;
     private Double withholdingTaxLimit;
     private Double withholdingTaxPercentage;
-    double totalDue;
-    double totalPaying;
+    private double totalDue;
+    private double totalPaying;
     private double totalPayingWithoutWht;
 
-    @EJB
-    BillNumberGenerator billNumberBean;
     private Boolean printPreview = false;
-    PaymentMethod paymentMethod;
-    Speciality speciality;
-    Speciality referringDoctorSpeciality;
-    @EJB
-    StaffFacade staffFacade;
-    List<String1Value1> list;
-    List<String2Value1> list1;
-    List<BillFee> docPayingBillFee;
-    List<BillItem> billItems1;
+    private PaymentMethod paymentMethod;
+    private Speciality speciality;
+    private Speciality referringDoctorSpeciality;
 
-    List<String2Value1> docPayListDischarged;
-    List<String2Value1> docPayListNotDischarged;
+    private List<String1Value1> list;
+    private List<String2Value1> list1;
+    private List<BillFee> docPayingBillFee;
+    private List<BillItem> billItems1;
 
-    List<BillItem> docFeePayDischarged;
-    List<BillItem> docFeePayNotDischarged;
+    private List<String2Value1> docPayListDischarged;
+    private List<String2Value1> docPayListNotDischarged;
 
-    List<BillFee> docFeeDueDischarged;
-    List<BillFee> docFeeDueNotDischarged;
+    private List<BillItem> docFeePayDischarged;
+    private List<BillItem> docFeePayNotDischarged;
 
-    double totalDocFeePayDischarged;
-    double totalDocFeePayNotDischarged;
+    private List<BillFee> docFeeDueDischarged;
+    private List<BillFee> docFeeDueNotDischarged;
 
-    double totalDocFeeDueDischarged;
-    double totalDocFeeDueNotDischarged;
+    private IncomeBundle bundle;
 
-    double totalPaid = 0.0;
-    double totalVal = 0.0;
+    private double totalDocFeePayDischarged;
+    private double totalDocFeePayNotDischarged;
 
-    List<BillFee> bhtBillItemList;
-    List<BillFee> bhtDueList;
+    private double totalDocFeeDueDischarged;
+    private double totalDocFeeDueNotDischarged;
 
-    SearchKeyword searchKeyword;
+    private double totalPaid = 0.0;
+    private double totalVal = 0.0;
 
+    private List<BillFee> bhtBillItemList;
+    private List<BillFee> bhtDueList;
+
+    private SearchKeyword searchKeyword;
+    private AdmissionType admissionType;
+    private Institution institution;
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Functions">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
+    // </editor-fold>
     public void makenull() {
         currentStaff = null;
         speciality = null;
@@ -176,9 +198,6 @@ public class InwardStaffPaymentBillController implements Serializable {
         printPreview = false;
         return "/inward/inward_bill_staff_payment?faces-redirect=true";
     }
-
-    AdmissionType admissionType;
-    Institution institution;
 
     public void fillDocPayingBillFeeByCreatedDate() {
         Date startTime = new Date();
@@ -253,7 +272,11 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public String navigateToViewInwardPayProfessionalPayments() {
         recreateModel();
+        fetchWithholdingDetailConfiguration();
+        return "/inward/inward_bill_professional_payment?faces-redirect=true";
+    }
 
+    private void fetchWithholdingDetailConfiguration() {
         allowUserToSelectPayWithholdingTaxDuringProfessionalPayments
                 = configOptionApplicationController.getBooleanValueByKey(
                         "Allow User To Select Whether To Pay Withholding Tax During Professional Payments", true);
@@ -278,7 +301,6 @@ public class InwardStaffPaymentBillController implements Serializable {
             withholdingTaxCalculationStatus = "Depending On Payments";  // Default to "Depending On Payments"
         }
 
-        return "/inward/inward_bill_professional_payment?faces-redirect=true";
     }
 
     public void calculateDueFeesForInwardForSelectedPeriod() {
@@ -680,6 +702,105 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         }
 
+
+
+    }
+
+    public void fillProfessionalPaymentsByDischargedDate() {
+        fillProfessionalPayments(true);
+    }
+
+    public void fillProfessionalPaymentsByAddedDate() {
+        fillProfessionalPayments(false);
+    }
+
+    private void fillProfessionalPayments(boolean dischargeDate) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "select bf "
+                + " from BillFee bf"
+                + " where bf.retired=false "
+                + " and bf.billItem.retired=false "
+                + " and bf.bill.retired=false "
+                + " and bf.bill.billTypeAtomic in :btas ";
+
+        if (dischargeDate) {
+            jpql += " and bf.bill.patientEncounter.dateOfDischarge between :fd and :td ";
+        } else {
+            jpql += " and bf.bill.createdAt between :fd and :td ";
+        }
+
+        if (speciality != null) {
+            jpql += " and bf.staff.speciality=:s ";
+            params.put("s", speciality);
+        }
+        
+        if (currentStaff != null) {
+            jpql += " and bf.staff.id=:staffid ";
+            params.put("staffid", currentStaff.getId());
+        }
+
+        if (admissionType != null) {
+            jpql += " and bf.bill.patientEncounter.admissionType=:admTp ";
+            params.put("admTp", admissionType);
+        }
+
+        if (paymentMethod != null) {
+            jpql += " and bf.bill.patientEncounter.paymentMethod=:pm";
+            params.put("pm", paymentMethod);
+        }
+
+        if (institution != null) {
+            jpql += " and bf.bill.patientEncounter.creditCompany=:cd";
+            params.put("cd", institution);
+        }
+
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        params.put("btas", btas);
+
+        List<BillFee> bfs = billFeeFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (bfs == null) {
+            return;
+        }
+
+        // Use a map to aggregate fee totals by staff.
+        Map<Staff, IncomeRow> staffRows = new HashMap<>();
+
+        for (BillFee bf : bfs) {
+            if (bf.getStaff() == null) {
+                continue;
+            }
+            IncomeRow existingRow = staffRows.get(bf.getStaff());
+            if (existingRow == null) {
+                existingRow = new IncomeRow();
+                existingRow.setStaff(bf.getStaff());
+                existingRow.setNetTotal(0.0);
+                existingRow.setPaidTotal(0.0);
+                staffRows.put(bf.getStaff(), existingRow);
+            }
+            existingRow.setNetTotal(existingRow.getNetTotal() + bf.getFeeValue());
+            existingRow.setPaidTotal(existingRow.getPaidTotal() + bf.getPaidValue());
+        }
+
+        // Build the bundle using the aggregated rows.
+        IncomeBundle ib = new IncomeBundle();
+        for (IncomeRow row : staffRows.values()) {
+            ib.getRows().add(row);
+            ib.setNetTotal(ib.getNetTotal() + row.getNetTotal());
+            ib.setPaidTotal(ib.getPaidTotal() + row.getPaidTotal());
+        }
+
+
+
+        bundle = ib;
     }
 
     public void fillDocPayDischargeAndNotDischarge() {
@@ -1082,14 +1203,6 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     }
 
-    public StaffFacade getStaffFacade() {
-        return staffFacade;
-    }
-
-    public void setStaffFacade(StaffFacade staffFacade) {
-        this.staffFacade = staffFacade;
-    }
-
     public Speciality getSpeciality() {
         return speciality;
     }
@@ -1111,7 +1224,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //   ////// // System.out.println(sql);
-            suggestions = getStaffFacade().findByJpql(sql);
+            suggestions = staffFacade.findByJpql(sql);
         }
         return suggestions;
     }
@@ -1127,10 +1240,10 @@ public class InwardStaffPaymentBillController implements Serializable {
         } else {
             if (getReferringDoctorSpeciality() != null) {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality=:rd order by p.person.name";
-                suggestions = getStaffFacade().findByJpql(sql, m);
+                suggestions = staffFacade.findByJpql(sql, m);
             } else {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
-                suggestions = getStaffFacade().findByJpql(sql);
+                suggestions = staffFacade.findByJpql(sql);
             }
         }
         return suggestions;
@@ -1219,7 +1332,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         calculatePaymentsSelected();
         System.out.println("totalPay = " + totalPaying);
 
-        switch (withholdingTaxCalculationStatus) {
+        switch (getWithholdingTaxCalculationStatus()) {
             case "Depending On Payments":
                 System.out.println("totalPaying1 = " + totalPaying);
                 calculateWithholdingTaxDependingOnPayments();
@@ -1513,7 +1626,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1525,7 +1638,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1533,14 +1646,6 @@ public class InwardStaffPaymentBillController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
         //  resetLists();
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<BillItem> getBillItems() {
@@ -1878,6 +1983,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     public Double getWithholdingTaxPercentage() {
         if (withholdingTaxPercentage == null) {
             withholdingTaxPercentage = configOptionApplicationController.getDoubleValueByKey("Withholding Tax Percentage");
+            if (withholdingTaxPercentage == null) {
+                withholdingTaxPercentage = 0.0;
+            }
         }
         return withholdingTaxPercentage;
     }
@@ -1919,6 +2027,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public String getWithholdingTaxCalculationStatus() {
+        if (withholdingTaxCalculationStatus == null) {
+            fetchWithholdingDetailConfiguration();
+        }
         return withholdingTaxCalculationStatus;
     }
 
@@ -1927,6 +2038,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<String> getWithholdingTaxCalculationStatuses() {
+        if (withholdingTaxCalculationStatuses == null) {
+            fetchWithholdingDetailConfiguration();
+        }
         return withholdingTaxCalculationStatuses;
     }
 
@@ -1948,6 +2062,14 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setTotalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute(double totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute) {
         this.totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute = totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute;
+    }
+
+    public IncomeBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(IncomeBundle bundle) {
+        this.bundle = bundle;
     }
 
 }

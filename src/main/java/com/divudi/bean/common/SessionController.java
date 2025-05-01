@@ -188,6 +188,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean passwordRequirementsFulfilled = true;
     private boolean enforcedPasswordChange = false;
     private String passwordRequirementMessage;
+    private Boolean inwardServiceBillingAfterShiftStart;
+    private Boolean inwardServiceBillItemSearchByAutocomplete;
 
     public String navigateToLoginPage() {
         return "/index1.xhtml";
@@ -892,11 +894,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean isFirstVisit() {
-        System.out.println("this = " + this);
-        System.out.println("isFirstVisit = ");
         String j = "Select w from WebUser w order by w.id";
         WebUser ws = getFacede().findFirstByJpql(j);
-        System.out.println("ws = " + ws);
         if (ws == null) {
             JsfUtil.addSuccessMessage("First Visit");
             return true;
@@ -1854,7 +1853,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         m.put("ret", true);
         m.put("wu", twu);
-        System.out.println("m = " + m);
         List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql, m);
         return twups;
     }
@@ -1975,7 +1973,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                 getLoginsFacade().create(thisLogin);
             } catch (Exception e) {
                 getLoginsFacade().edit(thisLogin);
-                System.err.println("e = " + e);
             }
 
         } else {
@@ -1986,7 +1983,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @PreDestroy
     private void recordLogout() {
-        System.out.println("Session destroyed: " + thisLogin);
 
         if (thisLogin == null) {
             return;
@@ -2004,10 +2000,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                 managedLogin.setLogoutAt(thisLogin.getLogoutAt());
                 getLoginsFacade().edit(managedLogin);
             } else {
-                System.err.println("Error: Unable to find the Login entity with ID: " + thisLogin.getId());
             }
         } catch (Exception e) {
-            System.err.println("Error recording logout: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -2362,6 +2356,28 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setOpdBillItemSearchByAutocomplete(Boolean opdBillItemSearchByAutocomplete) {
         this.opdBillItemSearchByAutocomplete = opdBillItemSearchByAutocomplete;
+    }
+
+    public Boolean getInwardServiceBillingAfterShiftStart() {
+        if (inwardServiceBillingAfterShiftStart == null) {
+            inwardServiceBillingAfterShiftStart =  configOptionApplicationController.getBooleanValueByKey("Inward Service Bill With Payment Need to Start the Shift", false);
+        }
+        return inwardServiceBillingAfterShiftStart;
+    }
+
+    public void setInwardServiceBillingAfterShiftStart(Boolean inwardServiceBillingAfterShiftStart) {
+        this.inwardServiceBillingAfterShiftStart = inwardServiceBillingAfterShiftStart;
+    }
+
+    public Boolean getInwardServiceBillItemSearchByAutocomplete() {
+        if (inwardServiceBillItemSearchByAutocomplete == null) {
+            inwardServiceBillItemSearchByAutocomplete = configOptionApplicationController.getBooleanValueByKey("Inward Service Bill Item Search By Autocomplete", false);
+        }
+        return inwardServiceBillItemSearchByAutocomplete;
+    }
+
+    public void setInwardServiceBillItemSearchByAutocomplete(Boolean inwardServiceBillItemSearchByAutocomplete) {
+        this.inwardServiceBillItemSearchByAutocomplete = inwardServiceBillItemSearchByAutocomplete;
     }
 
     public Boolean getPharmacyBillingAfterShiftStart() {

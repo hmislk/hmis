@@ -2365,7 +2365,7 @@ public class HumanResourceBean {
     }
 
 //    public double calOt(Date date) {
-//        DateRange dateRange = commonFunctions.getDateRangeForOT(date);
+//        DateRange dateRange = CommonFunctions.getDateRangeForOT(date);
 //        //System.err.println("From : " + dateRange.getFromDate());
 //        //System.err.println("To : " + dateRange.getToDate());
 //
@@ -2490,7 +2490,7 @@ public class HumanResourceBean {
                 endRecord.setRecordTimeStamp(CommonFunctions.getEndOfDay(toDate));
                 getFingerPrintRecordFacade().edit(endRecord);
                 //Update Staff shift
-//                ss.setShiftEndTime(commonFunctions.getEndOfDay(dateRange.getToDate()));
+//                ss.setShiftEndTime(CommonFunctions.getEndOfDay(dateRange.getToDate()));
                 getStaffShiftFacade().edit(ss);
             }
         }
@@ -2500,7 +2500,7 @@ public class HumanResourceBean {
 //    public OtNormalSpecial calOt(Date date, Staff staff) {
 //        OtNormalSpecial otNormalSpecial = new OtNormalSpecial();
 //
-//        DateRange dateRange = commonFunctions.getDateRangeForOT(date);
+//        DateRange dateRange = CommonFunctions.getDateRangeForOT(date);
 //
 //        otNormalSpecial.setDateRange(dateRange);
 //
@@ -3527,8 +3527,8 @@ public class HumanResourceBean {
 //                + " and s.salaryCycle.salaryToDate>=:td";
 //
 //        HashMap hm = new HashMap<>();
-//        hm.put("fd", commonFunctions.getStartOfMonth(date));
-//        hm.put("td", commonFunctions.getEndOfMonth(date));
+//        hm.put("fd", CommonFunctions.getStartOfMonth(date));
+//        hm.put("td", CommonFunctions.getEndOfMonth(date));
 //        hm.put("s", s);
 //
 //        StaffSalary tmp = getStaffSalaryFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
