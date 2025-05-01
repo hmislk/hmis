@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="ptixs" />
+        <cc:attribute name="editable" type="java.lang.Boolean" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:commandButton value="Download" ajax="false">
+            <p:dataExporter 
+                fileName="pharmaceutical_bill_items" 
+                target="tblBillItems" 
+                type="xlsx" />
+        </p:commandButton>
+        
+        <p:outputLabel value="Bill ID" ></p:outputLabel>
+        <p:inputText id="billIdToAssignBillItems" value="#{billController.billIdToAssignBillItems}" >
+            <p:ajax event="keyup" process="@this" ></p:ajax>
+            <p:ajax event="blur" process="@this" ></p:ajax>
+        </p:inputText>
+
+        <p:dataTable 
+            id="tblBillItems"
+            value="#{cc.attrs.ptixs}" 
+            var="ptix" 
+            rowKey="#{ptix.id}" 
+            editable="true">
+
+            <f:facet name="header">
+                <h:outputText value="Patient Investigation Items" />
+            </f:facet>
+
+            <p:column headerText="ID">
+                <h:outputText value="#{ptix.id}" class="w-100 m-1" />
+            </p:column>
+
+            <p:column headerText="Bill Item ID">
+                <h:outputText value="#{ptix.billItem.id}" class="w-100 m-1" />
+            </p:column>
+            
+             <p:column headerText="Bill ID">
+                <h:outputText value="#{ptix.billItem.bill.id}" class="w-100 m-1" />
+            </p:column>
+
+            <p:column headerText="Item">
+                <h:outputText value="#{ptix.investigation.name}" class="w-100 m-1" />
+            </p:column>
+            
+            <p:column headerText="Actions">
+                <p:commandButton 
+                    value="Fix" 
+                    action="#{billController.createNewBillItemAndAssignPatientInvestigation(ptix)}" 
+                    ajax="false"
+                    onclick="return confirm('Are you sure you want to fix this Patient Investigation and attached it to the other bill? This action cannot be undone.');"
+                    styleClass="ui-button-warning"
+                    rendered="#{cc.attrs.editable}">
+                </p:commandButton>
+            </p:column>
+
+        </p:dataTable>
+
+
+    </cc:implementation>
+</html>
