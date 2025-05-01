@@ -74,13 +74,13 @@
                         <p:outputLabel value="#{b.deptId}" />
                     </p:column>
 
-                    <p:column headerText="Staff Code" 
-                              filterBy="#{b.toStaff.code}" 
+                    <p:column headerText="Staff EPF No" 
+                              filterBy="#{b.toStaff.epfNo}" 
                               filterMatchMode="contains">
                         <f:facet name="header">
-                            <p:outputLabel value="Staff Code"/>
+                            <p:outputLabel value="Staff EPF N"/>
                         </f:facet>
-                        <p:outputLabel value="#{b.toStaff.code}" />
+                        <p:outputLabel value="#{b.toStaff.epfNo}" />
                     </p:column>
 
                     <p:column headerText="Staff Name" 
@@ -108,9 +108,9 @@
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="Total Amount" style="text-align: right">
+                    <p:column headerText="Gross Amount" style="text-align: right">
                         <f:facet name="header">
-                            <p:outputLabel value="Total Amount"/>
+                            <p:outputLabel value="Gross Amount"/>
                         </f:facet>
                         <p:outputLabel value="#{b.netTotal+b.discount}">
                             <f:convertNumber pattern="#,##0.00"/>

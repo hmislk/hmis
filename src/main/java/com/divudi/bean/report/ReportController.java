@@ -1087,6 +1087,9 @@ public class ReportController implements Serializable {
             boolean isRefunded = result.getBillItem().getBill() instanceof RefundBill;
 
             if (existingResult == null) {
+                if (isCancelled || isRefunded) {
+                    result.setCount(-Math.abs(result.getCount()));
+                }
                 existingResult = result;
             } else if (!(isCancelled || isRefunded)) {
                 existingResult.setCount(existingResult.getCount() + result.getCount());
