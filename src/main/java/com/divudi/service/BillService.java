@@ -64,11 +64,11 @@ import java.util.Map;
 public class BillService {
 
     @EJB
-    DepartmentFacade departmentFacade;
+    private DepartmentFacade departmentFacade;
     @EJB
-    InstitutionFacade institutionFacade;
+    private InstitutionFacade institutionFacade;
     @EJB
-    BillFacade billFacade;
+    private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -76,13 +76,13 @@ public class BillService {
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
-    PaymentFacade paymentFacade;
+   private  PaymentFacade paymentFacade;
     @EJB
-    DrawerService drawerService;
+    private DrawerService drawerService;
     @EJB
-    ItemFacade itemFacade;
+    private ItemFacade itemFacade;
     @EJB
-    PatientInvestigationFacade patientInvestigationFacade;
+    private PatientInvestigationFacade patientInvestigationFacade;
 
     private static final Gson gson = new Gson();
 
@@ -1631,7 +1631,15 @@ public class BillService {
                 + " WHERE pbi.billItem.bill=:bl "
                 + " order by pbi.id";
         params.put("bl", bill);
-        return patientInvestigationFacade.findByJpql(jpql, params);
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        List<PatientInvestigation> ptix = patientInvestigationFacade.findByJpql(jpql, params);
+        if(ptix==null){
+            System.out.println("ptix is null = " + ptix);
+        }else{
+            System.out.println("ptix size= " + ptix.size());
+        }
+        return ptix;
     }
 
 }

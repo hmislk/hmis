@@ -3375,13 +3375,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             JsfUtil.addErrorMessage("Error creating bill item: " + e.getMessage());
         }
 
-        duplicateBillItem.copy(originalBillItemToDuplicate);
-        duplicateBillItem.setBill(selectedBillToAssignNewlyCreatedBillItems);
-        billItemFacade.create(duplicateBillItem);
-        duplicateBillItem.setPatientInvestigation(ptix);
-        billItemFacade.edit(duplicateBillItem);
-        ptix.setBillItem(duplicateBillItem);
-        patientInvestigationFacade.edit(ptix);
 
         billService.createBillItemFeesAndAssignToNewBillItem(originalBillItemToDuplicate, duplicateBillItem);
 
