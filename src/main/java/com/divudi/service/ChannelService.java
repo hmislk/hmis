@@ -56,6 +56,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.google.common.collect.HashBiMap;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -961,7 +963,7 @@ public class ChannelService {
         if (accept) {
             sqlForSessionInstace = "update SessionInstance set acceptOnlineBookings = true";
             sqlForServiceSession = "update Item set acceptOnlineBookings = true where Dtype = 'ServiceSession'";
-        }else{
+        } else {
             sqlForSessionInstace = "update SessionInstance set acceptOnlineBookings = false";
             sqlForServiceSession = "update Item set acceptOnlineBookings = false where Dtype = 'ServiceSession'";
         }
@@ -992,7 +994,7 @@ public class ChannelService {
         params.put("date", new Date());
         params.put("total", 0);
 
-        return (SessionInstance)getSessionInstanceFacade().findByJpqlWithoutCache(sql, params).get(0);
+        return (SessionInstance) getSessionInstanceFacade().findByJpqlWithoutCache(sql, params).get(0);
 
     }
 
@@ -1364,7 +1366,7 @@ public class ChannelService {
 
         // Handle sessionDate equality check
         if (sessionDate != null) {
-            jpql.append(" and i.sessionDate = :sd ");
+            jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", sessionDate);
             System.out.println(sessionDate);
         } else if (sessionDate == null) {
@@ -1389,7 +1391,34 @@ public class ChannelService {
         m.put("ret", false);
 
         sessionInstances = sessionInstanceFacade.findByJpqlWithoutCache(jpql.toString(), m, TemporalType.TIMESTAMP);
-        return sessionInstances;
+        return filterAndfindUniqueNextImmidiateSessions(sessionInstances);
+    }
+
+    public List<SessionInstance> filterAndfindUniqueNextImmidiateSessions(List<SessionInstance> sessions) {
+        if(sessions == null || sessions.isEmpty()){
+            return sessions;
+        }
+        
+        Map<String, SessionInstance> uniqueSessions = new HashMap<>();
+        
+        for(SessionInstance session : sessions){
+            String insId = String.valueOf(session.getOriginatingSession().getInstitution().getId());
+            String staffId = String.valueOf(session.getOriginatingSession().getStaff().getId());
+            String key = insId+staffId;
+            
+            SessionInstance existingSession = uniqueSessions.get(key);
+            
+            if(existingSession == null){
+                uniqueSessions.put(key, session);
+            }else if(existingSession.getSessionDate().after(session.getSessionDate())){
+                uniqueSessions.put(key, session);
+            }else if(existingSession.getSessionDate() == session.getSessionDate() && existingSession.getSessionTime().after(session.getSessionTime())){
+                uniqueSessions.put(key, session);
+            }
+            
+        }
+        
+        return new ArrayList<>(uniqueSessions.values());
     }
 
     public WebUser checkUserCredentialForApi(String temUserName, String temPassword) {
