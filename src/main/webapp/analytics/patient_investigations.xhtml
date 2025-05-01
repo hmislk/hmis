@@ -8,83 +8,81 @@
     <h:body>
         <ui:composition template="/analytics/index.xhtml">
             <ui:define name="report">
-                <h:form >
+                <h:form>
                     <p:panel>
-                        <f:facet name="header" >
-                            <h:outputLabel value="PHARMACEUTICAL BILL ITEM LIST"/>                          
+                        <f:facet name="header">
+                            <h:outputLabel value="PATIENT INVESTIGATION LIST"/>
                         </f:facet>
 
                         <ui:include src="/analytics/common_filters.xhtml" />
 
-
-                        <h:panelGrid columns="6" class="my-2" >
+                        <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
                                 class="ui-button-success" 
                                 icon="fas fa-magnifying-glass" 
                                 id="btnSearch"
                                 ajax="false" 
                                 value="List" 
-                                action="#{searchController.listPharmaceuticalBillItems()}"/>
-                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="All Pharmaceutical Bill Items" type="xlsx" target="tblPbis" ></p:dataExporter>
+                                action="#{searchController.listPatientInvestigations()}"/>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel">
+                                <p:dataExporter fileName="All Patient Investigations" type="xlsx" target="tblInvestigations"></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
-
 
                         <div style="width: 100%; overflow-x: auto;">
                             <p:dataTable
                                 rowIndexVar="i"
-                                id="tblPbis" 
-                                value="#{searchController.pharmaceuticalBillItems}" 
+                                id="tblInvestigations" 
+                                value="#{searchController.patientInvestigations}" 
                                 scrollable="true"
-                                var="pbi"
+                                var="pi"
                                 rows="10"
                                 paginatorAlwaysVisible="false"
                                 paginator="true"
                                 paginatorPosition="top"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="5,10,15,50"
-                                >
-                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="PBI ID" sortBy="#{pbi.id}" filterBy="#{pbi.id}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{pbi.id}"/>
+                                rowsPerPageTemplate="5,10,15,50">
+
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID" sortBy="#{pi.id}" filterBy="#{pi.id}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{pi.id}"/>
                                 </p:column>
 
-                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill Item ID" sortBy="#{pbi.billItem.id}" filterBy="#{pbi.billItem.id}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{pbi.billItem.id}"/>
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill Item ID" sortBy="#{pi.billItem.id}" filterBy="#{pi.billItem.id}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{pi.billItem.id}"/>
                                 </p:column>
 
-                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{pbi.billItem.bill.id}" filterBy="#{pbi.billItem.bill.id}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{pbi.billItem.bill.id}"/>
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{pi.billItem.bill.id}" filterBy="#{pi.billItem.bill.id}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{pi.billItem.bill.id}"/>
                                 </p:column>
 
-                                <p:column headerText="Bill Number" sortBy="#{pbi.billItem.bill.deptId}" filterBy="#{pbi.billItem.bill.deptId}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{pbi.billItem.bill.deptId}"/>
+                                <p:column headerText="Bill Number" sortBy="#{pi.billItem.bill.deptId}" filterBy="#{pi.billItem.bill.deptId}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{pi.billItem.bill.deptId}"/>
                                 </p:column>
 
-                                <p:column headerText="Bill Type" sortBy="#{pbi.billItem.bill.billTypeAtomic.label}" filterBy="#{pbi.billItem.bill.billTypeAtomic.label}" filterMatchMode="contains">
-                                    <h:outputText value="#{pbi.billItem.bill.billTypeAtomic.label}"/>
+                                <p:column headerText="Bill Type" sortBy="#{pi.billItem.bill.billTypeAtomic.label}" filterBy="#{pi.billItem.bill.billTypeAtomic.label}" filterMatchMode="contains">
+                                    <h:outputText value="#{pi.billItem.bill.billTypeAtomic.label}"/>
                                 </p:column>
 
-                                <p:column headerText="Date/Time" sortBy="#{pbi.billItem.bill.createdAt}" filterBy="#{pbi.billItem.bill.createdAt}">
-                                    <h:outputText value="#{pbi.billItem.bill.createdAt}">
+                                <p:column headerText="Date/Time" sortBy="#{pi.billItem.bill.createdAt}" filterBy="#{pi.billItem.bill.createdAt}">
+                                    <h:outputText value="#{pi.billItem.bill.createdAt}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputText>
                                 </p:column>
 
-                                <p:column headerText="User" sortBy="#{pbi.billItem.bill.creater.name}" filterBy="#{pbi.billItem.bill.creater.name}" filterMatchMode="contains">
-                                    <h:outputText value="#{pbi.billItem.bill.creater.name}"/>
+                                <p:column headerText="User" sortBy="#{pi.billItem.bill.creater.name}" filterBy="#{pi.billItem.bill.creater.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{pi.billItem.bill.creater.name}"/>
                                 </p:column>
 
-                                <p:column headerText="Item" sortBy="#{pbi.itemBatch.item.name}" filterBy="#{pbi.itemBatch.item.name}" filterMatchMode="contains">
-                                    <h:outputText value="#{pbi.itemBatch.item.name}"/>
+                                <p:column headerText="Investigation" sortBy="#{pi.investigation.name}" filterBy="#{pi.investigation.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{pi.investigation.name}"/>
                                 </p:column>
 
                                 <p:column headerText="Status" exportable="false">
                                     <h:panelGroup>
-                                        <p:badge value="Bill Item Retired" styleClass="ui-badge-info" rendered="#{pbi.billItem.retired}"/>
-                                        <p:badge value="Bill Retired" styleClass="ui-badge-info" rendered="#{pbi.billItem.bill.retired}"/>
-                                        <p:badge value="Bill Cancelled" styleClass="ui-badge-danger" rendered="#{pbi.billItem.bill.cancelled}"/>
-                                        <p:badge value="Bill Returned" styleClass="ui-badge-warning" rendered="#{pbi.billItem.bill.refunded}"/>
+                                        <p:badge value="Bill Item Retired" styleClass="ui-badge-info" rendered="#{pi.billItem.retired}"/>
+                                        <p:badge value="Bill Retired" styleClass="ui-badge-info" rendered="#{pi.billItem.bill.retired}"/>
+                                        <p:badge value="Bill Cancelled" styleClass="ui-badge-danger" rendered="#{pi.billItem.bill.cancelled}"/>
+                                        <p:badge value="Bill Returned" styleClass="ui-badge-warning" rendered="#{pi.billItem.bill.refunded}"/>
                                     </h:panelGroup>
                                 </p:column>
 
@@ -95,7 +93,7 @@
                                         class="m-1 ui-button-info"
                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                         ajax="false">
-                                        <f:setPropertyActionListener value="#{pbi.billItem.bill}" target="#{billSearch.bill}"/>
+                                        <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -104,7 +102,7 @@
                                         class="m-1 ui-button-warning" 
                                         action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
                                         ajax="false">
-                                        <f:setPropertyActionListener value="#{pbi.billItem.bill}" target="#{billSearch.bill}"/>
+                                        <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -114,21 +112,16 @@
                                         action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
                                         ajax="false" 
                                         rendered="#{webUserController.hasPrivilege('Developers')}">
-                                        <f:setPropertyActionListener value="#{pbi.billItem.bill}" target="#{billSearch.bill}"/>
+                                        <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
                                     </p:commandButton>
                                 </p:column>
+
                             </p:dataTable>
-
-
                         </div>
 
                     </p:panel>
                 </h:form>
-
-
-
             </ui:define>
-
         </ui:composition>
     </h:body>
 </html>
