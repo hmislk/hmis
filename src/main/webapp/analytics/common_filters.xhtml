@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition>
+            <h:panelGrid columns="8" styleClass="w-100">
+
+                <!-- Date From -->
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                    <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                </h:panelGroup>
+                <p:calendar styleClass="w-100" inputStyleClass="w-100 form-control" id="fromDate"
+                            value="#{searchController.fromDate}"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                <p:spacer width="50"/>
+
+                <!-- Date To -->
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                    <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                </h:panelGroup>
+                <p:calendar styleClass="w-100" inputStyleClass="w-100 form-control" id="toDate"
+                            value="#{searchController.toDate}"
+                            navigator="false"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                <p:spacer width="50"/>
+
+                <!-- User -->
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                    <h:outputLabel value="User" for="user" class="mx-3"/>
+                </h:panelGroup>
+                <p:autoComplete forceSelection="true"
+                                value="#{searchController.webUser}"
+                                placeholder="Select User"
+                                completeMethod="#{webUserController.completeUser}"
+                                id="user"
+                                var="u"
+                                itemLabel="#{u.webUserPerson.name}"
+                                itemValue="#{u}"
+                                class="w-100"
+                                inputStyleClass="w-100"/>
+
+                <!-- Institution -->
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
+                    <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu id="cmbIns" styleClass="w-100 form-control"
+                                 value="#{searchController.institution}" filter="true">
+                    <f:selectItem itemLabel="All Institutions"/>
+                    <f:selectItems value="#{institutionController.companies}" var="ins"
+                                   itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                    <p:ajax process="cmbIns" update="cmbDept"/>
+                </p:selectOneMenu>
+
+                <p:spacer/>
+
+                <!-- Site -->
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>
+                    <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu id="siteMenu" styleClass="w-100 form-control"
+                                 value="#{searchController.site}" filter="true">
+                    <f:selectItem itemLabel="All Sites"/>
+                    <f:selectItems value="#{institutionController.sites}" var="site"
+                                   itemLabel="#{site.name}" itemValue="#{site}"/>
+                    <p:ajax process="siteMenu" update="cmbDept"/>
+                </p:selectOneMenu>
+
+                <p:spacer/>
+
+                <!-- Department -->
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
+                    <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu id="cmbDept" styleClass="w-100 form-control"
+                                 value="#{searchController.department}" filter="true">
+                    <f:selectItem itemLabel="All Departments"/>
+                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                   var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                </p:selectOneMenu>
+
+                <!-- Bill Type Atomic -->
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                    <h:outputLabel value="Bill Type (Atomic)" for="billTypeAtomic" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu id="billTypeAtomic" filter="true" filterMatchMode="contains"
+                                 value="#{searchController.billTypeAtomic}">
+                    <f:selectItem itemLabel="All Types"/>
+                    <f:selectItems var="billTypeAtomic" itemLabel="#{billTypeAtomic}"
+                                   itemValue="#{billTypeAtomic}" value="#{enumController.billTypesAtomic}"/>
+                </p:selectOneMenu>
+
+                <p:spacer/>
+
+                <!-- Bill Type -->
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                    <h:outputLabel value="Bill Type" for="billType" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu id="billType" class="w-100"
+                                 value="#{searchController.billType}">
+                    <f:selectItem itemLabel="All Types"/>
+                    <f:selectItems var="billType" itemLabel="#{billType.label}"
+                                   itemValue="#{billType}" value="#{enumController.billTypes}"/>
+                </p:selectOneMenu>
+
+                <p:spacer/>
+
+                <!-- Bill Class Type -->
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                    <h:outputLabel value="Class Type" for="billClass" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu id="billClass" class="w-100"
+                                 value="#{searchController.billClassType}">
+                    <f:selectItem itemLabel="All Class Types"/>
+                    <f:selectItems var="billclass" itemLabel="#{billclass}"
+                                   value="#{enumController.billClassTypes}"/>
+                </p:selectOneMenu>
+
+            </h:panelGrid>
+        </ui:composition>
+    </h:body>
+</html>
