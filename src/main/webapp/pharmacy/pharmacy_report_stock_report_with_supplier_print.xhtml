@@ -16,20 +16,20 @@
                             <div class="d-flex justify-content-between">
                                 <h:outputText value="Stock Summary (with Suppliers) Print View" class="mt-2"/>
                                 <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        icon="fa-solid fa-print"
-                                        class="ui-button-info"
-                                        style="width: 150px"
-                                        ajax="false" 
-                                        value="Print">
-                                        <p:printer target="reportView" />
+                                    <p:commandButton
+                                            icon="pi pi-print"
+                                            styleClass="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false"
+                                            value="Print">
+                                            <p:printer target="reportView" />
                                     </p:commandButton>
                                     <p:commandButton 
                                         ajax="false" 
                                         value="Back to Report" 
                                         style="width: 200px"
-                                        icon="fa fa-arrow-left"
-                                        class="ui-button-warning"
+                                        icon="pi pi-arrow-left"
+                                        styleClass="ui-button-warning"
                                         action="pharmacy_report_stock_report_with_supplier?faces-redirect=true" >
                                     </p:commandButton>
                                 </div>
