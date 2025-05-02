@@ -2310,11 +2310,6 @@ public class BillSearch implements Serializable {
             return true;
         }
 
-        if (getPaymentMethod() == PaymentMethod.Credit && getBill().getPaidAmount() != 0.0) {
-            JsfUtil.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
-            return true;
-        }
-
         if (getBill().getBillType() == BillType.LabBill) {
             if (patientInvestigation.getCollected()) {
                 JsfUtil.addErrorMessage("You can't cancell this bill. Sample is already taken");
@@ -2391,6 +2386,15 @@ public class BillSearch implements Serializable {
         if (getBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
             return;
+        }
+        
+        if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
+            List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
+
+            if (items != null && !items.isEmpty()) {
+                JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be canceled.");
+                return;
+            }
         }
 
         if (errorsPresentOnOpdBillCancellation()) {
