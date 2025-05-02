@@ -264,7 +264,7 @@ public class PharmacySummaryReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
     public void processDailyStockBalanceReport() {
-        reportTimerController.trackReportExecution(() -> {
+//        reportTimerController.trackReportExecution(() -> {
             if (department == null) {
                 JsfUtil.addErrorMessage("Please select a department");
                 return;
@@ -313,7 +313,7 @@ public class PharmacySummaryReportController implements Serializable {
             if (closingBalance != null) {
                 dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
             }
-        }, SummaryReports.DAILY_STOCK_BALANCE_REPORT, sessionController.getLoggedUser());
+//        }, SummaryReports.DAILY_STOCK_BALANCE_REPORT, sessionController.getLoggedUser());
     }
 
     public void listBillTypes() {
