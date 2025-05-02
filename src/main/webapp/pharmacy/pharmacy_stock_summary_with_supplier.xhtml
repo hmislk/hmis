@@ -13,7 +13,7 @@
                     <p:panel header="Stock Summary (with Suppliers)" >
                         <h:panelGrid columns="8" class="my-2" >
 
-                            <h:outputText value="Department" ></h:outputText>
+                            <h:outputText value="Department"/>
                             <p:autoComplete 
                                 class="mx-2" 
                                 completeMethod="#{departmentController.completeDept}" 
@@ -24,36 +24,37 @@
                                 maxlength="15"
                                 value="#{reportsStock.department}"  >
                                 <p:column headerText="Code" style="padding: 5px; width: 6em;">
-                                    <h:outputText value="#{dept.code}" ></h:outputText>
+                                    <h:outputText value="#{dept.code}" />
                                 </p:column>
                                 <p:column headerText="Name" style="padding: 5px; min-width: 20em;">
-                                    <h:outputText value="#{dept.name}" ></h:outputText>
+                                    <h:outputText value="#{dept.name}" />
                                 </p:column>
                             </p:autoComplete>
 
-                            <p:commandButton 
-                                class="ui-button-warning " 
-                                icon="fas fa-cogs"  
-                                ajax="false" 
-                                value="Process" 
-                                action="#{reportsStock.fillAllSuppliersStocks()}" >
+                            <p:commandButton
+                                    styleClass="ui-button-success m-1"
+                                    icon="pi pi-cog"
+                                    ajax="false"
+                                    value="Process"
+                                    action="#{reportsStock.fillAllSuppliersStocks()}" >
                             </p:commandButton>
 
-                            <p:commandButton 
-                                class="ui-button-info mx-2" 
-                                icon="fas fa-print"  
-                                value="Print" 
-                                ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                            <p:commandButton
+                                    styleClass="ui-button-info m-1"
+                                    icon="pi pi-download"
+                                    ajax="false"
+                                    value="Download">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Summary_with_Suppliers"/>
                             </p:commandButton>
 
-                            <p:commandButton 
-                                class="ui-button-success" 
-                                icon="fas fa-file-excel"  
-                                ajax="false" value="Excel" 
-                                styleClass="noPrintButton" >
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"/>
+                            <p:commandButton
+                                    styleClass="ui-button-warning m-1"
+                                    icon="pi pi-print"
+                                    value="Print"
+                                    ajax="false" action="pharmacy_stock_summary_with_supplier_print?faces-redirect=true">
                             </p:commandButton>
+
+
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview">
@@ -73,7 +74,7 @@
                                 </f:facet>
 
                                 <p:column headerText="No." style="width: 40px;">
-                                    <h:outputText value="#{ii+1}" ></h:outputText>
+                                    <h:outputText value="#{ii+1}" />
                                 </p:column>
 
                                 <p:column
@@ -95,7 +96,7 @@
                                     style="width: 12em;"
                                     styleClass="averageNumericColumn">
                                     <h:outputText value="#{i.qty}"  >
-                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,###"/>
                                     </h:outputText>
                                 </p:column>
 
@@ -105,11 +106,11 @@
                                     style="text-align: right; width: 12em;"
                                     sortBy="#{i.purchaseValue}">
                                     <h:outputText value="#{i.purchaseValue}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer" >
                                         <h:outputText value="#{reportsStock.stockPurchaseValue}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
@@ -120,7 +121,7 @@
                                     style="text-align: right; width: 12em;"
                                     sortBy="#{i.retailsaleValue}">
                                     <h:outputText value="#{i.retailsaleValue}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer" >
                                         <h:outputText value="#{reportsStock.stockSaleValue}" >

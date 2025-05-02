@@ -17,6 +17,7 @@
                             <div class="d-flex justify-content-between">
                                 <p:outputLabel value="Bill Administration" class="mt-2"></p:outputLabel>
                                 <p:commandButton value="Save" action="#{billSearch.saveViewingBillData()}" ajax="false" ></p:commandButton>
+                                <p:commandButton value="Bill Search" action="#{billSearch.navigateToBillListFromAdminBill()}" ajax="false" ></p:commandButton>
                             </div> 
                         </f:facet>
                         <div class="row">
@@ -41,9 +42,16 @@
                                     </p:tab>
                                     <p:tab title="Bill Items" >
                                         <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
-                                        
-                                        <view:pharmaceutical_bill_item_list_edit editable="true" pharmaceuticalBillItems="#{billSearch.viewingPharmaceuticalBillItems}"/>
-                                        
+
+                                        <view:pharmaceutical_bill_item_list_edit 
+                                            editable="true" 
+                                            pharmaceuticalBillItems="#{billSearch.viewingPharmaceuticalBillItems}"/>
+
+                                        <view:patient_investigation_list_edit 
+                                            ptixs="#{billSearch.viewingPatientInvestigations}"
+                                            editable="true"
+                                             ></view:patient_investigation_list_edit>
+
                                     </p:tab>
                                     <p:tab title="Bill Fees" >
                                         <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
