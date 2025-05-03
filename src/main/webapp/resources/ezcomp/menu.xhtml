@@ -32,7 +32,7 @@
                     title="Home">
                 </p:menuitem>
 
-                
+
                 <p:submenu 
                     id="smOpd"
                     icon="fa fa-fw fa-user-md"
@@ -351,10 +351,10 @@
                             value="Add Services &amp; Investigations" 
                             rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" />
                         <p:menuitem
-                                ajax="false"
-                                action="#{opdBillController.navigateToNewInwardServiceBill}"
-                                value="Add Services &amp; Investigations with Payments"
-                                rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices') and configOptionApplicationController.getBooleanValueByKey('Enable Collecting Payments on Add Services &amp; Investigations on Inward',false)}" />
+                            ajax="false"
+                            action="#{opdBillController.navigateToNewInwardServiceBill}"
+                            value="Add Services &amp; Investigations with Payments"
+                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices') and configOptionApplicationController.getBooleanValueByKey('Enable Collecting Payments on Add Services &amp; Investigations on Inward',false)}" />
                         <p:menuitem 
                             ajax="false"
                             action="#{inwardAdditionalChargeController.navigateToAddOutsideChargeFromMenu()}" 
@@ -652,6 +652,11 @@
                             ajax="false" 
                             action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"  
                             value="Sale" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem> 
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{pharmacySimpleRetailSaleController.navigateToPharmacySimpleRetailSale()}"  
+                            value="Simple Retail Sale" 
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem> 
                         <p:menuitem  
                             ajax="false" 
