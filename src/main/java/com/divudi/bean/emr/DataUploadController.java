@@ -5704,8 +5704,6 @@ public class DataUploadController implements Serializable {
         // Creating the first sheet for data entry
         XSSFSheet dataSheet = workbook.createSheet("Data Entry");
 
-        // Hiding the institution sheet
-//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
         String[] columnHeaders = {"Item Fee ID", "Item Name", "Institution", "Department", "Staff", "Fee Type", "Fee", "Fee for foreigner"};
