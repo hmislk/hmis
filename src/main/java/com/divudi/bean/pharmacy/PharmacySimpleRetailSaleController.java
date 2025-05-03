@@ -203,10 +203,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     private Institution toInstitution;
     private String errorMessage = "";
 
-    /////////////////
-    private List<Stock> replaceableStocks;
-    //List<BillItem> billItems;
-    private List<Item> itemsWithoutStocks;
     /////////////////////////
     private double cashPaid;
     private double netTotal;
@@ -333,7 +329,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         Patient pt = savePatient();
 
         boolean hadPaymentRelatedError = paymentService.checkPaymentMethodError(paymentMethod, paymentMethodData, getPreBill().getNetTotal(), cashPaid, getPatient(), toStaff);
-        
+
         if (hadPaymentRelatedError) {
             billSettlingStarted = false;
             return;
@@ -378,6 +374,46 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         resetAll();
         billSettlingStarted = false;
         billPreview = true;
+    }
+
+    // ChatGPT contributed - 2025-05
+    public List<Stock> completeAvailableStocks(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+
+        StringBuilder sql = new StringBuilder("SELECT i FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemName LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.barcode = :query ");
+        }
+
+        sql.append(") ORDER BY i.itemName, i.itemBatch.dateOfExpire");
+
+        return getStockFacade().findByJpql(sql.toString(), parameters, 20);
     }
 
     // </editor-fold>  
@@ -446,8 +482,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         patientTabId = "tabPt";
         strTenderedValue = "";
         billPreview = false;
-        replaceableStocks = null;
-        itemsWithoutStocks = null;
         paymentMethodData = null;
         cashPaid = 0;
         netTotal = 0;
@@ -474,8 +508,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         patientSearchTab = 1;
         strTenderedValue = "";
         billPreview = false;
-        replaceableStocks = null;
-        itemsWithoutStocks = null;
         paymentMethodData = null;
         cashPaid = 0;
         netTotal = 0;
@@ -762,9 +794,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         return Sex.values();
     }
 
-    public List<Stock> getReplaceableStocks() {
-        return replaceableStocks;
-    }
 
     public Integer getIntQty() {
         if (qty == null) {
@@ -797,17 +826,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         this.stock = stock;
     }
 
-    public void setReplaceableStocks(List<Stock> replaceableStocks) {
-        this.replaceableStocks = replaceableStocks;
-    }
-
-    public List<Item> getItemsWithoutStocks() {
-        return itemsWithoutStocks;
-    }
-
-    public void setItemsWithoutStocks(List<Item> itemsWithoutStocks) {
-        this.itemsWithoutStocks = itemsWithoutStocks;
-    }
 
     public String newSaleBillWithoutReduceStock() {
         clearBill();
@@ -868,193 +886,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         return items;
     }
 
-    @Deprecated
-    public List<Stock> completeAvailableStocks(String qry) {
-        Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
-        List<Stock> initialStocks = completeAvailableStocksStartsWith(qry);
-        if (initialStocks != null) {
-            stockSet.addAll(initialStocks);
-        }
-
-        // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
-        if (stockSet.size() <= 10) {
-            List<Stock> additionalStocks = completeAvailableStocksContains(qry);
-            if (additionalStocks != null) {
-                stockSet.addAll(additionalStocks);
-            }
-        }
-
-        return new ArrayList<>(stockSet);
-    }
-
-    @Deprecated
-    public List<Stock> completeAvailableStocksStartsWith(String qry) {
-        List<Stock> stockList;
-        String sql;
-        Map m = new HashMap();
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        double d = 0.0;
-        m.put("s", d);
-        m.put("n", qry.toUpperCase() + "%");
-        if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        }
-        stockList = getStockFacade().findByJpql(sql, m, 20);
-//        itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
-        return stockList;
-    }
-
-    @Deprecated
-    public List<Stock> completeAvailableStocksContains(String qry) {
-        List<Stock> stockList;
-        String sql;
-        Map m = new HashMap();
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        double d = 0.0;
-        m.put("s", d);
-        m.put("n", "%" + qry.toUpperCase() + "%");
-        if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        }
-        stockList = getStockFacade().findByJpql(sql, m, 20);
-//        itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
-        return stockList;
-    }
-
-    //matara pharmacy auto complete
-    @Deprecated
-    public List<Stock> completeAvailableStocksFromNameOrGenericOld(String qry) {
-        List<Stock> items;
-        String sql;
-        Map m = new HashMap();
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        double d = 0.0;
-        m.put("s", d);
-        qry = qry.replaceAll("\n", "");
-        qry = qry.replaceAll("\r", "");
-        m.put("n", "%" + qry.toUpperCase().trim() + "%");
-
-        //////System.out.println("qry = " + qry);
-        if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n or (i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        }
-
-        items = getStockFacade().findByJpql(sql, m, 20);
-
-        if (qry.length() > 5 && items.size() == 1) {
-            stock = items.get(0);
-            handleSelectAction();
-        } else if (!qry.trim().isEmpty() && qry.length() > 4) {
-            itemsWithoutStocks = completeRetailSaleItemsWithoutStocks(qry);
-        }
-        return items;
-    }
-
-    @Deprecated
-    public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
-        long startTime = System.nanoTime();
-        if (qry == null || qry.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        qry = qry.replaceAll("[\\n\\r]", "").trim();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
-        parameters.put("stockMin", 0.0);
-        parameters.put("query", "%" + qry + "%");
-
-        String sql;
-        if (qry.length() > 6) {
-            sql = "SELECT i FROM Stock i "
-                    + "WHERE i.stock > :stockMin "
-                    + "AND i.department = :department "
-                    + "AND (i.itemBatch.item.name LIKE :query ";
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by item code", true)) {
-                sql += " OR i.itemBatch.item.code LIKE :query ";
-            }
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", true)) {
-                sql += "OR i.itemBatch.item.barcode = :query ";
-            }
-        } else {
-            sql = "SELECT i FROM Stock i "
-                    + "WHERE i.stock > :stockMin "
-                    + "AND i.department = :department "
-                    + "AND( i.itemBatch.item.name LIKE :query ";
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by item code", true)) {
-                sql += " OR i.itemBatch.item.code LIKE :query ";
-            }
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", false)) {
-                sql += "OR i.itemBatch.item.barcode = :query ";
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
-            sql += "OR i.itemBatch.item.vmp.vtm.name LIKE :query ";
-        }
-
-        sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        long endTime = System.nanoTime();
-        long executionTime = endTime - startTime;
-        System.out.println("Execution Old time: " + executionTime + " nanoseconds");
-        return getStockFacade().findByJpql(sql, parameters, 20);
-    }
-
-    public List<Stock> completeAvailableStockOptimized(String qry) {
-        if (qry == null || qry.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        qry = qry.replaceAll("[\\n\\r]", "").trim();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
-        parameters.put("stockMin", 0.0);
-        parameters.put("query", "%" + qry + "%");
-
-        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by item code", true);
-        boolean searchByBarcode = qry.length() > 6
-                ? configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", true)
-                : configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", false);
-        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by generic name(VMP)", false);
-
-        StringBuilder sql = new StringBuilder("SELECT i FROM Stock i ")
-                .append("WHERE i.stock > :stockMin ")
-                .append("AND i.department = :department ")
-                .append("AND (");
-
-        sql.append("i.itemBatch.item.name LIKE :query ");
-
-        if (searchByItemCode) {
-            sql.append("OR i.itemBatch.item.code LIKE :query ");
-        }
-
-        if (searchByBarcode) {
-            sql.append("OR i.itemBatch.item.barcode = :query ");
-        }
-
-        if (searchByGeneric) {
-            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
-        }
-
-        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
-
-        return getStockFacade().findByJpql(sql.toString(), parameters, 20);
-    }
+   
 
     public void handleSelectAction() {
         if (stock == null) {
@@ -1063,17 +895,9 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
             //////System.out.println("Internal Error at PharmacySaleController.java > handleSelectAction");
         }
-
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
         pharmacyService.addBillItemInstructions(billItem);
-
-        boolean findAlternatives = configOptionApplicationController.getBooleanValueByKey("Show alternative medicines available during retail sale", false);
-        if (findAlternatives) {
-            if (stock != null && stock.getItemBatch() != null) {
-                fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
-            }
-        }
     }
 
     public List<Item> completeRetailSaleItemsWithoutStocks(String qry) {
@@ -1149,23 +973,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 //        bi.setNetRate(bi.getRate() - bi.getDiscount());
 //        //  ////System.err.println("Net "+bi.getNetRate());
 //    }
-    public void fillReplaceableStocksForAmp(Amp ampIn) {
-        String sql;
-        Map m = new HashMap();
-        double d = 0.0;
-        Amp amp = ampIn;
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        m.put("s", d);
-        m.put("vmp", amp.getVmp());
-        m.put("a", amp);
-        sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp "
-                + "where i.stock >:s and "
-                + "i.department=:d and "
-                + "amp.vmp=:vmp "
-                + "and amp<>:a "
-                + "order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findByJpql(sql, m);
-    }
 
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
         calculateBillItem();
@@ -1611,7 +1418,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-
 
     private void savePreBillFinallyForRetailSale(Patient pt) {
         if (getPreBill().getId() == null) {
@@ -2194,7 +2000,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 //        }
 //        return false;
 //    }
-
     public List<Payment> createPaymentsForBill(Bill b) {
         return createMultiplePayments(b, b.getPaymentMethod());
     }
@@ -2815,7 +2620,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     }
 
     private void clearBillItem() {
-        replaceableStocks = null;
         billItem = null;
         editingBillItem = null;
         qty = null;

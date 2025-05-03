@@ -62,7 +62,6 @@
                                                 <h:panelGroup id="acStock" >
                                                     <p:autoComplete
                                                         accesskey="i"
-                                                        rendered="#{not configOptionApplicationController.getBooleanValueByKey('Display Total Stock when listing medicines for Retail Sale',true)}"
                                                         id="acStockWithoutTotalStock"
                                                         inputStyleClass="w-100"
                                                         minQueryLength="3"
@@ -70,90 +69,41 @@
                                                         class="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySimpleRetailSaleController.stock}"
-                                                        completeMethod="#{pharmacySimpleRetailSaleController.completeAvailableStockOptimized}"
+                                                        completeMethod="#{pharmacySimpleRetailSaleController.completeAvailableStocks}"
                                                         var="i"
-                                                        itemLabel="#{i.itemBatch.item.name}"
+                                                        itemLabel="#{i.itemName}"
                                                         itemValue="#{i}">
+
                                                         <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                                                &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                                            </h:outputText>
+                                                            <h:outputText value="#{i.itemName}" />
+                                                            <p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}"
+                                                                   value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expiring Soon':''}"
+                                                                   severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
                                                         </p:column>
-                                                        <p:column
-                                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used',true)}"
-                                                            headerText="Code" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
+
+                                                        <p:column headerText="Code" style="padding: 8px;">
+                                                            <h:outputText value="#{i.code}" />
                                                         </p:column>
-                                                        <p:column headerText="Generic" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
-                                                        </p:column>
-                                                        <p:column
-                                                            headerText="Rate" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}" style="width: 80px!important;">
-                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+
+                                                        <p:column headerText="Rate" style="padding: 8px;" styleClass="text-end">
+                                                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
+                                                                <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Stocks" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.stock}" >
-                                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
+
+                                                        <p:column headerText="Stocks" style="padding: 8px;" styleClass="text-end">
+                                                            <h:outputLabel value="#{i.stock}">
+                                                                <f:convertNumber pattern="#,###" />
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Expiry" style="padding: 8px;" class="w-100" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
-                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+
+                                                        <p:column headerText="Expiry" style="padding: 8px;" class="w-100" styleClass="text-end">
+                                                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}">
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                        <p:ajax event="itemSelect" listener="#{pharmacySimpleRetailSaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
-                                                        <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
-                                                    </p:autoComplete>
-                                                    <p:autoComplete
-                                                        accesskey="i"
-                                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Total Stock when listing medicines for Retail Sale',true)}"
-                                                        id="acStockWithTotalStock"
-                                                        inputStyleClass="w-100"
-                                                        minQueryLength="3"
-                                                        maxResults="20"
-                                                        class="w-100"
-                                                        forceSelection="true"
-                                                        value="#{pharmacySimpleRetailSaleController.stock}"
-                                                        completeMethod="#{stockController.completeAvailableStocksWithItemStock}"
-                                                        scrollHeight="400"
-                                                        var="i"
-                                                        itemLabel="#{i.itemBatch.item.name}"
-                                                        itemValue="#{i}">
-                                                        <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                                                &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                                            </h:outputText>
-                                                            <h:outputLabel value=" (" ></h:outputLabel>
-                                                            <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
-                                                            <h:outputLabel value=") - " ></h:outputLabel>
-                                                            <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
-                                                        </p:column>
-                                                        <p:column headerText="Rate" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}" style="width: 80px!important;">
-                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Stocks" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.stock}" >
-                                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Total Stock" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.transItemStockQty}" >
-                                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Expiry" style="padding: 8px;" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
-                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                        <p:ajax event="itemSelect" listener="#{pharmacySimpleRetailSaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
-                                                        <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
+
+                                                        <p:ajax event="itemSelect" listener="#{pharmacySimpleRetailSaleController.handleSelect}" update="txtQty txtRate focusQty" />
                                                     </p:autoComplete>
                                                 </h:panelGroup>
 
@@ -170,8 +120,8 @@
                                                     class="w-100"
                                                     style="text-align: right;"
                                                     value="#{pharmacySimpleRetailSaleController.intQty}">
-                                                    <p:ajax event="keyup" listener="#{pharmacySimpleRetailSaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}" update="txtRate txtVal"></p:ajax>
-                                                    <p:ajax event="blur" listener="#{pharmacySimpleRetailSaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}" update="txtRate txtVal"></p:ajax>
+                                                    <p:ajax event="keyup" listener="#{pharmacySimpleRetailSaleController.calculateBillItemListner}" process="txtQty" update="txtRate txtVal"></p:ajax>
+                                                    <p:ajax event="blur" listener="#{pharmacySimpleRetailSaleController.calculateBillItemListner}" process="txtQty" update="txtRate txtVal"></p:ajax>
                                                 </p:inputText>
 
                                             </div>
@@ -186,8 +136,8 @@
                                                             value="Add"
                                                             styleClass="ui-button-success"
                                                             action="#{pharmacySimpleRetailSaleController.addBillItem()}"
-                                                            process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId} focusForAcIx"
-                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtItemInstructions" >
+                                                            process="@this"
+                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId}" >
                                                         </p:commandButton>
 
                                                     </div>
@@ -220,14 +170,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="row w-100 m-1 p-1 boder-1">
-                                            <div class="col-12" >
-                                                <h:panelGroup id="txtItemInstructions" style="display: #{pharmacySimpleRetailSaleController.billItem != null and not empty pharmacySimpleRetailSaleController.billItem.instructions ? 'block' : 'none'}">
-                                                    <h:outputLabel style="font-weight: bold" value="Instructions : " for="instructionText"></h:outputLabel>
-                                                    <h:outputText id="instructionText" class=" text-muted" value=" #{pharmacySimpleRetailSaleController.billItem.instructions}" ></h:outputText>
-                                                </h:panelGroup>
-                                            </div>
-                                        </div>
                                         <p:focus id="focusQty" for="txtQty"></p:focus>
                                         <p:focus id="focusItem" for="acStock"></p:focus>
                                     </p:panel>
@@ -252,217 +194,6 @@
 
                                             <p:column headerText="Item" style="padding: 6px;">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
-                                                <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
-
-                                                <p:dialog
-                                                    id="panDoc"
-                                                    widgetVar="dlg"
-                                                    resizable="false"
-                                                    modal="true"
-                                                    onShow="$('.ui-dialog').addClass('custom-dialog')"
-                                                    class="w-50">
-                                                    <p:panelGrid
-                                                        columns="2"
-                                                        class="table table-striped"
-                                                        >
-                                                        <f:facet name="header" >
-                                                            <h:outputLabel value="Item Details" ></h:outputLabel>
-                                                        </f:facet>
-
-                                                        <p:outputLabel value="Code" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}"/>
-
-                                                        <p:outputLabel value="Name" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}"/>
-
-                                                        <p:outputLabel value="Type" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.class.simpleName}"/>
-
-                                                        <p:outputLabel value="Product" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.vmp.name}"/>
-
-
-                                                        <p:outputLabel value="Stock Quentity" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.stock.stock}"/>
-
-                                                        <p:outputLabel value="Expiry" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
-                                                            <f:convertDateTime  pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                        </p:outputLabel>
-
-                                                        <p:outputLabel value="Batch No" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
-
-                                                        <p:outputLabel value="Sale Rate" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}"/>
-                                                    </p:panelGrid>
-
-
-                                                </p:dialog>
-                                            </p:column>
-
-                                            <p:column headerText="Instructions" style="text-align: center" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable label printing for pharmacy medicines', false)}">
-                                                <p:commandButton style="font-size: small; margin: auto; border-radius: 10px" actionListener="#{pharmacySimpleRetailSaleController.addPrescriptionToBillitem(bi)}" id="processInstructions" class="ui-button-info" value="Add" oncomplete="PF('instructions').show();" process="processInstructions" update="#{p:resolveFirstComponentWithId('instructionDetials',view).clientId}"></p:commandButton>
-
-                                                <p:dialog
-                                                    id="instructionDetials"
-                                                    widgetVar="instructions"
-                                                    resizable="false"
-                                                    closable="false"
-                                                    modal="true"
-                                                    onShow="$('.ui-dialog').addClass('custom-dialog')"
-
-                                                    >
-                                                    <p:panel>
-                                                        <f:facet name="header" class="align-items-center">
-                                                            <h:outputText styleClass="fas fa-pills"/>
-                                                            <p:outputLabel class="mx-4" value="Instruction for the #{bi.item.name}" />
-
-                                                            <p:commandButton value="Close" process="@this" class='ui-button-warning' style="float: right;" oncomplete="PF('instructions').hide()"/>
-
-                                                        </f:facet>
-                                                        <div>
-
-                                                            <!-- Dose Group -->
-                                                            <div class="row align-items-center text-left text-start">
-                                                                <div class="col-md-3">
-                                                                    <label>Dose:</label>
-                                                                </div>
-
-                                                                <div class="col-3">
-                                                                    <p:inputText
-                                                                        id="txtDose"
-                                                                        class="w-100"
-                                                                        value="#{bi.prescription.dose}"
-                                                                        placeholder="Dose"/>
-
-                                                                </div>
-                                                                <div class="col-md-3">
-                                                                    <p:selectOneMenu id="cmbDose"
-                                                                                     value="#{bi.prescription.doseUnit}">
-                                                                        <f:selectItem itemLabel="Select" />
-                                                                        <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.encounterMedicine.prescription.item)}"
-                                                                                       var="du" itemLabel="#{du.name}" itemValue="#{du}" />
-                                                                    </p:selectOneMenu>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Frequency Selection -->
-                                                            <div class="row my-3 text-start align-items-center">
-                                                                <div class="col-md-3">
-                                                                    <label for="cmbFrequency">Frequency:</label>
-                                                                </div>
-
-                                                                <div class="col-md-6">
-                                                                    <p:selectOneMenu id="cmbFrequency"
-                                                                                     class="w-100"
-                                                                                     value="#{bi.prescription.frequencyUnit}">
-                                                                        <f:selectItem itemLabel="Select" />
-                                                                        <f:selectItems value="#{measurementUnitController.frequencyUnits}"
-                                                                                       var="du"
-                                                                                       itemLabel="#{du.name}"
-                                                                                       itemValue="#{du}" />
-                                                                    </p:selectOneMenu>
-                                                                </div>
-
-                                                            </div>
-
-                                                            <!-- Duration Group -->
-                                                            <div class="row text-start align-items-center">
-                                                                <div class="col-md-3">
-                                                                    <label>Duration:</label>
-                                                                </div>
-
-                                                                <div class="col-md-3">
-                                                                    <p:inputText style="width: 6em;"
-                                                                                 id="txtDuration"
-                                                                                 value="#{bi.prescription.duration}"
-                                                                                 placeholder="Duration"/>
-
-                                                                </div>
-
-                                                                <div class="col-md-3">
-                                                                    <p:selectOneMenu id="cmbDuration"
-                                                                                     value="#{bi.prescription.durationUnit}">
-                                                                        <f:selectItem itemLabel="Select" />
-                                                                        <f:selectItems value="#{measurementUnitController.durationUnits}"
-                                                                                       var="du"
-                                                                                       itemLabel="#{du.name}"
-                                                                                       itemValue="#{du}" />
-                                                                    </p:selectOneMenu>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="row text-start my-3">
-                                                                <div class="col-md-3">
-                                                                    <label for="instructionText" class="w-100">Comment :</label>
-                                                                </div>
-
-                                                                <div class="col-md-9">
-                                                                    <p:inputTextarea value="#{bi.prescription.comment}" id="instructionText" rows="6" cols="33"/>
-                                                                </div>
-
-
-                                                            </div>
-
-                                                            <!-- Add Prescription Button -->
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <p:commandButton value="Print Label"
-                                                                                     class="ui-button-info w-100"
-                                                                                     action="#{pharmacySimpleRetailSaleController.enableLabelPrint(bi.prescription)}"
-                                                                                     ajax="true"
-                                                                                     update="printLabelSection"
-                                                                                     oncomplete="PF('printLabelSectionView').show()"
-
-                                                                                     >
-
-                                                                    </p:commandButton>
-
-
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <p:commandButton value="Add Instructions"
-                                                                                     class="ui-button-success w-100"
-                                                                                     id="btnAddRx"
-                                                                                     icon="pi pi-plus"
-                                                                                     process="btnAddRx instructionDetials "
-                                                                                     update="tblBillItem"
-                                                                                     action="#{pharmacySimpleRetailSaleController.addPrescriptionToBillitem(bi)}" />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </p:panel>
-
-                                                </p:dialog>
-
-                                                <p:dialog
-                                                    id="printLabelDialog"
-                                                    widgetVar="printLabelSectionView"
-                                                    resizable="false"
-                                                    closable="true"
-                                                    modal="true"
-                                                    onShow="$('.ui-dialog').addClass('custom-dialog')"
-
-                                                    >
-
-                                                    <h:panelGroup id="printLabelSection">
-                                                        <phi:pharmacy_instruction_label billItem="#{bi}" controller="#{pharmacySimpleRetailSaleController}"/>
-                                                    </h:panelGroup>
-
-                                                    <p:commandButton value="Print Label"
-                                                                     class="ui-button-info w-100 my-4"
-                                                                     action="#{pharmacySimpleRetailSaleController.enableLabelPrint(bi.prescription)}"
-                                                                     ajax="false"
-                                                                     update="printLabelSection instructionDetials"
-                                                                     oncomplete="PF('printLabelSectionView').show()"
-                                                                     process="@this"
-                                                                     >
-                                                        <p:printer target="printLabelSection"></p:printer>
-
-                                                    </p:commandButton>
-                                                </p:dialog>
-
                                             </p:column>
 
                                             <p:column headerText="Rate" style="width: 5em; padding: 6px;">
@@ -518,62 +249,6 @@
 
                                         </p:dataTable>
                                     </p:panel>
-                                    <p:panel id="tabI" class="my-1 ">
-                                        <f:facet name="header" >
-                                            <h:outputText styleClass="fas fa-check-circle" />
-                                            <h:outputLabel value="Alternatives" class="mx-4"></h:outputLabel>
-                                        </f:facet>
-                                        <p:dataTable
-                                            class="w-100"
-                                            id="lstReplaceableBatch"
-                                            selection="#{pharmacySimpleRetailSaleController.replacableStock}"
-                                            value="#{pharmacySimpleRetailSaleController.replaceableStocks}"
-                                            var="ri"
-                                            selectionMode="single"
-                                            rowKey="#{ri.id}"
-                                            emptyMessage="System can not detect suitable replacements.">
-                                            <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('acStock',view).clientId}" listener="#{pharmacySimpleRetailSaleController.makeStockAsBillItemStock()}" ></p:ajax>
-                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('acStock',view).clientId}" listener="#{pharmacySimpleRetailSaleController.makeStockAsBillItemStock()}" ></p:ajax>
-                                            <p:column headerText="Item">
-                                                #{ri.itemBatch.item.name}
-                                            </p:column>
-                                            <p:column headerText="Code">
-                                                #{ri.itemBatch.item.code}
-                                            </p:column>
-                                            <p:column headerText="Rate"  style="text-align: right;">
-                                                <p:outputLabel value="#{ri.itemBatch.retailsaleRate}">
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </p:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Stocks" style="text-align: right;">
-                                                <p:outputLabel value="#{ri.stock}"  style="width: 50px!important;">
-                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                </p:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Expiry">
-                                                <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime > ri.itemBatch.dateOfExpire}" >
-                                                    <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" styleClass="ui-messages-fatal"  >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                    </p:outputLabel>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{ri.itemBatch.dateOfExpire > commonFunctionsProxy.currentDateTime}" >
-                                                    <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                    </p:outputLabel>
-                                                </h:panelGroup>
-                                            </p:column>
-                                        </p:dataTable>
-
-
-
-                                    </p:panel>
-
-
-
-
-
-
-
                                 </div>
                                 <div class="col-md-5"  >
                                     <h:panelGrid id="sale" columns="1" class="alignTop w-100"  >
