@@ -381,6 +381,15 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    // ChatGPT contributed - 2025-05
+    public List<T> findByJpqlWithRange(String jpql, int startPosition, int maxResults) {
+        return getEntityManager()
+                .createQuery(jpql, entityClass)
+                .setFirstResult(startPosition)
+                .setMaxResults(maxResults)
+                .getResultList();
+    }
+
     public List<?> findLightsByJpql(String jpql) {
         Query qry = getEntityManager().createQuery(jpql);
         return qry.getResultList();
