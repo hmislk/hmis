@@ -1008,6 +1008,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return getStockFacade().findByJpql(sql, parameters, 20);
     }
 
+    
+    
+    
     public List<Stock> completeAvailableStockOptimized(String qry) {
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();

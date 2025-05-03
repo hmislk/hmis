@@ -10,6 +10,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,10 +27,10 @@ import javax.persistence.Transient;
  */
 @Entity
 @Table(
-    indexes = {
-        @Index(name = "idx_stock_department", columnList = "department"),
-        @Index(name = "idx_stock_stock", columnList = "stock")
-    }
+        indexes = {
+            @Index(name = "idx_stock_department", columnList = "department"),
+            @Index(name = "idx_stock_stock", columnList = "stock")
+        }
 )
 public class Stock implements Serializable, RetirableEntity {
 
@@ -37,6 +38,13 @@ public class Stock implements Serializable, RetirableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    // ChatGPT contributed - 2025-05
+    @Column(length = 100)
+    private String itemName;
+    @Column(length = 100)
+    private String barcode;
+    private Long longCode;
+
     private Double stock = 0.0;
     @Transient
     private double calculated = 0;
@@ -66,11 +74,8 @@ public class Stock implements Serializable, RetirableEntity {
 //
 //    @OneToMany(mappedBy = "parentStock", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 //    List<Stock> childStocks;
-
     @Transient
     private Double transItemStockQty;
-
-
 
 //    public List<Stock> getChildStocks() {
 //        return childStocks;
@@ -87,7 +92,6 @@ public class Stock implements Serializable, RetirableEntity {
 //    public void setParentStock(Stock parentStock) {
 //        this.parentStock = parentStock;
 //    }
-
     public String getCode() {
         return code;
     }
@@ -232,5 +236,30 @@ public class Stock implements Serializable, RetirableEntity {
     public void setStockLocator(String stockLocator) {
         this.stockLocator = stockLocator;
     }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
+
+    public Long getLongCode() {
+        return longCode;
+    }
+
+    public void setLongCode(Long longCode) {
+        this.longCode = longCode;
+    }
+    
 
 }
