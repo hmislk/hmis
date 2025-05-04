@@ -26,6 +26,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
+import com.divudi.core.data.StockLight;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
@@ -97,6 +98,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
@@ -184,6 +186,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     private BillItem editingBillItem;
     private Double qty;
     private Stock stock;
+    private StockLight stockLight;
     private boolean billSettlingStarted;
     private PaymentScheme paymentScheme;
 
@@ -396,24 +399,73 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
                 : configOptionApplicationController.getBooleanValueByKey(
                         "Enable search medicines by barcode", false);
 
-        StringBuilder sql = new StringBuilder("SELECT i FROM Stock i ")
+        StringBuilder jpql = new StringBuilder("SELECT i FROM Stock i ")
                 .append("WHERE i.stock > :stockMin ")
-                .append("AND i.department = :department ")
-                .append("AND (");
+                .append("AND i.department = :department AND (");
 
-        sql.append("i.itemName LIKE :query ");
+        jpql.append("i.itemName LIKE :query ");
 
         if (searchByItemCode) {
-            sql.append("OR i.code LIKE :query ");
+            jpql.append("OR i.code LIKE :query ");
         }
 
         if (searchByBarcode) {
-            sql.append("OR i.barcode = :query ");
+            jpql.append("OR i.barcode LIKE :query ");
         }
 
-        sql.append(") ORDER BY i.itemName, i.itemBatch.dateOfExpire");
+        Long longCode = CommonFunctions.stringToLong(qry);
+        if (longCode != null) {
+            jpql.append("OR i.longCode = :longCode ");
+            parameters.put("longCode", longCode);
+        }
 
-        return getStockFacade().findByJpql(sql.toString(), parameters, 20);
+        jpql.append(") ORDER BY i.itemName, i.dateOfExpire");
+
+        System.out.println("sql.toString() = " + jpql.toString());
+        System.out.println("parameters = " + parameters);
+        List<Stock> ss = getStockFacade().findByJpql(jpql.toString(), parameters, 20);
+        System.out.println("ss = " + ss);
+        return ss;
+    }
+
+    public List<StockLight> completeStockLights(String qry) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("INFO:   completeStockLights started");
+
+        if (qry == null || qry.trim().isEmpty()) {
+            System.out.println("INFO:   Validation check took: " + (System.currentTimeMillis() - startTime) + " ms");
+            return Collections.emptyList();
+        }
+
+        long paramStartTime = System.currentTimeMillis();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", qry.trim() + "%");  // changed from %qry% to qry%
+        parameters.put("today", new Date());
+        System.out.println("INFO:   Building parameters took: " + (System.currentTimeMillis() - paramStartTime) + " ms");
+
+        String jpql = "SELECT new com.divudi.core.data.StockLight("
+                + "s.id, s.itemName, s.code, s.barcode, s.dateOfExpire, s.retailsaleRate, s.stock) "
+                + "FROM Stock s "
+                + "WHERE s.stock > :stockMin "
+                + "AND s.department = :department "
+                + "AND s.dateOfExpire >= :today "
+                + // filter for non-expired
+                "AND (s.itemName LIKE :query OR s.code LIKE :query OR s.barcode LIKE :query) "
+                + "ORDER BY s.itemName";
+        System.out.println("INFO:   JPQL built: " + jpql);
+        System.out.println("INFO:   Parameters: " + parameters);
+
+        long queryStartTime = System.currentTimeMillis();
+        List<StockLight> sls = (List<StockLight>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP, 20);
+        long queryEndTime = System.currentTimeMillis();
+        System.out.println("INFO:   Query execution took: " + (queryEndTime - queryStartTime) + " ms");
+        System.out.println("INFO:   Result size: " + sls.size());
+
+        System.out.println("INFO:   completeStockLights finished. Total time: " + (System.currentTimeMillis() - startTime) + " ms");
+
+        return sls;
     }
 
     // </editor-fold>  
@@ -794,7 +846,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         return Sex.values();
     }
 
-
     public Integer getIntQty() {
         if (qty == null) {
             return null;
@@ -825,7 +876,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     public void setStock(Stock stock) {
         this.stock = stock;
     }
-
 
     public String newSaleBillWithoutReduceStock() {
         clearBill();
@@ -870,109 +920,28 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
-    public List<Item> completeRetailSaleItems(String qry) {
-        Map m = new HashMap<>();
-        List<Item> items;
-        String sql;
-        sql = "select i from Item i where i.retired=false "
-                + " and (i.name) like :n and type(i)=:t "
-                + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
-        m.put("t", Amp.class);
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        m.put("n", "%" + qry + "%");
-        double s = 0.0;
-        m.put("s", s);
-        items = getItemFacade().findByJpql(sql, m, 10);
-        return items;
-    }
-
-   
-
     public void handleSelectAction() {
         if (stock == null) {
-            //////System.out.println("Stock NOT selected.");
         }
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
-            //////System.out.println("Internal Error at PharmacySaleController.java > handleSelectAction");
         }
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
-        pharmacyService.addBillItemInstructions(billItem);
-    }
-
-    public List<Item> completeRetailSaleItemsWithoutStocks(String qry) {
-        Map m = new HashMap<>();
-        List<Item> items;
-        String sql;
-
-        if (qry.length() > 4) {
-            sql = "select i from Amp i "
-                    + "where i.retired=false and "
-                    + "((i.name) like :n or (i.code) like :n  or (i.barcode) like :n  or (i.vmp.name) like :n) and "
-                    + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and ((ibs.itemBatch.item.name) like :n or (ibs.itemBatch.item.code) like :n  or (ibs.itemBatch.item.barcode) like :n  or (ibs.itemBatch.item.vmp.name) like :n )  ) "
-                    + "order by i.name ";
-
-        } else {
-
-            sql = "select i from Amp i "
-                    + "where i.retired=false and "
-                    + "((i.name) like :n or (i.code) like :n or (i.vmp.name) like :n) and "
-                    + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and ((ibs.itemBatch.item.name) like :n or (ibs.itemBatch.item.code) like :n or (ibs.itemBatch.item.vmp.name) like :n )  ) "
-                    + "order by i.name ";
-
-        }
-
-//        if (qry.length() > 4) {
-//            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n or (i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-//        } else {
-//            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-//        }
-//
-//        sql = "select i from Amp i "
-//                + "where i.retired=false and "
-//                + "(i.name) like :n and "
-//                + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and ibs.itemBatch.item.name like :n) "
-//                + "order by i.name ";
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        m.put("n", "%" + qry + "%");
-        double s = 0.0;
-        m.put("s", s);
-        items = getItemFacade().findByJpql(sql, m, 10);
-        return items;
     }
 
     public void handleSelect(SelectEvent event) {
+        if (stockLight == null) {
+            return;
+        }
+        if (stockLight.getId() == null) {
+            return;
+        }
+        stock = stockFacade.find(stockLight.getId());
+        if (stock == null) {
+            return;
+        }
         handleSelectAction();
     }
-
-//    public void calculateRates(BillItem bi) {
-//        ////////System.out.println("calculating rates");
-//        if (bi.getPharmaceuticalBillItem().getStock() == null) {
-//            ////////System.out.println("stock is null");
-//            return;
-//        }
-//        getBillItem();
-//        PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
-//        if (pharmBillItem != null) {
-//            Stock stock = pharmBillItem.getStock();
-//            if (stock != null) {
-//                ItemBatch itemBatch = stock.getItemBatch();
-//                if (itemBatch != null) {
-//                    // Ensure that each step in the chain is not null before accessing further.
-//                    bi.setRate(itemBatch.getRetailsaleRate());
-//                } else {
-//                }
-//            } else {
-//            }
-//        } else {
-//        }
-//
-////        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
-//        bi.setDiscount(calculateBillItemDiscountRate(bi));
-//        //  ////System.err.println("Discount "+bi.getDiscount());
-//        bi.setNetRate(bi.getRate() - bi.getDiscount());
-//        //  ////System.err.println("Net "+bi.getNetRate());
-//    }
 
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
         calculateBillItem();
@@ -1045,7 +1014,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     }
 
     public void calculateRates(BillItem bi) {
-        System.out.println("calculateRates = ");
         PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
         if (pharmBillItem != null && pharmBillItem.getStock() != null) {
             ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
@@ -3103,6 +3071,14 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
         this.billSettlingStarted = billSettlingStarted;
+    }
+
+    public StockLight getStockLight() {
+        return stockLight;
+    }
+
+    public void setStockLight(StockLight stockLight) {
+        this.stockLight = stockLight;
     }
 
 }

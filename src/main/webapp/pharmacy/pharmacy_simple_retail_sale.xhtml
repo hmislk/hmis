@@ -64,21 +64,23 @@
                                                         accesskey="i"
                                                         id="acStockWithoutTotalStock"
                                                         inputStyleClass="w-100"
-                                                        minQueryLength="3"
+                                                        minQueryLength="4"
+                                                        queryDelay="500"
+                                                        converter="stockLightConverter"
                                                         maxResults="10"
                                                         class="w-100"
                                                         forceSelection="true"
-                                                        value="#{pharmacySimpleRetailSaleController.stock}"
-                                                        completeMethod="#{pharmacySimpleRetailSaleController.completeAvailableStocks}"
+                                                        value="#{pharmacySimpleRetailSaleController.stockLight}"
+                                                        completeMethod="#{pharmacySimpleRetailSaleController.completeStockLights}"
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
                                                         itemValue="#{i}">
 
-                                                        <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <p:column headerText="Item" style="padding: 8px;">
                                                             <h:outputText value="#{i.itemName}" />
-                                                            <p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}"
-                                                                   value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expiring Soon':''}"
-                                                                   severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
+                                                            <p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ? 'true' : commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ? 'true' : 'false'}"
+                                                                   value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ? 'Expired' : commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ? 'Expiring Soon' : ''}"
+                                                                   severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ? 'danger' : commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ? 'warning' : ''}" />
                                                         </p:column>
 
                                                         <p:column headerText="Code" style="padding: 8px;">
@@ -86,25 +88,26 @@
                                                         </p:column>
 
                                                         <p:column headerText="Rate" style="padding: 8px;" styleClass="text-end">
-                                                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
+                                                            <h:outputLabel value="#{i.retailsaleRate}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
 
                                                         <p:column headerText="Stocks" style="padding: 8px;" styleClass="text-end">
-                                                            <h:outputLabel value="#{i.stock}">
+                                                            <h:outputLabel value="#{i.stockQty}">
                                                                 <f:convertNumber pattern="#,###" />
                                                             </h:outputLabel>
                                                         </p:column>
 
                                                         <p:column headerText="Expiry" style="padding: 8px;" class="w-100" styleClass="text-end">
-                                                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}">
+                                                            <h:outputLabel value="#{i.dateOfExpire}">
                                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                             </h:outputLabel>
                                                         </p:column>
 
                                                         <p:ajax event="itemSelect" listener="#{pharmacySimpleRetailSaleController.handleSelect}" update="txtQty txtRate focusQty" />
                                                     </p:autoComplete>
+
                                                 </h:panelGroup>
 
 
