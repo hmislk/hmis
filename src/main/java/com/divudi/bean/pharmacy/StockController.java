@@ -23,6 +23,8 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.StockService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -59,6 +61,8 @@ public class StockController implements Serializable {
     private StockFacade ejbFacade;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    StockService stockService;
     List<Stock> selectedItems;
     private Stock current;
     private List<Stock> items = null;
@@ -161,6 +165,16 @@ public class StockController implements Serializable {
             d += s.getStock();
         }
         return d;
+    }
+
+// ChatGPT contributed - 2025-05
+    public void addItemNamesToAllStocks() {
+        try {
+            stockService.addItemNamesToAllStocks();
+            JsfUtil.addSuccessMessage("Batch update has started in the background. You can continue using the system.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to start the batch update: " + e.getMessage());
+        }
     }
 
     public List<Stock> completeAvailableStocks(String qry) {

@@ -34,6 +34,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -886,7 +887,21 @@ public class ReportsStock implements Serializable {
                 }
                 ib.setItem(i);
                 s.setItemBatch(ib);
+
                 s.setStock(d);
+
+                if (i != null) {
+                    s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                    s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                    String code = i.getCode();
+                    Long longCode = CommonFunctions.stringToLong(code);
+                    s.setLongCode(longCode);
+                } else {
+                    s.setItemName("UNKNOWN");
+                    s.setBarcode("");
+                    s.setLongCode(0L);
+                }
+
                 stocks.add(s);
                 totalQty += d;
             }
