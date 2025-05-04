@@ -358,14 +358,17 @@
                                 </h:panelGrid>
 
                             </p:tab>
+                            
                             <p:tab title="Channel" >
+                                <p:growl id="msg" life="2000"></p:growl>
                                 <p:panel header="Channel" >
                                     <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
                                         
                                         <h:outputLabel value="Accept Online Booking for all Channeling Sessions"></h:outputLabel>
                                         <h:panelGroup>
-                                            <p:commandButton value="Accept" action="#{sessionController.acceptOnlineBookingForAllSessions(true)}"></p:commandButton>
-                                            <p:commandButton class="mx-2 ui-button-danger" value="Not Accept" action="#{sessionController.acceptOnlineBookingForAllSessions(false)}"></p:commandButton>
+                                            
+                                            <p:commandButton value="Accept" update="msg" action="#{sessionController.acceptOnlineBookingForAllSessions(true)}"></p:commandButton>
+                                            <p:commandButton class="mx-2 ui-button-danger" update="msg" value="Not Accept" action="#{sessionController.acceptOnlineBookingForAllSessions(false)}"></p:commandButton>
                                         </h:panelGroup>
 
                                         <h:outputLabel value="Send SMS on Booking"></h:outputLabel>

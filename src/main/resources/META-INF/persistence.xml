@@ -8,7 +8,9 @@
         <properties>
             <property name="eclipselink.logging.level" value="SEVERE"/>
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
-            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="both"/>
+            <property name="eclipselink.persistencexml.validate" value="true"/>
+            <property name="eclipselink.schema-validation" value="true"/>
             <!-- Use a relative path for the application location -->
             <property name="eclipselink.application-location" value="C:\Users\Chinthaka Prasad\Documents\sql script\New folder"/>
         </properties>
@@ -19,7 +21,7 @@
         <properties>
             <property name="eclipselink.logging.level" value="SEVERE"/>
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
-            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="both"/>
             <!-- Use a relative path for the application location -->
             <property name="eclipselink.application-location" value="C:\Users\Chinthaka Prasad\Documents\sql script\New folder"/>
         </properties>

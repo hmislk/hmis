@@ -971,8 +971,7 @@ public class ChannelService {
         getSessionInstanceFacade().executeNativeSql(sqlForSessionInstace);
         serviceSessionFacade.executeNativeSql(sqlForServiceSession);
         getSessionInstanceFacade().flush();
-        serviceSessionFacade.flush();
-        JsfUtil.addSuccessMessage("All bookings are now available");
+        serviceSessionFacade.flush(); 
 
     }
 

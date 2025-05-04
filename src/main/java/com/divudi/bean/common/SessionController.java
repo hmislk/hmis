@@ -205,12 +205,18 @@ public class SessionController implements Serializable, HttpSessionListener {
             }
         }
     }
-    
+
     @EJB
     private ChannelService channelService;
-    
-    public void acceptOnlineBookingForAllSessions(boolean accept) throws Exception{
+
+    public void acceptOnlineBookingForAllSessions(boolean accept) throws Exception {
         channelService.makeAllSessionsAvailableForOnlineBookings(accept);
+
+        if (accept) {
+            JsfUtil.addSuccessMessage("Accept Online Bookings from now.");
+        } else if(!accept) {
+            JsfUtil.addErrorMessage("Online Bookings are not accepted from now.");
+        }
     }
 
     public String getLandingPageOld() {
@@ -2368,7 +2374,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Boolean getInwardServiceBillingAfterShiftStart() {
         if (inwardServiceBillingAfterShiftStart == null) {
-            inwardServiceBillingAfterShiftStart =  configOptionApplicationController.getBooleanValueByKey("Inward Service Bill With Payment Need to Start the Shift", false);
+            inwardServiceBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Inward Service Bill With Payment Need to Start the Shift", false);
         }
         return inwardServiceBillingAfterShiftStart;
     }
