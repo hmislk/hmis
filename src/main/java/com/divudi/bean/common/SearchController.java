@@ -1244,6 +1244,10 @@ public class SearchController implements Serializable {
     public String navigateToAllCashierHandovers() {
         return "/reports/cashier_reports/all_cashier_shifts?faces-redirect=true";
     }
+    
+    public String navigateToShiftEndCash() {
+        return "/reports/cashier_reports/shift_end_cash_list?faces-redirect=true";
+    }
 
     public String navigatToReportDoctorPaymentOpd() {
         FacesContext context = FacesContext.getCurrentInstance();
