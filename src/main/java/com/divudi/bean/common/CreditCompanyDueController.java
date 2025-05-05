@@ -89,6 +89,9 @@ public class CreditCompanyDueController implements Serializable {
     private Department department;
     private Institution site;
 
+    Map<PatientEncounter, List<Bill>> billPatientEncounterMap = new HashMap<>();
+    private int rowCounter = 0;
+
     private List<Bill> bills = new ArrayList<>();
 
     public List<Bill> getBills() {
@@ -129,6 +132,22 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public int nextRowCounter() {
+        return ++rowCounter;
+    }
+
+    public void resetCounter() {
+        rowCounter = 0;
+    }
+
+    public Map<PatientEncounter, List<Bill>> getBillPatientEncounterMap() {
+        return billPatientEncounterMap;
+    }
+
+    public void setBillPatientEncounterMap(Map<PatientEncounter, List<Bill>> billPatientEncounterMap) {
+        this.billPatientEncounterMap = billPatientEncounterMap;
     }
 
     public void makeNull() {
@@ -1327,10 +1346,10 @@ public class CreditCompanyDueController implements Serializable {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
         }
-        if (institution != null) {
-            sql += " and b.creditCompany =:ins ";
-            m.put("ins", institution);
-        }
+//        if (institution != null) {
+//            sql += " and b.creditCompany =:ins ";
+//            m.put("ins", institution);
+//        }
 
         if (paymentMethod != null) {
             sql += " and b.paymentMethod =:pm ";
@@ -1363,7 +1382,9 @@ public class CreditCompanyDueController implements Serializable {
         }
 
         updateSettledAmountsForIP(patientEncounters);
-        removeSettledAndExcessBills(patientEncounters);
+
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
+        calculateCreditCompanyAmounts();
 
         billed = 0;
         paidByPatient = 0;
@@ -1372,6 +1393,137 @@ public class CreditCompanyDueController implements Serializable {
             billed += p.getFinalBill().getNetTotal();
             paidByPatient += p.getFinalBill().getSettledAmountByPatient();
             paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
+        }
+    }
+
+    private Map<PatientEncounter, List<Bill>> getCreditCompanyBills(List<PatientEncounter> patientEncounters, String dueType) {
+        if (dueType == null || (!dueType.equalsIgnoreCase("due") && !dueType.equalsIgnoreCase("any")
+                && !dueType.equalsIgnoreCase("excess") && !dueType.equalsIgnoreCase("settled"))) {
+            return Collections.emptyMap();
+        }
+
+        List<Long> patientEncounterIds = patientEncounters.stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill from Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.patientEncounter.id in :patientEncounterIds ";
+
+        parameters.put("br", true);
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += " and bill.creditCompany =:ins ";
+            parameters.put("ins", institution);
+        }
+
+        List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
+
+        Map<Long, PatientEncounter> encounterMap = patientEncounters.stream()
+                .collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
+
+        if (dueType.equalsIgnoreCase("settled")) {
+            return rs.stream()
+                    .filter(bill -> {
+                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
+                        Bill referenceBill = bill.getReferenceBill();
+
+                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
+                            return false;
+                        }
+
+                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
+                            bill.setNetTotal(0.0);
+                        }
+
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
+                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
+
+                        return (netTotal - settledByPatient - settledBySponsor) == 0;
+                    })
+                    .collect(Collectors.groupingBy(
+                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                    ));
+        }
+
+        if (dueType.equalsIgnoreCase("excess")) {
+            return rs.stream()
+                    .filter(bill -> {
+                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
+                        Bill referenceBill = bill.getReferenceBill();
+
+                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
+                            return false;
+                        }
+
+                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
+                            bill.setNetTotal(0.0);
+                        }
+
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
+                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
+
+                        return (netTotal - settledByPatient - settledBySponsor) < 0;
+                    })
+                    .collect(Collectors.groupingBy(
+                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                    ));
+        }
+
+        if (dueType.equalsIgnoreCase("due")) {
+            return rs.stream()
+                    .filter(bill -> {
+                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
+
+                        Bill referenceBill = bill.getReferenceBill();
+
+                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
+                            return false;
+                        }
+
+                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
+                            bill.setNetTotal(0.0);
+                        }
+
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
+                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
+
+                        return (netTotal - settledByPatient - settledBySponsor) > 0;
+                    })
+                    .collect(Collectors.groupingBy(
+                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                    ));
+        }
+
+        return rs.stream()
+                .collect(Collectors.groupingBy(
+                        bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                ));
+    }
+
+    private void calculateCreditCompanyAmounts() {
+        for (Map.Entry<PatientEncounter, List<Bill>> entry : getBillPatientEncounterMap().entrySet()) {
+
+            PatientEncounter patientEncounter = entry.getKey();
+            List<Bill> bills = entry.getValue();
+
+            double totalPayableByCompanies = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+            double totalPaidByCompanies = bills.stream().mapToDouble(Bill::getPaidAmount).sum();
+
+            patientEncounter.setTransPaid(totalPayableByCompanies);
+            patientEncounter.setTransPaidByCompany(totalPaidByCompanies);
         }
     }
 
