@@ -1,8 +1,10 @@
 package com.divudi.core.data;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class StockLight {
+public class StockLight  implements Serializable  {
+    private static final long serialVersionUID = 1L;
 
     private final Long id;
     private final String itemName;

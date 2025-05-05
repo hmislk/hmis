@@ -41,12 +41,13 @@ public class Stock implements Serializable, RetirableEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     // ChatGPT contributed - 2025-05
-    @Column(length = 100)
+    @Column(name = "ITEMNAME", length = 100)
     private String itemName;
 
-    @Column(length = 30)
+    @Column(name = "BARCODE", length = 30)
     private String barcode;
 
+    @Column(name = "LONGCODE")
     private Long longCode;
 
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -62,6 +63,7 @@ public class Stock implements Serializable, RetirableEntity {
     private Department department;
     @ManyToOne
     Staff staff;
+    @Column(name = "CODE")
     String code;
     private Long startBarcode;
     private Long endBarcode;

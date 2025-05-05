@@ -543,7 +543,7 @@ public class PaymentService {
     public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Double cashPaid) {
         return checkPaymentMethodError(paymentMethod, paymentMethodData, netTotal, cashPaid, null, null);
     }
-    
+
     public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Double cashPaid, Patient patient, Staff toStaff) {
         if (paymentMethod == PaymentMethod.Cheque) {
             if (paymentMethodData.getCheque().getInstitution() == null
@@ -579,38 +579,40 @@ public class PaymentService {
 
         if (configOptionApplicationController.getBooleanValueByKey("Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill", true)) {
             if (paymentMethod == PaymentMethod.Cash) {
-                if (cashPaid != null && netTotal != null) {
-                    if (cashPaid == 0.0) {
-                        JsfUtil.addErrorMessage("Please enter the paid amount");
-                        return true;
-                    }
-                    if (cashPaid < netTotal) {
-                        JsfUtil.addErrorMessage("Please select tendered amount correctly");
-                        return true;
-                    }
+                if (netTotal == null || cashPaid == null) {
+                    JsfUtil.addErrorMessage("Net total and tendered amount are required for cash payments");
+                    return true;
+                }
+                if (cashPaid == 0.0) {
+                    JsfUtil.addErrorMessage("Please enter the paid amount");
+                    return true;
+                }
+                if (cashPaid < netTotal) {
+                    JsfUtil.addErrorMessage("Please select tendered amount correctly");
+                    return true;
                 }
             }
         }
 
         if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (patient == null) {
+                JsfUtil.addErrorMessage("Patient information is required for Patient Deposit payments");
+                return true;
+            }
             if (!patient.getHasAnAccount()) {
-                JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                JsfUtil.addErrorMessage("Patient has no account. Can't proceed with Patient Deposits");
                 return true;
             }
             double creditLimitAbsolute = Math.abs(patient.getCreditLimit());
-            double runningBalance;
-            if (patient.getRunningBalance() != null) {
-                runningBalance = patient.getRunningBalance();
-            } else {
-                runningBalance = 0.0;
-            }
+            double runningBalance = patient.getRunningBalance() != null ? patient.getRunningBalance() : 0.0;
             double availableForPurchase = runningBalance + creditLimitAbsolute;
 
-            if (netTotal > availableForPurchase) {
+            double effectiveTotal = netTotal != null ? netTotal : 0.0;
+
+            if (effectiveTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
                 return true;
             }
-
         }
 
         if (paymentMethod == PaymentMethod.Staff) {
@@ -619,7 +621,9 @@ public class PaymentService {
                 return true;
             }
 
-            if (toStaff.getCurrentCreditValue() + netTotal > toStaff.getCreditLimitQualified()) {
+            double safeNetTotal = netTotal != null ? netTotal : 0.0;
+
+            if (toStaff.getCurrentCreditValue() + safeNetTotal > toStaff.getCreditLimitQualified()) {
                 JsfUtil.addErrorMessage("No enough Credit.");
                 return true;
             }
@@ -630,11 +634,13 @@ public class PaymentService {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
                 return true;
             }
-            if (Math.abs(toStaff.getAnnualWelfareUtilized()) + netTotal > toStaff.getAnnualWelfareQualified()) {
+
+            double safeNetTotal = netTotal != null ? netTotal : 0.0;
+
+            if (Math.abs(toStaff.getAnnualWelfareUtilized()) + safeNetTotal > toStaff.getAnnualWelfareQualified()) {
                 JsfUtil.addErrorMessage("No enough credit.");
                 return true;
             }
-
         }
 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {

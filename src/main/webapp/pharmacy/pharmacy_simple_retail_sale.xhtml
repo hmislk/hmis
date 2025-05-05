@@ -78,11 +78,10 @@
 
                                                         <p:column headerText="Item" style="padding: 8px;">
                                                             <h:outputText value="#{i.itemName}" />
-                                                            <p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ? 'true' : commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ? 'true' : 'false'}"
-                                                                   value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ? 'Expired' : commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ? 'Expiring Soon' : ''}"
-                                                                   severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ? 'danger' : commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ? 'warning' : ''}" />
+                                                            <p:tag rendered="#{commonFunctionsProxy.currentDateTime gt i.dateOfExpire or commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.dateOfExpire}"
+                                                                   value="#{commonFunctionsProxy.currentDateTime gt i.dateOfExpire ? 'Expired' : 'Expiring Soon'}"
+                                                                   severity="#{commonFunctionsProxy.currentDateTime gt i.dateOfExpire ? 'danger' : 'warning'}" />
                                                         </p:column>
-
                                                         <p:column headerText="Code" style="padding: 8px;">
                                                             <h:outputText value="#{i.code}" />
                                                         </p:column>
