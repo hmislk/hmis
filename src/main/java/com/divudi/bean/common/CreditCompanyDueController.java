@@ -1384,7 +1384,7 @@ public class CreditCompanyDueController implements Serializable {
 
         updateSettledAmountsForIP(patientEncounters);
 
-        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "excess"));
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
         calculateCreditCompanyAmounts();
 
         billed = 0;
@@ -1493,11 +1493,20 @@ public class CreditCompanyDueController implements Serializable {
 
         List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
 
+        List<Bill> detachedClones = rs.stream()
+                .map(b -> {
+                    Bill clonedBill = new Bill();
+                    clonedBill.clone(b);
+                    return clonedBill;
+                })
+                .collect(Collectors.toList());
+
+
         Map<Long, PatientEncounter> encounterMap = patientEncounters.stream()
                 .collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
 
         if (dueType.equalsIgnoreCase("settled")) {
-            return rs.stream()
+            return detachedClones.stream()
                     .filter(bill -> {
                         PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
                         Bill referenceBill = bill.getReferenceBill();
@@ -1522,7 +1531,7 @@ public class CreditCompanyDueController implements Serializable {
         }
 
         if (dueType.equalsIgnoreCase("excess")) {
-            return rs.stream()
+            return detachedClones.stream()
                     .filter(bill -> {
                         PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
                         Bill referenceBill = bill.getReferenceBill();
@@ -1547,7 +1556,7 @@ public class CreditCompanyDueController implements Serializable {
         }
 
         if (dueType.equalsIgnoreCase("due")) {
-            return rs.stream()
+            return detachedClones.stream()
                     .filter(bill -> {
                         PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
 
@@ -1572,7 +1581,7 @@ public class CreditCompanyDueController implements Serializable {
                     ));
         }
 
-        return rs.stream()
+        return detachedClones.stream()
                 .collect(Collectors.groupingBy(
                         bill -> encounterMap.get(bill.getPatientEncounter().getId())
                 ));
