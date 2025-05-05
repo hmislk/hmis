@@ -1390,7 +1390,7 @@ public class CreditCompanyDueController implements Serializable {
         billed = 0;
         paidByPatient = 0;
         paidByCompany = 0;
-        for (PatientEncounter p : patientEncounters) {
+        for (PatientEncounter p : getBillPatientEncounterMap().keySet()) {
             billed += p.getFinalBill().getNetTotal();
             paidByPatient += p.getFinalBill().getSettledAmountByPatient();
             paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
@@ -1454,7 +1454,7 @@ public class CreditCompanyDueController implements Serializable {
         billed = 0;
         paidByPatient = 0;
         paidByCompany = 0;
-        for (PatientEncounter p : patientEncounters) {
+        for (PatientEncounter p : getBillPatientEncounterMap().keySet()) {
             billed += p.getFinalBill().getNetTotal();
             paidByPatient += p.getFinalBill().getSettledAmountByPatient();
             paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
