@@ -224,9 +224,8 @@
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel"
+                            action="#{creditCompanyDueController.exportInwardCashDueToExcel}"
                             actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}">
-                        <p:dataExporter target="printPanel" fileName="inward_due_age_credit_company_detail"
-                                        type="xlsx"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -235,8 +234,8 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             value="PDF"
+                            action="#{creditCompanyDueController.exportInwardCashDueToPdf()}"
                             actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}">
-                        <p:dataExporter type="pdf" target="printPanel" fileName="inward_due_age_credit_company_detail"/>
                     </p:commandButton>
 
                     <h:panelGroup id="printPanel">
