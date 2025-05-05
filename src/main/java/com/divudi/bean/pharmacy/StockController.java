@@ -770,7 +770,8 @@ public class StockController implements Serializable {
                 + "s.code, "
                 + "s.barcode, "
                 + "s.dateOfExpire, "
-                + "s.stock"
+                + "s.retailsaleRate"
+                + "s.stock, "
                 + ") FROM Stock s WHERE s.id = :id";
 
         List<StockLight> result = (List<StockLight>) getFacade().findLightsByJpql(jpql, params, TemporalType.DATE, 1);
