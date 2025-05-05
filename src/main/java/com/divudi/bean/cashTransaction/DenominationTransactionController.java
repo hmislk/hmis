@@ -97,10 +97,10 @@ public class DenominationTransactionController implements Serializable {
         return dts;
     }
 
-    @Deprecated // Directly User method with the same name in BillService
-    List<DenominationTransaction> fetchDenominationTransactionFromBill(Bill b) {
-        return billService.fetchDenominationTransactionFromBill(b);
-    }
+//    @Deprecated // Directly User method with the same name in BillService
+//    List<DenominationTransaction> fetchDenominationTransactionFromBill(Bill b) {
+//        return billService.fetchDenominationTransactionFromBill(b);
+//    }
 
     @FacesConverter(forClass = DenominationTransaction.class)
     public static class DenominationTransactionConverter implements Converter {
