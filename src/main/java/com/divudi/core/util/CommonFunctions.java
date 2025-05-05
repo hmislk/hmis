@@ -295,6 +295,18 @@ public class CommonFunctions {
         return round(numberToRound, 2);
     }
 
+// ChatGPT contributed - 2025-05
+    public static long stringToLong(String string) {
+        if (string == null || string.trim().isEmpty()) {
+            return 0l;
+        }
+        try {
+            return Long.parseLong(string.trim());
+        } catch (NumberFormatException e) {
+            return 0l;
+        }
+    }
+
     public static long calTimePeriod(Date frDate, Date tDate) {
         if (frDate == null || tDate == null) {
             return 0;

@@ -302,21 +302,9 @@ public class PharmacySaleReportController implements Serializable {
     }
 
     public void fillNonMoving() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
-        Map allItems;
-        List<Item> movedItems;
-        Stock s = new Stock();
-
-//        s.getDepartment();
-//        s.getItemBatch().getItem();
-//        s.getItemBatch().getItem();
         HashMap m = new HashMap();
         m.put("dpt", getDepartmentMoving());
         String j;
-
         j = "select s.itemBatch.item "
                 + " from Stock s "
                 + " where s.stock > 0 "
@@ -325,8 +313,6 @@ public class PharmacySaleReportController implements Serializable {
                 + " order by s.itemBatch.item.name";
 
         nonMovingItems = itemFacade.findByJpql(j, m);
-        ////System.out.println("nonMovingItems = " + nonMovingItems);
-
     }
 
     public void setCategory(Category category) {
