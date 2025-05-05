@@ -4804,17 +4804,17 @@ public class FinancialTransactionController implements Serializable {
 
         return "/cashier/handover_creation_bill_print?faces-redirect=true";
     }
-    
-    public String navigateToViewShiftEndCashInHandBill(Bill cashInHandBillToView){
-        if(cashInHandBillToView==null){
+
+    public String navigateToViewShiftEndCashInHandBill(Bill cashInHandBillToView) {
+        if (cashInHandBillToView == null) {
             JsfUtil.addErrorMessage("No Bill");
             return null;
         }
-        if(cashInHandBillToView.getBillTypeAtomic()==null){
+        if (cashInHandBillToView.getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("No Bill Type");
             return null;
         }
-        if(cashInHandBillToView.getBillTypeAtomic()==BillTypeAtomic.FUND_SHIFT_END_CASH_RECORD){
+        if (cashInHandBillToView.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_END_CASH_RECORD) {
             JsfUtil.addErrorMessage("Wrong Bill Type");
             return null;
         }
@@ -4822,8 +4822,11 @@ public class FinancialTransactionController implements Serializable {
         bundle.setHandoverBill(cashInHandBillToView);
         bundle.setFromUser(cashInHandBillToView.getCreater());
         bundle.setToUser(cashInHandBillToView.getCreater());
+        bundle.setUser(cashInHandBillToView.getCreater());
         bundle.setStartBill(cashInHandBillToView.getReferenceBill());
-        List<DenominationTransaction> denominations = 
+        List<DenominationTransaction> denominationTransactionsInCashHandover = billService.fetchDenominationTransactionFromBill(cashInHandBillToView);
+        bundle.setDenominationTransactions(denominationTransactionsInCashHandover);
+        return "shift_end_cash_in_hand_print?faces-redirect=true";
     }
 
     public String settleRecordingShiftEndCashInHand() {

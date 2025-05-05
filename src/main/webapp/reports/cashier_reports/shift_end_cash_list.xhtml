@@ -65,27 +65,34 @@
                             </p:autoComplete>
 
                         </p:panelGrid>
-                        <p:panelGrid columns="1" styleClass="m-3">
-                            <h:panelGroup layout="block" styleClass="form-group">
-
-                                <!-- Button to List All Shifts -->
-                                <p:commandButton 
-                                    value="List All Shift End Cash"
-                                    action="#{financialTransactionController.fillShiftEndCash}"
-                                    ajax="false"
-                                    styleClass="ui-button-success m-1"
-                                    icon="pi pi-list"
-                                    ></p:commandButton>
 
 
-                            </h:panelGroup>
-                        </p:panelGrid>
+                        <p:commandButton 
+                            value="List All Shift End Cash"
+                            action="#{financialTransactionController.fillShiftEndCash}"
+                            ajax="false"
+                            icon="pi pi-list"
+                            styleClass="ui-button-success m-1">
+                        </p:commandButton>
 
+                        <p:commandButton 
+                            value="Download"
+                            ajax="false"
+                            icon="pi pi-file-excel"
+                            styleClass="ui-button-warning m-1">
+                            <p:dataExporter fileName="Shift End Cash in Hand" target="tblCashInHands" type="xlsx" />
+                        </p:commandButton>
 
-
-
+                        <p:commandButton 
+                            value="Print"
+                            ajax="false"
+                            icon="pi pi-print"
+                            styleClass="ui-button-info m-1">
+                            <p:printer target="tblCashInHands" />
+                        </p:commandButton>
 
                         <p:dataTable 
+                            id="tblCashInHands"
                             value="#{financialTransactionController.bundle.reportTemplateRows}" 
                             var="ssb" 
                             rowKey="#{ssb.id}">
@@ -114,7 +121,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Start End"  width="10em" >
                                 <h:outputText value="#{ssb.bill.referenceBill.referenceBill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
@@ -125,12 +132,10 @@
                                     ajax="false"
                                     class="ui-button-success m-1" 
                                     value="View" 
-                                    action=""
+                                    action="#{financialTransactionController.navigateToViewShiftEndCashInHandBill(ssb.bill)}"
                                     icon="pi pi-eye"  >
                                 </p:commandButton>
                             </p:column>
-
-
                         </p:dataTable>
 
 
