@@ -1023,6 +1023,17 @@ public class Bill implements Serializable, RetirableEntity {
             pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
             pharmacyBill.setBill(this);
         }
+
+        if (bill.getReferenceBill() != null) {
+            Bill referenceBill = new Bill();
+            referenceBill.clone(bill.getReferenceBill());
+            this.referenceBill = referenceBill;
+        }
+
+        setCancelled(bill.isCancelled());
+        setRetired(bill.isRetired());
+        netTotal = bill.getNetTotal();
+        paidAmount = bill.getPaidAmount();
     }
 
     public List<BillComponent> getBillComponents() {

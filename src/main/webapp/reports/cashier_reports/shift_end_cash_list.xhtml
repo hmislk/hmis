@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/reports/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel  class="m-1 p-1 container-flex">
+                        <f:facet name="header">
+                            <p:outputLabel value="Shift End Cash" />
+                        </f:facet>
+
+                        <p:panelGrid layout="tabular" columns="2" class="w-100" >
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{financialTransactionController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{financialTransactionController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" for="acStaff" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acStaff" 
+                                inputStyleClass="w-100"
+                                value="#{financialTransactionController.user}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
+                        </p:panelGrid>
+
+
+                        <p:commandButton 
+                            value="List All Shift End Cash"
+                            action="#{financialTransactionController.fillShiftEndCash}"
+                            ajax="false"
+                            icon="pi pi-list"
+                            styleClass="ui-button-success m-1">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Download"
+                            ajax="false"
+                            icon="pi pi-file-excel"
+                            styleClass="ui-button-warning m-1">
+                            <p:dataExporter fileName="Shift End Cash in Hand" target="tblCashInHands" type="xlsx" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Print"
+                            ajax="false"
+                            icon="pi pi-print"
+                            styleClass="ui-button-info m-1">
+                            <p:printer target="tblCashInHands" />
+                        </p:commandButton>
+
+                        <p:dataTable 
+                            id="tblCashInHands"
+                            value="#{financialTransactionController.bundle.reportTemplateRows}" 
+                            var="ssb" 
+                            rowKey="#{ssb.id}">
+                            <p:column headerText="Cash Handover No"  width="10em" >
+                                <h:outputText value="#{ssb.bill.deptId}" >
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cash Value"  width="12em" class="text-end" >
+                                <h:outputText value="#{ssb.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cash in Hand Date / Time" width="10em" >
+                                <h:outputText value="#{ssb.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Shift" width="15em" styleClass="text-center">
+                                <h:outputText value="#{ssb.bill.referenceBill.deptId}" styleClass="font-weight-bold mb-2" />
+                                <p:spacer height="5" />
+                            </p:column>
+
+                            <p:column headerText="Shift Start" width="10em" >
+                                <h:outputText value="#{ssb.bill.referenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Shift End"  width="10em" >
+                                <h:outputText value="#{ssb.bill.referenceBill.referenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Actions">
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-success m-1" 
+                                    value="View" 
+                                    action="#{financialTransactionController.navigateToViewShiftEndCashInHandBill(ssb.bill)}"
+                                    icon="pi pi-eye"  >
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

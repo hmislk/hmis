@@ -13,6 +13,8 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.store.StoreBean;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.StockLight;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -42,6 +44,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -752,6 +755,55 @@ public class StockController implements Serializable {
 
     public void setSelectedItemExpiaringStocks(List<Stock> selectedItemExpiaringStocks) {
         this.selectedItemExpiaringStocks = selectedItemExpiaringStocks;
+    }
+
+    public StockLight findStockLightById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+
+        String jpql = "SELECT NEW com.divudi.core.data.StockLight("
+                + "s.id, "
+                + "s.itemName, "
+                + "s.code, "
+                + "s.barcode, "
+                + "s.dateOfExpire, "
+                + "s.retailsaleRate"
+                + "s.stock, "
+                + ") FROM Stock s WHERE s.id = :id";
+
+        List<StockLight> result = (List<StockLight>) getFacade().findLightsByJpql(jpql, params, TemporalType.DATE, 1);
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    @FacesConverter("stockLightConverter")
+    public static class StockLightConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext context, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.valueOf(value);
+                StockController controller = (StockController) context.getApplication().getELResolver()
+                        .getValue(context.getELContext(), null, "stockController");
+                StockLight sl = controller.findStockLightById(id);
+                return sl;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext context, UIComponent component, Object value) {
+            if (value instanceof StockLight) {
+                return ((StockLight) value).getId().toString();
+            }
+            return null;
+        }
     }
 
     /**

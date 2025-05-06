@@ -777,6 +777,14 @@ public class GrnController implements Serializable {
         return freeTotal;
     }
 
+    public double calFreeQuantitySaleValue(Bill b) {
+        double freeTotal = 0.0;
+        for (BillItem bi : b.getBillItems()) {
+            freeTotal = freeTotal + (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getRetailRate());
+        }
+        return freeTotal;
+    }
+
     private void updateBalanceForGrn(Bill grn) {
         if (grn == null) {
             return;

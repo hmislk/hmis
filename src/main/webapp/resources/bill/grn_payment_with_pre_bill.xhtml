@@ -74,10 +74,9 @@
                     justify-content: center;
                     padding: 3mm;
                 }
-                
+
                 .amount-world{
-                    font-weight: 700;
-                    width: 133mm;
+                    width: 140mm;
                 }
 
                 .amount-world-text{
@@ -89,7 +88,7 @@
 
                 .user{
                     font-size: 16px;
-                    line-height: 1.2;
+                    line-height: 1.1;
                     margin-top: 2mm;
                 }
 
@@ -109,6 +108,10 @@
 
                 .total-line{
                     display: flex;
+                }
+                
+                .print-footer{
+                    display: none;
                 }
 
             }
@@ -168,6 +171,17 @@
                     margin-left: 20mm!important;
                 }
 
+                .print-footer {
+                    position: fixed;
+                    bottom: 0;
+                    width: 100%;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #000;
+                    padding-bottom: 14px;
+                    background: white;
+                }
+
                 .signature-box{
                     margin-top: 8mm;
                 }
@@ -187,17 +201,26 @@
                     justify-content: center;
                     padding: 3mm;
                 }
+                
+                .amount-world{
+                    width: 133mm;
+                    font-size: 16px;
+                }
+                
+                .amount-world-title{
+                    font-size: 18px;
+                }
 
                 .amount-world-text{
                     font-weight: 700;
-                    width: 98mm;
-                    line-height: 1.2;
+                    width: 95mm;
+                    line-height: 1.0;
                     font-size: 16px;
                 }
 
                 .user{
                     font-size: 16px;
-                    line-height: 1.2;
+                    line-height: 1.1;
                     margin-top: 2mm;
                 }
 
@@ -218,15 +241,8 @@
 
                 .total-line{
                     display: flex;
-                }
-
-                .footer::after {
-                    content: "Softwere by Carecode Solutions";
-                    display: block;
-                    text-align: center;
-                    margin-top: 1mm;
-                    padding: 15px 0;
-                    font-size: 13px;
+                    min-height: 20mm;
+                    
                 }
 
             }
@@ -264,7 +280,7 @@
                             <div style="line-height: 1.2;">
                                 <div class="d-flex">
                                     <h:outputText value="Voucher No" style="width: 35mm;"/>
-                                    <h:outputText value="#{cc.attrs.bill.deptId}"/>
+                                    <h:outputText value="#{cc.attrs.bill.referenceBill.deptId}"/>
                                 </div>
                                 <div class="d-flex">
                                     <h:outputText value="Voucher Date" style="width: 35mm;"/>
@@ -372,10 +388,10 @@
                 <div class="fotter-box" style="padding: 3mm;">
                     <div class="total-line">
                         <div class="amount-world">
-                            <h:outputLabel value="AMOUNT IN WORDS" /><br/>
+                            <h:outputLabel value="AMOUNT IN WORDS" class="amount-world-title"/><br/>
                             <h:outputLabel 
                                 class="amount-world-text"
-                                value="**#{supplierPaymentController.convertToWord(-cc.attrs.bill.netTotal)} ONLY**">
+                                value="** #{supplierPaymentController.convertToWord(-cc.attrs.bill.netTotal)} Only **">
                             </h:outputLabel>
                         </div>
                         <div>
@@ -387,7 +403,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="user">
                         <div class="user-data" >
                             <h:outputLabel value="Prepared By" style="width: 35mm;" />
@@ -427,7 +442,7 @@
                             </div>
                         </div>
                         <div class="payment-data-box">
-                            <div style="display: grid; line-height: 1.5;">
+                            <div style="display: grid; line-height: 1.3;">
                                 <div class="d-flex">
                                     <h:outputLabel value="Name" style="width: 23mm;" />
                                     <h:outputLabel value=":" style="width: 5mm;" />
@@ -452,7 +467,10 @@
                         </div>
                     </div>
 
-                    <footer class="footer"></footer>
+                    <div class="print-footer">
+                        <h:outputLabel value="Softwere by Carecode Solutions" />
+                    </div>
+
                 </div>
             </div>
 
