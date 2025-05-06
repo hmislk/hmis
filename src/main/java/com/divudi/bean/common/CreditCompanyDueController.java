@@ -406,10 +406,10 @@ public class CreditCompanyDueController implements Serializable {
                     row.getCell(j).setCellStyle(mergedStyle);
                 }
 
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue1PatientEncounters(), "0-30 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue2PatientEncounters(), "30-60 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue3PatientEncounters(), "60-90 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue4PatientEncounters(), "90+ Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue1Bills(), "0-30 Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue2Bills(), "30-60 Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue3Bills(), "60-90 Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue4Bills(), "90+ Days");
             }
 
             workbook.write(out);
@@ -419,16 +419,16 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    private int exportInnerDataTable(XSSFSheet sheet, int rowIndex, List<PatientEncounter> encounters, String period) {
-        for (PatientEncounter p1 : encounters) {
+    private int exportInnerDataTable(XSSFSheet sheet, int rowIndex, List<Bill> bills, String period) {
+        for (Bill b : bills) {
             Row dataRow = sheet.createRow(rowIndex++);
             dataRow.createCell(0).setCellValue(" ");
             dataRow.createCell(1).setCellValue(period);
-            dataRow.createCell(2).setCellValue(p1.getBhtNo());
-            dataRow.createCell(3).setCellValue(p1.getPatient().getPerson().getName());
-            dataRow.createCell(4).setCellValue(p1.getDateOfAdmission().toString());
-            dataRow.createCell(5).setCellValue(p1.getDateOfDischarge().toString());
-            dataRow.createCell(6).setCellValue(p1.getCreditUsedAmount() + p1.getCreditPaidAmount());
+            dataRow.createCell(2).setCellValue(b.getPatientEncounter().getBhtNo());
+            dataRow.createCell(3).setCellValue(b.getPatientEncounter().getPatient().getPerson().getName());
+            dataRow.createCell(4).setCellValue(b.getPatientEncounter().getDateOfAdmission().toString());
+            dataRow.createCell(5).setCellValue(b.getPatientEncounter().getDateOfDischarge().toString());
+            dataRow.createCell(6).setCellValue(b.getNetTotal() - b.getPaidAmount());
 
             XSSFCellStyle amountStyle = sheet.getWorkbook().createCellStyle();
             amountStyle.setDataFormat(sheet.getWorkbook().createDataFormat().getFormat("#,##0.00"));
