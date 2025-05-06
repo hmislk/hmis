@@ -1610,7 +1610,7 @@ public class CreditCompanyDueController implements Serializable {
             return;
         }
 
-        Map<Long, Double> settledAmounts = calculateSettledSponsorBillIP();
+        Map<Long, Double> settledAmounts = calculateSettledSponsorBillIP(patientEncounters);
 
         for (PatientEncounter patientEncounter : patientEncounters) {
             Bill finalBill = patientEncounter.getFinalBill();
@@ -1626,7 +1626,7 @@ public class CreditCompanyDueController implements Serializable {
                 finalBill.setSettledAmountByPatient(total);
             }
 
-            total = settledAmounts.get(patientEncounter.getId());
+            total = settledAmounts.getOrDefault(patientEncounter.getId(), 0.0);
 
             synchronized (finalBill) {
                 finalBill.setSettledAmountBySponsor(total);
@@ -1634,7 +1634,7 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    private Map<Long, Double> calculateSettledSponsorBillIP() {
+    private Map<Long, Double> calculateSettledSponsorBillIP(List<PatientEncounter> patientEncounters) {
         List<Long> patientEncounterIds = patientEncounters.stream()
                 .map(PatientEncounter::getId)
                 .collect(Collectors.toList());
@@ -1661,15 +1661,7 @@ public class CreditCompanyDueController implements Serializable {
 
         List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
 
-        List<Bill> detachedClones = rs.stream()
-                .map(b -> {
-                    Bill clonedBill = new Bill();
-                    clonedBill.clone(b);
-                    return clonedBill;
-                })
-                .collect(Collectors.toList());
-
-        return detachedClones.stream()
+        return rs.stream()
                 .collect(Collectors.groupingBy(
                         bill -> bill.getPatientEncounter().getId(),
                         Collectors.summingDouble(Bill::getPaidAmount)
