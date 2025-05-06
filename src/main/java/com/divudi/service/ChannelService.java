@@ -971,7 +971,7 @@ public class ChannelService {
         getSessionInstanceFacade().executeNativeSql(sqlForSessionInstace);
         serviceSessionFacade.executeNativeSql(sqlForServiceSession);
         getSessionInstanceFacade().flush();
-        serviceSessionFacade.flush(); 
+        serviceSessionFacade.flush();
 
     }
 
@@ -982,7 +982,6 @@ public class ChannelService {
                 + " and session.cancelled = :cancel "
                 + " and session.completed = :complete"
                 + " and session.retired = :retire "
-                + " and session.sessionDate >= :date"
                 + " and session.originatingSession.total <> :total";
 
         Map params = new HashMap();
@@ -990,12 +989,16 @@ public class ChannelService {
         params.put("cancel", false);
         params.put("complete", false);
         params.put("retire", false);
-        params.put("date", new Date());
         params.put("total", 0);
-        
+
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable add online bookings(API) for past sessions that are still not completed", false)) {
+            sql += " and session.sessionDate >= :date";
+            params.put("date", new Date());
+        }
+
         List<SessionInstance> sessions = getSessionInstanceFacade().findByJpqlWithoutCache(sql, params);
-        
-        if(sessions == null || sessions.isEmpty()){
+
+        if (sessions == null || sessions.isEmpty()) {
             return null;
         }
 
@@ -1400,29 +1403,29 @@ public class ChannelService {
     }
 
     public List<SessionInstance> filterAndfindUniqueNextImmidiateSessions(List<SessionInstance> sessions) {
-        if(sessions == null || sessions.isEmpty()){
+        if (sessions == null || sessions.isEmpty()) {
             return sessions;
         }
-        
+
         Map<String, SessionInstance> uniqueSessions = new HashMap<>();
-        
-        for(SessionInstance session : sessions){
+
+        for (SessionInstance session : sessions) {
             String insId = String.valueOf(session.getOriginatingSession().getInstitution().getId());
             String staffId = String.valueOf(session.getOriginatingSession().getStaff().getId());
-            String key = insId+staffId;
-            
+            String key = insId + staffId;
+
             SessionInstance existingSession = uniqueSessions.get(key);
-            
-            if(existingSession == null){
+
+            if (existingSession == null) {
                 uniqueSessions.put(key, session);
-            }else if(existingSession.getSessionDate().after(session.getSessionDate())){
+            } else if (existingSession.getSessionDate().after(session.getSessionDate())) {
                 uniqueSessions.put(key, session);
-            }else if(existingSession.getSessionDate() == session.getSessionDate() && existingSession.getSessionTime().after(session.getSessionTime())){
+            } else if (existingSession.getSessionDate() == session.getSessionDate() && existingSession.getSessionTime().after(session.getSessionTime())) {
                 uniqueSessions.put(key, session);
             }
-            
+
         }
-        
+
         return new ArrayList<>(uniqueSessions.values());
     }
 

@@ -825,8 +825,16 @@ public class ChannelApi {
         if (sessionId == null || sessionId.isEmpty()) {
             throw new ValidationException("SessionID", " Missing SessionId field");
         }
+        
+        Long sessionIdLong = 0L;
+        
+        try{
+            sessionIdLong = Long.parseLong(sessionId);
+        }catch(Exception e){
+            throw new ValidationException("SessionID", " Invalid Session ID" + sessionId);
+        }
 
-        SessionInstance session = sessionInstanceFacade.find(Long.parseLong(sessionId));
+        SessionInstance session = channelService.findActiveChannelSession(Long.parseLong(sessionId));
         if (session == null) {
             //JSONObject response = commonFunctionToErrorResponse("Session id is invalid");
             throw new ValidationException("SessionID", " No session associate with this id" + sessionId);
