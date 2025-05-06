@@ -281,34 +281,34 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    public void createInwardAgeTableDetailWithFilters() {
-        Date startTime = new Date();
-
-        makeNull();
-        Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
-                true, PaymentMethod.Credit, institutionOfDepartment, department, site);
-        setIns.addAll(list);
-
-        creditCompanyAge = new ArrayList<>();
-        for (Institution ins : setIns) {
-            if (ins == null) {
-                continue;
-            }
-
-            String1Value5 newRow = new String1Value5();
-            newRow.setInstitution(ins);
-            setInwardValues(ins, newRow, PaymentMethod.Credit, institutionOfDepartment, department, site);
-
-            if (newRow.getValue1() != 0
-                    || newRow.getValue2() != 0
-                    || newRow.getValue3() != 0
-                    || newRow.getValue4() != 0) {
-                creditCompanyAge.add(newRow);
-            }
-        }
-    }
+//    public void createInwardAgeTableWithFilters() {
+//        Date startTime = new Date();
+//
+//        makeNull();
+//        Set<Institution> setIns = new HashSet<>();
+//
+//        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
+//                true, PaymentMethod.Credit, institutionOfDepartment, department, site);
+//        setIns.addAll(list);
+//
+//        creditCompanyAge = new ArrayList<>();
+//        for (Institution ins : setIns) {
+//            if (ins == null) {
+//                continue;
+//            }
+//
+//            String1Value5 newRow = new String1Value5();
+//            newRow.setInstitution(ins);
+//            setInwardValues(ins, newRow, PaymentMethod.Credit, institutionOfDepartment, department, site);
+//
+//            if (newRow.getValue1() != 0
+//                    || newRow.getValue2() != 0
+//                    || newRow.getValue3() != 0
+//                    || newRow.getValue4() != 0) {
+//                creditCompanyAge.add(newRow);
+//            }
+//        }
+//    }
 
     public void createInwardAgeTableWithFilters() {
         Date startTime = new Date();
@@ -834,12 +834,16 @@ public class CreditCompanyDueController implements Serializable {
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+                dataTable5Value.getValue1Bills().add(b);
             } else if (dayCount < 60) {
                 dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+                dataTable5Value.getValue2Bills().add(b);
             } else if (dayCount < 90) {
                 dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+                dataTable5Value.getValue3Bills().add(b);
             } else {
                 dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+                dataTable5Value.getValue4Bills().add(b);
             }
         }
     }

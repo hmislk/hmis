@@ -4,13 +4,14 @@
  */
 package com.divudi.core.data.table;
 
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author safrin
  */
 public class String1Value5 {
@@ -19,12 +20,16 @@ public class String1Value5 {
     Institution institution;
     private double value1;
     List<PatientEncounter> value1PatientEncounters;
+    List<Bill> value1Bills;
     private double value2;
     List<PatientEncounter> value2PatientEncounters;
+    List<Bill> value2Bills;
     private double value3;
     List<PatientEncounter> value3PatientEncounters;
+    List<Bill> value3Bills;
     private double value4;
     List<PatientEncounter> value4PatientEncounters;
+    List<Bill> value4Bills;
     private double value5;
 
     public List<PatientEncounter> getValue1PatientEncounters() {
@@ -77,6 +82,54 @@ public class String1Value5 {
     public void setValue4PatientEncounters(List<PatientEncounter> value4PatientEncounters) {
 
         this.value4PatientEncounters = value4PatientEncounters;
+    }
+
+    public List<Bill> getValue1Bills() {
+        if (value1Bills == null) {
+            value1Bills = new ArrayList<>();
+        }
+
+        return value1Bills;
+    }
+
+    public void setValue1Bills(List<Bill> value1Bills) {
+        this.value1Bills = value1Bills;
+    }
+
+    public List<Bill> getValue2Bills() {
+        if (value2Bills == null) {
+            value2Bills = new ArrayList<>();
+        }
+
+        return value2Bills;
+    }
+
+    public void setValue2Bills(List<Bill> value2Bills) {
+        this.value2Bills = value2Bills;
+    }
+
+    public List<Bill> getValue3Bills() {
+        if (value3Bills == null) {
+            value3Bills = new ArrayList<>();
+        }
+
+        return value3Bills;
+    }
+
+    public void setValue3Bills(List<Bill> value3Bills) {
+        this.value3Bills = value3Bills;
+    }
+
+    public List<Bill> getValue4Bills() {
+        if (value4Bills == null) {
+            value4Bills = new ArrayList<>();
+        }
+
+        return value4Bills;
+    }
+
+    public void setValue4Bills(List<Bill> value4Bills) {
+        this.value4Bills = value4Bills;
     }
 
     public String getString() {
