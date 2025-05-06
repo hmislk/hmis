@@ -992,8 +992,14 @@ public class ChannelService {
         params.put("retire", false);
         params.put("date", new Date());
         params.put("total", 0);
+        
+        List<SessionInstance> sessions = getSessionInstanceFacade().findByJpqlWithoutCache(sql, params);
+        
+        if(sessions == null || sessions.isEmpty()){
+            return null;
+        }
 
-        return (SessionInstance) getSessionInstanceFacade().findByJpqlWithoutCache(sql, params).get(0);
+        return (SessionInstance) sessions.get(0);
 
     }
 
