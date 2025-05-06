@@ -281,7 +281,7 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    public void createInwardAgeTableWithFilters() {
+    public void createInwardAgeTableDetailWithFilters() {
         Date startTime = new Date();
 
         makeNull();
@@ -308,6 +308,56 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
+    }
+
+    public void createInwardAgeTableWithFilters() {
+        Date startTime = new Date();
+
+        makeNull();
+
+        Map<Institution, List<Bill>> institutionMap = getCreditCompanyBillsGroupedByCreditCompany();
+
+        creditCompanyAge = new ArrayList<>();
+        for (Institution ins : institutionMap.keySet()) {
+            if (ins == null) {
+                continue;
+            }
+
+            String1Value5 newRow = new String1Value5();
+            newRow.setInstitution(ins);
+            setInwardValues(newRow, institutionMap.get(ins));
+
+            if (newRow.getValue1() != 0
+                    || newRow.getValue2() != 0
+                    || newRow.getValue3() != 0
+                    || newRow.getValue4() != 0) {
+                creditCompanyAge.add(newRow);
+            }
+        }
+    }
+
+    private Map<Institution, List<Bill>> getCreditCompanyBillsGroupedByCreditCompany() {
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill FROM Bill bill " +
+                "WHERE bill.retired <> :br " +
+                "AND bill.billTypeAtomic IN :bts";
+
+        parameters.put("br", true);
+        parameters.put("bts", bts);
+
+        if (institutionOfDepartment != null) {
+            jpql += " AND bill.institution = :ins";
+            parameters.put("ins", institutionOfDepartment);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql, parameters);
+
+        return bills.stream()
+                .filter(b -> b.getCreditCompany() != null)
+                .collect(Collectors.groupingBy(Bill::getCreditCompany));
     }
 
     public void exportCreditCompanyDueAgeDetailToExcel() {
@@ -768,6 +818,28 @@ public class CreditCompanyDueController implements Serializable {
             } else {
                 dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
                 dataTable5Value.getValue4PatientEncounters().add(b);
+            }
+        }
+    }
+
+    private void setInwardValues(String1Value5 dataTable5Value, List<Bill> bills) {
+        for (Bill b : bills) {
+            long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
+
+            double finalValue = b.getNetTotal() - b.getPaidAmount();
+
+            if (finalValue == 0) {
+                continue;
+            }
+
+            if (dayCount < 30) {
+                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+            } else if (dayCount < 60) {
+                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+            } else if (dayCount < 90) {
+                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+            } else {
+                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
             }
         }
     }
