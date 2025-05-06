@@ -1278,7 +1278,10 @@ public class ChannelApi {
             throw new ValidationException("Channel : ", "Appoinment session is already finished now.");
         }
         if (session.isCancelled()) {
-            throw new ValidationException("Channel : ", "Channel session session is Cancelled from the Hospital. Please contact hospital for more info.");
+            throw new ValidationException("Channel : ", "Channel session is Cancelled from the Hospital. Please contact hospital for more info.");
+        }
+        if(session.isRetired()){
+            throw new ValidationException("Channel : ", "Channel session is not available.");
         }
     }
 
@@ -1391,7 +1394,7 @@ public class ChannelApi {
         appoinment.put("givenTime", null);
         appoinment.put("chRoom", session.getRoomNo());
         appoinment.put("timeInterval", null);
-        appoinment.put("status", "Active");
+        appoinment.put("status", OnlineBookingStatus.ACTIVE);
         appoinment.put("isnew", null);
 
         Map<String, Object> sessionDetails = new HashMap<>();
