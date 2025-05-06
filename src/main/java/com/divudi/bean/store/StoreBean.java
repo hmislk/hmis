@@ -617,6 +617,8 @@ public class StoreBean implements Serializable {
                 String code = i.getCode();
                 Long longCode = CommonFunctions.stringToLong(code);
                 s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
             } else {
                 s.setItemName("UNKNOWN");
                 s.setBarcode("");
@@ -674,6 +676,8 @@ public class StoreBean implements Serializable {
                 String code = i.getCode();
                 Long longCode = CommonFunctions.stringToLong(code);
                 s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
             } else {
                 s.setItemName("UNKNOWN");
                 s.setBarcode("");
@@ -730,6 +734,8 @@ public class StoreBean implements Serializable {
                 String code = i.getCode();
                 Long longCode = CommonFunctions.stringToLong(code);
                 s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
             } else {
                 s.setItemName("UNKNOWN");
                 s.setBarcode("");
@@ -782,6 +788,8 @@ public class StoreBean implements Serializable {
                 String code = i.getCode();
                 Long longCode = CommonFunctions.stringToLong(code);
                 s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
             } else {
                 s.setItemName("UNKNOWN");
                 s.setBarcode("");
@@ -839,6 +847,8 @@ public class StoreBean implements Serializable {
                 String code = i.getCode();
                 Long longCode = CommonFunctions.stringToLong(code);
                 s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
             } else {
                 s.setItemName("UNKNOWN");
                 s.setBarcode("");
