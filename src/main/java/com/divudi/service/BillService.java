@@ -28,12 +28,14 @@ import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DenominationTransactionFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -72,11 +74,13 @@ public class BillService {
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
+    private DenominationTransactionFacade denominationTransactionFacade;
+    @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
-   private  PaymentFacade paymentFacade;
+    private PaymentFacade paymentFacade;
     @EJB
     private DrawerService drawerService;
     @EJB
@@ -315,7 +319,6 @@ public class BillService {
         billItemFacade.edit(bi);
     }
 
-    
     public void createBillItemFeesAndAssignToNewBillItem(BillItem originalBillItem, BillItem duplicateBillItem) {
         double staffFeesCalculatedByBillFees = 0.0;
         double collectingCentreFeesCalculateByBillFees = 0.0;
@@ -324,7 +327,7 @@ public class BillService {
         double additionalFeeCalculatedByBillFees = 0.0;
 
         List<BillFee> originalBillfess = fetchBillFees(originalBillItem);
-        
+
         List<BillFee> duplicateBillfess = new ArrayList<>();
 
         for (BillFee bf : originalBillfess) {
@@ -366,7 +369,6 @@ public class BillService {
         billItemFacade.edit(duplicateBillItem);
     }
 
-    
     public void createBillItemFeeBreakdownFromBill(Bill bill) {
         List<BillItem> billItems = fetchBillItems(bill);
         createBillItemFeeBreakdownAsHospitalFeeItemDiscount(billItems);
@@ -448,7 +450,7 @@ public class BillService {
         parameters.put("ret", false);
         return billFacade.findFirstByJpql(jpql, parameters);
     }
-    
+
     public Bill fetchBillById(Long id) {
         String jpql = "SELECT b "
                 + " FROM Bill b "
@@ -1634,9 +1636,9 @@ public class BillService {
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         List<PatientInvestigation> ptix = patientInvestigationFacade.findByJpql(jpql, params);
-        if(ptix==null){
+        if (ptix == null) {
             System.out.println("ptix is null = " + ptix);
-        }else{
+        } else {
             System.out.println("ptix size= " + ptix.size());
         }
         return ptix;
@@ -1644,11 +1646,11 @@ public class BillService {
 
     public List<BillItem> checkCreditBillPaymentReciveFromCreditCompany(Bill bill) {
         List<BillItem> billItems = new ArrayList<>();
-        
+
         if (bill == null) {
             return billItems;
         }
-        
+
         Map params = new HashMap();
         String jpql = "select bi "
                 + " from BillItem bi"
@@ -1660,10 +1662,21 @@ public class BillService {
         params.put("can", false);
         params.put("bta", BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         params.put("b", bill);
-        
-        billItems = billItemFacade.findByJpql(jpql, params);
-        return billItems ;
 
+        billItems = billItemFacade.findByJpql(jpql, params);
+        return billItems;
+
+    }
+
+    public List<DenominationTransaction> fetchDenominationTransactionFromBill(Bill b) {
+        String jpql = "select dt "
+                + " from DenominationTransaction dt "
+                + " where dt.retired=:ret "
+                + " and dt.bill=:b";
+        Map m = new HashMap();
+        m.put("b", b);
+        m.put("ret", false);
+        return denominationTransactionFacade.findByJpql(jpql, m);
     }
 
 }

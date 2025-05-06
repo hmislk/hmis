@@ -1382,7 +1382,7 @@ public class CreditCompanyDueController implements Serializable {
             return;
         }
 
-        updateSettledAmountsForIP(patientEncounters);
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
 
         setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
         calculateCreditCompanyAmounts();
@@ -1446,7 +1446,7 @@ public class CreditCompanyDueController implements Serializable {
             return;
         }
 
-        updateSettledAmountsForIP(patientEncounters);
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
 
         setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "excess"));
         calculateCreditCompanyAmounts();
@@ -1603,6 +1603,69 @@ public class CreditCompanyDueController implements Serializable {
 
     private void removeSettledAndExcessBills(List<PatientEncounter> patientEncounters) {
         patientEncounters.removeIf(p -> p.getFinalBill().getNetTotal() - (Math.abs(p.getFinalBill().getPaidAmount()) + Math.abs(p.getCreditPaidAmount())) <= 0);
+    }
+
+    private void updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(List<PatientEncounter> patientEncounters) {
+        if (patientEncounters == null || patientEncounters.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> settledAmounts = calculateSettledSponsorBillIP(patientEncounters);
+
+        for (PatientEncounter patientEncounter : patientEncounters) {
+            Bill finalBill = patientEncounter.getFinalBill();
+
+            if (finalBill.isCancelled() || finalBill.isRefunded()) {
+                continue;
+            }
+
+            List<Bill> bills = calculateSettledPatientBillIP(finalBill);
+            double total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountByPatient(total);
+            }
+
+            total = settledAmounts.getOrDefault(patientEncounter.getId(), 0.0);
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountBySponsor(total);
+            }
+        }
+    }
+
+    private Map<Long, Double> calculateSettledSponsorBillIP(List<PatientEncounter> patientEncounters) {
+        List<Long> patientEncounterIds = patientEncounters.stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill from Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.patientEncounter.id in :patientEncounterIds ";
+
+        parameters.put("br", true);
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += " and bill.creditCompany =:ins ";
+            parameters.put("ins", institution);
+        }
+
+        List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
+
+        return rs.stream()
+                .collect(Collectors.groupingBy(
+                        bill -> bill.getPatientEncounter().getId(),
+                        Collectors.summingDouble(Bill::getPaidAmount)
+                ));
     }
 
     private void updateSettledAmountsForIP(List<PatientEncounter> patientEncounters) {
