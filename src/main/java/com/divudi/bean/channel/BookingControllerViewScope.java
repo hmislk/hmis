@@ -1822,7 +1822,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 mobile = methodBillSession.getBill().getPatient().getPerson().getSmsNumber();
             }
         } else {
-            mobile = methodBillSession.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
+            if (methodBillSession.getBill().getReferenceBill() != null && methodBillSession.getBill().getReferenceBill().getOnlineBooking() != null) {
+                mobile = methodBillSession.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
+            }
         }
 
         if (!mobile.equals("")) {
