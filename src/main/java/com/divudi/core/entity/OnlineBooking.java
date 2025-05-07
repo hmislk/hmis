@@ -45,8 +45,8 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private String requestIp;
     private double hospitalFee;
     private double doctorFee;
-    private boolean Absent;
-    private boolean Canceled;
+    private boolean absent;
+    private boolean canceled;
     private String cancelledBy;
     
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -352,19 +352,19 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     }
 
     public boolean isAbsent() {
-        return Absent;
+        return absent;
     }
 
-    public void setAbsent(boolean Absent) {
-        this.Absent = Absent;
+    public void setAbsent(boolean absent) {
+        this.absent = absent;
     }
 
     public boolean isCanceled() {
-        return Canceled;
+        return canceled;
     }
 
-    public void setCanceled(boolean Canceled) {
-        this.Canceled = Canceled;
+    public void setCanceled(boolean canceled) {
+        this.canceled = canceled;
     }
 
     public String getCancelledBy() {
