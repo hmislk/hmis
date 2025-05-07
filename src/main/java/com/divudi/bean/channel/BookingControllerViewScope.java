@@ -1189,11 +1189,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 continue;
             }
 
-            OnlineBooking booking = bs.getBill().getReferenceBill().getOnlineBooking();
-            booking.setIsCanceled(true);
-            booking.setCancelledBy("From System : " + getSessionController().getLoggedUser().getName());
-            booking.setOnlineBookingStatus(OnlineBookingStatus.DOCTOR_CANCELED);
-            getOnlineBookingFacade().edit(booking);
+            if (bs.getBill().getReferenceBill() != null && bs.getBill().getReferenceBill().getOnlineBooking() != null) {
+                OnlineBooking booking = bs.getBill().getReferenceBill().getOnlineBooking();
+                booking.setCanceled(true);
+                booking.setCancelledBy("From System : " + getSessionController().getLoggedUser().getName());
+                booking.setOnlineBookingStatus(OnlineBookingStatus.DOCTOR_CANCELED);
+                getOnlineBookingFacade().edit(booking);
+            }
 
         }
     }
@@ -1208,16 +1210,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (bs.getBill() == null) {
                 continue;
             }
-            String mobile;
+            String mobile = "";
             if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
                 if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
                     continue;
                 }
                 mobile = bs.getBill().getPatient().getPerson().getSmsNumber();
-            } else {
+            } else if (bs.getBill().getReferenceBill() != null
+                    && bs.getBill().getReferenceBill().getOnlineBooking() != null) {
                 mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
             }
 
+            if (mobile.isEmpty()) {
+                continue;
+            }
             Sms e = new Sms();
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
@@ -1808,14 +1814,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
-        
+
         String mobile = "";
-        
-        if(methodBillSession.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+
+        if (methodBillSession.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             if (!methodBillSession.getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
                 mobile = methodBillSession.getBill().getPatient().getPerson().getSmsNumber();
             }
-        }else{
+        } else {
             mobile = methodBillSession.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
         }
 
@@ -1868,16 +1874,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillBillSessions();
         fillSessionActivities();
     }
-    
-    public void markOnlineBookingStatusForCompletedBooking(List<BillSession> allBookings){
-        for(BillSession appoinment : allBookings){
-            if(appoinment.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && 
-                    !appoinment.getBill().isCancelled() && 
-                    !appoinment.getBill().isRefunded() && 
-                    !appoinment.isAbsent()){
-                appoinment.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.COMPLETED);
-                getOnlineBookingFacade().edit(appoinment.getBill().getReferenceBill().getOnlineBooking());
-                
+
+    public void markOnlineBookingStatusForCompletedBooking(List<BillSession> allBookings) {
+        for (BillSession appoinment : allBookings) {
+            if (appoinment.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
+                    && !appoinment.getBill().isCancelled()
+                    && !appoinment.getBill().isRefunded()
+                    && !appoinment.isAbsent()) {
+
+                if (appoinment.getBill().getReferenceBill() != null && appoinment.getBill().getReferenceBill().getOnlineBooking() != null) {
+                    appoinment.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.COMPLETED);
+                    getOnlineBookingFacade().edit(appoinment.getBill().getReferenceBill().getOnlineBooking());
+                }
+
             }
         }
     }
@@ -1893,7 +1902,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Completed");
         markOnlineBookingStatusForCompletedBooking(getBillSessions());
-        
+
         if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingNoShow()) {
             sendSmsOnChannelMissingChannelBookings();
         }
@@ -2310,7 +2319,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getSelectedBillSession().setAbsentMarkedAt(new Date());
         getSelectedBillSession().setAbsentMarkedUser(sessionController.getLoggedUser());
         if (getSelectedBillSession().getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-            getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking().setIsAbsent(true);
+            getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking().setAbsent(true);
         }
         billSessionFacade.edit(getSelectedBillSession());
     }
@@ -2625,7 +2634,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             getBillSession().getBill().getCancelledBill().setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
             OnlineBooking booking = getBillSession().getBill().getReferenceBill().getOnlineBooking();
             booking.setOnlineBookingStatus(OnlineBookingStatus.PATIENT_CANCELED);
-            booking.setIsCanceled(true);
+            booking.setCanceled(true);
             booking.setCancelledBy("From system : " + getSessionController().getLoggedUser().getName());
             onlineBookingFacade.edit(booking);
             getBillFacade().edit(getBillSession().getBill().getReferenceBill());
@@ -3486,7 +3495,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         if (selectedBillSession.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && selectedBillSession.getBill().getReferenceBill() != null) {
             if (selectedBillSession.getBill().getReferenceBill().getOnlineBooking() != null) {
-                selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setIsAbsent(true);
+                selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setAbsent(true);
             }
         }
     }
@@ -4095,11 +4104,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
         String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
-        
+
         String patientName = "";
 
         if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-            patientName = b.getReferenceBill().getOnlineBooking().getTitle()+"."+ b.getReferenceBill().getOnlineBooking().getPatientName();
+            patientName = b.getReferenceBill().getOnlineBooking().getTitle() + "." + b.getReferenceBill().getOnlineBooking().getPatientName();
         } else {
             patientName = b.getPatient().getPerson().getNameWithTitle();
         }

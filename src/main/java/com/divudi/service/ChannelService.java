@@ -666,7 +666,7 @@ public class ChannelService {
         bi.setQty(1.0);
         bi.setSessionDate(session.getSessionAt());
 
-        if (bill.getOnlineBooking().isForeignStatus()) {
+        if (bill.getOnlineBooking() != null && bill.getOnlineBooking().isForeignStatus()) {
             bi.setGrossValue(session.getOriginatingSession().getTotalFfee());
             bi.setNetRate(session.getOriginatingSession().getTotalFfee());
             bi.setNetValue(session.getOriginatingSession().getTotalFfee());
@@ -947,7 +947,7 @@ public class ChannelService {
 
     public void cancelOnlineBooking(OnlineBooking booking) {
         booking.setOnlineBookingStatus(OnlineBookingStatus.PATIENT_CANCELED);
-        booking.setIsCanceled(true);
+        booking.setCanceled(true);
         booking.setCancelledBy("From API :" + booking.getAgency().getName());
         getOnlineBookingFacade().edit(booking);
 
@@ -1420,7 +1420,7 @@ public class ChannelService {
                 uniqueSessions.put(key, session);
             } else if (existingSession.getSessionDate().after(session.getSessionDate())) {
                 uniqueSessions.put(key, session);
-            } else if (existingSession.getSessionDate() == session.getSessionDate() && existingSession.getSessionTime().after(session.getSessionTime())) {
+            } else if (existingSession.getSessionDate().equals(session.getSessionDate()) && existingSession.getSessionTime().after(session.getSessionTime())) {
                 uniqueSessions.put(key, session);
             }
 

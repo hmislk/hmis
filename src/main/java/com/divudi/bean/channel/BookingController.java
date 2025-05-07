@@ -1522,7 +1522,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                     continue;
                 }
                 mobile = bs.getBill().getPatient().getPerson().getSmsNumber();
-            }else if(bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+            }else if(bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
+                     && bs.getBill().getReferenceBill() != null && bs.getBill().getReferenceBill().getOnlineBooking() != null){
                 mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
             }
 
