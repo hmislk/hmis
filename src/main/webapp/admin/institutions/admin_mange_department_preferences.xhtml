@@ -203,7 +203,7 @@
                                         class="form-label w-100"
                                         value="Number of Collection Centre Bill Copies"></h:outputLabel>
                                     <p:inputText value="#{sessionController.currentPreference.numberOfCCBillCopies}"/>
-                                    
+
                                     <h:outputLabel
                                         class="form-label"
                                         value="Genarate OPD TOken Numbers To Counter Wise"></h:outputLabel>
@@ -358,9 +358,18 @@
                                 </h:panelGrid>
 
                             </p:tab>
+                            
                             <p:tab title="Channel" >
+                                <p:growl id="msg" life="2000"></p:growl>
                                 <p:panel header="Channel" >
                                     <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
+                                        
+                                        <h:outputLabel value="Accept Online Booking for all Channeling Sessions"></h:outputLabel>
+                                        <h:panelGroup>
+                                            
+                                            <p:commandButton value="Accept" update="msg" action="#{sessionController.acceptOnlineBookingForAllSessions(true)}"></p:commandButton>
+                                            <p:commandButton class="mx-2 ui-button-danger" update="msg" value="Not Accept" action="#{sessionController.acceptOnlineBookingForAllSessions(false)}"></p:commandButton>
+                                        </h:panelGroup>
 
                                         <h:outputLabel value="Send SMS on Booking"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBooking}"/>
@@ -380,14 +389,12 @@
                                         <h:outputLabel value="Send SMS on Doctor Payment"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingDocterPayment}"/>
 
-
-
                                         <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
                                         <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  </p:inputTextarea>
 
                                         <h:outputLabel value="SMS Template For Channel Booking Cancellation"></h:outputLabel>
                                         <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingCancellation}" class="w-100">  </p:inputTextarea>
-                                        
+
                                         <h:outputLabel value="SMS Template For Channel Doctor Arrival"></h:outputLabel>
                                         <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelDoctorArrival}" class="w-100">  </p:inputTextarea>
 
@@ -396,14 +403,14 @@
 
                                         <h:outputLabel value="SMS Template For Missing Channel Booking"></h:outputLabel>
                                         <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingNoShow}" class="w-100">  </p:inputTextarea>
-                                        
+
                                         <h:outputLabel value="SMS Template For Channel Doctor Payment"></h:outputLabel>
                                         <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingDoctorPayment}" class="w-100">  </p:inputTextarea>
 
-                                        
+
                                         <p:separator></p:separator>
                                         <p:separator></p:separator>
-                                        
+
                                         <h:outputLabel value="Show Bar Code in Channel Booking Bill"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.showBarCodeInChannelBookingBill}"/>
 
@@ -459,7 +466,7 @@
 
                                         <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
                                         <h:inputText id="fontName" value="#{sessionController.currentPreference.microBiologyFont}"/>
-                                        
+
 
                                     </h:panelGrid>
                                 </p:panel>

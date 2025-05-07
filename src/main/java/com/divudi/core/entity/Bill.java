@@ -79,6 +79,9 @@ public class Bill implements Serializable, RetirableEntity {
     private List<Bill> cashBillsOpdPre = new ArrayList<>();
     @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
     private List<Bill> refundBills = new ArrayList<>();
+    
+    @OneToOne
+    private OnlineBooking onlineBooking;
 
     @Enumerated(EnumType.STRING)
     protected BillClassType billClassType;
@@ -452,6 +455,14 @@ public class Bill implements Serializable, RetirableEntity {
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
+    }
+    
+     public OnlineBooking getOnlineBooking() {
+        return onlineBooking;
+    }
+
+    public void setOnlineBooking(OnlineBooking onlineBooking) {
+        this.onlineBooking = onlineBooking;
     }
 
     private void generateBillPrintFromBillTemplate() {
