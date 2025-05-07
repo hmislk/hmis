@@ -581,6 +581,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToSearchAdmissions() {
+        bhtSummeryController.setPatientEncounterHasProvisionalBill(false);
         return "/inward/inpatient_search?faces-redirect=true";
     }
 
@@ -782,6 +783,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         current.getPatient().setEditingMode(false);
         bhtSummeryController.setPatientEncounter(current);
+        bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
         return bhtSummeryController.navigateToInpatientProfile();
     }
 
