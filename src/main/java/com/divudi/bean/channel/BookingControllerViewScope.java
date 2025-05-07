@@ -1835,7 +1835,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setCreatedAt(new Date());
             e.setSmsType(MessageType.ChannelStatusUpdate);
             e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(methodBillSession.getBill().getPatient().getPerson().getSmsNumber());
+            e.setReceipientNumber(mobile);
             e.setSendingMessage(smsBody(methodBillSession));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
