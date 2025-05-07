@@ -133,6 +133,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private DrawerController drawerController;
     @Inject
     private PharmacySaleController pharmacySaleController;
+    @Inject
+    private AuditEventApplicationController auditEventApplicationController;
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -278,13 +280,16 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public AuditEvent createNewAuditEvent() {
-        return createNewAuditEvent(null);
+        return createNewAuditEvent(null, null);
     }
 
-    public AuditEvent createNewAuditEvent(String actionName) {
+    public AuditEvent createNewAuditEvent(String trigger, String status) {
         AuditEvent auditEvent = new AuditEvent();
-        if (actionName != null) {
-            auditEvent.setEventTrigger(actionName);
+        if (trigger != null) {
+            auditEvent.setEventTrigger(trigger);
+        }
+        if (status != null) {
+            auditEvent.setEventStatus(status);
         }
         auditEvent.setEventDataTime(currentTime());
         auditEvent.setInstitutionId(institution != null ? institution.getId() : null);
@@ -295,7 +300,24 @@ public class SessionController implements Serializable, HttpSessionListener {
         auditEvent.setIpAddress(requestInfo.getIpAddress());
         auditEvent.setHost(requestInfo.getHost());
         auditEvent.setUrl(requestInfo.getUrl());
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return auditEvent;
+    }
 
+    public AuditEvent completeAuditEvent(AuditEvent auditEvent) {
+        if (auditEvent == null) {
+            return null;
+        }
+        if (auditEvent.getEventDataTime() == null) {
+            return null;
+        }
+        long duration;
+        Date startTime = auditEvent.getEventDataTime();
+        Date endTime = currentTime();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
         return auditEvent;
     }
 
