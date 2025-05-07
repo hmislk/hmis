@@ -1221,7 +1221,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
             }
 
-            if (mobile.isEmpty()) {
+            if (mobile == null || mobile.isEmpty()) {
                 continue;
             }
             Sms e = new Sms();
@@ -1827,7 +1827,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        if (!mobile.equals("")) {
+        if (mobile != null && !mobile.equals("")) {
             Sms e = new Sms();
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
