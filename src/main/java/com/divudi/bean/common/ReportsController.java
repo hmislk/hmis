@@ -3961,7 +3961,7 @@ public class ReportsController implements Serializable {
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         removeCancelledNonInvestigationBills(rs);
         createSummaryRows(rs);
-        rs.removeIf(row -> row.getRowValue() == 0.0);
+//        rs.removeIf(row -> row.getRowValue() == 0.0);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
