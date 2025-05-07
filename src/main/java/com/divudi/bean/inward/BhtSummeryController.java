@@ -172,6 +172,7 @@ public class BhtSummeryController implements Serializable {
     boolean changed = false;
     boolean showOrginalBill = false;
     private String duration;
+    private boolean patientEncounterHasProvisionalBill = false;
 
     public String navigateToIntrimBillEstimate() {
         createTablesWithEstimatedProfessionalFees();
@@ -2090,19 +2091,23 @@ public class BhtSummeryController implements Serializable {
         bItem.setBillFees(list);
 
     }
+    
+    public void createIntrimBillTable(){
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Access to Intrim Bill if Provisional Bill is Created")) {
+            if (admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
+                JsfUtil.addErrorMessage("There is a Provisional Bill For This Admission");
+                patientEncounter = null;
+                return;
+            }
+        }
+        createTables();
+    }
 
     public void createTables() {
         makeNull();
 
         if (patientEncounter == null) {
             return;
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Restrict Access to Intrim Bill if Provisional Bill is Created")) {
-            if (admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
-                JsfUtil.addErrorMessage("There is a Provisional Bill For This Admission");
-                return;
-            }
         }
 
         createPatientRooms();
@@ -3137,6 +3142,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setDuration(String duration) {
         this.duration = duration;
+    }
+
+    public boolean isPatientEncounterHasProvisionalBill() {
+        return patientEncounterHasProvisionalBill;
+    }
+
+    public void setPatientEncounterHasProvisionalBill(boolean patientEncounterHasProvisionalBill) {
+        this.patientEncounterHasProvisionalBill = patientEncounterHasProvisionalBill;
     }
 
 }
