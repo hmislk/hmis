@@ -635,7 +635,6 @@ public class ItemController implements Serializable {
                 jpql += "AND i.department=:dept ";
                 parameters.put("dept", department);
             }
-
             jpql += "ORDER BY i.name";
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         }
