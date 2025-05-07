@@ -78,6 +78,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import javax.transaction.Transactional;
 
 /**
  *
@@ -956,6 +957,7 @@ public class ChannelService {
     @EJB
     private ServiceSessionFacade serviceSessionFacade;
 
+    @Transactional
     public void makeAllSessionsAvailableForOnlineBookings(boolean accept) throws Exception {
 
         String sqlForServiceSession = "";

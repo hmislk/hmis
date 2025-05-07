@@ -4022,12 +4022,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setCreater(sessionController.getLoggedUser());
         e.setBill(bs.getBill());
 
+        String mobile = "";
         if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
+            mobile = bs.getBill().getPatient().getPerson().getSmsNumber();
         } else {
-            e.setReceipientNumber(bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo());
+            if (bs.getBill().getReferenceBill() != null && bs.getBill().getReferenceBill().getOnlineBooking() != null) {
+                mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
+            }
         }
-
+        
+        if(mobile == null || mobile.isEmpty()){
+            return;
+        }
+        e.setReceipientNumber(mobile);
         e.setSendingMessage(createChanellCancellationBookingSms(bs.getBill()));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
