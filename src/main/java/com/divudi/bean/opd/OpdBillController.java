@@ -53,6 +53,7 @@ import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.DepartmentResolver;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -126,6 +127,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     PaymentService paymentService;
     @EJB
     DiscountSchemeValidationService discountSchemeValidationService;
+    @EJB
+    DepartmentResolver departmentResolver;
 
     /**
      * Controllers
@@ -1702,7 +1705,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private boolean processBillsByDepartment() {
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
-            billDepts.add(e.getBillItem().getItem().getDepartment());
+            Department prformingDept = departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), e.getBillItem().getItem());
+            billDepts.add(prformingDept);
         }
         for (Department d : billDepts) {
             Bill myBill = new BilledBill();
@@ -1712,7 +1716,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             List<BillEntry> tmp = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
-                if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
+                Department prformingDept = departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), e.getBillItem().getItem());
+                if (Objects.equals(prformingDept.getId(), d.getId())) {
                     BillItem bi = getBillBean().saveBillItemForOpdBill(myBill, e, getSessionController().getLoggedUser(), getBillFeeBundleEntrys());
                     myBill.getBillItems().add(bi);
                     tmp.add(e);
