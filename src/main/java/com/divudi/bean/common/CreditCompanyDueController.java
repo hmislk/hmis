@@ -281,25 +281,51 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
+//    public void createInwardAgeTableWithFilters() {
+//        Date startTime = new Date();
+//
+//        makeNull();
+//        Set<Institution> setIns = new HashSet<>();
+//
+//        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
+//                true, PaymentMethod.Credit, institutionOfDepartment, department, site);
+//        setIns.addAll(list);
+//
+//        creditCompanyAge = new ArrayList<>();
+//        for (Institution ins : setIns) {
+//            if (ins == null) {
+//                continue;
+//            }
+//
+//            String1Value5 newRow = new String1Value5();
+//            newRow.setInstitution(ins);
+//            setInwardValues(ins, newRow, PaymentMethod.Credit, institutionOfDepartment, department, site);
+//
+//            if (newRow.getValue1() != 0
+//                    || newRow.getValue2() != 0
+//                    || newRow.getValue3() != 0
+//                    || newRow.getValue4() != 0) {
+//                creditCompanyAge.add(newRow);
+//            }
+//        }
+//    }
+
     public void createInwardAgeTableWithFilters() {
         Date startTime = new Date();
 
         makeNull();
-        Set<Institution> setIns = new HashSet<>();
 
-        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
-                true, PaymentMethod.Credit, institutionOfDepartment, department, site);
-        setIns.addAll(list);
+        Map<Institution, List<Bill>> institutionMap = getCreditCompanyBillsGroupedByCreditCompany();
 
         creditCompanyAge = new ArrayList<>();
-        for (Institution ins : setIns) {
+        for (Institution ins : institutionMap.keySet()) {
             if (ins == null) {
                 continue;
             }
 
             String1Value5 newRow = new String1Value5();
             newRow.setInstitution(ins);
-            setInwardValues(ins, newRow, PaymentMethod.Credit, institutionOfDepartment, department, site);
+            setInwardValues(newRow, institutionMap.get(ins));
 
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
@@ -308,6 +334,30 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
+    }
+
+    private Map<Institution, List<Bill>> getCreditCompanyBillsGroupedByCreditCompany() {
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill FROM Bill bill " +
+                "WHERE bill.retired <> :br " +
+                "AND bill.billTypeAtomic IN :bts";
+
+        parameters.put("br", true);
+        parameters.put("bts", bts);
+
+        if (institutionOfDepartment != null) {
+            jpql += " AND bill.institution = :ins";
+            parameters.put("ins", institutionOfDepartment);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql, parameters);
+
+        return bills.stream()
+                .filter(b -> b.getCreditCompany() != null)
+                .collect(Collectors.groupingBy(Bill::getCreditCompany));
     }
 
     public void exportCreditCompanyDueAgeDetailToExcel() {
@@ -356,10 +406,10 @@ public class CreditCompanyDueController implements Serializable {
                     row.getCell(j).setCellStyle(mergedStyle);
                 }
 
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue1PatientEncounters(), "0-30 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue2PatientEncounters(), "30-60 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue3PatientEncounters(), "60-90 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue4PatientEncounters(), "90+ Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue1Bills(), "0-30 Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue2Bills(), "30-60 Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue3Bills(), "60-90 Days");
+                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue4Bills(), "90+ Days");
             }
 
             workbook.write(out);
@@ -369,16 +419,16 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    private int exportInnerDataTable(XSSFSheet sheet, int rowIndex, List<PatientEncounter> encounters, String period) {
-        for (PatientEncounter p1 : encounters) {
+    private int exportInnerDataTable(XSSFSheet sheet, int rowIndex, List<Bill> bills, String period) {
+        for (Bill b : bills) {
             Row dataRow = sheet.createRow(rowIndex++);
             dataRow.createCell(0).setCellValue(" ");
             dataRow.createCell(1).setCellValue(period);
-            dataRow.createCell(2).setCellValue(p1.getBhtNo());
-            dataRow.createCell(3).setCellValue(p1.getPatient().getPerson().getName());
-            dataRow.createCell(4).setCellValue(p1.getDateOfAdmission().toString());
-            dataRow.createCell(5).setCellValue(p1.getDateOfDischarge().toString());
-            dataRow.createCell(6).setCellValue(p1.getCreditUsedAmount() + p1.getCreditPaidAmount());
+            dataRow.createCell(2).setCellValue(b.getPatientEncounter().getBhtNo());
+            dataRow.createCell(3).setCellValue(b.getPatientEncounter().getPatient().getPerson().getName());
+            dataRow.createCell(4).setCellValue(b.getPatientEncounter().getDateOfAdmission().toString());
+            dataRow.createCell(5).setCellValue(b.getPatientEncounter().getDateOfDischarge().toString());
+            dataRow.createCell(6).setCellValue(b.getNetTotal() - b.getPaidAmount());
 
             XSSFCellStyle amountStyle = sheet.getWorkbook().createCellStyle();
             amountStyle.setDataFormat(sheet.getWorkbook().createDataFormat().getFormat("#,##0.00"));
@@ -768,6 +818,32 @@ public class CreditCompanyDueController implements Serializable {
             } else {
                 dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
                 dataTable5Value.getValue4PatientEncounters().add(b);
+            }
+        }
+    }
+
+    private void setInwardValues(String1Value5 dataTable5Value, List<Bill> bills) {
+        for (Bill b : bills) {
+            long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
+
+            double finalValue = b.getNetTotal() - b.getPaidAmount();
+
+            if (finalValue == 0) {
+                continue;
+            }
+
+            if (dayCount < 30) {
+                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+                dataTable5Value.getValue1Bills().add(b);
+            } else if (dayCount < 60) {
+                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+                dataTable5Value.getValue2Bills().add(b);
+            } else if (dayCount < 90) {
+                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+                dataTable5Value.getValue3Bills().add(b);
+            } else {
+                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+                dataTable5Value.getValue4Bills().add(b);
             }
         }
     }
@@ -1382,7 +1458,7 @@ public class CreditCompanyDueController implements Serializable {
             return;
         }
 
-        updateSettledAmountsForIP(patientEncounters);
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
 
         setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
         calculateCreditCompanyAmounts();
@@ -1446,7 +1522,7 @@ public class CreditCompanyDueController implements Serializable {
             return;
         }
 
-        updateSettledAmountsForIP(patientEncounters);
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
 
         setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "excess"));
         calculateCreditCompanyAmounts();
@@ -1603,6 +1679,69 @@ public class CreditCompanyDueController implements Serializable {
 
     private void removeSettledAndExcessBills(List<PatientEncounter> patientEncounters) {
         patientEncounters.removeIf(p -> p.getFinalBill().getNetTotal() - (Math.abs(p.getFinalBill().getPaidAmount()) + Math.abs(p.getCreditPaidAmount())) <= 0);
+    }
+
+    private void updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(List<PatientEncounter> patientEncounters) {
+        if (patientEncounters == null || patientEncounters.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> settledAmounts = calculateSettledSponsorBillIP(patientEncounters);
+
+        for (PatientEncounter patientEncounter : patientEncounters) {
+            Bill finalBill = patientEncounter.getFinalBill();
+
+            if (finalBill.isCancelled() || finalBill.isRefunded()) {
+                continue;
+            }
+
+            List<Bill> bills = calculateSettledPatientBillIP(finalBill);
+            double total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountByPatient(total);
+            }
+
+            total = settledAmounts.getOrDefault(patientEncounter.getId(), 0.0);
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountBySponsor(total);
+            }
+        }
+    }
+
+    private Map<Long, Double> calculateSettledSponsorBillIP(List<PatientEncounter> patientEncounters) {
+        List<Long> patientEncounterIds = patientEncounters.stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill from Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.patientEncounter.id in :patientEncounterIds ";
+
+        parameters.put("br", true);
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += " and bill.creditCompany =:ins ";
+            parameters.put("ins", institution);
+        }
+
+        List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
+
+        return rs.stream()
+                .collect(Collectors.groupingBy(
+                        bill -> bill.getPatientEncounter().getId(),
+                        Collectors.summingDouble(Bill::getPaidAmount)
+                ));
     }
 
     private void updateSettledAmountsForIP(List<PatientEncounter> patientEncounters) {
