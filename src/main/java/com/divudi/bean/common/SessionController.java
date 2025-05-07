@@ -4,6 +4,7 @@
  * Consultant (Health Informatics)
  * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
+ *
  */
 package com.divudi.bean.common;
 
@@ -76,9 +77,7 @@ import javax.servlet.ServletContext;
 @SessionScoped
 public class SessionController implements Serializable, HttpSessionListener {
 
-    /**
-     * EJBs
-     */
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private WebUserDepartmentFacade webUserDepartmentFacade;
     @EJB
@@ -97,9 +96,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     private WebUserDashboardFacade webUserDashboardFacade;
     @EJB
     private InstitutionFacade institutionFacade;
-    /**
-     * Controllers
-     */
+
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SecurityController securityController;
     @Inject
@@ -134,10 +133,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private DrawerController drawerController;
     @Inject
     private PharmacySaleController pharmacySaleController;
-    /**
-     * Properties
-     */
-
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
     private WebUser loggedUser = null;
     private UserPreference loggedPreference;
@@ -192,43 +189,56 @@ public class SessionController implements Serializable, HttpSessionListener {
     private String passwordRequirementMessage;
     private Boolean inwardServiceBillingAfterShiftStart;
     private Boolean inwardServiceBillItemSearchByAutocomplete;
-    String ipAddr;
-    String ipAddress;
-    String host;
+    private String ipAddr;
+    private String ipAddress;
+    private String host;
 
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToLoginPage() {
         return "/index1.xhtml";
     }
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Functions">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
 
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes Static Converter">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
+    // </editor-fold>  
+// ChatGPT contributed - 2025-05
     @PostConstruct
     public void init() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        this.ipAddress = request.getRemoteAddr();
+        HttpRequestInfo requestInfo = populateRequestInfo();
+        this.ipAddress = requestInfo.getIpAddress();
+    }
+
+    @Override
+    public void sessionCreated(HttpSessionEvent se) {
+        // Optional debug log
     }
 
     private void recordLogin() {
         if (thisLogin != null) {
-            thisLogin.setLogoutAt(Calendar.getInstance().getTime());
+            thisLogin.setLogoutAt(currentTime());
             if (thisLogin.getId() != null && thisLogin.getId() != 0) {
                 getLoginsFacade().edit(thisLogin);
             }
         }
 
         thisLogin = new Logins();
-        thisLogin.setLogedAt(Calendar.getInstance().getTime());
+        thisLogin.setLogedAt(currentTime());
         thisLogin.setInstitution(institution);
         thisLogin.setDepartment(department);
         thisLogin.setWebUser(loggedUser);
 
-        HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-
-        ipAddr = httpServletRequest.getHeader("X-FORWARDED-FOR");
-        ipAddress = (ipAddr == null) ? httpServletRequest.getRemoteAddr() : ipAddr;
-        host = httpServletRequest.getRemoteHost();
-
-        thisLogin.setIpaddress(ipAddress);
-        thisLogin.setComputerName(host);
+        HttpRequestInfo requestInfo = populateRequestInfo();
+        thisLogin.setIpaddress(requestInfo.getIpAddress());
+        thisLogin.setComputerName(requestInfo.getHost());
 
         if (thisLogin.getId() == null) {
             try {
@@ -236,7 +246,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             } catch (Exception e) {
                 getLoginsFacade().edit(thisLogin);
             }
-
         } else {
             getLoginsFacade().edit(thisLogin);
         }
@@ -245,7 +254,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @PreDestroy
     private void recordLogout() {
-
         if (thisLogin == null) {
             return;
         }
@@ -253,15 +261,11 @@ public class SessionController implements Serializable, HttpSessionListener {
         applicationController.removeLoggins(this);
 
         try {
-            // Set logout time
-            thisLogin.setLogoutAt(Calendar.getInstance().getTime());
-
-            // Ensure the entity is not detached by re-fetching it using the facade
+            thisLogin.setLogoutAt(currentTime());
             Logins managedLogin = getLoginsFacade().find(thisLogin.getId());
             if (managedLogin != null) {
                 managedLogin.setLogoutAt(thisLogin.getLogoutAt());
                 getLoginsFacade().edit(managedLogin);
-            } else {
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -269,38 +273,96 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     @Override
-    public void sessionCreated(HttpSessionEvent se) {
-        //////// // System.out.println("starting session");
-    }
-
-    @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        //////// // System.out.println("recording logout as session is distroid");
         recordLogout();
     }
 
-    // ChatGPT contributed - 2025-05
-    public AuditEvent createAuditEvent(String actionName) {
+    public AuditEvent createNewAuditEvent() {
+        return createNewAuditEvent(null);
+    }
+
+    public AuditEvent createNewAuditEvent(String actionName) {
         AuditEvent auditEvent = new AuditEvent();
+        if (actionName != null) {
+            auditEvent.setEventTrigger(actionName);
+        }
+        auditEvent.setEventDataTime(currentTime());
+        auditEvent.setInstitutionId(institution != null ? institution.getId() : null);
+        auditEvent.setDepartmentId(department != null ? department.getId() : null);
+        auditEvent.setWebUserId(loggedUser != null ? loggedUser.getId() : null);
 
-        auditEvent.setEventTrigger(actionName);
-        auditEvent.setEventDataTime(Calendar.getInstance().getTime());
-        auditEvent.setEventStatus("Started");
-        auditEvent.setInstitutionId(institution.getId());
-        auditEvent.setDepartmentId(department.getId());
-        auditEvent.setWebUserId(loggedUser.getId());
+        HttpRequestInfo requestInfo = populateRequestInfo();
+        auditEvent.setIpAddress(requestInfo.getIpAddress());
+        auditEvent.setHost(requestInfo.getHost());
+        auditEvent.setUrl(requestInfo.getUrl());
 
-        HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        return auditEvent;
+    }
+
+// ---------- COMMON HELPERS ----------
+    private Date currentTime() {
+        return Calendar.getInstance().getTime();
+    }
+
+    private HttpRequestInfo populateRequestInfo() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         String ipAddr = request.getHeader("X-FORWARDED-FOR");
         String ipAddress = (ipAddr == null) ? request.getRemoteAddr() : ipAddr;
         String host = request.getRemoteHost();
         String url = request.getRequestURL().toString();
 
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setHost(host);
-        auditEvent.setUrl(url);
+        return new HttpRequestInfo(ipAddress, host, url);
+    }
 
-        return auditEvent;
+    public String getIpAddr() {
+        return ipAddr;
+    }
+
+    public void setIpAddr(String ipAddr) {
+        this.ipAddr = ipAddr;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+// ---------- HELPER CLASS ----------
+    public static class HttpRequestInfo {
+
+        private final String ipAddress;
+        private final String host;
+        private final String url;
+
+        public HttpRequestInfo(String ipAddress, String host, String url) {
+            this.ipAddress = ipAddress;
+            this.host = host;
+            this.url = url;
+        }
+
+        public String getIpAddress() {
+            return ipAddress;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public String getUrl() {
+            return url;
+        }
     }
 
     public void redirectToIndex1(ComponentSystemEvent event) {
@@ -415,31 +477,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
         } catch (IOException e) {
         }
-    }
-
-//    public void redirectToLandingPage3() {
-//        FacesContext context = FacesContext.getCurrentInstance();
-//        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-//        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
-//        System.out.println("facesServletMapping = " + facesServletMapping);
-//        if (facesServletMapping == null) {
-//            facesServletMapping = "/faces/"; // Default value
-//        }
-//        System.out.println("facesServletMapping = " + facesServletMapping);
-//        String redirectPath;
-//        if (getApplicationPreference().getThemeName() == null || !getApplicationPreference().getThemeName().trim().equals("")) {
-//            redirectPath = facesServletMapping + "index1.xhtml";
-//        } else {
-//            redirectPath = facesServletMapping + "themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
-//        }
-//        try {
-//            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
-//        } catch (IOException e) {
-//            System.out.println("e = " + e);
-//        }
-//    }
-    public Date currentTime() {
-        return new Date();
     }
 
     public String createFirstLogin() {

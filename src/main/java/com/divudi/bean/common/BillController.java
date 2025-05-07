@@ -1048,16 +1048,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public void getOpdBills() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        String ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
+        AuditEvent auditEvent = sessionController.createNewAuditEvent();
         auditEvent.setEventStatus("Started");
+        auditEvent.setEventTrigger("getOpdBills()");
         long duration;
         Date startTime = new Date();
         auditEvent.setEventDataTime(startTime);
@@ -1071,9 +1064,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (sessionController != null && sessionController.getLoggedUser() != null) {
             auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
         }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("getOpdBills()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         BillType[] billTypes = {BillType.OpdBill};
@@ -3384,7 +3374,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error creating bill item: " + e.getMessage());
         }
-
 
         billService.createBillItemFeesAndAssignToNewBillItem(originalBillItemToDuplicate, duplicateBillItem);
 
