@@ -23,6 +23,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
 
 /**
  *
@@ -35,7 +36,10 @@ public class DefaultServiceDepartmentController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private DefaultServiceDepartmentFacade ejbFacade;
-    @EJB
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
     private SessionController sessionController;
     // </editor-fold>
 
@@ -92,12 +96,12 @@ public class DefaultServiceDepartmentController implements Serializable {
             return null;
         }
         items = getDefaultServiceDepartments(orderingDepartment, serviceDepartment, category, item);
-        return navigateToEditDefaultServiceDepartment();
+        return navigateToListDefaultServiceDepartments();
     }
 
     public String saveExistingDefaultServiceDepartment() {
         if (current == null) {
-            JsfUtil.addErrorMessage("Must have an ordering department");
+            JsfUtil.addErrorMessage("No record selected");
             return null;
         }
         if (current.getBillingDepartment() == null) {
@@ -113,6 +117,10 @@ public class DefaultServiceDepartmentController implements Serializable {
     }
 
     public DefaultServiceDepartment getDefaultServiceDepartment(Department orderingDept, Department serviceDept, Category cat, Item itm) {
+        if (orderingDept == null || serviceDept == null) {
+            JsfUtil.addErrorMessage("Ordering and Service departments are required");
+            return null;
+        }
         String jpql = "select d "
                 + " from DefaultServiceDepartment d "
                 + " where d.retired=false "
@@ -198,12 +206,8 @@ public class DefaultServiceDepartmentController implements Serializable {
     }
 
     public List<DefaultServiceDepartment> getItems() {
-        if (items == null) {
-            items = getFacade().findAll();
-        }
         return items;
     }
-
 
     public Department getOrderingDepartment() {
         return orderingDepartment;
@@ -237,8 +241,6 @@ public class DefaultServiceDepartmentController implements Serializable {
         this.item = item;
     }
 
-    
-    
     public DefaultServiceDepartmentFacade getFacade() {
         return ejbFacade;
     }
