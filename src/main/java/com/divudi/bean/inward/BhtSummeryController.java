@@ -131,6 +131,8 @@ public class BhtSummeryController implements Serializable {
     RoomChangeController roomChangeController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    AdmissionController admissionController;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
@@ -1331,21 +1333,21 @@ public class BhtSummeryController implements Serializable {
         printPreview = true;
         originalBill = null;
     }
-    
+
     public String settleProvisionalBill(Bill b) {
-        
-        if(b == null){
+
+        if (b == null) {
             JsfUtil.addErrorMessage("Error : Bill Not Found!");
             return "";
         }
-        
+
         setPatientEncounter(b.getPatientEncounter());
-        
+
         originalBill = b.getBackwardReferenceBill();
         originalBill.setDiscount(b.getDiscount());
         originalBill.setNetTotal(originalBill.getGrantTotal() - b.getDiscount());
         getBillFacade().edit(originalBill);
-        
+
 //        current = new BilledBill();
 //        getCurrent().copy(b);
 //        getCurrent().copyValue(b);
@@ -1377,13 +1379,11 @@ public class BhtSummeryController implements Serializable {
 //                }
 //            }
 //        }
-
         setCurrent(b);
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
         getCurrent().setBillType(BillType.InwardFinalBill);
-       
+
         getBillFacade().edit(current);
-       
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
@@ -1405,7 +1405,7 @@ public class BhtSummeryController implements Serializable {
         showOrginalBill = false;
         printPreview = true;
         originalBill = null;
-        
+
         return "inward_bill_final?faces-redirect=true";
     }
 
@@ -1951,7 +1951,6 @@ public class BhtSummeryController implements Serializable {
                 saveTempRoomBillFee(getPatientRooms(), temBi);
             }
 
-
             getTempBill().getBillItems().add(temBi);
         }
 
@@ -2093,13 +2092,17 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void createTables() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         makeNull();
 
         if (patientEncounter == null) {
             return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Access to Intrim Bill if Provisional Bill is Created")) {
+            if (admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
+                JsfUtil.addErrorMessage("There is a Provisional Bill For This Admission");
+                return;
+            }
         }
 
         createPatientRooms();
