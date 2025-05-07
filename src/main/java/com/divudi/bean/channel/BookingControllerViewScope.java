@@ -1214,7 +1214,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     continue;
                 }
                 mobile = bs.getBill().getPatient().getPerson().getSmsNumber();
-            }else{
+            } else {
                 mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
             }
 
@@ -4070,7 +4070,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
         String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
-        String patientName = b.getPatient().getPerson().getNameWithTitle();
+        
+        String patientName = "";
+
+        if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+            patientName = b.getReferenceBill().getOnlineBooking().getTitle()+"."+ b.getReferenceBill().getOnlineBooking().getPatientName();
+        } else {
+            patientName = b.getPatient().getPerson().getNameWithTitle();
+        }
+
         int no = b.getSingleBillSession().getSerialNo();
 
         String insName = sessionController.getLoggedUser().getInstitution().getName();
