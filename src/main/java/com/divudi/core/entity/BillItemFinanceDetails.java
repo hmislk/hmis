@@ -2,10 +2,15 @@ package com.divudi.core.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -20,8 +25,15 @@ public class BillItemFinanceDetails implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @OneToOne(mappedBy = "billItemFinanceDetails")
     private BillItem billItem;
-    
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @ManyToOne
+    private WebUser createdBy;
+
     // Gross and Net Totals
     private BigDecimal grossTotal = BigDecimal.ZERO;
     private BigDecimal netTotal = BigDecimal.ZERO;
@@ -103,6 +115,15 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal totalPaidAsOnCall = BigDecimal.ZERO;
     private BigDecimal totalPaidAsYouOweMe = BigDecimal.ZERO;
     private BigDecimal totalPaidAsNone = BigDecimal.ZERO;
+
+    public BillItemFinanceDetails() {
+        createdAt = new Date();
+    }
+
+    public BillItemFinanceDetails(BillItem billItem) {
+        this.billItem = billItem;
+        createdAt = new Date();
+    }
 
     public BillItemFinanceDetails clone() {
         BillItemFinanceDetails cloned = new BillItemFinanceDetails();
@@ -188,8 +209,6 @@ public class BillItemFinanceDetails implements Serializable {
         this.id = id;
     }
 
-    
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -679,6 +698,22 @@ public class BillItemFinanceDetails implements Serializable {
         this.billItem = billItem;
     }
 
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public WebUser getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(WebUser createdBy) {
+        this.createdBy = createdBy;
+    }
     
     
+
 }

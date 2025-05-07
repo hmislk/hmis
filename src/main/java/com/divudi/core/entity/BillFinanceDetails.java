@@ -66,10 +66,12 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal totalPaidAsNone = BigDecimal.ZERO;
 
     public BillFinanceDetails() {
+        createdAt = new Date();
     }
 
     public BillFinanceDetails(Bill bill) {
         this.bill = bill;
+        createdAt = new Date();
     }
 
     public BillFinanceDetails clone() {
