@@ -86,7 +86,7 @@
                                     class="w-100">
                                 </p:commandButton>
                                 <p:commandButton
-                                    rendered="#{(not admissionController.current.discharged or not admissionController.current.paymentFinalized) and not admissionController.isAddmissionHaveProvisionalBill(admissionController.current)}"
+                                    rendered="#{(not admissionController.current.discharged or not admissionController.current.paymentFinalized) and not bhtSummeryController.patientEncounterHasProvisionalBill}"
                                     action="#{bhtSummeryController.navigateToIntrimBillFromPatientProfile()}"
                                     value="Interim Bill" 
                                     class="w-100"
@@ -96,7 +96,7 @@
                                         target="#{bhtSummeryController.patientEncounter}"/>
                                 </p:commandButton>
                                 <p:commandButton
-                                    rendered="#{(not admissionController.current.discharged or not admissionController.current.paymentFinalized) and admissionController.isAddmissionHaveProvisionalBill(admissionController.current)}"
+                                    rendered="#{(not admissionController.current.discharged or not admissionController.current.paymentFinalized) and bhtSummeryController.patientEncounterHasProvisionalBill}"
                                     action="#{inwardSearch.navigateToProvisionalBillForAdmission()}"
                                     value="Provisional Bill" 
                                     class="w-100"
