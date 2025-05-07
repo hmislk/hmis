@@ -878,15 +878,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Remove Provisional Admission From showing completePatientDishcargedNotFinalized")) {
-            List<Admission> toRemove = new ArrayList<>();
-            for (Admission a : suggestions) {
-                if (isAddmissionHaveProvisionalBill(a)) {
-                    toRemove.add(a);
-                }
-            }
-            suggestions.removeAll(toRemove);
-        }
         return suggestions;
     }
 
