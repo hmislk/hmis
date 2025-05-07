@@ -245,6 +245,7 @@ public class ReportsStock implements Serializable {
     }
 
     public void fillDepartmentNonEmptyItemStocks() {
+        reportTimerController.trackReportExecution(() -> {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -271,7 +272,7 @@ public class ReportsStock implements Serializable {
 
         }
         pharmacyStockRows = lsts;
-
+        }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
     }
 
     public void fillDepartmentStockByItemOrderByVmp() {
@@ -519,6 +520,7 @@ public class ReportsStock implements Serializable {
     private Date date;
 
     public void fillDepartmentExpiaryStocks() {
+        reportTimerController.trackReportExecution(() -> {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -543,7 +545,7 @@ public class ReportsStock implements Serializable {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
-
+        }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
     }
 
     public void addComment(Stock st) {
