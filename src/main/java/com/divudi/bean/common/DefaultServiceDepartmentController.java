@@ -86,17 +86,16 @@ public class DefaultServiceDepartmentController implements Serializable {
         return navigateToEditDefaultServiceDepartment();
     }
 
-    public String listDefaultServiceDepartments() {
+    public void listDefaultServiceDepartments() {
         if (orderingDepartment == null) {
             JsfUtil.addErrorMessage("Must have an ordering department");
-            return null;
+            return;
         }
         if (serviceDepartment == null) {
             JsfUtil.addErrorMessage("Must have a service department");
-            return null;
+            return;
         }
         items = getDefaultServiceDepartments(orderingDepartment, serviceDepartment, category, item);
-        return navigateToListDefaultServiceDepartments();
     }
 
     public String saveExistingDefaultServiceDepartment() {
