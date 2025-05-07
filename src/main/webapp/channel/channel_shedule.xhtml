@@ -133,9 +133,6 @@
                                         </p:commandButton>
                                     </h:panelGrid>
 
-
-
-
                                     <p:tabView id="tvDetails" style="width: 100%!important;" activeIndex="#{channelScheduleController.tabIndex}">
                                         <p:tab title="Details">
                                             <p:panelGrid columns="2" columnClasses="custom-col-38 , custom-col-58" class="w-100" >
@@ -185,7 +182,6 @@
 
                                                 </h:panelGroup>
 
-
                                                 <h:outputText value="Institution" ></h:outputText>
                                                 <p:selectOneMenu class="w-100" id="cmbIns" value="#{channelScheduleController.current.institution}" >
                                                     <f:selectItem itemLabel="Please select a Institution"/>
@@ -193,8 +189,6 @@
                                                                    var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />    
                                                     <f:ajax execute="cmbIns" render="cmbDep" event="change"/>
                                                 </p:selectOneMenu>
-
-
 
                                                 <p:outputLabel for="cmbDep" value="Department"></p:outputLabel>        
                                                 <p:selectOneMenu 
@@ -247,6 +241,9 @@
 
                                                 <p:outputLabel value="Refundable"/>
                                                 <p:selectBooleanCheckbox value="#{channelScheduleController.current.refundable}"/>
+                                                
+                                                <p:outputLabel value="Accept Online Bookings"/>
+                                                <p:selectBooleanCheckbox value="#{channelScheduleController.current.acceptOnlineBookings}"/>
 
                                                 <p:outputLabel value="Paid Appointment Only"/>
                                                 <p:selectBooleanCheckbox value="#{channelScheduleController.current.paidAppointmentsOnly}" />
