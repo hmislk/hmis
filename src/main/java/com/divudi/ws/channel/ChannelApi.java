@@ -825,12 +825,12 @@ public class ChannelApi {
         if (sessionId == null || sessionId.isEmpty()) {
             throw new ValidationException("SessionID", " Missing SessionId field");
         }
-        
+
         Long sessionIdLong = 0L;
-        
-        try{
+
+        try {
             sessionIdLong = Long.parseLong(sessionId);
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new ValidationException("SessionID", " Invalid Session ID" + sessionId);
         }
 
@@ -1280,7 +1280,7 @@ public class ChannelApi {
         if (session.isCancelled()) {
             throw new ValidationException("Channel : ", "Channel session is Cancelled from the Hospital. Please contact hospital for more info.");
         }
-        if(session.isRetired()){
+        if (session.isRetired()) {
             throw new ValidationException("Channel : ", "Channel session is not available.");
         }
     }
@@ -1359,7 +1359,6 @@ public class ChannelApi {
         //Bill temporarySavedBill = bookingData.getBill();
         Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingData);
 
-
         try {
             validateBillForCompleteBooking(temporarySavedBill);
             validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
@@ -1367,7 +1366,7 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
             JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -1583,15 +1582,15 @@ public class ChannelApi {
         appoinment.put("status", bookingStatus);
 
         SessionInstance session = bookingBill.getSingleBillSession().getSessionInstance();
-        
+
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
-        if(session.isCompleted()){
+        if (session.isCompleted()) {
             sessionStatus = SessionStatusForOnlineBooking.Ended.toString();
-        }else if(session.isCancelled()){
+        } else if (session.isCancelled()) {
             sessionStatus = SessionStatusForOnlineBooking.Cancelled.toString();
-        }else if(!session.isAcceptOnlineBookings()){
+        } else if (!session.isAcceptOnlineBookings()) {
             sessionStatus = SessionStatusForOnlineBooking.Hold.toString();
-        }else if(channelService.isFullyBookedSession(session)){
+        } else if (channelService.isFullyBookedSession(session)) {
             sessionStatus = SessionStatusForOnlineBooking.Full.toString();
         }
 
@@ -1715,18 +1714,23 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable Online Bookings cancellation after session is started.", true)) {
+            JSONObject response = commonFunctionToErrorResponse("Can't cancel the appoinment due to hospital restriction. Please contact hospital.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
         BillSession bs = channelService.cancelBookingBill(completedSaveBill, bookingData);
 
         SessionInstance session = bs.getSessionInstance();
-        
+
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
-        if(session.isCompleted()){
+        if (session.isCompleted()) {
             sessionStatus = SessionStatusForOnlineBooking.Ended.toString();
-        }else if(session.isCancelled()){
+        } else if (session.isCancelled()) {
             sessionStatus = SessionStatusForOnlineBooking.Cancelled.toString();
-        }else if(!session.isAcceptOnlineBookings()){
+        } else if (!session.isAcceptOnlineBookings()) {
             sessionStatus = SessionStatusForOnlineBooking.Hold.toString();
-        }else if(channelService.isFullyBookedSession(session)){
+        } else if (channelService.isFullyBookedSession(session)) {
             sessionStatus = SessionStatusForOnlineBooking.Full.toString();
         }
 

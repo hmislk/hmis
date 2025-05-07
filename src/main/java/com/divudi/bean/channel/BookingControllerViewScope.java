@@ -1804,12 +1804,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
-        if (methodBillSession.getBill().getPatient() == null) {
+        if (methodBillSession.getBill().getPatient() == null && methodBillSession.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
+        
+        String mobile = "";
+        
+        if(methodBillSession.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+            if (!methodBillSession.getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+                mobile = methodBillSession.getBill().getPatient().getPerson().getSmsNumber();
+            }
+        }else{
+            mobile = methodBillSession.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
+        }
 
-        if (!methodBillSession.getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+        if (!mobile.equals("")) {
             Sms e = new Sms();
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
@@ -1858,6 +1868,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillBillSessions();
         fillSessionActivities();
     }
+    
+    public void markOnlineBookingStatusForCompletedBooking(List<BillSession> allBookings){
+        for(BillSession appoinment : allBookings){
+            if(appoinment.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && 
+                    !appoinment.getBill().isCancelled() && 
+                    !appoinment.getBill().isRefunded() && 
+                    !appoinment.isAbsent()){
+                appoinment.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.COMPLETED);
+                
+            }
+        }
+    }
 
     public void markSessionInstanceAsCompleted() {
         if (selectedSessionInstance == null) {
@@ -1869,6 +1891,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setCompletedBy(sessionController.getLoggedUser());
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Completed");
+        markOnlineBookingStatusForCompletedBooking(getBillSessions());
+        
         if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingNoShow()) {
             sendSmsOnChannelMissingChannelBookings();
         }
