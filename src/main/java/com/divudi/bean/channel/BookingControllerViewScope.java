@@ -1876,6 +1876,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     !appoinment.getBill().isRefunded() && 
                     !appoinment.isAbsent()){
                 appoinment.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.COMPLETED);
+                getOnlineBookingFacade().edit(appoinment.getBill().getReferenceBill().getOnlineBooking());
                 
             }
         }
