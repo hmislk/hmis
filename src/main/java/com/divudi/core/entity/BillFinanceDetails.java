@@ -1,12 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.divudi.core.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -18,7 +15,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author buddhika
+ * @author Dr Buddhika Ariyaratne
+ * 
  */
 @Entity
 public class BillFinanceDetails implements Serializable {
@@ -27,7 +25,7 @@ public class BillFinanceDetails implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @OneToOne(mappedBy = "billFinanceDetails")
+    @OneToOne(mappedBy = "billFinanceDetails", cascade = CascadeType.ALL)
     private Bill bill;
 
     private BigDecimal billDiscount = BigDecimal.ZERO;
