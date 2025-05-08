@@ -125,7 +125,8 @@ public class BillItemFinanceDetails implements Serializable {
         createdAt = new Date();
     }
 
-    public BillItemFinanceDetails clone() {
+    @Override
+    public BillItemFinanceDetails clone() throws CloneNotSupportedException {
         BillItemFinanceDetails cloned = new BillItemFinanceDetails();
 
         cloned.grossTotal = this.grossTotal;
