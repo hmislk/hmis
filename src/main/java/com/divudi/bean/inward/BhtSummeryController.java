@@ -2096,9 +2096,10 @@ public class BhtSummeryController implements Serializable {
     
     public void createIntrimBillTable(){
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Access to Intrim Bill if Provisional Bill is Created")) {
-            if (admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
+            if (patientEncounter != null &&
+                admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
                 JsfUtil.addErrorMessage("There is a Provisional Bill For This Admission");
-                patientEncounter = null;
+                clear();            // resets patientEncounter and cached data safely
                 return;
             }
         }
