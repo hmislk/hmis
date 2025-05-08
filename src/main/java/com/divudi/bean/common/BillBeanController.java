@@ -146,7 +146,7 @@ public class BillBeanController implements Serializable {
     StaffService staffBean;
     @EJB
     BillService billService;
-    @Inject
+    @EJB
     DepartmentResolver departmentResolver;
 
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
@@ -4120,7 +4120,7 @@ public class BillBeanController implements Serializable {
 
         ptIx.setCreatedAt(Calendar.getInstance().getTime());
         ptIx.setCreater(wu);
-        
+
         ptIx.setOrdered(Boolean.TRUE);
         ptIx.setOrderedAt(new Date());
         ptIx.setOrderedBy(sessionController.getLoggedUser());
@@ -4149,13 +4149,18 @@ public class BillBeanController implements Serializable {
         ptIx.setReceived(Boolean.FALSE);
 
         Department prformingDept = departmentResolver.resolvePerformingDepartment(billEntry.getBillItem().getBill().getDepartment(), billEntry.getBillItem().getItem());
-
+        if (prformingDept == null) {
+            // Gracefully fall back to the item’s own department
+            prformingDept = billEntry.getBillItem().getItem().getDepartment();
+        }
         ptIx.setReceiveDepartment(prformingDept);
         ptIx.setApproveDepartment(prformingDept);
         ptIx.setDataEntryDepartment(prformingDept);
         ptIx.setPrintingDepartment(prformingDept);
         ptIx.setPerformDepartment(prformingDept);
-        ptIx.setPerformInstitution(prformingDept.getInstitution());
+        if (prformingDept != null) {
+            ptIx.setPerformInstitution(prformingDept.getInstitution());
+        }
 
         if (billEntry.getBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("No Bill Item Selected");
