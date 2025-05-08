@@ -5,14 +5,14 @@
         <jta-data-source>jdbc/coop</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <property name="eclipselink.logging.level" value="SEVERE"/>
+            <property name="eclipselink.logging.level.sql" value="SEVERE"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
         <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <property name="eclipselink.logging.level" value="SEVERE"/>
+            <property name="eclipselink.logging.level.sql" value="SEVERE"/>
         </properties>
     </persistence-unit>
 </persistence>

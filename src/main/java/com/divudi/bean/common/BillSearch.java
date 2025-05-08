@@ -19,6 +19,7 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
@@ -64,7 +65,9 @@ import com.divudi.bean.pharmacy.PurchaseReturnController;
 import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.bean.pharmacy.TransferReceiveController;
 import com.divudi.core.data.BillTypeAtomic;
+
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_ISSUE_CANCELLED;
+
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -80,6 +83,7 @@ import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
+
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -99,11 +103,11 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
 
 /**
- *
  * @author Buddhika
  */
 @Named
@@ -233,6 +237,8 @@ public class BillSearch implements Serializable {
     PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     @Inject
     GoodsReturnController goodsReturnController;
+    @Inject
+    private ReportTimerController reportTimerController;
     /**
      * Class Variables
      */
@@ -255,7 +261,7 @@ public class BillSearch implements Serializable {
     private WebUser user;
     private BillType billType;
     private BillClassType billClassType;
-    ////////////////
+    /// /////////////
     private List<Bill> billsToApproveCancellation;
     private List<Bill> billsApproving;
     private List<BillItem> refundingItems;
@@ -273,8 +279,8 @@ public class BillSearch implements Serializable {
     private LazyDataModel<Bill> lazyBills;
     List<BillSummery> billSummeries;
     private BillSummery billSummery;
-    ////////////////////
-    ///////////////////
+    /// /////////////////
+    /// ////////////////
     private SearchKeyword searchKeyword;
     private Institution creditCompany;
     private PatientInvestigation patientInvestigation;
@@ -563,131 +569,133 @@ public class BillSearch implements Serializable {
     }
 
     public void processCashierPharmacySaleBillSummery() {
-        //For Auditing Purposes
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-        String url = request.getRequestURL().toString();
-        String ipAddress = request.getRemoteAddr();
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("fillTransactionTypeSummery()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+        reportTimerController.trackReportExecution(() -> {
+            //For Auditing Purposes
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+            String url = request.getRequestURL().toString();
+            String ipAddress = request.getRemoteAddr();
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("fillTransactionTypeSummery()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
-        Map m = new HashMap();
-        String j;
-        j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billTypeAtomic, b.billType, b.creater) "
-                + " from Bill b "
-                + " where b.retired=false "
-                + " and b.billTime between :fd and :td ";
+            Map m = new HashMap();
+            String j;
+            j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billTypeAtomic, b.billType, b.creater) "
+                    + " from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
 
-        if (institution != null) {
-            j += " and b.institution=:ins ";
-            m.put("ins", institution);
-        }
+            if (institution != null) {
+                j += " and b.institution=:ins ";
+                m.put("ins", institution);
+            }
 
-        if (department != null) {
-            j += " and b.department=:dep ";
-            m.put("dep", department);
-        }
-        if (user != null) {
-            j += " and b.creater=:wu ";
-            m.put("wu", user);
-        }
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PharmacySale);
-        billTypes.add(BillType.PharmacySaleWithoutStock);
-        billTypes.add(BillType.PharmacyWholeSale);
-        j += " and b.billType in :bts ";
-        m.put("bts", billTypes);
+            if (department != null) {
+                j += " and b.department=:dep ";
+                m.put("dep", department);
+            }
+            if (user != null) {
+                j += " and b.creater=:wu ";
+                m.put("wu", user);
+            }
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacySale);
+            billTypes.add(BillType.PharmacySaleWithoutStock);
+            billTypes.add(BillType.PharmacyWholeSale);
+            j += " and b.billType in :bts ";
+            m.put("bts", billTypes);
 
-        j += " group by b.paymentMethod, b.billClassType, b.billType, b.creater, b.billTypeAtomic";
+            j += " group by b.paymentMethod, b.billClassType, b.billType, b.creater, b.billTypeAtomic";
 
-        Boolean bf = false;
-        if (bf) {
-            Bill b = new Bill();
-            b.getPaymentMethod();
-            b.getTotal();
-            b.getDiscount();
-            b.getNetTotal();
-            b.getVat();
-            b.getBillType();
-            b.getBillTime();
-            b.getInstitution();
-            b.getCreater();
-        }
+            Boolean bf = false;
+            if (bf) {
+                Bill b = new Bill();
+                b.getPaymentMethod();
+                b.getTotal();
+                b.getDiscount();
+                b.getNetTotal();
+                b.getVat();
+                b.getBillType();
+                b.getBillTime();
+                b.getInstitution();
+                b.getCreater();
+            }
 
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+            m.put("fd", fromDate);
+            m.put("td", toDate);
 
-        List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
-        billSummeries = new ArrayList<>();
-        Long i = 1l;
-        for (Object o : objs) {
-            BillSummery tbs = (BillSummery) o;
-            tbs.setKey(i);
-            billSummeries.add(tbs);
-            i++;
-        }
-        calculateTotalForBillSummaries();
+            List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
+            billSummeries = new ArrayList<>();
+            Long i = 1l;
+            for (Object o : objs) {
+                BillSummery tbs = (BillSummery) o;
+                tbs.setKey(i);
+                billSummeries.add(tbs);
+                i++;
+            }
+            calculateTotalForBillSummaries();
 
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        }, PharmacyReports.PHARMACY_SALE_SUMMARY, sessionController.getLoggedUser());
     }
 
     public void processCashierPharmacySaleBillTotalDateWise() {
-        //For Auditing Purposes
+        reportTimerController.trackReportExecution(() -> {
+            //For Auditing Purposes
 
-        Map m = new HashMap();
-        String j;
-        j = "select new com.divudi.core.data.BillSummery(Function('DATE',(b.createdAt)),sum(b.netTotal), count(b)) "
-                + " from Bill b "
-                + " where b.retired=false "
-                + " and b.billTime between :fd and :td ";
+            Map m = new HashMap();
+            String j;
+            j = "select new com.divudi.core.data.BillSummery(Function('DATE',(b.createdAt)),sum(b.netTotal), count(b)) "
+                    + " from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
 
-        if (institution != null) {
-            j += " and b.institution=:ins ";
-            m.put("ins", institution);
-        }
+            if (institution != null) {
+                j += " and b.institution=:ins ";
+                m.put("ins", institution);
+            }
 
-        if (department != null) {
-            j += " and b.department=:dep ";
-            m.put("dep", department);
-        }
+            if (department != null) {
+                j += " and b.department=:dep ";
+                m.put("dep", department);
+            }
 
-        j += " group by Function('DATE',(b.createdAt))";
+            j += " group by Function('DATE',(b.createdAt))";
 
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+            m.put("fd", fromDate);
+            m.put("td", toDate);
 
-        List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
-        billSummeries = new ArrayList<>();
-        Long i = 1l;
-        for (Object o : objs) {
-            BillSummery tbs = (BillSummery) o;
-            tbs.setKey(i);
-            billSummeries.add(tbs);
-            i++;
-        }
-
+            List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
+            billSummeries = new ArrayList<>();
+            Long i = 1l;
+            for (Object o : objs) {
+                BillSummery tbs = (BillSummery) o;
+                tbs.setKey(i);
+                billSummeries.add(tbs);
+                i++;
+            }
+        }, PharmacyReports.PHARMACY_SALE_SUMMARY_DATE, sessionController.getLoggedUser());
     }
 
     public void fillCashierDetails() {
@@ -1970,7 +1978,7 @@ public class BillSearch implements Serializable {
 
     }
 
-//    public String returnBill() {
+    //    public String returnBill() {
 //        if (refundingItems.isEmpty()) {
 //            JsfUtil.addErrorMessage("There is no item to Refund");
 //            return "";
@@ -2107,7 +2115,7 @@ public class BillSearch implements Serializable {
         }
     }
 
-//    public void refundBillItems(RefundBill rb) {
+    //    public void refundBillItems(RefundBill rb) {
 //        for (BillItem bi : refundingItems) {
 //            //set Bill Item as Refunded
 //
@@ -2387,7 +2395,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Saved bill");
             return;
         }
-        
+
         if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
 
@@ -2509,7 +2517,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Saved bill");
             return;
         }
-        
+
         if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
             if (!checkCancelBill(getBill())) {
                 JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
@@ -2981,8 +2989,8 @@ public class BillSearch implements Serializable {
     }
 
     public void cancelBillFee(Bill cancellationProfessionalPaymentBill,
-            BillItem cancellationProfessionalBillItem,
-            List<BillFee> originalProfessionalPaymentFeesForBillItem) {
+                              BillItem cancellationProfessionalBillItem,
+                              List<BillFee> originalProfessionalPaymentFeesForBillItem) {
         for (BillFee originalProfessionalPaymentFeeForBillItem : originalProfessionalPaymentFeesForBillItem) {
             BillFee newCancellingBillFee = new BillFee();
             newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
@@ -3545,7 +3553,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/bill_admin?faces-redirect=true;";
     }
-    
+
     public String navigateToBillListFromAdminBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill selected");
@@ -3617,7 +3625,7 @@ public class BillSearch implements Serializable {
         return "/opd/professional_payments/opd_search_professional_payment_due?faces-redirect=true;";
     }
 
-//    public String navigateToViewOpdPayProfessionalPayments() {
+    //    public String navigateToViewOpdPayProfessionalPayments() {
 //        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true;";
 //    }
     public String navigateToViewCancallationOpdbATCHBill() {
@@ -5584,8 +5592,7 @@ public class BillSearch implements Serializable {
     public void setViewingPatientInvestigations(List<PatientInvestigation> viewingPatientInvestigations) {
         this.viewingPatientInvestigations = viewingPatientInvestigations;
     }
-    
-    
+
 
     public class PaymentSummary {
 
