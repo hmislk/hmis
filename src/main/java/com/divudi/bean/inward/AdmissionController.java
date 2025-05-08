@@ -581,6 +581,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToSearchAdmissions() {
+        bhtSummeryController.setPatientEncounterHasProvisionalBill(false);
         return "/inward/inpatient_search?faces-redirect=true";
     }
 
@@ -782,6 +783,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         current.getPatient().setEditingMode(false);
         bhtSummeryController.setPatientEncounter(current);
+        bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
         return bhtSummeryController.navigateToInpatientProfile();
     }
 
@@ -877,15 +879,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             //      h.put("btp", BillType.InwardPaymentBill);
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
-        }
-        if (configOptionApplicationController.getBooleanValueByKey("Remove Provisional Admission From showing completePatientDishcargedNotFinalized")) {
-            List<Admission> toRemove = new ArrayList<>();
-            for (Admission a : suggestions) {
-                if (isAddmissionHaveProvisionalBill(a)) {
-                    toRemove.add(a);
-                }
-            }
-            suggestions.removeAll(toRemove);
         }
         return suggestions;
     }

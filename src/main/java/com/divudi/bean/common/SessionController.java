@@ -15,6 +15,8 @@ import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.Privileges;
+import com.divudi.core.data.dataStructure.ChargeItemTotal;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
@@ -54,6 +56,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -191,6 +194,23 @@ public class SessionController implements Serializable, HttpSessionListener {
     private String passwordRequirementMessage;
     private Boolean inwardServiceBillingAfterShiftStart;
     private Boolean inwardServiceBillItemSearchByAutocomplete;
+    
+    @PostConstruct
+    public void init(){
+        for (InwardChargeType i : InwardChargeType.values()) {
+            try {
+                String name = configOptionApplicationController
+                    .getLongTextValueByKey(
+                        "Inward Charge Type - Name For " + i.getLabel(),
+                        i.getLabel()
+                    );
+                i.setName(name != null ? name : i.getLabel());
+            } catch (Exception e) {
+                i.setName(i.getLabel());
+                // Consider logging the exception
+            }
+        }
+    }
 
     public String navigateToLoginPage() {
         return "/index1.xhtml";
