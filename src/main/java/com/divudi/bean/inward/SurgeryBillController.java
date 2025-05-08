@@ -772,7 +772,8 @@ public class SurgeryBillController implements Serializable {
 
     public List<DepartmentBillItems> getDepartmentBillItems() {
         if (departmentBillItems == null) {
-            departmentBillItems = getInwardBean().createDepartmentBillItems(getSurgeryBill().getPatientEncounter(), getSurgeryBill());
+            List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(getSurgeryBill().getPatientEncounter());
+            departmentBillItems = getInwardBean().createDepartmentBillItems(getSurgeryBill().getPatientEncounter(), getSurgeryBill(),cpts);
         }
         return departmentBillItems;
     }

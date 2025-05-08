@@ -4,7 +4,6 @@
  * Consultant (Health Informatics)
  * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
- *
  */
 package com.divudi.bean.common;
 
@@ -16,7 +15,8 @@ import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.Privileges;
-import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.data.dataStructure.ChargeItemTotal;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
@@ -46,6 +46,7 @@ import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.cashTransaction.Denomination;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.service.ChannelService;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -77,7 +78,9 @@ import javax.servlet.ServletContext;
 @SessionScoped
 public class SessionController implements Serializable, HttpSessionListener {
 
-    // <editor-fold defaultstate="collapsed" desc="EJBs">
+    /**
+     * EJBs
+     */
     @EJB
     private WebUserDepartmentFacade webUserDepartmentFacade;
     @EJB
@@ -96,9 +99,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     private WebUserDashboardFacade webUserDashboardFacade;
     @EJB
     private InstitutionFacade institutionFacade;
-
-    // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    /**
+     * Controllers
+     */
     @Inject
     private SecurityController securityController;
     @Inject
@@ -133,10 +136,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     private DrawerController drawerController;
     @Inject
     private PharmacySaleController pharmacySaleController;
-    @Inject
-    private AuditEventApplicationController auditEventApplicationController;
-    // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    /**
+     * Properties
+     */
+
     private static final long serialVersionUID = 1L;
     private WebUser loggedUser = null;
     private UserPreference loggedPreference;
@@ -191,200 +194,26 @@ public class SessionController implements Serializable, HttpSessionListener {
     private String passwordRequirementMessage;
     private Boolean inwardServiceBillingAfterShiftStart;
     private Boolean inwardServiceBillItemSearchByAutocomplete;
-    private String ipAddr;
-    private String ipAddress;
-    private String host;
+    
+    @PostConstruct
+    public void init(){
+        for (InwardChargeType i : InwardChargeType.values()) {
+            try {
+                String name = configOptionApplicationController
+                    .getLongTextValueByKey(
+                        "Inward Charge Type - Name For " + i.getLabel(),
+                        i.getLabel()
+                    );
+                i.setName(name != null ? name : i.getLabel());
+            } catch (Exception e) {
+                i.setName(i.getLabel());
+                // Consider logging the exception
+            }
+        }
+    }
 
-    // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Constructors">
-    // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToLoginPage() {
         return "/index1.xhtml";
-    }
-    // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Functions">
-    // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-
-    // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Inner Classes Static Converter">
-    // </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
-    // </editor-fold>  
-// ChatGPT contributed - 2025-05
-    @PostConstruct
-    public void init() {
-        HttpRequestInfo requestInfo = populateRequestInfo();
-        this.ipAddress = requestInfo.getIpAddress();
-    }
-
-    @Override
-    public void sessionCreated(HttpSessionEvent se) {
-        // Optional debug log
-    }
-
-    private void recordLogin() {
-        if (thisLogin != null) {
-            thisLogin.setLogoutAt(currentTime());
-            if (thisLogin.getId() != null && thisLogin.getId() != 0) {
-                getLoginsFacade().edit(thisLogin);
-            }
-        }
-
-        thisLogin = new Logins();
-        thisLogin.setLogedAt(currentTime());
-        thisLogin.setInstitution(institution);
-        thisLogin.setDepartment(department);
-        thisLogin.setWebUser(loggedUser);
-
-        HttpRequestInfo requestInfo = populateRequestInfo();
-        thisLogin.setIpaddress(requestInfo.getIpAddress());
-        thisLogin.setComputerName(requestInfo.getHost());
-
-        if (thisLogin.getId() == null) {
-            try {
-                getLoginsFacade().create(thisLogin);
-            } catch (Exception e) {
-                getLoginsFacade().edit(thisLogin);
-            }
-        } else {
-            getLoginsFacade().edit(thisLogin);
-        }
-        getApplicationController().addToLoggins(this);
-    }
-
-    @PreDestroy
-    private void recordLogout() {
-        if (thisLogin == null) {
-            return;
-        }
-
-        applicationController.removeLoggins(this);
-
-        try {
-            thisLogin.setLogoutAt(currentTime());
-            Logins managedLogin = getLoginsFacade().find(thisLogin.getId());
-            if (managedLogin != null) {
-                managedLogin.setLogoutAt(thisLogin.getLogoutAt());
-                getLoginsFacade().edit(managedLogin);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void sessionDestroyed(HttpSessionEvent se) {
-        recordLogout();
-    }
-
-    public AuditEvent createNewAuditEvent() {
-        return createNewAuditEvent(null, null);
-    }
-
-    public AuditEvent createNewAuditEvent(String trigger, String status) {
-        AuditEvent auditEvent = new AuditEvent();
-        if (trigger != null) {
-            auditEvent.setEventTrigger(trigger);
-        }
-        if (status != null) {
-            auditEvent.setEventStatus(status);
-        }
-        auditEvent.setEventDataTime(currentTime());
-        auditEvent.setInstitutionId(institution != null ? institution.getId() : null);
-        auditEvent.setDepartmentId(department != null ? department.getId() : null);
-        auditEvent.setWebUserId(loggedUser != null ? loggedUser.getId() : null);
-
-        HttpRequestInfo requestInfo = populateRequestInfo();
-        auditEvent.setIpAddress(requestInfo.getIpAddress());
-        auditEvent.setHost(requestInfo.getHost());
-        auditEvent.setUrl(requestInfo.getUrl());
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        return auditEvent;
-    }
-
-    public AuditEvent completeAuditEvent(AuditEvent auditEvent) {
-        if (auditEvent == null) {
-            return null;
-        }
-        if (auditEvent.getEventDataTime() == null) {
-            return null;
-        }
-        long duration;
-        Date startTime = auditEvent.getEventDataTime();
-        Date endTime = currentTime();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        return auditEvent;
-    }
-
-// ---------- COMMON HELPERS ----------
-    private Date currentTime() {
-        return Calendar.getInstance().getTime();
-    }
-
-    private HttpRequestInfo populateRequestInfo() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        String ipAddr = request.getHeader("X-FORWARDED-FOR");
-        String ipAddress = (ipAddr == null) ? request.getRemoteAddr() : ipAddr;
-        String host = request.getRemoteHost();
-        String url = request.getRequestURL().toString();
-
-        return new HttpRequestInfo(ipAddress, host, url);
-    }
-
-    public String getIpAddr() {
-        return ipAddr;
-    }
-
-    public void setIpAddr(String ipAddr) {
-        this.ipAddr = ipAddr;
-    }
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-// ---------- HELPER CLASS ----------
-    public static class HttpRequestInfo {
-
-        private final String ipAddress;
-        private final String host;
-        private final String url;
-
-        public HttpRequestInfo(String ipAddress, String host, String url) {
-            this.ipAddress = ipAddress;
-            this.host = host;
-            this.url = url;
-        }
-
-        public String getIpAddress() {
-            return ipAddress;
-        }
-
-        public String getHost() {
-            return host;
-        }
-
-        public String getUrl() {
-            return url;
-        }
     }
 
     public void redirectToIndex1(ComponentSystemEvent event) {
@@ -394,6 +223,19 @@ public class SessionController implements Serializable, HttpSessionListener {
             } catch (IOException e) {
                 // Handle the exception (e.g., logging)
             }
+        }
+    }
+
+    @EJB
+    private ChannelService channelService;
+
+    public void acceptOnlineBookingForAllSessions(boolean accept) throws Exception {
+        channelService.makeAllSessionsAvailableForOnlineBookings(accept);
+
+        if (accept) {
+            JsfUtil.addSuccessMessage("Accept Online Bookings from now.");
+        } else if(!accept) {
+            JsfUtil.addErrorMessage("Online Bookings are not accepted from now.");
         }
     }
 
@@ -499,6 +341,31 @@ public class SessionController implements Serializable, HttpSessionListener {
             context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
         } catch (IOException e) {
         }
+    }
+
+//    public void redirectToLandingPage3() {
+//        FacesContext context = FacesContext.getCurrentInstance();
+//        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+//        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+//        System.out.println("facesServletMapping = " + facesServletMapping);
+//        if (facesServletMapping == null) {
+//            facesServletMapping = "/faces/"; // Default value
+//        }
+//        System.out.println("facesServletMapping = " + facesServletMapping);
+//        String redirectPath;
+//        if (getApplicationPreference().getThemeName() == null || !getApplicationPreference().getThemeName().trim().equals("")) {
+//            redirectPath = facesServletMapping + "index1.xhtml";
+//        } else {
+//            redirectPath = facesServletMapping + "themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+//        }
+//        try {
+//            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
+//        } catch (IOException e) {
+//            System.out.println("e = " + e);
+//        }
+//    }
+    public Date currentTime() {
+        return new Date();
     }
 
     public String createFirstLogin() {
@@ -2110,6 +1977,78 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setLoginsFacade(LoginsFacade loginsFacade) {
         this.loginsFacade = loginsFacade;
+    }
+
+    private void recordLogin() {
+        if (thisLogin != null) {
+            thisLogin.setLogoutAt(Calendar.getInstance().getTime());
+            if (thisLogin.getId() != null && thisLogin.getId() != 0) {
+                getLoginsFacade().edit(thisLogin);
+            }
+        }
+
+        thisLogin = new Logins();
+        thisLogin.setLogedAt(Calendar.getInstance().getTime());
+        thisLogin.setInstitution(institution);
+        thisLogin.setDepartment(department);
+        thisLogin.setWebUser(loggedUser);
+
+        HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+
+        String ipAddr = httpServletRequest.getHeader("X-FORWARDED-FOR");
+        String ipAddress = (ipAddr == null) ? httpServletRequest.getRemoteAddr() : ipAddr;
+        String host = httpServletRequest.getRemoteHost();
+
+        thisLogin.setIpaddress(ipAddress);
+        thisLogin.setComputerName(host);
+
+        if (thisLogin.getId() == null) {
+            try {
+                getLoginsFacade().create(thisLogin);
+            } catch (Exception e) {
+                getLoginsFacade().edit(thisLogin);
+            }
+
+        } else {
+            getLoginsFacade().edit(thisLogin);
+        }
+        getApplicationController().addToLoggins(this);
+    }
+
+    @PreDestroy
+    private void recordLogout() {
+
+        if (thisLogin == null) {
+            return;
+        }
+
+        applicationController.removeLoggins(this);
+
+        try {
+            // Set logout time
+            thisLogin.setLogoutAt(Calendar.getInstance().getTime());
+
+            // Ensure the entity is not detached by re-fetching it using the facade
+            Logins managedLogin = getLoginsFacade().find(thisLogin.getId());
+            if (managedLogin != null) {
+                managedLogin.setLogoutAt(thisLogin.getLogoutAt());
+                getLoginsFacade().edit(managedLogin);
+            } else {
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void sessionCreated(HttpSessionEvent se) {
+        //////// // System.out.println("starting session");
+    }
+
+    @Override
+    public void sessionDestroyed(HttpSessionEvent se) {
+        //////// // System.out.println("recording logout as session is distroid");
+        recordLogout();
     }
 
     public CashTransactionBean getCashTransactionBean() {
