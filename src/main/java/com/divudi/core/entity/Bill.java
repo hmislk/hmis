@@ -79,7 +79,7 @@ public class Bill implements Serializable, RetirableEntity {
     private List<Bill> cashBillsOpdPre = new ArrayList<>();
     @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
     private List<Bill> refundBills = new ArrayList<>();
-    
+
     @OneToOne
     private OnlineBooking onlineBooking;
 
@@ -110,6 +110,8 @@ public class Bill implements Serializable, RetirableEntity {
     ////////////////////////////////////////////////
     @Lob
     private String comments;
+    @Lob
+    private String indication;
     // Bank Detail
     private String creditCardRefNo;
     private String chequeRefNo;
@@ -456,8 +458,8 @@ public class Bill implements Serializable, RetirableEntity {
         billTime = new Date();
         createdAt = new Date();
     }
-    
-     public OnlineBooking getOnlineBooking() {
+
+    public OnlineBooking getOnlineBooking() {
         return onlineBooking;
     }
 
@@ -937,6 +939,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
@@ -1011,6 +1014,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
@@ -2763,6 +2767,8 @@ public class Bill implements Serializable, RetirableEntity {
     public void setPaymentGenerated(boolean paymentGenerated) {
         this.paymentGenerated = paymentGenerated;
     }
+    
+    
 
     public WebUser getPaymentGeneratedBy() {
         return paymentGeneratedBy;
@@ -2880,5 +2886,13 @@ public class Bill implements Serializable, RetirableEntity {
         if (billFinanceDetails != null && billFinanceDetails.getBill() != this) {
             billFinanceDetails.setBill(this);
         }
+    }
+
+    public String getIndication() {
+        return indication;
+    }
+
+    public void setIndication(String indication) {
+        this.indication = indication;
     }
 }
