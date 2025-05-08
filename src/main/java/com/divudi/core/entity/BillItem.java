@@ -87,6 +87,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private double otherFee;
     private double reagentFee;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    private BillItemFinanceDetails billItemFinanceDetails;
 
 //    private double dblValue;
     @ManyToOne
@@ -276,8 +278,14 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
-        collectingCentreFee=billItem.getCollectingCentreFee();
+        collectingCentreFee = billItem.getCollectingCentreFee();
         //  referanceBillItem=billItem.getReferanceBillItem();
+        // Copy BillItemFinanceDetails if present
+        if (billItem.getBillItemFinanceDetails() != null) {
+            BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
+            clonedFinanceDetails.setBillItem(this);
+            this.setBillItemFinanceDetails(clonedFinanceDetails);
+        }
     }
 
     public void copyWithoutFinancialData(BillItem billItem) {
@@ -309,7 +317,7 @@ public class BillItem implements Serializable, RetirableEntity {
         staffFee = 0.0;
         hospitalFee = 0.0;
         Rate = 0.0;
-        marginRate =0.0;
+        marginRate = 0.0;
         netRate = 0.0;
         tmpQty = 0.0;
         marginValue = 0.0;
@@ -1103,7 +1111,7 @@ public class BillItem implements Serializable, RetirableEntity {
     }
 
     public Prescription getPrescription() {
-        if(prescription == null){
+        if (prescription == null) {
             prescription = new Prescription();
         }
         return prescription;
@@ -1121,6 +1129,19 @@ public class BillItem implements Serializable, RetirableEntity {
         this.reagentFee = reagentFee;
     }
 
+    public BillItemFinanceDetails getBillItemFinanceDetails() {
+        if (billItemFinanceDetails == null) {
+            billItemFinanceDetails = new BillItemFinanceDetails();
+            billItemFinanceDetails.setBillItem(this);
+        }
+        return billItemFinanceDetails;
+    }
 
+    public void setBillItemFinanceDetails(BillItemFinanceDetails billItemFinanceDetails) {
+        this.billItemFinanceDetails = billItemFinanceDetails;
+        if (billItemFinanceDetails != null && billItemFinanceDetails.getBillItem() != this) {
+            billItemFinanceDetails.setBillItem(this);
+        }
+    }
 
 }

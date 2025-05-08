@@ -1852,10 +1852,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         auditEventController.updateAuditEvent(eventUuid);
         billSettlingStarted = false;
-        
-        if(patientEncounter != null){
+
+        if (patientEncounter != null) {
             return "/inward/inward_service_batch_bill_print?faces-redirect=true";
-        }else{
+        } else {
             return "/opd/opd_batch_bill_print?faces-redirect=true";
         }
     }
@@ -1885,10 +1885,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             newSingleBill.setBillItems(list);
             newSingleBill.setBillTotal(newSingleBill.getNetTotal());
-            if(patientEncounter != null){
+            if (patientEncounter != null) {
                 newSingleBill.setIpOpOrCc("IP");
                 newSingleBill.setPatientEncounter(patientEncounter);
-            }else{
+            } else {
                 newSingleBill.setIpOpOrCc("OP");
             }
             getBillFacade().edit(newSingleBill);
@@ -1922,7 +1922,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         saveBatchBill();
-        if(patientEncounter != null){
+        if (patientEncounter != null) {
             getBatchBill().setIpOpOrCc("IP");
             getBatchBill().setPatientEncounter(patientEncounter);
             getFacade().edit(getBatchBill());
@@ -2076,7 +2076,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //        duplicatePrint = false;
 //        return true;
 //    }
-
     public void markToken(Bill b) {
         Token t = getToken();
         if (t == null) {
@@ -3455,13 +3454,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (bs == null) {
             return null;
         }
-        if (bs.getBill().getPatient() == null) {
-            return null;
+        if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+            if (bs.getBill().getPatient() == null) {
+                return null;
+            }
+            
+            patient = bs.getBill().getPatient();
         }
+
         if (bs.getSessionInstance().getStaff() == null) {
             return null;
         }
-        patient = bs.getBill().getPatient();
         Staff channellingDoc = bs.getSessionInstance().getStaff();
         getCurrentlyWorkingStaff().add(channellingDoc);
         setSelectedCurrentlyWorkingStaff(channellingDoc);
@@ -4179,7 +4182,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     }
 
-    public void selectPatientEncounter(){
+    public void selectPatientEncounter() {
         if (patientEncounter != null) {
             setPatient(patientEncounter.getPatient());
         } else {
