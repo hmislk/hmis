@@ -223,6 +223,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private String opdEncounterComments = "";
     private int patientSearchTab = 0;
     private String comment;
+    private String indication;
     private double opdPaymentCredit;
     private Date fromDate;
     private Date toDate;
@@ -733,6 +734,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         opdBill = new BilledBill();
         opdPaymentCredit = 0.0;
         comment = null;
+        indication=null;
         searchController.createTableByKeywordToPayBills();
     }
 
@@ -2155,6 +2157,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setPatient(patient);
         newBatchBill.setCreditCompany(creditCompany);
         newBatchBill.setComments(comment);
+        newBatchBill.setIndication(indication);
         newBatchBill.setIpOpOrCc("OP");
         boolean billNumberByYear;
         String insId;
@@ -2281,6 +2284,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setCollectingCentre(collectingCentre);
         newBill.setIpOpOrCc("OP");
         newBill.setComments(comment);
+        newBill.setIndication(indication);
         getBillBean().setPaymentMethodData(newBill, paymentMethod, getPaymentMethodData());
         newBill.setBillDate(new Date());
         newBill.setBillTime(new Date());
@@ -2369,6 +2373,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setCreditCompany(creditCompany);
         newBill.setCollectingCentre(collectingCentre);
         newBill.setComments(comment);
+        newBill.setIndication(indication);
         newBill.setIpOpOrCc("OP");
 
         getBillBean().setPaymentMethodData(newBill, paymentMethod, getPaymentMethodData());
@@ -2991,6 +2996,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setStaff(null);
         setToStaff(null);
         setComment(null);
+        setIndication(null);
         lstBillEntries = new ArrayList<>();
         setForeigner(false);
         setSessionDate(Calendar.getInstance().getTime());
@@ -3029,6 +3035,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setStaff(null);
         setToStaff(null);
         setComment(null);
+        setIndication(null);
         lstBillEntries = new ArrayList<>();
         setForeigner(false);
         setSessionDate(Calendar.getInstance().getTime());
@@ -4718,4 +4725,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
     }
+
+    public String getIndication() {
+        return indication;
+    }
+
+    public void setIndication(String indication) {
+        this.indication = indication;
+    }
+    
+    
 }

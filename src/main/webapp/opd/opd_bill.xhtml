@@ -1348,7 +1348,6 @@
                                             <p:column headerText="Code" style="padding: 2px;">#{ri.institutionCode}</p:column>
                                         </p:autoComplete>
 
-
                                         <h:panelGroup class="w-100">
                                             <p:outputLabel for="cmbDoc" value="Doctor" ></p:outputLabel>
                                             <p:commandLink id="btnAddNewDoc" 
@@ -1403,8 +1402,6 @@
                                             </p:dialog> 
                                         </h:panelGroup>
                                         <h:panelGroup>
-
-
                                             <p:autoComplete forceSelection="true" 
                                                             id="cmbDoc" 
                                                             value="#{opdBillController.referredBy}" 
@@ -1463,6 +1460,15 @@
 
                                         </p:autoComplete>
 
+
+
+                                        <h:panelGroup class="w-100" >
+                                            <p:outputLabel 
+                                                value="Indication" />
+                                        </h:panelGroup>
+                                        <p:inputTextarea 
+                                            class="w-100" 
+                                            value="#{opdBillController.indication}"></p:inputTextarea>
                                     </h:panelGrid>
                                 </p:panel>
 
