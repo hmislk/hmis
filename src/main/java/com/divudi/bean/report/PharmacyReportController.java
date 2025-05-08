@@ -114,6 +114,7 @@ import java.util.HashSet;
 
 import com.divudi.core.facade.ItemFacade;
 import java.text.DecimalFormat;
+import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 
 /**
@@ -311,7 +312,6 @@ public class PharmacyReportController implements Serializable {
 
     private Institution fromSite;
     private Institution toSite;
-
 
     //Constructor
     public PharmacyReportController() {
@@ -2074,7 +2074,7 @@ public class PharmacyReportController implements Serializable {
         if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType)) {
             jpql += " and s.department IS NOT NULL ";
         }
-        
+
         jpql += " order by s.createdAt ";
         stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
@@ -2280,18 +2280,18 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(createCell(docType, cellFont));
 
                 double stockIn = isIn ? qty + freeQty : 0.0;
-                table.addCell(createCell(DECIMAL_FORMAT .format(stockIn), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT.format(stockIn), cellFont));
 
                 double stockOut = isOut ? qty + freeQty : 0.0;
-                table.addCell(createCell(DECIMAL_FORMAT .format(stockOut), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT.format(stockOut), cellFont));
 
                 double itemStock = safeGet(() -> f.getItemStock(), 0.0);
-                table.addCell(createCell(DECIMAL_FORMAT .format(itemStock), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT.format(itemStock), cellFont));
 
-                table.addCell(createCell(DECIMAL_FORMAT .format(purchaseRate), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT.format(purchaseRate), cellFont));
 
                 double closingValue = itemStock * purchaseRate;
-                table.addCell(createCell(DECIMAL_FORMAT .format(closingValue), cellFont));
+                table.addCell(createCell(DECIMAL_FORMAT.format(closingValue), cellFont));
             }
 
             document.add(table);
@@ -2471,6 +2471,82 @@ public class PharmacyReportController implements Serializable {
                 stockQty += pr.getQuantity();
             }
         }
+    }
+
+    private Map<String, Double> cogs = new HashMap<>();
+
+    public void processCostOfGoodSold() {
+        cogs = new LinkedHashMap<>();
+
+        try {
+            if (fromDate == null) {
+                cogs.put("ERROR", -1.0);
+                return;
+            }
+
+            StringBuilder jpql = new StringBuilder("SELECT sh FROM StockHistory sh WHERE ");
+
+            calculateOpeningStock();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateOpeningStock() {
+        StringBuilder subQuery = new StringBuilder()
+                .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                .append("WHERE sh2.retired = false ")
+                .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
+                .append("OR sh2.itemBatch.item.departmentType = :depty) ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("depty", DepartmentType.Pharmacy);
+        params.put("et", CommonFunctions.getStartOfDay(fromDate));
+
+        addFilter(subQuery, params, "sh2.institution", "ins", institution);
+        addFilter(subQuery, params, "sh2.department.site", "sit", site);
+        addFilter(subQuery, params, "sh2.department", "dep", department);
+        if (amp != null) {
+            addFilter(subQuery, params, "sh2.itemBatch.item", "itm", amp);
+        }
+        addFilter(subQuery, "AND sh2.createdAt < :et");
+
+        subQuery.append("GROUP BY sh2.itemBatch.item");
+
+        List<Long> latestStockHistoryIds = facade.findLongValuesByJpql(subQuery.toString(), params);
+
+        double totalQty = 0.0;
+        double totalSaleValue = 0.0;
+        double totalPurchaseValue = 0.0;
+        Set<Long> processedItems = new HashSet<>();
+
+        for (Long shid : latestStockHistoryIds) {
+            StockHistory sh = facade.find(shid);
+            if (sh == null || sh.getItemBatch() == null || sh.getItemBatch().getItem() == null) {
+                continue;
+            }
+
+            double stockQty = sh.getItemStock();
+            double purchaseRate = sh.getItemBatch().getPurcahseRate();
+            double saleRate = sh.getItemBatch().getRetailsaleRate();
+
+            totalQty += stockQty;
+            totalSaleValue += stockQty * saleRate;
+            totalPurchaseValue += stockQty * purchaseRate;
+        }
+
+        cogs.put("OPENING STOCK VALUE", totalSaleValue);
+        
+    }
+
+    public Map<String, Double> getCogs() {
+        return Collections.unmodifiableMap(cogs);
+    }
+
+    public void setCogs(Map<String, Double> cogs) {
+        this.cogs = new HashMap<>(cogs); 
     }
 
     @Deprecated
