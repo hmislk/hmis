@@ -939,7 +939,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
-        indication = bill.getInsication();
+        indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
@@ -1014,7 +1014,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
-        indication = bill.getInsication();
+        indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
