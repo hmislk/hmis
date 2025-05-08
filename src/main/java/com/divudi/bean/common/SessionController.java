@@ -198,7 +198,17 @@ public class SessionController implements Serializable, HttpSessionListener {
     @PostConstruct
     public void init(){
         for (InwardChargeType i : InwardChargeType.values()) {
-            i.setName(configOptionApplicationController.getLongTextValueByKey("Inward Charge Type - Name For " + i.getLabel(), i.getLabel()));
+            try {
+                String name = configOptionApplicationController
+                    .getLongTextValueByKey(
+                        "Inward Charge Type - Name For " + i.getLabel(),
+                        i.getLabel()
+                    );
+                i.setName(name != null ? name : i.getLabel());
+            } catch (Exception e) {
+                i.setName(i.getLabel());
+                // Consider logging the exception
+            }
         }
     }
 
