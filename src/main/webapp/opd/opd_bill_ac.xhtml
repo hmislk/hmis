@@ -1542,14 +1542,13 @@
 
                                         </p:autoComplete>
 
-                                        <h:panelGroup class="w-100" >
-                                            <p:outputLabel 
-                                                value="Indication" />
-                                        </h:panelGroup>
-                                        <p:inputTextarea 
-                                            class="w-100" 
-                                            value="#{opdBillController.indication}"></p:inputTextarea>
-
+    <p:outputLabel for="txtIndication" value="Indication"/>
+    <p:inputTextarea
+        id="txtIndication"
+        class="w-100"
+        rows="4"
+        maxlength="500"
+        value="#{opdBillController.indication}" />
                                     </h:panelGrid>
                                 </p:panel>
 
