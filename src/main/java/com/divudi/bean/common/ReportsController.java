@@ -3854,22 +3854,28 @@ public class ReportsController implements Serializable {
 
             currentItem.setNetValue(-Math.abs(currentItem.getNetValue()));
 
-            Bill originalBill = currentBill.getBilledBill();
-            if (originalBill == null) {
-                continue;
-            }
+            if (currentItem.getReferanceBillItem() != null) {
+                if (currentItem.getReferanceBillItem().getPatientInvestigation() == null) {
+                    iterator.remove();
+                }
+            } else {
+                Bill originalBill = currentBill.getBilledBill();
+                if (originalBill == null) {
+                    continue;
+                }
 
-            List<BillItem> originalItems = Optional.ofNullable(originalBill.getBillItems())
-                    .orElse(Collections.emptyList());
+                List<BillItem> originalItems = Optional.ofNullable(originalBill.getBillItems())
+                        .orElse(Collections.emptyList());
 
-            boolean hasMatchingItem = originalItems.stream()
-                    .filter(oi -> oi.getItem() != null)
-                    .anyMatch(oi ->
-                            oi.getItem().equals(currentItem.getItem()) &&
-                                    oi.getPatientInvestigation() == null);
+                boolean hasMatchingItem = originalItems.stream()
+                        .filter(oi -> oi.getItem() != null)
+                        .anyMatch(oi ->
+                                oi.getItem().equals(currentItem.getItem()) &&
+                                        oi.getPatientInvestigation() == null);
 
-            if (hasMatchingItem) {
-                iterator.remove();
+                if (hasMatchingItem) {
+                    iterator.remove();
+                }
             }
         }
     }
@@ -3955,7 +3961,7 @@ public class ReportsController implements Serializable {
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         removeCancelledNonInvestigationBills(rs);
         createSummaryRows(rs);
-        rs.removeIf(row -> row.getRowValue() == 0.0);
+//        rs.removeIf(row -> row.getRowValue() == 0.0);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
