@@ -2484,7 +2484,7 @@ public class PharmacyReportController implements Serializable {
                 return;
             }
 
-            StringBuilder jpql = new StringBuilder("SELECT sh FROM StockHistory sh WHERE ");
+//            StringBuilder jpql = new StringBuilder("SELECT sh FROM StockHistory sh WHERE ");
 
             calculateOpeningStock();
 
@@ -2517,10 +2517,9 @@ public class PharmacyReportController implements Serializable {
 
         List<Long> latestStockHistoryIds = facade.findLongValuesByJpql(subQuery.toString(), params);
 
-        double totalQty = 0.0;
+//        double totalQty = 0.0;
         double totalSaleValue = 0.0;
-        double totalPurchaseValue = 0.0;
-        Set<Long> processedItems = new HashSet<>();
+//        double totalPurchaseValue = 0.0;
 
         for (Long shid : latestStockHistoryIds) {
             StockHistory sh = facade.find(shid);
@@ -2529,12 +2528,12 @@ public class PharmacyReportController implements Serializable {
             }
 
             double stockQty = sh.getItemStock();
-            double purchaseRate = sh.getItemBatch().getPurcahseRate();
+//            double purchaseRate = sh.getItemBatch().getPurcahseRate();
             double saleRate = sh.getItemBatch().getRetailsaleRate();
 
-            totalQty += stockQty;
+//            totalQty += stockQty;
             totalSaleValue += stockQty * saleRate;
-            totalPurchaseValue += stockQty * purchaseRate;
+//            totalPurchaseValue += stockQty * purchaseRate;
         }
 
         cogs.put("OPENING STOCK VALUE", totalSaleValue);
