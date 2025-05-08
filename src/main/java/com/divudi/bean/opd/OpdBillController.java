@@ -1740,7 +1740,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         Map<Department, Set<Category>> billDeptCats = new HashMap<>();
         // Collecting unique Departments and Categories
         for (BillEntry e : lstBillEntries) {
-            Department dept = e.getBillItem().getItem().getDepartment();
+            Department dept =  departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), e.getBillItem().getItem());
             Category cat = e.getBillItem().getItem().getCategory();
             billDeptCats.computeIfAbsent(dept, k -> new HashSet<>()).add(cat);
         }
@@ -1748,37 +1748,38 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         for (Map.Entry<Department, Set<Category>> entry : billDeptCats.entrySet()) {
             Department d = entry.getKey();
             for (Category c : entry.getValue()) {
-                Bill myBill = new BilledBill();
-                myBill = saveBill(d, c, myBill); // Saving the bill for each Department and Category
-                if (myBill == null) {
+                Bill newlyCreatedIndividualBill = new BilledBill();
+                newlyCreatedIndividualBill = saveBill(d, c, newlyCreatedIndividualBill); // Saving the bill for each Department and Category
+                if (newlyCreatedIndividualBill == null) {
                     return false;
                 }
                 List<BillEntry> tmp = new ArrayList<>();
 
                 // Adding BillItems to the Bill
-                for (BillEntry e : lstBillEntries) {
-                    if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())
-                            && Objects.equals(e.getBillItem().getItem().getCategory().getId(), c.getId())) {
-                        BillItem bi = getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                        myBill.getBillItems().add(bi);
-                        tmp.add(e);
+                for (BillEntry billEntry : lstBillEntries) {
+                    Department dept =  departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), billEntry.getBillItem().getItem());
+                    if (Objects.equals(dept.getId(), d.getId())
+                            && Objects.equals(billEntry.getBillItem().getItem().getCategory().getId(), c.getId())) {
+                        BillItem bi = getBillBean().saveBillItem(newlyCreatedIndividualBill, billEntry, getSessionController().getLoggedUser());
+                        newlyCreatedIndividualBill.getBillItems().add(bi);
+                        tmp.add(billEntry);
                     }
                 }
 
                 // Handling partial payments if allowed
                 if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                    myBill.setCashPaid(cashPaid);
+                    newlyCreatedIndividualBill.setCashPaid(cashPaid);
                 }
 
                 // Finalizing the Bill
-                getBillFacade().edit(myBill);
-                getBillBean().calculateBillItemsForOpdBill(myBill, tmp, getBillFeeBundleEntrys());
+                getBillFacade().edit(newlyCreatedIndividualBill);
+                getBillBean().calculateBillItemsForOpdBill(newlyCreatedIndividualBill, tmp, getBillFeeBundleEntrys());
 //              Payments are Created Only for Batch Bills
 //              createPaymentsForBills(myBill, tmp);
-                getBillBean().checkBillItemFeesInitiated(myBill);
+                getBillBean().checkBillItemFeesInitiated(newlyCreatedIndividualBill);
 
                 // Adding the finalized Bill to the list of Bills
-                getBills().add(myBill);
+                getBills().add(newlyCreatedIndividualBill);
             }
         }
 
