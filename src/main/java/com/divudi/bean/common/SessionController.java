@@ -46,6 +46,7 @@ import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.cashTransaction.Denomination;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.service.ChannelService;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -212,6 +213,19 @@ public class SessionController implements Serializable, HttpSessionListener {
             } catch (IOException e) {
                 // Handle the exception (e.g., logging)
             }
+        }
+    }
+
+    @EJB
+    private ChannelService channelService;
+
+    public void acceptOnlineBookingForAllSessions(boolean accept) throws Exception {
+        channelService.makeAllSessionsAvailableForOnlineBookings(accept);
+
+        if (accept) {
+            JsfUtil.addSuccessMessage("Accept Online Bookings from now.");
+        } else if(!accept) {
+            JsfUtil.addErrorMessage("Online Bookings are not accepted from now.");
         }
     }
 
@@ -2370,7 +2384,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Boolean getInwardServiceBillingAfterShiftStart() {
         if (inwardServiceBillingAfterShiftStart == null) {
-            inwardServiceBillingAfterShiftStart =  configOptionApplicationController.getBooleanValueByKey("Inward Service Bill With Payment Need to Start the Shift", false);
+            inwardServiceBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Inward Service Bill With Payment Need to Start the Shift", false);
         }
         return inwardServiceBillingAfterShiftStart;
     }

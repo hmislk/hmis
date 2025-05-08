@@ -63,7 +63,7 @@
                                              action="#{bookingController.reloadSessionInstance()}"
                                              oncomplete="PF('reloadSessionWarn').show()" 
                                              disabled="#{bookingController.selectedSessionInstance == null}" />
-                            
+
                             <p:commandButton icon="fa fa-cog" 
                                              styleClass="ui-button-warning mx-1" 
                                              oncomplete="PF('ChannelRoomNumberChange').show()" 
@@ -84,18 +84,18 @@
                                         <h:outputText value="The session has been successfully completed." />
                                     </h:panelGrid>
                                 </p:dialog>-->
-                
-                
-                 <p:dialog minHeight="100" width="800" header="Room Number Change" widgetVar="ChannelRoomNumberChange" modal="true" resizable="false">
-                     <h:panelGrid columns="3" class="w-75 mx-4">
-                         <p:outputLabel value="Current Room Number" />
-                         <p:outputLabel value=":" />
-                         <p:outputLabel value="#{bookingController.selectedSessionInstance.roomNo}" />
-                         
-                         <p:outputLabel value="New Room Number" />
-                         <p:outputLabel value=":" />
-                         <p:inputNumber value="#{bookingController.selectedSessionInstance.roomNo}" />
-                     </h:panelGrid>
+
+
+                <p:dialog minHeight="100" width="800" header="Room Number Change" widgetVar="ChannelRoomNumberChange" modal="true" resizable="false">
+                    <h:panelGrid columns="3" class="w-75 mx-4">
+                        <p:outputLabel value="Current Room Number" />
+                        <p:outputLabel value=":" />
+                        <p:outputLabel value="#{bookingController.selectedSessionInstance.roomNo}" />
+
+                        <p:outputLabel value="New Room Number" />
+                        <p:outputLabel value=":" />
+                        <p:inputNumber value="#{bookingController.selectedSessionInstance.roomNo}" />
+                    </h:panelGrid>
                     <f:facet name="footer">
                         <p:commandButton
                             class="mx-2 ui-button-warning"
@@ -110,7 +110,7 @@
                             onclick="PF('ChannelRoomNumberChange').hide();" />
                     </f:facet>
                 </p:dialog>
-                
+
                 <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="completeSessionWarn" modal="true" resizable="false">
                     <p>Are you sure you want to complete this channel session?</p>
 
@@ -290,8 +290,17 @@
                                         </div>
                                         <div class="col-2">
                                             <div class="mx-2">
-                                                <h6>#{bs.bill.patient.person.nameWithTitle}</h6>
-                                                <h6>(#{bs.bill.patient.person.smsNumber})</h6>
+                                                <h:panelGroup rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
+                                                    <h6>#{bs.bill.patient.person.nameWithTitle}</h6>
+                                                    <h6>(#{bs.bill.patient.person.smsNumber})</h6>
+                                                </h:panelGroup>
+                                                
+                                                <h:panelGroup rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
+                                                    <h6>#{bs.bill.referenceBill.onlineBooking.patientName}</h6>
+                                                    <h6>(#{bs.bill.referenceBill.onlineBooking.phoneNo})</h6>
+                                                </h:panelGroup>
+                                                
+
                                             </div>
                                         </div>
                                         <div class="col-3">
@@ -301,7 +310,7 @@
                                                     <p:badge value="Not Paid" severity="warning" rendered="#{bs.bill.paidAmount eq 0 and bs.paidBillSession eq null}" styleClass="p-badge-green mx-1" />
 <!--                                                    <p:badge value="On Call" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" styleClass="p-badge-green" />
                                                     <p:badge value="Staff" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" styleClass="p-badge-green" />-->
-                                                    <p:badge value="Paid" class="mx-1" severity="success" rendered="#{bs.paidBillSession ne null}" />
+                                                    <p:badge value="Paid" class="mx-1" severity="success" rendered="#{bs.paidBillSession ne null or bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" />
 <!--                                                    <p:badge value="Agent" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" />
                                                     <p:badge value="On Call" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" />
                                                     <p:badge value="Staff" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" />-->
