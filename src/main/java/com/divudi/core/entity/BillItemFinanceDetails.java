@@ -125,6 +125,7 @@ public class BillItemFinanceDetails implements Serializable {
         createdAt = new Date();
     }
 
+    @Override
     public BillItemFinanceDetails clone() {
         BillItemFinanceDetails cloned = new BillItemFinanceDetails();
 
