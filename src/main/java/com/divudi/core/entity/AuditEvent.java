@@ -50,6 +50,7 @@ public class AuditEvent implements Serializable {
     private Long eventDuration;
     private String eventStatus;
     private String ipAddress;
+    private String host;
 
     private String entityType;
 
@@ -89,6 +90,8 @@ public class AuditEvent implements Serializable {
         return "com.divudi.core.entity.AuditEvent[ id=" + id + " ]";
     }
 
+    
+    
     public void calculateDifference() {
         System.out.println("calculateDifference");
         System.out.println("Before JSON: " + beforeJson);
@@ -270,6 +273,14 @@ public class AuditEvent implements Serializable {
 
     public void setEntityType(String entityType) {
         this.entityType = entityType;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
 }

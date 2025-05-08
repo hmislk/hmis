@@ -72,6 +72,7 @@ public class BillFinanceDetails implements Serializable {
         createdAt = new Date();
     }
 
+    @Override
     public BillFinanceDetails clone() {
         BillFinanceDetails clone = new BillFinanceDetails();
         clone.setBillDiscount(this.billDiscount);
