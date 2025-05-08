@@ -172,19 +172,18 @@
                             <h:outputText value="&#xf491;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Laboratory" for="cmbCat" class="m-3"/>
                         </h:panelGroup>
-                        <p:selectOneMenu
-                                class="w-100"
-                                id="cmbCat"
-                                filter="true"
-                                filterMatchMode="contains"
-                                value="#{reportsController.category}">
-                            <f:selectItem itemLabel="Please select a Laboratory"/>
-                            <f:selectItems
-                                    value="#{investigationCategoryController.itemsWithServiceCategories}"
-                                    var="cat"
-                                    itemLabel="#{cat.name}"
-                                    itemValue="#{cat}"/>
-                        </p:selectOneMenu>
+                        <p:autoComplete
+                                completeMethod="#{categoryController.completeCategory}"
+                                var="pta"
+                                itemLabel="#{pta.name}"
+                                itemValue="#{pta}"
+                                forceSelection="true"
+                                value="#{reportsController.category}"
+                                inputStyleClass="w-100"
+                                class="w-100 m-1"
+                                maxResults="20"
+                                id="cat">
+                        </p:autoComplete>
 
                         <p:spacer width="20"/>
 
@@ -475,8 +474,11 @@
                             </p:column>
                             <p:column headerText="Test Name" width="5rem">
                                 <h:outputText value="#{row.categoryName}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total Test Performed"/>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Total Tests Performed" width="1rem">
+                            <p:column headerText="Total Test Performed" width="1rem">
                                 <h:outputText value="#{row.rowValue}">
                                     <f:convertNumber pattern="#,##0.0"/>
                                 </h:outputText>

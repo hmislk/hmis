@@ -406,7 +406,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         balance = getTenderedAmount() - getFeeTotalForSelectedBill();
     }
 
-
 //    public double calculatRemainForMultiplePaymentTotal() {
 //        total = getFeeTotalForSelectedBill();
 //        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -471,7 +470,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 //    public void calculateBalance() {
 //        balance = getTenderedAmount() - getFeeTotalForSelectedBill();
 //    }
-
     public void sessionInstanceSelected() {
         sortSessions();
     }
@@ -1518,14 +1516,22 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             if (bs.getBill() == null) {
                 continue;
             }
-            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
-                continue;
+            String mobile = "";
+            if (bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                    continue;
+                }
+                mobile = bs.getBill().getPatient().getPerson().getSmsNumber();
+            }else if(bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
+                     && bs.getBill().getReferenceBill() != null && bs.getBill().getReferenceBill().getOnlineBooking() != null){
+                mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
             }
+
             Sms e = new Sms();
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
             e.setBill(bs.getBill());
-            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
+            e.setReceipientNumber(mobile);
             e.setSendingMessage(createChanellBookingDoctorArrivalSms(bs.getBill()));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -2842,11 +2848,13 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 + " and bs.bill.billType in :bts"
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionInstance=:ss "
+                + " and bs.bill.billTypeAtomic <> :bta"
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
         hh.put("ss", getSelectedSessionInstance());
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
         // Initialize counts
@@ -4668,7 +4676,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     public double getTenderedAmount() {
         return tenderedAmount;
     }
-
 
     public void setTenderedAmount(double tenderedAmount) {
         this.tenderedAmount = tenderedAmount;
