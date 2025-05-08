@@ -71,7 +71,7 @@ public class BillFinanceDetails implements Serializable {
     }
 
     @Override
-    public BillFinanceDetails clone() throws CloneNotSupportedException {
+    public BillFinanceDetails clone() {
         BillFinanceDetails clone = new BillFinanceDetails();
         clone.setBillDiscount(this.billDiscount);
         clone.setTotalOfBillLineDiscounts(this.totalOfBillLineDiscounts);
