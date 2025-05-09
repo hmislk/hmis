@@ -311,6 +311,9 @@
                                 <h:outputText
                                         value="Weekly Report OPD (7.00pm - 7.00am) Night"
                                         style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText
+                                        value="#{reportsController.getDateRangeText(i)}"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
                             </f:facet>
                             <p:column headerText="Item" width="5rem">
                                 <h:outputText value="#{item}"/>
@@ -336,6 +339,9 @@
                                 <h:outputText
                                         value="Weekly Report OPD (7.00am - 1.00pm) Night"
                                         style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText
+                                        value="#{reportsController.getDateRangeText(i)}"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
                             </f:facet>
                             <p:column headerText="Item" width="5rem">
                                 <h:outputText value="#{item}"/>
@@ -360,6 +366,9 @@
                             <f:facet name="header">
                                 <h:outputText
                                         value="Weekly Report OPD (1.00pm - 7.00pm) Night"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText
+                                        value="#{reportsController.getDateRangeText(i)}"
                                         style="font-weight: bold; text-align: left; display: block;"/>
                             </f:facet>
                             <p:column headerText="Item" width="5rem">

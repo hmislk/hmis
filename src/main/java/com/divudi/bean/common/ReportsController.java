@@ -51,6 +51,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
@@ -1842,6 +1843,32 @@ public class ReportsController implements Serializable {
             groupBillItemsDaily();
         }
     }
+
+    public String getDateRangeText(Integer week) {
+        if (week == null) {
+            return "-";
+        }
+
+        List<Integer> daysOfWeek = getDaysOfWeek(week);
+        if (daysOfWeek.isEmpty()) {
+            return "-";
+        }
+
+        int startDay = daysOfWeek.get(0);
+        int endDay = daysOfWeek.get(daysOfWeek.size() - 1);
+
+        int yearValue = LocalDate.now().getYear();
+        int monthValue = month.getValue();
+
+        LocalDate startDate = LocalDate.of(yearValue, monthValue, startDay);
+        LocalDate endDate = LocalDate.of(yearValue, monthValue, endDay);
+
+        String pattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+
+        return formatter.format(startDate.atStartOfDay()) + " - " + formatter.format(endDate.atTime(LocalTime.MAX));
+    }
+
 
     private void groupBillItemsDaily() {
         // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
@@ -5803,6 +5830,7 @@ public class ReportsController implements Serializable {
                 document.add(title);
 
                 document.add(new Paragraph("Week: " + week, headerFont));
+                document.add(new Paragraph(getDateRangeText(week), headerFont));
                 document.add(new Paragraph("Report Type: Detail", regularFont));
                 document.add(Chunk.NEWLINE);
 
@@ -5888,7 +5916,10 @@ public class ReportsController implements Serializable {
                 headerRow2.createCell(0).setCellValue("Week: " + week);
 
                 Row headerRow3 = sheet.createRow(rowIndex++);
-                headerRow3.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 7.00am) Night");
+                headerRow3.createCell(0).setCellValue(getDateRangeText(week));
+
+                Row headerRow4 = sheet.createRow(rowIndex++);
+                headerRow4.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 7.00am) Night");
 
                 rowIndex++;
 
