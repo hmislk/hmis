@@ -371,9 +371,10 @@ public class CreditCompanyDueController implements Serializable {
             XSSFCellStyle amountStyle = workbook.createCellStyle();
             amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
 
-            XSSFCellStyle boldStyle = workbook.createCellStyle();
             XSSFFont boldFont = workbook.createFont();
             boldFont.setBold(true);
+
+            XSSFCellStyle boldStyle = workbook.createCellStyle();
             boldStyle.setFont(boldFont);
 
             XSSFCellStyle boldStyleCentered = workbook.createCellStyle();
@@ -382,7 +383,6 @@ public class CreditCompanyDueController implements Serializable {
             boldStyleCentered.setVerticalAlignment(VerticalAlignment.CENTER);
 
             Row headerRow = sheet.createRow(rowIndex++);
-
             Cell cell0 = headerRow.createCell(0);
             cell0.setCellValue("Credit Company");
             cell0.setCellStyle(boldStyle);
@@ -405,7 +405,7 @@ public class CreditCompanyDueController implements Serializable {
             Cell cell4 = headerRow.createCell(16);
             cell4.setCellValue("90+ Days");
             cell4.setCellStyle(boldStyleCentered);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 16, 21));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 16, 20));
 
             XSSFCellStyle mergedStyle = workbook.createCellStyle();
             mergedStyle.cloneStyleFrom(amountStyle);
@@ -434,10 +434,20 @@ public class CreditCompanyDueController implements Serializable {
                 row.getCell(16).setCellStyle(mergedStyle);
                 sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 16, 20));
 
-                rowIndex = Math.max(exportInnerDataTable(sheet, rowIndex, i.getValue1Bills(), "0-30 Days"), rowIndex);
-                rowIndex = Math.max(exportInnerDataTable(sheet, rowIndex, i.getValue2Bills(), "30-60 Days"), rowIndex);
-                rowIndex = Math.max(exportInnerDataTable(sheet, rowIndex, i.getValue3Bills(), "60-90 Days"), rowIndex);
-                rowIndex = Math.max(exportInnerDataTable(sheet, rowIndex, i.getValue4Bills(), "90+ Days"), rowIndex);
+                int maxRows = Math.max(
+                        Math.max(i.getValue1Bills().size(), i.getValue2Bills().size()),
+                        Math.max(i.getValue3Bills().size(), i.getValue4Bills().size())
+                );
+
+                for (int j = 0; j < maxRows; j++) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    dataRow.createCell(0).setCellValue(" ");
+
+                    insertBillCell(dataRow, i.getValue1Bills(), j, 1);
+                    insertBillCell(dataRow, i.getValue2Bills(), j, 6);
+                    insertBillCell(dataRow, i.getValue3Bills(), j, 11);
+                    insertBillCell(dataRow, i.getValue4Bills(), j, 16);
+                }
             }
 
             workbook.write(out);
@@ -447,56 +457,28 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    private int exportInnerDataTable(XSSFSheet sheet, int rowIndex, List<Bill> bills, String period) {
-        Integer bhtCellIndex = null;
-        Integer nameCellIndex = null;
-        Integer date1CellIndex = null;
-        Integer date2CellIndex = null;
-        Integer valueCellIndex = null;
+    private void insertBillCell(Row row, List<Bill> bills, int index, int startCol) {
+        XSSFWorkbook workbook = (XSSFWorkbook) row.getSheet().getWorkbook();
 
-        if (period.equalsIgnoreCase("0-30 Days")) {
-            bhtCellIndex = 1;
-            nameCellIndex = 2;
-            date1CellIndex = 3;
-            date2CellIndex = 4;
-            valueCellIndex = 5;
-        } else if (period.equalsIgnoreCase("30-60 Days")) {
-            bhtCellIndex = 6;
-            nameCellIndex = 7;
-            date1CellIndex = 8;
-            date2CellIndex = 9;
-            valueCellIndex = 10;
-        } else if (period.equalsIgnoreCase("60-90 Days")) {
-            bhtCellIndex = 11;
-            nameCellIndex = 12;
-            date1CellIndex = 13;
-            date2CellIndex = 14;
-            valueCellIndex = 15;
-        } else if (period.equalsIgnoreCase("90+ Days")) {
-            bhtCellIndex = 16;
-            nameCellIndex = 17;
-            date1CellIndex = 18;
-            date2CellIndex = 19;
-            valueCellIndex = 20;
+        if (index < bills.size()) {
+            Bill b = bills.get(index);
+            row.createCell(startCol).setCellValue(b.getPatientEncounter().getBhtNo());
+            row.createCell(startCol + 1).setCellValue(b.getPatientEncounter().getPatient().getPerson().getName());
+            row.createCell(startCol + 2).setCellValue(b.getPatientEncounter().getDateOfAdmission().toString());
+            row.createCell(startCol + 3).setCellValue(b.getPatientEncounter().getDateOfDischarge().toString());
+
+            Cell valueCell = row.createCell(startCol + 4);
+            valueCell.setCellValue(b.getNetTotal() - b.getPaidAmount());
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+            valueCell.setCellStyle(amountStyle);
+        } else {
+            for (int k = 0; k < 5; k++) {
+                row.createCell(startCol + k).setCellValue("");
+            }
         }
-
-
-        for (Bill b : bills) {
-            Row dataRow = sheet.createRow(rowIndex++);
-            dataRow.createCell(0).setCellValue(" ");
-            dataRow.createCell(bhtCellIndex != null ? bhtCellIndex : 0).setCellValue(b.getPatientEncounter().getBhtNo());
-            dataRow.createCell(nameCellIndex != null ? nameCellIndex : 0).setCellValue(b.getPatientEncounter().getPatient().getPerson().getName());
-            dataRow.createCell(date1CellIndex != null ? date1CellIndex : 0).setCellValue(b.getPatientEncounter().getDateOfAdmission().toString());
-            dataRow.createCell(date2CellIndex != null ? date2CellIndex : 0).setCellValue(b.getPatientEncounter().getDateOfDischarge().toString());
-            dataRow.createCell(valueCellIndex != null ? valueCellIndex : 0).setCellValue(b.getNetTotal() - b.getPaidAmount());
-
-            XSSFCellStyle amountStyle = sheet.getWorkbook().createCellStyle();
-            amountStyle.setDataFormat(sheet.getWorkbook().createDataFormat().getFormat("#,##0.00"));
-            dataRow.getCell(valueCellIndex != null ? valueCellIndex : 0).setCellStyle(amountStyle);
-        }
-        return rowIndex;
     }
-
 
     List<DealerDueDetailRow> dealerDueDetailRows;
 
