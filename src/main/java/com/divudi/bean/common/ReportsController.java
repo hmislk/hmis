@@ -52,6 +52,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
@@ -1844,7 +1845,20 @@ public class ReportsController implements Serializable {
         }
     }
 
-    public String getDateRangeText(Integer week) {
+    public int getNumberOfWeeksOfMonth() {
+        if (month == null) {
+            return 0;
+        }
+
+        LocalDate firstDayOfMonth = LocalDate.of(LocalDate.now().getYear(), month, 1);
+        LocalDate lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth());
+
+        Date lastDate = Date.from(lastDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        return getWeekOfMonth(lastDate);
+    }
+
+    public String getDateRangeText(Integer week, boolean onlyDateAndMonth) {
         if (week == null) {
             return "-";
         }
@@ -1866,7 +1880,14 @@ public class ReportsController implements Serializable {
         String pattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
 
-        return formatter.format(startDate.atStartOfDay()) + " - " + formatter.format(endDate.atTime(LocalTime.MAX));
+        if (onlyDateAndMonth) {
+            pattern = "dd/MM";
+            formatter = DateTimeFormatter.ofPattern(pattern);
+
+            return formatter.format(startDate) + " - " + formatter.format(endDate);
+        } else {
+            return formatter.format(startDate.atStartOfDay()) + " - " + formatter.format(endDate.atTime(LocalTime.MAX));
+        }
     }
 
 
@@ -5673,7 +5694,7 @@ public class ReportsController implements Serializable {
                         FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
 
                 for (int week = 1; week <= 6; week++) {
-                    table.addCell(new PdfPCell(new Phrase("Week " + week,
+                    table.addCell(new PdfPCell(new Phrase(getDateRangeText(week, true),
                             FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
                 }
                 table.addCell(new PdfPCell(new Phrase("Total",
@@ -5750,7 +5771,9 @@ public class ReportsController implements Serializable {
                 shiftCell.setCellStyle(shiftStyle);
 
                 Row headerRow = sheet.createRow(rowIndex++);
-                String[] headers = {"Name", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Total"};
+                String[] headers = {"Name", getDateRangeText(1, true), getDateRangeText(2, true),
+                        getDateRangeText(3, true), getDateRangeText(4, true),
+                        getDateRangeText(5, true), getDateRangeText(6, true), "Total"};
                 for (int col = 0; col < headers.length; col++) {
                     Cell cell = headerRow.createCell(col);
                     cell.setCellValue(headers[col]);
@@ -5830,7 +5853,7 @@ public class ReportsController implements Serializable {
                 document.add(title);
 
                 document.add(new Paragraph("Week: " + week, headerFont));
-                document.add(new Paragraph(getDateRangeText(week), headerFont));
+                document.add(new Paragraph(getDateRangeText(week,false), headerFont));
                 document.add(new Paragraph("Report Type: Detail", regularFont));
                 document.add(Chunk.NEWLINE);
 
@@ -5916,7 +5939,7 @@ public class ReportsController implements Serializable {
                 headerRow2.createCell(0).setCellValue("Week: " + week);
 
                 Row headerRow3 = sheet.createRow(rowIndex++);
-                headerRow3.createCell(0).setCellValue(getDateRangeText(week));
+                headerRow3.createCell(0).setCellValue(getDateRangeText(week, false));
 
                 Row headerRow4 = sheet.createRow(rowIndex++);
                 headerRow4.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 7.00am) Night");
