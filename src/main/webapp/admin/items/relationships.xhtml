@@ -40,7 +40,8 @@
                                             icon="pi pi-trash"
                                             action="#{relationshipController.delete()}"
                                             process="@this"
-                                            update="lstItems panelDetails" />
+                                            update="lstItems panelDetails"
+                                            style="background-color: #d32f2f; border-color: #d32f2f; color: #fff;"/>
                                 </div>
                             </p:panel>
                             <p:panel id="panelDetails" header="Details" styleClass="p-2">
@@ -65,7 +66,7 @@
                                             action="#{relationshipController.saveSelected()}"
                                             process="panelDetails"
                                             update="lstItems"
-                                            style="width: 45%"/>
+                                            style="width: 45%; background-color: #fbc02d; border-color: #fbc02d; color: #212529;"/>
                                 </div>
                             </p:panel>
                         </p:panelGrid>

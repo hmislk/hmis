@@ -20,6 +20,7 @@ public enum Analyzer {
     SmartLytePlus("SmartLyte Plus"),
     SwelabLumi("Swelab Lumi"),
     HumaCount5D("HumaCount5D"),
+    HumaLyte("HumaLyte"),
     MaglumiX3HL7("Maglumi X3 HL7");
 
     private final String label;

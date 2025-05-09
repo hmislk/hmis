@@ -239,8 +239,8 @@ public class OpdReportController implements Serializable {
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
 
-        dailyStockBalanceReport.setOpeningStock(stockHistoryService.fetchOpeningStockQuantity(department, toDate));
-        dailyStockBalanceReport.setClosingStock(stockHistoryService.fetchClosingStockQuantity(department, toDate));
+        dailyStockBalanceReport.setOpeningStockValue(stockHistoryService.fetchOpeningStockQuantity(department, toDate));
+        dailyStockBalanceReport.setClosingStockValue(stockHistoryService.fetchClosingStockQuantity(department, toDate));
 
     }
 
@@ -441,7 +441,7 @@ public class OpdReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
 
-        List<Bill> bills = billService.fetchBillsWithToInstitution(
+        List<Bill> incomeBills = billService.fetchBillsWithToInstitution(
                 fromDate,
                 toDate,
                 institution,
@@ -456,7 +456,7 @@ public class OpdReportController implements Serializable {
                 paymentScheme
         );
 
-        bundle = new IncomeBundle(bills);
+        bundle = new IncomeBundle(incomeBills);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {
                 continue;

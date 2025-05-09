@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/cashier/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel  class="m-1 p-1 container-flex">
+                        <f:facet name="header">
+                            <div class="row">
+                                <div class="col">
+                                    <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
+                                    <p:outputLabel value="Shift Handover" />
+                                    <p:commandButton 
+                                        class="ui-button-success mx-2" 
+                                        ajax="false" 
+                                        value="&nbsp;&nbsp;Record Shift End Cash in Hand" 
+                                        icon="fa fa-handshake"
+                                        style="float: right;"
+                                        onclick="return confirm('Are you sure you want to handover this shift?');"
+                                        action="#{financialTransactionController.settleRecordingShiftEndCashInHand()}" />
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="gpPrint" >
+                            <div class="row mx-2" >
+                                <div class="col-6">
+                                    <p:panelGrid layout="tabular" columns="2" class="w-100">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Shift" class="font-weight-bold" style="float:left;"/>
+                                        </f:facet>
+                                        <!-- User with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-user" style="margin-right:5px; color: #007bff;"></i>
+                                            <p:outputLabel value="User" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.user.webUserPerson.nameWithTitle}" ></p:outputLabel>
+                                            <p:spacer width="10" ></p:spacer>
+                                            <p:outputLabel value="(#{financialTransactionController.bundle.user.name})" ></p:outputLabel>
+                                        </h:panelGroup>
+                                        <!-- Shift Start with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-clock" style="margin-right:5px; color: #28a745;"></i>
+                                            <p:outputLabel value="Shift Start" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <h:panelGroup>
+                                                <i class="pi pi-calendar-plus" style="color: #ffc107;"></i>
+                                            </h:panelGroup>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.startBill.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </p:outputLabel>
+                                            <p:spacer width="10"></p:spacer>
+                                            <h:panelGroup>
+                                                <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
+                                            </h:panelGroup>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.startBill.deptId}" />
+
+                                        </h:panelGroup>
+                                        <!-- Shift End with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-clock" style="margin-right:5px; color: #dc3545;"></i>
+                                            <p:outputLabel value="Shift End" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:badge value="Shift Not Yet Ended" 
+                                                     rendered="#{financialTransactionController.bundle.endBill eq null}" 
+                                                     styleClass="ui-badge-danger" 
+                                                     icon="pi pi-times">
+                                            </p:badge>
+                                            <h:panelGroup rendered="#{financialTransactionController.bundle.endBill ne null}">
+                                                <h:panelGroup>
+                                                    <i class="pi pi-calendar-minus" style="margin-right:5px; color: #ffc107;"></i>
+                                                </h:panelGroup>
+                                                <p:outputLabel value="#{financialTransactionController.bundle.endBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </p:outputLabel>
+                                                <p:spacer width="10" ></p:spacer>
+                                                <h:panelGroup>
+                                                    <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
+                                                </h:panelGroup>
+                                                <p:outputLabel value="#{financialTransactionController.bundle.endBill.deptId}" />
+
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <!-- Total Handover Value with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-dollar" style="margin-right:5px; color: #17a2b8;"></i>
+                                            <p:outputLabel value="Total Collected Value" />
+                                        </h:panelGroup>
+                                        <h:panelGroup id="tblCashier">
+                                            <h:outputText value="#{financialTransactionController.bundle.denominatorValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                    </p:panelGrid>
+
+                                </div>
+
+                                <div class="col-6" >
+
+
+
+
+
+                                    <h:panelGroup id="gpDenominations" >
+                                        <p:dataTable   value="#{financialTransactionController.bundle.denominationTransactions}" var="deno"  >
+                                            <p:column title="Denomination">
+                                                <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
+                                            </p:column>
+                                            <p:column  title="Number">
+                                                <p:inputText 
+                                                    class="text-end w-100" 
+                                                    id="txtDenoQtyHandover"
+                                                    value="#{deno.denominationQty}" 
+                                                    style="width: 100%;" 
+                                                    label="Cash Handover" 
+                                                    onfocus="this.select()">
+                                                    <f:convertNumber integerOnly="true" />
+                                                    <p:ajax 
+                                                        event="blur"
+                                                        process="txtDenoQtyHandover" 
+                                                        listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
+                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} " ></p:ajax>
+                                                </p:inputText>  
+                                            </p:column>
+                                            <p:column >
+                                                <p:outputLabel
+                                                    class="ui-button text-end w-100"
+                                                    id="txtDenoVal" value="#{deno.denominationValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+
+                        </h:panelGroup>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

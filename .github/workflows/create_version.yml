@@ -1,9 +1,11 @@
+# .github/workflows/create-version.yml
 name: Update Version and README
 
-on:
-  push:
-    branches:
-      - 'master'
+#on:
+#  push:
+  #  branches:
+   #   - 'development'  # Optional: include if development updates also need versioning
+  workflow_dispatch:   # Allow manual trigger from GitHub UI
 
 jobs:
   update_version_and_readme:
@@ -11,9 +13,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+        uses: actions/checkout@v3  # 🔄 Changed from v2 to v3
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -22,13 +22,13 @@ jobs:
 
       - name: Determine current date
         id: current_date
-        run: echo "::set-output name=date::$(TZ=Asia/Colombo date +'%Y%m%d')"
+        run: echo "date=$(TZ=Asia/Colombo date +'%Y%m%d')" >> $GITHUB_OUTPUT
 
       - name: Reset counter if it's a new day
-        id: reset_counter
         run: |
+          mkdir -p .github
           current_date=$(TZ=Asia/Colombo date +'%Y%m%d')
-          last_date=$(cat .github/last_date.txt || echo '0')
+          last_date=$(cat .github/last_date.txt 2>/dev/null || echo '0')
           if [ "$current_date" != "$last_date" ]; then
             echo "0" > .github/counter.txt
             echo "$current_date" > .github/last_date.txt
@@ -36,39 +36,57 @@ jobs:
 
       - name: Read merge counter from file
         id: read_counter
-        run: echo "::set-output name=counter::$(cat .github/counter.txt || echo '0')"
+        run: echo "counter=$(cat .github/counter.txt 2>/dev/null || echo '0')" >> $GITHUB_OUTPUT
 
       - name: Increment merge counter
         id: increment_counter
         run: |
           counter=$((${{ steps.read_counter.outputs.counter }} + 1))
-          echo "::set-output name=counter::$counter"
+          echo "counter=$counter" >> $GITHUB_OUTPUT
           echo $counter > .github/counter.txt
 
-      - name: Update version file with date and merge counter
-        run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > src/main/resources/VERSION.txt
+      - name: Build version string
+        id: version_string
+        run: echo "version=3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" >> $GITHUB_OUTPUT
 
-      - name: Update version file with date and merge counter(Simple)
-        run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > src/main/resources/version.txt
+      - name: Update VERSION.txt files
+        run: |
+          echo "${{ steps.version_string.outputs.version }}" > src/main/resources/VERSION.txt
+          echo "${{ steps.version_string.outputs.version }}" > src/main/resources/version.txt
 
       - name: Update README.md
         run: |
-          sed -i "s/Current Version:.*/Current Version: 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }} (This line will be automatically updated to reflect the latest version)/" README.md
+          sed -i "s/Current Version:.*/Current Version: ${{ steps.version_string.outputs.version }} (This line will be automatically updated to reflect the latest version)/" README.md
 
-      - name: Set Git user name and email
+      - name: Commit version bump changes
         run: |
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          #git checkout -b update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
+          git add -f src/main/resources/VERSION.txt src/main/resources/version.txt README.md .github/counter.txt .github/last_date.txt
+          git commit -m "Update version to ${{ steps.version_string.outputs.version }}"
 
-      - name: Stage changes
-        run: |
-          git add src/main/resources/VERSION.txt README.md .github/counter.txt .github/last_date.txt
+#      - name: Push branch
+#        uses: ad-m/github-push-action@v0.6.0
+#        with:
+#          branch: update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit version and README update
-        run: |
-          git commit -m "Update version to 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
         with:
-          branch: ${{ github.event.ref_name }}
+          title: "Update version to ${{ steps.version_string.outputs.version }}"
+          commit-message: "[version bump] Update version to ${{ steps.version_string.outputs.version }}"  # 🔄 Match commit message above
+          branch: update-version-${{ steps.current_date.outputs.date }}-${{ steps.increment_counter.outputs.counter }}
+          base: development
+          body: "Automated version bump and README update."
+          delete-branch: true
+          labels: auto-merge
+
+      - name: Enable auto-merge
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: merge
+

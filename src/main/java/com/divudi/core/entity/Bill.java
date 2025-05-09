@@ -80,6 +80,9 @@ public class Bill implements Serializable, RetirableEntity {
     @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
     private List<Bill> refundBills = new ArrayList<>();
 
+    @OneToOne
+    private OnlineBooking onlineBooking;
+
     @Enumerated(EnumType.STRING)
     protected BillClassType billClassType;
 
@@ -107,6 +110,8 @@ public class Bill implements Serializable, RetirableEntity {
     ////////////////////////////////////////////////
     @Lob
     private String comments;
+    @Lob
+    private String indication;
     // Bank Detail
     private String creditCardRefNo;
     private String chequeRefNo;
@@ -437,6 +442,9 @@ public class Bill implements Serializable, RetirableEntity {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
     private StockBill stockBill;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    private BillFinanceDetails billFinanceDetails;
+
     public Bill() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -449,6 +457,14 @@ public class Bill implements Serializable, RetirableEntity {
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
+    }
+
+    public OnlineBooking getOnlineBooking() {
+        return onlineBooking;
+    }
+
+    public void setOnlineBooking(OnlineBooking onlineBooking) {
+        this.onlineBooking = onlineBooking;
     }
 
     private void generateBillPrintFromBillTemplate() {
@@ -923,6 +939,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
@@ -944,6 +961,11 @@ public class Bill implements Serializable, RetirableEntity {
             pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
             pharmacyBill.setBill(this);
         }
+        if (bill.getBillFinanceDetails() != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+            clonedFinanceDetails.setBill(this);
+            this.setBillFinanceDetails(clonedFinanceDetails);
+        }
     }
 
     public void copyValue(Bill bill) {
@@ -962,6 +984,78 @@ public class Bill implements Serializable, RetirableEntity {
         this.settledAmountBySponsor = bill.getSettledAmountBySponsor();
         if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
             this.getPharmacyBill().copyValue(bill.getPharmacyBill());
+        }
+        if (bill.getBillFinanceDetails() != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+            clonedFinanceDetails.setBill(this);
+            this.setBillFinanceDetails(clonedFinanceDetails);
+        }
+    }
+
+    public void clone(Bill bill) {
+        billType = bill.getBillType();
+        referenceNumber = bill.getReferenceNumber();
+        membershipScheme = bill.getMembershipScheme();
+        collectingCentre = bill.getCollectingCentre();
+        catId = bill.getCatId();
+        creditCompany = bill.getCreditCompany();
+        staff = bill.getStaff();
+        webUser = bill.getWebUser();
+        toStaff = bill.getToStaff();
+        fromStaff = bill.getFromStaff();
+        toDepartment = bill.getToDepartment();
+        toInstitution = bill.getToInstitution();
+        fromDepartment = bill.getFromDepartment();
+        fromInstitution = bill.getFromInstitution();
+        discountPercent = bill.getDiscountPercent();
+        patient = bill.getPatient();
+        patientEncounter = bill.getPatientEncounter();
+        referredBy = bill.getReferredBy();
+        referringDepartment = bill.getReferringDepartment();
+        surgeryBillType = bill.getSurgeryBillType();
+        comments = bill.getComments();
+        indication = bill.getIndication();
+        paymentMethod = bill.getPaymentMethod();
+        paymentScheme = bill.getPaymentScheme();
+        bank = bill.getBank();
+        chequeDate = bill.getChequeDate();
+        referenceInstitution = bill.getReferenceInstitution();
+        bookingId = bill.getBookingId();
+        appointmentAt = bill.getAppointmentAt();
+        referredByInstitution = bill.getReferredByInstitution();
+        invoiceNumber = bill.getInvoiceNumber();
+        vat = bill.getVat();
+        vatPlusNetTotal = bill.getVatPlusNetTotal();
+        sessionId = bill.getSessionId();
+        ipOpOrCc = bill.getIpOpOrCc();
+        chequeRefNo = bill.getChequeRefNo();
+        settledAmountByPatient = bill.getSettledAmountByPatient();
+        settledAmountBySponsor = bill.getSettledAmountBySponsor();
+        qty = bill.getQty();
+        hospitalFee = bill.getHospitalFee();
+        totalHospitalFee = bill.getTotalHospitalFee();
+        billItems = new ArrayList<>(BillItem.copyBillItems(bill.getBillItems()));
+        //      referenceBill=bill.getReferenceBill();
+        if (bill.getPharmacyBill() != null) {
+            pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
+            pharmacyBill.setBill(this);
+        }
+
+        if (bill.getReferenceBill() != null) {
+            Bill referenceBill = new Bill();
+            referenceBill.clone(bill.getReferenceBill());
+            this.referenceBill = referenceBill;
+        }
+
+        setCancelled(bill.isCancelled());
+        setRetired(bill.isRetired());
+        netTotal = bill.getNetTotal();
+        paidAmount = bill.getPaidAmount();
+
+        if (bill.getBillFinanceDetails() != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+            clonedFinanceDetails.setBill(this);
+            this.setBillFinanceDetails(clonedFinanceDetails);
         }
     }
 
@@ -2673,6 +2767,8 @@ public class Bill implements Serializable, RetirableEntity {
     public void setPaymentGenerated(boolean paymentGenerated) {
         this.paymentGenerated = paymentGenerated;
     }
+    
+    
 
     public WebUser getPaymentGeneratedBy() {
         return paymentGeneratedBy;
@@ -2775,5 +2871,28 @@ public class Bill implements Serializable, RetirableEntity {
             mp.forEach(m::putIfAbsent);
         }
         return m;
+    }
+
+    public BillFinanceDetails getBillFinanceDetails() {
+        if (billFinanceDetails == null) {
+            billFinanceDetails = new BillFinanceDetails();
+            billFinanceDetails.setBill(this);
+        }
+        return billFinanceDetails;
+    }
+
+    public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
+        this.billFinanceDetails = billFinanceDetails;
+        if (billFinanceDetails != null && billFinanceDetails.getBill() != this) {
+            billFinanceDetails.setBill(this);
+        }
+    }
+
+    public String getIndication() {
+        return indication;
+    }
+
+    public void setIndication(String indication) {
+        this.indication = indication;
     }
 }

@@ -1,12 +1,7 @@
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.DoctorController;
-import com.divudi.bean.common.InstitutionController;
-import com.divudi.bean.common.ItemApplicationController;
-import com.divudi.bean.common.ItemController;
-import com.divudi.bean.common.PatientController;
-import com.divudi.bean.common.PersonController;
-import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.common.*;
+import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.StockHistoryController;
 import com.divudi.core.data.BillFinanceType;
@@ -56,6 +51,7 @@ import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import com.divudi.core.facade.AgentHistoryFacade;
@@ -117,6 +113,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 
 import com.divudi.core.facade.ItemFacade;
+import java.text.DecimalFormat;
+import java.util.LinkedHashMap;
+import java.util.function.Supplier;
 
 /**
  * @author Pubudu Piyankara
@@ -163,10 +162,13 @@ public class PharmacyReportController implements Serializable {
     @Inject
     WebUserController webUserController;
     @Inject
-    PatientInvestigationFacade patientInvestigationFacade;
+    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
-    StockHistoryController stockHistoryController;
+    SessionController sessionController;
+    @EJB
+    private ReportTimerController reportTimerController;
 
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,##0.00");
     private int reportIndex;
     private Institution institution;
     private Institution site;
@@ -1244,27 +1246,29 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void generatePharmacyCashInOutLedger() {
-        netTotal = 0.0;
-        bills = new ArrayList<>();
-        unifiedBundle = new ArrayList<>();
-        List<BillTypeAtomic> allBillTypes = new ArrayList<>();
-        Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
+        reportTimerController.trackReportExecution(() -> {
+            netTotal = 0.0;
+            bills = new ArrayList<>();
+            unifiedBundle = new ArrayList<>();
+            List<BillTypeAtomic> allBillTypes = new ArrayList<>();
+            Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
 
-        // Combine all relevant BillTypeAtomic
-        List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
-        List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
-        List<BillTypeAtomic> btasShiftStart = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE);
-        List<BillTypeAtomic> btasShiftEnd = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE);
+            // Combine all relevant BillTypeAtomic
+            List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+            List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
+            List<BillTypeAtomic> btasShiftStart = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE);
+            List<BillTypeAtomic> btasShiftEnd = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE);
 
-        allBillTypes.addAll(btasCashIn);
-        allBillTypes.addAll(btasCashOut);
-        allBillTypes.addAll(btasShiftStart);
-        allBillTypes.addAll(btasShiftEnd);
+            allBillTypes.addAll(btasCashIn);
+            allBillTypes.addAll(btasCashOut);
+            allBillTypes.addAll(btasShiftStart);
+            allBillTypes.addAll(btasShiftEnd);
 
-        allBillTypes.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
-        allBillTypes.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
+            allBillTypes.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+            allBillTypes.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
 
-        createPharmacyCashInOutLedger(allBillTypes);
+            createPharmacyCashInOutLedger(allBillTypes);
+        }, PharmacyReports.CASH_IN_OUT_REPORT, sessionController.getLoggedUser());
     }
 
     public void createPharmacyCashInOutLedger(List<BillTypeAtomic> billTypeAtomics) {
@@ -1992,6 +1996,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
         } else if ("grnDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
@@ -2007,6 +2012,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
         } else if ("consumptionDoc".equals(documentType)) {
             billTypes.add(BillType.PharmacyIssue);
 
@@ -2140,7 +2146,7 @@ public class PharmacyReportController implements Serializable {
             row.setItem(shx.getItemBatch().getItem());
             row.setItemBatch(shx.getItemBatch());
 
-            double batchQty = shx.getItemStock();
+            double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
 
@@ -2151,6 +2157,207 @@ public class PharmacyReportController implements Serializable {
 
             rows.add(row);
         }
+    }
+
+    public static <T> T safeGet(Supplier<T> supplier, T defaultValue) {
+        try {
+            T result = supplier.get();
+            return result != null ? result : defaultValue;
+        } catch (NullPointerException e) {
+            return defaultValue;
+        }
+    }
+
+    private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
+        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+    };
+
+    private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
+        for (String header : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setBackgroundColor(new BaseColor(220, 220, 220));
+            table.addCell(cell);
+        }
+    }
+
+    public void exportStockLedgerToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        List<StockHistory> histories = getStockLedgerHistories();
+        if (histories == null || histories.isEmpty()) {
+
+            System.out.println("No stock ledger data available for the selected period");
+            return;
+        }
+
+        response.reset();
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Ledger_Report.pdf");
+        Document document = null;
+        try (OutputStream out = response.getOutputStream()) {
+            document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Stock Ledger Report", (Font) titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+            Paragraph dateRange = new Paragraph(
+                    String.format("From: %s To: %s",
+                            formatDate(getFromDate()),
+                            formatDate(getToDate())), (Font) subTitleFont);
+            dateRange.setAlignment(Element.ALIGN_CENTER);
+            dateRange.setSpacingAfter(20);
+            document.add(dateRange);
+
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+
+            PdfPTable table = new PdfPTable(19); // Number of columns
+            table.setWidthPercentage(100);
+
+            table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
+
+            String[] headers = {
+                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                "Closing Stock", "Rate", "Closing Value"
+            };
+
+            addTableHeaders(table, headerFont, headers);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat(configOptionApplicationController.getShortTextValueByKey("Short Date Format", sessionController.getApplicationPreference().getShortDateFormat()));
+
+            int rowNum = 1;
+            for (StockHistory f : histories) {
+                final BillItem billItem = f.getPbItem().getBillItem();
+                final Bill bill = billItem.getBill();
+                final Item item = billItem.getItem();
+                final Department fromDept = safeGet(() -> bill.getFromDepartment(), null);
+                final Department toDept = safeGet(() -> bill.getToDepartment(), null);
+                final Category itemCategory = safeGet(() -> item.getCategory(), null);
+                final MeasurementUnit unit = safeGet(() -> item.getMeasurementUnit(), null);
+                final BillTypeAtomic atomicType = safeGet(() -> bill.getBillTypeAtomic(), null);
+                final BillType billType = safeGet(() -> bill.getBillType(), null);
+                final double qty = safeGet(() -> f.getPbItem().getQty(), 0.0);
+                final double freeQty = safeGet(() -> f.getPbItem().getFreeQty(), 0.0);
+                final double purchaseRate = safeGet(() -> f.getPbItem().getPurchaseRate(), 0.0);
+                final boolean isIn = safeGet(() -> f.getPbItem().isTransThisIsStockIn(), false);
+                final boolean isOut = safeGet(() -> f.getPbItem().isTransThisIsStockOut(), false);
+
+                table.addCell(createCell(String.valueOf(rowNum++), cellFont));
+                table.addCell(createCell(safeGet(() -> f.getDepartment().getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> itemCategory.getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> item.getCode(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> item.getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> unit.getName(), " "), cellFont));
+
+                String transactionType = isIn ? "STOCK IN" : isOut ? "STOCK OUT" : "N/A";
+                PdfPCell transCell = new PdfPCell(new Phrase(transactionType, cellFont));
+                transCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(transCell);
+
+                table.addCell(createCell(safeGet(() -> bill.getDeptId(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> dateFormat.format(f.getCreatedAt()), ""), cellFont));
+
+                String refDocNo = getRefDocNo(f);
+                table.addCell(createCell(refDocNo != null ? refDocNo : "", cellFont));
+
+                String refDocDate = getRefDocDate(f);
+                table.addCell(createCell(refDocDate != null ? refDocDate : "", cellFont));
+
+                table.addCell(createCell(safeGet(() -> fromDept.getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> toDept.getName(), ""), cellFont));
+
+                String docType = atomicType != null ? atomicType.getLabel() : safeGet(() -> billType.getLabel(), "");
+                table.addCell(createCell(docType, cellFont));
+
+                double stockIn = isIn ? qty + freeQty : 0.0;
+                table.addCell(createCell(DECIMAL_FORMAT.format(stockIn), cellFont));
+
+                double stockOut = isOut ? qty + freeQty : 0.0;
+                table.addCell(createCell(DECIMAL_FORMAT.format(stockOut), cellFont));
+
+                double itemStock = safeGet(() -> f.getItemStock(), 0.0);
+                table.addCell(createCell(DECIMAL_FORMAT.format(itemStock), cellFont));
+
+                table.addCell(createCell(DECIMAL_FORMAT.format(purchaseRate), cellFont));
+
+                double closingValue = itemStock * purchaseRate;
+                table.addCell(createCell(DECIMAL_FORMAT.format(closingValue), cellFont));
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (document != null) {
+                try {
+                    if (document.isOpen()) {
+                        document.close();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    private PdfPCell createCell(String content, Font font) {
+        if (content == null || content.isEmpty()) {
+            content = " ";
+        }
+        PdfPCell cell = new PdfPCell(new Phrase(content, font));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+    private String formatDate(Date date) {
+        if (date == null) {
+            return "N/A";
+        }
+        return new SimpleDateFormat("dd-MMM-yyyy").format(date);
+    }
+
+    private String getRefDocNo(StockHistory f) {
+        return safeGet(() -> {
+            if ("opSaleDoc".equals(documentType) || "ipSaleDoc".equals(documentType)) {
+                return f.getPbItem().getBillItem().getBill().getReferenceBill().isCancelled()
+                        ? f.getPbItem().getBillItem().getBill().getForwardReferenceBill().getDeptId()
+                        : f.getPbItem().getBillItem().getBill().getBackwardReferenceBill().getDeptId();
+            } else {
+                return f.getPbItem().getBillItem().getBill().getCancelledBill() != null
+                        ? f.getPbItem().getBillItem().getBill().getCancelledBill().getDeptId()
+                        : f.getPbItem().getBillItem().getBill().getReferenceBill().getDeptId();
+            }
+        }, "");
+    }
+
+    private String getRefDocDate(StockHistory f) {
+        Date refDocDate = safeGet(() -> {
+            if (documentType.equals("opSaleDoc") || documentType.equals("ipSaleDoc")) {
+                return f.getPbItem().getBillItem().getBill().getReferenceBill().isCancelled()
+                        ? f.getPbItem().getBillItem().getBill().getForwardReferenceBill().getCreatedAt()
+                        : f.getPbItem().getBillItem().getBill().getBackwardReferenceBill().getCreatedAt();
+            } else {
+                return f.getPbItem().getBillItem().getBill().getCancelledBill() != null
+                        ? f.getPbItem().getBillItem().getBill().getCancelledBill().getCreatedAt()
+                        : f.getPbItem().getBillItem().getBill().getReferenceBill().getCreatedAt();
+            }
+        }, null);
+
+        return refDocDate != null ? formatDate(refDocDate) : "";
     }
 
     public void processClosingStockForItemReport() {
@@ -2264,6 +2471,81 @@ public class PharmacyReportController implements Serializable {
                 stockQty += pr.getQuantity();
             }
         }
+    }
+
+    private Map<String, Double> cogs = new HashMap<>();
+
+    public void processCostOfGoodSold() {
+        cogs = new LinkedHashMap<>();
+
+        try {
+            if (fromDate == null) {
+                cogs.put("ERROR", -1.0);
+                return;
+            }
+
+//            StringBuilder jpql = new StringBuilder("SELECT sh FROM StockHistory sh WHERE ");
+
+            calculateOpeningStock();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateOpeningStock() {
+        StringBuilder subQuery = new StringBuilder()
+                .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                .append("WHERE sh2.retired = false ")
+                .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
+                .append("OR sh2.itemBatch.item.departmentType = :depty) ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("depty", DepartmentType.Pharmacy);
+        params.put("et", CommonFunctions.getStartOfDay(fromDate));
+
+        addFilter(subQuery, params, "sh2.institution", "ins", institution);
+        addFilter(subQuery, params, "sh2.department.site", "sit", site);
+        addFilter(subQuery, params, "sh2.department", "dep", department);
+        if (amp != null) {
+            addFilter(subQuery, params, "sh2.itemBatch.item", "itm", amp);
+        }
+        addFilter(subQuery, "AND sh2.createdAt < :et");
+
+        subQuery.append("GROUP BY sh2.itemBatch.item");
+
+        List<Long> latestStockHistoryIds = facade.findLongValuesByJpql(subQuery.toString(), params);
+
+//        double totalQty = 0.0;
+        double totalSaleValue = 0.0;
+//        double totalPurchaseValue = 0.0;
+
+        for (Long shid : latestStockHistoryIds) {
+            StockHistory sh = facade.find(shid);
+            if (sh == null || sh.getItemBatch() == null || sh.getItemBatch().getItem() == null) {
+                continue;
+            }
+
+            double stockQty = sh.getItemStock();
+//            double purchaseRate = sh.getItemBatch().getPurcahseRate();
+            double saleRate = sh.getItemBatch().getRetailsaleRate();
+
+//            totalQty += stockQty;
+            totalSaleValue += stockQty * saleRate;
+//            totalPurchaseValue += stockQty * purchaseRate;
+        }
+
+        cogs.put("OPENING STOCK VALUE", totalSaleValue);
+        
+    }
+
+    public Map<String, Double> getCogs() {
+        return Collections.unmodifiableMap(cogs);
+    }
+
+    public void setCogs(Map<String, Double> cogs) {
+        this.cogs = new HashMap<>(cogs); 
     }
 
     @Deprecated

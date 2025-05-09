@@ -40,8 +40,24 @@
                             />
 
                         <p:spacer width="50" ></p:spacer>
-                        <p:spacer width="50" ></p:spacer>
-                        <p:spacer width="50" ></p:spacer>
+                        <!-- New Doctor Field with Icon -->
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                            <h:outputLabel value="User" for="user" class="mx-3" />
+                        </h:panelGroup>
+                        <p:autoComplete 
+                            forceSelection="true"
+                            value="#{opdReportController.webUser}"
+                            placeholder="Select User"
+                            completeMethod="#{webUserController.completeUser}" 
+                            id="user"
+                            var="u" 
+                            itemLabel="#{u.webUserPerson.name}" 
+                            itemValue="#{u}"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            >
+                        </p:autoComplete>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
@@ -305,12 +321,12 @@
                     </p:commandButton>
 
                     <p:button 
-                        disabled="true"
+                        disabled="false"
                         value="To Print" 
                         styleClass="ui-button-warning m-1"
                         icon="pi pi-print"
-                        outcome="opd_income_report_print"
-                        target="_blank"/>
+                        outcome="opd_income_report_print1"
+                        />
 
 
                     <p:dataTable

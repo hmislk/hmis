@@ -113,7 +113,6 @@ public class TransferIssueController implements Serializable {
 //
 //        return false;
 //    }
-
     public boolean isFullyIssued(Bill bill) {
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             return false; // Null or empty bills are not considered fully issued
@@ -123,7 +122,7 @@ public class TransferIssueController implements Serializable {
 
             if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
                 return false;
-            }else if(originalItem.getPharmaceuticalBillItem().getItemBatch() == null){
+            } else if (originalItem.getPharmaceuticalBillItem().getItemBatch() == null) {
                 return false;
             }
         }
@@ -269,7 +268,6 @@ public class TransferIssueController implements Serializable {
 //                if (sq.getQty() == 0) {
 //                    continue;
 //                }
-
                 //Checking User Stock Entity
                 if (!userStockController.isStockAvailable(sq.getStock(), sq.getQty(), getSessionController().getLoggedUser())) {
                     JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
@@ -553,11 +551,22 @@ public class TransferIssueController implements Serializable {
                 }
             }
 
-            if (bi.getReferanceBillItem().getQty() < (bi.getPharmaceuticalBillItem().getQty()+bi.getIssuedPhamaceuticalItemQty())) {
+            if (bi.getReferanceBillItem().getQty() < (bi.getPharmaceuticalBillItem().getQty() + bi.getIssuedPhamaceuticalItemQty())) {
                 JsfUtil.addErrorMessage("Issued quantity is higher than requested quantity in " + bi.getItem().getName());
                 return;
             }
         }
+
+        //Remove Zero Qty Item
+        List<BillItem> billItemList = new ArrayList<>();
+        for (BillItem bi : getBillItems()) {
+            if (bi.getPharmaceuticalBillItem().getQty() != 0.0) {
+                billItemList.add(bi);
+            }
+        }
+
+        //Replase the billItem with out Zero Qty Item
+        setBillItems(billItemList);
 
         saveBill();
         for (BillItem i : getBillItems()) {
@@ -618,6 +627,8 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().getBillItems().add(i);
         }
 
+        getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValue);
+
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
 
         if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
@@ -659,11 +670,24 @@ public class TransferIssueController implements Serializable {
 
     }
 
+    private void updateBillItemRateAndValue(BillItem b) {
+        boolean useRetailRate = sessionController.getDepartmentPreference().isTranferNetTotalbyRetailRate();
+        double rate = useRetailRate
+                ? b.getPharmaceuticalBillItem().getRetailRate()
+                : b.getPharmaceuticalBillItem().getPurchaseRate();
+
+        b.setRate(rate);
+        b.setQty(b.getPharmaceuticalBillItem().getQty());
+        b.setNetValue(rate * b.getPharmaceuticalBillItem().getQty());
+
+        getBillItemFacade().edit(b);
+    }
+
     private double calTotal() {
         double value = 0;
         int serialNo = 0;
 
-        if (sessionController.getApplicationPreference().isTranferNetTotalbyRetailRate()) {
+        if (sessionController.getDepartmentPreference().isTranferNetTotalbyRetailRate()) {
             for (BillItem b : getIssuedBill().getBillItems()) {
                 value += (b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
                 b.setSearialNo(serialNo++);

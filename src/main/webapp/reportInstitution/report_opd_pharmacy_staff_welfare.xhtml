@@ -26,13 +26,16 @@
                 </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2" >
                     <p:commandButton id="btnRefresh" value="Process" ajax="false" 
-                                     class="ui-button-warning" icon="fas fa-cogs"
+                                     class="ui-button-info m-1" icon="fas fa-cogs"
                                      action="#{serviceSummery.opdPharmacyStaffWelfarebills}"/>
                     <p:defaultCommand target="btnRefresh"/>
 
-                    <p:commandButton ajax="false" value="Print"  
-                                     class="ui-button-info mx-2" icon="fas fa-print" >
-                        <p:printer target="panelPrint" />
+                    <p:commandButton
+                            value="To Print"
+                            ajax="false"
+                            styleClass="ui-button-warning m-1"
+                            action="report_opd_pharmacy_staff_welfare_print?faces-redirect=true;"
+                            icon="pi pi-print">
                     </p:commandButton>
 
                     <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
@@ -71,13 +74,13 @@
                         <p:outputLabel value="#{b.deptId}" />
                     </p:column>
 
-                    <p:column headerText="Staff Code" 
-                              filterBy="#{b.toStaff.code}" 
+                    <p:column headerText="Staff EPF No" 
+                              filterBy="#{b.toStaff.epfNo}" 
                               filterMatchMode="contains">
                         <f:facet name="header">
-                            <p:outputLabel value="Staff Code"/>
+                            <p:outputLabel value="Staff EPF N"/>
                         </f:facet>
-                        <p:outputLabel value="#{b.toStaff.code}" />
+                        <p:outputLabel value="#{b.toStaff.epfNo}" />
                     </p:column>
 
                     <p:column headerText="Staff Name" 
@@ -105,9 +108,9 @@
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="Total Amount" style="text-align: right">
+                    <p:column headerText="Gross Amount" style="text-align: right">
                         <f:facet name="header">
-                            <p:outputLabel value="Total Amount"/>
+                            <p:outputLabel value="Gross Amount"/>
                         </f:facet>
                         <p:outputLabel value="#{b.netTotal+b.discount}">
                             <f:convertNumber pattern="#,##0.00"/>

@@ -12,7 +12,7 @@
 
                 <p:panel header="Reports">
                     <div class="row" >
-                        <div class="col-md-3" >
+                        <div class="col-md-2" >
                             <h:form>
                                 <p:accordionPanel activeIndex="#{searchController.manageListIndex}">
                                     <p:ajax process="@this"></p:ajax>
@@ -77,6 +77,43 @@
                                                 class="w-100">
                                             </p:commandButton>
 
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Pharmaceutical Bill Item List" 
+                                                action="#{searchController.navigateToPharmaceuticalBillItemList()}"
+                                                class="w-100">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Patient Investigation List" 
+                                                action="#{searchController.navigateToPatientInvestigationList()}"
+                                                class="w-100 mx-2"/>
+
+                                        </div>
+
+                                    </p:tab>
+                                    
+                                    
+                                     <p:tab title="Additional Lists">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Cancellation Bill List" 
+                                                action="#{searchController.navigateToCancellationBillList}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                             <p:commandButton 
+                                                ajax="false" 
+                                                value="Return Bill List" 
+                                                action="#{searchController.navigateToReturnBillList()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                        </div>
+                                     </p:tab>
+                                    
+                                    <p:tab title="Downloads">
+                                        <div class="d-grid gap-2">
 
 
                                             <p:commandButton 
@@ -194,10 +231,9 @@
                                             <p:commandButton
                                                 ajax="false" 
                                                 value="OPD Summary by Item"
-                                                action="#{searchController.navigateToOpdSummaryByItem()}" 
-                                                ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Cancelled Bill List" action="#" ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Returned Bill List" action="#" ></p:commandButton>
+                                                action="#{searchController.navigateToOpdSummaryByItem()}">
+                                            </p:commandButton>
+                                            
 
                                         </div>
                                     </p:tab>
@@ -277,7 +313,7 @@
                                 </p:accordionPanel>
                             </h:form>
                         </div>
-                        <div class="col-md-9" >
+                        <div class="col-md-10" >
                             <ui:insert name="report">
                             </ui:insert>
                         </div>

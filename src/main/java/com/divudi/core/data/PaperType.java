@@ -16,7 +16,8 @@ public enum PaperType {
     PosPrintedBatchPaper("POS Printed Batch Bill"),
     PosHeaderPaper("POS Bill with Header"),
     FiveFIvePaperCustom2("5 inch to 5 inch Paper with out heading Coustom 2"),
-    FiveFiveCustom3("5 inch to 5 inch Paper with out heading Custom 3");
+    FiveFiveCustom3("5 inch to 5 inch Paper with out heading Custom 3"),
+    FiveEightInchPaper("5x8 inch Paper");
 
     private String label;
 

@@ -11,7 +11,7 @@
 
 
     <ui:define name="subcontent">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:outputStylesheet library="css" name="printing.css"/>
         <h:panelGroup rendered="true" >
             <h:form>
                 <p:panel>
@@ -56,7 +56,9 @@
                             <h:outputLabel value="#{commonReport.bundle.name}"/> 
                         </f:facet>
 
-                        <p:column headerText="Referred By" >
+                        <p:column headerText="Referred By"
+                                  sortBy="#{b.referringInstitution.name}"
+                                  filterBy="#{b.referringInstitution.name}">
                             <f:facet name="header">  
                                 <h:outputLabel value="Referred By" style="float: left"/>
                             </f:facet> 
@@ -66,14 +68,18 @@
 
 
 
-                        <p:column headerText="Count" >
+                        <p:column headerText="Count"
+                                  sortBy="#{b.long1}"
+                                  filterBy="#{b.long1}">
                             <f:facet name="header">  
                                 <h:outputLabel value="Count" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.long1}"/>
                         </p:column>
 
-                        <p:column headerText="Value" >
+                        <p:column headerText="Value"
+                                  sortBy="#{b.rowValue}"
+                                  filterBy="#{b.rowValue}">
                             <f:facet name="header">  
                                 <h:outputLabel value="Value" style="float: left"/>
                             </f:facet> 

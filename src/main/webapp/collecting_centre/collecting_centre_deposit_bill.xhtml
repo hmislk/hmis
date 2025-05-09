@@ -41,10 +41,10 @@
                             </f:facet>
 
                             <div class="row">
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <p:outputLabel value="Collecting Centre" />
                                 </div>
-                                <div class="col-md-7">
+                                <div class="col-md-8">
                                     <p:autoComplete 
                                         id="creditCom" 
                                         forceSelection="true" 
@@ -71,11 +71,12 @@
                             </div>
                             
                             <div class="row my-2">
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <p:outputLabel value="Value" />
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-9">
                                     <p:inputText 
+                                        class="text-end"
                                         autocomplete="off" 
                                         onfocus="this.select();"
                                         value="#{agentAndCcPaymentController.current.netTotal}"/> 
@@ -83,7 +84,7 @@
                             </div>
 
                             <div class="row my-2">
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <p:outputLabel value="Payment" />
                                 </div>
                                 <div class="col-md-2">
@@ -97,10 +98,10 @@
                                     </p:selectOneMenu>
                                 </div>
                                 
-                                <div class="col-md-5">
-                                    <h:panelGroup id="paymentDetails">
+                                <div class="col-md-7">
+                                    <h:panelGroup id="paymentDetails" class="w-100">
                                         <h:panelGroup id="creditCard"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Card'}">
-                                            <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                            <pa:creditCardDetailsAsOnlyPayment class="w-100" paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="cheque"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Cheque'}">
