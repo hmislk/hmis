@@ -443,10 +443,10 @@ public class CreditCompanyDueController implements Serializable {
                     Row dataRow = sheet.createRow(rowIndex++);
                     dataRow.createCell(0).setCellValue(" ");
 
-                    insertBillCell(dataRow, i.getValue1Bills(), j, 1);
-                    insertBillCell(dataRow, i.getValue2Bills(), j, 6);
-                    insertBillCell(dataRow, i.getValue3Bills(), j, 11);
-                    insertBillCell(dataRow, i.getValue4Bills(), j, 16);
+                    insertBillCell(dataRow, i.getValue1Bills(), j, 1, amountStyle);
+                    insertBillCell(dataRow, i.getValue2Bills(), j, 6, amountStyle);
+                    insertBillCell(dataRow, i.getValue3Bills(), j, 11, amountStyle);
+                    insertBillCell(dataRow, i.getValue4Bills(), j, 16, amountStyle);
                 }
             }
 
@@ -457,21 +457,19 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    private void insertBillCell(Row row, List<Bill> bills, int index, int startCol) {
-        XSSFWorkbook workbook = (XSSFWorkbook) row.getSheet().getWorkbook();
-
+    private void insertBillCell(Row row, List<Bill> bills, int index, int startCol, XSSFCellStyle amountStyle) {
         if (index < bills.size()) {
             Bill b = bills.get(index);
             row.createCell(startCol).setCellValue(b.getPatientEncounter().getBhtNo());
             row.createCell(startCol + 1).setCellValue(b.getPatientEncounter().getPatient().getPerson().getName());
-            row.createCell(startCol + 2).setCellValue(b.getPatientEncounter().getDateOfAdmission().toString());
-            row.createCell(startCol + 3).setCellValue(b.getPatientEncounter().getDateOfDischarge().toString());
+            Date doa = b.getPatientEncounter().getDateOfDischarge();
+            row.createCell(startCol + 2).setCellValue(doa != null ? doa.toString() : "");
+            Date dod = b.getPatientEncounter().getDateOfDischarge();
+            row.createCell(startCol + 3).setCellValue(dod != null ? dod.toString() : "");
 
             Cell valueCell = row.createCell(startCol + 4);
             valueCell.setCellValue(b.getNetTotal() - b.getPaidAmount());
 
-            XSSFCellStyle amountStyle = workbook.createCellStyle();
-            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
             valueCell.setCellStyle(amountStyle);
         } else {
             for (int k = 0; k < 5; k++) {
