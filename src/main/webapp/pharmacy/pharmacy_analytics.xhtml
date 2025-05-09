@@ -91,6 +91,15 @@
 
                                     <p:tab title="Stock Reports">
                                         <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                icon="fa fa-cubes" 
+                                                value="Stock Report by Batch" 
+                                                action="#{reportsStock.navigateToStockReportByBatch()}" 
+                                                ajax="false" />
+
+
+
                                             <p:commandButton class="w-100" value="Stock Report by Batch" action="pharmacy_report_department_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100" value="Expiring Stock Report by Batch" action="pharmacy_report_department?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100" value="Stock Report by Expiry" action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true" ajax="false" />
@@ -131,6 +140,14 @@
                                                 action="pharmacy_report_stock_report_with_supplier?faces-redirect=true" 
                                                 ajax="false" >
                                             </p:commandButton>       
+
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                icon="fa fa-file-export" 
+                                                value="Stock Report by Batch for Export" 
+                                                action="#{reportsStock.navigateToStockReportByBatchForExport()}" 
+                                                ajax="false" />
+
                                         </div>
                                     </p:tab>
 
@@ -234,14 +251,14 @@
 
                                     <p:tab title="Procurement Reports">
                                         <div class="d-grid gap-2">
-                                            
+
                                             <p:commandButton 
                                                 class="w-100 ui-button-warning"
                                                 ajax="false" 
                                                 style="text-align: left" 
                                                 value="Pharmacy Procurement Report"
                                                 action="#{pharmacySummaryReportController.navigateToPharmacyProcurementReport()}"/>
-                                            
+
                                             <p:commandButton class="w-100" ajax="false" value="GRN Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100 ui-button-warning" value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch?faces-redirect=true" ajax="false"/>
                                             <p:commandButton class="w-100 ui-button-warning" value="Purchase Orders Not Approved" action="pharmacy_transfer_issued_list_not_approve_report?faces-redirect=true" ajax="false" />

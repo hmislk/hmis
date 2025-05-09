@@ -1158,7 +1158,6 @@ public class PharmacyItemExcelManager implements Serializable {
 //        }
 //
 //    }
-
     @Deprecated // Use the mathod with the same name in data upload controller
     public String importToExcelWithStock() {
         if (file == null || file.getFileName() == null) {
@@ -2401,14 +2400,27 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setCode(strCode);
                         amp.setDepartmentType(DepartmentType.Pharmacy);
                         amp.setMeasurementUnit(strengthUnit);
+                        amp.setIssueUnit(issueUnit);
+                        amp.setStrengthUnit(strengthUnit);
                         amp.setDblValue(strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
                         amp.setVmp(vmp);
                         getAmpFacade().create(amp);
                     } else {
+                      
+                        
                         amp.setRetired(false);
                         amp.setDepartmentType(DepartmentType.Pharmacy);
+                        
                         amp.setCode(strCode);
+                        amp.setDepartmentType(DepartmentType.Pharmacy);
+                        amp.setMeasurementUnit(strengthUnit);
+                        amp.setIssueUnit(issueUnit);
+                        amp.setStrengthUnit(strengthUnit);
+                        amp.setDblValue(strengthUnitsPerIssueUnit);
+                        amp.setCategory(cat);
+                        amp.setVmp(vmp);
+                        
                         getAmpFacade().edit(amp);
                     }
                 } else {
