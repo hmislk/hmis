@@ -695,8 +695,7 @@ public class SearchController implements Serializable {
         resetAllFiltersExceptDateRange();
         return "/analytics/bills?faces-redirect=true";
     }
-    
-    
+
     public String navigateToCancellationBillList() {
         resetAllFiltersExceptDateRange();
         return "/analytics/cancellation_bills?faces-redirect=true";
@@ -1250,7 +1249,7 @@ public class SearchController implements Serializable {
     public String navigateToAllCashierHandovers() {
         return "/reports/cashier_reports/all_cashier_shifts?faces-redirect=true";
     }
-    
+
     public String navigateToShiftEndCash() {
         return "/reports/cashier_reports/shift_end_cash_list?faces-redirect=true";
     }
@@ -10664,6 +10663,70 @@ public class SearchController implements Serializable {
 
             }
         }
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        netTotal = 0.0;
+        discount = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
+    public void listCancellationBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        jpql.append(" and type(b)=:billClassType ");
+        params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
 
         if (billType != null) {
             jpql.append(" and b.billType=:billType ");
