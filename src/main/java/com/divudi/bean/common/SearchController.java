@@ -251,6 +251,26 @@ public class SearchController implements Serializable {
     private BillClassType billClassType;
     private String selectedOpdPackageBillSelector;
     private List<String> OpdPackageBillSelector;
+    private ReportTemplateRow selectedChannelBookingBillRow;
+
+    public ReportTemplateRow getSelectedChannelBookingBillRow() {
+        return selectedChannelBookingBillRow;
+    }
+
+    public void setSelectedChannelBookingBillRow(ReportTemplateRow selectedChannelBookingBillRow) {
+        this.selectedChannelBookingBillRow = selectedChannelBookingBillRow;
+    }
+
+
+    public void handleChannelBillRowClick(){
+        if(selectedChannelBookingBillRow.getBill() instanceof CancelledBill){
+            for(ReportTemplateRow r : bundle.getReportTemplateRows()){
+                if(r.getBill().getCancelledBill() != null && r.getBill().getCancelledBill().equals(selectedChannelBookingBillRow.getBill())){
+                    this.selectedChannelBookingBillRow = r;
+                }
+            }
+        }
+    }
 
     private StreamedContent downloadingExcel;
 
