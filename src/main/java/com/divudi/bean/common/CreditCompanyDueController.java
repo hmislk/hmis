@@ -40,10 +40,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -379,37 +376,68 @@ public class CreditCompanyDueController implements Serializable {
             boldFont.setBold(true);
             boldStyle.setFont(boldFont);
 
-            Row headerRow = sheet.createRow(rowIndex++);
-            headerRow.createCell(0).setCellValue("Credit Company");
-            headerRow.createCell(1).setCellValue("0-30 Days");
-            headerRow.createCell(2).setCellValue("30-60 Days");
-            headerRow.createCell(3).setCellValue("60-90 Days");
-            headerRow.createCell(4).setCellValue("90+ Days");
+            XSSFCellStyle boldStyleCentered = workbook.createCellStyle();
+            boldStyleCentered.setFont(boldFont);
+            boldStyleCentered.setAlignment(HorizontalAlignment.CENTER);
+            boldStyleCentered.setVerticalAlignment(VerticalAlignment.CENTER);
 
-            for (int i = 0; i <= 4; i++) {
-                headerRow.getCell(i).setCellStyle(boldStyle);
-            }
+            Row headerRow = sheet.createRow(rowIndex++);
+
+            Cell cell0 = headerRow.createCell(0);
+            cell0.setCellValue("Credit Company");
+            cell0.setCellStyle(boldStyle);
+
+            Cell cell1 = headerRow.createCell(1);
+            cell1.setCellValue("0-30 Days");
+            cell1.setCellStyle(boldStyleCentered);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 5));
+
+            Cell cell2 = headerRow.createCell(6);
+            cell2.setCellValue("30-60 Days");
+            cell2.setCellStyle(boldStyleCentered);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 6, 10));
+
+            Cell cell3 = headerRow.createCell(11);
+            cell3.setCellValue("60-90 Days");
+            cell3.setCellStyle(boldStyleCentered);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 11, 15));
+
+            Cell cell4 = headerRow.createCell(16);
+            cell4.setCellValue("90+ Days");
+            cell4.setCellStyle(boldStyleCentered);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 16, 21));
+
+            XSSFCellStyle mergedStyle = workbook.createCellStyle();
+            mergedStyle.cloneStyleFrom(amountStyle);
+            mergedStyle.setFont(boldFont);
+            mergedStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            mergedStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             for (String1Value5 i : getCreditCompanyAge()) {
                 Row row = sheet.createRow(rowIndex++);
                 row.createCell(0).setCellValue(i.getInstitution().getName());
+                row.getCell(0).setCellStyle(mergedStyle);
+
                 row.createCell(1).setCellValue(i.getValue1());
-                row.createCell(2).setCellValue(i.getValue2());
-                row.createCell(3).setCellValue(i.getValue3());
-                row.createCell(4).setCellValue(i.getValue4());
+                row.getCell(1).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 1, 5));
 
-                XSSFCellStyle mergedStyle = workbook.createCellStyle();
-                mergedStyle.cloneStyleFrom(amountStyle);
-                mergedStyle.setFont(boldFont);
+                row.createCell(6).setCellValue(i.getValue2());
+                row.getCell(6).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 6, 10));
 
-                for (int j = 0; j <= 4; j++) {
-                    row.getCell(j).setCellStyle(mergedStyle);
-                }
+                row.createCell(11).setCellValue(i.getValue3());
+                row.getCell(11).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 11, 15));
 
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue1Bills(), "0-30 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue2Bills(), "30-60 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue3Bills(), "60-90 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue4Bills(), "90+ Days");
+                row.createCell(16).setCellValue(i.getValue4());
+                row.getCell(16).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 16, 20));
+
+                rowIndex = Math.max(exportInnerDataTable(sheet, rowIndex, i.getValue1Bills(), "0-30 Days"), rowIndex);
+                rowIndex = Math.max(exportInnerDataTable(sheet, rowIndex, i.getValue2Bills(), "30-60 Days"), rowIndex);
+                rowIndex = Math.max(exportInnerDataTable(sheet, rowIndex, i.getValue3Bills(), "60-90 Days"), rowIndex);
+                rowIndex = Math.max(exportInnerDataTable(sheet, rowIndex, i.getValue4Bills(), "90+ Days"), rowIndex);
             }
 
             workbook.write(out);
@@ -420,19 +448,51 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     private int exportInnerDataTable(XSSFSheet sheet, int rowIndex, List<Bill> bills, String period) {
+        Integer bhtCellIndex = null;
+        Integer nameCellIndex = null;
+        Integer date1CellIndex = null;
+        Integer date2CellIndex = null;
+        Integer valueCellIndex = null;
+
+        if (period.equalsIgnoreCase("0-30 Days")) {
+            bhtCellIndex = 1;
+            nameCellIndex = 2;
+            date1CellIndex = 3;
+            date2CellIndex = 4;
+            valueCellIndex = 5;
+        } else if (period.equalsIgnoreCase("30-60 Days")) {
+            bhtCellIndex = 6;
+            nameCellIndex = 7;
+            date1CellIndex = 8;
+            date2CellIndex = 9;
+            valueCellIndex = 10;
+        } else if (period.equalsIgnoreCase("60-90 Days")) {
+            bhtCellIndex = 11;
+            nameCellIndex = 12;
+            date1CellIndex = 13;
+            date2CellIndex = 14;
+            valueCellIndex = 15;
+        } else if (period.equalsIgnoreCase("90+ Days")) {
+            bhtCellIndex = 16;
+            nameCellIndex = 17;
+            date1CellIndex = 18;
+            date2CellIndex = 19;
+            valueCellIndex = 20;
+        }
+
+
         for (Bill b : bills) {
             Row dataRow = sheet.createRow(rowIndex++);
             dataRow.createCell(0).setCellValue(" ");
-            dataRow.createCell(1).setCellValue(period);
-            dataRow.createCell(2).setCellValue(b.getPatientEncounter().getBhtNo());
-            dataRow.createCell(3).setCellValue(b.getPatientEncounter().getPatient().getPerson().getName());
-            dataRow.createCell(4).setCellValue(b.getPatientEncounter().getDateOfAdmission().toString());
-            dataRow.createCell(5).setCellValue(b.getPatientEncounter().getDateOfDischarge().toString());
-            dataRow.createCell(6).setCellValue(b.getNetTotal() - b.getPaidAmount());
+            dataRow.createCell(bhtCellIndex != null ? bhtCellIndex : 0).setCellValue(b.getPatientEncounter().getBhtNo());
+            dataRow.createCell(nameCellIndex != null ? nameCellIndex : 0).setCellValue(b.getPatientEncounter().getPatient().getPerson().getName());
+            dataRow.createCell(date1CellIndex != null ? date1CellIndex : 0).setCellValue(b.getPatientEncounter().getDateOfAdmission().toString());
+            dataRow.createCell(date2CellIndex != null ? date2CellIndex : 0).setCellValue(b.getPatientEncounter().getDateOfDischarge().toString());
+            dataRow.createCell(valueCellIndex != null ? valueCellIndex : 0).setCellValue(b.getNetTotal() - b.getPaidAmount());
 
             XSSFCellStyle amountStyle = sheet.getWorkbook().createCellStyle();
             amountStyle.setDataFormat(sheet.getWorkbook().createDataFormat().getFormat("#,##0.00"));
-            dataRow.getCell(6).setCellStyle(amountStyle);
+            dataRow.getCell(valueCellIndex != null ? valueCellIndex : 0).setCellStyle(amountStyle);
         }
         return rowIndex;
     }
