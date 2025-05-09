@@ -17877,11 +17877,13 @@ public class SearchController implements Serializable {
         parameters.put("br", true);
 
         List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
-        ;
+        bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
+      
         if (bookingType != null) {
             switch (bookingType) {
                 case "System Bookings":
                     bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    bts.remove(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
                     break;
                 case "Online Bookings":
                     bts = new ArrayList<BillTypeAtomic>();

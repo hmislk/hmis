@@ -206,8 +206,8 @@
                                     <h:outputText value="Bill No" />
                                 </f:facet>
                                 <h:outputText value="#{row.bill.deptId}" />
-                                <p:badge value="Cancelled" severity="danger" rendered="#{b.cancelled}"/>
-                                <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
+                                <p:badge value="Cancelled" severity="danger" rendered="#{row.bill.cancelled}"/>
+                                <p:badge value="Refunded" severity="warning" rendered="#{row.bill.refunded}"/>
                             </p:column>
 
                             <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
@@ -221,7 +221,10 @@
                                 <f:facet name="header">
                                     <h:outputText value="Patient" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.patient.person.nameWithTitle}">
+                                <h:outputText rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.patient.person.nameWithTitle}">
+                                </h:outputText>
+                                
+                                <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.referenceBill.onlineBooking.patientName}">
                                 </h:outputText>
                             </p:column>
 
