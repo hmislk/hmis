@@ -695,6 +695,12 @@ public class SearchController implements Serializable {
         resetAllFiltersExceptDateRange();
         return "/analytics/bills?faces-redirect=true";
     }
+    
+    
+    public String navigateToCancellationBillList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/cancellation_bills?faces-redirect=true";
+    }
 
     public String navigateToPharmaceuticalBillItemList() {
         resetAllFiltersExceptDateRange();
