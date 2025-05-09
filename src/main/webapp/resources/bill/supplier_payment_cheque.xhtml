@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="billItems" />
+        <cc:attribute name="acPayeeOnly" type="boolean" required="false"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <style>
+        .body {
+            font-family: "Arial";
+            margin: 0;
+            padding: 0;
+            width: 210mm;
+            height: 297mm;
+            font-size: 9pt;
+        }
+
+        .vertical-text {
+            position: absolute;
+            transform: rotate(270deg);
+            transform-origin: left top;
+        }
+
+        .vertical-text-border {
+            position: absolute;
+            transform: rotate(270deg);
+            transform-origin: left top;
+            border-bottom: 1px solid;
+            border-top: 1px solid;
+        }
+
+        /* For screen only: rotate the whole layout 90 degrees */
+        @media screen {
+            .wrapper {
+                transform: rotate(90deg);
+                transform-origin: top left;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 297mm;
+                height: 210mm;
+                overflow: auto;
+            }
+        }
+
+        /* For print: keep the original orientation */
+        @media print {
+            .wrapper {
+                transform: none !important;
+                width: 210mm;
+                height: 297mm;
+            }
+        }
+    </style>
+
+        <div class="wrapper">
+            <div class="vertical-text" style="left: 8mm; top: 56mm;  font-size: 10pt;">
+                <h:outputLabel value="#{sessionController.currentDate}" style="letter-spacing: 4.5mm;">
+                    <f:convertDateTime pattern="ddMMyyyy" />
+                </h:outputLabel>
+            </div>
+            <div class="vertical-text-border" style="left: 8mm; top: 100mm; text-transform: uppercase !important;  font-size: 10pt;">
+                <h:outputLabel value="A/C PAYEE ONLY"  rendered="#{cc.attrs.acPayeeOnly}"/>
+            </div>
+            <div class="vertical-text" style="left: 21mm; top: 158mm; text-transform: uppercase !important;  font-size: 10pt;">
+                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" />
+            </div>
+            <div class="vertical-text" style="left: 31mm; top: 158mm; text-transform: uppercase !important;  font-size: 10pt; width: 84mm">
+                <h:outputLabel value="**#{supplierPaymentController.convertToWord(-cc.attrs.bill.netTotal)} ONLY**" />
+            </div>
+            <div class="vertical-text" style="left: 36mm; top: 54mm; text-transform: uppercase !important; font-weight: bold;  font-size: 10pt;">
+                <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
+                    <f:convertNumber pattern="#,###,###.00" />
+                </h:outputLabel>
+            </div>
+            <div class="vertical-text" style="left: 47mm; top: 52mm; text-transform: uppercase !important; font-family: 'Times New Roman'; text-align: center; font-size: 8pt; max-width: 40mm">
+               <h:outputText value="GALLE CO-OPERATIVE HOSPITAL LTD." escape="false" />
+            </div>
+            <div class="vertical-text" style="left: 64mm; top: 68mm; text-transform: uppercase !important; font-size: 8pt;">
+                <h:outputLabel value="............................................................................................................." />
+            </div>
+            <div class="vertical-text" style="left: 68mm; top: 65mm; font-size: 8pt; font-family: 'Times New Roman'; width: 80mm">
+                <h:outputLabel value="Chairman   Vice Chairman   General Manager   Accountant" />
+            </div>
+        </div>
+    </cc:implementation>
+</html>

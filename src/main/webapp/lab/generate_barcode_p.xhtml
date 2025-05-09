@@ -1352,20 +1352,13 @@
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
                                         var="mys" 
                                         class="w-100" 
-                                        maxResults="10"
-                                        inputStyleClass="w-100"
+                                        maxResults="50"
+                                        inputStyleClass="form-control"
                                         itemLabel="#{mys.person.name}" 
                                         panelStyleClass="custom-dropdown-panel"
                                         itemValue="#{mys}">
-                                        <p:column headerText="Name" style="padding: 6px; width: 250px;">
-                                            <h:outputText value="#{mys.person.nameWithTitle}" />
-                                        </p:column>
-                                        <p:column headerText="Code" style="padding: 6px; width: 20px;">
-                                            <h:outputText value="#{mys.code}" />
-                                        </p:column>
-                                        <p:column headerText="Name" style="padding: 6px; width: 20px;">
-                                            <h:outputText value="#{mys.epfNo}" />
-                                        </p:column>
+                                        <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
+                                        <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
                                     </p:autoComplete>
 
                                     <p:commandButton 

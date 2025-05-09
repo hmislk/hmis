@@ -34,6 +34,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,6 +113,16 @@ public class ReportsStock implements Serializable {
         return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
     }
 
+    public String navigateToStockReportByBatch() {
+        stocks = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_batch?faces-redirect=true";
+    }
+
+    public String navigateToStockReportByBatchForExport() {
+        stocks = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_batch_for_export?faces-redirect=true";
+    }
+    
     /**
      * Methods
      */
@@ -244,6 +255,7 @@ public class ReportsStock implements Serializable {
     }
 
     public void fillDepartmentNonEmptyItemStocks() {
+        reportTimerController.trackReportExecution(() -> {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -270,7 +282,7 @@ public class ReportsStock implements Serializable {
 
         }
         pharmacyStockRows = lsts;
-
+        }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
     }
 
     public void fillDepartmentStockByItemOrderByVmp() {
@@ -518,6 +530,7 @@ public class ReportsStock implements Serializable {
     private Date date;
 
     public void fillDepartmentExpiaryStocks() {
+        reportTimerController.trackReportExecution(() -> {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -542,7 +555,7 @@ public class ReportsStock implements Serializable {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
-
+        }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
     }
 
     public void addComment(Stock st) {
@@ -712,10 +725,6 @@ public class ReportsStock implements Serializable {
     }
 
     public String fillDistributorStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (department == null || institution == null) {
             JsfUtil.addErrorMessage("Please select a department && Dealor");
             return "";
@@ -746,6 +755,39 @@ public class ReportsStock implements Serializable {
         }
 
         return "/pharmacy/pharmacy_report_supplier_stock_by_batch";
+    }
+
+    public String fillSupplierStocks() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return "";
+        }
+        Map m;
+        String sql;
+        records = new ArrayList<>();
+
+        m = new HashMap();
+
+        m.put("dep", department);
+        m.put("st", 0.0);
+        sql = "select s "
+                + " from Stock s "
+                + " where s.department=:dep "
+                + " and s.stock > :st ";
+
+        if (institution != null) {
+            sql += "and s.itemBatch.lastPurchaseBillItem.bill.fromInstitution =:ins";
+            m.put("ins", institution);
+        }
+        stocks = getStockFacade().findByJpql(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+        }
+
+        return "/pharmacy/pharmacy_report_stock_report_with_supplier?faces-redirect=true";
     }
 
     public void fillCategoryStocks() {
@@ -857,7 +899,23 @@ public class ReportsStock implements Serializable {
                 }
                 ib.setItem(i);
                 s.setItemBatch(ib);
+
                 s.setStock(d);
+
+                if (i != null) {
+                    s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                    s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                    String code = i.getCode();
+                    Long longCode = CommonFunctions.stringToLong(code);
+                    s.setLongCode(longCode);
+                    s.setDateOfExpire(ib.getDateOfExpire());
+                    s.setRetailsaleRate(ib.getRetailsaleRate());
+                } else {
+                    s.setItemName("UNKNOWN");
+                    s.setBarcode("");
+                    s.setLongCode(0L);
+                }
+
                 stocks.add(s);
                 totalQty += d;
             }
@@ -945,6 +1003,45 @@ public class ReportsStock implements Serializable {
             sql = "select sum(s.stock),sum(s.stock * s.itemBatch.purcahseRate),sum(s.stock * s.itemBatch.retailsaleRate)"
                     + " from Stock s where s.department=:d and s.itemBatch.item.id in (select item.id from ItemsDistributors id join id.item as item where id.retired=false and id.institution=:ins)"
                     + " ";
+            Object[] objs = getStockFacade().findSingleAggregate(sql, m);
+
+            if (objs[0] != null && (Double) objs[0] > 0) {
+                StockReportRecord r = new StockReportRecord();
+                ////////System.out.println("objs = " + objs);
+                r.setInstitution(i);
+                r.setQty((Double) objs[0]);
+                r.setPurchaseValue((Double) objs[1]);
+                r.setRetailsaleValue((Double) objs[2]);
+                records.add(r);
+                stockPurchaseValue = stockPurchaseValue + r.getPurchaseValue();
+                stockSaleValue = stockSaleValue + r.getRetailsaleValue();
+            }
+        }
+
+    }
+
+    public void fillAllSuppliersStocks() {
+
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        Map m;
+        String sql;
+        records = new ArrayList<>();
+        List<Institution> dealers = getDealerController().getItems();
+        stockSaleValue = 0.0;
+        stockPurchaseValue = 0.0;
+        for (Institution i : dealers) {
+            ////////System.out.println("i = " + i);
+            m = new HashMap();
+            m.put("ins", i);
+            m.put("d", department);
+            sql = "select sum(s.stock),sum(s.stock * s.itemBatch.purcahseRate),sum(s.stock * s.itemBatch.retailsaleRate)"
+                    + " from Stock s "
+                    + " where s.department=:d "
+                    + " and s.itemBatch.lastPurchaseBillItem.bill.fromInstitution =:ins";
             Object[] objs = getStockFacade().findSingleAggregate(sql, m);
 
             if (objs[0] != null && (Double) objs[0] > 0) {

@@ -69,7 +69,7 @@ public class AuditEventController implements Serializable {
         auditEvent.setEventEndTime(endTime);
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.saveAutitEvent(auditEvent);
+        auditEventApplicationController.saveAuditEvent(auditEvent);
     }
 
     public String navigateToAuditEventList() {
@@ -101,7 +101,7 @@ public class AuditEventController implements Serializable {
         auditEvent.setEventTrigger(eventName);
         String uuid = UUID.randomUUID().toString();
         auditEvent.setUuid(uuid);
-        auditEventApplicationController.saveAutitEvent(auditEvent);
+        auditEventApplicationController.saveAuditEvent(auditEvent);
         return auditEvent.getUuid();
     }
 

@@ -72,6 +72,7 @@ import com.divudi.core.facade.PackegeFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.DepartmentResolver;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -145,6 +146,8 @@ public class BillBeanController implements Serializable {
     StaffService staffBean;
     @EJB
     BillService billService;
+    @EJB
+    DepartmentResolver departmentResolver;
 
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
@@ -2337,6 +2340,11 @@ public class BillBeanController implements Serializable {
         return bill;
     }
 
+    public Bill fetchBillBypassingCache(Long billId) {
+        Bill bill = getBillFacade().findWithoutCache(billId);
+        return bill;
+    }
+
     public double getTotalByBillFee(BillItem billItem) {
         String sql = "Select sum(bf.feeValue) from BillFee bf where "
                 + " bf.retired=false and bf.billItem=:bItm";
@@ -3524,24 +3532,24 @@ public class BillBeanController implements Serializable {
         return billFeeFacade.findByJpql(j, m);
     }
 
-    public BillItem saveBillItem(Bill b, BillEntry e, WebUser wu) {
-        e.getBillItem().setCreatedAt(new Date());
-        e.getBillItem().setCreater(wu);
-        e.getBillItem().setBill(b);
+    public BillItem saveBillItem(Bill bill, BillEntry billEntry, WebUser user) {
+        billEntry.getBillItem().setCreatedAt(new Date());
+        billEntry.getBillItem().setCreater(user);
+        billEntry.getBillItem().setBill(bill);
 
-        if (e.getBillItem().getId() == null) {
-            getBillItemFacade().create(e.getBillItem());
+        if (billEntry.getBillItem().getId() == null) {
+            getBillItemFacade().create(billEntry.getBillItem());
         }
 
-        saveBillComponent(e, b, wu);
-        saveBillFee(e, b, wu);
+        saveBillComponent(billEntry, bill, user);
+        saveBillFee(billEntry, bill, user);
 
         //System.out.println("BillItems().size() = " + b.getBillItems().size());
-        for (BillItem bi : b.getBillItems()) {
+        for (BillItem bi : bill.getBillItems()) {
             //System.out.println("bif = " + bi.getBillFees().size());
         }
 
-        return e.getBillItem();
+        return billEntry.getBillItem();
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf, List<BillFeeBundleEntry> billFeeBundleEntries) {
@@ -3566,25 +3574,25 @@ public class BillBeanController implements Serializable {
         return found;
     }
 
-    public BillItem saveBillItemForOpdBill(Bill b, BillEntry e, WebUser wu, List<BillFeeBundleEntry> billFeeBundleEntries) {
+    public BillItem saveBillItemForOpdBill(Bill bill, BillEntry billEntry, WebUser user, List<BillFeeBundleEntry> billFeeBundleEntries) {
 
-        e.getBillItem().setCreatedAt(new Date());
-        e.getBillItem().setCreater(wu);
-        e.getBillItem().setBill(b);
+        billEntry.getBillItem().setCreatedAt(new Date());
+        billEntry.getBillItem().setCreater(user);
+        billEntry.getBillItem().setBill(bill);
 
-        if (e.getBillItem().getId() == null) {
-            getBillItemFacade().create(e.getBillItem());
+        if (billEntry.getBillItem().getId() == null) {
+            getBillItemFacade().create(billEntry.getBillItem());
         }
 
-        saveBillComponentForOpdBill(e, b, wu);
-        saveBillFeeForOpdBill(e, b, wu, billFeeBundleEntries);
+        saveBillComponentForOpdBill(billEntry, bill, user);
+        saveBillFeeForOpdBill(billEntry, bill, user, billFeeBundleEntries);
 
         //System.out.println("BillItems().size() = " + b.getBillItems().size());
-        for (BillItem bi : b.getBillItems()) {
+        for (BillItem bi : bill.getBillItems()) {
             //System.out.println("bif = " + bi.getBillFees().size());
         }
 
-        return e.getBillItem();
+        return billEntry.getBillItem();
     }
 
     public BillItem saveBillItem(Bill b, BillEntry e, WebUser wu, Payment p) {
@@ -4107,15 +4115,20 @@ public class BillBeanController implements Serializable {
 
     }
 
-    private void savePatientInvestigation(BillEntry e, BillComponent bc, WebUser wu) {
+    private void savePatientInvestigation(BillEntry billEntry, BillComponent bc, WebUser wu) {
         PatientInvestigation ptIx = new PatientInvestigation();
 
         ptIx.setCreatedAt(Calendar.getInstance().getTime());
         ptIx.setCreater(wu);
 
+        ptIx.setOrdered(Boolean.TRUE);
+        ptIx.setOrderedAt(new Date());
+        ptIx.setOrderedBy(sessionController.getLoggedUser());
+        ptIx.setOrderedDepartment(billEntry.getBillItem().getBill().getFromDepartment());
+
         ptIx.setStatus(PatientInvestigationStatus.ORDERED);
 
-        ptIx.setBillItem(e.getBillItem());
+        ptIx.setBillItem(billEntry.getBillItem());
         ptIx.setBillComponent(bc);
         ptIx.setPackege(bc.getPackege());
         ptIx.setApproved(Boolean.FALSE);
@@ -4124,10 +4137,10 @@ public class BillBeanController implements Serializable {
         ptIx.setDataEntered(Boolean.FALSE);
         ptIx.setInvestigation((Investigation) bc.getItem());
         ptIx.setOutsourced(Boolean.FALSE);
-        ptIx.setPatient(e.getBillItem().getBill().getPatient());
+        ptIx.setPatient(billEntry.getBillItem().getBill().getPatient());
 
-        if (e.getBillItem().getBill().getPatientEncounter() != null) {
-            ptIx.setEncounter(e.getBillItem().getBill().getPatientEncounter());
+        if (billEntry.getBillItem().getBill().getPatientEncounter() != null) {
+            ptIx.setEncounter(billEntry.getBillItem().getBill().getPatientEncounter());
         }
 
         ptIx.setPerformed(Boolean.FALSE);
@@ -4135,20 +4148,28 @@ public class BillBeanController implements Serializable {
         ptIx.setPrinted(Boolean.FALSE);
         ptIx.setReceived(Boolean.FALSE);
 
-        ptIx.setReceiveDepartment(e.getBillItem().getItem().getDepartment());
-        ptIx.setApproveDepartment(e.getBillItem().getItem().getDepartment());
-        ptIx.setDataEntryDepartment(e.getBillItem().getItem().getDepartment());
-        ptIx.setPrintingDepartment(e.getBillItem().getItem().getDepartment());
-        ptIx.setPerformDepartment(e.getBillItem().getItem().getDepartment());
+        Department prformingDept = departmentResolver.resolvePerformingDepartment(billEntry.getBillItem().getBill().getDepartment(), billEntry.getBillItem().getItem());
+        if (prformingDept == null) {
+            // Gracefully fall back to the item’s own department
+            prformingDept = billEntry.getBillItem().getItem().getDepartment();
+        }
+        ptIx.setReceiveDepartment(prformingDept);
+        ptIx.setApproveDepartment(prformingDept);
+        ptIx.setDataEntryDepartment(prformingDept);
+        ptIx.setPrintingDepartment(prformingDept);
+        ptIx.setPerformDepartment(prformingDept);
+        if (prformingDept != null) {
+            ptIx.setPerformInstitution(prformingDept.getInstitution());
+        }
 
-        if (e.getBillItem().getItem() == null) {
+        if (billEntry.getBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("No Bill Item Selected");
-        } else if (e.getBillItem().getItem().getDepartment() == null) {
-            JsfUtil.addErrorMessage("Under administration, add a Department for this investigation " + e.getBillItem().getItem().getName());
-        } else if (e.getBillItem().getItem().getDepartment().getInstitution() == null) {
-            JsfUtil.addErrorMessage("Under administration, add an Institution for the department " + e.getBillItem().getItem().getDepartment());
-        } else if (e.getBillItem().getItem().getDepartment().getInstitution() != wu.getInstitution()) {
-            ptIx.setOutsourcedInstitution(e.getBillItem().getItem().getInstitution());
+        } else if (billEntry.getBillItem().getItem().getDepartment() == null) {
+            JsfUtil.addErrorMessage("Under administration, add a Department for this investigation " + billEntry.getBillItem().getItem().getName());
+        } else if (billEntry.getBillItem().getItem().getDepartment().getInstitution() == null) {
+            JsfUtil.addErrorMessage("Under administration, add an Institution for the department " + billEntry.getBillItem().getItem().getDepartment());
+        } else if (billEntry.getBillItem().getItem().getDepartment().getInstitution() != wu.getInstitution()) {
+            ptIx.setOutsourcedInstitution(billEntry.getBillItem().getItem().getInstitution());
         }
 
         ptIx.setRetired(false);
@@ -4159,45 +4180,45 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public void saveBillComponent(BillEntry e, Bill b, WebUser wu) {
-        for (BillComponent bc : e.getLstBillComponents()) {
+    public void saveBillComponent(BillEntry billEntry, Bill bill, WebUser user) {
+        for (BillComponent bc : billEntry.getLstBillComponents()) {
 
             bc.setCreatedAt(Calendar.getInstance().getTime());
-            bc.setCreater(wu);
+            bc.setCreater(user);
 
-            bc.setDepartment(b.getDepartment());
-            bc.setInstitution(b.getDepartment().getInstitution());
+            bc.setDepartment(bill.getDepartment());
+            bc.setInstitution(bill.getDepartment().getInstitution());
 
-            bc.setBill(b);
+            bc.setBill(bill);
 
             if (bc.getId() == null) {
                 getBillComponentFacade().create(bc);
             }
 
             if (bc.getItem() instanceof Investigation) {
-                savePatientInvestigation(e, bc, wu);
+                savePatientInvestigation(billEntry, bc, user);
             }
 
         }
     }
 
-    public void saveBillComponentForOpdBill(BillEntry e, Bill b, WebUser wu) {
-        for (BillComponent bc : e.getLstBillComponents()) {
+    public void saveBillComponentForOpdBill(BillEntry billEntry, Bill bill, WebUser user) {
+        for (BillComponent bc : billEntry.getLstBillComponents()) {
 
             bc.setCreatedAt(Calendar.getInstance().getTime());
-            bc.setCreater(wu);
+            bc.setCreater(user);
 
-            bc.setDepartment(b.getDepartment());
-            bc.setInstitution(b.getDepartment().getInstitution());
+            bc.setDepartment(bill.getDepartment());
+            bc.setInstitution(bill.getDepartment().getInstitution());
 
-            bc.setBill(b);
+            bc.setBill(bill);
 
             if (bc.getId() == null) {
                 getBillComponentFacade().create(bc);
             }
 
             if (bc.getItem() instanceof Investigation) {
-                savePatientInvestigation(e, bc, wu);
+                savePatientInvestigation(billEntry, bc, user);
             }
 
         }

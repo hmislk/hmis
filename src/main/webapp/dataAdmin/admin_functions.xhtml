@@ -15,6 +15,103 @@
                 <h:form >
 
                     <div class='row' >
+                        <div class="col-12 col-md-12 col-lg-12 p-1">
+                            <h:form>
+                                <h:outputLabel value="From Date" />
+                                <p:calendar id="calFrom" 
+                                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            value="#{billController.fromDate}">
+                                    <p:ajax event="dateSelect" process="calFrom" />
+                                </p:calendar>
+
+                                <p:spacer width="10em" />
+
+                                <h:outputLabel value="To Date" />
+                                <p:calendar id="calTo"
+                                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            value="#{billController.toDate}">
+                                    <p:ajax event="dateSelect" process="calTo" />
+                                </p:calendar>
+                            </h:form>
+                        </div>
+
+
+                        <div class="col-12 col-md-4 col-lg-2 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                action="#{billController.addMissingBillTypeAtomics}"
+                                class="w-100 m-1"
+                                value="Add Bill Type Atomics"/>
+                        </div>
+
+                        <div class="col-12 col-md-8 col-lg-6 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS}"
+                                class="w-100 m-1"
+                                value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS Bills"/>
+                        </div>
+
+
+                        <div class="col-12 col-md-8 col-lg-6 p-1">
+                            <!--THis function is called done by admin. Have to do hundreds of time. So confirmation is a real headache. removing the confirmation-->
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                rendered="#{webUserController.hasPrivilege('Developers')}"
+                                action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
+                                update=":growl"
+                                class="w-100 m-1"
+                                value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
+                        </div>
+
+                        <div class="col-12 col-md-8 col-lg-6 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                action="#{billController.correctBillItemRatesInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
+                                class="w-100 m-1"
+                                value="Correct Bill Item Rates in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
+                        </div>
+
+
+                        <div class="col-12 col-md-8 col-lg-6 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
+                                class="w-100 m-1"
+                                value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
+                        </div>
+
+                        <div class="col-12 col-md-8 col-lg-6 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                action="#{billController.convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills}"
+                                class="w-100 m-1"
+                                value="Fix All Pharmaceutical BillItem Reference for All PHARMACY_RETAIL_SALE_CANCELLED Bills"/>
+                        </div>
+
+
+
+
+                        <div class="col-12 col-md-8 col-lg-6 p-1">
+                            <p:commandButton 
+                                ajax="false"
+                                disabled="false"
+                                action="#{billController.correctBillItemRatesInDIRECT_ISSUE_INWARD_MEDICINE_RETURN}"
+                                class="w-100 m-1"
+                                value="Correct Bill Item Rates in DIRECT_ISSUE_INWARD_MEDICINE_RETURN Bills"/>
+                        </div>
+
+
+
+
+
+
                         <div class="col-12 col-md-4 col-lg-2 p-1" >
                             <p:commandButton 
                                 class="w-100"
@@ -104,14 +201,7 @@
                                 value="Make All OPD Services and Investigations to Allow Discounts"/>
                         </div>
 
-                        <div class="col-12 col-md-4 col-lg-2 p-1">
-                            <p:commandButton 
-                                ajax="false"
-                                disabled="false"
-                                action="#{billController.addMissingBillTypeAtomics}"
-                                class="w-100 m-1"
-                                value="Add Bill Type Atomics"/>
-                        </div>
+
 
                         <div class="col-12 col-md-4 col-lg-2 p-1">
                             <p:commandButton 
