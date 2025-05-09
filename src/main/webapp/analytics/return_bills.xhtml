@@ -136,7 +136,12 @@
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Bill Type" for="billType" class="mx-3" />
                             </h:panelGroup>
-                            <p:selectOneMenu id="billType" class="w-100  "  value="#{searchController.billType}" >
+                            <p:selectOneMenu
+                                id="billType"
+                                class="w-100" 
+                                filter="true"
+                                filterMatchMode="contains"
+                                value="#{searchController.billType}" >
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
                                 <f:selectItems 
                                     var="billType"

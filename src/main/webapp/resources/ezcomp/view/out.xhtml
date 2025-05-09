@@ -20,10 +20,34 @@
 
 
                     <p:outputLabel value="Bill Type Atomic" ></p:outputLabel>
-                    <p:outputLabel value="#{cc.attrs.bill.billTypeAtomic}" ></p:outputLabel>
+                    <p:selectOneMenu
+                        filter="true"
+                        filterMatchMode="contains"
+                        id="billTypeAtomic" 
+                        class="w-100"
+                        value="#{cc.attrs.bill.billTypeAtomic}" >
+                        <f:selectItem itemLabel="All Types" ></f:selectItem>
+                        <f:selectItems 
+                            var="billTypeAtomic"
+                            itemLabel="#{billTypeAtomic}"           
+                            itemValue="#{billTypeAtomic}" 
+                            value="#{enumController.billTypesAtomic}" ></f:selectItems>
+                    </p:selectOneMenu>
 
                     <p:outputLabel value="Bill Type" ></p:outputLabel>
-                    <p:outputLabel value="#{cc.attrs.bill.billType}" ></p:outputLabel>
+                    <p:selectOneMenu
+                        id="billType"
+                        class="w-100" 
+                        filter="true"
+                        filterMatchMode="contains"
+                        value="#{cc.attrs.bill.billType}" >
+                        <f:selectItem itemLabel="All Types" ></f:selectItem>
+                        <f:selectItems 
+                            var="billType"
+                            itemLabel="#{billType.label}"           
+                            itemValue="#{billType}" 
+                            value="#{enumController.billTypes}" ></f:selectItems>
+                    </p:selectOneMenu>
 
 
                     <p:outputLabel value="Bill Created at" ></p:outputLabel>
