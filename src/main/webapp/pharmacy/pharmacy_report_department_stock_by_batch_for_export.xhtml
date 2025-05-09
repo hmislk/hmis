@@ -10,32 +10,54 @@
             <ui:define name="subcontent">
                 <h:form id="frm">
                     <p:panel header="Stock Report by Batch for Export" >
-                        <h:panelGrid columns="7" class="my-2 " >
+                        <p:panelGrid columns="2"  class="w-100">
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" 
                                             value="#{reportsStock.department}" 
-                                            class="w-100 mx-2"
+                                            class="w-100"
                                             inputStyleClass="w-100"
                                             >
                             </p:autoComplete>
-                            <p:spacer width="10" height="1" ></p:spacer>
+
+                            <h:outputLabel value="From Record" ></h:outputLabel>
+                            <p:inputText value="#{reportsStock.fromRecord}" 
+                                         onfocus="this.select()"
+                                         validatorMessage="Please enter a valid number"
+                                         placeholder="Enter starting record number (e.g. 0)">
+                                <f:validateLongRange minimum="0" />
+                                <p:tooltip value="Enter the starting record number (inclusive)" />
+                            </p:inputText>
+
+                            <h:outputLabel value="To Record" ></h:outputLabel>
+                            <p:inputText value="#{reportsStock.toRecord}"  
+                                         onfocus="this.select()"
+                                         validatorMessage="Please enter a valid number greater than From Record" 
+                                         placeholder="Enter ending record number (e.g. 1000)">
+                                <f:validateLongRange minimum="0" />
+                                <p:tooltip value="Enter the ending record number (inclusive)" />
+                            </p:inputText>
+
                             <p:commandButton 
                                 ajax="false" 
                                 value="Process"
                                 icon="fas fa-cogs"
                                 class="ui-button-warning"
-                                actionListener="#{reportsStock.fillDepartmentStocks()}" >
+                                actionListener="#{reportsStock.fillDepartmentStocksForDownload()}" >
                             </p:commandButton>
                             <p:commandButton 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success"
                                 value="Excel"
                                 ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
+                                <p:dataExporter 
+                                    type="xlsx" 
+                                    target="tbl" 
+                                    fileName="stock_by_batch_#{reportsStock.department.name}_#{reportsStock.fromRecord}_#{reportsStock.toRecord}" />
                             </p:commandButton>
-                        </h:panelGrid>
+
+                        </p:panelGrid>
                         <p:dataTable 
                             id="tbl"
                             rowIndexVar="ii"
@@ -47,18 +69,14 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="20, 50, 100">
 
-                            <f:facet name="header">
-                                <h:outputLabel value="Batch Stock Report - #{reportsStock.department.name}" />
-                            </f:facet>
-
-                            <p:column headerText="Serial No">
-                                <h:outputText value="#{ii + 1}" />
+                            <p:column headerText="ID">
+                                <h:outputText value="#{i.id}" />
                             </p:column>
                             <p:column headerText="Category">
-                                <h:outputText value="#{i.itemBatch.item.category.name}" />
+                                <h:outputText value="#{empty i.itemBatch.item.category.name ? 'Other' : i.itemBatch.item.category.name}" />
                             </p:column>
                             <p:column headerText="Product">
-                                <h:outputText value="#{i.itemBatch.item.name}" />
+                                <h:outputText value="#{empty i.itemBatch.item.name ? 'No Name' : i.itemBatch.item.name}" />
                             </p:column>
                             <p:column headerText="Code">
                                 <h:outputText value="#{i.itemBatch.item.code}" />
@@ -67,13 +85,15 @@
                                 <h:outputText value="#{i.itemBatch.item.barcode}" />
                             </p:column>
                             <p:column headerText="Generic Name">
-                                <h:outputText value="#{i.itemBatch.item.vmp.name}" />
+                                <h:outputText value="#{empty i.itemBatch.item.vmp.name ? 'Other' : i.itemBatch.item.vmp.name}" />
                             </p:column>
                             <p:column headerText="Strength">
                                 <h:outputText value="#{i.itemBatch.item.dblValue}" />
                             </p:column>
                             <p:column headerText="Strength Unit">
-                                <h:outputText value="#{empty i.itemBatch.item.measurementUnit.name ? i.itemBatch.item.category.name : i.itemBatch.item.measurementUnit.name}" />
+                                <h:outputText value="#{empty i.itemBatch.item.measurementUnit.name 
+                                                       ? (empty i.itemBatch.item.category.name ? '#' : i.itemBatch.item.category.name) 
+                                                       : i.itemBatch.item.measurementUnit.name}" />
                             </p:column>
 
                             <p:column headerText="Pack Size">
@@ -81,8 +101,9 @@
                                 <!--Packs are NOT Listed in this data table. So it will always be 1-->
                             </p:column>
                             <p:column headerText="Issue Unit">
-                                <h:outputText value="#{empty i.itemBatch.item.issueUnit.name ? i.itemBatch.item.category.name : i.itemBatch.item.issueUnit.name}" />
+                                <h:outputText value="#{empty i.itemBatch.item.issueUnit.name ? (empty i.itemBatch.item.category.name ? '#' : i.itemBatch.item.category.name) : i.itemBatch.item.issueUnit.name}" />
                             </p:column>
+
 
                             <p:column headerText="Pack Unit">
                                 <h:outputText value="#{empty i.itemBatch.item.packUnit.name ? 'Pack' : i.itemBatch.item.packUnit.name}" />
