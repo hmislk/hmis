@@ -51,9 +51,10 @@
                                 class="ui-button-success"
                                 value="Excel"
                                 ajax="false">
-                                <p:dataExporter type="xlsx" 
-                                                target="tbl" 
-                                                fileName="stock_by_batch_#{reportsStock.department.name}_#{reportsStock.fromRecord}_#{reportsStock.toRecord}" />
+                                <p:dataExporter 
+                                    type="xlsx" 
+                                    target="tbl" 
+                                    fileName="stock_by_batch_#{reportsStock.department.name}_#{reportsStock.fromRecord}_#{reportsStock.toRecord}" />
                             </p:commandButton>
 
                         </p:panelGrid>
