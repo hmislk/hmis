@@ -230,6 +230,11 @@
                                     <p:outputLabel id="txtFeeType" value="#{f.feeType.label}" >
                                     </p:outputLabel>
                                 </p:column>
+                                <p:column headerText="Created At" >
+                                    <p:outputLabel id="txt" value="#{f.createdAt}" >
+                                        <f:convertDateTime pattern="YYYY MM dd HH:mm:ss"/>
+                                    </p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Discount Allowed" >
                                     <p:selectBooleanButton 
                                         value="#{f.discountAllowed}" 
