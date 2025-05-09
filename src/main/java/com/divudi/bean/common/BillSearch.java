@@ -3677,38 +3677,20 @@ public class BillSearch implements Serializable {
         }
         if (configOptionController.getBooleanValueByKey("OPD Bill Cancelation is Limited to the Last 24 hours", OptionScope.APPLICATION, null, null, null)) {
             opdBillCancellationSameDay = chackRefundORCancelBill(bill);
-            //System.out.println("opdBillCancellationSameDay = " + opdBillCancellationSameDay);
-//            if (opdBillCancellationSameDay) {
-//                System.out.println("Can Cancel");
-//            } else {
-//                System.out.println("Can not Cancel");
-//            }
         } else {
             opdBillCancellationSameDay = true;
-            //System.out.println("***Can Cancel***");
         }
-
         if (configOptionController.getBooleanValueByKey("OPD Bill Refund Allowed to the Last 24 hours", OptionScope.APPLICATION, null, null, null)) {
             opdBillRefundAllowedSameDay = chackRefundORCancelBill(bill);
-            //System.out.println("opdBillRefundAllowedSameDay = " + opdBillRefundAllowedSameDay);
-//            if (opdBillRefundAllowedSameDay) {
-//                System.out.println("Can Refund");
-//            } else {
-//                System.out.println("Can not Refund");
-//            }
         } else {
             opdBillRefundAllowedSameDay = true;
-            //System.out.println("***Can Refund***");
         }
-
         paymentMethod = bill.getPaymentMethod();
         createBillItemsAndBillFees();
         billBean.checkBillItemFeesInitiated(bill);
-
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
         printPreview = false;
-
         return "/opd/bill_reprint?faces-redirect=true;";
     }
 
