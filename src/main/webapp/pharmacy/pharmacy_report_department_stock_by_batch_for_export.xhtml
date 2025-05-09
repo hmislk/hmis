@@ -22,10 +22,22 @@
                             </p:autoComplete>
 
                             <h:outputLabel value="From Record" ></h:outputLabel>
-                            <p:inputText value="#{reportsStock.fromRecord}" onfocus="this.select()"></p:inputText>
+                            <p:inputText value="#{reportsStock.fromRecord}" 
+                                         onfocus="this.select()"
+                                         validatorMessage="Please enter a valid number"
+                                         placeholder="Enter starting record number (e.g. 0)">
+                                <f:validateLongRange minimum="0" />
+                                <p:tooltip value="Enter the starting record number (inclusive)" />
+                            </p:inputText>
 
                             <h:outputLabel value="To Record" ></h:outputLabel>
-                            <p:inputText value="#{reportsStock.toRecord}"  onfocus="this.select()"></p:inputText>
+                            <p:inputText value="#{reportsStock.toRecord}"  
+                                         onfocus="this.select()"
+                                         validatorMessage="Please enter a valid number greater than From Record" 
+                                         placeholder="Enter ending record number (e.g. 1000)">
+                                <f:validateLongRange minimum="0" />
+                                <p:tooltip value="Enter the ending record number (inclusive)" />
+                            </p:inputText>
 
                             <p:commandButton 
                                 ajax="false" 
