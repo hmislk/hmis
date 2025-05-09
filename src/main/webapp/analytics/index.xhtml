@@ -103,6 +103,12 @@
                                                 action="#{searchController.navigateToCancellationBillList}"
                                                 class="w-100">
                                             </p:commandButton>
+                                             <p:commandButton 
+                                                ajax="false" 
+                                                value="Return Bill List" 
+                                                action="#{searchController.navigateToReturnBillList()}"
+                                                class="w-100">
+                                            </p:commandButton>
                                         </div>
                                      </p:tab>
                                     
@@ -225,10 +231,9 @@
                                             <p:commandButton
                                                 ajax="false" 
                                                 value="OPD Summary by Item"
-                                                action="#{searchController.navigateToOpdSummaryByItem()}" 
-                                                ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Cancelled Bill List" action="#" ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Returned Bill List" action="#" ></p:commandButton>
+                                                action="#{searchController.navigateToOpdSummaryByItem()}">
+                                            </p:commandButton>
+                                            
 
                                         </div>
                                     </p:tab>
