@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -179,14 +180,19 @@
                     filterBy="#{agentHx.bill.deptId}"
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
                     filterMatchMode="contains">
-                    <p:commandLink 
-                        value="#{agentHx.bill.deptId}" 
-                        ajax="false"
-                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
-                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
-                    </p:commandLink>
-                    <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
-                    <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
+                    <h:outputText value="#{agentHx.bill.deptId}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    width="7em" 
+                    headerText="Ref Bill Nos" 
+                    sortBy="#{agentHx.bill.deptId}" 
+                    filterBy="#{agentHx.bill.deptId}"
+                    style="background-color: #{reportController.getTableRowColor(agentHx)}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{agentHx.bill.cancelledBill.deptId}"  rendered="#{agentHx.bill.cancelled}"></h:outputText>
+<!--                    <ui:repeat var="rb" value="#{agentHx.bill.refundBills}" >
+                        <h:inputText value="#{rb.deptId}" ></h:inputText>
+                    </ui:repeat>-->
                 </p:column>
 
                 <p:column  
@@ -195,11 +201,19 @@
                     exportable="false"
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
                     rendered="#{webUserController.hasPrivilege('Developers')}">
-                    <p:commandButton 
+                    <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
+                    <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
+                    <p:commandLink 
                         ajax="false"
                         value="Edit"
                         action="#{collectingCentreController.navigateToEditCollectingCentreBalanceEntry(agentHx)}" >
-                    </p:commandButton>
+                    </p:commandLink>
+                    <p:commandLink 
+                        value="View" 
+                        ajax="false"
+                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
+                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
+                    </p:commandLink>
                 </p:column>
 
                 <p:column 
