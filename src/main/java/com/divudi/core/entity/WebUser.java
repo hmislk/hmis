@@ -77,7 +77,7 @@ public class WebUser implements Serializable {
     //Activation properties
     @JsonIgnore
     boolean activated;
-    private boolean needToResetPassword=false;
+    private boolean needToResetPassword = false;
     @JsonIgnore
     @ManyToOne
     WebUser activator;
@@ -94,6 +94,9 @@ public class WebUser implements Serializable {
     @ManyToOne
     @JsonIgnore
     Institution institution;
+    @ManyToOne
+    @JsonIgnore
+    private Institution site;
     @ManyToOne
     @JsonIgnore
     Department department;
@@ -387,6 +390,14 @@ public class WebUser implements Serializable {
         this.needToResetPassword = needToResetPassword;
     }
 
+    public Institution getSite() {
+        return site;
+    }
 
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+    
+    
 
 }

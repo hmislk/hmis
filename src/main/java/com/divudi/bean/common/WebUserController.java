@@ -523,6 +523,8 @@ public class WebUserController implements Serializable {
 
         getCurrent().setLoginPage(loginPage);
 
+        getCurrent().setSite(site);
+        
         getPersonFacade().create(getCurrent().getWebUserPerson());
         if (createOnlyUserForExsistingUser) {
             getCurrent().getWebUserPerson().setName(getStaff().getPerson().getName());
