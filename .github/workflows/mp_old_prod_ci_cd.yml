@@ -75,10 +75,10 @@ jobs:
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="mp-old.war"
+          WAR_NAME="mpold.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="mp-old"
-          SUBDOMAIN="mp-old"
+          APP_NAME="mpold"
+          SUBDOMAIN="mpold"
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
