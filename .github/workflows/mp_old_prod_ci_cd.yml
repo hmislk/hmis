@@ -75,7 +75,7 @@ jobs:
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="mp_old.war"
+          WAR_NAME="mp-old.war"
           WAR_DIR="/home/appuser/app/latest"
           APP_NAME="mp-old"
           SUBDOMAIN="mp-old"
