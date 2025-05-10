@@ -469,7 +469,7 @@ public class WebUserController implements Serializable {
         department = null;
         institution = null;
         loginPage = null;
-        return "/admin/users/user_add_new";
+        return "/admin/users/user_add_new?faces-redirect=true";
     }
 
     public SecurityController getSecurityController() {
