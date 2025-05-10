@@ -123,6 +123,7 @@ public class WebUserController implements Serializable {
     @EJB
     private InstitutionFacade institutionFacade;
     private Institution institution;
+    private Institution site;
     private Department department;
     private Privileges[] currentPrivilegeses;
     Speciality speciality;
@@ -1282,6 +1283,14 @@ public class WebUserController implements Serializable {
         this.skipDevelopersPrivilege = skipDevelopersPrivilege;
     }
 
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
     @FacesConverter(forClass = WebUser.class)
     public static class WebUserControllerConverter implements Converter {
 
@@ -1344,5 +1353,7 @@ public class WebUserController implements Serializable {
     public void setUserNotificationCount(int userNotificationCount) {
         this.userNotificationCount = userNotificationCount;
     }
+    
+    
 
 }
