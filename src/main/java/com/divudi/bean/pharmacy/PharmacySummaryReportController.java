@@ -50,6 +50,7 @@ import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE
 import static com.divudi.core.data.ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.HistoricalRecord;
@@ -274,54 +275,54 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processDailyStockBalanceReport() {
 //        reportTimerController.trackReportExecution(() -> {
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
-            }
-            if (fromDate == null) {
-                JsfUtil.addErrorMessage("Please select a date");
-                return;
-            }
-            Date today = new Date();
-            if (!fromDate.before(today)) {
-                JsfUtil.addErrorMessage("Selected date must be earlier than today");
-                return;
-            }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        if (fromDate == null) {
+            JsfUtil.addErrorMessage("Please select a date");
+            return;
+        }
+        Date today = new Date();
+        if (!fromDate.before(today)) {
+            JsfUtil.addErrorMessage("Selected date must be earlier than today");
+            return;
+        }
 
-            dailyStockBalanceReport = new DailyStockBalanceReport();
-            dailyStockBalanceReport.setDate(fromDate);
-            dailyStockBalanceReport.setDepartment(department);
+        dailyStockBalanceReport = new DailyStockBalanceReport();
+        dailyStockBalanceReport.setDate(fromDate);
+        dailyStockBalanceReport.setDepartment(department);
 
-            HistoricalRecord openingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, fromDate);
-            if (openingBalance != null) {
-                dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
-            }
+        HistoricalRecord openingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, fromDate);
+        if (openingBalance != null) {
+            dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
+        }
 
-            // Calculate toDate as fromDate + 1 day
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(fromDate);
-            cal.add(Calendar.DATE, 1);
-            toDate = cal.getTime();
+        // Calculate toDate as fromDate + 1 day
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fromDate);
+        cal.add(Calendar.DATE, 1);
+        toDate = cal.getTime();
 
-            Date startOfTheDay = CommonFunctions.getStartOfBeforeDay(fromDate);
-            Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
+        Date startOfTheDay = CommonFunctions.getStartOfBeforeDay(fromDate);
+        Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
 
-            PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-            dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
+        PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
 
-            PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-            dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
+        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
 
-            PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-            dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
+        PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
 
-            PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-            dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
+        PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
-            HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
-            if (closingBalance != null) {
-                dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
-            }
+        HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
+        if (closingBalance != null) {
+            dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
+        }
 //        }, SummaryReports.DAILY_STOCK_BALANCE_REPORT, sessionController.getLoggedUser());
     }
 
@@ -727,7 +728,7 @@ public class PharmacySummaryReportController implements Serializable {
             bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
-    
+
     public void processPharmacyIncomeAndCostReportByBill() {
         reportTimerController.trackReportExecution(() -> {
             System.out.println("processPharmacyIncomeReport");
@@ -749,11 +750,11 @@ public class PharmacySummaryReportController implements Serializable {
             bundle.generateRetailAndCostDetailsForPharmaceuticalBillType();
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
-    
+
     public void calPharmacyIncomeAndCostReportByBill() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-        for(Bill b : pbis){
+        for (Bill b : pbis) {
             if (b == null) {
                 continue;
             }
@@ -766,12 +767,16 @@ public class PharmacySummaryReportController implements Serializable {
                 continue; // unable to categorise safely
             }
             BillCategory bc = bta.getBillCategory();
-            
+
             Double saleValue = 0.0;
             Double purchaseValue = 0.0;
-            Double grossProfitValue = 0.0;
-            
+
             for (BillItem bi : b.getBillItems()) {
+
+                if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+                    continue;
+                }
+                
                 Double q = bi.getPharmaceuticalBillItem().getQty();
                 Double rRate = bi.getPharmaceuticalBillItem().getRetailRate();
                 if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
@@ -790,7 +795,6 @@ public class PharmacySummaryReportController implements Serializable {
 
                 double retailTotal = 0;
                 double purchaseTotal = 0;
-                double grossProfit = 0;
 
                 switch (bc) {
                     case BILL:
@@ -798,14 +802,12 @@ public class PharmacySummaryReportController implements Serializable {
                     case PREBILL:
                         retailTotal = retail * qty;
                         purchaseTotal = purchase * qty;
-                        grossProfit = (retail - purchase) * qty;
                         break;
 
                     case CANCELLATION:
                     case REFUND:
                         retailTotal = -retail * qty;
                         purchaseTotal = -purchase * qty;
-                        grossProfit = -(retail - purchase) * qty;
                         break;
 
                     default:
@@ -813,11 +815,14 @@ public class PharmacySummaryReportController implements Serializable {
                 }
                 saleValue += retailTotal;
                 purchaseValue += purchaseTotal;
-                grossProfitValue += grossProfit;
             }
-                b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
-                b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
-                getBillFacade().edit(b);
+            if (b.getBillFinanceDetails() == null) {
+                b.setBillFinanceDetails(new BillFinanceDetails());
+            }
+
+            b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
+            b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+            getBillFacade().edit(b);
         }
     }
 
