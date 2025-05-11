@@ -52,6 +52,7 @@ import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import com.divudi.core.facade.AgentHistoryFacade;
@@ -2360,7 +2361,7 @@ public class PharmacyReportController implements Serializable {
         return refDocDate != null ? formatDate(refDocDate) : "";
     }
 
-    public void processClosingStockForItemReport() {
+    public List<Long> processClosingStockForItemReport() {
         List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
@@ -2450,6 +2451,7 @@ public class PharmacyReportController implements Serializable {
             matchingRow.setPurchaseValue(matchingRow.getPurchaseValue() + batchQty * batchPurchaseRate);
             matchingRow.setSaleValue(matchingRow.getSaleValue() + batchQty * batchSaleRate);
         }
+        return ids;
     }
 
     public void processClosingStock() {
@@ -2479,14 +2481,10 @@ public class PharmacyReportController implements Serializable {
         cogs = new LinkedHashMap<>();
 
         try {
-            if (fromDate == null) {
-                cogs.put("ERROR", -1.0);
-                return;
-            }
-
-//            StringBuilder jpql = new StringBuilder("SELECT sh FROM StockHistory sh WHERE ");
-
             calculateOpeningStock();
+            calculateStockCorrection();
+            calculateGrnCashAndCredit();
+            calculateClosingStock();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
@@ -2494,50 +2492,185 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calculateOpeningStock() {
-        StringBuilder subQuery = new StringBuilder()
-                .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
-                .append("WHERE sh2.retired = false ")
-                .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
-                .append("OR sh2.itemBatch.item.departmentType = :depty) ");
+    private void calculateGrnCashAndCredit() {
+        try {
+            StringBuilder jpql = new StringBuilder("SELECT b.paymentMethod, SUM(b.netTotal) FROM Bill b ")
+                    .append("WHERE b.retired = false ")
+                    .append("AND b.billTypeAtomic = :bType ")
+                    .append("AND b.createdAt BETWEEN :fd AND :td ")
+                    .append("AND b.paymentMethod IN (:cash, :credit) ")
+                    .append("GROUP BY b.paymentMethod");
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("depty", DepartmentType.Pharmacy);
-        params.put("et", CommonFunctions.getStartOfDay(fromDate));
+            Map<String, Object> params = new HashMap<>();
+            params.put("bType", BillTypeAtomic.PHARMACY_GRN);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("cash", PaymentMethod.Cash);
+            params.put("credit", PaymentMethod.Credit);
 
-        addFilter(subQuery, params, "sh2.institution", "ins", institution);
-        addFilter(subQuery, params, "sh2.department.site", "sit", site);
-        addFilter(subQuery, params, "sh2.department", "dep", department);
-        if (amp != null) {
-            addFilter(subQuery, params, "sh2.itemBatch.item", "itm", amp);
-        }
-        addFilter(subQuery, "AND sh2.createdAt < :et");
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
 
-        subQuery.append("GROUP BY sh2.itemBatch.item");
+            List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        List<Long> latestStockHistoryIds = facade.findLongValuesByJpql(subQuery.toString(), params);
+            double cashTotal = 0.0;
+            double creditTotal = 0.0;
 
-//        double totalQty = 0.0;
-        double totalSaleValue = 0.0;
-//        double totalPurchaseValue = 0.0;
+            for (Object[] result : results) {
+                PaymentMethod pm = (PaymentMethod) result[0];
+                Number total = (Number) result[1]; // Could be Double, Long, or BigDecimal
 
-        for (Long shid : latestStockHistoryIds) {
-            StockHistory sh = facade.find(shid);
-            if (sh == null || sh.getItemBatch() == null || sh.getItemBatch().getItem() == null) {
-                continue;
+                if (pm == PaymentMethod.Cash) {
+                    cashTotal = total != null ? total.doubleValue() : 0.0;
+                } else if (pm == PaymentMethod.Credit) {
+                    creditTotal = total != null ? total.doubleValue() : 0.0;
+                }
             }
 
-            double stockQty = sh.getItemStock();
-//            double purchaseRate = sh.getItemBatch().getPurcahseRate();
-            double saleRate = sh.getItemBatch().getRetailsaleRate();
+            cogs.put("GRN CASH TOTAL", 0.0-cashTotal);
+            cogs.put("GRN CREDIT TOTAL", 0.0-creditTotal);
 
-//            totalQty += stockQty;
-            totalSaleValue += stockQty * saleRate;
-//            totalPurchaseValue += stockQty * purchaseRate;
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
+            cogs.put("ERROR", -1.0);
         }
+    }
 
-        cogs.put("OPENING STOCK VALUE", totalSaleValue);
-        
+    private void calculateStockCorrection() {
+        try {
+            List<BillType> billTypes = Arrays.asList(
+                    BillType.PharmacyAdjustmentSaleRate,
+                    BillType.PharmacyAdjustmentPurchaseRate,
+                    BillType.PharmacyAdjustmentWholeSaleRate
+            );
+
+            // Proper query with all required joins and fields
+            StringBuilder jpql = new StringBuilder("SELECT bi, phi.retailRate, phi.stock.stock FROM BillItem bi ")
+                    .append("JOIN bi.pharmaceuticalBillItem phi ")
+                    .append("JOIN phi.stock s ")
+                    .append("WHERE bi.retired = false ")
+                    .append("AND bi.bill.billType IN :bType ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("bType", billTypes);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+
+            addFilter(jpql, params, "bi.bill.institution", "ins", institution);
+            addFilter(jpql, params, "bi.bill.department.site", "sit", site);
+            addFilter(jpql, params, "bi.bill.department", "dep", department);
+
+            jpql.append(" ORDER BY bi.bill.createdAt");
+
+            List<Object[]> results = getBillItemFacade().findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            // Debugging output
+            System.out.println("Found " + results.size() + " adjustment records");
+            results.forEach(result -> {
+                System.out.println("BillItem ID: " + ((BillItem) result[0]).getId()
+                        + ", Old Rate: " + result[1]
+                        + ", Qty: " + result[2]
+                        + ", New Rate: " + ((BillItem) result[0]).getRate());
+            });
+
+            double totalVariance = results.stream()
+                    .mapToDouble(result -> {
+                        BillItem billItem = (BillItem) result[0];
+                        double oldRate = (Double) result[1];
+                        double qty = (Double) result[2];
+                        double variance = qty * (billItem.getRate() - oldRate);
+
+                        System.out.println("Calculated variance for item " + billItem.getId()
+                                + ": " + variance);
+                        return variance;
+                    })
+                    .sum();
+
+            System.out.println("Total variance: " + totalVariance);
+            cogs.put("Stock Correction", totalVariance);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateClosingStock() {
+        try {
+            // Optimized query to get closing stock values in one go
+            StringBuilder jpql = new StringBuilder()
+                    .append("SELECT sh.itemStock, b.retailsaleRate FROM StockHistory sh ")
+                    .append("JOIN sh.itemBatch b ")
+                    .append("WHERE sh.id IN (")
+                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                    .append("  WHERE sh2.retired = false ")
+                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
+                    .append("  AND sh2.createdAt <= :et ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("et", CommonFunctions.getEndOfDay(toDate));
+
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            jpql.append("  GROUP BY sh2.itemBatch.item")
+                    .append(") AND sh.itemBatch IS NOT NULL");
+
+            List<Object[]> results = facade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            double totalSaleValue = results.parallelStream()
+                    .mapToDouble(result -> (Double) result[0] * (Double) result[1])
+                    .sum();
+
+            cogs.put("CLOSING STOCK VALUE", totalSaleValue);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateClosingStock");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateOpeningStock() {
+        try {
+            // Optimized query to get opening stock values in one go
+            StringBuilder jpql = new StringBuilder()
+                    .append("SELECT sh.itemStock, b.retailsaleRate FROM StockHistory sh ")
+                    .append("JOIN sh.itemBatch b ")
+                    .append("WHERE sh.id IN (")
+                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                    .append("  WHERE sh2.retired = false ")
+                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
+                    .append("  AND sh2.createdAt < :et ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("et", CommonFunctions.getStartOfDay(fromDate));
+
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+            if (amp != null) {
+                addFilter(jpql, params, "sh2.itemBatch.item", "itm", amp);
+            }
+
+            jpql.append("  GROUP BY sh2.itemBatch.item")
+                    .append(") AND sh.itemBatch IS NOT NULL");
+
+            List<Object[]> results = facade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            double totalSaleValue = results.parallelStream()
+                    .mapToDouble(result -> (Double) result[0] * (Double) result[1])
+                    .sum();
+
+            cogs.put("OPENING STOCK VALUE", totalSaleValue);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
+            cogs.put("ERROR", -1.0);
+        }
     }
 
     public Map<String, Double> getCogs() {
@@ -2545,7 +2678,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void setCogs(Map<String, Double> cogs) {
-        this.cogs = new HashMap<>(cogs); 
+        this.cogs = new HashMap<>(cogs);
     }
 
     @Deprecated
