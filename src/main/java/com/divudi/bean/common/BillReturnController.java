@@ -18,6 +18,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.cashTransaction.Drawer;
 
 import com.divudi.core.facade.BillFacade;
+import com.divudi.service.BillService;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
@@ -50,6 +51,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     DrawerService drawerService;
     @EJB
     ProfessionalPaymentService professionalPaymentService;
+    @EJB
+    BillService billService;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -67,6 +70,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     DrawerController drawerController;
     @Inject
     AgentAndCcApplicationController agentAndCcApplicationController;
+    @Inject
+    WebUserController webUserController;
 
     private ConfigOptionApplicationController configOptionApplicationController;
 
@@ -250,6 +255,24 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             returningStarted = false;
             return null;
         }
+
+        if (!webUserController.hasPrivilege("OpdReturn")) {
+            JsfUtil.addErrorMessage("You have no Privilege to Refund OPD Bills. Please Contact System Administrator.");
+            returningStarted = false;
+            return null;
+        }
+        
+        Bill backward = originalBillToReturn.getBackwardReferenceBill();
+        
+        if (backward != null && backward.getPaymentMethod() == PaymentMethod.Credit) {
+            List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(backward);
+            if (items != null && !items.isEmpty()) {
+                returningStarted = false;
+                JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be Refund.");
+                return null;
+            }
+        }
+
         calculateRefundingAmount();
 
         Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
