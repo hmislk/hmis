@@ -22,7 +22,6 @@ public class LogFileService {
     private static final SimpleDateFormat TS
             = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
-
     public List<Path> list(Path dir, Date from, Date to) throws IOException {
         try (Stream<Path> s = Files.list(dir)) {
             return s.filter(Files::isRegularFile)
@@ -35,11 +34,16 @@ public class LogFileService {
     }
 
     public StreamedContent download(Path p) throws IOException {
-        InputStream in = Files.newInputStream(p);
         return DefaultStreamedContent.builder()
                 .name(p.getFileName().toString())
                 .contentType("application/octet-stream")
-                .stream(() -> in)
+                .stream(() -> {
+                    try {
+                        return Files.newInputStream(p);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error opening log file: " + p.getFileName(), e);
+                    }
+                })
                 .build();
     }
 

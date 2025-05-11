@@ -29,24 +29,29 @@
                                          action="#{dataAdministrationController.refresh}"/>
                     </p:panelGrid>
 
-                    <p:dataTable id="tbl"
-                                 value="#{dataAdministrationController.logs}"
-                                 var="f"
-                                 rowKey="#{f}"
-                                 selectionMode="single"
-                                 selection="#{dataAdministrationController.selected}">
-                        <p:column headerText="File">
-                            <h:outputText value="#{f.fileName}"/>
-                        </p:column>
+                    <p:messages id="messages" showDetail="true" closable="true"/>
 
-                        <p:column headerText="Action">
-                            <p:commandButton value="Download" ajax="false">
-                                <f:setPropertyActionListener value="#{f}"
-                                                             target="#{dataAdministrationController.selected}" />
-                                <p:fileDownload value="#{dataAdministrationController.file}" />
-                            </p:commandButton>
-                        </p:column>
-                    </p:dataTable>
+                    <p:panelGrid columns="2">
+
+                        <p:dataTable 
+                            id="tbl"
+                            emptyMessage="No log files found. Please check the log directory configuration."
+                            value="#{dataAdministrationController.logs}"
+                            var="f"
+                            rowKey="#{f}"
+                            selectionMode="single"
+                            selection="#{dataAdministrationController.selected}">
+                            <p:column headerText="File">
+                                <h:outputText value="#{f.fileName}"/>
+                            </p:column>
+
+                            <p:column headerText="Action">
+                                <p:commandButton value="Download" ajax="false">
+                                    <p:fileDownload value="#{dataAdministrationController.downloadFile(f)}"/>
+                                </p:commandButton>
+                            </p:column>
+
+                        </p:dataTable>
 
 
                 </h:form>

@@ -335,11 +335,12 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
-    public StreamedContent getFile() throws IOException {
-        return selected == null ? null : logService.download(selected);
+
+    public StreamedContent downloadFile(Path file) throws IOException {
+        return logService.download(file);
     }
 
-    /* helpers */
+
     private static LocalDate toLocalDate(Date d) {
         return d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
