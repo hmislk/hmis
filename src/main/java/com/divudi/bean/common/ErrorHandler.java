@@ -50,9 +50,41 @@ public class ErrorHandler implements Serializable {
             return "N/A";
         }
         StringBuilder sb = new StringBuilder();
-        for (StackTraceElement element : t.getStackTrace()) {
-            sb.append(element.toString()).append("\n");
-        }
+        appendStackTrace(t, sb);
         return sb.toString();
+    }
+
+    private void appendStackTrace(Throwable t, StringBuilder sb) {
+        // Append the main exception class and message
+        sb.append(t.getClass().getName())
+          .append(": ")
+          .append(escapeHtml(t.getMessage()))
+          .append("\n");
+
+        // Append stack trace elements
+        for (StackTraceElement element : t.getStackTrace()) {
+            sb.append("    at ")
+              .append(escapeHtml(element.toString()))
+              .append("\n");
+        }
+
+        // Append cause if present
+        Throwable cause = t.getCause();
+        if (cause != null && cause != t) {
+            sb.append("Caused by: ");
+            appendStackTrace(cause, sb);
+        }
+    }
+
+    private String escapeHtml(String input) {
+        if (input == null) {
+            return "";
+        }
+        return input
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&#39;");
     }
 }
