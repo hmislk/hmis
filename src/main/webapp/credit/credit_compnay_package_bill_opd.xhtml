@@ -54,7 +54,8 @@
                                             action="#{cashRecieveBillController.addToBill()}" 
                                             ajax="false" 
                                             icon="fa fa-plus"
-                                            class="ui-button-success gap-2"/>
+                                            class="ui-button-success gap-2">
+                                        </p:commandButton>
                                     </div>
 
                                 </f:facet>
@@ -163,7 +164,7 @@
                                     <div class="col-md-8">
                                         <p:selectOneMenu  class="w-100"  id="cmbPs" value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
                                             <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                            <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                            <p:ajax process="cmbPs" update="payments" event="change" />
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
@@ -182,7 +183,7 @@
                                         </p:outputLabel>
                                     </div>
                                 </div>
-
+                                
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Description"/>
@@ -195,19 +196,25 @@
                                 <div class="row my-2">
 
                                     <div class="col-md-10">
-                                        <div>
-                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                        <h:panelGroup id="payments">
+                                            <h:panelGroup 
+                                                id="creditCard" 
+                                                rendered="#{cashRecieveBillController.current.paymentMethod eq 'Card'}">
                                                 <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <h:panelGroup 
+                                                id="cheque" 
+                                                rendered="#{cashRecieveBillController.current.paymentMethod eq 'Cheque'}">
                                                 <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <h:panelGroup 
+                                                id="slip" 
+                                                rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
                                                 <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                             </h:panelGroup>
-                                        </div>
+                                        </h:panelGroup>
                                     </div>
                                 </div>
                             </p:panel>
@@ -273,8 +280,6 @@
                     </div>
                 </p:panel>
 
-
-
                 <p:panel  rendered="#{cashRecieveBillController.printPreview}" >
 
                     <div class="d-flex justify-content-between align-items-center">
@@ -298,7 +303,7 @@
                         </div>
                     </div>
                     <h:panelGroup id="prints">
-                        <bi:five_five_paper_coustom_1_credit_payemnt  bill="#{cashRecieveBillController.current}" duplicate="false"/>
+                        <bi:five_five_paper_coustom_1_credit_payemnt bill="#{cashRecieveBillController.current}" duplicate="false"/>
                     </h:panelGroup>
                 </p:panel>
 
