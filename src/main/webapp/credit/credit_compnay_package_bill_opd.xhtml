@@ -71,21 +71,25 @@
                                             forceSelection="true" 
                                             value="#{cashRecieveBillController.currentBillItem.referenceBill}" 
                                             completeMethod="#{billController.completeOpdCreditPackageBatchBill}" 
-                                            var="ix" itemLabel="#{ix.patient.person.name}"
-                                            itemValue="#{ix}" class="w-100" inputStyleClass="w-100">
-                                            <p:column>
+                                            var="ix" 
+                                            itemLabel="#{ix.patient.person.name}"
+                                            itemValue="#{ix}"
+                                            maxResults="20"
+                                            class="w-100" 
+                                            inputStyleClass="w-100">
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Name"/>
                                                 </f:facet>
                                                 <h:outputLabel value="#{ix.patient.person.name}"/>
                                             </p:column>                                  
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Credit Company"/>
                                                 </f:facet>
                                                 <h:outputLabel value="#{ix.creditCompany.name}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Date"/>
                                                 </f:facet>
@@ -93,7 +97,7 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Due Amount"/>
                                                 </f:facet>
@@ -101,7 +105,7 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Paid Amount"/>
                                                 </f:facet>
@@ -109,7 +113,7 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Full Amount"/>
                                                 </f:facet>
@@ -121,9 +125,6 @@
                                         </p:autoComplete>
                                     </div>
                                 </div>
-
-
-
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
@@ -138,10 +139,8 @@
                                             value="#{cashRecieveBillController.currentBillItem.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
-
                                     </div>
                                 </div>
-
 
                             </p:panel>
                         </div>
@@ -154,12 +153,8 @@
                                             <h:outputText styleClass="fa fa-money-bill-wave" />
                                             <h:outputText value="Payment" class="mx-4"></h:outputText>
                                         </div>
-
-
                                     </div>
-
                                 </f:facet>
-
 
                                 <div class="row my-2 align-items-center">
                                     <div class="col-md-4">
@@ -172,8 +167,6 @@
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
-
-
 
                                 <div class="row my-2">
                                     <div class="col-md-2"></div>
@@ -218,7 +211,6 @@
                                     </div>
                                 </div>
                             </p:panel>
-
 
                         </div>
                     </div>
@@ -266,8 +258,13 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Remove">
-                                        <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" class="ui-button-danger">
+                                    <p:column headerText="Remove" width="5em;">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            action="#{cashRecieveBillController.remove(b)}" 
+                                            value="X" 
+                                            title="Remove Bill"
+                                            class="ui-button-danger">
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
