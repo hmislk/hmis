@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+
+
+                <h:form >
+
+
+
+                    <p:commandButton 
+                        value="Search"
+                        ajax="false"
+                        action="#{dataAdministrationController.refresh}" />
+
+                    <p:dataTable id="tbl"
+                                 value="#{dataAdministrationController.logs}"
+                                 var="f"
+                                 rowKey="#{f}"
+                                 selectionMode="single"
+                                 selection="#{dataAdministrationController.selected}">
+                        <p:column headerText="File">
+                            <h:outputText value="#{f.fileName}"/>
+                        </p:column>
+
+                        <p:column headerText="Action">
+                            <p:commandButton value="Download" ajax="false">
+                                <f:setPropertyActionListener value="#{f}"
+                                                             target="#{dataAdministrationController.selected}" />
+                                <p:fileDownload value="#{dataAdministrationController.file}" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+
+
+                </h:form>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
