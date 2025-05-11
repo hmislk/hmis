@@ -52,6 +52,8 @@
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
                                         <h:outputLabel value="#{billReturnController.originalBillToReturn.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Payment Method:" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.paymentMethod}" ></h:outputLabel>
                                         <h:outputLabel value="Total :" ></h:outputLabel>
                                         <h:outputLabel value="#{billReturnController.originalBillToReturn.total}" >
                                             <f:convertNumber pattern="#,##0.00" />
@@ -73,15 +75,15 @@
                                     <f:facet name="header" >
                                         <h:outputText value="Return Details" class="mt-2" ></h:outputText>
                                         <p:commandButton 
-                                        id="btnSave" 
-                                        value="Refund" 
-                                        ajax="false"
-                                        style="float:right;"
-                                        class="ui-button-warning"
-                                        onclick="if (!confirm('Are You Sure You Want to Refund this Items?'))
-                                                    return false;"
-                                        action="#{billReturnController.settleOpdReturnBill()}">
-                                    </p:commandButton>
+                                            id="btnSave" 
+                                            value="Refund" 
+                                            ajax="false"
+                                            style="float:right;"
+                                            class="ui-button-warning"
+                                            onclick="if (!confirm('Are You Sure You Want to Refund this Items?'))
+                                                        return false;"
+                                            action="#{billReturnController.settleOpdReturnBill()}">
+                                        </p:commandButton>
                                     </f:facet>
 
                                     <p:panelGrid columns="2" >
