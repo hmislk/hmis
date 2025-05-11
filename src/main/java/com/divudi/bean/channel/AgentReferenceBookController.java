@@ -234,7 +234,6 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addErrorMessage("You have No Privilege for Edit Book.");
             return;
         }
-        System.out.println("Editing ");
         book.setEditedAt(new Date());
         book.setEditor(sessionController.getLoggedUser());
         getAgentReferenceBookFacade().edit(book);
