@@ -15,8 +15,16 @@
                 <p class="mt-3">Please try again later. If the issue persists, contact your system administrator.</p>
 
                 <p:separator/>
+                <h:form>
+                    <p:commandButton
+                        value="Go to Home Page"
+                        action="/index.xhtml?faces-redirect=true"
+                        styleClass="ui-button-success m-1"
+                        ajax="false" />
+                </h:form>
+                <p:separator/>
 
-                <h3 class="text-info">Error Details (for admin use)</h3>
+                <h3 class="text-info">Error Details for the system administrators</h3>
                 <h:panelGrid columns="1" styleClass="text-left w-100" columnClasses="text-left" >
                     <h:outputText value="Status Code: #{errorHandler.statusCode}" />
                     <h:outputText value="Exception Type: #{errorHandler.exceptionType}" />
@@ -27,12 +35,7 @@
                     <h:outputText value="#{errorHandler.stackTrace}" escape="false" style="white-space: pre-wrap;" />
                 </h:panelGrid>
 
-                <h:form>
-                    <p:commandLink value="Go to Home Page"
-                                   action="/index.xhtml?faces-redirect=true"
-                                   styleClass="btn btn-primary mt-4"
-                                   ajax="false" />
-                </h:form>
+
             </div>
         </ui:define>
 

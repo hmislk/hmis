@@ -1,4 +1,4 @@
-package com.divudi.core.data.listener;
+package com.divudi.core.listener;
 
 import com.divudi.bean.common.ExceptionLogger;
 import javax.enterprise.inject.spi.CDI;
