@@ -648,11 +648,11 @@ public class DataAdministrationController implements Serializable {
     }
 
     public String navigateToCheckMissingFields() {
-        allCreateStetements ="";
-        executionFeedback="";
-        errors="";
-        createdSql="";
-        suggestedSql="";
+        allCreateStetements = "";
+        executionFeedback = "";
+        errors = "";
+        createdSql = "";
+        suggestedSql = "";
         return "/dataAdmin/missing_database_fields?faces-redirect=true";
     }
 
@@ -874,9 +874,8 @@ public class DataAdministrationController implements Serializable {
     public void createTablesAndFieldsForAllCreateStatements() {
         StringBuilder executionResults = new StringBuilder();
 
-        System.out.println("===== Starting CREATE TABLE parsing and ALTER execution =====");
+        System.out.println("===== Starting CREATE TABLE execution and ALTER processing =====");
 
-        // Split by CREATE TABLE, keeping it in the output
         String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
         int counter = 0;
 
@@ -891,6 +890,17 @@ public class DataAdministrationController implements Serializable {
             System.out.println("Create SQL:\n" + createStatement);
 
             try {
+                // First execute the CREATE TABLE
+                try {
+                    System.out.println("[EXEC] Running CREATE TABLE SQL");
+                    itemFacade.executeNativeSql(createStatement);
+                    executionResults.append("<br/>Successfully executed: ").append(createStatement);
+                } catch (Exception e) {
+                    System.out.println("[WARNING] CREATE TABLE failed (might already exist): " + e.getMessage());
+                    executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(e.getMessage());
+                }
+
+                // Proceed with ALTER logic
                 String tableName = extractTableName(createStatement);
                 if (tableName == null || tableName.isEmpty()) {
                     System.out.println("[WARNING] Skipping statement — table name not found.");
@@ -937,18 +947,18 @@ public class DataAdministrationController implements Serializable {
 
         System.out.println("===== All CREATE TABLE processing complete =====");
     }
-    
+
     // Add this method to validate SQL statements
     private boolean isValidSqlStatement(String sql) {
         sql = sql.trim().toLowerCase();
         // Only allow CREATE TABLE, ALTER TABLE statements, and setting foreign key checks
-        return (sql.startsWith("create table") || 
-                sql.startsWith("alter table") ||
-                sql.startsWith("set foreign_key_checks")) &&
-               !sql.contains("drop") &&
-               !sql.contains("truncate") &&
-               !sql.contains("delete") &&
-               !sql.contains("update");
+        return (sql.startsWith("create table")
+                || sql.startsWith("alter table")
+                || sql.startsWith("set foreign_key_checks"))
+                && !sql.contains("drop")
+                && !sql.contains("truncate")
+                && !sql.contains("delete")
+                && !sql.contains("update");
     }
 
     public void runSqlToCreateFields() {
@@ -2370,8 +2380,6 @@ public class DataAdministrationController implements Serializable {
     public void setTabIndexMissingFields(int tabIndexMissingFields) {
         this.tabIndexMissingFields = tabIndexMissingFields;
     }
-    
-    
 
     public class EntityFieldError {
 
