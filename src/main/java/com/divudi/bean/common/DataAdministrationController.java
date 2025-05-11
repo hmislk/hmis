@@ -317,26 +317,20 @@ public class DataAdministrationController implements Serializable {
     private Path selected;
     private Path logDir;
 
-    /* inside DataAdministrationController.java — ChatGPT contribution 2025-05-12 */
+    private Path findLogDir(String p) {
+        return Paths.get(p.trim()).normalize();
+    }
 
     public void refresh() {
-        Path dir = Paths.get(getPayaraLogLocation().trim()).normalize();
-        System.out.println("[LOG-DL] refresh() invoked");
-        System.out.println("[LOG-DL] Using directory: " + dir);
-
-        if (!Files.isDirectory(dir)) {
-            System.out.println("[LOG-DL] Path does NOT exist or is not a directory");
-            logs = Collections.emptyList();
-            return;
-        }
-
         try {
-            logs = logService.listAll(dir);
-            System.out.println("[LOG-DL] Files discovered: " + logs.size());
-            logs.forEach(p -> System.out.println("[LOG-DL]   " + p.getFileName()));
+            logDir = findLogDir(getPayaraLogLocation());
+            if (Files.isDirectory(logDir)) {
+                logs = logService.list(logDir, fromDate, toDate);
+            } else {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Log directory not found. Please set the configuration option for Payara Log File Path");
+            }
         } catch (IOException e) {
-            System.out.println("[LOG-DL] IOException while listing logs: " + e.getMessage());
-            e.printStackTrace();
             logs = Collections.emptyList();
         }
     }

@@ -15,10 +15,19 @@
 
 
 
-                    <p:commandButton 
-                        value="Search"
-                        ajax="false"
-                        action="#{dataAdministrationController.refresh}" />
+                    <p:panelGrid columns="2">
+                        <p:outputLabel value="From:"/>
+                        <p:calendar value="#{dataAdministrationController.fromDate}"  pattern="#{sessionController.applicationPreference.longDateFormat}">
+                        </p:calendar>
+
+                        <p:outputLabel value="To:"/>
+                        <p:calendar value="#{dataAdministrationController.toDate}"  pattern="#{sessionController.applicationPreference.longDateFormat}">
+                        </p:calendar>
+
+                        <p:spacer/>
+                        <p:commandButton value="Search" ajax="false"
+                                         action="#{dataAdministrationController.refresh}"/>
+                    </p:panelGrid>
 
                     <p:dataTable id="tbl"
                                  value="#{dataAdministrationController.logs}"
