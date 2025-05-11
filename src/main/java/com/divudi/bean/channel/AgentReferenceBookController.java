@@ -246,6 +246,11 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addErrorMessage("Enter the comment");
             return;
         }
+        if (!getWebUserController().hasPrivilege("DeleteData")) {
+            JsfUtil.addErrorMessage("You have No Privilege for Delete Book.");
+            return;
+        }
+        
         agentReferenceBook.setRetired(true);
         agentReferenceBook.setRetiredAt(new Date());
         agentReferenceBook.setRetirer(sessionController.getLoggedUser());
