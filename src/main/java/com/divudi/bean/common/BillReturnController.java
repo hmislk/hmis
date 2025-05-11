@@ -261,9 +261,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             returningStarted = false;
             return null;
         }
-
-        if (originalBillToReturn.getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
-            List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(originalBillToReturn.getBackwardReferenceBill());
+        
+        Bill backward = originalBillToReturn.getBackwardReferenceBill();
+        
+        if (backward != null && backward.getPaymentMethod() == PaymentMethod.Credit) {
+            List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(backward);
             if (items != null && !items.isEmpty()) {
                 returningStarted = false;
                 JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be Refund.");
