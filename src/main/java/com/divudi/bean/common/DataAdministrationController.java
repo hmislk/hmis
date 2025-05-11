@@ -1827,6 +1827,10 @@ public class DataAdministrationController implements Serializable {
         fillPharmacyCategory();
     }
 
+    public void causeError() {
+        throw new RuntimeException("This is a test exception to verify error handling.");
+    }
+
     public void deActveSelectedCategories() {
         if (selectedPharmaceuticalItemCategorys.isEmpty()) {
             JsfUtil.addErrorMessage("Please Select Category");
