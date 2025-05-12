@@ -1,4 +1,4 @@
-package com.divudi.bean.common;
+package com.divudi.core.data;
 
 import java.io.Serializable;
 import javax.enterprise.context.ApplicationScoped;
