@@ -1,6 +1,6 @@
 package com.divudi.core.listener;
 
-import com.divudi.bean.common.ExceptionLogger;
+import com.divudi.core.data.ExceptionLogger;
 import javax.enterprise.inject.spi.CDI;
 import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseEvent;
