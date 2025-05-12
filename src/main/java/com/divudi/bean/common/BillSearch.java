@@ -2335,6 +2335,14 @@ public class BillSearch implements Serializable {
 //            return true;
 //        }
 
+        if (getPaymentMethod() == null) {
+            boolean hasMoreThanoneIndividualBillsForTHisIndividualBill = billService.hasMultipleIndividualBillsForBatchBillOfThisIndividualBill(getBill());
+            if (hasMoreThanoneIndividualBillsForTHisIndividualBill) {
+                JsfUtil.addErrorMessage("You can't use Same as Billed when there are multiple bills for a Batch bill. Please select a Payment Method");
+                return true;
+            }
+        }
+
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
@@ -2389,15 +2397,15 @@ public class BillSearch implements Serializable {
 
     public void cancelOpdBill() {
         if (getBill() == null) {
-            JsfUtil.addErrorMessage("No bill");
+            JsfUtil.addErrorMessage("No Original Bill Selected To Cancel");
             return;
         }
         if (getBill().getId() == null) {
-            JsfUtil.addErrorMessage("No Saved bill");
+            JsfUtil.addErrorMessage("No Saved Original Bill");
             return;
         }
         if (getBill().getBackwardReferenceBill() == null) {
-            JsfUtil.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Batch Bill found for the Individual Bill which is selected to Cancel");
             return;
         }
 
@@ -2924,7 +2932,6 @@ public class BillSearch implements Serializable {
 //            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
 //            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(cancellationBill, tmpC, p);
 //            //
-
             list.add(b);
 
         }
@@ -3207,7 +3214,12 @@ public class BillSearch implements Serializable {
         //System.out.println("bill = " + bill.getIdStr());
 
         if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
-            paymentMethod = bill.getPaymentMethod();
+            boolean moreThanOneIndividualBillsForTheBatchBillOfThisIndividualBill = billService.hasMultipleIndividualBillsForBatchBillOfThisIndividualBill(bill);
+            if (moreThanOneIndividualBillsForTheBatchBillOfThisIndividualBill) {
+                paymentMethod = bill.getPaymentMethod();
+            } else {
+                paymentMethod = null;
+            }
         } else {
             paymentMethod = PaymentMethod.Cash;
         }
