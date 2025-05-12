@@ -32,9 +32,8 @@
 
                         <p:growl ></p:growl>
 
-
-                        <div class="row mt-3">
-                            <div class="col-md-3">
+                        <div class="row" >
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
@@ -43,7 +42,7 @@
                                     <common:patient patient="#{billReturnController.originalBillToReturn.patient}" class="w-100"/>
                                 </p:panel>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt"></h:outputText>
@@ -68,9 +67,9 @@
                                         </h:outputLabel>
                                     </p:panelGrid>
                                 </p:panel>
-                            </div>
-                            <div class="col-md-6">
 
+                            </div>
+                            <div class="col-md-4">
                                 <p:panel >
                                     <f:facet name="header" >
                                         <h:outputText value="Return Details" class="mt-2" ></h:outputText>
@@ -143,9 +142,9 @@
                                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                 </h:outputText>
                                                             </p:column>
-<!--                                                            <p:ajax process="@this" 
-                                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                    event="itemSelect"  />-->
+                                                            <!--                                                            <p:ajax process="@this" 
+                                                                                                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                                                                                event="itemSelect"  />-->
                                                         </p:autoComplete>
                                                     </div>
                                                 </div>
@@ -187,9 +186,9 @@
                                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                 </h:outputText>
                                                             </p:column>
-<!--                                                            <p:ajax process="@this" 
-                                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                    event="itemSelect"  />-->
+                                                            <!--                                                            <p:ajax process="@this" 
+                                                                                                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                                                                                event="itemSelect"  />-->
                                                         </p:autoComplete>
                                                     </div>
                                                 </div>
@@ -228,10 +227,14 @@
                                     </h:panelGroup>
                                 </p:panel>
 
+                            </div>
+                        </div>
+                        <div class="row" >
+                            <div class="col-md-12">
                                 <p:panel id="panelItems" class="mt-2">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt" class="mt-2"></h:outputText>
-                                        <h:outputLabel value="Bill Item Details" class="mx-2 mt-2"></h:outputLabel>
+                                        <h:outputLabel value="Select Returning Items" class="mx-2 mt-2"></h:outputLabel>
                                         <p:commandButton
                                             value="Select All"
                                             id="selectAll"
@@ -281,6 +284,11 @@
                                 </p:panel>
                             </div>
                         </div>
+
+
+
+
+
                     </p:panel>
                 </h:form>
             </ui:define>
