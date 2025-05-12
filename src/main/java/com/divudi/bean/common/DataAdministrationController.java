@@ -85,6 +85,7 @@ import com.divudi.core.facade.StockVarientBillItemFacade;
 import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.LogFileService;
 import java.io.Serializable;
 import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
@@ -113,6 +114,17 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.reflections.Reflections;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.file.*;
+import java.time.*;
+import java.util.*;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -205,6 +217,8 @@ public class DataAdministrationController implements Serializable {
     BillSearch billSearch;
     @Inject
     InstitutionController institutionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @EJB
     ItemFacade itemFacade;
@@ -243,6 +257,9 @@ public class DataAdministrationController implements Serializable {
 
     @EJB
     BillEjb billEjb;
+
+    @EJB
+    private LogFileService logService;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -295,6 +312,44 @@ public class DataAdministrationController implements Serializable {
     private String progressMessage;
     int processedRecords = 0;
     int totalRecords = 0;
+
+    private List<Path> logs;
+    private Path selected;
+    private Path logDir;
+
+    private Path findLogDir(String p) {
+        return Paths.get(p.trim()).normalize();
+    }
+
+    public void refresh() {
+        try {
+            String configuredPath = getPayaraLogLocation();
+            if (configuredPath == null || configuredPath.trim().isEmpty()) {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Payara log location is not configured.");
+                return;
+            }
+            logDir = findLogDir(configuredPath);
+
+            if (Files.isDirectory(logDir)) {
+                logs = logService.list(logDir, fromDate, toDate);
+            } else {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Log directory not found. Please set the configuration option for Payara Log File Path");
+            }
+        } catch (IOException e) {
+            logs = Collections.emptyList();
+            JsfUtil.addErrorMessage("Error accessing log directory: " + e.getMessage());
+        }
+    }
+
+    public StreamedContent downloadFile(Path file) throws IOException {
+        return logService.download(file);
+    }
+
+    private static LocalDate toLocalDate(Date d) {
+        return d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
 
     public void convertNameToCode() {
         code = CommonFunctions.nameToCode(name);
@@ -361,6 +416,10 @@ public class DataAdministrationController implements Serializable {
                 itemFacade.edit(ix);
             }
         }
+    }
+
+    public String getPayaraLogLocation() {
+        return configOptionApplicationController.getLongTextValueByKey("Location of the Payara Log", "/opt/payara/logs/app/");
     }
 
     public void retireAllPharmacyRelatedData() {
@@ -654,6 +713,10 @@ public class DataAdministrationController implements Serializable {
         createdSql = "";
         suggestedSql = "";
         return "/dataAdmin/missing_database_fields?faces-redirect=true";
+    }
+
+    public String navigateToDownloadLogFiles() {
+        return "/dataAdmin/download_log_files?faces-redirect=true";
     }
 
     public String navigateToNameToCode() {
@@ -1827,6 +1890,10 @@ public class DataAdministrationController implements Serializable {
         fillPharmacyCategory();
     }
 
+    public void causeError() {
+        throw new RuntimeException("This is a test exception to verify error handling.");
+    }
+
     public void deActveSelectedCategories() {
         if (selectedPharmaceuticalItemCategorys.isEmpty()) {
             JsfUtil.addErrorMessage("Please Select Category");
@@ -2379,6 +2446,22 @@ public class DataAdministrationController implements Serializable {
 
     public void setTabIndexMissingFields(int tabIndexMissingFields) {
         this.tabIndexMissingFields = tabIndexMissingFields;
+    }
+
+    public List<Path> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<Path> logs) {
+        this.logs = logs;
+    }
+
+    public Path getSelected() {
+        return selected;
+    }
+
+    public void setSelected(Path selected) {
+        this.selected = selected;
     }
 
     public class EntityFieldError {
