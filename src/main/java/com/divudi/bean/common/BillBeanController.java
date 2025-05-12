@@ -3726,16 +3726,24 @@ public class BillBeanController implements Serializable {
                     }
                 }
             }
+            
+            
+            e.getBillItem().setRate(net);
+            e.getBillItem().setDiscountRate(net);
+            e.getBillItem().setRate(net);
+            
+            e.getBillItem().setGrossValue(net);
+            e.getBillItem().setDiscount(net);
+            e.getBillItem().setNetValue(net);
+            
+            
+            
         }
 
         bill.setStaffFee(staff);
         bill.setPerformInstitutionFee(ins);
 
-//        bill.setTotal(tot);
-//        bill.setNetTotal(net);
-//        bill.setDiscount(dis);
         if (sessionController.getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            ////System.out.println("cashRemain" + billController.getCashRemain());
             if (billController.getCashRemain() != 0) {
                 if (tot > billController.getCashRemain()) {
                     bill.setBalance(tot - billController.getCashRemain());
@@ -3760,8 +3768,6 @@ public class BillBeanController implements Serializable {
                 bill.setCashPaid(0.0);
                 bill.setDiscount(dis);
             }
-            ////System.out.println(".................");
-
         } else {
             bill.setGrantTotal(tot);
             bill.setTotal(tot);
