@@ -3707,6 +3707,7 @@ public class BillBeanController implements Serializable {
             double billItemGross = 0.0;
             double billItemNet = 0.0;
             double billItemDiscount = 0.0;
+            double billItemMargin = 0.0;
             double billItemVat = 0.0;
 
             for (BillFee bf : e.getLstBillFees()) {
@@ -3715,6 +3716,7 @@ public class BillBeanController implements Serializable {
                     billItemGross += bf.getFeeGrossValue();
                     billItemNet += bf.getFeeValue();
                     billItemDiscount += bf.getFeeDiscount();
+                    billItemMargin += bf.getFeeMargin();
                     billItemVat += bf.getFeeVat();
 
                     if (bf.getFee().getFeeType() != FeeType.Staff) {
@@ -3732,13 +3734,22 @@ public class BillBeanController implements Serializable {
             }
 
             BillItem billItem = e.getBillItem();
-            billItem.setRate(billItemGross);
-            billItem.setDiscountRate(billItemDiscount);
             billItem.setGrossValue(billItemGross);
             billItem.setDiscount(billItemDiscount);
+            billItem.setMarginValue(billItemMargin);
             billItem.setNetValue(billItemNet);
             billItem.setVat(billItemVat);
+            
 
+// Fix rates based on quantity
+            double qty = billItem.getQty() != null && billItem.getQty() > 0.0 ? billItem.getQty() : 1.0;
+
+            billItem.setRate(billItemGross / qty);
+            billItem.setDiscountRate(billItemDiscount / qty);
+            billItem.setNetRate(billItemNet / qty);
+            billItem.setMarginRate((billItemMargin) / qty);
+            
+            
             System.out.println("BillItem ID: " + billItem.getId());
             System.out.println("  Rate         : " + billItemGross);
             System.out.println("  Qty          : " + billItem.getQty());
