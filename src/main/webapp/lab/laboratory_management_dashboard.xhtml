@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:s="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+            <h:head>
+                <style>
+                    #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
+                </style>
+            </h:head>
+
+            <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving'))}" >
+                <na:not_authorize />
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
+                <h1 class="text-center">Laboratory Management Dashboard</h1>
+                <h:form>
+                    <p:megaMenu orientation="horizontal" autoDisplay="false"  class="d-flex justify-content-center mt-3">
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToLaboratoryBills()}"
+                            ajax="false"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" class="d-flex justify-content-center">
+                            <i class="fa-solid fa-file-invoice-dollar fa-lg mx-3"/>
+                            <h:outputText value="Lab Bills"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToBarcodes()}"
+                            ajax="false"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" class="d-flex justify-content-center">
+                            <i class="fa-solid fa-barcode fa-lg mx-3"/>
+                            <h:outputText value="Barcodes"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToSamples()}"
+                            ajax="false"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" class="d-flex justify-content-center">
+                            <i class="fa-solid fa-vial fa-lg mx-3"/>
+                            <h:outputText value="Samples"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToReport()}"
+                            ajax="false"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" class="d-flex justify-content-center">
+                            <i class="fa-solid fa-file-pen fa-lg mx-3"/>
+                            <h:outputText value="Reports"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToReportPrint()}"
+                            ajax="false"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" class="d-flex justify-content-center">
+                            <i class="fa-solid fa-print fa-lg mx-3"/>
+                            <h:outputText value="Report Print"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToLaboratoryAdministration()}"
+                            ajax="false"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" class="d-flex justify-content-center">
+                            <i class="fa-solid fa-gears fa-lg mx-3"/>
+                            <h:outputText value="Settings"/> 
+                        </p:menuitem >
+                    </p:megaMenu>
+                    
+                    
+                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'BILLS'}">
+                        <h1><h:outputText value="Bills" class="d-flex justify-content-center mt-4"/> </h1>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'BILL_BARCODES'}">
+                        <h1><h:outputText value="Bar Codes" class="d-flex justify-content-center mt-4"/> </h1>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_SAMPLES'}">
+                        <h1><h:outputText value="Samples" class="d-flex justify-content-center mt-4"/> </h1>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
+                        <h1><h:outputText value="Report" class="d-flex justify-content-center mt-4"/> </h1>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_REPORTS'}">
+                        <h1><h:outputText value="Report Print" class="d-flex justify-content-center mt-4"/> </h1>
+                    </h:panelGroup>
+                    
+                </h:form>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</html>
