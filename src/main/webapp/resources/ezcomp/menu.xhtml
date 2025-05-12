@@ -582,6 +582,14 @@
                         value="Sample Management" 
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
                     </p:menuitem>
+                    
+                    <p:menuitem 
+                        ajax="false"
+                        icon="fa fa-flask"
+                        rendered="#{webUserController.hasPrivilege('Developers') and false}"
+                        action="#{laboratoryManagementController.navigateToLaboratoryManagementDashboard()}"
+                        value="Laboratory Dashboard">
+                    </p:menuitem>
 
                     <p:menuitem
                         ajax="false"  
