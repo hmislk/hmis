@@ -97,34 +97,69 @@
                                         </p:autoComplete> 
 
 
-                                        <p:outputLabel value="Institution" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
-                                        <p:autoComplete 
-                                            id="ins"
+                                        <p:outputLabel value="Institution" rendered="#{!webUserController.createOnlyUserForExsistingUser}" />
+                                        <p:selectOneMenu
+                                            id="userIns"
+                                            styleClass="w-100 form-control"
                                             value="#{webUserController.institution}"
                                             rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                            completeMethod="#{institutionController.completeIns}"
-                                            var="ins"
-                                            class="w-100 mt-1"
-                                            inputStyleClass="form-control"
-                                            itemLabel="#{ins.name}"
-                                            itemValue="#{ins}">
-                                            <p:ajax event="itemSelect" update="dep"/>
-                                        </p:autoComplete>
+                                            filter="true">
+                                            <f:selectItem itemLabel="Select Institution" />
+                                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                            <p:ajax process="@this" update="userSite userDept" />
+                                        </p:selectOneMenu>
 
-                                        <p:outputLabel value="Department" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
-
-                                        <p:autoComplete 
-                                            id="dep"
-                                            class="w-100 mt-1"
-                                            inputStyleClass="form-control"
-                                            value="#{webUserController.department}" 
+                                        <p:outputLabel value="Site" rendered="#{!webUserController.createOnlyUserForExsistingUser}" />
+                                        <p:selectOneMenu
+                                            id="userSite"
+                                            styleClass="w-100 form-control"
+                                            value="#{webUserController.site}"
                                             rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                            completeMethod="#{departmentController.completeDeptWithIns}"
-                                            var="dept"
-                                            itemLabel="#{dept.name}"
-                                            itemValue="#{dept}">
-                                            <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
-                                        </p:autoComplete>
+                                            filter="true">
+                                            <f:selectItem itemLabel="Select Site" />
+                                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                            <p:ajax process="@this" update="userDept" />
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Department" rendered="#{!webUserController.createOnlyUserForExsistingUser}" />
+                                        <h:panelGroup id="userDept">
+                                            <p:selectOneMenu
+                                                rendered="#{webUserController.institution eq null and webUserController.site eq null}"
+                                                styleClass="w-100 form-control"
+                                                value="#{webUserController.department}"
+                                                filter="true" filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Department" />
+                                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                            </p:selectOneMenu>
+
+                                            <p:selectOneMenu
+                                                rendered="#{webUserController.institution eq null and webUserController.site ne null}"
+                                                styleClass="w-100 form-control"
+                                                value="#{webUserController.department}"
+                                                filter="true" filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Department" />
+                                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                            </p:selectOneMenu>
+
+                                            <p:selectOneMenu
+                                                rendered="#{webUserController.institution ne null and webUserController.site eq null}"
+                                                styleClass="w-100 form-control"
+                                                value="#{webUserController.department}"
+                                                filter="true" filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Department" />
+                                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(webUserController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                            </p:selectOneMenu>
+
+                                            <p:selectOneMenu
+                                                rendered="#{webUserController.institution ne null and webUserController.site ne null}"
+                                                styleClass="w-100 form-control"
+                                                value="#{webUserController.department}"
+                                                filter="true" filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Department" />
+                                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.institution, webUserController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                            </p:selectOneMenu>
+                                        </h:panelGroup>
+
 
                                         <p:outputLabel for="loginPage" value="Login Page" />
                                         <p:selectOneMenu 

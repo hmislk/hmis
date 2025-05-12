@@ -31,6 +31,13 @@
                             <p:commandButton 
                                 ajax="false" 
                                 class="mx-1 ui-button-secondary"
+                                value="Back to Reports"
+                                immediate="true"
+                                action="/channel/channel_reports?faces-redirect=true"
+                                icon="fa-solid fa-arrow-left" />
+                            <p:commandButton 
+                                ajax="false" 
+                                class="mx-1 ui-button-secondary"
                                 value="Back to Bookings"
                                 immediate="true"
                                 action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}"
@@ -38,7 +45,7 @@
                             <p:commandButton 
                                 ajax="false" 
                                 class="mx-1 ui-button-secondary"
-                                value="Back"
+                                value="Back to Session"
                                 immediate="true"
                                 action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingControllerViewScope.selectedSessionInstance)}"
                                 icon="fa-solid fa-arrow-left" />

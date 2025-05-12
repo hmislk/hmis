@@ -489,7 +489,14 @@
                                 value="View" 
                                 style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
                                 class="mx-1"
-                                action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+<p:commandLink 
+   value="View" 
+   style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
+   class="mx-1"
+   action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+   ajax="false">
+   <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+</p:commandLink>
                                 ajax="false">
                                 <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                             </p:commandLink>

@@ -22,26 +22,26 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}"  class="mx-2" >
                             </p:autoComplete>
                             <p:commandButton 
-                                ajax="false"  
-                                value="Fill" 
-                                icon="fas fa-fill"
-                                class="ui-button-warning"
+                                ajax="false"
+                                value="Process"
+                                styleClass="ui-button-success m-1"
+                                icon="pi pi-cog"
                                 action="#{reportsStock.fillDepartmentStocks}" >
                             </p:commandButton>
-                            <p:commandButton 
-                                value="Excel" 
-                                icon="fas fa-file-excel"
-                                class="ui-button-success mx-2"
-                                ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Total Stock"/>                               
+                            <p:commandButton
+                                    value="Download"
+                                    styleClass="ui-button-info m-1"
+                                    icon="pi pi-download"
+                                    ajax="false">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="Total Stock"/>
                             </p:commandButton>
-                            <p:commandButton 
-                                value="Print" 
-                                icon="fas fa-print"
-                                class="ui-button-info"
-                                actionListener="#{reportsStock.prepareForPrint()}"
-                                oncomplete="$('#frm\\:print').click()" 
-                                             update=":frm:tbl">
+                            <p:commandButton
+                                    value="To Print"
+                                    styleClass="ui-button-warning m-1"
+                                    icon="pi pi-print"
+                                    action="pharmacy_department_stock_report_by_batch_print?faces-redirect=true"
+                                    oncomplete="$('#frm\\:print').click()"
+                                    update=":frm:tbl">
                             </p:commandButton>
                             <p:commandButton 
                                 id="print" 
@@ -85,7 +85,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" />
                                 </p:column>
 
                                 <p:column headerText="Stock Quantity"
@@ -96,9 +96,9 @@
                                         <h:outputLabel value="Stock Quantity"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.stock}"  >
-                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,###" />
                                     </h:outputLabel>
-                                    <h:outputLabel value="#{i.itemBatch.item.measurementUnit.name}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.measurementUnit.name}" />
                                 </p:column>
 
                                 <p:column headerText="Expiry"
@@ -108,7 +108,7 @@
                                         <h:outputLabel value="Expiry"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
-                                        <f:convertDateTime pattern="dd-M-yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="dd-M-yy" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -119,7 +119,7 @@
                                         <h:outputLabel value="Purchase Rate"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -130,11 +130,11 @@
                                         <h:outputLabel value="Purchase Value"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate * i.stock}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer" >
                                         <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
-                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber parent="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -146,7 +146,7 @@
                                         <h:outputLabel value="Retail Sale Rate"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -157,11 +157,11 @@
                                         <h:outputLabel value="Retail Sale Value"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer" >
                                         <h:outputLabel value="#{reportsStock.stockSaleValue}" >
-                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber parent="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>

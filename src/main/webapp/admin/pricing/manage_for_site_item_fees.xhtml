@@ -9,11 +9,8 @@
     <h:head>
     </h:head>
     <h:body>
-
         <ui:composition template="/admin/pricing/index.xhtml">
-
             <ui:define name="subcontent">
-
                 <h:form>
                     <p:growl id="msg"/>
                     <p:panel>
@@ -23,20 +20,24 @@
                         </f:facet>
 
                         <p:panelGrid columns="2" class="w-100" >
-
                             <p:outputLabel value="Select Site" />
                             <p:autoComplete 
                                 value="#{itemFeeManager.forSite}" 
-                                forceSelection="true" id="acColl"
+                                forceSelection="true" 
+                                id="acColl"
                                 completeMethod="#{institutionController.completeSite}" 
-                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
+                                var="vt" 
+                                itemLabel="#{vt.name}" 
+                                itemValue="#{vt}" 
                                 maxResults="10"
                                 class="w-100 mb-1"
                                 inputStyleClass="form-control">
-                                <p:ajax event="itemSelect" 
-                                        process="@this" 
-                                        update="gpFees localFee foreignerFee" 
-                                        listener="#{itemFeeManager.updateItemAndSiteFees()}"></p:ajax>
+                                <p:ajax 
+                                    event="itemSelect" 
+                                    process="@this" 
+                                    update="gpFees localFee foreignerFee" 
+                                    listener="#{itemFeeManager.updateItemAndSiteFees()}">
+                                </p:ajax>
                             </p:autoComplete>
 
                             <p:outputLabel value="Select Item" />
@@ -56,16 +57,18 @@
                                 <p:column  headerText="Code" style="padding: 6px; margin: 0px; width: 8em;">
                                     <h:outputText value="#{ix.code}"></h:outputText>
                                 </p:column>
-                                <p:column  headerText="Type" style="padding: 6px; margin: 0px; width: 8em;">
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Type" style="padding: 6px; margin: 0px; width: 8em;">
                                     <h:outputText value="#{ix.itemType}"></h:outputText>
                                 </p:column>
                                 <p:column  headerText="Name" style="padding: 6px; margin: 0px;">
                                     <h:outputText value="#{ix.name}"></h:outputText>
                                 </p:column>
-                                <p:ajax event="itemSelect" 
-                                        process="@this" 
-                                        update="gpFees localFee foreignerFee" 
-                                        listener="#{itemFeeManager.updateItemAndSiteFees()}"></p:ajax>
+                                <p:ajax 
+                                    event="itemSelect" 
+                                    process="@this" 
+                                    update="gpFees localFee foreignerFee" 
+                                    listener="#{itemFeeManager.updateItemAndSiteFees()}">
+                                </p:ajax>
                             </p:autoComplete>
 
                             <h:panelGroup  id="localFee">
@@ -89,7 +92,6 @@
                                     </p:outputLabel>
                                 </h:panelGroup>
                             </h:panelGroup>
-
                         </p:panelGrid>
 
                         <div class="row">
@@ -103,7 +105,6 @@
                                 </p:commandButton>
                             </div>
                         </div>
-
 
                         <p:dialog id="dlg"  widgetVar="dlg" modal="true" height="30em" width="50em" >
                             <f:facet name="header" >
@@ -207,7 +208,6 @@
                                     </p:selectOneMenu>
                                 </h:panelGroup>
 
-
                                 <p:outputLabel value="Fee" ></p:outputLabel>
                                 <p:inputText value="#{itemFeeManager.itemFee.fee}"  onfocus="this.select();"   class="w-100"></p:inputText>
 
@@ -228,6 +228,11 @@
                                 </p:column>
                                 <p:column headerText="Type" >
                                     <p:outputLabel id="txtFeeType" value="#{f.feeType.label}" >
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Created At" >
+                                    <p:outputLabel id="txt" value="#{f.createdAt}" >
+                                        <f:convertDateTime pattern="YYYY MM dd HH:mm:ss"/>
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Discount Allowed" >
@@ -268,11 +273,13 @@
                                 </p:column>
                                 <p:column headerText="Value" >
                                     <p:inputText id="txtFeeVal" value="#{f.fee}" class="w-100" >
+                                        <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFeeForSites(f)}" update=":#{p:resolveFirstComponentWithId('localFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}" ></p:ajax>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Value for Foreigners" >
                                     <p:inputText id="txtFfeeVal" value="#{f.ffee}"  class="w-100" >
+                                        <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFeeForSites(f)}"  update=":#{p:resolveFirstComponentWithId('foreignerFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}"></p:ajax>
                                     </p:inputText>
                                 </p:column>
@@ -287,16 +294,12 @@
                                         <f:setPropertyActionListener value="#{f}" target="#{itemFeeManager.removingFee}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>
-
                             </p:dataTable>
                         </p:panel>
-
                     </p:panel>
-
+                    
                 </h:form>
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>

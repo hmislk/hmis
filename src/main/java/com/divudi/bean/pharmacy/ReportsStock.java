@@ -82,6 +82,8 @@ public class ReportsStock implements Serializable {
     double totalPurchaseValue;
     double totalRetailSaleRate;
     double totalRetailSaleValue;
+    private int fromRecord;
+    private int toRecord;
     Vmp vmp;
     BillType[] billTypes;
     ReportKeyWord reportKeyWord;
@@ -113,6 +115,16 @@ public class ReportsStock implements Serializable {
         return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
     }
 
+    public String navigateToStockReportByBatch() {
+        stocks = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_batch?faces-redirect=true";
+    }
+
+    public String navigateToStockReportByBatchForExport() {
+        stocks = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_batch_for_export?faces-redirect=true";
+    }
+    
     /**
      * Methods
      */
@@ -152,6 +164,29 @@ public class ReportsStock implements Serializable {
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
     }
 
+    
+    public void fillDepartmentStocksForDownload() {
+        reportTimerController.trackReportExecution(() -> {
+            System.out.println("fillDepartmentStocks");
+            Date startedAt = new Date();
+            System.out.println("startedAt = " + startedAt);
+            if (department == null) {
+                JsfUtil.addErrorMessage("Please select a department");
+                return;
+            }
+            Map<String, Object> m = new HashMap<>();
+            String sql = "select s from Stock s "
+                    + " where s.department=:d "
+                    + " and s.stock > 0 "
+                    + " order by s.id";
+            m.put("d", department);
+            Date beforeJpql = new Date();
+            System.out.println("beforeJpql = " + beforeJpql);
+            stocks = getStockFacade().findByJpql(sql, m, fromRecord, toRecord);
+        }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    
     public void fillDepartmentStocksOfMedicines() {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
@@ -1418,5 +1453,25 @@ public class ReportsStock implements Serializable {
     public void setBills(List<BillItem> billItems) {
         this.billItems = billItems;
     }
+
+    public int getFromRecord() {
+        return fromRecord;
+    }
+
+    public void setFromRecord(int fromRecord) {
+        this.fromRecord = fromRecord;
+    }
+
+    public int getToRecord() {
+        return toRecord;
+    }
+
+    public void setToRecord(int toRecord) {
+        this.toRecord = toRecord;
+    }
+
+   
+    
+    
 
 }
