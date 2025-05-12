@@ -1836,7 +1836,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         billSettlingStarted = true;
         if (validatePaymentMethodData()) {
-
             billSettlingStarted = false;
             return null;
         }
@@ -1846,9 +1845,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return null;
         }
-        String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill Started");
+        AuditEvent audirEvent = auditEventController.createNewAuditEvent("OPD Bill Controller - Settle OPD Bill Started");
         if (!executeSettleBillActions()) {
-            auditEventController.updateAuditEvent(eventUuid);
+            auditEventController.failAuditEvent(audirEvent, "Execute Settle Bill Action Failed because of errors in user inputs.");
             billSettlingStarted = false;
             return "";
         }
@@ -1858,7 +1857,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             sendSmsOnOpdBillSettling(smsTempalteForTheSmsAfterOpdBilling);
         }
 
-        auditEventController.updateAuditEvent(eventUuid);
+        auditEventController.completeAuditEvent(audirEvent);
         billSettlingStarted = false;
 
         if (patientEncounter != null) {

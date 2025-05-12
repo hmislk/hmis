@@ -262,25 +262,71 @@
                                         var="obi"
                                         selectionDisabled="#{obi.refunded}"
                                         selection="#{billReturnController.originalBillItemsToSelectedToReturn}"
-                                        rowKey="#{obi.id}" >
+                                        rowKey="#{obi.id}"
+                                        styleClass="table table-sm">
 
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" event="rowSelectCheckbox" listener="#{billReturnController.calculateRefundingAmount()}" />
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" event="rowUnselectCheckbox" listener="#{billReturnController.calculateRefundingAmount()}"/>
+                                        <p:ajax process="@this" 
+                                                update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" 
+                                                event="rowSelectCheckbox" 
+                                                listener="#{billReturnController.calculateRefundingAmount()}" />
 
-                                        <p:column selectionBox="true" width="20" >
+                                        <p:ajax process="@this" 
+                                                update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" 
+                                                event="rowUnselectCheckbox" 
+                                                listener="#{billReturnController.calculateRefundingAmount()}" />
+
+                                        <p:column selectionBox="true" width="20" />
+
+                                        <p:column headerText="Item">
+                                            <h:outputText value="#{obi.item.name}" />
                                         </p:column>
-                                        <p:column headerText="Item Name">
-                                            <h:outputLabel value="#{obi.item.name}" ></h:outputLabel>
+
+                                        <p:column headerText="Qty" styleClass="text-end">
+                                            <h:outputText value="#{obi.qty}" />
                                         </p:column>
-                                        <p:column >
-                                            <p:tag styleClass="mr-2" icon="pi pi-exclamation-triangle" severity="warning" value="Refunded" rendered="#{obi.refunded}"></p:tag>
-                                        </p:column>
-                                        <p:column headerText="Item Value" style="width: 10em;">
-                                            <h:outputLabel value="#{obi.netValue}" class="mx-3 d-flex justify-content-end">
+
+                                        <p:column headerText="Rate" styleClass="text-end">
+                                            <h:outputText value="#{obi.rate}">
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </p:column>
+
+                                        <p:column headerText="Discount %" styleClass="text-end">
+                                            <h:outputText value="#{obi.discountRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Net Rate" styleClass="text-end">
+                                            <h:outputText value="#{obi.netRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Gross Value" styleClass="text-end">
+                                            <h:outputText value="#{obi.grossValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Discount Value" styleClass="text-end">
+                                            <h:outputText value="#{obi.discount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Net Value" styleClass="text-end">
+                                            <h:outputText value="#{obi.netValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Status" styleClass="text-center">
+                                            <p:tag icon="pi pi-exclamation-triangle" severity="warning" value="Refunded" rendered="#{obi.refunded}" />
+                                        </p:column>
+
                                     </p:dataTable>
+
                                 </p:panel>
                             </div>
                         </div>
