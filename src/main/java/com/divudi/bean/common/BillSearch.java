@@ -2329,10 +2329,11 @@ public class BillSearch implements Serializable {
             }
 
         }
-        if (getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a payment scheme for Cancellation.");
-            return true;
-        }
+        // Now if the payment method is NULL, payments are created as in the original bill
+//        if (getPaymentMethod() == null) {
+//            JsfUtil.addErrorMessage("Please select a payment scheme for Cancellation.");
+//            return true;
+//        }
 
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
@@ -2395,10 +2396,13 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Saved bill");
             return;
         }
+        if (getBill().getBackwardReferenceBill() == null) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
 
         if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
-
             if (items != null && !items.isEmpty()) {
                 JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be canceled.");
                 return;
@@ -2989,8 +2993,8 @@ public class BillSearch implements Serializable {
     }
 
     public void cancelBillFee(Bill cancellationProfessionalPaymentBill,
-                              BillItem cancellationProfessionalBillItem,
-                              List<BillFee> originalProfessionalPaymentFeesForBillItem) {
+            BillItem cancellationProfessionalBillItem,
+            List<BillFee> originalProfessionalPaymentFeesForBillItem) {
         for (BillFee originalProfessionalPaymentFeeForBillItem : originalProfessionalPaymentFeesForBillItem) {
             BillFee newCancellingBillFee = new BillFee();
             newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
@@ -5592,7 +5596,6 @@ public class BillSearch implements Serializable {
     public void setViewingPatientInvestigations(List<PatientInvestigation> viewingPatientInvestigations) {
         this.viewingPatientInvestigations = viewingPatientInvestigations;
     }
-
 
     public class PaymentSummary {
 
