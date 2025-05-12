@@ -3704,21 +3704,25 @@ public class BillBeanController implements Serializable {
         double vat = 0.0;
 
         for (BillEntry e : billEntrys) {
-            for (BillFee bf : e.getLstBillFees()) {
+            double billItemGross = 0.0;
+            double billItemNet = 0.0;
+            double billItemDiscount = 0.0;
+            double billItemVat = 0.0;
 
+            for (BillFee bf : e.getLstBillFees()) {
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf, bundleFeeEntries);
                 if (needToAdd) {
-
-                    tot += bf.getFeeGrossValue();
-                    net += bf.getFeeValue();
-                    dis += bf.getFeeDiscount();
-                    vat += bf.getFeeVat();
+                    billItemGross += bf.getFeeGrossValue();
+                    billItemNet += bf.getFeeValue();
+                    billItemDiscount += bf.getFeeDiscount();
+                    billItemVat += bf.getFeeVat();
 
                     if (bf.getFee().getFeeType() != FeeType.Staff) {
                         ins += bf.getFeeValue();
                     } else {
                         staff += bf.getFeeValue();
                     }
+
                     if (bf.getId() == null || bf.getId() == 0) {
                         getBillFeeFacade().create(bf);
                     } else {
@@ -3726,22 +3730,35 @@ public class BillBeanController implements Serializable {
                     }
                 }
             }
-            
-            
-            e.getBillItem().setRate(net);
-            e.getBillItem().setDiscountRate(net);
-            e.getBillItem().setRate(net);
-            
-            e.getBillItem().setGrossValue(net);
-            e.getBillItem().setDiscount(net);
-            e.getBillItem().setNetValue(net);
-            
-            
-            
+
+            BillItem billItem = e.getBillItem();
+            billItem.setRate(billItemGross);
+            billItem.setDiscountRate(billItemDiscount);
+            billItem.setGrossValue(billItemGross);
+            billItem.setDiscount(billItemDiscount);
+            billItem.setNetValue(billItemNet);
+            billItem.setVat(billItemVat);
+
+            System.out.println("BillItem ID: " + billItem.getId());
+            System.out.println("  Rate         : " + billItemGross);
+            System.out.println("  Qty          : " + billItem.getQty());
+            System.out.println("  DiscountRate : " + billItemDiscount);
+            System.out.println("  NetValue     : " + billItemNet);
+            System.out.println("  Vat          : " + billItemVat);
+
+            tot += billItemGross;
+            dis += billItemDiscount;
+            net += billItemNet;
+            vat += billItemVat;
         }
 
         bill.setStaffFee(staff);
         bill.setPerformInstitutionFee(ins);
+
+        System.out.println("Total Gross     : " + tot);
+        System.out.println("Total Discount  : " + dis);
+        System.out.println("Total Net       : " + net);
+        System.out.println("Total VAT       : " + vat);
 
         if (sessionController.getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (billController.getCashRemain() != 0) {
@@ -3760,7 +3777,6 @@ public class BillBeanController implements Serializable {
                     bill.setCashPaid(tot);
                     billController.setCashRemain(billController.getCashRemain() - tot);
                 }
-
             } else {
                 bill.setBalance(tot);
                 bill.setTotal(tot);
@@ -3778,6 +3794,14 @@ public class BillBeanController implements Serializable {
 
         bill.setVat(vat);
         bill.setVatPlusNetTotal(vat + bill.getNetTotal());
+
+        System.out.println("Final Bill Values:");
+        System.out.println("  Grant Total       : " + bill.getGrantTotal());
+        System.out.println("  Total             : " + bill.getTotal());
+        System.out.println("  Net Total         : " + bill.getNetTotal());
+        System.out.println("  Discount          : " + bill.getDiscount());
+        System.out.println("  VAT               : " + bill.getVat());
+        System.out.println("  VAT + Net Total   : " + bill.getVatPlusNetTotal());
 
         getBillFacade().edit(bill);
     }
