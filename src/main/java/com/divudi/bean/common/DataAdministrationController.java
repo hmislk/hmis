@@ -323,7 +323,14 @@ public class DataAdministrationController implements Serializable {
 
     public void refresh() {
         try {
-            logDir = findLogDir(getPayaraLogLocation());
+            String configuredPath = getPayaraLogLocation();
+            if (configuredPath == null || configuredPath.trim().isEmpty()) {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Payara log location is not configured.");
+                return;
+            }
+            logDir = findLogDir(configuredPath);
+
             if (Files.isDirectory(logDir)) {
                 logs = logService.list(logDir, fromDate, toDate);
             } else {
@@ -332,14 +339,13 @@ public class DataAdministrationController implements Serializable {
             }
         } catch (IOException e) {
             logs = Collections.emptyList();
+            JsfUtil.addErrorMessage("Error accessing log directory: " + e.getMessage());
         }
     }
-
 
     public StreamedContent downloadFile(Path file) throws IOException {
         return logService.download(file);
     }
-
 
     private static LocalDate toLocalDate(Date d) {
         return d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -2456,14 +2462,6 @@ public class DataAdministrationController implements Serializable {
 
     public void setSelected(Path selected) {
         this.selected = selected;
-    }
-
-    public Path getLogDir() {
-        return logDir;
-    }
-
-    public void setLogDir(Path logDir) {
-        this.logDir = logDir;
     }
 
     public class EntityFieldError {
