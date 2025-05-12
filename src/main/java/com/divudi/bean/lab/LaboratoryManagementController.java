@@ -13,6 +13,7 @@ import javax.inject.Named;
 public class LaboratoryManagementController implements Serializable {
 
     public LaboratoryManagementController() {
+        listingEntity = ListingEntity.BILLS; // Set default view
     }
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
