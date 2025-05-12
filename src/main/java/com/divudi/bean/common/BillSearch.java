@@ -2418,17 +2418,6 @@ public class BillSearch implements Serializable {
             return;
         }
 
-        if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            if (getBill().getPatient().getHasAnAccount() == null) {
-//                JsfUtil.addErrorMessage("Create Patient Account First");
-//                return;
-//            }
-//            if (!getBill().getPatient().getHasAnAccount()) {
-//                JsfUtil.addErrorMessage("Create Patient Account First");
-//                return;
-//            }
-        }
-
         if (paymentMethod == PaymentMethod.Staff) {
             if (getBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Can't Select Staff Method");
@@ -2467,8 +2456,8 @@ public class BillSearch implements Serializable {
 
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
-        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
-        List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
+        List<Payment> ps = getOpdPreSettleController().createPaymentsForCancellationsforOPDBill(cancellationBill, paymentMethod);
+        List<BillItem> list = cancelBillItems(getBill(), cancellationBill, ps);
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
 
@@ -2476,7 +2465,7 @@ public class BillSearch implements Serializable {
         getBill().setCancelledBill(cancellationBill);
 
         billController.save(getBill());
-        drawerController.updateDrawerForOuts(p);
+        drawerController.updateDrawerForOuts(ps);
         JsfUtil.addSuccessMessage("Cancelled");
 
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -2886,7 +2875,7 @@ public class BillSearch implements Serializable {
         return newlyCreatedCancellationBillItems;
     }
 
-    private List<BillItem> cancelBillItems(Bill originalBill, Bill cancellationBill, Payment p) {
+    private List<BillItem> cancelBillItems(Bill originalBill, Bill cancellationBill, List<Payment> ps) {
         List<BillItem> list = new ArrayList<>();
         for (BillItem nB : originalBill.getBillItems()) {
             BillItem b = new BillItem();
@@ -2930,11 +2919,11 @@ public class BillSearch implements Serializable {
             List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
             cancelBillFee(cancellationBill, b, tmp);
 
-            //create BillFeePayments For cancel
-            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
-            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
-            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(cancellationBill, tmpC, p);
-            //
+//            //create BillFeePayments For cancel
+//            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
+//            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
+//            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(cancellationBill, tmpC, p);
+//            //
 
             list.add(b);
 
