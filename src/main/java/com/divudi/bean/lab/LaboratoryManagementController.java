@@ -129,6 +129,7 @@ public class LaboratoryManagementController implements Serializable {
         performingInstitution = null;
         performingDepartment = null;
         patientInvestigationStatus = null;
+        selectAll = false;
         listingEntity = ListingEntity.PATIENT_SAMPLES;
     }
 
@@ -302,6 +303,16 @@ public class LaboratoryManagementController implements Serializable {
         jpql += " AND b.createdAt BETWEEN :fd AND :td";
         params.put("fd", getFromDate());
         params.put("td", getToDate());
+        
+        if (billNo != null && !billNo.trim().isEmpty()) {
+            jpql += " AND b.deptId LIKE :billNo";
+            params.put("billNo", "%" + getBillNo().trim() + "%");
+        }
+
+        if (bhtNo != null && !bhtNo.trim().isEmpty()) {
+            jpql += " AND b.patientEncounter is not null AND b.patientEncounter.bhtNo LIKE :bht";
+            params.put("bht", "%" + getBhtNo().trim() + "%");
+        }
 
         if (orderedInstitution != null) {
             jpql += " AND b.institution = :orderedInstitution";
@@ -343,11 +354,6 @@ public class LaboratoryManagementController implements Serializable {
             params.put("type", getType().trim());
         }
 
-        if (referringDoctor != null) {
-            jpql += " AND b.referringDoctor = :referringDoctor";
-            params.put("referringDoctor", getReferringDoctor());
-        }
-
         if (patientInvestigationStatus != null) {
             jpql += " AND ps.status = :status";
             params.put("status", getPatientInvestigationStatus());
@@ -368,6 +374,7 @@ public class LaboratoryManagementController implements Serializable {
         if (patientSamples == null) {
             patientSamples = new ArrayList();
         }
+        selectAll = false;
     }
 
     public void fetchSamples(List<PatientInvestigationStatus> availableStatus) {
@@ -423,6 +430,7 @@ public class LaboratoryManagementController implements Serializable {
         status.add(PatientInvestigationStatus.SAMPLE_GENERATED);
 
         fetchSamples(status);
+        selectAll = false;
     }
 
     public void pendingSendSampleList() {
@@ -431,6 +439,7 @@ public class LaboratoryManagementController implements Serializable {
         status.add(PatientInvestigationStatus.SAMPLE_COLLECTED);
 
         fetchSamples(status);
+        selectAll = false;
     }
 
     public void nonReciecedSampleList() {
@@ -439,6 +448,7 @@ public class LaboratoryManagementController implements Serializable {
         status.add(PatientInvestigationStatus.SAMPLE_SENT);
 
         fetchSamples(status);
+        selectAll = false;
     }
 
     public void selectAllSamples() {
@@ -680,6 +690,30 @@ public class LaboratoryManagementController implements Serializable {
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
     }
+    
+    public void navigateToSamplesFromSelectedBill(Bill bill) {
+        patientSamples = new ArrayList<>();
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT ps "
+                + "FROM PatientSample ps "
+                + "JOIN ps.bill b "
+                + "WHERE ps.retired = :ret "
+                + " and ps.bill =:bill ";
+
+        jpql += " ORDER BY ps.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        selectAll = false;
+
+    }
+
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">

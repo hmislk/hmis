@@ -44,7 +44,7 @@
                         </p:menuitem >
 
                         <p:menuitem
-                            action="#{laboratoryManagementController.navigateToBarcodes()}"
+                            action="#{laboratoryManagementController.navigateToInvestigation()}"
                             ajax="false"
                             style="font-size: 22px; font-weight: 600; width: 12em;" 
                             class="d-flex justify-content-center">
@@ -82,6 +82,7 @@
 
                     <!--                Bills Section-->
                     <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'BILLS'}" >
+                        <h3><h:outputText value="Bills" class="d-flex justify-content-center mt-4"/> </h3>
                         <h:panelGrid columns="6" class="w-100 mt-2" style="font-weight: bolder">
                             <h:panelGrid columns="1" class="w-100">
                                 <h:outputLabel class="w-100" value="From Date"/>
@@ -353,6 +354,7 @@
                                         title="To Samples" 
                                         class="ui-button-raised"
                                         ajax="false"
+                                        action="#{laboratoryManagementController.navigateToSamplesFromSelectedBill(b)}"
                                         disabled="#{b.status.label eq 'Ordered'}" >
                                     </p:commandButton>
                                     <p:commandButton 
@@ -367,7 +369,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
-                        <h1><h:outputText value="Bar Codes" class="d-flex justify-content-center mt-4"/> </h1>
+                        <h1><h:outputText value="INVESTIGATIONS" class="d-flex justify-content-center mt-4"/> </h1>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'VIEW_BARCODE'}">
@@ -387,10 +389,10 @@
                                         <div class="d-flex gap-3">
                                             <p:commandButton 
                                                 icon="fa-solid fa-flask-vial"
-                                                value="To Samples" 
+                                                value="To Sample List" 
                                                 class="ui-button-warning"
                                                 ajax="false"
-                                                action="#{patientInvestigationController.navigateToSamplesFromSelectedBill(patientInvestigationController.currentBill)}" >
+                                                action="#{laboratoryManagementController.navigateToSamplesFromSelectedBill(laboratoryManagementController.currentBill)}" >
                                             </p:commandButton>
                                         </div>
                                     </div>
@@ -592,7 +594,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_SAMPLES'}">
-                        <h1><h:outputText value="Samples" class="d-flex justify-content-center mt-4"/> </h1>
+                        <h3><h:outputText value="Samples" class="d-flex justify-content-center mt-4"/> </h3>
 
                         <h:panelGrid columns="6" class="w-100 mt-2" style="font-weight: bolder">
                             <h:panelGrid columns="1" class="w-100">
@@ -752,7 +754,7 @@
 
                         </h:panelGrid>
 
-                        <div class="d-flex">
+                        <div class="d-flex mt-2">
                             <div class="col-md-9">
                                 <p:dataTable  
                                     id="samples"
@@ -1167,11 +1169,11 @@
 
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
+                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_REPORTS'}">
                         <h1><h:outputText value="Report" class="d-flex justify-content-center mt-4"/> </h1>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_REPORTS'}">
+                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'REPORT_PRINT'}">
                         <h1><h:outputText value="Report Print" class="d-flex justify-content-center mt-4"/> </h1>
                     </h:panelGroup>
 
