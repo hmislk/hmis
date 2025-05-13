@@ -7,8 +7,6 @@ import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.PatientInvestigationWrapper;
 import com.divudi.core.data.lab.PatientSampleWrapper;
-import com.divudi.core.data.lab.SearchDateType;
-import com.divudi.core.data.lab.SearchDateType.*;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -359,7 +357,7 @@ public class LaboratoryManagementController implements Serializable {
             params.put("status", getPatientInvestigationStatus());
         }
 
-        if (sampleId != null) {
+        if (sampleId != null && !sampleId.trim().isEmpty()) {
             jpql += " AND (ps.sampleId like :smpid or ps.id like :smpId) ";
             params.put("smpid", "%" + String.valueOf(sampleId) + "%");
             params.put("smpId", "%" + String.valueOf(sampleId) + "%");
