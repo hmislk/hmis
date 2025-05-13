@@ -489,46 +489,22 @@
                                 value="View" 
                                 style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
                                 class="mx-1"
-<p:commandLink 
-   value="View" 
-   style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
-   class="mx-1"
-   action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-   ajax="false">
-   <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-</p:commandLink>
+                                action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                 ajax="false">
                                 <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                             </p:commandLink>
-
-                            <!--                            <p:commandLink 
-                                                            value="Manage" 
-                                                            style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
-                                                            class="mx-1"
-                                                            action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
-                                                            ajax="false">
-                                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                                        </p:commandLink>-->
-
-                            <!--                            <p:commandLink 
-                                                            value="Admin" 
-                                                            style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
-                                                            class="mx-1"
-                                                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                                            ajax="false" 
-                                                            rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                                        </p:commandLink>-->
+                            <p:commandLink 
+                                value="Admin" 
+                                style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
+                                class="mx-1"
+                                action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                ajax="false" 
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                            </p:commandLink>
                         </p:column>
-
-
                     </p:dataTable>
-
-
-
-
                 </h:form>
-
             </ui:define>
         </ui:composition>
     </h:body>

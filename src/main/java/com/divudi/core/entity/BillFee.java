@@ -79,17 +79,19 @@ public class BillFee implements Serializable, RetirableEntity {
     @ManyToOne
     Bill bill;
     ///////////////
-    double feeValue = 0.0;
+    private double feeValue = 0.0;
+    private Double feeGrossValue;
+    private double feeDiscount;
+    private double feeVat;
+    private double feeVatPlusValue;
+
     @Transient
     private double absoluteFeeValue;
-    private Double feeGrossValue;
+
     @Transient
     private Double feeGrossValueTransient;
     @Transient
     private boolean userChangedTheGrossValueTransient;
-    double feeDiscount;
-    double feeVat;
-    double feeVatPlusValue;
 
     double feeMargin;
     double feeAdjusted;
@@ -367,7 +369,7 @@ public class BillFee implements Serializable, RetirableEntity {
     private Double tmpSettleChangedValue;
 
     public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
-        System.out.println("setFeeValueForCreditCompany" );
+        System.out.println("setFeeValueForCreditCompany");
         System.out.println("tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
@@ -775,7 +777,5 @@ public class BillFee implements Serializable, RetirableEntity {
     public void setUserChangedTheGrossValueTransient(boolean userChangedTheGrossValueTransient) {
         this.userChangedTheGrossValueTransient = userChangedTheGrossValueTransient;
     }
-
-
 
 }
