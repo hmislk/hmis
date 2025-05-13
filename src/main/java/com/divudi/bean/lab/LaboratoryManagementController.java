@@ -1,14 +1,22 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.lab.BillBarcode;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.PatientInvestigationWrapper;
+import com.divudi.core.data.lab.PatientSampleWrapper;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Route;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -27,6 +36,8 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class LaboratoryManagementController implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     public LaboratoryManagementController() {
         activeIndex = 1;
         listingEntity = ListingEntity.BILLS; // Set default view
@@ -35,9 +46,18 @@ public class LaboratoryManagementController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     BillFacade billFacade;
+    @EJB
+    private PatientInvestigationFacade ejbFacade;
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    SessionController sessionController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -59,6 +79,12 @@ public class LaboratoryManagementController implements Serializable {
     private Department performingDepartment;
     private String billNo;
     private String bhtNo;
+    
+    private List<BillBarcode> billBarcodes;
+    private List<BillBarcode> selectedBillBarcodes;
+    private Bill currentBill;
+    
+    private boolean printIndividualBarcodes;
             
 
     private List<Bill> bills = null;
@@ -69,12 +95,22 @@ public class LaboratoryManagementController implements Serializable {
     public String navigateToLaboratoryManagementDashboard() {
         activeIndex = 1;
         listingEntity = ListingEntity.BILLS;
+        if(configOptionApplicationController.getBooleanValueByKey("Only bills that have been sent to the Log department should be displayed.", false)){
+            performingInstitution = sessionController.getInstitution();
+            performingDepartment = sessionController.getDepartment();
+        }
+        patientInvestigationStatus = PatientInvestigationStatus.ORDERED;
         return "/lab/laboratory_management_dashboard?faces-redirect=true";
     }
-
+    
     public void navigateToLaboratoryBills() {
         activeIndex = 1;
         listingEntity = ListingEntity.BILLS;
+        if(configOptionApplicationController.getBooleanValueByKey("Only bills that have been sent to the Log department should be displayed.", false)){
+            performingInstitution = sessionController.getInstitution();
+            performingDepartment = sessionController.getDepartment();
+        }
+        patientInvestigationStatus = PatientInvestigationStatus.ORDERED;
     }
 
     public void navigateToBarcodes() {
@@ -184,6 +220,70 @@ public class LaboratoryManagementController implements Serializable {
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
+    
+    public void generateBarcodesForSelectedBill(Bill billForBarcode) {
+        selectedBillBarcodes = new ArrayList<>();
+        billBarcodes = new ArrayList<>();
+        setCurrentBill(billForBarcode);
+        if (billForBarcode == null) {
+            JsfUtil.addErrorMessage("No Bills Seelcted");
+            return;
+        }
+
+        if (billForBarcode.isCancelled()) {
+            JsfUtil.addErrorMessage("This Bill is Already Cancel");
+            return;
+        }
+
+        BillBarcode bb = new BillBarcode(billForBarcode);
+        List<PatientSampleWrapper> psws = new ArrayList<>();
+        List<PatientSample> pss = patientInvestigationController.prepareSampleCollectionByBillsForPhlebotomyRoom(billForBarcode, sessionController.getLoggedUser());
+        StringBuilder sampleIDs = new StringBuilder();
+        if (pss != null) {
+            for (PatientSample ps : pss) {
+                PatientSampleWrapper ptsw = new PatientSampleWrapper(ps);
+                psws.add(ptsw);
+                if (!sampleIDs.toString().contains(ps.getIdStr())) {
+                    sampleIDs.append(ps.getIdStr()).append(" ");  // Add space for separation
+                }
+            }
+        }
+
+        for (PatientInvestigationWrapper piw : bb.getPatientInvestigationWrappers()) {
+            if (billForBarcode.getStatus() == PatientInvestigationStatus.ORDERED) {
+                piw.getPatientInvestigation().setBarcodeGenerated(true);
+                piw.getPatientInvestigation().setBarcodeGeneratedAt(new Date());
+
+            }
+
+            // Properly add unique sample IDs to PatientInvestigation
+            String[] idsToAdd = sampleIDs.toString().trim().split("\\s+");
+            String existingSampleIds = piw.getPatientInvestigation().getSampleIds();
+            for (String id : idsToAdd) {
+                if (!existingSampleIds.contains(id)) {
+                    existingSampleIds += " " + id;
+                }
+            }
+            if (billForBarcode.getStatus() == PatientInvestigationStatus.ORDERED) {
+                piw.getPatientInvestigation().setBarcodeGeneratedBy(sessionController.getLoggedUser());
+                piw.getPatientInvestigation().setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+            }
+            piw.getPatientInvestigation().setSampleIds(existingSampleIds.trim());
+
+            ejbFacade.edit(piw.getPatientInvestigation());
+        }
+        if (billForBarcode.getStatus() == PatientInvestigationStatus.ORDERED) {
+            billForBarcode.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+        }
+
+        billFacade.edit(billForBarcode);
+        bb.setPatientSampleWrappers(psws);
+
+        billBarcodes.add(bb);
+        selectedBillBarcodes = billBarcodes;
+        listingEntity = ListingEntity.VIEW_BARCODE;
+    }
+    
 
     // </editor-fold>
     
@@ -330,5 +430,36 @@ public class LaboratoryManagementController implements Serializable {
         this.activeIndex = activeIndex;
     }
     
+    public List<BillBarcode> getBillBarcodes() {
+        return billBarcodes;
+    }
+
+    public void setBillBarcodes(List<BillBarcode> billBarcodes) {
+        this.billBarcodes = billBarcodes;
+    }
+
+    public List<BillBarcode> getSelectedBillBarcodes() {
+        return selectedBillBarcodes;
+    }
+
+    public void setSelectedBillBarcodes(List<BillBarcode> selectedBillBarcodes) {
+        this.selectedBillBarcodes = selectedBillBarcodes;
+    }
+
+    public Bill getCurrentBill() {
+        return currentBill;
+    }
+
+    public void setCurrentBill(Bill currentBill) {
+        this.currentBill = currentBill;
+    }
+
+    public boolean isPrintIndividualBarcodes() {
+        return printIndividualBarcodes;
+    }
+
+    public void setPrintIndividualBarcodes(boolean printIndividualBarcodes) {
+        this.printIndividualBarcodes = printIndividualBarcodes;
+    }
     // </editor-fold>
 }
