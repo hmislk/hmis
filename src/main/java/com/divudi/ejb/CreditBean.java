@@ -14,6 +14,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.service.BillService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +40,8 @@ public class CreditBean {
     private BillFacade billFacade;
     @EJB
     PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    BillService billService;
 
     public List<Bill> getCreditBills(Institution ins, BillType billType, Date fromDate, Date toDate, boolean lessThan) {
         String sql = "Select b From BilledBill b"
@@ -66,6 +69,39 @@ public class CreditBean {
         hm.put("val", 0.1);
 
         return (List<Bill>) getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public List<Bill> getCreditBills(Institution ins, List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, boolean lessThan) {
+        String jpql = "Select b From Bill b"
+                + " where b.retired=false "
+                + " and b.createdAt  between :frm and :to ";
+
+        if (lessThan) {
+            jpql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+        } else {
+            jpql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+        }
+
+        jpql += " and b.creditCompany=:cc "
+                + " and b.paymentMethod= :pm "
+                + " and b.billTypeAtomic in :billTypeAtomics ";
+
+        HashMap params = new HashMap();
+        params.put("frm", fromDate);
+        params.put("to", toDate);
+        params.put("cc", ins);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("billTypeAtomics", billTypeAtomics);
+        params.put("val", 0.1);
+        
+        
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        
+        List<Bill> bs = (List<Bill>) getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        return bs;
+        
     }
 
     public List<Bill> getCreditBillsPharmacy(Institution ins, List<BillType> billTypes, Date fromDate, Date toDate, boolean lessThan) {
@@ -154,6 +190,39 @@ public class CreditBean {
         hm.put("val", 0.1);
 
         return (List<Institution>) getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public List<Institution> getCreditInstitution(List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, boolean lessThan) {
+        String jpql;
+        HashMap params;
+        jpql = "Select distinct(b.creditCompany) From Bill b "
+                + " where b.retired=false ";
+
+        if (lessThan) {
+            jpql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+        } else {
+            jpql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+        }
+
+        jpql += " and b.createdAt between :frm and :to "
+                + " and b.paymentMethod= :pm "
+                + " and b.billTypeAtomic in :billTypeAtomics "
+                + " order by b.creditCompany.name  ";
+
+         
+        
+        params = new HashMap();
+        params.put("frm", fromDate);
+        params.put("to", toDate);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("billTypeAtomics", billTypeAtomics); // This include cancellations and refunds. So no need to check a bill is canceleld or returned
+        params.put("val", 0.1);
+
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        List<Institution> ins = (List<Institution>) getInstitutionFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("ins = " + ins);
+        return ins;
     }
 
     public List<Institution> getCreditInstitutionPharmacy(List<BillType> billTypes, Date fromDate, Date toDate, boolean lessThan) {
@@ -260,7 +329,7 @@ public class CreditBean {
     }
 
     public List<PatientEncounter> getCreditPatientEncounterWithFinalizedPayments(Institution institution, Date fromDate, Date toDate, PaymentMethod paymentMethod,
-                                                                                 Institution institutionOfDepartment, Department department, Institution site) {
+            Institution institutionOfDepartment, Department department, Institution site) {
         String sql;
         HashMap hm = new HashMap();
 
@@ -441,7 +510,7 @@ public class CreditBean {
     }
 
     public List<Institution> getCreditInstitutionByPatientEncounterWithFinalizedPayments(Date fromDate, Date toDate, PaymentMethod paymentMethod,
-                                                                                         Institution institution, Department department, Institution site) {
+            Institution institution, Department department, Institution site) {
         String sql;
         HashMap<String, Object> hm = new HashMap<>();
         sql = "Select distinct(b.creditCompany)"
@@ -763,7 +832,34 @@ public class CreditBean {
         hm.put("tp1", BillType.OpdBill);
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
+    
+    public List<Institution> getCreditCompanyFromBillsFromBillTypeAtomic(boolean lessThan) {
+        String sql;
+        HashMap hm;
+        sql = "Select distinct(b.creditCompany) "
+                + " From Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.paymentMethod=:pm "
+                + " and b.billTypeAtomic in :billTypeAtomics ";
 
+        if (lessThan) {
+            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
+        } else {
+            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))< :val) ";
+        }
+        
+        List<BillTypeAtomic> btas = billService.fetchBillTypeAtomicsForOpdFinance();
+
+        hm = new HashMap();
+        hm.put("val", 0.1);
+        hm.put("pm", PaymentMethod.Credit);
+        hm.put("billTypeAtomics", btas);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    
+    
     public List<Institution> getCreditCompanyFromBillsPharmacy(boolean lessThan) {
         String sql;
         HashMap hm;
