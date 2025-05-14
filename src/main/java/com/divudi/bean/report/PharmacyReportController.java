@@ -113,9 +113,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 
 import com.divudi.core.facade.ItemFacade;
+
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Pubudu Piyankara
@@ -2169,7 +2172,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
-        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+            1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
     };
 
     private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
@@ -2225,10 +2228,10 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
 
             String[] headers = {
-                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
-                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
-                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
-                "Closing Stock", "Rate", "Closing Value"
+                    "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                    "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                    "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                    "Closing Stock", "Rate", "Closing Value"
             };
 
             addTableHeaders(table, headerFont, headers);
@@ -2506,6 +2509,13 @@ public class PharmacyReportController implements Serializable {
             }
 
             List<PharmacyRow> rows = getRows();
+
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
             int serial = 1;
             for (PharmacyRow f : rows) {
                 table.addCell(String.valueOf(serial++));
@@ -2530,7 +2540,8 @@ public class PharmacyReportController implements Serializable {
             document.close();
             context.responseComplete();
         } catch (Exception e) {
-            e.printStackTrace();
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
         }
     }
 
@@ -2598,7 +2609,7 @@ public class PharmacyReportController implements Serializable {
         }
 
         cogs.put("OPENING STOCK VALUE", totalSaleValue);
-        
+
     }
 
     public Map<String, Double> getCogs() {
@@ -2606,7 +2617,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void setCogs(Map<String, Double> cogs) {
-        this.cogs = new HashMap<>(cogs); 
+        this.cogs = new HashMap<>(cogs);
     }
 
     @Deprecated
@@ -2860,9 +2871,9 @@ public class PharmacyReportController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
 
             String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
-                "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
-                "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
 
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -2966,8 +2977,8 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
-                "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
-                "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
