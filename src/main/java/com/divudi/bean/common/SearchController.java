@@ -251,6 +251,26 @@ public class SearchController implements Serializable {
     private BillClassType billClassType;
     private String selectedOpdPackageBillSelector;
     private List<String> OpdPackageBillSelector;
+    private ReportTemplateRow selectedChannelBookingBillRow;
+
+    public ReportTemplateRow getSelectedChannelBookingBillRow() {
+        return selectedChannelBookingBillRow;
+    }
+
+    public void setSelectedChannelBookingBillRow(ReportTemplateRow selectedChannelBookingBillRow) {
+        this.selectedChannelBookingBillRow = selectedChannelBookingBillRow;
+    }
+
+
+    public void handleChannelBillRowClick(){
+        if(selectedChannelBookingBillRow.getBill() instanceof CancelledBill){
+            for(ReportTemplateRow r : bundle.getReportTemplateRows()){
+                if(r.getBill().getCancelledBill() != null && r.getBill().getCancelledBill().equals(selectedChannelBookingBillRow.getBill())){
+                    this.selectedChannelBookingBillRow = r;
+                }
+            }
+        }
+    }
 
     private StreamedContent downloadingExcel;
 
@@ -17877,11 +17897,13 @@ public class SearchController implements Serializable {
         parameters.put("br", true);
 
         List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
-        ;
+        bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
+      
         if (bookingType != null) {
             switch (bookingType) {
                 case "System Bookings":
                     bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    bts.remove(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
                     break;
                 case "Online Bookings":
                     bts = new ArrayList<BillTypeAtomic>();

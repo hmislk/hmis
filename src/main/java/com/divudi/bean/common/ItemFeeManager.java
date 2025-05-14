@@ -799,7 +799,7 @@ public class ItemFeeManager implements Serializable {
                 + "f.item.department.name, "
                 + "f.item.name, "
                 + "f.item.code, "
-                + "f.item.total, "
+                + " sum(f.fee), "
                 + "f.item.department.id) "
                 + " from ItemFee f "
                 + " where f.retired=:ret ";

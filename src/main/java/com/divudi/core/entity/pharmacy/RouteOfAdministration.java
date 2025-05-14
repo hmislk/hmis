@@ -1,4 +1,4 @@
-package com.divudi.bean.pharmacy;
+package com.divudi.core.entity.pharmacy;
 
 import com.divudi.core.entity.Category;
 import java.io.Serializable;
