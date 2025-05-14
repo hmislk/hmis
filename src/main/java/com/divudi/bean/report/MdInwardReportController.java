@@ -91,6 +91,8 @@ public class MdInwardReportController implements Serializable {
     BillEjb billEjb;
     @EJB
     private PatientItemFacade patientItemFacade;
+    @EJB
+    AdmissionFacade admissionFacade;
     ///////////////////////////////
     @Inject
     private SessionController sessionController;
@@ -103,6 +105,10 @@ public class MdInwardReportController implements Serializable {
     boolean showCategory = false;
 
     private double purchaseValue;
+    private Staff currentStaff;
+    private Speciality speciality;
+    private List<Admission> admissions;
+    
     @Named
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -122,6 +128,9 @@ public class MdInwardReportController implements Serializable {
         itemWithFees = null;
         fillterItemWithFees = null;
         paymentMethod = null;
+        admissions = null;
+        speciality = null;
+        currentStaff = null;
     }
 
     public BillsTotals getBiltot() {
@@ -268,6 +277,47 @@ public class MdInwardReportController implements Serializable {
         }
 
 
+
+    }
+    
+    public void fillAdmissions() {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select ad from Admission ad "
+                + " where ad.retired=false "
+                + " and ad.createdAt between :fd and :td ";
+
+        if (speciality != null) {
+            sql += " and ad.referringConsultant.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        if (currentStaff != null) {
+            sql += " and ad.referringConsultant=:cs";
+            m.put("cs", currentStaff);
+        }
+
+        if (admissionType != null) {
+            sql += " and ad.admissionType=:admTp ";
+            m.put("admTp", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql += " and ad.paymentMethod=:pm";
+            m.put("pm", paymentMethod);
+        }
+        if (institution != null) {
+            sql += " and ad.creditCompany=:cd";
+            m.put("cd", institution);
+        }
+
+        sql += " order by ad.createdAt ASC ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -2976,6 +3026,30 @@ public class MdInwardReportController implements Serializable {
 
     public void setManagaeInwardReportIndex(int managaeInwardReportIndex) {
         this.managaeInwardReportIndex = managaeInwardReportIndex;
+    }
+
+    public List<Admission> getAdmissions() {
+        return admissions;
+    }
+
+    public void setAdmissions(List<Admission> admissions) {
+        this.admissions = admissions;
+    }
+
+    public Staff getCurrentStaff() {
+        return currentStaff;
+    }
+
+    public void setCurrentStaff(Staff currentStaff) {
+        this.currentStaff = currentStaff;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
     }
 
     //619
