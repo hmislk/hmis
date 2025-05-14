@@ -2109,7 +2109,7 @@ public class ReportsController implements Serializable {
 
     private ReportTemplateRowBundle generateWeeklyBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT billItem "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -2165,7 +2165,19 @@ public class ReportsController implements Serializable {
         jpql += "GROUP BY billItem";
 
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        List<BillItem> bi = billItemFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        List<ReportTemplateRow> rs = new ArrayList<>();
+        for (BillItem billItem : bi) {
+            ReportTemplateRow row = new ReportTemplateRow();
+
+            boolean hasInvestigation = billItem.getItem() != null && billItem.getItem() instanceof Investigation;
+
+            if (!hasInvestigation) {
+                row.setBillItem(billItem);
+                rs.add(row);
+            }
+        }
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
