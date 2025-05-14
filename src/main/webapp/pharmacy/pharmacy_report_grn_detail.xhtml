@@ -54,31 +54,31 @@
                     <h:panelGrid columns="3" class="my-2">
                         <p:commandButton 
                             id="btnRefresh" 
-                            ajax="false" 
-                            value="Fill" 
-                            icon="fa-solid fa-fill"
-                            class="ui-button-warning"
+                            ajax="false"
+                            value="Process"
+                            styleClass="ui-button-success m-1"
+                            icon="pi pi-cog"
                             actionListener="#{commonReport.createGrnDetailTable()}"
                             style="float: right;" />  
 
                         <p:commandButton 
                             actionListener="#{commonReport.createGrnDetailTable()}" 
-                            ajax="false" 
-                            value="Excel" 
-                            icon="fa-solid fa-file-excel"
-                            class="ui-button-success mx-2" 
+                            ajax="false"
+                            value="Download"
+                            styleClass="ui-button-info m-1"
+                            icon="pi pi-download"
                             style="float: right;" >
                             <p:dataExporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum" fileName="report_grn_detail"  />
                         </p:commandButton>
 
                         <p:commandButton 
-                            ajax="false" 
-                            value="Print"
-                            icon="fa-solid fa-print"
-                            class="ui-button-info"
-                            style="float: right;" >
-                            <p:printer target="reportPrint"/>
-                        </p:commandButton>  
+                            ajax="false"
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            style="float: right;"
+                            action="pharmacy_report_grn_detail_print?faces-redirect=true"/>
+
                     </h:panelGrid>
 
                     <p:panel id="reportPriview">
@@ -156,7 +156,7 @@
                                                             <h:outputLabel value="#{b.referenceInstitution.name}"/>
                                                         </p:column>-->
 
-                            <p:column headerText="Po No" 
+                            <p:column headerText="PO No"
                                       width="11em"
                                       sortBy="#{b.referenceBill.deptId}"
                                       filterBy="#{b.referenceBill.deptId}"
@@ -212,7 +212,7 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Remark"/>
                                 </f:facet> 
-                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" />
                             </p:column>
 
                             <!--                            <p:column headerText="Remark" exportable="false" >
@@ -526,7 +526,7 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Remark"/>
                                 </f:facet> 
-                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" />
                             </p:column>
                             <p:columnGroup type="footer">  
                                 <p:row >  

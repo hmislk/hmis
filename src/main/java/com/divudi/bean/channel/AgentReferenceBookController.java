@@ -6,6 +6,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.InstitutionType;
@@ -213,17 +214,26 @@ public class AgentReferenceBookController implements Serializable {
     public void searchReferenceBooks() {
         createAllBookTable();
     }
+    @Inject
+    private WebUserController webUserController;
+
+    private AgentReferenceBook editingBook;
 
     public void updateAgentBook(AgentReferenceBook book) {
         if (book == null) {
-            JsfUtil.addSuccessMessage("No Book Selected");
+            JsfUtil.addErrorMessage("No Book Selected");
             return;
         }
         if (book.getId() == null) {
-            JsfUtil.addSuccessMessage("No Reference Book Selected");
+            JsfUtil.addErrorMessage("No Reference Book Selected");
             return;
         }
 
+        if (!getWebUserController().hasPrivilege("EditData")) {
+            searchReferenceBooks();
+            JsfUtil.addErrorMessage("You have No Privilege for Edit Book.");
+            return;
+        }
         book.setEditedAt(new Date());
         book.setEditor(sessionController.getLoggedUser());
         getAgentReferenceBookFacade().edit(book);
@@ -235,6 +245,11 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addErrorMessage("Enter the comment");
             return;
         }
+        if (!getWebUserController().hasPrivilege("DeleteData")) {
+            JsfUtil.addErrorMessage("You have No Privilege for Delete Book.");
+            return;
+        }
+        
         agentReferenceBook.setRetired(true);
         agentReferenceBook.setRetiredAt(new Date());
         agentReferenceBook.setRetirer(sessionController.getLoggedUser());
@@ -532,6 +547,22 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setBookActive(boolean bookActive) {
         this.bookActive = bookActive;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
+    }
+
+    public AgentReferenceBook getEditingBook() {
+        return editingBook;
+    }
+
+    public void setEditingBook(AgentReferenceBook editingBook) {
+        this.editingBook = editingBook;
     }
 
 }

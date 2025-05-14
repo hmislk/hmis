@@ -92,9 +92,8 @@
                                         rowKey="#{refBook.id}"
                                         paginator="true"
                                         paginatorPosition="bottom"
-                                        rowsPerPageTemplate="20,50,100"
+                                        rowsPerPageTemplate="20,50,100,500"
                                         >
-
 
                                         <p:column
                                             style="padding: 6px;"
@@ -127,7 +126,17 @@
                                             filterMatchMode="contains"
                                             sortBy="#{refBook.institution.name}"
                                             styleClass="alignTop" width="150">
-                                            <h:outputLabel value="#{refBook.institution.name}"/>
+                                            <div class="d-flex justify-content-between">
+                                                <h:outputLabel value="#{refBook.institution.name}"/>
+                                                <h:panelGroup rendered="#{refBook.retired}" >
+                                                    <div class="d-flex gap-3" style="color: red;">
+                                                        <h:outputLabel value="#{refBook.retirer.webUserPerson.nameWithTitle}"/>
+                                                        <h:outputLabel value="#{refBook.retiredAt}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                        </h:outputLabel>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </div>
                                         </p:column>
 
                                         <p:column
