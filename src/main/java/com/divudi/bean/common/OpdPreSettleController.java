@@ -1768,10 +1768,9 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 p.setCreater(getSessionController().getLoggedUser());
                 paymentFacade.create(p);
                 ps.add(p);
-                
-                bill.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
-                billFacade.edit(bill);
             }
+            bill.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
+            billFacade.edit(bill);
         } else {
             Payment p = new Payment();
             p.setBill(bill);
