@@ -401,6 +401,32 @@ public class BillService {
         return batchBill;
     }
 
+    public boolean hasMultipleIndividualBillsForThisBatchBill(Bill batchBill) {
+        if (batchBill == null) {
+            return false;
+        }
+        String j = "SELECT COUNT(b) FROM Bill b WHERE b.backwardReferenceBill = :batch";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("batch", batchBill);
+        Long count = billFacade.findLongByJpql(j, parameters);
+        return count != null && count > 1;
+    }
+
+    public boolean hasMultipleIndividualBillsForBatchBillOfThisIndividualBill(Bill individualBill) {
+        if (individualBill == null) {
+            return false;
+        }
+        Bill batchBill = fetchBatchBillOfIndividualBill(individualBill);
+        if (batchBill == null) {
+            return false;
+        }
+        String j = "SELECT COUNT(b) FROM Bill b WHERE b.backwardReferenceBill = :batch";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("batch", batchBill);
+        Long count = billFacade.findLongByJpql(j, parameters);
+        return count != null && count > 1;
+    }
+
     public Bill fetchBillReferredAsReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
         return fetchBillByReferenceType("referenceBill", referredBill, billTypeAtomic);
     }

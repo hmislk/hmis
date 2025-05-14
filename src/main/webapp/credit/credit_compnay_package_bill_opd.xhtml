@@ -54,7 +54,8 @@
                                             action="#{cashRecieveBillController.addToBill()}" 
                                             ajax="false" 
                                             icon="fa fa-plus"
-                                            class="ui-button-success gap-2"/>
+                                            class="ui-button-success gap-2">
+                                        </p:commandButton>
                                     </div>
 
                                 </f:facet>
@@ -71,21 +72,25 @@
                                             forceSelection="true" 
                                             value="#{cashRecieveBillController.currentBillItem.referenceBill}" 
                                             completeMethod="#{billController.completeOpdCreditPackageBatchBill}" 
-                                            var="ix" itemLabel="#{ix.patient.person.name}"
-                                            itemValue="#{ix}" class="w-100" inputStyleClass="w-100">
-                                            <p:column>
+                                            var="ix" 
+                                            itemLabel="#{ix.patient.person.name}"
+                                            itemValue="#{ix}"
+                                            maxResults="20"
+                                            class="w-100" 
+                                            inputStyleClass="w-100">
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Name"/>
                                                 </f:facet>
                                                 <h:outputLabel value="#{ix.patient.person.name}"/>
                                             </p:column>                                  
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Credit Company"/>
                                                 </f:facet>
                                                 <h:outputLabel value="#{ix.creditCompany.name}"/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Date"/>
                                                 </f:facet>
@@ -93,7 +98,7 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Due Amount"/>
                                                 </f:facet>
@@ -101,7 +106,7 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Paid Amount"/>
                                                 </f:facet>
@@ -109,7 +114,7 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="padding: 6px;">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Full Amount"/>
                                                 </f:facet>
@@ -121,9 +126,6 @@
                                         </p:autoComplete>
                                     </div>
                                 </div>
-
-
-
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
@@ -138,10 +140,8 @@
                                             value="#{cashRecieveBillController.currentBillItem.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
-
                                     </div>
                                 </div>
-
 
                             </p:panel>
                         </div>
@@ -154,12 +154,8 @@
                                             <h:outputText styleClass="fa fa-money-bill-wave" />
                                             <h:outputText value="Payment" class="mx-4"></h:outputText>
                                         </div>
-
-
                                     </div>
-
                                 </f:facet>
-
 
                                 <div class="row my-2 align-items-center">
                                     <div class="col-md-4">
@@ -168,12 +164,10 @@
                                     <div class="col-md-8">
                                         <p:selectOneMenu  class="w-100"  id="cmbPs" value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
                                             <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                            <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                            <p:ajax process="cmbPs" update="payments" event="change" />
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
-
-
 
                                 <div class="row my-2">
                                     <div class="col-md-2"></div>
@@ -189,7 +183,7 @@
                                         </p:outputLabel>
                                     </div>
                                 </div>
-
+                                
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Description"/>
@@ -202,23 +196,28 @@
                                 <div class="row my-2">
 
                                     <div class="col-md-10">
-                                        <div>
-                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                        <h:panelGroup id="payments">
+                                            <h:panelGroup 
+                                                id="creditCard" 
+                                                rendered="#{cashRecieveBillController.current.paymentMethod eq 'Card'}">
                                                 <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <h:panelGroup 
+                                                id="cheque" 
+                                                rendered="#{cashRecieveBillController.current.paymentMethod eq 'Cheque'}">
                                                 <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <h:panelGroup 
+                                                id="slip" 
+                                                rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
                                                 <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                             </h:panelGroup>
-                                        </div>
+                                        </h:panelGroup>
                                     </div>
                                 </div>
                             </p:panel>
-
 
                         </div>
                     </div>
@@ -266,8 +265,13 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Remove">
-                                        <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" class="ui-button-danger">
+                                    <p:column headerText="Remove" width="5em;">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            action="#{cashRecieveBillController.remove(b)}" 
+                                            value="X" 
+                                            title="Remove Bill"
+                                            class="ui-button-danger">
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
@@ -275,8 +279,6 @@
                         </div>
                     </div>
                 </p:panel>
-
-
 
                 <p:panel  rendered="#{cashRecieveBillController.printPreview}" >
 
@@ -301,7 +303,7 @@
                         </div>
                     </div>
                     <h:panelGroup id="prints">
-                        <bi:five_five_paper_coustom_1_credit_payemnt  bill="#{cashRecieveBillController.current}" duplicate="false"/>
+                        <bi:five_five_paper_coustom_1_credit_payemnt bill="#{cashRecieveBillController.current}" duplicate="false"/>
                     </h:panelGroup>
                 </p:panel>
 

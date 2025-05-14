@@ -767,6 +767,7 @@ public class ChannelScheduleController implements Serializable {
             current = new ServiceSession();
             current.setInstitution(sessionController.getInstitution());
             current.setDepartment(sessionController.getDepartment());
+            current.setAcceptOnlineBookings(true);
 //            createFees();
         }
         return current;

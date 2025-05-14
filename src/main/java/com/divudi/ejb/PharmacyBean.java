@@ -779,6 +779,7 @@ public class PharmacyBean {
                     + " and s.itemBatch.dateOfExpire > :doe"
                     + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
             params.put("amps", amps);
+            params.put("doe", new Date());
         } else {
             JsfUtil.addErrorMessage("Not supported yet");
             return new ArrayList<>();

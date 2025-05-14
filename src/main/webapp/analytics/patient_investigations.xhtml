@@ -11,29 +11,34 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputLabel value="PATIENT INVESTIGATION LIST"/>
+                            <h:outputLabel value="Patient Investigation List"/>
                         </f:facet>
 
                         <ui:include src="/analytics/common_filters.xhtml" />
 
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton 
-                                class="ui-button-success" 
-                                icon="fas fa-magnifying-glass" 
-                                id="btnSearch"
-                                ajax="false" 
-                                value="List" 
-                                action="#{searchController.listPatientInvestigations()}"/>
-                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel">
-                                <p:dataExporter fileName="All Patient Investigations" type="xlsx" target="tblInvestigations"></p:dataExporter>
+                            <p:commandButton
+                                    class="ui-button-warning"
+                                    icon="fas fa-list"
+                                    id="btnSearch"
+                                    ajax="false"
+                                    value="List"
+                                    action="#{searchController.listPatientInvestigations()}"/>
+                            <p:commandButton
+                                    class="ui-button-success mx-2"
+                                    icon="fas fa-file-excel"
+                                    id="btnExcel"
+                                    ajax="false"
+                                    value="Excel">
+                                <p:dataExporter fileName="All Patient Investigations" type="xlsx" target="tblInvestigations"/>
                             </p:commandButton>
                         </h:panelGrid>
 
                         <div style="width: 100%; overflow-x: auto;">
                             <p:dataTable
                                 rowIndexVar="i"
-                                id="tblInvestigations" 
-                                value="#{searchController.patientInvestigations}" 
+                                id="tblInvestigations"
+                                value="#{searchController.patientInvestigations}"
                                 scrollable="true"
                                 var="pi"
                                 rows="10"
@@ -87,30 +92,30 @@
                                 </p:column>
 
                                 <p:column headerText="Actions" exportable="false" width="9em">
-                                    <p:commandButton 
-                                        title="View Bill" 
-                                        icon="fa fa-eye" 
+                                    <p:commandButton
+                                        title="View Bill"
+                                        icon="fa fa-eye"
                                         class="m-1 ui-button-info"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                         ajax="false">
                                         <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        title="Manage Bill" 
-                                        icon="fa fa-tools" 
-                                        class="m-1 ui-button-warning" 
-                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                                    <p:commandButton
+                                        title="Manage Bill"
+                                        icon="fa fa-tools"
+                                        class="m-1 ui-button-warning"
+                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}"
                                         ajax="false">
                                         <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        title="Admin" 
-                                        icon="fa fa-shield-alt" 
-                                        class="m-1 ui-button-danger" 
-                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        title="Admin"
+                                        icon="fa fa-shield-alt"
+                                        class="m-1 ui-button-danger"
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}"
+                                        ajax="false"
                                         rendered="#{webUserController.hasPrivilege('Developers')}">
                                         <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
                                     </p:commandButton>

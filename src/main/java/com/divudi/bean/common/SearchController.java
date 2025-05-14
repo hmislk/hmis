@@ -251,6 +251,26 @@ public class SearchController implements Serializable {
     private BillClassType billClassType;
     private String selectedOpdPackageBillSelector;
     private List<String> OpdPackageBillSelector;
+    private ReportTemplateRow selectedChannelBookingBillRow;
+
+    public ReportTemplateRow getSelectedChannelBookingBillRow() {
+        return selectedChannelBookingBillRow;
+    }
+
+    public void setSelectedChannelBookingBillRow(ReportTemplateRow selectedChannelBookingBillRow) {
+        this.selectedChannelBookingBillRow = selectedChannelBookingBillRow;
+    }
+
+
+    public void handleChannelBillRowClick(){
+        if(selectedChannelBookingBillRow.getBill() instanceof CancelledBill){
+            for(ReportTemplateRow r : bundle.getReportTemplateRows()){
+                if(r.getBill().getCancelledBill() != null && r.getBill().getCancelledBill().equals(selectedChannelBookingBillRow.getBill())){
+                    this.selectedChannelBookingBillRow = r;
+                }
+            }
+        }
+    }
 
     private StreamedContent downloadingExcel;
 
@@ -694,6 +714,16 @@ public class SearchController implements Serializable {
     public String navigateToBillList() {
         resetAllFiltersExceptDateRange();
         return "/analytics/bills?faces-redirect=true";
+    }
+
+    public String navigateToCancellationBillList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/cancellation_bills?faces-redirect=true";
+    }
+
+    public String navigateToReturnBillList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/return_bills?faces-redirect=true";
     }
 
     public String navigateToPharmaceuticalBillItemList() {
@@ -1244,7 +1274,7 @@ public class SearchController implements Serializable {
     public String navigateToAllCashierHandovers() {
         return "/reports/cashier_reports/all_cashier_shifts?faces-redirect=true";
     }
-    
+
     public String navigateToShiftEndCash() {
         return "/reports/cashier_reports/shift_end_cash_list?faces-redirect=true";
     }
@@ -10690,6 +10720,134 @@ public class SearchController implements Serializable {
 
     }
 
+    public void listCancellationBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        jpql.append(" and type(b)=:billClassType ");
+        params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        netTotal = 0.0;
+        discount = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
+    public void listReturnBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        jpql.append(" and type(b)=:billClassType ");
+        params.put("billClassType", com.divudi.core.entity.RefundBill.class);
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        netTotal = 0.0;
+        discount = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
     public void listPharmaceuticalBillItems() {
         pharmaceuticalBillItems = null;
         Map<String, Object> params = new HashMap<>();
@@ -17739,11 +17897,13 @@ public class SearchController implements Serializable {
         parameters.put("br", true);
 
         List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
-        ;
+        bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
+      
         if (bookingType != null) {
             switch (bookingType) {
                 case "System Bookings":
                     bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    bts.remove(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
                     break;
                 case "Online Bookings":
                     bts = new ArrayList<BillTypeAtomic>();

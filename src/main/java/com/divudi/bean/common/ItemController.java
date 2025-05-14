@@ -2327,7 +2327,7 @@ public class ItemController implements Serializable {
                     + " or type(c)=:inv"
                     + " or type(c)=:ward "
                     + " or type(c)=:the)  "
-                    + " and (c.name) like :q"
+                    + " and ((c.name) like :q or (c.code) like :q ) "
                     + " order by c.name";
             m.put("pac", Packege.class);
             m.put("ser", Service.class);

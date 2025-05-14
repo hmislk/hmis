@@ -40,8 +40,24 @@
                             />
 
                         <p:spacer width="50" ></p:spacer>
-                        <p:spacer width="50" ></p:spacer>
-                        <p:spacer width="50" ></p:spacer>
+                        <!-- New Doctor Field with Icon -->
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                            <h:outputLabel value="User" for="user" class="mx-3" />
+                        </h:panelGroup>
+                        <p:autoComplete 
+                            forceSelection="true"
+                            value="#{opdReportController.webUser}"
+                            placeholder="Select User"
+                            completeMethod="#{webUserController.completeUser}" 
+                            id="user"
+                            var="u" 
+                            itemLabel="#{u.webUserPerson.name}" 
+                            itemValue="#{u}"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            >
+                        </p:autoComplete>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
@@ -477,35 +493,18 @@
                                 ajax="false">
                                 <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                             </p:commandLink>
-
-                            <!--                            <p:commandLink 
-                                                            value="Manage" 
-                                                            style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
-                                                            class="mx-1"
-                                                            action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
-                                                            ajax="false">
-                                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                                        </p:commandLink>-->
-
-                            <!--                            <p:commandLink 
-                                                            value="Admin" 
-                                                            style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
-                                                            class="mx-1"
-                                                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                                            ajax="false" 
-                                                            rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                                        </p:commandLink>-->
+                            <p:commandLink 
+                                value="Admin" 
+                                style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
+                                class="mx-1"
+                                action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                ajax="false" 
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                            </p:commandLink>
                         </p:column>
-
-
                     </p:dataTable>
-
-
-
-
                 </h:form>
-
             </ui:define>
         </ui:composition>
     </h:body>
