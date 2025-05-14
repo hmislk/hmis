@@ -2473,6 +2473,67 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public void exportBatchWisePharmacyStockToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            PdfPTable table = new PdfPTable(9);
+            table.setWidthPercentage(100);
+            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2f, 2f, 2.5f, 2.5f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Closing Stock", "Stock Value"};
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<PharmacyRow> rows = getRows();
+            int serial = 1;
+            for (PharmacyRow f : rows) {
+                table.addCell(String.valueOf(serial++));
+                table.addCell(f.getItem().getCategory() != null ? f.getItem().getCategory().getName() : "-");
+                table.addCell(f.getItem().getCode() != null ? f.getItem().getCode() : "-");
+                table.addCell(f.getItem().getName() != null ? f.getItem().getName() : "-");
+                table.addCell(f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-");
+                table.addCell(f.getItemBatch() != null && f.getItemBatch().getDateOfExpire() != null ? sdf.format(f.getItemBatch().getDateOfExpire()) : "-");
+                table.addCell(f.getItemBatch() != null ? f.getItemBatch().getBatchNo() : "-");
+                table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
+                table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
+            }
+
+            PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(7);
+            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(footerCell);
+            table.addCell(String.format("%.2f", getStockQty()));
+            table.addCell(String.format("%.2f", getStockSaleValue()));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private Map<String, Double> cogs = new HashMap<>();
 
     public void processCostOfGoodSold() {
