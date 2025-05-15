@@ -345,7 +345,7 @@ public void fillAdmissionsByConsultants() {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP, 100);
     } catch (Exception e) {
         JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
     }
