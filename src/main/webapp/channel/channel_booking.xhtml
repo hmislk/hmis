@@ -113,6 +113,14 @@
                                 icon="fa-solid fa-bars-progress" />
 
                             <p:commandButton 
+                                ajax="false" 
+                                value="Add Channel Booking" 
+                                class="ui-button-warning mx-1"
+                                action="#{bookingControllerViewScope.sessionInstanceFetchFromChannelBooking()}"
+                                actionListener="#{bookingControllerViewScope.setSelectedSessionInstance(bookingController.selectedSessionInstance)}"
+                                icon="fa-solid fa-bars-progress" />
+
+                            <p:commandButton 
                                 rendered="#{!bookingController.selectedSessionInstance.arrived}"
                                 id="btnArrival"
                                 ajax="false"
@@ -136,7 +144,7 @@
                     <div class="col-2">
                         <div >
                             <div>
-                                
+
                                 <p:selectOneListbox 
                                     id="acSpeciality"
                                     filter="true"
@@ -163,7 +171,7 @@
 
                     <div class="col-2">
                         <div>
-                            
+
                             <p:selectOneListbox 
                                 id="scStaff"
                                 filter="true"
@@ -186,7 +194,7 @@
                     </div>
 
                     <div class="col-md-4 p-0"  >
-                        
+
                         <p:selectOneListbox 
                             id="acSessions"
                             filter="true"
@@ -258,7 +266,7 @@
                     </div>
 
                     <div class="col-4" >
-                        
+
                         <h:outputText id="test" value="#{bookingController.selectedBillSession}" rendered="false"></h:outputText>
                         <p:selectOneListbox
                             id="acBookings" 
@@ -287,18 +295,18 @@
                             <p:column style="width: 20px!important;">
                                 <p:outputLabel class="badge badge-light" value="Credit" rendered="#{!bs.bill.billPaymentCompletelySettled}" style="color: red;"/>
                                 <p:outputLabel value="-On Call" rendered="#{!bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'OnCall'}" style="color: red;"/>
-                                
+
                                 <p:outputLabel value="Paid" rendered="#{bs.bill.billPaymentCompletelySettled}" style="color: green;"/>
                                 <p:outputLabel value="OnCall" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'OnCall'}" style="margin-left: 5px; color: green;"/>
                                 <p:outputLabel value="-Card" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paidBill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green;"/>
                                 <p:outputLabel value="-Cash" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
                                 <p:outputLabel value="-Agent" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paidBill.paymentMethod eq 'Agent'}" style="color: green;"/>
                                 <p:outputLabel value="-Staff" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
-                                
-                                
-                                <!--<p:outputLabel value="Paid OnCall-Card" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall' and bs.bill.paidBill.paymentMethod eq 'Card'}"/>-->
-                                <!--<p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>-->
-                                
+
+
+<!--<p:outputLabel value="Paid OnCall-Card" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall' and bs.bill.paidBill.paymentMethod eq 'Card'}"/>-->
+<!--<p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>-->
+
                             </p:column>
 
                             <p:column style="width: 10px!important;">
