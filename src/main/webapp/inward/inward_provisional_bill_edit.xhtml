@@ -27,7 +27,7 @@
                                         <p:commandButton 
                                             icon=" fa fa-refresh"
                                             value="Refresh" 
-                                            action="#"
+                                            action="#{inwardSearch.refreshBill}"
                                             class="ui-button-warning"
                                             process="@this"
                                             update="@all" />
@@ -314,6 +314,7 @@
                                                     <p:commandButton 
                                                         icon="fa fa-print"
                                                         value="Hospital Bill"
+                                                        disabled="#{inwardSearch.changed}"
                                                         class="ui-button-info"
                                                         ajax="false">
                                                         <p:printer target="finalOriginalBillPriview" ></p:printer>
