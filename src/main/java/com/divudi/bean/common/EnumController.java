@@ -1022,7 +1022,9 @@ public class EnumController implements Serializable {
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Bill Cancel", true);
             if (include) {
-                paymentMethodsForOpdBillCanceling.add(pm);
+                if (pm != PaymentMethod.MultiplePaymentMethods) {
+                    paymentMethodsForOpdBillCanceling.add(pm);
+                }
             }
         }
         return paymentMethodsForOpdBillCanceling;
