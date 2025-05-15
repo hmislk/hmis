@@ -91,6 +91,10 @@ public class MdInwardReportController implements Serializable {
     BillEjb billEjb;
     @EJB
     private PatientItemFacade patientItemFacade;
+    @EJB
+    AdmissionFacade admissionFacade;
+    @EJB
+    StaffFacade staffFacade;
     ///////////////////////////////
     @Inject
     private SessionController sessionController;
@@ -103,6 +107,10 @@ public class MdInwardReportController implements Serializable {
     boolean showCategory = false;
 
     private double purchaseValue;
+    private Staff currentStaff;
+    private Speciality speciality;
+    private List<Admission> admissions;
+    
     @Named
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -122,6 +130,9 @@ public class MdInwardReportController implements Serializable {
         itemWithFees = null;
         fillterItemWithFees = null;
         paymentMethod = null;
+        admissions = null;
+        speciality = null;
+        currentStaff = null;
     }
 
     public BillsTotals getBiltot() {
@@ -393,6 +404,34 @@ public class MdInwardReportController implements Serializable {
             total += b.getNetValue();
         }
 
+
+    }
+    
+    public void fillAdmissionsByConsultants() {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select ad from Admission ad "
+                + " where ad.retired=false "
+                + " and ad.createdAt between :fd and :td ";
+
+        if (speciality != null) {
+            sql += " and ad.referringConsultant.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        if (currentStaff != null) {
+            sql += " and ad.referringConsultant=:cs";
+            m.put("cs", currentStaff);
+        }
+
+        sql += " order by ad.createdAt ASC";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -2662,6 +2701,37 @@ public class MdInwardReportController implements Serializable {
         i.setTotal(hospiatalFee + staffFee);
 
     }
+    
+    public List<Staff> completeStaff(String query) {
+        List<Staff> suggestions;
+        String sql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        }
+
+        HashMap hm = new HashMap();
+
+        if (speciality != null) {
+            sql = "select p from Staff p "
+                    + " where p.retired=false "
+                    + " and ((p.person.name) like :q "
+                    + " or  (p.code) like :q ) "
+                    + " and p.speciality=:sp "
+                    + " order by p.person.name";
+            hm.put("sp", getSpeciality());
+        } else {
+            sql = "select p from Staff p "
+                    + " where p.retired=false "
+                    + " and ((p.person.name) like :q "
+                    + " or  (p.code) like :q )"
+                    + " order by p.person.name";
+        }
+        //////// // System.out.println(sql);
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        suggestions = staffFacade.findByJpql(sql, hm, 20);
+
+        return suggestions;
+    }
 
     public void setItemWithFees(List<ItemWithFee> itemWithFees) {
         this.itemWithFees = itemWithFees;
@@ -2976,6 +3046,30 @@ public class MdInwardReportController implements Serializable {
 
     public void setManagaeInwardReportIndex(int managaeInwardReportIndex) {
         this.managaeInwardReportIndex = managaeInwardReportIndex;
+    }
+
+    public Staff getCurrentStaff() {
+        return currentStaff;
+    }
+
+    public void setCurrentStaff(Staff currentStaff) {
+        this.currentStaff = currentStaff;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+
+    public List<Admission> getAdmissions() {
+        return admissions;
+    }
+
+    public void setAdmissions(List<Admission> admissions) {
+        this.admissions = admissions;
     }
 
     //619
