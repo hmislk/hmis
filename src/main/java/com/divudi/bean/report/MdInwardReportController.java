@@ -92,6 +92,8 @@ public class MdInwardReportController implements Serializable {
     private PatientItemFacade patientItemFacade;
     @EJB
     AdmissionFacade admissionFacade;
+    @EJB
+    StaffFacade staffFacade;
     ///////////////////////////////
     @Inject
     private SessionController sessionController;
@@ -316,6 +318,34 @@ public class MdInwardReportController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
         }
+
+    }
+    
+    public void fillAdmissionsByConsultants() {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select ad from Admission ad "
+                + " where ad.retired=false "
+                + " and ad.createdAt between :fd and :td ";
+
+        if (speciality != null) {
+            sql += " and ad.referringConsultant.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        if (currentStaff != null) {
+            sql += " and ad.referringConsultant=:cs";
+            m.put("cs", currentStaff);
+        }
+
+        sql += " order by ad.createdAt ASC";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -2684,6 +2714,37 @@ public class MdInwardReportController implements Serializable {
         i.setProFee(staffFee);
         i.setTotal(hospiatalFee + staffFee);
 
+    }
+    
+    public List<Staff> completeStaff(String query) {
+        List<Staff> suggestions;
+        String sql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        }
+
+        HashMap hm = new HashMap();
+
+        if (speciality != null) {
+            sql = "select p from Staff p "
+                    + " where p.retired=false "
+                    + " and ((p.person.name) like :q "
+                    + " or  (p.code) like :q ) "
+                    + " and p.speciality=:sp "
+                    + " order by p.person.name";
+            hm.put("sp", getSpeciality());
+        } else {
+            sql = "select p from Staff p "
+                    + " where p.retired=false "
+                    + " and ((p.person.name) like :q "
+                    + " or  (p.code) like :q )"
+                    + " order by p.person.name";
+        }
+        //////// // System.out.println(sql);
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        suggestions = staffFacade.findByJpql(sql, hm, 20);
+
+        return suggestions;
     }
 
     public void setItemWithFees(List<ItemWithFee> itemWithFees) {
