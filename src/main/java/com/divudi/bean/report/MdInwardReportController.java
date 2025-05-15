@@ -321,8 +321,8 @@ public class MdInwardReportController implements Serializable {
 
     }
     
-    public void fillAdmissionsByConsultants() {
-
+public void fillAdmissionsByConsultants() {
+    try {
         String sql;
         Map m = new HashMap();
 
@@ -346,8 +346,10 @@ public class MdInwardReportController implements Serializable {
         m.put("td", toDate);
 
         admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
-
+    } catch (Exception e) {
+        JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
     }
+}
 
     public void createServiceBillsByDischargeDate() {
         Date startTime = new Date();
