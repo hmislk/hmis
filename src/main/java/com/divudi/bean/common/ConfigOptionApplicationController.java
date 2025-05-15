@@ -61,7 +61,6 @@ public class ConfigOptionApplicationController implements Serializable {
 //                .map(value -> new Denomination(value, 0))
 //                .collect(Collectors.toList());
 //    }
-
     public void loadApplicationOptions() {
         applicationOptions = new HashMap<>();
         List<ConfigOption> options = getApplicationOptions();
@@ -101,7 +100,6 @@ public class ConfigOptionApplicationController implements Serializable {
 //        }
 //        return denominations;
 //    }
-
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
@@ -158,9 +156,9 @@ public class ConfigOptionApplicationController implements Serializable {
         return getEnumValue(option, enumClass);
     }
 
-    public Double getDoubleValueByKey(String key, Double defaultValue) {
+    public Integer getIntegerValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
-        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
             option = new ConfigOption();
             option.setCreatedAt(new Date());
             option.setOptionKey(key);
@@ -168,7 +166,29 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setInstitution(null);
             option.setDepartment(null);
             option.setWebUser(null);
-            option.setValueType(OptionValueType.DOUBLE);
+            option.setValueType(OptionValueType.INTEGER);
+            option.setOptionValue("0");
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        try {
+            return Integer.valueOf(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public Integer getIntegerValueByKey(String key, Integer defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.INTEGER);
             if (defaultValue == null) {
                 option.setOptionValue("");
             } else {
@@ -178,7 +198,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadApplicationOptions();
         }
         try {
-            return Double.valueOf(option.getOptionValue());
+            return Integer.valueOf(option.getOptionValue());
         } catch (NumberFormatException e) {
             return null;
         }
@@ -196,6 +216,32 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setWebUser(null);
             option.setValueType(OptionValueType.DOUBLE);
             option.setOptionValue("0.0");
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        try {
+            return Double.valueOf(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public Double getDoubleValueByKey(String key, Double defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.DOUBLE);
+            if (defaultValue == null) {
+                option.setOptionValue("");
+            } else {
+                option.setOptionValue(defaultValue + "");
+            }
             optionFacade.create(option);
             loadApplicationOptions();
         }
@@ -327,7 +373,7 @@ public class ConfigOptionApplicationController implements Serializable {
         return option.getOptionValue();
     }
 
-    public String getEnumValueByKey(String key ) {
+    public String getEnumValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.ENUM) {
             option = new ConfigOption();

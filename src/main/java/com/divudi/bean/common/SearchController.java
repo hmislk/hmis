@@ -139,7 +139,7 @@ public class SearchController implements Serializable {
     @EJB
     private BillFacade billFacade;
     @EJB
-    AgentHistoryFacade agentHistoryFacade;
+    private AgentHistoryFacade agentHistoryFacade;
     @EJB
     private PaymentFacade paymentFacade;
     @EJB
@@ -151,70 +151,75 @@ public class SearchController implements Serializable {
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
-    BillSessionFacade billSessionFacade;
+    private BillSessionFacade billSessionFacade;
     @EJB
-    StockFacade stockFacade;
+    private StockFacade stockFacade;
     @EJB
-    PatientReportFacade patientReportFacade;
+    private PatientReportFacade patientReportFacade;
     @EJB
     private PatientFacade patientFacade;
     @EJB
-    TokenFacade tokenFacade;
+    private TokenFacade tokenFacade;
     @EJB
     private DrawerFacade drawerFacade;
     @EJB
-    BillService billService;
+    private BillService billService;
     @EJB
-    PatientInvestigationService patientInvestigationService;
+    private PatientInvestigationService patientInvestigationService;
     @EJB
     private ReportTimerController reportTimerController;
-
+    @EJB
+    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private BillBeanController billBean;
     @Inject
+    private BillController billController;
+    @Inject
     private SessionController sessionController;
     @Inject
-    TransferController transferController;
+    private TransferController transferController;
     @Inject
-    PharmacySaleBhtController pharmacySaleBhtController;
+    private PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
-    AuditEventApplicationController auditEventApplicationController;
+    private AuditEventApplicationController auditEventApplicationController;
     @Inject
-    OpdPreSettleController opdPreSettleController;
+    private OpdPreSettleController opdPreSettleController;
     @Inject
-    PharmacyPreSettleController pharmacyPreSettleController;
+    private PharmacyPreSettleController pharmacyPreSettleController;
     @Inject
     private DepartmentController departmentController;
     @Inject
-    BillSearch billSearch;
+    private BillSearch billSearch;
     @Inject
-    PharmacyBillSearch pharmacyBillSearch;
+    private PharmacyBillSearch pharmacyBillSearch;
     @Inject
-    OpdBillController opdBillController;
+    private OpdBillController opdBillController;
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
+    private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
-    ChannelSearchController channelSearchController;
+    private ChannelSearchController channelSearchController;
     @Inject
-    ReportTemplateController reportTemplateController;
+    private ReportTemplateController reportTemplateController;
     @Inject
-    CashBookEntryController cashBookEntryController;
+    private CashBookEntryController cashBookEntryController;
     @Inject
-    ExcelController excelController;
+    private ExcelController excelController;
     @Inject
-    PdfController pdfController;
+    private PdfController pdfController;
     @Inject
-    DrawerEntryController drawerEntryController;
+    private DrawerEntryController drawerEntryController;
     @Inject
-    DrawerController drawerController;
+    private DrawerController drawerController;
     @Inject
-    EnumController enumController;
+    private EnumController enumController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String visitType;
     private String methodType;
+
+    private boolean printPreview = false;
 
     private Category category;
     private ReportTemplateType reportTemplateType;
@@ -239,65 +244,85 @@ public class SearchController implements Serializable {
     private List<BillFee> billFeesDone;
     private List<BillItem> billItems;
     private List<PatientInvestigation> patientInvestigations;
+    private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     private List<PatientReport> patientReports;
     private List<PatientInvestigation> patientInvestigationsSigle;
     private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
     private String selectedOpdPackageBillSelector;
     private List<String> OpdPackageBillSelector;
+    private ReportTemplateRow selectedChannelBookingBillRow;
+
+    public ReportTemplateRow getSelectedChannelBookingBillRow() {
+        return selectedChannelBookingBillRow;
+    }
+
+    public void setSelectedChannelBookingBillRow(ReportTemplateRow selectedChannelBookingBillRow) {
+        this.selectedChannelBookingBillRow = selectedChannelBookingBillRow;
+    }
+
+
+    public void handleChannelBillRowClick(){
+        if(selectedChannelBookingBillRow.getBill() instanceof CancelledBill){
+            for(ReportTemplateRow r : bundle.getReportTemplateRows()){
+                if(r.getBill().getCancelledBill() != null && r.getBill().getCancelledBill().equals(selectedChannelBookingBillRow.getBill())){
+                    this.selectedChannelBookingBillRow = r;
+                }
+            }
+        }
+    }
 
     private StreamedContent downloadingExcel;
 
-    BillSummaryRow billSummaryRow;
-    Bill cancellingIssueBill;
-    Bill bill;
-    Speciality speciality;
-    PatientEncounter patientEncounter;
-    Staff staff;
-    Item item;
-    double dueTotal;
-    double doneTotal;
-    double netTotal;
+    private Bill cancellingIssueBill;
+    private Bill bill;
+    private Speciality speciality;
+    private PatientEncounter patientEncounter;
+    private Staff staff;
+    private Item item;
+    private double dueTotal;
+    private double doneTotal;
+    private double netTotal;
     private double totalBillCount;
     private double grossTotal;
     private double discount;
-    ServiceSession selectedServiceSession;
-    Staff currentStaff;
+    private ServiceSession selectedServiceSession;
+    private Staff currentStaff;
     private String mrnNo;
-    List<BillItem> billItem;
-    List<PatientInvestigation> userPatientInvestigations;
+    private List<BillItem> billItem;
+    private List<PatientInvestigation> userPatientInvestigations;
 
-    String menuBarSearchText;
-    String smsText;
-    String uniqueSmsText;
-    boolean channelingPanelVisible;
-    boolean pharmacyPanelVisible;
-    boolean opdPanelVisible;
-    boolean inwardPanelVisible;
-    boolean labPanelVisile;
-    boolean patientPanelVisible;
-    ReportKeyWord reportKeyWord;
+    private String menuBarSearchText;
+    private String smsText;
+    private String uniqueSmsText;
+    private boolean channelingPanelVisible;
+    private boolean pharmacyPanelVisible;
+    private boolean opdPanelVisible;
+    private boolean inwardPanelVisible;
+    private boolean labPanelVisile;
+    private boolean patientPanelVisible;
+    private ReportKeyWord reportKeyWord;
 
-    List<Bill> channellingBills;
-    List<BillSession> billSessions;
-    List<Bill> opdBills;
-    List<Bill> pharmacyBills;
-    List<Admission> admissions;
-    List<PatientInvestigation> pis;
-    List<Patient> patients;
-    List<String> telephoneNumbers;
-    List<String> selectedTelephoneNumbers;
-    List<PharmacyAdjustmentRow> pharmacyAdjustmentRows;
+    private List<Bill> channellingBills;
+    private List<BillSession> billSessions;
+    private List<Bill> opdBills;
+    private List<Bill> pharmacyBills;
+    private List<Admission> admissions;
+    private List<PatientInvestigation> pis;
+    private List<Patient> patients;
+    private List<String> telephoneNumbers;
+    private List<String> selectedTelephoneNumbers;
+    private List<PharmacyAdjustmentRow> pharmacyAdjustmentRows;
 
-    BillSession selectedBillSession;
-    UploadedFile file;
+    private BillSession selectedBillSession;
+    private UploadedFile file;
     private Institution creditCompany;
 
     private Institution otherInstitution;
 
     private Institution institution;
     private Department department;
-    List<Bill> prescreptionBills;
+    private List<Bill> prescreptionBills;
     private Department fromDepartment;
     private Department toDepartment;
     private Institution fromInstitution;
@@ -306,10 +331,8 @@ public class SearchController implements Serializable {
     private Patient patient;
     private Institution dealer;
     private List<Bill> grnBills;
-    Bill currentBill;
+    private Bill currentBill;
     private Long currentBillId;
-    private Bill preBill;
-    boolean billPreview;
     private Long barcodeIdLong;
     private Date maxDate;
 
@@ -690,6 +713,42 @@ public class SearchController implements Serializable {
 
     public String navigateToBillList() {
         resetAllFiltersExceptDateRange();
+        return "/analytics/bills?faces-redirect=true";
+    }
+
+    public String navigateToCancellationBillList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/cancellation_bills?faces-redirect=true";
+    }
+
+    public String navigateToReturnBillList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/return_bills?faces-redirect=true";
+    }
+
+    public String navigateToPharmaceuticalBillItemList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/pharmaceutical_bill_items?faces-redirect=true";
+    }
+
+    public String navigateToPatientInvestigationList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/patient_investigations?faces-redirect=true";
+    }
+
+    public String navigateToBillListFromBill(Bill bill) {
+        resetAllFilters();
+        fromDate = CommonFunctions.getStartOfBeforeDay(bill.getCreatedAt());
+        toDate = CommonFunctions.getEndOfDay(bill.getCreatedAt());
+        webUser = bill.getCreater();
+        institution = bill.getInstitution();
+        department = bill.getDepartment();
+        if (bill.getDepartment() != null) {
+            site = bill.getDepartment().getSite();
+        }
+        billTypeAtomic = bill.getBillTypeAtomic();
+        billType = bill.getBillType();
+        listBills();
         return "/analytics/bills?faces-redirect=true";
     }
 
@@ -1214,6 +1273,10 @@ public class SearchController implements Serializable {
 
     public String navigateToAllCashierHandovers() {
         return "/reports/cashier_reports/all_cashier_shifts?faces-redirect=true";
+    }
+
+    public String navigateToShiftEndCash() {
+        return "/reports/cashier_reports/shift_end_cash_list?faces-redirect=true";
     }
 
     public String navigatToReportDoctorPaymentOpd() {
@@ -2315,6 +2378,14 @@ public class SearchController implements Serializable {
 
     public void setShowLoggedDepartmentOnly(boolean showLoggedDepartmentOnly) {
         this.showLoggedDepartmentOnly = showLoggedDepartmentOnly;
+    }
+
+    public List<PharmaceuticalBillItem> getPharmaceuticalBillItems() {
+        return pharmaceuticalBillItems;
+    }
+
+    public void setPharmaceuticalBillItems(List<PharmaceuticalBillItem> pharmaceuticalBillItems) {
+        this.pharmaceuticalBillItems = pharmaceuticalBillItems;
     }
 
     public class billsWithbill {
@@ -7090,14 +7161,6 @@ public class SearchController implements Serializable {
 
     }
 
-    @Inject
-    private BillController billController;
-
-    @EJB
-    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-
-    private boolean printPreview = false;
-
     public String navigateToAddToStockBillPrint() {
         printPreview = true;
         duplicateBillView = true;
@@ -10655,6 +10718,280 @@ public class SearchController implements Serializable {
             }
         }
 
+    }
+
+    public void listCancellationBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        jpql.append(" and type(b)=:billClassType ");
+        params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        netTotal = 0.0;
+        discount = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
+    public void listReturnBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        jpql.append(" and type(b)=:billClassType ");
+        params.put("billClassType", com.divudi.core.entity.RefundBill.class);
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        netTotal = 0.0;
+        discount = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
+    public void listPharmaceuticalBillItems() {
+        pharmaceuticalBillItems = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select pbi from PharmaceuticalBillItem pbi "
+                + " join pbi.billItem bi join bi.bill b "
+                + " where 1=1 "
+                + " ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        if (billClassType != null) {
+            jpql.append(" and type(b)=:billClassType ");
+            switch (billClassType) {
+                case Bill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case BilledBill:
+                    params.put("billClassType", com.divudi.core.entity.BilledBill.class);
+                    break;
+                case CancelledBill:
+                    params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
+                    break;
+                case OtherBill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case PreBill:
+                    params.put("billClassType", com.divudi.core.entity.PreBill.class);
+                    break;
+                case RefundBill:
+                    params.put("billClassType", com.divudi.core.entity.RefundBill.class);
+                    break;
+
+            }
+        }
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by pbi.id ");
+
+        pharmaceuticalBillItems = pharmaceuticalBillItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    public void listPatientInvestigations() {
+        patientInvestigations = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select pi from PatientInvestigation pi "
+                + " join pi.billItem bi join bi.bill b "
+                + " where 1=1 "
+                + " ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        if (billClassType != null) {
+            jpql.append(" and type(b)=:billClassType ");
+            switch (billClassType) {
+                case Bill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case BilledBill:
+                    params.put("billClassType", com.divudi.core.entity.BilledBill.class);
+                    break;
+                case CancelledBill:
+                    params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
+                    break;
+                case OtherBill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case PreBill:
+                    params.put("billClassType", com.divudi.core.entity.PreBill.class);
+                    break;
+                case RefundBill:
+                    params.put("billClassType", com.divudi.core.entity.RefundBill.class);
+                    break;
+            }
+        }
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        jpql.append(" order by pi.id ");
+
+        patientInvestigations = patientInvestigationFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     public void listBillsOpdCreditCompanySettle() {
@@ -17560,11 +17897,13 @@ public class SearchController implements Serializable {
         parameters.put("br", true);
 
         List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
-        ;
+        bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
+      
         if (bookingType != null) {
             switch (bookingType) {
                 case "System Bookings":
                     bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    bts.remove(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
                     break;
                 case "Online Bookings":
                     bts = new ArrayList<BillTypeAtomic>();

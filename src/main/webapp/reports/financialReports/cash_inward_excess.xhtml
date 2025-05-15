@@ -74,7 +74,8 @@
                             ajax="false"
                             value="Process"
                             icon="fas fa-cogs"
-                            action="#{creditCompanyDueController.createInwardPaymentBills()}">
+                            action="#{creditCompanyDueController.createInwardCashExcess()}">
+                        <!--                            action="#{creditCompanyDueController.createInwardPaymentBills()}">-->
                     </p:commandButton>
 
                     <p:commandButton
@@ -168,7 +169,8 @@
                     <!--                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}"/>-->
                     <!--                        </f:facet>-->
                     <!--                    </p:dataTable>-->
-                    <p:dataTable id="lst" value="#{creditCompanyDueController.patientEncounters}" var="b">
+                    <p:dataTable id="lst" value="#{creditCompanyDueController.billPatientEncounterMap.entrySet()}"
+                                 var="entry">
                         <f:facet name="header">
                             <h:outputLabel value="EXCESS SEARCH"/>
                             <h:outputLabel value="&emsp;&emsp;From :  " style="white-space: pre-line"/>
@@ -182,49 +184,42 @@
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputLabel>
                         </f:facet>
-                        <p:column headerText="Bill No" width="70px">
-                            <h:outputLabel value="#{b.finalBill.deptId}"/>
-                            <f:facet name="footer">
-                                <h:outputLabel value="Total"/>
-                            </f:facet>
-                        </p:column>
                         <p:column headerText="Patient Encounter" width="50px">
-                            <h:outputLabel value="#{b.bhtNo}"/>
+                            <h:outputLabel value="#{entry.key.bhtNo}"/>
                         </p:column>
                         <p:column headerText="Patient Name" width="50px">
-                            <h:outputLabel value="#{b.patient.person.name}"/>
+                            <h:outputLabel value="#{entry.key.patient.person.name}"/>
                         </p:column>
                         <p:column headerText="Used Amount" width="50px;">
-                            <h:outputLabel value="#{b.finalBill.netTotal}">
+                            <h:outputLabel value="#{entry.key.finalBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <f:facet name="footer">
-                                <h:outputLabel value="#{creditCompanyDueController.finalTotal}">
+                                <h:outputLabel value="#{creditCompanyDueController.billed}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
                         <p:column headerText="Paid Amount" width="50px;">
                             <h:outputLabel
-                                    value="#{b.finalBill.settledAmountByPatient + b.finalBill.settledAmountBySponsor}">
-                                <!--                            <h:outputLabel value="#{b.transPaid}">-->
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{creditCompanyDueController.finalPaidTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="Net Amount" width="50px;">
-                            <h:outputLabel
-                                    value="#{b.finalBill.settledAmountByPatient + b.finalBill.settledAmountBySponsor - b.finalBill.netTotal}">
-                                <!--                                value="#{b.transPaid-b.finalBill.netTotal}">-->
+                                    value="#{entry.key.finalBill.settledAmountByPatient + entry.key.finalBill.settledAmountBySponsor}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <f:facet name="footer">
                                 <h:outputLabel
-                                        value="#{creditCompanyDueController.finalPaidTotal - creditCompanyDueController.finalTotal}">
+                                        value="#{creditCompanyDueController.paidByCompany + creditCompanyDueController.paidByPatient}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Excess Amount" width="50px;">
+                            <h:outputLabel
+                                    value="#{ entry.key.finalBill.netTotal - entry.key.finalBill.settledAmountByPatient - entry.key.finalBill.settledAmountBySponsor}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel
+                                        value="#{creditCompanyDueController.billed-(creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
@@ -233,6 +228,71 @@
                             <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}"/>
                         </f:facet>
                     </p:dataTable>
+                    <!--                    <p:dataTable id="lst" value="#{creditCompanyDueController.patientEncounters}" var="b">-->
+                    <!--                        <f:facet name="header">-->
+                    <!--                            <h:outputLabel value="EXCESS SEARCH"/>-->
+                    <!--                            <h:outputLabel value="&emsp;&emsp;From :  " style="white-space: pre-line"/>-->
+                    <!--                            <h:outputLabel value="#{creditCompanyDueController.fromDate}">-->
+                    <!--                                <f:convertDateTime-->
+                    <!--                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>-->
+                    <!--                            </h:outputLabel>-->
+                    <!--                            <h:outputLabel value="&emsp;&emsp;To  :  "/>-->
+                    <!--                            <h:outputLabel value="#{creditCompanyDueController.toDate}">-->
+                    <!--                                <f:convertDateTime-->
+                    <!--                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>-->
+                    <!--                            </h:outputLabel>-->
+                    <!--                        </f:facet>-->
+                    <!--                        <p:column headerText="Bill No" width="70px">-->
+                    <!--                            <h:outputLabel value="#{b.finalBill.deptId}"/>-->
+                    <!--                            <f:facet name="footer">-->
+                    <!--                                <h:outputLabel value="Total"/>-->
+                    <!--                            </f:facet>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Patient Encounter" width="50px">-->
+                    <!--                            <h:outputLabel value="#{b.bhtNo}"/>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Patient Name" width="50px">-->
+                    <!--                            <h:outputLabel value="#{b.patient.person.name}"/>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Used Amount" width="50px;">-->
+                    <!--                            <h:outputLabel value="#{b.finalBill.netTotal}">-->
+                    <!--                                <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                            </h:outputLabel>-->
+                    <!--                            <f:facet name="footer">-->
+                    <!--                                <h:outputLabel value="#{creditCompanyDueController.finalTotal}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </f:facet>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Paid Amount" width="50px;">-->
+                    <!--                            <h:outputLabel-->
+                    <!--                                    value="#{b.finalBill.settledAmountByPatient + b.finalBill.settledAmountBySponsor}">-->
+                    <!--                                &lt;!&ndash;                            <h:outputLabel value="#{b.transPaid}">&ndash;&gt;-->
+                    <!--                                <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                            </h:outputLabel>-->
+                    <!--                            <f:facet name="footer">-->
+                    <!--                                <h:outputLabel value="#{creditCompanyDueController.finalPaidTotal}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </f:facet>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Net Amount" width="50px;">-->
+                    <!--                            <h:outputLabel-->
+                    <!--                                    value="#{b.finalBill.settledAmountByPatient + b.finalBill.settledAmountBySponsor - b.finalBill.netTotal}">-->
+                    <!--                                &lt;!&ndash;                                value="#{b.transPaid-b.finalBill.netTotal}">&ndash;&gt;-->
+                    <!--                                <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                            </h:outputLabel>-->
+                    <!--                            <f:facet name="footer">-->
+                    <!--                                <h:outputLabel-->
+                    <!--                                        value="#{creditCompanyDueController.finalPaidTotal - creditCompanyDueController.finalTotal}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </f:facet>-->
+                    <!--                        </p:column>-->
+                    <!--                        <f:facet name="footer">-->
+                    <!--                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}"/>-->
+                    <!--                        </f:facet>-->
+                    <!--                    </p:dataTable>-->
                 </p:panel>
             </h:form>
         </ui:define>

@@ -51,6 +51,8 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
@@ -139,6 +141,7 @@ public class ReportsController implements Serializable {
     private BillClassType billClassType;
     private Institution collectingCentre;
     private RoomCategory roomCategory;
+    private List<ReportTemplateRow> filteredReportTemplateRows;
 
     private StreamedContent downloadingExcel;
 
@@ -592,6 +595,17 @@ public class ReportsController implements Serializable {
 
     public List<Department> getDepartments() {
         return departments;
+    }
+
+    public List<ReportTemplateRow> getFilteredReportTemplateRows() {
+        if (filteredReportTemplateRows == null) {
+            filteredReportTemplateRows = new ArrayList<>();
+        }
+        return filteredReportTemplateRows;
+    }
+
+    public void setFilteredReportTemplateRows(List<ReportTemplateRow> filteredReportTemplateRows) {
+        this.filteredReportTemplateRows = filteredReportTemplateRows;
     }
 
     public void setDepartments(List<Department> departments) {
@@ -1831,6 +1845,52 @@ public class ReportsController implements Serializable {
         }
     }
 
+    public int getNumberOfWeeksOfMonth() {
+        if (month == null) {
+            return 0;
+        }
+
+        LocalDate firstDayOfMonth = LocalDate.of(LocalDate.now().getYear(), month, 1);
+        LocalDate lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth());
+
+        Date lastDate = Date.from(lastDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        return getWeekOfMonth(lastDate);
+    }
+
+    public String getDateRangeText(Integer week, boolean onlyDateAndMonth) {
+        if (week == null) {
+            return "-";
+        }
+
+        List<Integer> daysOfWeek = getDaysOfWeek(week);
+        if (daysOfWeek.isEmpty()) {
+            return "-";
+        }
+
+        int startDay = daysOfWeek.get(0);
+        int endDay = daysOfWeek.get(daysOfWeek.size() - 1);
+
+        int yearValue = LocalDate.now().getYear();
+        int monthValue = month.getValue();
+
+        LocalDate startDate = LocalDate.of(yearValue, monthValue, startDay);
+        LocalDate endDate = LocalDate.of(yearValue, monthValue, endDay);
+
+        String pattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+
+        if (onlyDateAndMonth) {
+            pattern = "dd/MM";
+            formatter = DateTimeFormatter.ofPattern(pattern);
+
+            return formatter.format(startDate) + " - " + formatter.format(endDate);
+        } else {
+            return formatter.format(startDate.atStartOfDay()) + " - " + formatter.format(endDate.atTime(LocalTime.MAX));
+        }
+    }
+
+
     private void groupBillItemsDaily() {
         // Map<Week, Map<ItemName, Map<dayOfMonth, Count>>>
         Map<Integer, Map<String, Map<Integer, Double>>> weeklyBillItemMap7to7 = new HashMap<>();
@@ -2049,7 +2109,7 @@ public class ReportsController implements Serializable {
 
     private ReportTemplateRowBundle generateWeeklyBillItems(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
+        String jpql = "SELECT billItem "
                 + "FROM BillItem billItem "
                 + "JOIN billItem.bill bill "
                 + "WHERE billItem.retired <> :bfr AND bill.retired <> :br ";
@@ -2105,7 +2165,19 @@ public class ReportsController implements Serializable {
         jpql += "GROUP BY billItem";
 
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        List<BillItem> bi = billItemFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        List<ReportTemplateRow> rs = new ArrayList<>();
+        for (BillItem billItem : bi) {
+            ReportTemplateRow row = new ReportTemplateRow();
+
+            boolean hasInvestigation = billItem.getItem() != null && billItem.getItem() instanceof Investigation;
+
+            if (!hasInvestigation) {
+                row.setBillItem(billItem);
+                rs.add(row);
+            }
+        }
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
@@ -2834,7 +2906,7 @@ public class ReportsController implements Serializable {
         bundle.setName("Bills");
         bundle.setBundleType("billList");
 
-        bundle = generateOpdAndInwardDueBills(opdBts, paymentMethods);
+        bundle = generateDebtorBalanceBills(opdBts, paymentMethods);
 
         if (visitType.equalsIgnoreCase("IP")) {
             updateSettledAmountsForIP();
@@ -3150,6 +3222,97 @@ public class ReportsController implements Serializable {
         bundle.setBundleType("billList");
 
         bundle = generateCollectionCenterBookWiseBills(opdBts);
+    }
+
+    public void exportCollectionCenterBookWiseDetailToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_center_book_wise_detail_report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4);
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            Paragraph title = new Paragraph("Collection Center Book Wise Detail", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(10f);
+            document.add(title);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+
+            if (getCollectingCentre() != null) {
+                Paragraph centerName = new Paragraph("Collection Center: " + getCollectingCentre().getName(), cellFont);
+                centerName.setSpacingAfter(10f);
+                document.add(centerName);
+            }
+
+            PdfPTable table = new PdfPTable(7);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{2f, 1f, 2f, 3f, 3f, 3f, 2f});
+
+            String[] headers = {
+                    "Bill No", "Book No", "Book Ref No", "Patient",
+                    "Creator", "Created Date", "Bill Value"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            List<ReportTemplateRow> exportRows;
+            if (filteredReportTemplateRows != null && !filteredReportTemplateRows.isEmpty()) {
+                exportRows = filteredReportTemplateRows;
+            } else {
+                exportRows = getBundle().getReportTemplateRows();
+            }
+
+            for (ReportTemplateRow c : exportRows) {
+                table.addCell(new PdfPCell(new Phrase(c.getBill().getDeptId(), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        collectingCentreBillController.generateBookNumberFromReference(c.getBill().getReferenceNumber()), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(c.getBill().getReferenceNumber(), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        c.getBill().getPatient().getPerson().getNameWithTitle(), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        c.getBill().getCreater().getWebUserPerson().getName(), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        dateFormat.format(c.getBill().getCreatedAt()), cellFont)));
+
+                PdfPCell netTotalCell = new PdfPCell(new Phrase(
+                        df.format(c.getBill().getNetTotal()), cellFont));
+                netTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(netTotalCell);
+            }
+
+            PdfPCell totalLabel = new PdfPCell(new Phrase("Gross Total", headerFont));
+            totalLabel.setColspan(6);
+            totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalLabel);
+
+            PdfPCell totalValue = new PdfPCell(new Phrase(
+                    df.format(getBundle().getGrossTotal()), cellFont));
+            totalValue.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalValue);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public ReportTemplateRowBundle generateCollectionCenterBookWiseBills(List<BillTypeAtomic> bts) {
@@ -3630,6 +3793,7 @@ public class ReportsController implements Serializable {
                 BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION,
                 BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
                 BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION,
                 BillTypeAtomic.OPD_BILL_REFUND,
                 BillTypeAtomic.PACKAGE_OPD_BILL_REFUND,
                 BillTypeAtomic.CC_BILL_CANCELLATION,
@@ -3741,11 +3905,35 @@ public class ReportsController implements Serializable {
 
         while (iterator.hasNext()) {
             ReportTemplateRow row = iterator.next();
-            BillItem bi = row.getBillItem();
-            Bill b = bi.getBill();
+            BillItem currentItem = row.getBillItem();
+            Bill currentBill = currentItem.getBill();
 
-            if (cancelAndRefundBillTypeAtomics.contains(b.getBillTypeAtomic())) {
-                if (bi.getReferanceBillItem() == null || bi.getReferanceBillItem().getPatientInvestigation() == null) {
+            if (!cancelAndRefundBillTypeAtomics.contains(currentBill.getBillTypeAtomic())) {
+                continue;
+            }
+
+            currentItem.setNetValue(-Math.abs(currentItem.getNetValue()));
+
+            if (currentItem.getReferanceBillItem() != null) {
+                if (currentItem.getReferanceBillItem().getPatientInvestigation() == null) {
+                    iterator.remove();
+                }
+            } else {
+                Bill originalBill = currentBill.getBilledBill();
+                if (originalBill == null) {
+                    continue;
+                }
+
+                List<BillItem> originalItems = Optional.ofNullable(originalBill.getBillItems())
+                        .orElse(Collections.emptyList());
+
+                boolean hasMatchingItem = originalItems.stream()
+                        .filter(oi -> oi.getItem() != null)
+                        .anyMatch(oi ->
+                                oi.getItem().equals(currentItem.getItem()) &&
+                                        oi.getPatientInvestigation() == null);
+
+                if (hasMatchingItem) {
                     iterator.remove();
                 }
             }
@@ -3833,7 +4021,7 @@ public class ReportsController implements Serializable {
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         removeCancelledNonInvestigationBills(rs);
         createSummaryRows(rs);
-        rs.removeIf(row -> row.getRowValue() == 0.0);
+//        rs.removeIf(row -> row.getRowValue() == 0.0);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
@@ -3917,6 +4105,160 @@ public class ReportsController implements Serializable {
         }
 
         groupBills();
+    }
+
+    private List<ReportTemplateRow> filterByCreditCompanyPaymentMethod(List<ReportTemplateRow> rows) {
+        List<ReportTemplateRow> filteredRows = new ArrayList<>();
+
+        Set<Long> billIds = rows.stream()
+                .map(ReportTemplateRow::getBill)
+                .filter(Objects::nonNull)
+                .map(Bill::getId)
+                .collect(Collectors.toSet());
+
+        Map<Long, Bill> billIdToCreditCompanyBill = new HashMap<>();
+
+        if ("OP".equalsIgnoreCase(visitType)) {
+            String jpql = "SELECT bi FROM BillItem bi WHERE bi.referenceBill.id IN :billIds";
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", billIds);
+            List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
+
+            for (BillItem bi : billItems) {
+                if (bi.getReferenceBill() != null && bi.getBill() != null) {
+                    billIdToCreditCompanyBill.put(bi.getReferenceBill().getId(), bi.getBill());
+                }
+            }
+        } else if ("IP".equalsIgnoreCase(visitType)) {
+            String jpql = "SELECT b FROM Bill b WHERE b.forwardReferenceBill.id IN :billIds";
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", billIds);
+            List<Bill> bills = billFacade.findByJpql(jpql, params);
+
+            for (Bill b : bills) {
+                if (b.getForwardReferenceBill() != null) {
+                    billIdToCreditCompanyBill.put(b.getForwardReferenceBill().getId(), b);
+                }
+            }
+        } else {
+            return filteredRows;
+        }
+
+        for (ReportTemplateRow row : rows) {
+            Bill bill = row.getBill();
+            if (bill == null) continue;
+
+            Bill creditCompanyBill = billIdToCreditCompanyBill.get(bill.getId());
+            if (creditCompanyBill == null || creditCompanyBill.getPaymentMethod() == null) continue;
+
+            if (creditCompanyBill.getPaymentMethod().equals(paymentMethod)) {
+                filteredRows.add(row);
+            }
+        }
+
+        return filteredRows;
+    }
+
+    public ReportTemplateRowBundle generateOpdAndInwardDueBills(List<BillTypeAtomic> bts, List<PaymentMethod> paymentMethods) {
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
+                + "FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.creditCompany is not null ";
+
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (paymentMethods != null) {
+            jpql += "AND bill.paymentMethod in :bpms ";
+            parameters.put("bpms", paymentMethods);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && admissionType != null)) {
+            jpql += "AND bill.patientEncounter.admissionType = :type ";
+            parameters.put("type", admissionType);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && roomCategory != null)) {
+            jpql += "AND bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
+            parameters.put("category", roomCategory);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && dischargedStatus != null && !dischargedStatus.trim().isEmpty())) {
+            if (dischargedStatus.equalsIgnoreCase("notDischarged")) {
+                jpql += "AND bill.patientEncounter.discharged = :status ";
+                parameters.put("status", false);
+            } else if (dischargedStatus.equalsIgnoreCase("discharged")) {
+                jpql += "AND bill.patientEncounter.discharged = :status ";
+                parameters.put("status", true);
+            }
+        }
+
+        if (institution != null) {
+            if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.department.institution = :ins ";
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.patientEncounter.department.institution = :ins ";
+            }
+
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.department = :dep ";
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.patientEncounter.department = :dep ";
+            }
+
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            if (visitType.equalsIgnoreCase("OP")) {
+                jpql += "AND bill.department.site = :site ";
+            } else if (visitType.equalsIgnoreCase("IP")) {
+                jpql += "AND bill.patientEncounter.department.site = :site ";
+            }
+
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND bill.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+
+        if (collectingCentre != null) {
+            jpql += "AND bill.collectingCentre = :ccc ";
+            parameters.put("ccc", collectingCentre);
+        }
+
+        if (creditCompany != null) {
+            jpql += "AND bill.creditCompany = :cc ";
+            parameters.put("cc", creditCompany);
+        }
+
+        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill, bill.creditCompany";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+
+        if (paymentMethod != null) {
+            b.setReportTemplateRows(filterByCreditCompanyPaymentMethod(rs));
+        } else {
+            b.setReportTemplateRows(rs);
+        }
+
+        b.createRowValuesFromBill();
+        b.calculateTotalsWithCredit();
+        return b;
     }
 
     public void exportOpdAndInwardOPToExcel() {
@@ -4350,7 +4692,7 @@ public class ReportsController implements Serializable {
         }
     }
 
-    public ReportTemplateRowBundle generateOpdAndInwardDueBills(List<BillTypeAtomic> bts, List<PaymentMethod> paymentMethods) {
+    public ReportTemplateRowBundle generateDebtorBalanceBills(List<BillTypeAtomic> bts, List<PaymentMethod> paymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
@@ -5364,7 +5706,7 @@ public class ReportsController implements Serializable {
                         FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
 
                 for (int week = 1; week <= 6; week++) {
-                    table.addCell(new PdfPCell(new Phrase("Week " + week,
+                    table.addCell(new PdfPCell(new Phrase(getDateRangeText(week, true),
                             FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
                 }
                 table.addCell(new PdfPCell(new Phrase("Total",
@@ -5441,7 +5783,9 @@ public class ReportsController implements Serializable {
                 shiftCell.setCellStyle(shiftStyle);
 
                 Row headerRow = sheet.createRow(rowIndex++);
-                String[] headers = {"Name", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Total"};
+                String[] headers = {"Name", getDateRangeText(1, true), getDateRangeText(2, true),
+                        getDateRangeText(3, true), getDateRangeText(4, true),
+                        getDateRangeText(5, true), getDateRangeText(6, true), "Total"};
                 for (int col = 0; col < headers.length; col++) {
                     Cell cell = headerRow.createCell(col);
                     cell.setCellValue(headers[col]);
@@ -5521,6 +5865,7 @@ public class ReportsController implements Serializable {
                 document.add(title);
 
                 document.add(new Paragraph("Week: " + week, headerFont));
+                document.add(new Paragraph(getDateRangeText(week,false), headerFont));
                 document.add(new Paragraph("Report Type: Detail", regularFont));
                 document.add(Chunk.NEWLINE);
 
@@ -5606,7 +5951,10 @@ public class ReportsController implements Serializable {
                 headerRow2.createCell(0).setCellValue("Week: " + week);
 
                 Row headerRow3 = sheet.createRow(rowIndex++);
-                headerRow3.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 7.00am) Night");
+                headerRow3.createCell(0).setCellValue(getDateRangeText(week, false));
+
+                Row headerRow4 = sheet.createRow(rowIndex++);
+                headerRow4.createCell(0).setCellValue("Weekly Report OPD (7.00pm - 7.00am) Night");
 
                 rowIndex++;
 

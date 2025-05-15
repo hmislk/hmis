@@ -381,6 +381,15 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    // ChatGPT contributed - 2025-05
+    public List<T> findByJpqlWithRange(String jpql, int startPosition, int maxResults) {
+        return getEntityManager()
+                .createQuery(jpql, entityClass)
+                .setFirstResult(startPosition)
+                .setMaxResults(maxResults)
+                .getResultList();
+    }
+
     public List<?> findLightsByJpql(String jpql) {
         Query qry = getEntityManager().createQuery(jpql);
         return qry.getResultList();
@@ -568,6 +577,40 @@ public abstract class AbstractFacade<T> {
                 Object pVal = (Object) m.getValue();
                 qry.setParameter(pPara, pVal);
             }
+        }
+
+        List<T> ts;
+        try {
+            ts = qry.getResultList();
+        } catch (Exception e) {
+            ts = new ArrayList<>();
+        }
+
+        return ts;
+    }
+
+    public List<T> findByJpql(String jpql, Map<String, Object> parameters, int fromRecord, int toRecord) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            String pPara = (String) m.getKey();
+            if (m.getValue() instanceof Date) {
+                Date pVal = (Date) m.getValue();
+                qry.setParameter(pPara, pVal, TemporalType.DATE);
+            } else {
+                Object pVal = m.getValue();
+                qry.setParameter(pPara, pVal);
+            }
+        }
+
+        // Apply pagination if valid range is provided
+        if (fromRecord >= 0) {
+            qry.setFirstResult(fromRecord);
+        }
+        if (toRecord > 0) {
+            qry.setMaxResults(toRecord - fromRecord + 1);
         }
 
         List<T> ts;

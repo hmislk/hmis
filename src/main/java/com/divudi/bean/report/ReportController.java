@@ -105,6 +105,8 @@ public class ReportController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    PharmacyReportController pharmacyReportController;
 
     private int reportIndex;
     private Institution institution;
@@ -1087,6 +1089,9 @@ public class ReportController implements Serializable {
             boolean isRefunded = result.getBillItem().getBill() instanceof RefundBill;
 
             if (existingResult == null) {
+                if (isCancelled || isRefunded) {
+                    result.setCount(-Math.abs(result.getCount()));
+                }
                 existingResult = result;
             } else if (!(isCancelled || isRefunded)) {
                 existingResult.setCount(existingResult.getCount() + result.getCount());
@@ -2893,11 +2898,17 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToconsumption() {
-
         return "/reports/inventoryReports/consumption?faces-redirect=true";
     }
 
     public String navigateToClosingStockReport() {
+        pharmacyReportController.setReportType("itemWise");
+        reportTemplateFileIndexName = "Closing Stock Report";
+        return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
+    }
+    public String navigateToBatchWiseStockReport() {
+        pharmacyReportController.setReportType("batchWise");
+        reportTemplateFileIndexName = "Batch Wise Stock Report";
         return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
     }
 

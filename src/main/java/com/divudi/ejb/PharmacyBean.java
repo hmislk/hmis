@@ -53,6 +53,7 @@ import com.divudi.core.facade.VmpFacade;
 import com.divudi.core.facade.VmppFacade;
 import com.divudi.core.facade.VtmFacade;
 import com.divudi.core.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -240,8 +241,6 @@ public class PharmacyBean {
 
     }
 
-    
-    
     private List<BillItem> createBillItemsForPharmacyRetailSaleCancellationPreBillWithStockReturn(Bill originalBill, Bill cancellationPreBill, WebUser user, Department department) {
 
         List<BillItem> billItems = new ArrayList<>();
@@ -284,7 +283,7 @@ public class PharmacyBean {
         return billItems;
 
     }
-    
+
     public Bill reAddToStock(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
 //        if (bill.isCancelled()) {
 //            JsfUtil.addErrorMessage("Bill Already Cancelled");
@@ -525,6 +524,24 @@ public class PharmacyBean {
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
             getStockFacade().createAndFlush(s);
         } else {
             getStockFacade().refresh(s);
@@ -549,6 +566,24 @@ public class PharmacyBean {
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
             s.setCode(pharmaceuticalBillItem.getCode());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
             getStockFacade().createAndFlush(s);
         } else {
             s.setStock(s.getStock() + qty);
@@ -570,6 +605,24 @@ public class PharmacyBean {
             s = new Stock();
             s.setDepartment(department);
             s.setItemBatch(batch);
+            ItemBatch ib = batch;
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getStock() < qty) {
             return false;
@@ -595,6 +648,24 @@ public class PharmacyBean {
             s = new Stock();
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getStock() < qty) {
             return false;
@@ -625,6 +696,24 @@ public class PharmacyBean {
             s = new Stock();
             s.setDepartment(department);
             s.setItemBatch(batch);
+            ItemBatch ib = batch;
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         s.setStock(s.getStock() - qty);
         if (s.getId() == null || s.getId() == 0) {
@@ -690,6 +779,7 @@ public class PharmacyBean {
                     + " and s.itemBatch.dateOfExpire > :doe"
                     + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
             params.put("amps", amps);
+            params.put("doe", new Date());
         } else {
             JsfUtil.addErrorMessage("Not supported yet");
             return new ArrayList<>();

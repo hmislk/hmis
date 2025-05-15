@@ -452,11 +452,9 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public double calQtyInTwoSql(PharmaceuticalBillItem po) {
-
         double grns = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill);
         double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn);
-
-        return grns - grnReturn;
+        return Math.abs(grns) - Math.abs(grnReturn);
     }
 
     public double calFreeQtyInTwoSql(PharmaceuticalBillItem po) {

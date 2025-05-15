@@ -28,6 +28,7 @@ import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -339,6 +340,42 @@ public class IncomeBundle implements Serializable {
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
             grossProfitValue += grossProfit;
+        }
+
+        System.out.println("==== Final Totals ====");
+        System.out.println("Total Sale Value: " + saleValue);
+        System.out.println("Total Purchase Value: " + purchaseValue);
+        System.out.println("Total Gross Profit: " + grossProfitValue);
+    }
+
+    public void generateRetailAndCostDetailsForPharmaceuticalBill() {
+        saleValue = 0;
+        purchaseValue = 0;
+        grossProfitValue = 0;
+
+        for (IncomeRow r : getRows()) {
+            Bill b = r.getBill();
+            if (b == null) {
+                continue;
+            }
+
+            if (b.getBillFinanceDetails() == null) {
+                continue;
+            }
+
+            saleValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+            purchaseValue += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+            grossProfitValue += (b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() - b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue());
+
+//            System.out.println("---- Item ----");
+//            System.out.println("BillCategory: " + bc);
+//            System.out.println("Original Qty: " + q);
+//            System.out.println("Retail Rate: " + rRate);
+//            System.out.println("Purchase Rate: " + pRate);
+//            System.out.println("Adjusted Qty: " + ((bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -qty : qty));
+//            System.out.println("Retail Total: " + retailTotal);
+//            System.out.println("Purchase Total: " + purchaseTotal);
+//            System.out.println("Gross Profit: " + grossProfit);          
         }
 
         System.out.println("==== Final Totals ====");

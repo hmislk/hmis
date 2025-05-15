@@ -58,10 +58,13 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.FamilyMember;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -117,6 +120,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     @EJB
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
     private InstitutionFacade institutionFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
@@ -159,6 +164,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     DrawerController drawerController;
     @Inject
     private BillSearch billSearch;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Class Vairables
@@ -264,6 +271,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     @Inject
     SearchController searchController;
+
+    private Long billIdToAssignBillItems;
 
     public String toAddNewCollectingCentre() {
         return "/admin/institutions/collecting_centre";
@@ -1039,34 +1048,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public void getOpdBills() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        String ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("getOpdBills()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
+        AuditEvent auditEvent = sessionController.createNewAuditEvent("getOpdBills()","Started");
         BillType[] billTypes = {BillType.OpdBill};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         if (r == null) {
@@ -1093,12 +1075,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (r.getGrossTotal() != null) {
             grosTotal = r.getGrossTotal();
         }
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+        sessionController.completeAuditEvent(auditEvent);
     }
 
     public void onLineSettleBills() {
@@ -1807,6 +1784,15 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return billFeeFacade.findByJpql(jpql, m);
     }
 
+    public boolean checkCancelBill(Bill originalBill) {
+        List<PatientInvestigationStatus> availableStatus = enumController.getAvailableStatusforCancel();
+        boolean canCancelBill = false;
+        if (availableStatus.contains(originalBill.getStatus())) {
+            canCancelBill = true;
+        }
+        return canCancelBill;
+    }
+
     public String navigateToCancelOpdBatchBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");
@@ -1834,11 +1820,44 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             batchBillCancellationStarted = false;
             return "";
         }
-        if (!getWebUserController().hasPrivilege("OpdCancel")) {
-            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
-            batchBillCancellationStarted = false;
-            return "";
+
+        if (getBatchBill().getPaymentMethod() == PaymentMethod.Credit) {
+            List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBatchBill());
+
+            if (items != null && !items.isEmpty()) {
+                batchBillCancellationStarted = false;
+                JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be canceled.");
+                return "";
+            }
         }
+
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", false)) {
+            for (Bill bill : billBean.validBillsOfBatchBill(getBatchBill())) {
+                if (!checkCancelBill(bill)) {
+                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                    if (getWebUserController().hasPrivilege("BillCancel")) {
+                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+                    } else {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        batchBillCancellationStarted = false;
+                        return "";
+                    }
+                } else {
+                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        batchBillCancellationStarted = false;
+                        return "";
+                    }
+                }
+            }
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
+        }
+
         if (errorsPresentOnOpdBatchBillCancellation()) {
             batchBillCancellationStarted = false;
             return "";
@@ -3289,6 +3308,54 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         Long count = pharmaceuticalBillItemFacade.countByJpql(jpql, params);
         return count != null && count > 1;
+    }
+
+    public void createNewBillItemAndAssignPatientInvestigation(PatientInvestigation ptix) {
+        if (billIdToAssignBillItems == null) {
+            JsfUtil.addErrorMessage("No ID for a Bill to assign newly created Bill Items");
+            return;
+        }
+        if (ptix == null) {
+            JsfUtil.addErrorMessage("No patient investigation");
+            return;
+        }
+        if (ptix.getBillItem() == null) {
+            JsfUtil.addErrorMessage("No Bill Item for Patient investigation");
+            return;
+        }
+        Bill selectedBillToAssignNewlyCreatedBillItems;
+        BillItem originalBillItemToDuplicate = ptix.getBillItem();
+        BillItem duplicateBillItem = new BillItem();
+
+        selectedBillToAssignNewlyCreatedBillItems = billService.fetchBillById(billIdToAssignBillItems);
+        if (selectedBillToAssignNewlyCreatedBillItems == null) {
+            JsfUtil.addErrorMessage("No Bill Found for the ID given for a Bill to assign newly created Bill Items");
+            return;
+        }
+
+        try {
+            duplicateBillItem.copy(originalBillItemToDuplicate);
+            duplicateBillItem.setBill(selectedBillToAssignNewlyCreatedBillItems);
+            duplicateBillItem.setCreatedAt(new Date());
+            duplicateBillItem.setCreater(getSessionController().getLoggedUser());
+            billItemFacade.create(duplicateBillItem);
+
+            duplicateBillItem.setPatientInvestigation(ptix);
+            billItemFacade.edit(duplicateBillItem);
+
+            ptix.setBillItem(duplicateBillItem);
+            patientInvestigationFacade.edit(ptix);
+
+            // Can NOT Recalculate bill totals after adding the new item. Bill Totals are correc. We are fixing Bill Items. Have have to double check bill totlas are equal to the total of the bill item values
+            // calTotals();
+            JsfUtil.addSuccessMessage("New Bill Item Created and References Assigned");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error creating bill item: " + e.getMessage());
+        }
+
+        billService.createBillItemFeesAndAssignToNewBillItem(originalBillItemToDuplicate, duplicateBillItem);
+
+        JsfUtil.addSuccessMessage("New Bill Item Created and Referances Assigned");
     }
 
     public void convertPharmaceuticalBillItemReferenceFromErroneouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBill(PharmaceuticalBillItem pbi) {
@@ -4828,6 +4895,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     public void setBatchBillCancellationStarted(boolean batchBillCancellationStarted) {
         this.batchBillCancellationStarted = batchBillCancellationStarted;
+    }
+
+    public Long getBillIdToAssignBillItems() {
+        return billIdToAssignBillItems;
+    }
+
+    public void setBillIdToAssignBillItems(Long billIdToAssignBillItems) {
+        this.billIdToAssignBillItems = billIdToAssignBillItems;
     }
 
     /**

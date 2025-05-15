@@ -13,72 +13,7 @@
                         <f:facet name="header" >
                             <h:outputLabel value="ALL BILL LIST"/>                          
                         </f:facet>
-                        <h:panelGrid columns="2" class="my-2" >
-                            <h:outputLabel value="From Date"/>
-                            <p:datePicker 
-                                class="w-100 mx-4" 
-                                inputStyleClass="w-100"
-                                id="fromDate" 
-                                value="#{searchController.fromDate}" 
-                                showTime="true"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
-                            </p:datePicker>
-                            <h:outputLabel value="To Date"/>
-                            <p:datePicker 
-                                class="w-100 mx-4" 
-                                inputStyleClass="w-100" 
-                                id="toDate" 
-                                value="#{searchController.toDate}" 
-                                showTime="true"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
-                            </p:datePicker>
-
-                            <h:outputText value="Institution" />
-                            <p:autoComplete 
-                                forceSelection="true"
-                                value="#{searchController.institution}"
-                                completeMethod="#{institutionController.completeIns}" 
-                                id="ins2"
-                                var="ix" 
-                                itemLabel="#{ix.name}" 
-                                itemValue="#{ix}"
-                                class="w-100 mx-4" 
-                                inputStyleClass="w-100"
-                                >
-                                <p:ajax listener="#{searchController.fillInstitutionInDepartment(searchController.institution)}" process="ins2" update="somDept" />
-                            </p:autoComplete>
-
-                            <h:outputText value="Department" />
-                            <p:selectOneMenu 
-                                id="somDept" 
-                                value="#{searchController.department}" 
-                                class="w-100 mx-4" 
-                                >
-                                <f:selectItem  itemLabel="Please select a Department"/>
-                                <f:selectItems 
-                                    value="#{searchController.departments}" 
-                                    var="d" 
-                                    itemLabel="#{d.name}" itemValue="#{d}" 
-                                    />
-                            </p:selectOneMenu>
-
-                            <h:outputText value="User" />
-                            <p:autoComplete 
-                                forceSelection="true"
-                                value="#{searchController.webUser}"
-                                placeholder="Select User"
-                                completeMethod="#{webUserController.completeUser}" 
-                                id="user"
-                                var="u" 
-                                itemLabel="#{u.webUserPerson.name}" 
-                                itemValue="#{u}"
-                                class="w-100 mx-4"
-                                inputStyleClass="w-100"
-                                >
-                            </p:autoComplete>
-
-
-                        </h:panelGrid>
+                        <ui:include src="/analytics/common_filters.xhtml" />
                         <h:panelGrid columns="6" class="my-2" >
                             <p:commandButton 
                                 class="ui-button-warning" 
