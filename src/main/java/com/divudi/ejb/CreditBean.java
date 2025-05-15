@@ -96,8 +96,6 @@ public class CreditBean {
         params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
 
         List<Bill> bs = (List<Bill>) getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -199,7 +197,6 @@ public class CreditBean {
             boolean lessThan) {
         // ChatGPT contribution – 15 May 2025
         if (billTypeAtomics == null || billTypeAtomics.isEmpty()) {
-            System.out.println("[DEBUG] billTypeAtomics is null or empty; returning empty list.");
             return Collections.emptyList();
         }
 
@@ -233,14 +230,10 @@ public class CreditBean {
         params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
 
-        System.out.println("[DEBUG] JPQL  : " + jpql);
-        System.out.println("[DEBUG] Params: " + params);
 
         List<Institution> ins = getInstitutionFacade()
                 .findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-        System.out.println("[DEBUG] Result size     : " + (ins == null ? 0 : ins.size()));
-        System.out.println("[DEBUG] Institutions    : " + ins);
 
         return ins == null ? Collections.emptyList() : ins;
     }
@@ -633,28 +626,20 @@ public class CreditBean {
     }
 
     public double getSettledAmountByCompany(Bill b) {
-        System.out.println("Starting getSettledAmountByCompany");
-        System.out.println("Input Bill: " + b);
 
         String sql = "Select sum(b.netValue)"
                 + " from BillItem b "
                 + " where b.retired=false "
                 + " and b.referenceBill=:rB "
                 + " and b.bill.billTypeAtomic in :btas ";
-        System.out.println("JPQL Query: " + sql);
 
         HashMap<String, Object> hm = new HashMap<>();
         List<BillTypeAtomic> btas = BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
-        System.out.println("BillTypeAtomics for CREDIT_SETTLE_BY_COMPANY: " + btas);
 
         hm.put("rB", b);
         hm.put("btas", btas);
-        System.out.println("Query Parameters: " + hm);
 
         double result = getBillItemFacade().findDoubleByJpql(sql, hm);
-        System.out.println("Query Result (Settled Amount by Company): " + result);
-
-        System.out.println("Completed getSettledAmountByCompany");
         return result;
     }
 
