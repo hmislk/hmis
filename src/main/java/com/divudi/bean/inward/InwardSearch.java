@@ -1756,6 +1756,10 @@ public class InwardSearch implements Serializable {
     public void changeIsMade() {
         changed = true;
     }
+    
+    public void refreshBill(){
+        changed = false;
+    }
 
     public void updateTotal() {
 
@@ -1767,7 +1771,7 @@ public class InwardSearch implements Serializable {
 
         bill.setGrantTotal(grantTotal);
         bill.setNetTotal(grantTotal - bill.getDiscount());
-        changed = false;
+        changed = true;
 
     }
 
