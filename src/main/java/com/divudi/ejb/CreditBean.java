@@ -18,10 +18,12 @@ import com.divudi.service.BillService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -93,15 +95,14 @@ public class CreditBean {
         params.put("pm", PaymentMethod.Credit);
         params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
-        
-        
+
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
-        
+
         List<Bill> bs = (List<Bill>) getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         return bs;
-        
+
     }
 
     public List<Bill> getCreditBillsPharmacy(Institution ins, List<BillType> billTypes, Date fromDate, Date toDate, boolean lessThan) {
@@ -192,37 +193,56 @@ public class CreditBean {
         return (List<Institution>) getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
-    public List<Institution> getCreditInstitution(List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, boolean lessThan) {
-        String jpql;
-        HashMap params;
-        jpql = "Select distinct(b.creditCompany) From Bill b "
-                + " where b.retired=false ";
-
-        if (lessThan) {
-            jpql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
-        } else {
-            jpql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+    public List<Institution> getCreditInstitution(List<BillTypeAtomic> billTypeAtomics,
+            Date fromDate,
+            Date toDate,
+            boolean lessThan) {
+        // ChatGPT contribution – 15 May 2025
+        if (billTypeAtomics == null || billTypeAtomics.isEmpty()) {
+            System.out.println("[DEBUG] billTypeAtomics is null or empty; returning empty list.");
+            return Collections.emptyList();
         }
 
-        jpql += " and b.createdAt between :frm and :to "
-                + " and b.paymentMethod= :pm "
-                + " and b.billTypeAtomic in :billTypeAtomics "
-                + " order by b.creditCompany.name  ";
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(toDate);
+        cal.add(Calendar.DATE, 1); // include the whole final day
+        Date toInclusive = cal.getTime();
 
-         
-        
-        params = new HashMap();
+        StringBuilder jpqlBuilder = new StringBuilder();
+        jpqlBuilder.append("SELECT DISTINCT b.creditCompany FROM Bill b ")
+                .append("WHERE b.retired = FALSE ");
+
+        if (lessThan) {
+            jpqlBuilder.append("AND (ABS(b.netTotal) - ABS(b.paidAmount)) > :val ");
+        } else {
+            jpqlBuilder.append("AND (ABS(b.netTotal) - ABS(b.paidAmount)) < :val ");
+        }
+
+        jpqlBuilder.append("AND b.createdAt BETWEEN :frm AND :to ")
+                .append("AND b.paymentMethod = :pm ")
+                .append("AND b.billTypeAtomic IN :billTypeAtomics ")
+                .append("AND b.creditCompany IS NOT NULL ")
+                .append("ORDER BY b.creditCompany.name");
+
+        String jpql = jpqlBuilder.toString();
+
+        Map params = new HashMap<>();
         params.put("frm", fromDate);
-        params.put("to", toDate);
+        params.put("to", toInclusive);
         params.put("pm", PaymentMethod.Credit);
-        params.put("billTypeAtomics", billTypeAtomics); // This include cancellations and refunds. So no need to check a bill is canceleld or returned
+        params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-        List<Institution> ins = (List<Institution>) getInstitutionFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("ins = " + ins);
-        return ins;
+        System.out.println("[DEBUG] JPQL  : " + jpql);
+        System.out.println("[DEBUG] Params: " + params);
+
+        List<Institution> ins = getInstitutionFacade()
+                .findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        System.out.println("[DEBUG] Result size     : " + (ins == null ? 0 : ins.size()));
+        System.out.println("[DEBUG] Institutions    : " + ins);
+
+        return ins == null ? Collections.emptyList() : ins;
     }
 
     public List<Institution> getCreditInstitutionPharmacy(List<BillType> billTypes, Date fromDate, Date toDate, boolean lessThan) {
@@ -832,7 +852,7 @@ public class CreditBean {
         hm.put("tp1", BillType.OpdBill);
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
-    
+
     public List<Institution> getCreditCompanyFromBillsFromBillTypeAtomic(boolean lessThan) {
         String sql;
         HashMap hm;
@@ -848,7 +868,7 @@ public class CreditBean {
         } else {
             sql += " and ((abs(b.netTotal)-abs(b.paidAmount))< :val) ";
         }
-        
+
         List<BillTypeAtomic> btas = billService.fetchBillTypeAtomicsForOpdFinance();
 
         hm = new HashMap();
@@ -858,8 +878,6 @@ public class CreditBean {
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
-    
-    
     public List<Institution> getCreditCompanyFromBillsPharmacy(boolean lessThan) {
         String sql;
         HashMap hm;
