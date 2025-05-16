@@ -79,6 +79,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.OptionScope;
 
+import static com.divudi.core.data.PaymentMethod.Card;
 import static com.divudi.core.data.PaymentMethod.Cash;
 
 import com.divudi.core.data.dataStructure.ComponentDetail;
@@ -1105,8 +1106,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageSessionInstance(SessionInstance sessionInstance) {
-        
-        if(sessionInstance == null){
+
+        if (sessionInstance == null) {
             return "";
         }
         this.selectedSessionInstance = sessionInstance;
@@ -1455,6 +1456,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addToDayToToDateNew() {
+        fromDate = new Date();
         toDate = new Date();
         listAndFilterSessionInstances();
     }
@@ -1561,7 +1563,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             selectedSessionInstance = sessions.get(0);
             viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
             viewScopeDataTransferController.setSessionsFiltered(sessions);
-            
 
             viewScopeDataTransferController.setFromDate(selectedSessionInstance.getSessionDate());
             viewScopeDataTransferController.setToDate(selectedSessionInstance.getSessionDate());
@@ -2050,7 +2051,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         needToFillSessionInstances = viewScopeDataTransferController.getNeedToFillSessionInstances();
         if (needToFillSessionInstances == null || needToFillSessionInstances != false) {
             listAndFilterSessionInstances();
-        }else{
+        } else {
             sessionInstancesFiltered = viewScopeDataTransferController.getSessionsFiltered();
         }
 
@@ -2264,17 +2265,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void loadSessionInstance() {
         sessionInstances = channelBean.listTodaysSessionInstances(true, false, false);
     }
-    
-    public String navigateToManageBookingFromChannelBooking(BillSession bs, SessionInstance ss){
-                
-        if(bs == null || bs.getId() == null || ss == null){
+
+    public String navigateToManageBookingFromChannelBooking(BillSession bs, SessionInstance ss) {
+
+        if (bs == null || bs.getId() == null || ss == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
         }
-        
+
         selectedBillSession = bs;
         selectedSessionInstance = ss;
-        
+
         return navigateToManageBooking(bs);
     }
 
@@ -2284,7 +2285,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
-        }   
+        }
 
         // Setting the properties in the viewScopeDataTransferController
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
@@ -2323,17 +2324,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         calculateSelectedBillSessionTotal();
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
-    
-    public BillSession getBillSessionFromBill(Bill bill){
+
+    public BillSession getBillSessionFromBill(Bill bill) {
         String sql = " select bs from BillSession bs "
                 + " where bs.bill = :bill "
                 + " and bs.retired = :ret"
                 + " and bs.bill.retired = :ret ";
-        
+
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("bill", bill);
-        
+
         return billSessionFacade.findFirstByJpql(sql, params);
     }
 
@@ -7838,19 +7839,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
 
-        switch (getRefundPaymentMethod()) {
-            case Cash:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getRefundableTotal()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;
-            case Card:
-                if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < getRefundableTotal()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            switch (getRefundPaymentMethod()) {
+                case Cash:
+                    if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getRefundableTotal()) {
+                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                        return;
+                    }
+                    break;
+                case Card:
+                    if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < getRefundableTotal()) {
+                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                        return;
+                    }
+                    break;
+            }
         }
 
         if (refundableTotal > 0.0) {
