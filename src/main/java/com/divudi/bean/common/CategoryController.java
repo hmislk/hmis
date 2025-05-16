@@ -690,10 +690,10 @@ public class CategoryController implements Serializable {
     }
 
     public List<Category> getPharmaceuticalAndConsumableItemCategories() {
-        items = new ArrayList<>();
-        items.addAll(pharmaceuticalItemCategoryController.getItems());
-        items.addAll(consumableCategoryController.getItemsAvailableSelectOne());
-        return items;
+        List<Category> combinedItems = new ArrayList<>();
+        combinedItems.addAll(pharmaceuticalItemCategoryController.getItems());
+        combinedItems.addAll(consumableCategoryController.getItemsAvailableSelectOne());
+        return combinedItems;
     }
 
     List<Category> nationalities;
