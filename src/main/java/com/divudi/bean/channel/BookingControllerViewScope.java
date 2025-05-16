@@ -2264,13 +2264,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void loadSessionInstance() {
         sessionInstances = channelBean.listTodaysSessionInstances(true, false, false);
     }
-
-    public String navigateToManageBooking(BillSession bs) {
-        
-        if(bs == null && bs.getId() != null){
+    
+    public String navigateToManageBookingFromChannelBooking(BillSession bs, SessionInstance ss){
+                
+        if(bs == null || bs.getId() == null || ss == null){
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
         }
+        
+        selectedBillSession = bs;
+        selectedSessionInstance = ss;
+        
+        return navigateToManageBooking(bs);
+    }
+
+    public String navigateToManageBooking(BillSession bs) {
 
         selectedBillSession = bs;
         if (selectedBillSession == null) {
