@@ -93,7 +93,7 @@
                                 value="View Session Data"
                                 icon="fas fa-eye"
                                 class="mx-1 ui-button-primary"
-                                action="#{bookingController.navigateToViewSessionData()}"
+                                action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingController.selectedSessionInstance)}"
                                 />
 
                             <p:commandButton 
