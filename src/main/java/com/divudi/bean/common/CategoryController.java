@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.pharmacy.ConsumableCategoryController;
+import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
 import com.divudi.core.data.CategoryType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
@@ -66,6 +68,10 @@ public class CategoryController implements Serializable {
 
     @Inject
     ItemController itemController;
+    @Inject
+    PharmaceuticalItemCategoryController pharmaceuticalItemCategoryController;
+    @Inject
+    ConsumableCategoryController consumableCategoryController;
 
     private List<Category> serviceCategories;
 
@@ -680,6 +686,13 @@ public class CategoryController implements Serializable {
                     + " order by c.name";
             items = getFacade().findByJpql(j);
         }
+        return items;
+    }
+
+    public List<Category> getPharmaceuticalAndConsumableItemCategories() {
+        items = new ArrayList<>();
+        items.addAll(pharmaceuticalItemCategoryController.getItems());
+        items.addAll(consumableCategoryController.getItemsAvailableSelectOne());
         return items;
     }
 
