@@ -221,7 +221,12 @@
                                 <f:facet name="header">
                                     <h:outputText value="Bill No" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.deptId}" />
+                                 <p:commandLink 
+                                    ajax="false" 
+                                    value="#{row.bill.deptId}"
+                                    action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(row.bill))}">
+                                </p:commandLink>
+                                
                                 <p:badge value="Cancelled" severity="danger" rendered="#{row.bill.cancelled}"/>
                                 <p:badge value="Refunded" severity="warning" rendered="#{row.bill.refunded}"/>
                                 <p:badge value="Cancel Bill" severity="info" rendered="#{row.bill.total lt 0}"/>

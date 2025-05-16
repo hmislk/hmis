@@ -2949,6 +2949,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(selectedSessionInstance);
+        selectedBillSession = null;
     }
 
     public void addReportPatient() {

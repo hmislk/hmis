@@ -2323,6 +2323,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         calculateSelectedBillSessionTotal();
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
+    
+    public BillSession getBillSessionFromBill(Bill bill){
+        String sql = " select bs from BillSession bs "
+                + " where bs.bill = :bill "
+                + " and bs.retired = :ret"
+                + " and bs.bill.retired = :ret ";
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bill", bill);
+        
+        return billSessionFacade.findFirstByJpql(sql, params);
+    }
 
     public String navigateToViewBillSession(BillSession bs) {
 //        System.out.println("bs = " + bs);
@@ -8975,7 +8988,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public boolean isDisableRefund() {
-        if (selectedBillSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow) {
+        if (selectedBillSession != null && selectedBillSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow) {
             if (selectedBillSession.getBill().getPaidAmount() == 0) {
                 disableRefund = true;
             } else {
