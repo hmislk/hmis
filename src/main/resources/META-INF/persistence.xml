@@ -7,6 +7,8 @@
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.level" value="SEVERE"/>
+            <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
@@ -15,6 +17,8 @@
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.level" value="SEVERE"/>
+            <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
         </properties>
     </persistence-unit>
 </persistence>

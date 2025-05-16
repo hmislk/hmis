@@ -93,6 +93,15 @@
                                 value="View Session Data"
                                 icon="fas fa-eye"
                                 class="mx-1 ui-button-primary"
+                                action="#{bookingController.navigateToViewSessionData()}"
+                                />
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="View Session"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
+                                icon="fas fa-eye"
+                                class="mx-1 ui-button-primary"
                                 action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingController.selectedSessionInstance)}"
                                 />
 
@@ -117,6 +126,7 @@
                                 value="Add Channel Booking" 
                                 class="ui-button-warning mx-1"
                                 action="#{bookingControllerViewScope.sessionInstanceFetchFromChannelBooking()}"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
                                 actionListener="#{bookingControllerViewScope.setSelectedSessionInstance(bookingController.selectedSessionInstance)}"
                                 icon="fa-solid fa-bars-progress" />
 
@@ -283,7 +293,8 @@
                             </p:column>
 
                             <p:column style="width: 50px!important;">
-                                <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
+                                <h:outputText rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" />
+                                <h:outputText rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" />
                             </p:column>
 
                             <p:column style="width: 20px!important;" rendered="#{bookingController.selectedSessionInstance.started}">
@@ -293,15 +304,16 @@
                             </p:column>
 
                             <p:column style="width: 20px!important;">
-                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{!bs.bill.billPaymentCompletelySettled}" style="color: red;"/>
+<!--                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{!bs.bill.billPaymentCompletelySettled}" style="color: red;"/>
                                 <p:outputLabel value="-On Call" rendered="#{!bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'OnCall'}" style="color: red;"/>
 
-                                <p:outputLabel value="Paid" rendered="#{bs.bill.billPaymentCompletelySettled}" style="color: green;"/>
-                                <p:outputLabel value="OnCall" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'OnCall'}" style="margin-left: 5px; color: green;"/>
-                                <p:outputLabel value="-Card" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paidBill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green;"/>
-                                <p:outputLabel value="-Cash" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
-                                <p:outputLabel value="-Agent" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paidBill.paymentMethod eq 'Agent'}" style="color: green;"/>
-                                <p:outputLabel value="-Staff" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
+                                <p:outputLabel value="Paid" rendered="#{bs.bill.billPaymentCompletelySettled}" style="color: green;"/>-->
+                                <p:outputLabel value="OnCall" rendered="#{bs.bill.paymentMethod eq 'OnCall'}" style="margin-left: 5px; color: green;"/>
+                                <p:outputLabel value="Card" rendered="#{bs.bill.paidBill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green;"/>
+                                <p:outputLabel value="Cash" rendered="#{bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
+                                <p:outputLabel value="Agent" rendered="#{bs.bill.paidBill.paymentMethod eq 'Agent'}" style="color: green;"/>
+                                <p:outputLabel value="Staff" rendered="#{bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
+                                <p:outputLabel value="OB - #{bs.bill.referenceBill.onlineBooking.referenceNo}" rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" style="color: #000; background: #fbc531; font-weight: bold; padding: 2px"/>
 
 
 <!--<p:outputLabel value="Paid OnCall-Card" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall' and bs.bill.paidBill.paymentMethod eq 'Card'}"/>-->
