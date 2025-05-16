@@ -1600,6 +1600,21 @@ public class ReportController implements Serializable {
             m.put("machine", machine);
         }
 
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and bi.bill.department.site = :site ";
+            m.put("site", site);
+        }
+
         List<BillTypeAtomic> bTypes = Arrays.asList(
                 BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
                 BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
