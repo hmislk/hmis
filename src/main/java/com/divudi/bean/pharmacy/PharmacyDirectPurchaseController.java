@@ -106,6 +106,91 @@ public class PharmacyDirectPurchaseController implements Serializable {
         warningMessage = null;
     }
 
+    public void addItem() {
+
+        Item item = getCurrentBillItem().getItem();
+        BillItemFinanceDetails f = getCurrentBillItem().getBillItemFinanceDetails();
+        PharmaceuticalBillItem pbi = getCurrentBillItem().getPharmaceuticalBillItem();
+
+        if (item == null) {
+            JsfUtil.addErrorMessage("Please select an item");
+            return;
+        }
+
+        if (f == null || pbi == null) {
+            JsfUtil.addErrorMessage("Invalid internal structure. Cannot proceed.");
+            return;
+        }
+
+        if (f.getQuantity() == null || f.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+            JsfUtil.addErrorMessage("Please enter quantity");
+            return;
+        }
+
+        if (f.getGrossRate() == null || f.getGrossRate().compareTo(BigDecimal.ZERO) <= 0) {
+            JsfUtil.addErrorMessage("Please enter the purchase rate");
+            return;
+        }
+
+        if (f.getRetailSaleRate() == null || f.getRetailSaleRate().compareTo(BigDecimal.ZERO) <= 0) {
+            JsfUtil.addErrorMessage("Please enter the sale rate");
+            return;
+        }
+
+        if (pbi.getDoe() == null) {
+            JsfUtil.addErrorMessage("Please set the date of expiry");
+            return;
+        }
+
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        }
+
+        BigDecimal unitsPerPack = BigDecimal.valueOf(item.getDblValue());
+        if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
+            unitsPerPack = BigDecimal.ONE;
+        }
+
+        BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
+        BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
+
+        if (item instanceof Amp) {
+            // AMP: no packs; assign both units and packs as same
+            pbi.setQty(qty.doubleValue());
+            pbi.setQtyPacks(qty.doubleValue());
+            pbi.setFreeQty(freeQty.doubleValue());
+            pbi.setFreeQtyPacks(freeQty.doubleValue());
+
+            // Assign purchase rate (unit rate)
+            pbi.setPurchaseRate(f.getGrossRate().doubleValue());
+            pbi.setRetailRate(f.getRetailSaleRate().doubleValue());
+
+        } else if (item instanceof Ampp) {
+            // AMPP: has packs; need conversion
+            BigDecimal qtyPacks = qty;
+            BigDecimal freeQtyPacks = freeQty;
+
+            BigDecimal qtyUnits = qtyPacks.multiply(unitsPerPack);
+            BigDecimal freeQtyUnits = freeQtyPacks.multiply(unitsPerPack);
+
+            pbi.setQty(qtyUnits.doubleValue());
+            pbi.setQtyPacks(qtyPacks.doubleValue());
+            pbi.setFreeQty(freeQtyUnits.doubleValue());
+            pbi.setFreeQtyPacks(freeQtyPacks.doubleValue());
+
+            // Assign purchase rate per pack
+            pbi.setPurchaseRatePack(f.getGrossRate().doubleValue());
+            pbi.setRetailRate(f.getRetailSaleRate().doubleValue());
+        }
+
+        getCurrentBillItem().setSearialNo(getBillItems().size());
+        getBillItems().add(currentBillItem);
+
+        currentBillItem = null;
+        distributeProportionalBillValuesToItems(getBillItems(), getBill());
+        calulateTotalsWhenAddingItemsOldMethod();
+    }
+
     private void recalculateFinancialsBeforeAddingBillItem(BillItemFinanceDetails f, boolean fromDiscountRate) {
         BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
         BigDecimal grossRate = f.getGrossRate() != null ? f.getGrossRate() : BigDecimal.ZERO;
@@ -957,66 +1042,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         calTotal();
 
         currentBillItem = null;
-    }
-
-    public void addItem() {
-
-        Item item = getCurrentBillItem().getItem();
-        BillItemFinanceDetails f = getCurrentBillItem().getBillItemFinanceDetails();
-        PharmaceuticalBillItem pbi = getCurrentBillItem().getPharmaceuticalBillItem();
-
-        if (item == null || f == null || pbi == null) {
-            JsfUtil.addErrorMessage("Please select an item");
-            return;
-        }
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getDoe() == null) {
-            JsfUtil.addErrorMessage("Please set the date of expiry");
-            return;
-        }
-
-        if (getCurrentBillItem().getBillItemFinanceDetails().getRetailSaleRate().compareTo(BigDecimal.ZERO) <= 0) {
-            JsfUtil.addErrorMessage("Please enter the sale rate");
-            return;
-        }
-
-        if (getBill().getId() == null) {
-            getBillFacade().create(getBill());
-        }
-
-        BigDecimal unitsPerPack = BigDecimal.valueOf(item.getDblValue());
-        if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
-            unitsPerPack = BigDecimal.ONE;
-        }
-
-        BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
-        BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
-
-        if (item instanceof Amp) {
-            // AMP has no pack unit. Qty and freeQty are same in packs and units.
-            pbi.setQty(qty.doubleValue());
-            pbi.setQtyPacks(qty.doubleValue());
-            pbi.setFreeQty(freeQty.doubleValue());
-            pbi.setFreeQtyPacks(freeQty.doubleValue());
-        } else if (item instanceof Ampp) {
-            // AMPP has pack unit. Divide units to get pack counts
-            BigDecimal qtyPacks = qty;
-            BigDecimal freeQtyPacks = freeQty;
-
-            BigDecimal qtyUnits = qtyPacks.multiply(unitsPerPack);
-            BigDecimal freeQtyUnits = freeQtyPacks.multiply(unitsPerPack);
-
-            pbi.setQty(qtyUnits.doubleValue());
-            pbi.setQtyPacks(qtyPacks.doubleValue());
-            pbi.setFreeQty(freeQtyUnits.doubleValue());
-            pbi.setFreeQtyPacks(freeQtyPacks.doubleValue());
-        }
-
-        getCurrentBillItem().setSearialNo(getBillItems().size());
-        getBillItems().add(currentBillItem);
-
-        currentBillItem = null;
-
-        calulateTotalsWhenAddingItemsOldMethod();
     }
 
     public void saveBill() {
