@@ -664,7 +664,7 @@
                                             disabled="#{!patientInvestigation.sampleAccepted}" 
                                             action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
                                             class="ui-button-danger"
-                                            onclick="if (!confirm('Are you sure you want to New Patient Report?'))
+                                            onclick="if (!confirm('Are you sure you want to create a new patient report?'))
                                                         return false;"
                                             ajax="false">
                                         </p:commandButton>
@@ -676,7 +676,7 @@
                                             disabled="#{patientInvestigation.sampleSentAt eq null}"
                                             action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
                                             class="ui-button-warning"
-                                            onclick="if (!confirm('Are you sure you want to New Patient Report?'))
+                                            onclick="if (!confirm('Are you sure you want to upload a new patient report ?'))
                                                         return false;"
                                             ajax="false">
                                         </p:commandButton>
@@ -722,7 +722,7 @@
                                                 disabled="#{!patientInvestigation.sampleAccepted}" 
                                                 action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
                                                 class="ui-button-danger"
-                                                onclick="if (!confirm('Are you sure you want to New Patient Report?'))
+                                                onclick="if (!confirm('Are you sure you want to create a new patient report?'))
                                                             return false;"
                                                 ajax="false">
                                             </p:commandButton>
@@ -734,7 +734,7 @@
                                                 disabled="#{patientInvestigation.sampleSentAt eq null}"
                                                 action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
                                                 class="ui-button-warning"
-                                                onclick="if (!confirm('Are you sure you want to New Patient Report?'))
+                                                onclick="if (!confirm('Are you sure you want to upload a new patient report?'))
                                                             return false;"
                                                 ajax="false">
                                             </p:commandButton>
