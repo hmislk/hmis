@@ -16,6 +16,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
 import com.divudi.core.facade.PatientSampleFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
@@ -52,6 +53,8 @@ public class LaboratoryManagementController implements Serializable {
     private PatientSampleFacade patientSampleFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    private PatientSampleComponantFacade patientSampleComponantFacade;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -122,6 +125,9 @@ public class LaboratoryManagementController implements Serializable {
     public void navigateToInvestigation() {
         activeIndex = 2;
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        performingInstitution = null;
+        performingDepartment = null;
+        patientInvestigationStatus = null;
     }
 
     public void navigateToSamples() {
@@ -902,6 +908,19 @@ public class LaboratoryManagementController implements Serializable {
         items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public List<Long> getPatientSampleComponentsByInvestigation(PatientInvestigation patientInvestigation) {
+
+        List<Long> sampleIds = new ArrayList();
+        String jpql = "SELECT psc.patientSample.id "
+                + " FROM PatientSampleComponant psc "
+                + " WHERE psc.retired=:retired "
+                + " AND psc.patientInvestigation=:patientInvestigation";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);  // Assuming you want only non-retired records
+        params.put("patientInvestigation", patientInvestigation);
+        sampleIds = patientSampleComponantFacade.findLongList(jpql, params);
+        return sampleIds;
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {

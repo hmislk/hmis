@@ -608,11 +608,11 @@
 
                             <!-- Samples Column -->
                             <p:column headerText="Sample IDs" style="width:10em; vertical-align: top;">
-                                <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" var="psc">
+                                <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" var="sample">
                                     <div class="ui-g d-grid" style="margin-bottom: 10px;">
                                         <div class="ui-g-6 d-flex">
                                             <i class="fa fa-vial"></i>
-                                            <h:outputText value="#{psc.patientSample.id}" class="mx-2 text-primary" />
+                                            <h:outputText value="#{sample}" class="mx-2 text-primary" />
                                         </div>
                                     </div>
                                 </ui:repeat>
