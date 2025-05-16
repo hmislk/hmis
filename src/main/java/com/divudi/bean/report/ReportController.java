@@ -1674,10 +1674,10 @@ public class ReportController implements Serializable {
 
         //Add All Lab Test Count
         for (ItemCount count : allLabTestCounts) {
-            if (count.getTestCount() != 0.0) {
+//            if (count.getTestCount() != 0.0) {
                 categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L)).getItems().add(count);
                 categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
-            }
+//            }
         }
 
         // Convert the map values to a list to be used in the JSF page
