@@ -811,14 +811,13 @@
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                            
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/direct_purchase?faces-redirect=true"  
+                            action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"  
                             value="Direct Purchase" 
                             icon="fas fa-hand-holding-usd"
-                            rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
-                            actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" >
+                        </p:menuitem>
 
                         <p:menuitem  
                             ajax="false" 

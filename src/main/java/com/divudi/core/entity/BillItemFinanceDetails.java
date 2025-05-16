@@ -34,9 +34,33 @@ public class BillItemFinanceDetails implements Serializable {
     @ManyToOne
     private WebUser createdBy;
 
+    // Gross and Net Rates
+    private BigDecimal grossRate = BigDecimal.ZERO;
+    private BigDecimal netRate = BigDecimal.ZERO;
+    private BigDecimal lineDiscountRate = BigDecimal.ZERO;
+    private BigDecimal billDiscountRate = BigDecimal.ZERO;
+    private BigDecimal totalDiscountRate = BigDecimal.ZERO;
+    private BigDecimal expenseRate = BigDecimal.ZERO;
+    // Costs
+    private BigDecimal billItemCostRateFromBill = BigDecimal.ZERO;
+    private BigDecimal billItemCostRateForTheLine = BigDecimal.ZERO;
+    private BigDecimal totalBillItemCostRate = BigDecimal.ZERO;
+    
+    
+    private BigDecimal unitsPerPack = BigDecimal.ZERO;
+
     // Gross and Net Totals
     private BigDecimal grossTotal = BigDecimal.ZERO;
     private BigDecimal netTotal = BigDecimal.ZERO;
+    private BigDecimal lineDiscount = BigDecimal.ZERO;
+    private BigDecimal billDiscount = BigDecimal.ZERO;
+    private BigDecimal totalDiscount = BigDecimal.ZERO;
+    private BigDecimal expense = BigDecimal.ZERO;
+
+    private BigDecimal retailSaleRate = BigDecimal.ZERO;
+    private BigDecimal wholesaleRate = BigDecimal.ZERO;
+    private BigDecimal retailSaleRatePerUnit = BigDecimal.ZERO;
+    private BigDecimal wholesaleRatePerUnit = BigDecimal.ZERO;
 
 // Return Totals
     private BigDecimal returnGrossTotal = BigDecimal.ZERO;
@@ -87,7 +111,9 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal freeQuantity = BigDecimal.ZERO;
     private BigDecimal freeValue = BigDecimal.ZERO;
     private BigDecimal retailSaleValue = BigDecimal.ZERO;
+    private BigDecimal retailSaleValueByUnit = BigDecimal.ZERO;
     private BigDecimal wholesaleValue = BigDecimal.ZERO;
+    private BigDecimal wholesaleValueByUnit = BigDecimal.ZERO;
     private BigDecimal quantity = BigDecimal.ZERO;
     private BigDecimal totalQuantity = BigDecimal.ZERO;
 
@@ -198,8 +224,81 @@ public class BillItemFinanceDetails implements Serializable {
         cloned.totalPaidAsOnCall = this.totalPaidAsOnCall;
         cloned.totalPaidAsYouOweMe = this.totalPaidAsYouOweMe;
         cloned.totalPaidAsNone = this.totalPaidAsNone;
+        cloned.grossRate = this.grossRate;
+        cloned.netRate = this.netRate;
+        cloned.lineDiscountRate = this.lineDiscountRate;
+        cloned.billDiscountRate = this.billDiscountRate;
+        cloned.totalDiscountRate = this.totalDiscountRate;
+        cloned.expenseRate = this.expenseRate;
+
+        cloned.lineDiscount = this.lineDiscount;
+        cloned.billDiscount = this.billDiscount;
+        cloned.totalDiscount = this.totalDiscount;
+        cloned.expense = this.expense;
+
+        cloned.retailSaleRate = this.retailSaleRate;
+        cloned.wholesaleRate = this.wholesaleRate;
+        cloned.retailSaleRatePerUnit = this.retailSaleRatePerUnit;
+        cloned.wholesaleRatePerUnit = this.wholesaleRatePerUnit;
+
+        cloned.retailSaleValueByUnit = this.retailSaleValueByUnit;
+        cloned.wholesaleValueByUnit = this.wholesaleValueByUnit;
+
+        cloned.billItemCostRateFromBill = this.billItemCostRateFromBill;
+        cloned.billItemCostRateForTheLine = this.billItemCostRateForTheLine;
+        cloned.totalBillItemCostRate = this.totalBillItemCostRate;
+        
+        cloned.unitsPerPack = this.unitsPerPack;
 
         return cloned;
+    }
+
+    public BigDecimal getGrossRate() {
+        return grossRate;
+    }
+
+    public void setGrossRate(BigDecimal grossRate) {
+        this.grossRate = grossRate;
+    }
+
+    public BigDecimal getNetRate() {
+        return netRate;
+    }
+
+    public void setNetRate(BigDecimal netRate) {
+        this.netRate = netRate;
+    }
+
+    public BigDecimal getLineDiscountRate() {
+        return lineDiscountRate;
+    }
+
+    public void setLineDiscountRate(BigDecimal lineDiscountRate) {
+        this.lineDiscountRate = lineDiscountRate;
+    }
+
+    public BigDecimal getBillDiscountRate() {
+        return billDiscountRate;
+    }
+
+    public void setBillDiscountRate(BigDecimal billDiscountRate) {
+        this.billDiscountRate = billDiscountRate;
+    }
+
+    public BigDecimal getTotalDiscountRate() {
+        return totalDiscountRate;
+    }
+
+    public void setTotalDiscountRate(BigDecimal totalDiscountRate) {
+        this.totalDiscountRate = totalDiscountRate;
+    }
+
+    public BigDecimal getExpenseRate() {
+        return expenseRate;
+    }
+
+    public void setExpenseRate(BigDecimal expenseRate) {
+        this.expenseRate = expenseRate;
     }
 
     public Long getId() {
@@ -234,6 +333,8 @@ public class BillItemFinanceDetails implements Serializable {
     public String toString() {
         return "com.divudi.core.entity.BillItemFinanceDetails[ id=" + id + " ]";
     }
+    
+    
 
     public BigDecimal getGrossTotal() {
         return grossTotal;
@@ -713,6 +814,118 @@ public class BillItemFinanceDetails implements Serializable {
 
     public void setCreatedBy(WebUser createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public BigDecimal getLineDiscount() {
+        return lineDiscount;
+    }
+
+    public void setLineDiscount(BigDecimal lineDiscount) {
+        this.lineDiscount = lineDiscount;
+    }
+
+    public BigDecimal getBillDiscount() {
+        return billDiscount;
+    }
+
+    public void setBillDiscount(BigDecimal billDiscount) {
+        this.billDiscount = billDiscount;
+    }
+
+    public BigDecimal getTotalDiscount() {
+        return totalDiscount;
+    }
+
+    public void setTotalDiscount(BigDecimal totalDiscount) {
+        this.totalDiscount = totalDiscount;
+    }
+
+    public BigDecimal getExpense() {
+        return expense;
+    }
+
+    public void setExpense(BigDecimal expense) {
+        this.expense = expense;
+    }
+
+    public BigDecimal getRetailSaleRate() {
+        return retailSaleRate;
+    }
+
+    public void setRetailSaleRate(BigDecimal retailSaleRate) {
+        this.retailSaleRate = retailSaleRate;
+    }
+
+    public BigDecimal getWholesaleRate() {
+        return wholesaleRate;
+    }
+
+    public void setWholesaleRate(BigDecimal wholesaleRate) {
+        this.wholesaleRate = wholesaleRate;
+    }
+
+    public BigDecimal getRetailSaleRatePerUnit() {
+        return retailSaleRatePerUnit;
+    }
+
+    public void setRetailSaleRatePerUnit(BigDecimal retailSaleRatePerUnit) {
+        this.retailSaleRatePerUnit = retailSaleRatePerUnit;
+    }
+
+    public BigDecimal getWholesaleRatePerUnit() {
+        return wholesaleRatePerUnit;
+    }
+
+    public void setWholesaleRatePerUnit(BigDecimal wholesaleRatePerUnit) {
+        this.wholesaleRatePerUnit = wholesaleRatePerUnit;
+    }
+
+    public BigDecimal getRetailSaleValueByUnit() {
+        return retailSaleValueByUnit;
+    }
+
+    public void setRetailSaleValueByUnit(BigDecimal retailSaleValueByUnit) {
+        this.retailSaleValueByUnit = retailSaleValueByUnit;
+    }
+
+    public BigDecimal getWholesaleValueByUnit() {
+        return wholesaleValueByUnit;
+    }
+
+    public void setWholesaleValueByUnit(BigDecimal wholesaleValueByUnit) {
+        this.wholesaleValueByUnit = wholesaleValueByUnit;
+    }
+
+    public BigDecimal getBillItemCostRateFromBill() {
+        return billItemCostRateFromBill;
+    }
+
+    public void setBillItemCostRateFromBill(BigDecimal billItemCostRateFromBill) {
+        this.billItemCostRateFromBill = billItemCostRateFromBill;
+    }
+
+    public BigDecimal getBillItemCostRateForTheLine() {
+        return billItemCostRateForTheLine;
+    }
+
+    public void setBillItemCostRateForTheLine(BigDecimal billItemCostRateForTheLine) {
+        this.billItemCostRateForTheLine = billItemCostRateForTheLine;
+    }
+
+    public BigDecimal getTotalBillItemCostRate() {
+        return totalBillItemCostRate;
+    }
+
+    public void setTotalBillItemCostRate(BigDecimal totalBillItemCostRate) {
+        this.totalBillItemCostRate = totalBillItemCostRate;
+    }
+
+    public BigDecimal getUnitsPerPack() {
+        return unitsPerPack;
+    }
+
+    public void setUnitsPerPack(BigDecimal unitsPerPack) {
+        this.unitsPerPack = unitsPerPack;
     }
     
     
