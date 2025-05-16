@@ -343,7 +343,8 @@
                             </p:column>
 
                             <p:column style="width: 5px!important;">
-                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.creditCompany.institutionCode}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.agency.name}"/>
                             </p:column>
 
                             <p:column style="width: 10px!important;">
@@ -360,6 +361,7 @@
                             </p:column>
 
                         </p:selectOneListbox>
+                        <p:poll interval="15" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>
                     </div>
                 </div>
 
