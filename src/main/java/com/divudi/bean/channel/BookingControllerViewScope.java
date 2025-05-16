@@ -2266,12 +2266,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageBooking(BillSession bs) {
-        System.out.println("bs = " + bs);
+        
+        if(bs == null && bs.getId() != null){
+            JsfUtil.addErrorMessage("Please select a Patient");
+            return "";
+        }
+
         selectedBillSession = bs;
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
-        }
+        }   
 
         // Setting the properties in the viewScopeDataTransferController
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
@@ -2304,6 +2309,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 }
             }
         }
+
         fillBaseFees();
         fillSessionInstanceByDoctor();
         calculateSelectedBillSessionTotal();
