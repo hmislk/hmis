@@ -3197,8 +3197,8 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (performingInstitution != null) {
-            jpql += " AND i.performInstitution = :peformingInstitution ";
-            params.put("peformingInstitution", getPerformingInstitution());
+            jpql += " AND i.performInstitution = :performInstitution ";
+            params.put("performInstitution", getPerformingInstitution());
         }
 
         if (performingDepartment != null) {
