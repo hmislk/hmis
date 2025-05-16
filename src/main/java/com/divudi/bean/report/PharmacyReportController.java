@@ -2087,12 +2087,12 @@ public class PharmacyReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
                 + " from StockHistory sh "
-                + " where sh.retired = :ret "
-                + " and (sh.itemBatch.item.departmentType is null "
-                + "      or sh.itemBatch.item.departmentType = :depty) ");
+                + " where sh.retired = :ret ");
+//                + " and (sh.itemBatch.item.departmentType is null "
+//                + "      or sh.itemBatch.item.departmentType = :depty) ");
 
         // Set query parameters
-        params.put("depty", DepartmentType.Pharmacy);
+//        params.put("depty", DepartmentType.Pharmacy);
         params.put("ret", false);
 
         if (institution != null) {
@@ -2367,11 +2367,11 @@ public class PharmacyReportController implements Serializable {
         List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
-                + " from StockHistory sh where sh.retired=:ret "
-                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+                + " from StockHistory sh where sh.retired=:ret ");
+//                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
 
         // Set query parameters
-        params.put("depty", DepartmentType.Pharmacy);
+//        params.put("depty", DepartmentType.Pharmacy);
         params.put("ret", false);
 
         if (institution != null) {
@@ -2403,7 +2403,8 @@ public class PharmacyReportController implements Serializable {
         jpql.append("and sh.createdAt < :et ");
         params.put("et", CommonFunctions.getEndOfDay(toDate));
 
-        jpql.append("group by sh.department, sh.itemBatch.item ");
+//        jpql.append("group by sh.department, sh.itemBatch.item ");
+        jpql.append("group by sh.department, sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
 
         // Fetch the IDs of the latest StockHistory rows per ItemBatch
@@ -2425,7 +2426,8 @@ public class PharmacyReportController implements Serializable {
             // Assign class-level 'item' so it is not shadowed by a local variable
             item = shx.getItemBatch().getItem();
 
-            double batchQty = shx.getItemStock();
+//            double batchQty = shx.getItemStock();
+            double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
 
