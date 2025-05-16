@@ -80,6 +80,7 @@
                                 id="btnAddBooking"
                                 ajax="false" 
                                 value="To Add Booking" 
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
                                 icon="fas fa-plus"
                                 class="ui-button-success"
                                 actionListener="#{bookingController.makeNull()}"
@@ -92,6 +93,7 @@
                                 ajax="false" 
                                 value="View Session Data"
                                 icon="fas fa-eye"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
                                 class="mx-1 ui-button-primary"
                                 action="#{bookingController.navigateToViewSessionData()}"
                                 />
@@ -104,11 +106,21 @@
                                 class="mx-1 ui-button-primary"
                                 action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingController.selectedSessionInstance)}"
                                 />
+                            
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Manage Booking"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
+                                icon="fas fa-eye"
+                                class="mx-1 ui-button-primary"
+                                action="#{bookingControllerViewScope.navigateToManageBooking(bookingController.selectedBillSession)}"
+                                />
 
                             <p:commandButton 
                                 ajax="false" 
                                 value="Consulant Room"
                                 icon="fas fa-eye"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
                                 class=" ui-button-primary"
                                 action="#{bookingController.navigateToViewSessionData()}"
                                 />
@@ -117,6 +129,7 @@
                             <p:commandButton 
                                 ajax="false" 
                                 value="Manage Booking" 
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
                                 class="ui-button-warning mx-1"
                                 action="#{bookingController.navigateToManageBooking()}"
                                 icon="fa-solid fa-bars-progress" />
