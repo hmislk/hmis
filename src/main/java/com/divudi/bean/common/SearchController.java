@@ -269,6 +269,12 @@ public class SearchController implements Serializable {
                     this.selectedChannelBookingBillRow = r;
                 }
             }
+        }else if(selectedChannelBookingBillRow.getBill() instanceof RefundBill){
+            for(ReportTemplateRow r : bundle.getReportTemplateRows()){
+                if(r.getBill().getRefundedBill() != null && r.getBill().getRefundedBill().equals(selectedChannelBookingBillRow.getBill())){
+                    this.selectedChannelBookingBillRow = r;
+                }
+            }
         }
     }
 

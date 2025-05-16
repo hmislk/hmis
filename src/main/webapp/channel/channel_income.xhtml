@@ -174,17 +174,10 @@
                             </div>
                         </div>
 
-                        <p:remoteCommand name="onBillRowClick"
+                        <p:remoteCommand name="onBillRowClick "
                                          actionListener="#{searchController.handleChannelBillRowClick}"
                                          update="tbl"
                                          />
-
-                        <script>
-                            function handleRowClick() {
-                                onBillRowClick(); // triggers AJAX to server
-                            }
-                        </script>
-
 
                         <p:dataTable 
                             id="tbl"
@@ -229,7 +222,9 @@
                                 
                                 <p:badge value="Cancelled" severity="danger" rendered="#{row.bill.cancelled}"/>
                                 <p:badge value="Refunded" severity="warning" rendered="#{row.bill.refunded}"/>
-                                <p:badge value="Cancel Bill" severity="info" rendered="#{row.bill.total lt 0}"/>
+                                <p:badge value="Refund Bill" severity="warning" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}"/>
+                                <p:badge value="Cancel Bill" severity="danger" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}"/>
+                                
                             </p:column>
 
                             <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
@@ -490,6 +485,12 @@
                                     targetElement.innerText = totalValue.toFixed(2);
                                 }
 
+                            }
+                            
+                            function handleRowClick() {
+                                onBillRowClick(); // triggers AJAX to server
+                                setTimeout(updateTotals, 500);
+                                
                             }
 
                             function updateTotals() {
