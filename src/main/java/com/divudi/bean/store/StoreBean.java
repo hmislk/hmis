@@ -1053,6 +1053,9 @@ public class StoreBean implements Serializable {
         sh.setStockQty(fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
+        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
+        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
 
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
@@ -1102,9 +1105,12 @@ public class StoreBean implements Serializable {
 
         Stock fetchedStock = getStockFacade().find(stock.getId());
 
-        sh.setStockQty(0.0);
+        sh.setStockQty(fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
+        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
+        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
 
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
