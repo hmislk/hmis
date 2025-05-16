@@ -83,7 +83,7 @@ public class LaboratoryManagementController implements Serializable {
     private String bhtNo;
     private List<PatientInvestigationStatus> availableStatus;
     private boolean selectAll = false;
-    private Long sampleId;
+    private String sampleId;
     private String sampleRejectionComment;
     private List<PatientSample> patientSamples;
     private List<PatientSample> selectedPatientSamples;
@@ -359,7 +359,7 @@ public class LaboratoryManagementController implements Serializable {
             params.put("status", getPatientInvestigationStatus());
         }
 
-        if (sampleId != null ) {
+        if (sampleId != null) {
             jpql += " AND (ps.sampleId like :smpid or ps.id like :smpId) ";
             params.put("smpid", "%" + String.valueOf(sampleId) + "%");
             params.put("smpId", "%" + String.valueOf(sampleId) + "%");
@@ -716,14 +716,18 @@ public class LaboratoryManagementController implements Serializable {
 
     public void searchPatientInvestigations() {
         items = new ArrayList();
-        if (sampleId != null && sampleId != 01) {
-            searchPatientInvestigationsWithSampleId();
-        } else {
-            searchPatientInvestigationsWithoutSampleId();
+
+        if (sampleId != null) {
+            try {
+                Long id = Long.valueOf(sampleId);
+                searchPatientInvestigationsWithSampleId(id);
+            } catch (NumberFormatException e) {
+                searchPatientInvestigationsWithoutSampleId();
+            }
         }
     }
 
-    public void searchPatientInvestigationsWithSampleId() {
+    public void searchPatientInvestigationsWithSampleId(Long sampleID) {
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -738,8 +742,7 @@ public class LaboratoryManagementController implements Serializable {
                 + " AND i.retired = :ret ";
 
         params.put("ret", false);
-        params.put("sampleId", sampleId);
-        params.put("sampleId", "%" + getSampleId()+ "%");
+        params.put("sampleId", "%" + sampleID + "%");
         params.put("fd", getFromDate());
         params.put("td", getToDate());
 
@@ -789,7 +792,7 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.ipOpOrCC = :tp ";
+            jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 
@@ -873,7 +876,7 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.ipOpOrCC = :tp ";
+            jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 
@@ -898,8 +901,6 @@ public class LaboratoryManagementController implements Serializable {
 
         items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
-
-    
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
@@ -1077,11 +1078,11 @@ public class LaboratoryManagementController implements Serializable {
         this.printIndividualBarcodes = printIndividualBarcodes;
     }
 
-    public Long getSampleId() {
+    public String getSampleId() {
         return sampleId;
     }
 
-    public void setSampleId(Long sampleId) {
+    public void setSampleId(String sampleId) {
         this.sampleId = sampleId;
     }
 
@@ -1132,7 +1133,7 @@ public class LaboratoryManagementController implements Serializable {
     public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
         this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
     }
-    
+
     public List<PatientInvestigation> getItems() {
         return items;
     }
