@@ -1575,6 +1575,21 @@ public class ReportController implements Serializable {
             m.put("machine", machine);
         }
 
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and bi.bill.department.site = :site ";
+            m.put("site", site);
+        }
+
         List<BillTypeAtomic> bTypes = Arrays.asList(
                 BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
                 BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
@@ -1634,10 +1649,10 @@ public class ReportController implements Serializable {
 
         //Add All Lab Test Count
         for (ItemCount count : allLabTestCounts) {
-            if (count.getTestCount() != 0.0) {
+//            if (count.getTestCount() != 0.0) {
                 categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L)).getItems().add(count);
                 categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
-            }
+//            }
         }
 
         // Convert the map values to a list to be used in the JSF page

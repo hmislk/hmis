@@ -170,7 +170,9 @@
                                 filter="true"
                                 class="w-100 ">
                             <f:selectItem itemLabel="All Categories"/>
-                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="category"
+<!--                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="category"-->
+<!--                                           itemLabel="#{category.name}" itemValue="#{category}"/>-->
+                            <f:selectItems value="#{categoryController.pharmaceuticalAndConsumableItemCategories}" var="category"
                                            itemLabel="#{category.name}" itemValue="#{category}"/>
                         </p:selectOneMenu>
 
@@ -181,10 +183,21 @@
                             <p:outputLabel value="Item Name" for="phmItem" class="m-3">
                             </p:outputLabel>
                         </h:panelGroup>
+<!--                        <p:autoComplete-->
+<!--                                id="phmItem"-->
+<!--                                value="#{pharmacyReportController.amp}"-->
+<!--                                completeMethod="#{ampController.completeAmp}"-->
+<!--                                var="item"-->
+<!--                                class="w-100"-->
+<!--                                minQueryLength="3"-->
+<!--                                maxResults="20"-->
+<!--                                inputStyleClass="w-100"-->
+<!--                                itemLabel="#{item.name}"-->
+<!--                                itemValue="#{item}"/>-->
                         <p:autoComplete
                                 id="phmItem"
                                 value="#{pharmacyReportController.amp}"
-                                completeMethod="#{ampController.completeAmp}"
+                                completeMethod="#{ampController.getPharmaceuticalAndStoreItemAmp()}"
                                 var="item"
                                 class="w-100"
                                 minQueryLength="3"
