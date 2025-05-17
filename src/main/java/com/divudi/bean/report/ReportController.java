@@ -1230,28 +1230,26 @@ public class ReportController implements Serializable {
     }
 
     public void createDebtorSettlement() {
-        String jpql = "SELECT bi from BillItem bi "
-                + "where bi.retired = :ret "
-                + "AND bi.bill.billTypeAtomic in :btas ";
-
+        StringBuilder jpql = new StringBuilder(
+                "SELECT bi FROM BillItem bi " +
+                "WHERE bi.retired = :ret " +
+                "AND bi.bill.billTypeAtomic IN :btas");
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
         m.put("btas", btas);
-
         if (institution != null) {
-            jpql += "AND bi.bill.fromInstitution = :cc ";
+            jpql.append(" AND bi.bill.fromInstitution = :cc");
             m.put("cc", institution);
         }
-
-        jpql += "AND bi.createdAt BETWEEN :fromDate AND :toDate";
+        jpql.append(" AND bi.createdAt BETWEEN :fromDate AND :toDate");
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
 
-        billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("billItems.size() = " + billItems.size());
+        billItems = billItemFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        
         if (selectedVoucherStatusOnDebtorSettlement != null) {
             // Filter the bills list based on the statusFilter
             billItems = filterBillsByStatus(billItems, selectedVoucherStatusOnDebtorSettlement);
@@ -1301,11 +1299,16 @@ public class ReportController implements Serializable {
             return "Unsettled";
         }
 
-        if (billitem.getReferenceBill().getPaidAmount() == billitem.getReferenceBill().getNetTotal()) {
+        Bill ref = billitem.getReferenceBill();
+        if (ref == null) {
+            return "Unsettled";
+        }
+        // safe equality check
+        if (Objects.equals(ref.getPaidAmount(), ref.getNetTotal())) {
             return "Settled";
         }
-
-        if (billitem.getReferenceBill().getNetTotal() > billitem.getReferenceBill().getPaidAmount()) {
+        // numeric comparison (primitive or compareTo for BigDecimal)
+        if (ref.getNetTotal() > ref.getPaidAmount()) {
             return "Partially Settled";
         }
 
