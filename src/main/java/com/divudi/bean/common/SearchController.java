@@ -261,11 +261,10 @@ public class SearchController implements Serializable {
         this.selectedChannelBookingBillRow = selectedChannelBookingBillRow;
     }
 
-
-    public void handleChannelBillRowClick(){
-        if(selectedChannelBookingBillRow.getBill() instanceof CancelledBill){
-            for(ReportTemplateRow r : bundle.getReportTemplateRows()){
-                if(r.getBill().getCancelledBill() != null && r.getBill().getCancelledBill().equals(selectedChannelBookingBillRow.getBill())){
+    public void handleChannelBillRowClick() {
+        if (selectedChannelBookingBillRow.getBill() instanceof CancelledBill) {
+            for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+                if (r.getBill().getCancelledBill() != null && r.getBill().getCancelledBill().equals(selectedChannelBookingBillRow.getBill())) {
                     this.selectedChannelBookingBillRow = r;
                 }
             }
@@ -5214,10 +5213,15 @@ public class SearchController implements Serializable {
     }
 
     public void createPoTablePharmacy() {
-        Date startTime = new Date();
-
-        createPoTable(InstitutionType.Dealer, BillType.PharmacyOrderApprove, BillType.PharmacyGrnBill);
-
+        List<BillTypeAtomic> billTypesToList = new ArrayList<>();
+        billTypesToList.add(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+        List<BillTypeAtomic> billTypesToAttachedToEachBillInTheList = new ArrayList<>();
+        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN);
+        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+        
+        createPoTable(InstitutionType.Dealer, billTypesToList, billTypesToAttachedToEachBillInTheList);
     }
 
     public void createPoTableStore() {
@@ -5227,6 +5231,8 @@ public class SearchController implements Serializable {
 
     }
 
+    
+    @Deprecated // Use the same overloaded method with billtypeatomic lists as parameters
     public void createPoTable(InstitutionType institutionType, BillType bt, BillType referenceBillType) {
         bills = null;
         String sql;
@@ -5275,7 +5281,57 @@ public class SearchController implements Serializable {
         }
 
     }
+    
+     public void createPoTable(InstitutionType institutionType, List<BillTypeAtomic> billTypeAtomicToList, List<BillTypeAtomic> referenceBillTypes) {
+        bills = null;
+        String sql;
+        HashMap tmp = new HashMap();
 
+        sql = "Select b From Bill b "
+                + " where  b.retired=false"
+                + " and b.billType in :btas"
+                + " and b.toInstitution.institutionType=:insTp "
+                + " and  b.referenceBill.institution=:ins "
+                + " and  b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.deptId) like :billNo )";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
+            sql += " and  ((b.toInstitution.name) like :toIns )";
+            tmp.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("insTp", institutionType);
+        tmp.put("ins", getSessionController().getInstitution());
+        tmp.put("btas", billTypeAtomicToList);
+        if (getReportKeyWord() != null) {
+            if (getReportKeyWord().isAdditionalDetails()) {
+                bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+            } else {
+                bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
+            }
+        } else {
+            bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
+        }
+        for (Bill b : bills) {
+            b.setListOfBill(getGrns(b, referenceBillTypes));
+        }
+
+    }
+
+    @Deprecated // Please use the overloaded method with Bill Type Atomics
     private List<Bill> getGrns(Bill b, BillType billType) {
         String sql = "Select b From BilledBill b "
                 + " where b.retired=false "
@@ -5288,6 +5344,20 @@ public class SearchController implements Serializable {
         return getBillFacade().findByJpql(sql, hm);
     }
 
+    
+    private List<Bill> getGrns(Bill b, List<BillTypeAtomic> btas) {
+        String sql = "Select b "
+                + " From Bill b "
+                + " where b.retired=false "
+                + " and b.billType=:btas"
+                + " and b.referenceBill=:ref";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        hm.put("btas", btas);
+        return getBillFacade().findByJpql(sql, hm);
+    }
+
+    
     private List<Bill> getIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
                 + " and b.billType=:btp and "
@@ -17898,7 +17968,7 @@ public class SearchController implements Serializable {
 
         List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
         bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
-      
+
         if (bookingType != null) {
             switch (bookingType) {
                 case "System Bookings":
