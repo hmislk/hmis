@@ -14,7 +14,7 @@
                 <p:panel>
                     <f:facet name="header">
                         <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
-                        <h:outputText value="Upload to Replace Site Fees by Item Code" styleClass="m-2"></h:outputText>
+                        <h:outputText value="Upload to Add Site Fees by Item Code" styleClass="m-2"></h:outputText>
                     </f:facet>
                     <h:form id="upload" enctype="multipart/form-data">
                         <p:panelGrid columns="2" >
@@ -39,8 +39,8 @@
                                       label="Choose File"/>
                         <p:commandButton 
                             icon="fa fa-upload"
-                            value="Upload and Replace Fee Values"
-                            action="#{itemController.uploadToReplaceSiteFeesByItemCode()}"
+                            value="Upload and Add Fee Values"
+                            action="#{itemController.uploadToAddSiteFeesByItemCode()}"
                             ajax="false"/>
 
 
