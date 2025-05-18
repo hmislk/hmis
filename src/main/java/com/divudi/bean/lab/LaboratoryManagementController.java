@@ -166,28 +166,20 @@ public class LaboratoryManagementController implements Serializable {
         PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
 
         if (null == currentPatientReport.getReportType()) {
-            System.out.println("Null");
             patientReportController.setCurrentPatientReport(currentPatientReport);
             return "/lab/patient_report?faces-redirect=true";
         } else {
             switch (currentPatientReport.getReportType()) {
                 case GENARATE:
-                    System.out.println("GENARATE");
                     patientReportController.setCurrentPatientReport(currentPatientReport);
                     patientReportController.fillReportFormats(currentPatientReport);
                     return "/lab/patient_report?faces-redirect=true";
                 case UPLOAD:
-                    System.out.println("UPLOAD");
 
                     Upload u = patientReportController.loadUpload(currentPatientReport);
 
-                    System.out.println("Report = " + currentPatientReport);
-                    System.out.println("Patient Investigation = " + currentPatientReport.getPatientInvestigation());
-
                     if (u != null) {
                         patientReportUploadController.setReportUpload(u);
-                        System.out.println("Upload Report = " + u.getPatientReport());
-                        System.out.println("Upload Investigation = " + u.getPatientInvestigation());
                     } else {
                         patientReportUploadController.setReportUpload(null);
                     }
@@ -1037,7 +1029,7 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Report");
             return;
         }
-        if (comment == null || comment.trim() == null) {
+        if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Add Comment");
             return;
         }
@@ -1055,7 +1047,7 @@ public class LaboratoryManagementController implements Serializable {
                 currentReportUpload.setRetired(true);
                 currentReportUpload.setRetiredAt(new Date());
                 currentReportUpload.setRetirer(sessionController.getLoggedUser());
-                uploadFacade.create(currentReportUpload);
+                uploadFacade.edit(currentReportUpload);
             }
         }
         patientReportFacade.edit(currentPatientReport);
