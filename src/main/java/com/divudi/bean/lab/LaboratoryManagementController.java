@@ -16,6 +16,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
 import com.divudi.core.facade.PatientSampleFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
@@ -52,6 +53,8 @@ public class LaboratoryManagementController implements Serializable {
     private PatientSampleFacade patientSampleFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    private PatientSampleComponantFacade patientSampleComponantFacade;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -93,6 +96,8 @@ public class LaboratoryManagementController implements Serializable {
     private Bill currentBill;
     private boolean printIndividualBarcodes;
     private List<Bill> bills = null;
+    private List<PatientInvestigation> items;
+    private String investigationName;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -120,6 +125,9 @@ public class LaboratoryManagementController implements Serializable {
     public void navigateToInvestigation() {
         activeIndex = 2;
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        performingInstitution = null;
+        performingDepartment = null;
+        patientInvestigationStatus = null;
     }
 
     public void navigateToSamples() {
@@ -301,7 +309,7 @@ public class LaboratoryManagementController implements Serializable {
         jpql += " AND b.createdAt BETWEEN :fd AND :td";
         params.put("fd", getFromDate());
         params.put("td", getToDate());
-        
+
         if (billNo != null && !billNo.trim().isEmpty()) {
             jpql += " AND b.deptId LIKE :billNo";
             params.put("billNo", "%" + getBillNo().trim() + "%");
@@ -357,7 +365,7 @@ public class LaboratoryManagementController implements Serializable {
             params.put("status", getPatientInvestigationStatus());
         }
 
-        if (sampleId != null && !sampleId.trim().isEmpty()) {
+        if (sampleId != null) {
             jpql += " AND (ps.sampleId like :smpid or ps.id like :smpId) ";
             params.put("smpid", "%" + String.valueOf(sampleId) + "%");
             params.put("smpId", "%" + String.valueOf(sampleId) + "%");
@@ -688,7 +696,7 @@ public class LaboratoryManagementController implements Serializable {
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
     }
-    
+
     public void navigateToSamplesFromSelectedBill(Bill bill) {
         patientSamples = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_SAMPLES;
@@ -707,12 +715,212 @@ public class LaboratoryManagementController implements Serializable {
         params.put("bill", bill);
 
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         selectAll = false;
 
     }
 
+    public void searchPatientInvestigations() {
+        items = new ArrayList();
 
+        if (sampleId != null) {
+            try {
+                Long id = Long.valueOf(sampleId);
+                searchPatientInvestigationsWithSampleId(id);
+            } catch (NumberFormatException e) {
+                searchPatientInvestigationsWithoutSampleId();
+            }
+        }
+    }
+
+    public void searchPatientInvestigationsWithSampleId(Long sampleID) {
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        // Query PatientSampleComponent to get PatientInvestigations
+        jpql = "SELECT i "
+                + "FROM PatientSampleComponant psc "
+                + " join psc.patientInvestigation i "
+                + " WHERE psc.retired = :ret "
+                + " AND psc.patientSample.id LIKE :sampleId "
+                + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td "
+                + " AND i.retired = :ret ";
+
+        params.put("ret", false);
+        params.put("sampleId", "%" + sampleID + "%");
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+
+        if (billNo != null && !billNo.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.deptId LIKE :billNo";
+            params.put("billNo", "%" + getBillNo().trim() + "%");
+        }
+
+        if (bhtNo != null && !bhtNo.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.patientEncounter is not null AND i.billItem.bill.patientEncounter.bhtNo LIKE :bht";
+            params.put("bht", "%" + getBhtNo().trim() + "%");
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
+            params.put("orderedInstitution", getOrderedInstitution());
+        }
+
+        if (orderedDepartment != null) {
+            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", getOrderedDepartment());
+        }
+
+        if (performingInstitution != null) {
+            jpql += " AND i.performInstitution = :performingInstitution ";
+            params.put("performingInstitution", getPerformingInstitution());
+        }
+
+        if (performingDepartment != null) {
+            jpql += " AND i.performDepartment = :performingDepartment ";
+            params.put("performingDepartment", getPerformingDepartment());
+        }
+
+        if (collectionCenter != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+            params.put("collectionCenter", getCollectionCenter());
+        }
+
+        if (route != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+            params.put("route", getRoute());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.patient.person.name LIKE :patientName ";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
+            params.put("tp", getType().trim());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+            params.put("referringDoctor", getReferringDoctor());
+        }
+
+        if (investigationName != null && !investigationName.trim().isEmpty()) {
+            jpql += " AND i.billItem.item.name like :investigation ";
+            params.put("investigation", "%" + investigationName.trim() + "%");
+        }
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND i.status = :patientInvestigationStatus ";
+            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+        }
+
+        jpql += " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+
+        items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void searchPatientInvestigationsWithoutSampleId() {
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret "
+                + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+
+        if (billNo != null && !billNo.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.deptId LIKE :billNo";
+            params.put("billNo", "%" + getBillNo().trim() + "%");
+        }
+
+        if (bhtNo != null && !bhtNo.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.patientEncounter is not null AND i.billItem.bill.patientEncounter.bhtNo LIKE :bht";
+            params.put("bht", "%" + getBhtNo().trim() + "%");
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
+            params.put("orderedInstitution", getOrderedInstitution());
+        }
+
+        if (orderedDepartment != null) {
+            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", getOrderedDepartment());
+        }
+
+        if (performingInstitution != null) {
+            jpql += " AND i.performInstitution = :peformingInstitution ";
+            params.put("peformingInstitution", getPerformingInstitution());
+        }
+
+        if (performingDepartment != null) {
+            jpql += " AND i.performDepartment = :peformingDepartment ";
+            params.put("peformingDepartment", getPerformingDepartment());
+        }
+
+        if (collectionCenter != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+            params.put("collectionCenter", getCollectionCenter());
+        }
+
+        if (route != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+            params.put("route", getRoute());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.patient.person.name LIKE :patientName ";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
+            params.put("tp", getType().trim());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+            params.put("referringDoctor", getReferringDoctor());
+        }
+
+        if (investigationName != null && !investigationName.trim().isEmpty()) {
+            jpql += " AND i.billItem.item.name like :investigation ";
+            params.put("investigation", "%" + investigationName.trim() + "%");
+        }
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND i.status = :patientInvestigationStatus ";
+            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+        }
+
+        jpql += " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+
+        items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<Long> getPatientSampleComponentsByInvestigation(PatientInvestigation patientInvestigation) {
+
+        List<Long> sampleIds = new ArrayList();
+        String jpql = "SELECT psc.patientSample.id "
+                + " FROM PatientSampleComponant psc "
+                + " WHERE psc.retired=:retired "
+                + " AND psc.patientInvestigation=:patientInvestigation";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);  // Assuming you want only non-retired records
+        params.put("patientInvestigation", patientInvestigation);
+        sampleIds = patientSampleComponantFacade.findLongList(jpql, params);
+        return sampleIds;
+    }
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
@@ -944,6 +1152,21 @@ public class LaboratoryManagementController implements Serializable {
     public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
         this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
     }
-    // </editor-fold>
 
+    public List<PatientInvestigation> getItems() {
+        return items;
+    }
+
+    public void setItems(List<PatientInvestigation> items) {
+        this.items = items;
+    }
+
+    public String getInvestigationName() {
+        return investigationName;
+    }
+
+    public void setInvestigationName(String investigationName) {
+        this.investigationName = investigationName;
+    }
+    // </editor-fold>
 }

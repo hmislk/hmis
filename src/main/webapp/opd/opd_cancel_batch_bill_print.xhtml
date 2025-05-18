@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/opd"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}">
+                    <na:not_authorize />
+                </h:panelGroup>
+                <h:form>
+                    <p:panel
+                        rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}">
+                        <f:facet name="header" >
+                            <h:outputText value="Cancel Batch Bill print" class="mt-2"></h:outputText>
+                            <p:commandButton  
+                                class="ui-button-secondary m-1"
+                                icon="fa-solid fa-arrow-left"
+                                action="#{opdBillController.navigateToSearchOpdBills()}"
+                                ajax="false"
+                                value="Back to Search"
+                                style="float: right;">
+                            </p:commandButton>
+                        </f:facet>
+                        <div class="row mb-2" >
+                            <div class="d-flex justify-content-end gap-2">
+                                <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                            </div> 
+                        </div>
+
+                        <div class="row" >
+                            <div class="col-2" ></div>
+                            <div class="col-4" >
+                                <p:panel>
+                                    <f:facet name="header" >
+                                        <div class="d-flex justify-content-between">
+                                            <p:outputLabel value="Individual Bills" class="mt-2"></p:outputLabel>
+                                            <p:commandButton 
+                                                value="Print" 
+                                                class="ui-button-info"
+                                                icon="fa fa-print"
+                                                ajax="false">
+                                                <p:printer target="groupPrint" />
+                                            </p:commandButton>
+                                        </div>
+                                    </f:facet>
+                                    <h:panelGroup id="groupPrint" >
+                                        <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
+
+
+                                            <h:panelGroup
+                                                id="gpBillPreviewFiveFiveCustom3" 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}"> 
+                                                <ui:repeat value="#{opdBillController.bills}" var="bc3" >
+                                                    <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="false"/>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                    <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                    <prints:five_five_paper_coustom_1_cancellation_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="ffpp">
+                                                    <prints:five_five_paper_without_headings 
+                                                        bill="#{ffpp}" 
+                                                        duplicate="#{opdBillController.duplicatePrint}"
+                                                        payments="#{opdBillController.payments}"/>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="pp">
+                                                    <prints:posOpdBillWithoutLogo bill="#{pp}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="pp">
+                                                    <prints:posOpdBill bill="#{pp}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="pp">
+                                                    <prints:A4_paper_with_headings bill="#{pp}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="pp">
+                                                    <prints:A4_paper_without_headings bill="#{pp}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosBatchPaper'}" >
+                                                <prints:pos_opd_bill_batch_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBatchBill'}" >
+                                                <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                    <prints:five_five_custom_3 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+
+                                        </ui:repeat>
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>
+                            <div class="col-4" >
+                                <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Showing OPD Batch Bill to Print')}">
+                                    <f:facet name="header" >
+                                        <div class="d-flex justify-content-between">
+                                            <p:outputLabel value="Batch Bill" class="mt-2"></p:outputLabel>
+                                            <p:commandButton
+                                                value="Print" 
+                                                class="ui-button-info"
+                                                icon="fa fa-print"
+                                                ajax="false">
+                                                <p:printer target="groupBatchBillPrint" />
+                                            </p:commandButton> 
+                                        </div>
+                                    </f:facet>
+                                    <h:panelGroup id="groupBatchBillPrint" rendered="#{configOptionApplicationController.getBooleanValueByKey('Showing OPD Batch Bill to Print')}">
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                            <prints:five_five_paper_coustom_1_OPD_Cancel_Batch_Bill bill="#{opdBillController.batchBill}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <prints:five_five_paper_with_headings_badge_bill billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}">
+                                            <prints:five_five_paper_without_headings_badge_bill billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}">
+                                            <prints:pos_opd_bill_batch billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}">
+                                            <prints:pos_opd_bill_without_logo_batch billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                        </div>
+                        <div class="col-2" ></div>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

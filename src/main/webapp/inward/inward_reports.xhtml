@@ -19,6 +19,7 @@
                                 <p:tab title="Admission Reports" closable="false">
                                     <div class="d-grid gap-2"> 
                                         <p:commandButton  ajax="false" value="Admission Report" action="report_admissions?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"/>
+                                        <p:commandButton ajax="false" value="Admission Report by Consultant" action="report_admission_by_consultant?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"/>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Service Reports" closable="false">
