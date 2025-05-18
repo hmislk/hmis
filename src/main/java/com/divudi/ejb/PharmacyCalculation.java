@@ -4,6 +4,7 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
@@ -33,6 +34,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -41,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -72,6 +75,9 @@ public class PharmacyCalculation implements Serializable {
     private BillFacade billFacade;
     @EJB
     private BillNumberGenerator billNumberBean;
+
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
 //    public void editBill(Bill bill, Bill ref, SessionController sc) {
 //
@@ -647,19 +653,33 @@ public class PharmacyCalculation implements Serializable {
 
     public ItemBatch saveItemBatch(BillItem tmp) {
         //System.err.println("Save Item Batch");
+
+        
+
         ItemBatch itemBatch = new ItemBatch();
         Item itm = tmp.getItem();
 
         if (itm instanceof Ampp) {
             itm = ((Ampp) itm).getAmp();
         }
-
-        double purchase = tmp.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+        double purchase;
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Cost", true);
+        if (manageCosting) {
+            purchase = tmp.getBillItemFinanceDetails().getBillItemCostForTheLine()
+              .divide(tmp.getBillItemFinanceDetails().getQuantity(), 6, RoundingMode.HALF_UP)
+              .doubleValue();
+// 4.646464
+// 4.646464
+        } else {
+            purchase = tmp.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+            // 4
+        }
         double retail = tmp.getPharmaceuticalBillItem().getRetailRateInUnit();
         double wholesale = tmp.getPharmaceuticalBillItem().getWholesaleRate();
         ////// // System.out.println("wholesale = " + wholesale);
         itemBatch.setDateOfExpire(tmp.getPharmaceuticalBillItem().getDoe());
         itemBatch.setBatchNo(tmp.getPharmaceuticalBillItem().getStringValue());
+
         itemBatch.setPurcahseRate(purchase);
         itemBatch.setRetailsaleRate(retail);
         itemBatch.setWholesaleRate(wholesale);

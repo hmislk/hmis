@@ -21,6 +21,7 @@ import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BillNumber;
@@ -48,6 +49,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -188,7 +190,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         currentBillItem = null;
         distributeProportionalBillValuesToItems(getBillItems(), getBill());
-        calulateTotalsWhenAddingItemsOldMethod();
+        calculateBillTotalsFromItems();
+//        calulateTotalsWhenAddingItemsOldMethod();
     }
 
     private void recalculateFinancialsBeforeAddingBillItem(BillItemFinanceDetails f, boolean fromDiscountRate) {
@@ -300,8 +303,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             BigDecimal costRate = totalQty.compareTo(BigDecimal.ZERO) > 0
                     ? cost.divide(totalQty, 6, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
-            f.setBillItemCostRateFromBill(costRate.setScale(2, RoundingMode.HALF_UP));
-            f.setTotalBillItemCostRate(costRate.setScale(2, RoundingMode.HALF_UP));
+            f.setBillItemCostRateFromBill(costRate.setScale(4, RoundingMode.HALF_UP));
+            f.setTotalBillItemCostRate(costRate.setScale(4, RoundingMode.HALF_UP));
         }
     }
 
@@ -384,9 +387,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
 
         BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
+        BigDecimal fqty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
         BigDecimal retailRate = f.getRetailSaleRate() != null ? f.getRetailSaleRate() : BigDecimal.ZERO;
-
-        BigDecimal retailValue = retailRate.multiply(qty);
+        BigDecimal totalQty = qty.add(fqty);
+        BigDecimal retailValue = retailRate.multiply(totalQty);
         f.setRetailSaleValue(retailValue.setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal unit = qty.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : qty;
@@ -802,7 +806,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBill().setNetTotal(grossTotal);
             ////// // System.out.println("net2" + getBill().getNetTotal());
         }
-
+        distributeProportionalBillValuesToItems(billItems, bill);
     }
 
     public void addExpense() {
@@ -1115,6 +1119,93 @@ public class PharmacyDirectPurchaseController implements Serializable {
         getBill().setSaleValue(saleValue);
     }
 
+    public void calculateBillTotalsFromItems() {
+        double tot = 0.0;
+        double saleValue = 0.0;
+        int serialNo = 0;
+
+        BigDecimal billDiscount = BigDecimal.ZERO;
+        BigDecimal totalLineDiscounts = BigDecimal.ZERO;
+        BigDecimal totalDiscount = BigDecimal.ZERO;
+        BigDecimal totalExpense = BigDecimal.ZERO;
+        BigDecimal totalFreeItemValue = BigDecimal.ZERO;
+        BigDecimal totalCost = BigDecimal.ZERO;
+        BigDecimal totalPurchase = BigDecimal.ZERO;
+        BigDecimal totalQty = BigDecimal.ZERO;
+        BigDecimal totalFreeQty = BigDecimal.ZERO;
+        BigDecimal totalTax = BigDecimal.ZERO;
+        BigDecimal totalRetail = BigDecimal.ZERO;
+        BigDecimal totalWholesale = BigDecimal.ZERO;
+        BigDecimal totalQtyAtomic = BigDecimal.ZERO;
+        BigDecimal totalFreeQtyAtomic = BigDecimal.ZERO;
+
+        for (BillItem bi : getBillItems()) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+
+            if (bi.getItem() instanceof Ampp) {
+                bi.setQty(pbi.getQtyPacks());
+                bi.setRate(pbi.getPurchaseRatePack());
+            } else if (bi.getItem() instanceof Amp) {
+                bi.setQty(pbi.getQty());
+                bi.setRate(pbi.getPurchaseRate());
+            }
+
+            bi.setSearialNo(serialNo++);
+            double netValue = bi.getQty() * bi.getRate();
+            bi.setNetValue(0 - netValue);
+            tot += bi.getNetValue();
+
+            // Preserve legacy sale value
+            saleValue += (pbi.getQty() + pbi.getFreeQty()) * pbi.getRetailRate();
+
+            if (f != null) {
+                billDiscount = billDiscount.add(f.getBillItemDiscountFromBill());
+                totalLineDiscounts = totalLineDiscounts.add(f.getLineDiscount());
+                totalDiscount = totalDiscount.add(f.getTotalBillItemDiscount());
+                totalExpense = totalExpense.add(f.getTotalBillItemExpense());
+                totalFreeItemValue = totalFreeItemValue.add(f.getFreeValue() != null ? f.getFreeValue() : BigDecimal.ZERO);
+                totalCost = totalCost.add(f.getTotalBillItemCost());
+                totalPurchase = totalPurchase.add(f.getGrossTotal());
+                totalQty = totalQty.add(f.getQuantity());
+                totalFreeQty = totalFreeQty.add(f.getFreeQuantity());
+                totalTax = totalTax.add(f.getTotalBillItemTax());
+                totalRetail = totalRetail.add(f.getRetailSaleValue());
+                totalWholesale = totalWholesale.add(f.getWholesaleValue() != null ? f.getWholesaleValue() : BigDecimal.ZERO);
+                totalQtyAtomic = totalQtyAtomic.add(f.getQuantity()); // update if separate conversion logic applies
+                totalFreeQtyAtomic = totalFreeQtyAtomic.add(f.getFreeQuantity());
+            }
+        }
+
+        // Set legacy values
+        getBill().setTotal(tot);
+        getBill().setNetTotal(tot);
+        getBill().setSaleValue(saleValue);
+
+        // Set finance details
+        BillFinanceDetails bfd = getBill().getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(getBill());
+            getBill().setBillFinanceDetails(bfd);
+        }
+
+        bfd.setBillDiscount(billDiscount);
+        bfd.setTotalOfBillLineDiscounts(totalLineDiscounts);
+        bfd.setTotalDiscount(totalDiscount);
+        bfd.setTotalExpense(totalExpense);
+        bfd.setTotalOfFreeItemValues(totalFreeItemValue);
+        bfd.setTotalCostValue(totalCost);
+        bfd.setTotalPurchaseValue(totalPurchase);
+        bfd.setTotalQuantity(totalQty);
+        bfd.setTotalFreeQuantity(totalFreeQty);
+        bfd.setTotalTaxValue(totalTax);
+        bfd.setTotalRetailSaleValue(totalRetail);
+        bfd.setTotalWholesaleValue(totalWholesale);
+        bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
+        bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(totalFreeQtyAtomic);
+    }
+
+    @Deprecated // use 
     public void calulateTotalsWhenAddingItemsOldMethod() {
         double tot = 0.0;
         double saleValue = 0.0;
