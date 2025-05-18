@@ -34,89 +34,111 @@ public class BillItemFinanceDetails implements Serializable {
     @ManyToOne
     private WebUser createdBy;
 
+    // Conversion: number of units per pack (e.g., tablets in a blister)
     private BigDecimal unitsPerPack = BigDecimal.ZERO;
 
-    // Rates
+    // ------------------ RATES ------------------
+    // Base price before any deductions
     private BigDecimal grossRate = BigDecimal.ZERO;
+
+    // Final rate after all discounts, expenses, and taxes
     private BigDecimal netRate = BigDecimal.ZERO;
 
+    // Discount percentages applied at line level, bill level, and total
     private BigDecimal lineDiscountRate = BigDecimal.ZERO;
     private BigDecimal billDiscountRate = BigDecimal.ZERO;
     private BigDecimal totalDiscountRate = BigDecimal.ZERO;
 
+    // Expense percentages applied at line level, bill level, and total
     private BigDecimal lineExpenseRate = BigDecimal.ZERO;
     private BigDecimal billExpenseRate = BigDecimal.ZERO;
     private BigDecimal totalExpenseRate = BigDecimal.ZERO;
 
-    // Tax Rates
+    // Tax percentages applied at bill, line, and total
     private BigDecimal billTaxRate = BigDecimal.ZERO;
     private BigDecimal lineTaxRate = BigDecimal.ZERO;
     private BigDecimal totalTaxRate = BigDecimal.ZERO;
 
-    // Costs
+    // Cost percentages applied at bill, line, and total
     private BigDecimal billCostRate = BigDecimal.ZERO;
     private BigDecimal lineCostRate = BigDecimal.ZERO;
     private BigDecimal totalCostRate = BigDecimal.ZERO;
 
-    // Gross and Net Totals
+    // ------------------ TOTALS ------------------
+    // Value before deductions
     private BigDecimal grossTotal = BigDecimal.ZERO;
+
+    // Value after deductions
     private BigDecimal netTotal = BigDecimal.ZERO;
 
+    // Absolute discount values
     private BigDecimal lineDiscount = BigDecimal.ZERO;
     private BigDecimal billDiscount = BigDecimal.ZERO;
     private BigDecimal totalDiscount = BigDecimal.ZERO;
 
+    // Retail and wholesale rates
     private BigDecimal retailSaleRate = BigDecimal.ZERO;
     private BigDecimal wholesaleRate = BigDecimal.ZERO;
 
+    // Retail and wholesale rates per unit (based on unitsPerPack)
     private BigDecimal retailSaleRatePerUnit = BigDecimal.ZERO;
     private BigDecimal wholesaleRatePerUnit = BigDecimal.ZERO;
 
+    // Absolute tax values
     private BigDecimal billTax = BigDecimal.ZERO;
     private BigDecimal lineTax = BigDecimal.ZERO;
     private BigDecimal totalTax = BigDecimal.ZERO;
 
-    // Expenses
+    // Absolute expense values
     private BigDecimal billExpense = BigDecimal.ZERO;
     private BigDecimal lineExpense = BigDecimal.ZERO;
     private BigDecimal totalExpense = BigDecimal.ZERO;
 
-    // Costs
+    // Absolute cost values
     private BigDecimal billCost = BigDecimal.ZERO;
     private BigDecimal lineCost = BigDecimal.ZERO;
     private BigDecimal totalCost = BigDecimal.ZERO;
 
-    // Percentages
+    // ------------------ PERCENTAGES ------------------
+    // Discounts as percentages from bill, line, and total
     private BigDecimal discountPercentageFromBill = BigDecimal.ZERO;
     private BigDecimal discountPercentageForTheLine = BigDecimal.ZERO;
     private BigDecimal totalDiscountPercentage = BigDecimal.ZERO;
 
+    // Taxes as percentages from bill, line, and total
     private BigDecimal taxPercentageFromBill = BigDecimal.ZERO;
     private BigDecimal taxPercentageForTheLine = BigDecimal.ZERO;
     private BigDecimal totalTaxPercentage = BigDecimal.ZERO;
 
+    // Expenses as percentages from bill, line, and total
     private BigDecimal expensePercentageFromBill = BigDecimal.ZERO;
     private BigDecimal expensePercentageForTheLine = BigDecimal.ZERO;
     private BigDecimal totalExpensePercentage = BigDecimal.ZERO;
 
+    // Costs as percentages from bill, line, and total
     private BigDecimal costPercentageFromBill = BigDecimal.ZERO;
     private BigDecimal costPercentageForTheLine = BigDecimal.ZERO;
     private BigDecimal totalCostPercentage = BigDecimal.ZERO;
 
-    // Quantities and values
+    // ------------------ QUANTITIES ------------------
+    // Quantities as entered (in packs when item is an AMPP or in units if item is AMP)
     private BigDecimal freeQuantity = BigDecimal.ZERO;
     private BigDecimal quantity = BigDecimal.ZERO;
     private BigDecimal totalQuantity = BigDecimal.ZERO;
 
+    // Quantities converted to atomic units (e.g., tablets)
     private BigDecimal freeQuantityByUnits = BigDecimal.ZERO;
     private BigDecimal quantityByUnits = BigDecimal.ZERO;
     private BigDecimal totalQuantityByUnits = BigDecimal.ZERO;
 
+    // ------------------ VALUE ESTIMATES ------------------
+    // Value of free items at different rates
     private BigDecimal freeValueAtCostRate = BigDecimal.ZERO;
     private BigDecimal freeValueAtRetailRate = BigDecimal.ZERO;
     private BigDecimal freeValueAtPurchaseRate = BigDecimal.ZERO;
     private BigDecimal freeValueAtWholesaleRate = BigDecimal.ZERO;
-    
+
+    // Value of total quantity at different rates
     private BigDecimal valueAtRetailRate = BigDecimal.ZERO;
     private BigDecimal valueAtWholesaleRate = BigDecimal.ZERO;
     private BigDecimal valueAtPurchaseRate = BigDecimal.ZERO;
@@ -155,6 +177,8 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal totalPaidAsOnCall = BigDecimal.ZERO;
     private BigDecimal totalPaidAsYouOweMe = BigDecimal.ZERO;
     private BigDecimal totalPaidAsNone = BigDecimal.ZERO;
+    
+    
 
     public BillItemFinanceDetails() {
         createdAt = new Date();
@@ -930,6 +954,70 @@ public class BillItemFinanceDetails implements Serializable {
 
     public void setUnitsPerPack(BigDecimal unitsPerPack) {
         this.unitsPerPack = unitsPerPack;
+    }
+
+    public BigDecimal getBillExpenseRate() {
+        return billExpenseRate;
+    }
+
+    public void setBillExpenseRate(BigDecimal billExpenseRate) {
+        this.billExpenseRate = billExpenseRate;
+    }
+
+    public BigDecimal getTotalExpenseRate() {
+        return totalExpenseRate;
+    }
+
+    public void setTotalExpenseRate(BigDecimal totalExpenseRate) {
+        this.totalExpenseRate = totalExpenseRate;
+    }
+
+    public BigDecimal getFreeQuantityByUnits() {
+        return freeQuantityByUnits;
+    }
+
+    public void setFreeQuantityByUnits(BigDecimal freeQuantityByUnits) {
+        this.freeQuantityByUnits = freeQuantityByUnits;
+    }
+
+    public BigDecimal getQuantityByUnits() {
+        return quantityByUnits;
+    }
+
+    public void setQuantityByUnits(BigDecimal quantityByUnits) {
+        this.quantityByUnits = quantityByUnits;
+    }
+
+    public BigDecimal getTotalQuantityByUnits() {
+        return totalQuantityByUnits;
+    }
+
+    public void setTotalQuantityByUnits(BigDecimal totalQuantityByUnits) {
+        this.totalQuantityByUnits = totalQuantityByUnits;
+    }
+
+    public BigDecimal getFreeValueAtRetailRate() {
+        return freeValueAtRetailRate;
+    }
+
+    public void setFreeValueAtRetailRate(BigDecimal freeValueAtRetailRate) {
+        this.freeValueAtRetailRate = freeValueAtRetailRate;
+    }
+
+    public BigDecimal getFreeValueAtPurchaseRate() {
+        return freeValueAtPurchaseRate;
+    }
+
+    public void setFreeValueAtPurchaseRate(BigDecimal freeValueAtPurchaseRate) {
+        this.freeValueAtPurchaseRate = freeValueAtPurchaseRate;
+    }
+
+    public BigDecimal getFreeValueAtWholesaleRate() {
+        return freeValueAtWholesaleRate;
+    }
+
+    public void setFreeValueAtWholesaleRate(BigDecimal freeValueAtWholesaleRate) {
+        this.freeValueAtWholesaleRate = freeValueAtWholesaleRate;
     }
 
 }
