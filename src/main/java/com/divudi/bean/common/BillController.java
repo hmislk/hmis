@@ -1807,7 +1807,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         batchBillCancellationStarted = false;
         return "/opd/batch_bill_cancel?faces-redirect=true;";
     }
-
+    
+    private List<Bill> cancelSingleBills = new ArrayList<>();
     public String cancelOpdBatchBill() {
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
@@ -1891,6 +1892,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         cancellationBatchBill.setGrantTotal(0 - Math.abs(batchBill.getGrantTotal()));
         cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
         cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
+        cancellationBatchBill.setReferenceBill(batchBill);
         cancellationBatchBill.setComments(comment);
         if (paymentMethod != null) {
             cancellationBatchBill.setPaymentMethod(paymentMethod);
@@ -1903,11 +1905,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         getBillFacade().edit(batchBill);
 
         bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
-
+        
+        cancelSingleBills = new ArrayList();
+        
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
-
+        
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBatchBill, pd);
@@ -1936,13 +1940,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         drawerController.updateDrawerForOuts(cancelPayments);
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
-        opdBillController.setBills(bills);
-        opdBillController.setBatchBill(batchBill);
+        
+        opdBillController.setBills(cancelSingleBills);
+        opdBillController.setBatchBill(cancellationBatchBill);
         getSessionController().setLoggedUser(wb);
 
         printPreview = true;
         batchBillCancellationStarted = false;
-        return "/opd/opd_batch_bill_print?faces-redirect=true";
+        return "/opd/opd_cancel_batch_bill_print?faces-redirect=true";
     }
 
     public String cancelPackageBatchBill() {
@@ -2187,8 +2192,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         individualCancelltionBill.setDepartment(getSessionController().getDepartment());
         individualCancelltionBill.setInstitution(getSessionController().getInstitution());
         individualCancelltionBill.setForwardReferenceBill(cancellationBatchBill);
+        individualCancelltionBill.setReferenceBill(originalBill);
         individualCancelltionBill.setComments(comment);
         billService.saveBill(individualCancelltionBill);
+        cancelSingleBills.add(individualCancelltionBill);
 
         List<BillItem> list = createBillItemsForOpdBatchBillCancellation(originalBill, individualCancelltionBill);
         try {
@@ -4903,6 +4910,17 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     public void setBillIdToAssignBillItems(Long billIdToAssignBillItems) {
         this.billIdToAssignBillItems = billIdToAssignBillItems;
+    }
+
+    public List<Bill> getCancelSingleBills() {
+        if (cancelSingleBills == null) {
+            cancelSingleBills = new ArrayList<>();
+        }
+        return cancelSingleBills;
+    }
+
+    public void setCancelSingleBills(List<Bill> cancelSingleBills) {
+        this.cancelSingleBills = cancelSingleBills;
     }
 
     /**
