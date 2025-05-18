@@ -595,22 +595,27 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 continue;
             }
 
-            Bill correctReferenceBill = null;
+            Bill correctReferenceOfPoBill = null;
             for (BillItem returnItem : returnItems) {
                 BillItem refItem = returnItem.getReferanceBillItem();
                 if (refItem == null || refItem.getBill() == null) {
                     continue;
                 }
                 if (refItem.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
-                    correctReferenceBill = refItem.getBill();
+                    correctReferenceOfPoBill = refItem.getBill();
                     break;
                 }
             }
 
-            if (correctReferenceBill != null) {
-                grnReturnBill.setReferenceBill(correctReferenceBill);
+            if (correctReferenceOfPoBill != null) {
+                grnReturnBill.setReferenceBill(correctReferenceOfPoBill);
                 billFacade.edit(grnReturnBill);
-                output += "Fixed: GRN Return #" + grnReturnBill.getDeptId() + " reference updated to PO #" + correctReferenceBill.getDeptId() + ".\n";
+                
+                grnBill.setReferenceBill(correctReferenceOfPoBill);
+                billFacade.edit(grnBill);
+                
+                output += "Fixed: GRN Return #" + grnReturnBill.getDeptId() + " reference updated to PO #" + correctReferenceOfPoBill.getDeptId() + ".\n";
+                output += "Fixed: GRN #" + grnBill.getDeptId() + " reference updated to PO #" + correctReferenceOfPoBill.getDeptId() + ".\n";
                 fixedCount++;
             } else {
                 output += "Failed to find correct PO for GRN Return #" + grnReturnBill.getDeptId() + ".\n";
