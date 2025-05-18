@@ -665,7 +665,7 @@ public class PharmacyCalculation implements Serializable {
         double purchase;
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Cost", true);
         if (manageCosting) {
-            purchase = tmp.getBillItemFinanceDetails().getBillItemCostForTheLine()
+            purchase = tmp.getBillItemFinanceDetails().getLineCost()
               .divide(tmp.getBillItemFinanceDetails().getQuantity(), 6, RoundingMode.HALF_UP)
               .doubleValue();
 // 4.646464

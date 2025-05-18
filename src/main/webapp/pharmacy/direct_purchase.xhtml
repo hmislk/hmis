@@ -298,7 +298,7 @@
                                         id="txtRetailValue"
                                         onfocus="this.select()"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleValue}" >
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.valueAtRetailRate}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </div>
@@ -313,7 +313,7 @@
                                         id="txtRetailValueByUnit"
                                         onfocus="this.select()"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleValueByUnit}" >
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.valueAtPurchaseRate}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </div>
@@ -562,12 +562,12 @@
                                                 </p:outputLabel>
 
                                                 <p:outputLabel value="Cost Rate (From Bill)" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billItemCostRateFromBill}" styleClass="text-end">
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billCostRate}" styleClass="text-end">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </p:outputLabel>
 
                                                 <p:outputLabel value="Total Cost Rate" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalBillItemCostRate}" styleClass="text-end">
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalCostRate}" styleClass="text-end">
                                                     <f:convertNumber pattern="#,##0.0000" />
                                                 </p:outputLabel>
                                             </p:panelGrid>
@@ -583,12 +583,12 @@
                                                 </p:outputLabel>
 
                                                 <p:outputLabel value="Bill Discount from Bill" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billItemDiscountFromBill}" styleClass="text-end">
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billTaxRate}" styleClass="text-end">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </p:outputLabel>
 
                                                 <p:outputLabel value="Total Discount" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalBillItemDiscount}" styleClass="text-end">
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalTaxRate}" styleClass="text-end">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </p:outputLabel>
 
@@ -603,7 +603,7 @@
                                                 </p:outputLabel>
 
                                                 <p:outputLabel value="Retail Sale Value" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.retailSaleValue}" styleClass="text-end">
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.valuvalueAtRetailRatetyleClass="text-end">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </p:outputLabel>
 
@@ -613,7 +613,7 @@
                                                 </p:outputLabel>
 
                                                 <p:outputLabel value="Total Cost" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalBillItemCost}" styleClass="text-end">
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalCost}" styleClass="text-end">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </p:outputLabel>
 

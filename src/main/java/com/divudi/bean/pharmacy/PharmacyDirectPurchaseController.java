@@ -216,11 +216,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         BigDecimal netTotal = grossTotal.subtract(lineDiscountValue);
         f.setNetTotal(netTotal.setScale(2, RoundingMode.HALF_UP));
-        f.setRetailSaleValue(netTotal.setScale(2, RoundingMode.HALF_UP));
+        f.setValueAtRetailRate(netTotal.setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal unit = qty.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : qty;
         BigDecimal perUnit = netTotal.divide(unit, 6, RoundingMode.HALF_UP);
-        f.setRetailSaleValueByUnit(perUnit.setScale(2, RoundingMode.HALF_UP));
+        f.setValueAtPurchaseRate(perUnit.setScale(2, RoundingMode.HALF_UP));
     }
 
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
@@ -278,22 +278,22 @@ public class PharmacyDirectPurchaseController implements Serializable {
             BigDecimal itemTax = billTaxTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
 
             // Set allocated values
-            f.setBillItemDiscountFromBill(itemDiscount);
-            f.setBillItemExpenseFromBill(itemExpense);
-            f.setBillItemTaxFromBill(itemTax);
+            f.setBillTaxRate(itemDiscount);
+            f.setBillExpense(itemExpense);
+            f.setBillTax(itemTax);
 
             // Totals
-            f.setTotalBillItemDiscount(f.getLineDiscount().add(itemDiscount));
-            f.setTotalBillItemExpense(itemExpense);
-            f.setTotalBillItemTax(itemTax);
+            f.setTotalTaxRate(f.getLineDiscount().add(itemDiscount));
+            f.setTotalExpense(itemExpense);
+            f.setTotalTax(itemTax);
 
             // Cost = grossTotal - totalDiscount + totalTax + expense
             BigDecimal cost = f.getGrossTotal()
-                    .subtract(f.getTotalBillItemDiscount())
-                    .add(f.getTotalBillItemTax())
-                    .add(f.getTotalBillItemExpense());
-            f.setBillItemCostFromBill(cost.setScale(2, RoundingMode.HALF_UP));
-            f.setTotalBillItemCost(cost.setScale(2, RoundingMode.HALF_UP));
+                    .subtract(f.getTotalTaxRate())
+                    .add(f.getTotalTax())
+                    .add(f.getTotalExpense());
+            f.setBillCost(cost.setScale(2, RoundingMode.HALF_UP));
+            f.setTotalCost(cost.setScale(2, RoundingMode.HALF_UP));
 
             // Cost Rate = cost / (qty + free)
             BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
@@ -303,8 +303,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             BigDecimal costRate = totalQty.compareTo(BigDecimal.ZERO) > 0
                     ? cost.divide(totalQty, 6, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
-            f.setBillItemCostRateFromBill(costRate.setScale(4, RoundingMode.HALF_UP));
-            f.setTotalBillItemCostRate(costRate.setScale(4, RoundingMode.HALF_UP));
+            f.setBillCostRate(costRate.setScale(4, RoundingMode.HALF_UP));
+            f.setTotalCostRate(costRate.setScale(4, RoundingMode.HALF_UP));
         }
     }
 
@@ -334,12 +334,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
         f.setTotalQuantity(totalQty.setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal freeValue = grossRate.multiply(freeQty);
-        f.setFreeValue(freeValue.setScale(2, RoundingMode.HALF_UP));
+        f.setFreeValueAtCostRate(freeValue.setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal netTotal = f.getNetTotal() != null ? f.getNetTotal() : BigDecimal.ZERO;
         BigDecimal unit = qty.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : qty;
         BigDecimal perUnit = netTotal.divide(unit, 6, RoundingMode.HALF_UP);
-        f.setRetailSaleValueByUnit(perUnit.setScale(2, RoundingMode.HALF_UP));
+        f.setValueAtPurchaseRate(perUnit.setScale(2, RoundingMode.HALF_UP));
     }
 
     public void onGrossRateChange() {
@@ -355,7 +355,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
         BigDecimal grossRate = f.getGrossRate() != null ? f.getGrossRate() : BigDecimal.ZERO;
         BigDecimal freeValue = grossRate.multiply(freeQty);
-        f.setFreeValue(freeValue.setScale(2, RoundingMode.HALF_UP));
+        f.setFreeValueAtCostRate(freeValue.setScale(2, RoundingMode.HALF_UP));
     }
 
     public void onLineDiscountRateChange() {
@@ -391,11 +391,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BigDecimal retailRate = f.getRetailSaleRate() != null ? f.getRetailSaleRate() : BigDecimal.ZERO;
         BigDecimal totalQty = qty.add(fqty);
         BigDecimal retailValue = retailRate.multiply(totalQty);
-        f.setRetailSaleValue(retailValue.setScale(2, RoundingMode.HALF_UP));
+        f.setValueAtRetailRate(retailValue.setScale(2, RoundingMode.HALF_UP));
 
         BigDecimal unit = qty.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : qty;
         BigDecimal perUnit = retailValue.divide(unit, 6, RoundingMode.HALF_UP);
-        f.setRetailSaleValueByUnit(perUnit.setScale(2, RoundingMode.HALF_UP));
+        f.setValueAtPurchaseRate(perUnit.setScale(2, RoundingMode.HALF_UP));
     }
 
     public void onRetailSaleRatePerUnitChange() {
@@ -410,8 +410,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BigDecimal ratePerUnit = f.getRetailSaleRatePerUnit() != null ? f.getRetailSaleRatePerUnit() : BigDecimal.ZERO;
 
         BigDecimal retailValue = ratePerUnit.multiply(qty);
-        f.setRetailSaleValueByUnit(ratePerUnit.setScale(2, RoundingMode.HALF_UP));
-        f.setRetailSaleValue(retailValue.setScale(2, RoundingMode.HALF_UP));
+        f.setValueAtPurchaseRate(ratePerUnit.setScale(2, RoundingMode.HALF_UP));
+        f.setValueAtRetailRate(retailValue.setScale(2, RoundingMode.HALF_UP));
     }
 
     // </editor-fold>  
@@ -1160,18 +1160,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
             saleValue += (pbi.getQty() + pbi.getFreeQty()) * pbi.getRetailRate();
 
             if (f != null) {
-                billDiscount = billDiscount.add(f.getBillItemDiscountFromBill());
+                billDiscount = billDiscount.add(f.getBillTaxRate());
                 totalLineDiscounts = totalLineDiscounts.add(f.getLineDiscount());
-                totalDiscount = totalDiscount.add(f.getTotalBillItemDiscount());
-                totalExpense = totalExpense.add(f.getTotalBillItemExpense());
-                totalFreeItemValue = totalFreeItemValue.add(f.getFreeValue() != null ? f.getFreeValue() : BigDecimal.ZERO);
-                totalCost = totalCost.add(f.getTotalBillItemCost());
+                totalDiscount = totalDiscount.add(f.getTotalTaxRate());
+                totalExpense = totalExpense.add(f.getTotalExpense());
+                totalFreeItemValue = totalFreeItemValue.add(f.getFreeValueAtCostRate() != null ? f.getFreeValueAtCostRate() : BigDecimal.ZERO);
+                totalCost = totalCost.add(f.getTotalCost());
                 totalPurchase = totalPurchase.add(f.getGrossTotal());
                 totalQty = totalQty.add(f.getQuantity());
                 totalFreeQty = totalFreeQty.add(f.getFreeQuantity());
-                totalTax = totalTax.add(f.getTotalBillItemTax());
-                totalRetail = totalRetail.add(f.getRetailSaleValue());
-                totalWholesale = totalWholesale.add(f.getWholesaleValue() != null ? f.getWholesaleValue() : BigDecimal.ZERO);
+                totalTax = totalTax.add(f.getTotalTax());
+                totalRetail = totalRetail.add(f.getValueAtRetailRate());
+                totalWholesale = totalWholesale.add(f.getValueAtWholesaleRate() != null ? f.getValueAtWholesaleRate() : BigDecimal.ZERO);
                 totalQtyAtomic = totalQtyAtomic.add(f.getQuantity()); // update if separate conversion logic applies
                 totalFreeQtyAtomic = totalFreeQtyAtomic.add(f.getFreeQuantity());
             }

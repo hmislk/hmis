@@ -34,61 +34,57 @@ public class BillItemFinanceDetails implements Serializable {
     @ManyToOne
     private WebUser createdBy;
 
-    // Gross and Net Rates
+    private BigDecimal unitsPerPack = BigDecimal.ZERO;
+
+    // Rates
     private BigDecimal grossRate = BigDecimal.ZERO;
     private BigDecimal netRate = BigDecimal.ZERO;
+
     private BigDecimal lineDiscountRate = BigDecimal.ZERO;
     private BigDecimal billDiscountRate = BigDecimal.ZERO;
     private BigDecimal totalDiscountRate = BigDecimal.ZERO;
-    private BigDecimal expenseRate = BigDecimal.ZERO;
+
+    private BigDecimal lineExpenseRate = BigDecimal.ZERO;
+    private BigDecimal billExpenseRate = BigDecimal.ZERO;
+    private BigDecimal totalExpenseRate = BigDecimal.ZERO;
+
+    // Tax Rates
+    private BigDecimal billTaxRate = BigDecimal.ZERO;
+    private BigDecimal lineTaxRate = BigDecimal.ZERO;
+    private BigDecimal totalTaxRate = BigDecimal.ZERO;
+
     // Costs
-    private BigDecimal billItemCostRateFromBill = BigDecimal.ZERO;
-    private BigDecimal billItemCostRateForTheLine = BigDecimal.ZERO;
-    private BigDecimal totalBillItemCostRate = BigDecimal.ZERO;
-    
-    
-    private BigDecimal unitsPerPack = BigDecimal.ZERO;
+    private BigDecimal billCostRate = BigDecimal.ZERO;
+    private BigDecimal lineCostRate = BigDecimal.ZERO;
+    private BigDecimal totalCostRate = BigDecimal.ZERO;
 
     // Gross and Net Totals
     private BigDecimal grossTotal = BigDecimal.ZERO;
     private BigDecimal netTotal = BigDecimal.ZERO;
+
     private BigDecimal lineDiscount = BigDecimal.ZERO;
     private BigDecimal billDiscount = BigDecimal.ZERO;
     private BigDecimal totalDiscount = BigDecimal.ZERO;
-    private BigDecimal expense = BigDecimal.ZERO;
 
     private BigDecimal retailSaleRate = BigDecimal.ZERO;
     private BigDecimal wholesaleRate = BigDecimal.ZERO;
+
     private BigDecimal retailSaleRatePerUnit = BigDecimal.ZERO;
     private BigDecimal wholesaleRatePerUnit = BigDecimal.ZERO;
 
-// Return Totals
-    private BigDecimal returnGrossTotal = BigDecimal.ZERO;
-    private BigDecimal returnNetTotal = BigDecimal.ZERO;
-
-// Return Quantity-based Totals (for clarity if needed separately)
-    private BigDecimal returnQuantityTotal = BigDecimal.ZERO;
-    private BigDecimal returnFreeQuantityTotal = BigDecimal.ZERO;
-
-    // Discounts
-    private BigDecimal billItemDiscountFromBill = BigDecimal.ZERO;
-    private BigDecimal billItemDiscountForTheLine = BigDecimal.ZERO;
-    private BigDecimal totalBillItemDiscount = BigDecimal.ZERO;
-
-    // Taxes
-    private BigDecimal billItemTaxFromBill = BigDecimal.ZERO;
-    private BigDecimal billItemTaxForTheLine = BigDecimal.ZERO;
-    private BigDecimal totalBillItemTax = BigDecimal.ZERO;
+    private BigDecimal billTax = BigDecimal.ZERO;
+    private BigDecimal lineTax = BigDecimal.ZERO;
+    private BigDecimal totalTax = BigDecimal.ZERO;
 
     // Expenses
-    private BigDecimal billItemExpenseFromBill = BigDecimal.ZERO;
-    private BigDecimal billItemExpenseForTheLine = BigDecimal.ZERO;
-    private BigDecimal totalBillItemExpense = BigDecimal.ZERO;
+    private BigDecimal billExpense = BigDecimal.ZERO;
+    private BigDecimal lineExpense = BigDecimal.ZERO;
+    private BigDecimal totalExpense = BigDecimal.ZERO;
 
     // Costs
-    private BigDecimal billItemCostFromBill = BigDecimal.ZERO;
-    private BigDecimal billItemCostForTheLine = BigDecimal.ZERO;
-    private BigDecimal totalBillItemCost = BigDecimal.ZERO;
+    private BigDecimal billCost = BigDecimal.ZERO;
+    private BigDecimal lineCost = BigDecimal.ZERO;
+    private BigDecimal totalCost = BigDecimal.ZERO;
 
     // Percentages
     private BigDecimal discountPercentageFromBill = BigDecimal.ZERO;
@@ -109,19 +105,37 @@ public class BillItemFinanceDetails implements Serializable {
 
     // Quantities and values
     private BigDecimal freeQuantity = BigDecimal.ZERO;
-    private BigDecimal freeValue = BigDecimal.ZERO;
-    private BigDecimal retailSaleValue = BigDecimal.ZERO;
-    private BigDecimal retailSaleValueByUnit = BigDecimal.ZERO;
-    private BigDecimal wholesaleValue = BigDecimal.ZERO;
-    private BigDecimal wholesaleValueByUnit = BigDecimal.ZERO;
     private BigDecimal quantity = BigDecimal.ZERO;
     private BigDecimal totalQuantity = BigDecimal.ZERO;
+
+    private BigDecimal freeQuantityByUnits = BigDecimal.ZERO;
+    private BigDecimal quantityByUnits = BigDecimal.ZERO;
+    private BigDecimal totalQuantityByUnits = BigDecimal.ZERO;
+
+    private BigDecimal freeValueAtCostRate = BigDecimal.ZERO;
+    private BigDecimal freeValueAtRetailRate = BigDecimal.ZERO;
+    private BigDecimal freeValueAtPurchaseRate = BigDecimal.ZERO;
+    private BigDecimal freeValueAtWholesaleRate = BigDecimal.ZERO;
+    
+    private BigDecimal valueAtRetailRate = BigDecimal.ZERO;
+    private BigDecimal valueAtWholesaleRate = BigDecimal.ZERO;
+    private BigDecimal valueAtPurchaseRate = BigDecimal.ZERO;
+    private BigDecimal valueAtCostRate = BigDecimal.ZERO;
 
     // Return quantities
     private BigDecimal returnQuantity = BigDecimal.ZERO;
     private BigDecimal returnFreeQuantity = BigDecimal.ZERO;
     private BigDecimal totalReturnQuantity = BigDecimal.ZERO;
 
+// Return Totals
+    private BigDecimal returnGrossTotal = BigDecimal.ZERO;
+    private BigDecimal returnNetTotal = BigDecimal.ZERO;
+
+// Return Quantity-based Totals (for clarity if needed separately)
+    private BigDecimal returnQuantityTotal = BigDecimal.ZERO;
+    private BigDecimal returnFreeQuantityTotal = BigDecimal.ZERO;
+
+    // Taxes
     // Payment method values
     private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
     private BigDecimal totalPaidAsCard = BigDecimal.ZERO;
@@ -163,21 +177,21 @@ public class BillItemFinanceDetails implements Serializable {
         cloned.returnQuantityTotal = this.returnQuantityTotal;
         cloned.returnFreeQuantityTotal = this.returnFreeQuantityTotal;
 
-        cloned.billItemDiscountFromBill = this.billItemDiscountFromBill;
-        cloned.billItemDiscountForTheLine = this.billItemDiscountForTheLine;
-        cloned.totalBillItemDiscount = this.totalBillItemDiscount;
+        cloned.billTaxRate = this.billTaxRate;
+        cloned.lineTaxRate = this.lineTaxRate;
+        cloned.totalTaxRate = this.totalTaxRate;
 
-        cloned.billItemTaxFromBill = this.billItemTaxFromBill;
-        cloned.billItemTaxForTheLine = this.billItemTaxForTheLine;
-        cloned.totalBillItemTax = this.totalBillItemTax;
+        cloned.billTax = this.billTax;
+        cloned.lineTax = this.lineTax;
+        cloned.totalTax = this.totalTax;
 
-        cloned.billItemExpenseFromBill = this.billItemExpenseFromBill;
-        cloned.billItemExpenseForTheLine = this.billItemExpenseForTheLine;
-        cloned.totalBillItemExpense = this.totalBillItemExpense;
+        cloned.billExpense = this.billExpense;
+        cloned.lineExpense = this.lineExpense;
+        cloned.totalExpense = this.totalExpense;
 
-        cloned.billItemCostFromBill = this.billItemCostFromBill;
-        cloned.billItemCostForTheLine = this.billItemCostForTheLine;
-        cloned.totalBillItemCost = this.totalBillItemCost;
+        cloned.billCost = this.billCost;
+        cloned.lineCost = this.lineCost;
+        cloned.totalCost = this.totalCost;
 
         cloned.discountPercentageFromBill = this.discountPercentageFromBill;
         cloned.discountPercentageForTheLine = this.discountPercentageForTheLine;
@@ -196,9 +210,9 @@ public class BillItemFinanceDetails implements Serializable {
         cloned.totalCostPercentage = this.totalCostPercentage;
 
         cloned.freeQuantity = this.freeQuantity;
-        cloned.freeValue = this.freeValue;
-        cloned.retailSaleValue = this.retailSaleValue;
-        cloned.wholesaleValue = this.wholesaleValue;
+        cloned.freeValueAtCostRate = this.freeValueAtCostRate;
+        cloned.valueAtRetailRate = this.valueAtRetailRate;
+        cloned.valueAtWholesaleRate = this.valueAtWholesaleRate;
         cloned.quantity = this.quantity;
         cloned.totalQuantity = this.totalQuantity;
 
@@ -229,25 +243,25 @@ public class BillItemFinanceDetails implements Serializable {
         cloned.lineDiscountRate = this.lineDiscountRate;
         cloned.billDiscountRate = this.billDiscountRate;
         cloned.totalDiscountRate = this.totalDiscountRate;
-        cloned.expenseRate = this.expenseRate;
+        cloned.lineExpenseRate = this.lineExpenseRate;
 
         cloned.lineDiscount = this.lineDiscount;
         cloned.billDiscount = this.billDiscount;
         cloned.totalDiscount = this.totalDiscount;
-        cloned.expense = this.expense;
+        cloned.billTax = this.billTax;
 
         cloned.retailSaleRate = this.retailSaleRate;
         cloned.wholesaleRate = this.wholesaleRate;
         cloned.retailSaleRatePerUnit = this.retailSaleRatePerUnit;
         cloned.wholesaleRatePerUnit = this.wholesaleRatePerUnit;
 
-        cloned.retailSaleValueByUnit = this.retailSaleValueByUnit;
-        cloned.wholesaleValueByUnit = this.wholesaleValueByUnit;
+        cloned.valueAtPurchaseRate = this.valueAtPurchaseRate;
+        cloned.valueAtCostRate = this.valueAtCostRate;
 
-        cloned.billItemCostRateFromBill = this.billItemCostRateFromBill;
-        cloned.billItemCostRateForTheLine = this.billItemCostRateForTheLine;
-        cloned.totalBillItemCostRate = this.totalBillItemCostRate;
-        
+        cloned.billCostRate = this.billCostRate;
+        cloned.lineCostRate = this.lineCostRate;
+        cloned.totalCostRate = this.totalCostRate;
+
         cloned.unitsPerPack = this.unitsPerPack;
 
         return cloned;
@@ -293,12 +307,12 @@ public class BillItemFinanceDetails implements Serializable {
         this.totalDiscountRate = totalDiscountRate;
     }
 
-    public BigDecimal getExpenseRate() {
-        return expenseRate;
+    public BigDecimal getLineExpenseRate() {
+        return lineExpenseRate;
     }
 
-    public void setExpenseRate(BigDecimal expenseRate) {
-        this.expenseRate = expenseRate;
+    public void setLineExpenseRate(BigDecimal lineExpenseRate) {
+        this.lineExpenseRate = lineExpenseRate;
     }
 
     public Long getId() {
@@ -333,8 +347,6 @@ public class BillItemFinanceDetails implements Serializable {
     public String toString() {
         return "com.divudi.core.entity.BillItemFinanceDetails[ id=" + id + " ]";
     }
-    
-    
 
     public BigDecimal getGrossTotal() {
         return grossTotal;
@@ -384,100 +396,100 @@ public class BillItemFinanceDetails implements Serializable {
         this.returnFreeQuantityTotal = returnFreeQuantityTotal;
     }
 
-    public BigDecimal getBillItemDiscountFromBill() {
-        return billItemDiscountFromBill;
+    public BigDecimal getBillTaxRate() {
+        return billTaxRate;
     }
 
-    public void setBillItemDiscountFromBill(BigDecimal billItemDiscountFromBill) {
-        this.billItemDiscountFromBill = billItemDiscountFromBill;
+    public void setBillTaxRate(BigDecimal billTaxRate) {
+        this.billTaxRate = billTaxRate;
     }
 
-    public BigDecimal getBillItemDiscountForTheLine() {
-        return billItemDiscountForTheLine;
+    public BigDecimal getLineTaxRate() {
+        return lineTaxRate;
     }
 
-    public void setBillItemDiscountForTheLine(BigDecimal billItemDiscountForTheLine) {
-        this.billItemDiscountForTheLine = billItemDiscountForTheLine;
+    public void setLineTaxRate(BigDecimal lineTaxRate) {
+        this.lineTaxRate = lineTaxRate;
     }
 
-    public BigDecimal getTotalBillItemDiscount() {
-        return totalBillItemDiscount;
+    public BigDecimal getTotalTaxRate() {
+        return totalTaxRate;
     }
 
-    public void setTotalBillItemDiscount(BigDecimal totalBillItemDiscount) {
-        this.totalBillItemDiscount = totalBillItemDiscount;
+    public void setTotalTaxRate(BigDecimal totalTaxRate) {
+        this.totalTaxRate = totalTaxRate;
     }
 
-    public BigDecimal getBillItemTaxFromBill() {
-        return billItemTaxFromBill;
+    public BigDecimal getBillTax() {
+        return billTax;
     }
 
-    public void setBillItemTaxFromBill(BigDecimal billItemTaxFromBill) {
-        this.billItemTaxFromBill = billItemTaxFromBill;
+    public void setBillTax(BigDecimal billTax) {
+        this.billTax = billTax;
     }
 
-    public BigDecimal getBillItemTaxForTheLine() {
-        return billItemTaxForTheLine;
+    public BigDecimal getLineTax() {
+        return lineTax;
     }
 
-    public void setBillItemTaxForTheLine(BigDecimal billItemTaxForTheLine) {
-        this.billItemTaxForTheLine = billItemTaxForTheLine;
+    public void setLineTax(BigDecimal lineTax) {
+        this.lineTax = lineTax;
     }
 
-    public BigDecimal getTotalBillItemTax() {
-        return totalBillItemTax;
+    public BigDecimal getTotalTax() {
+        return totalTax;
     }
 
-    public void setTotalBillItemTax(BigDecimal totalBillItemTax) {
-        this.totalBillItemTax = totalBillItemTax;
+    public void setTotalTax(BigDecimal totalTax) {
+        this.totalTax = totalTax;
     }
 
-    public BigDecimal getBillItemExpenseFromBill() {
-        return billItemExpenseFromBill;
+    public BigDecimal getBillExpense() {
+        return billExpense;
     }
 
-    public void setBillItemExpenseFromBill(BigDecimal billItemExpenseFromBill) {
-        this.billItemExpenseFromBill = billItemExpenseFromBill;
+    public void setBillExpense(BigDecimal billExpense) {
+        this.billExpense = billExpense;
     }
 
-    public BigDecimal getBillItemExpenseForTheLine() {
-        return billItemExpenseForTheLine;
+    public BigDecimal getLineExpense() {
+        return lineExpense;
     }
 
-    public void setBillItemExpenseForTheLine(BigDecimal billItemExpenseForTheLine) {
-        this.billItemExpenseForTheLine = billItemExpenseForTheLine;
+    public void setLineExpense(BigDecimal lineExpense) {
+        this.lineExpense = lineExpense;
     }
 
-    public BigDecimal getTotalBillItemExpense() {
-        return totalBillItemExpense;
+    public BigDecimal getTotalExpense() {
+        return totalExpense;
     }
 
-    public void setTotalBillItemExpense(BigDecimal totalBillItemExpense) {
-        this.totalBillItemExpense = totalBillItemExpense;
+    public void setTotalExpense(BigDecimal totalExpense) {
+        this.totalExpense = totalExpense;
     }
 
-    public BigDecimal getBillItemCostFromBill() {
-        return billItemCostFromBill;
+    public BigDecimal getBillCost() {
+        return billCost;
     }
 
-    public void setBillItemCostFromBill(BigDecimal billItemCostFromBill) {
-        this.billItemCostFromBill = billItemCostFromBill;
+    public void setBillCost(BigDecimal billCost) {
+        this.billCost = billCost;
     }
 
-    public BigDecimal getBillItemCostForTheLine() {
-        return billItemCostForTheLine;
+    public BigDecimal getLineCost() {
+        return lineCost;
     }
 
-    public void setBillItemCostForTheLine(BigDecimal billItemCostForTheLine) {
-        this.billItemCostForTheLine = billItemCostForTheLine;
+    public void setLineCost(BigDecimal lineCost) {
+        this.lineCost = lineCost;
     }
 
-    public BigDecimal getTotalBillItemCost() {
-        return totalBillItemCost;
+    public BigDecimal getTotalCost() {
+        return totalCost;
     }
 
-    public void setTotalBillItemCost(BigDecimal totalBillItemCost) {
-        this.totalBillItemCost = totalBillItemCost;
+    public void setTotalCost(BigDecimal totalCost) {
+        this.totalCost = totalCost;
     }
 
     public BigDecimal getDiscountPercentageFromBill() {
@@ -584,28 +596,28 @@ public class BillItemFinanceDetails implements Serializable {
         this.freeQuantity = freeQuantity;
     }
 
-    public BigDecimal getFreeValue() {
-        return freeValue;
+    public BigDecimal getFreeValueAtCostRate() {
+        return freeValueAtCostRate;
     }
 
-    public void setFreeValue(BigDecimal freeValue) {
-        this.freeValue = freeValue;
+    public void setFreeValueAtCostRate(BigDecimal freeValueAtCostRate) {
+        this.freeValueAtCostRate = freeValueAtCostRate;
     }
 
-    public BigDecimal getRetailSaleValue() {
-        return retailSaleValue;
+    public BigDecimal getValueAtRetailRate() {
+        return valueAtRetailRate;
     }
 
-    public void setRetailSaleValue(BigDecimal retailSaleValue) {
-        this.retailSaleValue = retailSaleValue;
+    public void setValueAtRetailRate(BigDecimal valueAtRetailRate) {
+        this.valueAtRetailRate = valueAtRetailRate;
     }
 
-    public BigDecimal getWholesaleValue() {
-        return wholesaleValue;
+    public BigDecimal getValueAtWholesaleRate() {
+        return valueAtWholesaleRate;
     }
 
-    public void setWholesaleValue(BigDecimal wholesaleValue) {
-        this.wholesaleValue = wholesaleValue;
+    public void setValueAtWholesaleRate(BigDecimal valueAtWholesaleRate) {
+        this.valueAtWholesaleRate = valueAtWholesaleRate;
     }
 
     public BigDecimal getQuantity() {
@@ -840,14 +852,6 @@ public class BillItemFinanceDetails implements Serializable {
         this.totalDiscount = totalDiscount;
     }
 
-    public BigDecimal getExpense() {
-        return expense;
-    }
-
-    public void setExpense(BigDecimal expense) {
-        this.expense = expense;
-    }
-
     public BigDecimal getRetailSaleRate() {
         return retailSaleRate;
     }
@@ -880,44 +884,44 @@ public class BillItemFinanceDetails implements Serializable {
         this.wholesaleRatePerUnit = wholesaleRatePerUnit;
     }
 
-    public BigDecimal getRetailSaleValueByUnit() {
-        return retailSaleValueByUnit;
+    public BigDecimal getValueAtPurchaseRate() {
+        return valueAtPurchaseRate;
     }
 
-    public void setRetailSaleValueByUnit(BigDecimal retailSaleValueByUnit) {
-        this.retailSaleValueByUnit = retailSaleValueByUnit;
+    public void setValueAtPurchaseRate(BigDecimal valueAtPurchaseRate) {
+        this.valueAtPurchaseRate = valueAtPurchaseRate;
     }
 
-    public BigDecimal getWholesaleValueByUnit() {
-        return wholesaleValueByUnit;
+    public BigDecimal getValueAtCostRate() {
+        return valueAtCostRate;
     }
 
-    public void setWholesaleValueByUnit(BigDecimal wholesaleValueByUnit) {
-        this.wholesaleValueByUnit = wholesaleValueByUnit;
+    public void setValueAtCostRate(BigDecimal valueAtCostRate) {
+        this.valueAtCostRate = valueAtCostRate;
     }
 
-    public BigDecimal getBillItemCostRateFromBill() {
-        return billItemCostRateFromBill;
+    public BigDecimal getBillCostRate() {
+        return billCostRate;
     }
 
-    public void setBillItemCostRateFromBill(BigDecimal billItemCostRateFromBill) {
-        this.billItemCostRateFromBill = billItemCostRateFromBill;
+    public void setBillCostRate(BigDecimal billCostRate) {
+        this.billCostRate = billCostRate;
     }
 
-    public BigDecimal getBillItemCostRateForTheLine() {
-        return billItemCostRateForTheLine;
+    public BigDecimal getLineCostRate() {
+        return lineCostRate;
     }
 
-    public void setBillItemCostRateForTheLine(BigDecimal billItemCostRateForTheLine) {
-        this.billItemCostRateForTheLine = billItemCostRateForTheLine;
+    public void setLineCostRate(BigDecimal lineCostRate) {
+        this.lineCostRate = lineCostRate;
     }
 
-    public BigDecimal getTotalBillItemCostRate() {
-        return totalBillItemCostRate;
+    public BigDecimal getTotalCostRate() {
+        return totalCostRate;
     }
 
-    public void setTotalBillItemCostRate(BigDecimal totalBillItemCostRate) {
-        this.totalBillItemCostRate = totalBillItemCostRate;
+    public void setTotalCostRate(BigDecimal totalCostRate) {
+        this.totalCostRate = totalCostRate;
     }
 
     public BigDecimal getUnitsPerPack() {
@@ -927,7 +931,5 @@ public class BillItemFinanceDetails implements Serializable {
     public void setUnitsPerPack(BigDecimal unitsPerPack) {
         this.unitsPerPack = unitsPerPack;
     }
-    
-    
 
 }
