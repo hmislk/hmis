@@ -1808,8 +1808,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return "/opd/batch_bill_cancel?faces-redirect=true;";
     }
     
-    private List<Bill> cancelSingleBills;
-
+    private List<Bill> cancelSingleBills = new ArrayList<>();
     public String cancelOpdBatchBill() {
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
@@ -4914,6 +4913,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public List<Bill> getCancelSingleBills() {
+        if (cancelSingleBills == null) {
+            cancelSingleBills = new ArrayList<>();
+        }
         return cancelSingleBills;
     }
 

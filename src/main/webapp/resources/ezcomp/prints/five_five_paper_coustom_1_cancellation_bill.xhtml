@@ -138,10 +138,7 @@
                             <td style="width:10%!important;">
                                 <h:panelGroup rendered="#{billItem.item.printSessionNumber}" >
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
-                                        <td>
-                                            <h:outputLabel  value="#{billItem.billSession.serialNo}"    >
-                                            </h:outputLabel>
-                                        </td>
+                                        <h:outputLabel  value="#{billItem.billSession.serialNo}"></h:outputLabel>
                                     </h:panelGroup>
                                 </h:panelGroup>
                             </td>
