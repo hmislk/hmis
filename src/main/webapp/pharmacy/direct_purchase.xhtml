@@ -53,11 +53,11 @@
                     <div class="col-8">
                         <p:panel
                             id="itemselectgrid"
-                            class="my-2 w-100"
-                            header="Add Item">
+                            class="m-1 w-100"
+                            header="Add New Item" >
                             <f:facet name="header" >
                                 <h:outputText styleClass="fa-solid fa-circle-plus" />
-                                <h:outputText  class="mx-4" value="Add Items" />
+                                <h:outputText  class="mx-4" value="Add New Item" />
                             </f:facet>
                             <p:focus id="focusItem" for="acItem" ></p:focus>
                             <div class="row w-100">
@@ -86,7 +86,10 @@
                                             event="itemSelect"
                                             process="acItem"
                                             listener="#{pharmacyDirectPurchaseController.onItemSelect}"
-                                            update="txtQty txtFreeQty txtPrate txtRetailRate" ></p:ajax>
+                                            update="txtQty txtFreeQty txtPrate txtLineDiscountRate txtLineDiscountValue 
+                                            txtRetailRate txtRetailValue txtUnitsPerPack txtPackOrUnit 
+                                            txtPurchaseValueMinusLineDiscountValue txtPurchaseValue" />
+
                                     </p:autoComplete>
                                 </div>
                                 <div class="col-1">
@@ -102,8 +105,9 @@
                                         <p:ajax 
                                             event="blur"
                                             process="@this" 
-                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue "
-                                            listener="#{pharmacyDirectPurchaseController.onQuantityChange}" />
+                                            listener="#{pharmacyDirectPurchaseController.onQuantityChange}"
+                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue 
+                                            txtPurchaseValue txtUnitsPerPack txtPackOrUnit" />
                                     </p:inputText>
                                 </div>
                                 <div class="col-1">
@@ -133,12 +137,14 @@
                                         autocomplete="off"
                                         onfocus="this.select()"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.grossRate}">
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                         <p:ajax 
                                             event="blur"
                                             process="@this"
-                                            update="txtPurchaseRate txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue "
-                                            listener="#{pharmacyDirectPurchaseController.onGrossRateChange}" />
+                                            listener="#{pharmacyDirectPurchaseController.onLineGrossRateChange}"
+                                            update="txtPurchaseValue txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue 
+                                            txtRetailValue txtPackOrUnit txtUnitsPerPack" />
+
                                     </p:inputText>
 
                                 </div>
@@ -156,8 +162,9 @@
                                         <p:ajax 
                                             event="blur"
                                             process="@this"
-                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue "
-                                            listener="#{pharmacyDirectPurchaseController.onLineDiscountRateChange}" />
+                                            listener="#{pharmacyDirectPurchaseController.onLineDiscountRateChange}"
+                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue 
+                                            txtPurchaseValue txtUnitsPerPack txtPackOrUnit" />
                                     </p:inputText>
                                 </div>
 
@@ -177,8 +184,8 @@
                                         <p:ajax 
                                             event="blur"
                                             process="@this"
-                                            update="txtRetailValue "
-                                            listener="#{pharmacyDirectPurchaseController.onRetailSaleRateChange}" />
+                                            listener="#{pharmacyDirectPurchaseController.onRetailSaleRateChange}"
+                                            update="txtRetailValue txtPackOrUnit txtUnitsPerPack" />
                                     </p:inputText>
                                 </div>
 
@@ -219,7 +226,7 @@
                                         class="ui-button-success w-100"
                                         icon="fas fa-plus"
                                         action="#{pharmacyDirectPurchaseController.addItem}"
-                                        process="itemselectgrid" 
+                                        process="@this" 
                                         update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} msg"/>
 
                                 </div>
@@ -229,20 +236,49 @@
 
 
 
-                                <div class="col-6">
+                                <div class="col-4">
+                                </div>
+
+                                <div class="col-1 text-end">
+                                    <h:outputLabel 
+                                        class="w-100 m-1"
+                                        style="white-space: nowrap;"
+                                        value="Pack or Unit" />
+                                    <p:inputText
+                                        id="txtPackOrUnit"
+                                        disabled="true"
+                                        autocomplete="off"
+                                        class="w-100 m-1 text-end"
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.item.class.simpleName eq 'Ampp' ? 'Pack' : 'Unit'}" />
+
+                                </div>
+
+                                <div class="col-1 text-end">
+                                    <h:outputLabel 
+                                        class="w-100 m-1"
+                                        style="white-space: nowrap;"
+                                        value="Units per pack" />
+                                    <h:panelGroup  id="txtUnitsPerPack" >
+                                        <p:inputText
+                                            rendered="#{pharmacyDirectPurchaseController.currentBillItem.item.class.simpleName eq 'Ampp'}"
+                                            disabled="true"
+                                            autocomplete="off"
+                                            class="w-100 m-1 text-end"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.item.dblValue}">
+                                        </p:inputText>
+                                    </h:panelGroup>
                                 </div>
 
 
-                                <div class="col-1">
+                                <div class="col-1 text-end">
                                     <h:outputLabel 
                                         class="w-100 m-1"
                                         style="white-space: nowrap;"
                                         value="Purchase Value" /><br/>
                                     <p:inputText
-                                        id="txtPurchaseRate"
+                                        id="txtPurchaseValue"
                                         disabled="true"
                                         autocomplete="off"
-                                        onfocus="this.select()"
                                         class="w-100 m-1 text-end"
                                         value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.grossTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -297,6 +333,220 @@
 
                             </div>
                         </p:panel>
+
+                        <p:dataTable
+                            class="m-1 w-100"
+                            rowIndexVar="i"
+                            var="ph"
+                            value="#{pharmacyDirectPurchaseController.billItems}"
+                            id="itemList">
+
+                            <f:facet name="header">
+                                <h:outputText styleClass="fas fa-shopping-cart" />
+                                <h:outputText class="mx-4" value="Added Items" />
+                            </f:facet>
+
+                            <p:column headerText="No" width="2em">
+                                <h:outputLabel value="#{i + 1}" />
+                            </p:column>
+
+                            <p:column headerText="Item" width="10em">
+                                <p:commandLink
+                                    class="w-100"
+                                    title="#{ph.item.name} - Click to view details"
+                                    value="#{ph.item.name}"
+                                    oncomplete="PF('dialog#{i}').show()"
+                                    update="itemList"
+                                    process="itemList">
+                                </p:commandLink>
+                                <p:dialog id="dialog"
+                                          widgetVar="dialog#{i}"
+                                          header="Details"
+                                          modal="true"
+                                          closable="true"
+                                          resizable="false"
+                                          class="w-75"
+                                          dynamic="true">
+                                    <p:tabView styleClass="w-100">
+
+                                        <!-- === Item Info Tab === -->
+                                        <p:tab title="Item Info">
+                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                                                <p:outputLabel value="Item Name" />
+                                                <p:outputLabel value="#{ph.item.name}" />
+
+                                                <p:outputLabel value="Item Code" />
+                                                <p:outputLabel value="#{ph.item.code}" />
+
+                                                <p:outputLabel value="Item Type" />
+                                                <p:outputLabel value="#{ph.item.class.simpleName}" />
+
+                                                <p:outputLabel value="Units Per Pack" />
+                                                <p:outputLabel value="#{ph.item.dblValue}" styleClass="text-end" />
+                                            </p:panelGrid>
+                                        </p:tab>
+
+                                        <!-- === Quantity Tab === -->
+                                        <p:tab title="Quantities">
+                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                                                <p:outputLabel value="Quantity" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.quantity}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Free Quantity" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.freeQuantity}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+                                            </p:panelGrid>
+                                        </p:tab>
+
+                                        <!-- === Rates Tab === -->
+                                        <p:tab title="Rates">
+                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                                                <p:outputLabel value="Purchase Rate" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.grossRate}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Retail Rate" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRate}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Line Discount Rate" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Cost Rate (From Bill)" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billCostRate}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Total Cost Rate" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalCostRate}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.0000" />
+                                                </p:outputLabel>
+                                            </p:panelGrid>
+                                        </p:tab>
+
+                                        <!-- === Values Tab === -->
+                                        <p:tab title="Values">
+                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+
+                                                <p:outputLabel value="Line Discount Value" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.lineDiscount}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Bill Discount from Bill" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billTaxRate}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Total Discount" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalTaxRate}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Gross Total" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.grossTotal}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Net Total" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.netTotal}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Retail Sale Value" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.valueAtCostRate}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Retail Value Per Unit" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.retailSaleValueByUnit}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                                <p:outputLabel value="Total Cost" />
+                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalCost}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+
+                                            </p:panelGrid>
+                                        </p:tab>
+
+                                    </p:tabView>
+
+
+                                </p:dialog>
+                            </p:column>
+
+                            <p:column headerText="Qty"  styleClass="text-end">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.quantity}" class="w-100"/>
+                            </p:column>
+
+                            <p:column headerText="Free"  styleClass="text-end">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.freeQuantity}" />
+                            </p:column>
+
+                            <p:column headerText="P. Rate"  styleClass="text-end">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.grossRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Dis. Rate"  styleClass="text-end">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="RR"  styleClass="text-end">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="DOE" styleClass="text-end">
+                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.doe}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Batch" styleClass="text-end">
+                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.stringValue}" />
+                            </p:column>
+                            <p:column headerText="Gross"  styleClass="text-end">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineGrossTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Discount"  styleClass="text-end">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Net"  styleClass="text-end">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineNetTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Profit %"  styleClass="text-end">
+                                <h:outputText
+                                    id="profMargin"
+                                    value="#{((ph.billItemFinanceDetails.valueAtRetailRate - ph.billItemFinanceDetails.valueAtCostRate) / ph.billItemFinanceDetails.valueAtCostRate) * 100}"
+                                    styleClass="#{ph.item.category.profitMargin > ((ph.billItemFinanceDetails.valueAtRetailRate - ph.billItemFinanceDetails.valueAtCostRate) / ph.billItemFinanceDetails.valueAtCostRate) * 100 ? 'ui-messages-fatal' : ''}">
+                                    <f:convertNumber pattern="0.0" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column>
+                                <p:commandButton class="mr-4 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
+                            </p:column>
+                        </p:dataTable>
+
                     </div>
                     <div class="col-4">
                         <p:panel header="Purchasing Details" class="m-1">
@@ -435,201 +685,7 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <p:dataTable
-                            class="my-2"
-                            rowIndexVar="i"
-                            var="ph"
-                            value="#{pharmacyDirectPurchaseController.billItems}"
-                            id="itemList">
 
-                            <f:facet name="header">
-                                <h:outputText styleClass="fas fa-shopping-cart" />
-                                <h:outputText class="mx-4" value="Ordered Items" />
-                            </f:facet>
-
-                            <p:column headerText="No" width="4em">
-                                <h:outputLabel value="#{i + 1}" />
-
-                            </p:column>
-
-                            <p:column headerText="Item">
-                                <h:outputLabel id="item" value="#{ph.item.name}" style="width:100%" />
-                                <p:commandLink
-                                    title="View Details"
-                                    value="View Details"
-                                    oncomplete="PF('dialog#{i}').show()"
-                                    update="itemList"
-                                    process="itemList">
-                                </p:commandLink>
-
-                                <p:dialog id="dialog"
-                                          widgetVar="dialog#{i}"
-                                          header="Details"
-                                          modal="true"
-                                          closable="true"
-                                          resizable="false"
-                                          class="w-75"
-                                          dynamic="true">
-                                    <p:tabView styleClass="w-100">
-
-                                        <!-- === Item Info Tab === -->
-                                        <p:tab title="Item Info">
-                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
-                                                <p:outputLabel value="Item Name" />
-                                                <p:outputLabel value="#{ph.item.name}" />
-
-                                                <p:outputLabel value="Item Code" />
-                                                <p:outputLabel value="#{ph.item.code}" />
-
-                                                <p:outputLabel value="Item Type" />
-                                                <p:outputLabel value="#{ph.item.class.simpleName}" />
-
-                                                <p:outputLabel value="Units Per Pack" />
-                                                <p:outputLabel value="#{ph.item.dblValue}" styleClass="text-end" />
-                                            </p:panelGrid>
-                                        </p:tab>
-
-                                        <!-- === Quantity Tab === -->
-                                        <p:tab title="Quantities">
-                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
-                                                <p:outputLabel value="Quantity" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.quantity}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Free Quantity" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.freeQuantity}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-                                            </p:panelGrid>
-                                        </p:tab>
-
-                                        <!-- === Rates Tab === -->
-                                        <p:tab title="Rates">
-                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
-                                                <p:outputLabel value="Purchase Rate" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.grossRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Retail Rate" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Line Discount Rate" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Cost Rate (From Bill)" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billCostRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Total Cost Rate" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalCostRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.0000" />
-                                                </p:outputLabel>
-                                            </p:panelGrid>
-                                        </p:tab>
-
-                                        <!-- === Values Tab === -->
-                                        <p:tab title="Values">
-                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
-
-                                                <p:outputLabel value="Line Discount Value" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.lineDiscount}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Bill Discount from Bill" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billTaxRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Total Discount" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalTaxRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Gross Total" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.grossTotal}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Net Total" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.netTotal}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Retail Sale Value" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.valueAtCostRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Retail Value Per Unit" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.retailSaleValueByUnit}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Total Cost" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalCost}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                            </p:panelGrid>
-                                        </p:tab>
-
-                                    </p:tabView>
-
-
-                                </p:dialog>
-                            </p:column>
-
-                            <p:column headerText="Qty" width="6em" styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.quantity}" />
-                            </p:column>
-
-                            <p:column headerText="Free" width="6em" styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.freeQuantity}" />
-                            </p:column>
-
-                            <p:column headerText="P. Rate" width="6em" styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.grossRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="S. Rate" width="6em" styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Batch">
-                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.stringValue}" />
-                            </p:column>
-
-                            <p:column headerText="DOE">
-                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.doe}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Profit %" width="6em" styleClass="text-end">
-                                <h:outputText
-                                    id="profMargin"
-                                    value="#{((ph.billItemFinanceDetails.retailSaleRate - ph.billItemFinanceDetails.grossRate) / ph.billItemFinanceDetails.grossRate) * 100}"
-                                    styleClass="#{ph.item.category.profitMargin > ((ph.billItemFinanceDetails.retailSaleRate - ph.billItemFinanceDetails.grossRate) / ph.billItemFinanceDetails.grossRate) * 100 ? 'ui-messages-fatal' : ''}">
-                                    <f:convertNumber pattern="0.0" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column>
-                                <p:commandButton class="mr-4 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
-                            </p:column>
-                        </p:dataTable>
 
                     </div>
                 </div>

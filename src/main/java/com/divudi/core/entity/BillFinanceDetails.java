@@ -95,6 +95,15 @@ public class BillFinanceDetails implements Serializable {
     // Free quantity in atomic units
     private BigDecimal totalFreeQuantityInAtomicUnitOfMeasurement = BigDecimal.ZERO;
 
+    private BigDecimal lineGrossTotal = BigDecimal.ZERO;
+    private BigDecimal billGrossTotal = BigDecimal.ZERO;
+    private BigDecimal grossTotal = BigDecimal.ZERO;
+
+    // Value after deductions
+    private BigDecimal lineNetTotal = BigDecimal.ZERO;
+    private BigDecimal billNetTotal = BigDecimal.ZERO;
+    private BigDecimal netTotal = BigDecimal.ZERO;
+
     // Getters and setters omitted for brevity
     // Payment method totals
     private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
@@ -128,21 +137,48 @@ public class BillFinanceDetails implements Serializable {
     @Override
     public BillFinanceDetails clone() {
         BillFinanceDetails clone = new BillFinanceDetails();
+
+        // ------------------ DISCOUNTS ------------------
         clone.setBillDiscount(this.billDiscount);
         clone.setTotalOfBillLineDiscounts(this.totalOfBillLineDiscounts);
         clone.setTotalDiscount(this.totalDiscount);
+
+        // ------------------ EXPENSES ------------------
+        clone.setBillExpense(this.billExpense);
+        clone.setTotalOfBillLineExpense(this.totalOfBillLineExpense);
         clone.setTotalExpense(this.totalExpense);
-        clone.setTotalOfFreeItemValues(this.totalOfFreeItemValues);
+
+        // ------------------ COST ------------------
+        clone.setBillCostValue(this.billCostValue);
+        clone.setBillOfBillLineCostValue(this.billOfBillLineCostValue);
         clone.setTotalCostValue(this.totalCostValue);
-        clone.setTotalPurchaseValue(this.totalPurchaseValue);
-        clone.setTotalQuantity(this.totalQuantity);
-        clone.setTotalFreeQuantity(this.totalFreeQuantity);
+
+        // ------------------ TAXES ------------------
+        clone.setBillTaxValue(this.billTaxValue);
+        clone.setTotalOfBillLineTaxValue(this.totalOfBillLineTaxValue);
         clone.setTotalTaxValue(this.totalTaxValue);
+
+        // ------------------ VALUES ------------------
+        clone.setTotalPurchaseValue(this.totalPurchaseValue);
+        clone.setTotalOfFreeItemValues(this.totalOfFreeItemValues);
         clone.setTotalRetailSaleValue(this.totalRetailSaleValue);
         clone.setTotalWholesaleValue(this.totalWholesaleValue);
+
+        // ------------------ QUANTITIES ------------------
+        clone.setTotalQuantity(this.totalQuantity);
+        clone.setTotalFreeQuantity(this.totalFreeQuantity);
         clone.setTotalQuantityInAtomicUnitOfMeasurement(this.totalQuantityInAtomicUnitOfMeasurement);
         clone.setTotalFreeQuantityInAtomicUnitOfMeasurement(this.totalFreeQuantityInAtomicUnitOfMeasurement);
 
+        // ------------------ GROSS & NET ------------------
+        clone.setLineGrossTotal(this.lineGrossTotal);
+        clone.setBillGrossTotal(this.billGrossTotal);
+        clone.setGrossTotal(this.grossTotal);
+        clone.setLineNetTotal(this.lineNetTotal);
+        clone.setBillNetTotal(this.billNetTotal);
+        clone.setNetTotal(this.netTotal);
+
+        // ------------------ PAYMENT METHODS ------------------
         clone.setTotalPaidAsCash(this.totalPaidAsCash);
         clone.setTotalPaidAsCard(this.totalPaidAsCard);
         clone.setTotalPaidAsMultiplePaymentMethods(this.totalPaidAsMultiplePaymentMethods);
@@ -162,7 +198,7 @@ public class BillFinanceDetails implements Serializable {
         clone.setTotalPaidAsYouOweMe(this.totalPaidAsYouOweMe);
         clone.setTotalPaidAsNone(this.totalPaidAsNone);
 
-        // note: skip ID, createdAt, createdBy; handle as needed elsewhere
+        // Note: skip ID, createdAt, etc. – those should be managed by persistence layer
         return clone;
     }
 
@@ -483,6 +519,102 @@ public class BillFinanceDetails implements Serializable {
 
     public void setCreatedBy(WebUser createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public BigDecimal getBillExpense() {
+        return billExpense;
+    }
+
+    public void setBillExpense(BigDecimal billExpense) {
+        this.billExpense = billExpense;
+    }
+
+    public BigDecimal getTotalOfBillLineExpense() {
+        return totalOfBillLineExpense;
+    }
+
+    public void setTotalOfBillLineExpense(BigDecimal totalOfBillLineExpense) {
+        this.totalOfBillLineExpense = totalOfBillLineExpense;
+    }
+
+    public BigDecimal getBillCostValue() {
+        return billCostValue;
+    }
+
+    public void setBillCostValue(BigDecimal billCostValue) {
+        this.billCostValue = billCostValue;
+    }
+
+    public BigDecimal getBillOfBillLineCostValue() {
+        return billOfBillLineCostValue;
+    }
+
+    public void setBillOfBillLineCostValue(BigDecimal billOfBillLineCostValue) {
+        this.billOfBillLineCostValue = billOfBillLineCostValue;
+    }
+
+    public BigDecimal getBillTaxValue() {
+        return billTaxValue;
+    }
+
+    public void setBillTaxValue(BigDecimal billTaxValue) {
+        this.billTaxValue = billTaxValue;
+    }
+
+    public BigDecimal getTotalOfBillLineTaxValue() {
+        return totalOfBillLineTaxValue;
+    }
+
+    public void setTotalOfBillLineTaxValue(BigDecimal totalOfBillLineTaxValue) {
+        this.totalOfBillLineTaxValue = totalOfBillLineTaxValue;
+    }
+
+    public BigDecimal getLineGrossTotal() {
+        return lineGrossTotal;
+    }
+
+    public void setLineGrossTotal(BigDecimal lineGrossTotal) {
+        this.lineGrossTotal = lineGrossTotal;
+    }
+
+    public BigDecimal getBillGrossTotal() {
+        return billGrossTotal;
+    }
+
+    public void setBillGrossTotal(BigDecimal billGrossTotal) {
+        this.billGrossTotal = billGrossTotal;
+    }
+
+    public BigDecimal getGrossTotal() {
+        return grossTotal;
+    }
+
+    public void setGrossTotal(BigDecimal grossTotal) {
+        this.grossTotal = grossTotal;
+    }
+
+    public BigDecimal getLineNetTotal() {
+        return lineNetTotal;
+    }
+
+    public void setLineNetTotal(BigDecimal lineNetTotal) {
+        this.lineNetTotal = lineNetTotal;
+    }
+
+    public BigDecimal getBillNetTotal() {
+        return billNetTotal;
+    }
+
+    public void setBillNetTotal(BigDecimal billNetTotal) {
+        this.billNetTotal = billNetTotal;
+    }
+
+    public BigDecimal getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(BigDecimal netTotal) {
+        this.netTotal = netTotal;
     }
 
 }

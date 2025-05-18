@@ -39,9 +39,13 @@ public class BillItemFinanceDetails implements Serializable {
 
     // ------------------ RATES ------------------
     // Base price before any deductions
+    private BigDecimal lineGrossRate = BigDecimal.ZERO;
+    private BigDecimal billGrossRate = BigDecimal.ZERO;
     private BigDecimal grossRate = BigDecimal.ZERO;
 
     // Final rate after all discounts, expenses, and taxes
+    private BigDecimal lineNetRate = BigDecimal.ZERO;
+    private BigDecimal billNetRate = BigDecimal.ZERO;
     private BigDecimal netRate = BigDecimal.ZERO;
 
     // Discount percentages applied at line level, bill level, and total
@@ -66,9 +70,13 @@ public class BillItemFinanceDetails implements Serializable {
 
     // ------------------ TOTALS ------------------
     // Value before deductions
+    private BigDecimal lineGrossTotal = BigDecimal.ZERO;
+    private BigDecimal billGrossTotal = BigDecimal.ZERO;
     private BigDecimal grossTotal = BigDecimal.ZERO;
 
     // Value after deductions
+    private BigDecimal lineNetTotal = BigDecimal.ZERO;
+    private BigDecimal billNetTotal = BigDecimal.ZERO;
     private BigDecimal netTotal = BigDecimal.ZERO;
 
     // Absolute discount values
@@ -177,73 +185,113 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal totalPaidAsOnCall = BigDecimal.ZERO;
     private BigDecimal totalPaidAsYouOweMe = BigDecimal.ZERO;
     private BigDecimal totalPaidAsNone = BigDecimal.ZERO;
-    
-    
-
-    public BillItemFinanceDetails() {
-        createdAt = new Date();
-    }
-
-    public BillItemFinanceDetails(BillItem billItem) {
-        this.billItem = billItem;
-        createdAt = new Date();
-    }
 
     @Override
     public BillItemFinanceDetails clone() {
         BillItemFinanceDetails cloned = new BillItemFinanceDetails();
 
-        cloned.grossTotal = this.grossTotal;
-        cloned.netTotal = this.netTotal;
+        // Metadata
+        cloned.unitsPerPack = this.unitsPerPack;
 
-        cloned.returnGrossTotal = this.returnGrossTotal;
-        cloned.returnNetTotal = this.returnNetTotal;
-        cloned.returnQuantityTotal = this.returnQuantityTotal;
-        cloned.returnFreeQuantityTotal = this.returnFreeQuantityTotal;
+        // ------------------ RATES ------------------
+        cloned.lineGrossRate = this.lineGrossRate;
+        cloned.billGrossRate = this.billGrossRate;
+        cloned.grossRate = this.grossRate;
 
+        cloned.lineNetRate = this.lineNetRate;
+        cloned.billNetRate = this.billNetRate;
+        cloned.netRate = this.netRate;
+        cloned.lineDiscountRate = this.lineDiscountRate;
+        cloned.billDiscountRate = this.billDiscountRate;
+        cloned.totalDiscountRate = this.totalDiscountRate;
+        cloned.lineExpenseRate = this.lineExpenseRate;
+        cloned.billExpenseRate = this.billExpenseRate;
+        cloned.totalExpenseRate = this.totalExpenseRate;
         cloned.billTaxRate = this.billTaxRate;
         cloned.lineTaxRate = this.lineTaxRate;
         cloned.totalTaxRate = this.totalTaxRate;
+        cloned.billCostRate = this.billCostRate;
+        cloned.lineCostRate = this.lineCostRate;
+        cloned.totalCostRate = this.totalCostRate;
 
+        // ------------------ TOTALS ------------------
+        cloned.lineGrossTotal = this.lineGrossTotal;
+        cloned.billGrossTotal = this.billGrossTotal;
+        cloned.grossTotal = this.grossTotal;
+        cloned.lineNetTotal = this.lineNetTotal;
+        cloned.billNetTotal = this.billNetTotal;
+        cloned.netTotal = this.netTotal;
+
+        // ------------------ DISCOUNTS ------------------
+        cloned.lineDiscount = this.lineDiscount;
+        cloned.billDiscount = this.billDiscount;
+        cloned.totalDiscount = this.totalDiscount;
+
+        // ------------------ RETAIL/WHOLESALE RATES ------------------
+        cloned.retailSaleRate = this.retailSaleRate;
+        cloned.wholesaleRate = this.wholesaleRate;
+        cloned.retailSaleRatePerUnit = this.retailSaleRatePerUnit;
+        cloned.wholesaleRatePerUnit = this.wholesaleRatePerUnit;
+
+        // ------------------ TAXES ------------------
         cloned.billTax = this.billTax;
         cloned.lineTax = this.lineTax;
         cloned.totalTax = this.totalTax;
 
+        // ------------------ EXPENSES ------------------
         cloned.billExpense = this.billExpense;
         cloned.lineExpense = this.lineExpense;
         cloned.totalExpense = this.totalExpense;
 
+        // ------------------ COSTS ------------------
         cloned.billCost = this.billCost;
         cloned.lineCost = this.lineCost;
         cloned.totalCost = this.totalCost;
 
+        // ------------------ PERCENTAGES ------------------
         cloned.discountPercentageFromBill = this.discountPercentageFromBill;
         cloned.discountPercentageForTheLine = this.discountPercentageForTheLine;
         cloned.totalDiscountPercentage = this.totalDiscountPercentage;
-
         cloned.taxPercentageFromBill = this.taxPercentageFromBill;
         cloned.taxPercentageForTheLine = this.taxPercentageForTheLine;
         cloned.totalTaxPercentage = this.totalTaxPercentage;
-
         cloned.expensePercentageFromBill = this.expensePercentageFromBill;
         cloned.expensePercentageForTheLine = this.expensePercentageForTheLine;
         cloned.totalExpensePercentage = this.totalExpensePercentage;
-
         cloned.costPercentageFromBill = this.costPercentageFromBill;
         cloned.costPercentageForTheLine = this.costPercentageForTheLine;
         cloned.totalCostPercentage = this.totalCostPercentage;
 
+        // ------------------ QUANTITIES ------------------
         cloned.freeQuantity = this.freeQuantity;
-        cloned.freeValueAtCostRate = this.freeValueAtCostRate;
-        cloned.valueAtRetailRate = this.valueAtRetailRate;
-        cloned.valueAtWholesaleRate = this.valueAtWholesaleRate;
         cloned.quantity = this.quantity;
         cloned.totalQuantity = this.totalQuantity;
+        cloned.freeQuantityByUnits = this.freeQuantityByUnits;
+        cloned.quantityByUnits = this.quantityByUnits;
+        cloned.totalQuantityByUnits = this.totalQuantityByUnits;
 
+        // ------------------ VALUE ESTIMATES ------------------
+        cloned.freeValueAtCostRate = this.freeValueAtCostRate;
+        cloned.freeValueAtRetailRate = this.freeValueAtRetailRate;
+        cloned.freeValueAtPurchaseRate = this.freeValueAtPurchaseRate;
+        cloned.freeValueAtWholesaleRate = this.freeValueAtWholesaleRate;
+        cloned.valueAtRetailRate = this.valueAtRetailRate;
+        cloned.valueAtWholesaleRate = this.valueAtWholesaleRate;
+        cloned.valueAtPurchaseRate = this.valueAtPurchaseRate;
+        cloned.valueAtCostRate = this.valueAtCostRate;
+
+        // ------------------ RETURN QUANTITIES ------------------
         cloned.returnQuantity = this.returnQuantity;
         cloned.returnFreeQuantity = this.returnFreeQuantity;
         cloned.totalReturnQuantity = this.totalReturnQuantity;
+        cloned.returnQuantityTotal = this.returnQuantityTotal;
+        cloned.returnFreeQuantityTotal = this.returnFreeQuantityTotal;
 
+        // ------------------ RETURN TOTALS ------------------
+        cloned.returnGrossTotal = this.returnGrossTotal;
+        cloned.returnNetTotal = this.returnNetTotal;
+
+        // ------------------ PAYMENT METHODS ------------------
         cloned.totalPaidAsCash = this.totalPaidAsCash;
         cloned.totalPaidAsCard = this.totalPaidAsCard;
         cloned.totalPaidAsMultiplePaymentMethods = this.totalPaidAsMultiplePaymentMethods;
@@ -262,33 +310,17 @@ public class BillItemFinanceDetails implements Serializable {
         cloned.totalPaidAsOnCall = this.totalPaidAsOnCall;
         cloned.totalPaidAsYouOweMe = this.totalPaidAsYouOweMe;
         cloned.totalPaidAsNone = this.totalPaidAsNone;
-        cloned.grossRate = this.grossRate;
-        cloned.netRate = this.netRate;
-        cloned.lineDiscountRate = this.lineDiscountRate;
-        cloned.billDiscountRate = this.billDiscountRate;
-        cloned.totalDiscountRate = this.totalDiscountRate;
-        cloned.lineExpenseRate = this.lineExpenseRate;
-
-        cloned.lineDiscount = this.lineDiscount;
-        cloned.billDiscount = this.billDiscount;
-        cloned.totalDiscount = this.totalDiscount;
-        cloned.billTax = this.billTax;
-
-        cloned.retailSaleRate = this.retailSaleRate;
-        cloned.wholesaleRate = this.wholesaleRate;
-        cloned.retailSaleRatePerUnit = this.retailSaleRatePerUnit;
-        cloned.wholesaleRatePerUnit = this.wholesaleRatePerUnit;
-
-        cloned.valueAtPurchaseRate = this.valueAtPurchaseRate;
-        cloned.valueAtCostRate = this.valueAtCostRate;
-
-        cloned.billCostRate = this.billCostRate;
-        cloned.lineCostRate = this.lineCostRate;
-        cloned.totalCostRate = this.totalCostRate;
-
-        cloned.unitsPerPack = this.unitsPerPack;
 
         return cloned;
+    }
+
+    public BillItemFinanceDetails() {
+        createdAt = new Date();
+    }
+
+    public BillItemFinanceDetails(BillItem billItem) {
+        this.billItem = billItem;
+        createdAt = new Date();
     }
 
     public BigDecimal getGrossRate() {
@@ -1020,4 +1052,70 @@ public class BillItemFinanceDetails implements Serializable {
         this.freeValueAtWholesaleRate = freeValueAtWholesaleRate;
     }
 
+    public BigDecimal getLineGrossTotal() {
+        return lineGrossTotal;
+    }
+
+    public void setLineGrossTotal(BigDecimal lineGrossTotal) {
+        this.lineGrossTotal = lineGrossTotal;
+    }
+
+    public BigDecimal getBillGrossTotal() {
+        return billGrossTotal;
+    }
+
+    public void setBillGrossTotal(BigDecimal billGrossTotal) {
+        this.billGrossTotal = billGrossTotal;
+    }
+
+    public BigDecimal getLineNetTotal() {
+        return lineNetTotal;
+    }
+
+    public void setLineNetTotal(BigDecimal lineNetTotal) {
+        this.lineNetTotal = lineNetTotal;
+    }
+
+    public BigDecimal getBillNetTotal() {
+        return billNetTotal;
+    }
+
+    public void setBillNetTotal(BigDecimal billNetTotal) {
+        this.billNetTotal = billNetTotal;
+    }
+
+    public BigDecimal getLineGrossRate() {
+        return lineGrossRate;
+    }
+
+    public void setLineGrossRate(BigDecimal lineGrossRate) {
+        this.lineGrossRate = lineGrossRate;
+    }
+
+    public BigDecimal getBillGrossRate() {
+        return billGrossRate;
+    }
+
+    public void setBillGrossRate(BigDecimal billGrossRate) {
+        this.billGrossRate = billGrossRate;
+    }
+
+    public BigDecimal getLineNetRate() {
+        return lineNetRate;
+    }
+
+    public void setLineNetRate(BigDecimal lineNetRate) {
+        this.lineNetRate = lineNetRate;
+    }
+
+    public BigDecimal getBillNetRate() {
+        return billNetRate;
+    }
+
+    public void setBillNetRate(BigDecimal billNetRate) {
+        this.billNetRate = billNetRate;
+    }
+
+    
+    
 }
