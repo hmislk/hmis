@@ -262,9 +262,15 @@ public class SearchController implements Serializable {
     }
 
     public void handleChannelBillRowClick() {
+        if (selectedChannelBookingBillRow == null || selectedChannelBookingBillRow.getBill() == null) {
+            return;
+        }
+
         if (selectedChannelBookingBillRow.getBill() instanceof CancelledBill) {
             for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
-                if (r.getBill().getCancelledBill() != null && r.getBill().getCancelledBill().equals(selectedChannelBookingBillRow.getBill())) {
+                if (r.getBill() != null
+                        && r.getBill().getCancelledBill() != null
+                        && r.getBill().getCancelledBill().equals(selectedChannelBookingBillRow.getBill())) {
                     this.selectedChannelBookingBillRow = r;
                 }
             }
