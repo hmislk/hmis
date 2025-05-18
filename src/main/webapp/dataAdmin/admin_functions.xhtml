@@ -42,10 +42,10 @@
                         <table class="table table-sm table-bordered w-100">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="width: 30%;">Name</th>
-                                    <th style="width: 50%;">Description</th>
-                                    <th style="width: 20%;">Action</th>
-                                    <th style="width: 20%;">Output</th>
+                                    <th style="width: 15%;">Name</th>
+                                    <th style="width: 30%;">Description</th>
+                                    <th style="width: 10%;">Action</th>
+                                    <th style="width: 45%;">Output</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -55,7 +55,7 @@
                                     <td>
                                         <h:form>
                                             <p:commandButton 
-                                                action="#{billController.fixReferencesInPharmacyGrnReturns}"
+                                                action="#{billController.fixReferancesInPharmacyGrnReturns()}"
                                                 ajax="false"
                                                 value="Correction Button will appear here"  />
                                         </h:form>
