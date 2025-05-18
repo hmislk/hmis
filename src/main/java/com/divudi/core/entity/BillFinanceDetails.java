@@ -16,7 +16,7 @@ import javax.persistence.TemporalType;
 /**
  *
  * @author Dr Buddhika Ariyaratne
- * 
+ *
  */
 @Entity
 public class BillFinanceDetails implements Serializable {
@@ -25,24 +25,77 @@ public class BillFinanceDetails implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @OneToOne(mappedBy = "billFinanceDetails", cascade = CascadeType.ALL)
     private Bill bill;
 
+    // ------------------ DISCOUNTS ------------------
+    // Discount applied directly to the Bill (not tied to specific lines)
     private BigDecimal billDiscount = BigDecimal.ZERO;
+
+    // Total of all line-level discounts (sum of discounts on individual BillItems)
     private BigDecimal totalOfBillLineDiscounts = BigDecimal.ZERO;
+
+    // Total discount (bill-level + all line-level)
     private BigDecimal totalDiscount = BigDecimal.ZERO;
+
+    // ------------------ EXPENSES ------------------
+    // Expense applied to the Bill itself (e.g., delivery fee, service charge)
+    private BigDecimal billExpense = BigDecimal.ZERO;
+
+    // Total of all expenses from individual BillItems
+    private BigDecimal totalOfBillLineExpense = BigDecimal.ZERO;
+
+    // Total expense (bill-level + all line-level)
     private BigDecimal totalExpense = BigDecimal.ZERO;
-    private BigDecimal totalOfFreeItemValues = BigDecimal.ZERO;
+
+    // ------------------ COST ------------------
+    // Cost incurred for the Bill as a whole (not specific to lines)
+    private BigDecimal billCostValue = BigDecimal.ZERO;
+
+    // Sum of cost values from each BillItem
+    private BigDecimal billOfBillLineCostValue = BigDecimal.ZERO;
+
+    // Total cost (bill-level + all line-level)
     private BigDecimal totalCostValue = BigDecimal.ZERO;
-    private BigDecimal totalPurchaseValue = BigDecimal.ZERO;
-    private BigDecimal totalQuantity = BigDecimal.ZERO;
-    private BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+    // ------------------ TAXES ------------------
+    // Tax applied to the whole Bill (e.g., VAT)
+    private BigDecimal billTaxValue = BigDecimal.ZERO;
+
+    // Total of tax amounts from all BillItems
+    private BigDecimal totalOfBillLineTaxValue = BigDecimal.ZERO;
+
+    // Total tax (bill-level + all line-level)
     private BigDecimal totalTaxValue = BigDecimal.ZERO;
+
+    // ------------------ VALUES ------------------
+    // Total purchase value for all BillItems (excluding discounts/taxes)
+    private BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+
+    // Estimated value of items given free of charge
+    private BigDecimal totalOfFreeItemValues = BigDecimal.ZERO;
+
+    // Expected total if all items sold at retail rate
     private BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+
+    // Expected total if all items sold at wholesale rate
     private BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+
+    // ------------------ QUANTITIES ------------------
+    // Total quantity of all BillItems (excluding free)
+    private BigDecimal totalQuantity = BigDecimal.ZERO;
+
+    // Total of free quantities across BillItems
+    private BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+    // Quantity in atomic units (e.g., tablets instead of boxes)
     private BigDecimal totalQuantityInAtomicUnitOfMeasurement = BigDecimal.ZERO;
+
+    // Free quantity in atomic units
     private BigDecimal totalFreeQuantityInAtomicUnitOfMeasurement = BigDecimal.ZERO;
 
+    // Getters and setters omitted for brevity
     // Payment method totals
     private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
     private BigDecimal totalPaidAsCard = BigDecimal.ZERO;
