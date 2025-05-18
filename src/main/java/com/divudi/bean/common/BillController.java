@@ -273,6 +273,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     SearchController searchController;
 
     private Long billIdToAssignBillItems;
+    private String output;
 
     public String toAddNewCollectingCentre() {
         return "/admin/institutions/collecting_centre";
@@ -540,6 +541,83 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         opdBill = temp;
         printPreview = true;
 
+    }
+
+    public void fixReferancesInPharmacyGrnReturns() {
+        output = ""; // Reset log
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.retired = :ret "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.billTypeAtomic IN :btas";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+        m.put("btas", btas);
+
+        List<Bill> allGrnReturns = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        int fixedCount = 0;
+
+        for (Bill grnReturnBill : allGrnReturns) {
+            Bill grnBill = grnReturnBill.getBilledBill();
+
+            if (grnBill == null) {
+                output += "Skipped: GRN Return #" + grnReturnBill.getDeptId() + " has no billed bill.\n";
+                continue;
+            }
+
+            if (grnBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_GRN) {
+                output += "Skipped: GRN Return #" + grnReturnBill.getDeptId() + " not linked to PHARMACY_GRN.\n";
+                continue;
+            }
+
+            Bill wronglyAssignedReferenceBill = grnBill.getReferenceBill();
+            if (wronglyAssignedReferenceBill == null) {
+                output += "Skipped: GRN #" + grnBill.getDeptId() + " has no reference bill.\n";
+                continue;
+            }
+
+            if (wronglyAssignedReferenceBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_ORDER) {
+                output += "Already correct: GRN #" + grnBill.getDeptId() + " references PO correctly.\n";
+                continue;
+            }
+
+            billService.reloadBill(grnReturnBill);
+            List<BillItem> returnItems = grnReturnBill.getBillItems();
+
+            if (returnItems == null || returnItems.isEmpty()) {
+                output += "Skipped: GRN Return #" + grnReturnBill.getDeptId() + " has no bill items.\n";
+                continue;
+            }
+
+            Bill correctReferenceBill = null;
+            for (BillItem returnItem : returnItems) {
+                BillItem refItem = returnItem.getReferanceBillItem();
+                if (refItem == null || refItem.getBill() == null) {
+                    continue;
+                }
+                if (refItem.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+                    correctReferenceBill = refItem.getBill();
+                    break;
+                }
+            }
+
+            if (correctReferenceBill != null) {
+                grnReturnBill.setReferenceBill(correctReferenceBill);
+                billFacade.edit(grnReturnBill);
+                output += "Fixed: GRN Return #" + grnReturnBill.getDeptId() + " reference updated to PO #" + correctReferenceBill.getDeptId() + ".\n";
+                fixedCount++;
+            } else {
+                output += "Failed to find correct PO for GRN Return #" + grnReturnBill.getDeptId() + ".\n";
+            }
+        }
+
+        output += "\nCorrection completed. Total GRN Returns fixed: " + fixedCount + ".";
     }
 
     public BillNumberGenerator getBillNumberGenerator() {
@@ -1048,7 +1126,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public void getOpdBills() {
-        AuditEvent auditEvent = sessionController.createNewAuditEvent("getOpdBills()","Started");
+        AuditEvent auditEvent = sessionController.createNewAuditEvent("getOpdBills()", "Started");
         BillType[] billTypes = {BillType.OpdBill};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         if (r == null) {
@@ -4005,6 +4083,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         }
 
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
     }
 
     public void recreateList(BillEntry r) {
