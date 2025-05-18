@@ -5220,7 +5220,7 @@ public class SearchController implements Serializable {
         billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
         billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
         billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
-        
+
         createPoTable(InstitutionType.Dealer, billTypesToList, billTypesToAttachedToEachBillInTheList);
     }
 
@@ -5231,7 +5231,6 @@ public class SearchController implements Serializable {
 
     }
 
-    
     @Deprecated // Use the same overloaded method with billtypeatomic lists as parameters
     public void createPoTable(InstitutionType institutionType, BillType bt, BillType referenceBillType) {
         bills = null;
@@ -5281,49 +5280,49 @@ public class SearchController implements Serializable {
         }
 
     }
-    
-     public void createPoTable(InstitutionType institutionType, List<BillTypeAtomic> billTypeAtomicToList, List<BillTypeAtomic> referenceBillTypes) {
-        bills = null;
-        String sql;
-        HashMap tmp = new HashMap();
 
-        sql = "Select b From Bill b "
+    public void createPoTable(InstitutionType institutionType, List<BillTypeAtomic> billTypeAtomicToList, List<BillTypeAtomic> referenceBillTypes) {
+        bills = null;
+        String jpql;
+        HashMap params = new HashMap();
+
+        jpql = "Select b From Bill b "
                 + " where  b.retired=false"
-                + " and b.billType in :btas"
+                + " and b.billTypeAtomic in :btas"
                 + " and b.toInstitution.institutionType=:insTp "
                 + " and  b.referenceBill.institution=:ins "
                 + " and  b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.deptId) like :billNo )";
-            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            jpql += " and  ((b.deptId) like :billNo )";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
-            sql += " and  ((b.toInstitution.name) like :toIns )";
-            tmp.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+            jpql += " and  ((b.toInstitution.name) like :toIns )";
+            params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
-            tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            jpql += " and  ((b.netTotal) like :netTotal )";
+            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
-        sql += " order by b.createdAt desc  ";
+        jpql += " order by b.createdAt desc  ";
 
-        tmp.put("toDate", getToDate());
-        tmp.put("fromDate", getFromDate());
-        tmp.put("insTp", institutionType);
-        tmp.put("ins", getSessionController().getInstitution());
-        tmp.put("btas", billTypeAtomicToList);
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("insTp", institutionType);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("btas", billTypeAtomicToList);
         if (getReportKeyWord() != null) {
             if (getReportKeyWord().isAdditionalDetails()) {
-                bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+                bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
             } else {
-                bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
+                bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
             }
         } else {
-            bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         }
         for (Bill b : bills) {
             b.setListOfBill(getGrns(b, referenceBillTypes));
@@ -5344,20 +5343,49 @@ public class SearchController implements Serializable {
         return getBillFacade().findByJpql(sql, hm);
     }
 
-    
-    private List<Bill> getGrns(Bill b, List<BillTypeAtomic> btas) {
-        String sql = "Select b "
-                + " From Bill b "
-                + " where b.retired=false "
-                + " and b.billType=:btas"
-                + " and b.referenceBill=:ref";
-        HashMap hm = new HashMap();
-        hm.put("ref", b);
-        hm.put("btas", btas);
-        return getBillFacade().findByJpql(sql, hm);
+    private List<Bill> getGrns(Bill purchaseOrderBill, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
+        List<Bill> result = new ArrayList<>();
+
+        // First: b.referenceBill = :ref
+        String jpql1 = "SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.billTypeAtomic IN :btas "
+                + "AND b.referenceBill = :ref";
+
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("ref", purchaseOrderBill);
+        params1.put("btas", grnBillTypesAtomicsToList);
+
+        List<Bill> list1 = getBillFacade().findByJpql(jpql1, params1);
+
+        if (list1 != null) {
+            result.addAll(list1);
+        }
+
+        // Second: b.billedBill.referenceBill = :ref (with null check)
+        String jpql2 = "SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.billTypeAtomic IN :btas "
+                + "AND b.billedBill IS NOT NULL "
+                + "AND b.billedBill.referenceBill = :ref";
+
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("ref", purchaseOrderBill);
+        params2.put("btas", grnBillTypesAtomicsToList);
+
+        List<Bill> list2 = getBillFacade().findByJpql(jpql2, params2);
+
+        if (list2 != null) {
+            for (Bill b : list2) {
+                if (!result.contains(b)) {
+                    result.add(b);
+                }
+            }
+        }
+
+        return result;
     }
 
-    
     private List<Bill> getIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
                 + " and b.billType=:btp and "
