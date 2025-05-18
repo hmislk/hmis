@@ -368,16 +368,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         recalculateFinancialsBeforeAddingBillItem(f, true); // Recalculate value from rate
     }
 
-    public void onLineDiscountValueChange() {
-        BillItem bi = currentBillItem;
-        if (bi == null || bi.getBillItemFinanceDetails() == null) {
-            return;
-        }
-
-        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-        recalculateFinancialsBeforeAddingBillItem(f, false); // Recalculate rate from value
-    }
-
     public void onRetailSaleRateChange() {
         BillItem bi = currentBillItem;
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
