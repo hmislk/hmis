@@ -5284,50 +5284,57 @@ public class SearchController implements Serializable {
     public void createPoTable(InstitutionType institutionType, List<BillTypeAtomic> billTypeAtomicToList, List<BillTypeAtomic> referenceBillTypes) {
         bills = null;
         String jpql;
-        HashMap params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "Select b From Bill b "
-                + " where  b.retired=false"
+                + " where b.retired = false"
                 + " and b.billTypeAtomic in :btas"
-                + " and b.toInstitution.institutionType=:insTp "
-                + " and  b.referenceBill.institution=:ins "
-                + " and  b.createdAt between :fromDate and :toDate ";
+                + " and b.toInstitution.institutionType = :insTp "
+                + " and b.referenceBill.institution = :ins "
+                + " and b.createdAt between :fromDate and :toDate ";
 
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            jpql += " and  ((b.deptId) like :billNo )";
-            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        if (getSearchKeyword() != null) {
+
+            if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
+                jpql += " and upper(b.deptId) like :billNo ";
+                params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            }
+
+            if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().isEmpty()) {
+                jpql += " and upper(b.toInstitution.name) like :toIns ";
+                params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+            }
+
+            if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
+                try {
+                    BigDecimal netTotalValue = new BigDecimal(getSearchKeyword().getNetTotal().trim());
+                    jpql += " and b.netTotal = :netTotal ";
+                    params.put("netTotal", netTotalValue);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid NetTotal input: " + getSearchKeyword().getNetTotal());
+                }
+            }
         }
 
-        if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
-            jpql += " and  ((b.toInstitution.name) like :toIns )";
-            params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and  ((b.netTotal) like :netTotal )";
-            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
-        }
-
-        jpql += " order by b.createdAt desc  ";
+        jpql += " order by b.createdAt desc ";
 
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("insTp", institutionType);
         params.put("ins", getSessionController().getInstitution());
         params.put("btas", billTypeAtomicToList);
-        if (getReportKeyWord() != null) {
-            if (getReportKeyWord().isAdditionalDetails()) {
-                bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-            } else {
-                bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
-            }
+
+        if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         } else {
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         }
-        for (Bill b : bills) {
-            b.setListOfBill(getGrns(b, referenceBillTypes));
-        }
 
+        if (bills != null && !bills.isEmpty()) {
+            for (Bill b : bills) {
+                b.setListOfBill(getGrns(b, referenceBillTypes)); // N+1; refactor if needed
+            }
+        }
     }
 
     @Deprecated // Please use the overloaded method with Bill Type Atomics
