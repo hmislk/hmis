@@ -161,7 +161,6 @@ public class GoodsReturnController implements Serializable {
         getReturnBill().setFromInstitution(getBill().getToInstitution());
 
         getReturnBill().setToDepartment(getBill().getDepartment());
-        getReturnBill().setToDepartment(getBill().getFromDepartment());
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -315,6 +314,10 @@ public class GoodsReturnController implements Serializable {
         }
         if (checkGrnItems()) {
             JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't Return ");
+            return;
+        }
+        if (billItems == null || billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items selected for return");
             return;
         }
 
