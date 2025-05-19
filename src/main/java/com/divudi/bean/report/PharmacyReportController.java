@@ -2157,6 +2157,8 @@ public class PharmacyReportController implements Serializable {
             row.setQuantity(batchQty);
             row.setPurchaseValue(batchQty * batchPurchaseRate);
             row.setSaleValue(batchQty * batchSaleRate);
+            row.setPurchaseRate(batchPurchaseRate);
+            row.setRetailRate(batchSaleRate);
 
             rows.add(row);
         }

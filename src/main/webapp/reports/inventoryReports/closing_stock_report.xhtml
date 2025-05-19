@@ -305,10 +305,7 @@
                             <p:column headerText="Batch No">
                                 <h:outputText value="#{f.itemBatch.batchNo}"/>
                             </p:column>
-                            <p:column
-                                    headerText="Closing Stock"
-                                    class="text-end"
-                                    width="8em">
+                            <p:column headerText="Qty">
                                 <h:outputText value="#{f.quantity}">
                                     <f:convertNumber pattern="#,###.#"/>
                                 </h:outputText>
@@ -318,10 +315,33 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            <p:column headerText="Purchase Rate">
+                                <h:outputText
+                                        value="#{f.purchaseRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
                             <p:column
-                                    headerText="Stock Value"
-                                    class="text-end"
-                                    width="10em">
+                                    headerText="Purchase Value">
+                                <h:outputText
+                                        value="#{f.purchaseValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column
+                                    headerText="Retail Rate">
+                                <h:outputText
+                                        value="#{f.retailRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column
+                                    headerText="Sale Value">
                                 <h:outputText
                                         value="#{f.saleValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
