@@ -1259,9 +1259,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
         bfd.setBillCostValue(bfd.getBillCostValue() != null ? bfd.getBillCostValue() : billCost);
 
         // Assign calculated from items
-        bfd.setTotalOfBillLineDiscounts(totalLineDiscounts);
+        bfd.setLineDiscount(totalLineDiscounts);
         bfd.setLineExpense(totalLineExpenses);
-        bfd.setTotalOfBillLineTaxValue(totalTaxLines);
+        bfd.setItemTaxValue(totalTaxLines);
         bfd.setLineCostValue(totalCostLines);
 
         bfd.setTotalDiscount(totalDiscount);
