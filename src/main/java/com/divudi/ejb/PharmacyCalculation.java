@@ -34,6 +34,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +42,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -654,26 +656,27 @@ public class PharmacyCalculation implements Serializable {
     public ItemBatch saveItemBatch(BillItem tmp) {
         //System.err.println("Save Item Batch");
 
-        
-
         ItemBatch itemBatch = new ItemBatch();
         Item itm = tmp.getItem();
-
         if (itm instanceof Ampp) {
             itm = ((Ampp) itm).getAmp();
         }
-        double purchase;
+
+        double purchase = 0d;
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Cost", true);
         if (manageCosting) {
-            purchase = tmp.getBillItemFinanceDetails().getLineCost()
-              .divide(tmp.getBillItemFinanceDetails().getQuantity(), 6, RoundingMode.HALF_UP)
-              .doubleValue();
-// 4.646464
-// 4.646464
+            BigDecimal qty = Optional.ofNullable(tmp.getBillItemFinanceDetails().getQuantity())
+                    .filter(q -> q.compareTo(BigDecimal.ZERO) != 0)
+                    .orElse(BigDecimal.ONE); // Prevent divide by zero
+
+            BigDecimal lineCost = Optional.ofNullable(tmp.getBillItemFinanceDetails().getLineCost())
+                    .orElse(BigDecimal.ZERO); // Prevent null
+
+            purchase = lineCost.divide(qty, 6, RoundingMode.HALF_UP).doubleValue();
         } else {
             purchase = tmp.getPharmaceuticalBillItem().getPurchaseRateInUnit();
-            // 4
         }
+
         double retail = tmp.getPharmaceuticalBillItem().getRetailRateInUnit();
         double wholesale = tmp.getPharmaceuticalBillItem().getWholesaleRate();
         ////// // System.out.println("wholesale = " + wholesale);
