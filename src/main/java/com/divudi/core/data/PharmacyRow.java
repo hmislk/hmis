@@ -1341,7 +1341,7 @@ public class PharmacyRow  implements Serializable{
         this.admissionType = admissionType;
     }
 
-    public double getPurchaseRate() {
+    public Double getPurchaseRate() {
         return purchaseRate;
     }
 
@@ -1349,7 +1349,7 @@ public class PharmacyRow  implements Serializable{
         this.purchaseRate = purchaseRate;
     }
 
-    public double getRetailRate() {
+    public Double getRetailRate() {
         return retailRate;
     }
 

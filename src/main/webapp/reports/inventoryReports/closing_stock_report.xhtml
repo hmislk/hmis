@@ -205,6 +205,17 @@
                                 inputStyleClass="w-100"
                                 itemLabel="#{item.name}"
                                 itemValue="#{item}"/>
+
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-box mr-2"/>
+                            <p:outputLabel value="Is Consignment Item" for="consignmentItem" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:selectBooleanCheckbox id="consignmentItem"
+                                                 value="#{pharmacyReportController.consignmentItem}"
+                                                 itemLabel="Yes"/>
                     </h:panelGrid>
 
                     <div class="d-flex align-items-center">

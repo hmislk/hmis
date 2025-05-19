@@ -316,6 +316,8 @@ public class PharmacyReportController implements Serializable {
     private Institution fromSite;
     private Institution toSite;
 
+    private boolean consignmentItem;
+
     //Constructor
     public PharmacyReportController() {
     }
@@ -2153,6 +2155,16 @@ public class PharmacyReportController implements Serializable {
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
 
+            if (isConsignmentItem()) {
+                if (batchQty > 0) {
+                    continue;
+                }
+            } else {
+                if (batchQty <= 0) {
+                    continue;
+                }
+            }
+
             // Populate row values directly (no accumulation needed, as each batch is its own row)
             row.setQuantity(batchQty);
             row.setPurchaseValue(batchQty * batchPurchaseRate);
@@ -2452,6 +2464,16 @@ public class PharmacyReportController implements Serializable {
                 rows.add(matchingRow);
             }
 
+            if (isConsignmentItem() && matchingRow.getQuantity() + batchQty > 0) {
+                rows.remove(matchingRow);
+                continue;
+            } else {
+                if (matchingRow.getQuantity() + batchQty <= 0) {
+                    rows.remove(matchingRow);
+                    continue;
+                }
+            }
+
             // Accumulate the quantities and values
             matchingRow.setQuantity(matchingRow.getQuantity() + batchQty);
             matchingRow.setPurchaseValue(matchingRow.getPurchaseValue() + batchQty * batchPurchaseRate);
@@ -2499,12 +2521,13 @@ public class PharmacyReportController implements Serializable {
                     FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
-            PdfPTable table = new PdfPTable(9);
+            PdfPTable table = new PdfPTable(12);
             table.setWidthPercentage(100);
-            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2f, 2f, 2.5f, 2.5f};
+            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2f, 2f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f};
             table.setWidths(columnWidths);
 
-            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Closing Stock", "Stock Value"};
+            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
+                    "Purchase Rate", "Purchase Value", "Retail Rate", "Sale Value"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -2530,6 +2553,9 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(f.getItemBatch() != null && f.getItemBatch().getDateOfExpire() != null ? sdf.format(f.getItemBatch().getDateOfExpire()) : "-");
                 table.addCell(f.getItemBatch() != null ? f.getItemBatch().getBatchNo() : "-");
                 table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
+                table.addCell(f.getPurchaseRate() != null ? String.format("%.2f", f.getPurchaseRate()) : "0.00");
+                table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
+                table.addCell(f.getRetailRate() != null ? String.format("%.2f", f.getRetailRate()) : "0.00");
                 table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
             }
 
@@ -2538,6 +2564,9 @@ public class PharmacyReportController implements Serializable {
             footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             table.addCell(footerCell);
             table.addCell(String.format("%.2f", getStockQty()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockPurchaseValue()));
+            table.addCell("");
             table.addCell(String.format("%.2f", getStockSaleValue()));
 
             document.add(table);
@@ -4137,5 +4166,13 @@ public class PharmacyReportController implements Serializable {
 
     public void setShowData(boolean showData) {
         this.showData = showData;
+    }
+
+    public boolean isConsignmentItem() {
+        return consignmentItem;
+    }
+
+    public void setConsignmentItem(boolean consignmentItem) {
+        this.consignmentItem = consignmentItem;
     }
 }
