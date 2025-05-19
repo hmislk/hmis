@@ -401,6 +401,32 @@ public class BillService {
         return batchBill;
     }
 
+    public boolean hasMultipleIndividualBillsForThisBatchBill(Bill batchBill) {
+        if (batchBill == null) {
+            return false;
+        }
+        String j = "SELECT COUNT(b) FROM Bill b WHERE b.backwardReferenceBill = :batch";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("batch", batchBill);
+        Long count = billFacade.findLongByJpql(j, parameters);
+        return count != null && count > 1;
+    }
+
+    public boolean hasMultipleIndividualBillsForBatchBillOfThisIndividualBill(Bill individualBill) {
+        if (individualBill == null) {
+            return false;
+        }
+        Bill batchBill = fetchBatchBillOfIndividualBill(individualBill);
+        if (batchBill == null) {
+            return false;
+        }
+        String j = "SELECT COUNT(b) FROM Bill b WHERE b.backwardReferenceBill = :batch";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("batch", batchBill);
+        Long count = billFacade.findLongByJpql(j, parameters);
+        return count != null && count > 1;
+    }
+
     public Bill fetchBillReferredAsReferenceBill(Bill referredBill, BillTypeAtomic billTypeAtomic) {
         return fetchBillByReferenceType("referenceBill", referredBill, billTypeAtomic);
     }
@@ -535,6 +561,20 @@ public class BillService {
                 + " order by bi.id";
         params.put("bl", b);
         return billItemFacade.findByJpql(jpql, params);
+    }
+    
+    public List<BillTypeAtomic> fetchBillTypeAtomicsForOpdFinance(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        return btas;
     }
 
     public List<PharmaceuticalBillItem> fetchPharmaceuticalBillItems(Bill b) {

@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+
+                <h:panelGroup  rendered="#{!webUserController.hasPrivilege('Admin')}"  >
+                    <p:outputLabel value="YOU ARE NOT AUTHERIZED." ></p:outputLabel>
+                </h:panelGroup>
+
+                <p:panel header="Manage User Role Privilages"  rendered="#{webUserController.hasPrivilege('Admin')}" >
+
+                    <h:form >
+                        <p:panelGrid columns="2">
+                            <p:outputLabel value="From:"/>
+                            <p:calendar value="#{dataAdministrationController.fromDate}"  pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:calendar>
+
+                            <p:outputLabel value="To:"/>
+                            <p:calendar value="#{dataAdministrationController.toDate}"  pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:calendar>
+
+                            <p:spacer/>
+                            <p:commandButton value="Search" ajax="false"
+                                             action="#{dataAdministrationController.refresh}"/>
+                        </p:panelGrid>
+
+                        <p:messages id="messages" showDetail="true" closable="true"/>
+
+
+
+                        <p:dataTable 
+                            id="tbl"
+                            emptyMessage="No log files found. Please check the log directory configuration."
+                            value="#{dataAdministrationController.logs}"
+                            var="f"
+                            rowKey="#{f}"
+                            selectionMode="single"
+                            selection="#{dataAdministrationController.selected}">
+                            <p:column headerText="File">
+                                <h:outputText value="#{f.fileName}"/>
+                            </p:column>
+
+                            <p:column headerText="Action">
+                                <p:commandButton value="Download" ajax="false">
+                                    <p:fileDownload value="#{dataAdministrationController.downloadFile(f)}"/>
+                                </p:commandButton>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+                    </h:form>
+
+                </p:panel>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

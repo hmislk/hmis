@@ -10,6 +10,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.util.JsfUtil;
@@ -102,6 +103,9 @@ public class AmpController implements Serializable {
     VmpController vmpController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private ItemController itemController;
+
     private UploadedFile file;
 
     public UploadedFile getFile() {
@@ -420,6 +424,14 @@ public class AmpController implements Serializable {
         return a;
     }
     List<Amp> ampList = null;
+
+    public List<Item> getPharmaceuticalAndStoreItemAmp(String qry) {
+        List<Item> a = new ArrayList<>();
+        a.addAll(completeAmp(qry));
+        a.addAll(itemController.completeStoreItemOnly(qry));
+
+        return a;
+    }
 
     public List<Amp> completeAmpByName(String qry) {
 

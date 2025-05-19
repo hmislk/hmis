@@ -19,6 +19,7 @@ import com.divudi.core.entity.*;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 
 import java.io.OutputStream;
 
@@ -53,6 +54,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 @Named
 @SessionScoped
 public class CreditCompanyDueController implements Serializable {
+
+    @EJB
+    private CreditBean creditBean;
+    @EJB
+    BillService billService;
 
     private Date fromDate;
     private Date toDate;
@@ -158,17 +164,10 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createAgeTable() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         makeNull();
         Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getCreditCompanyFromBills(true);
-
+        List<Institution> list = getCreditBean().getCreditCompanyFromBillsFromBillTypeAtomic(true);
         setIns.addAll(list);
-
         creditCompanyAge = new ArrayList<>();
         for (Institution ins : setIns) {
             if (ins == null) {
@@ -306,7 +305,6 @@ public class CreditCompanyDueController implements Serializable {
 //            }
 //        }
 //    }
-
     public void createInwardAgeTableWithFilters() {
         Date startTime = new Date();
 
@@ -338,9 +336,9 @@ public class CreditCompanyDueController implements Serializable {
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
 
-        String jpql = "SELECT bill FROM Bill bill " +
-                "WHERE bill.retired <> :br " +
-                "AND bill.billTypeAtomic IN :bts";
+        String jpql = "SELECT bill FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.billTypeAtomic IN :bts";
 
         parameters.put("br", true);
         parameters.put("bts", bts);
@@ -833,7 +831,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod,
-                                 Institution institutionOfDepartment, Department department, Institution site) {
+            Institution institutionOfDepartment, Department department, Institution site) {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(
                 inst, true, paymentMethod, institutionOfDepartment, department, site);
         for (PatientEncounter b : lst) {
@@ -956,16 +954,29 @@ public class CreditCompanyDueController implements Serializable {
         this.toDate = toDate;
     }
 
-    @EJB
-    private CreditBean creditBean;
-
+    @Deprecated // UsecreateOpdCreditDueByBillTypeAtomic
     public void createOpdCreditDue() {
-        Date startTime = new Date();
-
         List<Institution> setIns = getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), true);
         items = new ArrayList<>();
         for (Institution ins : setIns) {
             List<Bill> bills = getCreditBean().getCreditBills(ins, BillType.OpdBill, getFromDate(), getToDate(), true);
+            InstitutionBills newIns = new InstitutionBills();
+            newIns.setInstitution(ins);
+            newIns.setBills(bills);
+            for (Bill b : bills) {
+                newIns.setTotal(newIns.getTotal() + b.getNetTotal());
+                newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidAmount());
+            }
+            items.add(newIns);
+        }
+    }
+
+    public void createOpdCreditDueByBillTypeAtomic() {
+        List<BillTypeAtomic> btas = billService.fetchBillTypeAtomicsForOpdFinance();
+        List<Institution> setIns = getCreditBean().getCreditInstitution(btas, getFromDate(), getToDate(), true);
+        items = new ArrayList<>();
+        for (Institution ins : setIns) {
+            List<Bill> bills = getCreditBean().getCreditBills(ins, btas, getFromDate(), getToDate(), true);
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
             newIns.setBills(bills);
@@ -1616,7 +1627,6 @@ public class CreditCompanyDueController implements Serializable {
                     return clonedBill;
                 })
                 .collect(Collectors.toList());
-
 
         Map<Long, PatientEncounter> encounterMap = patientEncounters.stream()
                 .collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
@@ -2522,7 +2532,6 @@ public class CreditCompanyDueController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
             String[] headers = {"Institution Name", "Bill No", "Client Name", "Bill Date", "Billed Amount", "Staff Fee", "Paid Amount", "Net Amount"};
             int colIndex = 0;
-
 
             for (String header : headers) {
                 Cell cell = headerRow.createCell(colIndex++);
