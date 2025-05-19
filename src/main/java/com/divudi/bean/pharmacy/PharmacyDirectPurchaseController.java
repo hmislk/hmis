@@ -1381,6 +1381,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             PharmaceuticalBillItem cuPharmaceuticalBillItem = new PharmaceuticalBillItem();
             currentBillItem.setPharmaceuticalBillItem(cuPharmaceuticalBillItem);
             cuPharmaceuticalBillItem.setBillItem(currentBillItem);
+            BillItemFinanceDetails fd = new BillItemFinanceDetails(currentBillItem);
+            currentBillItem.setBillItemFinanceDetails(fd);
         }
         return currentBillItem;
     }
