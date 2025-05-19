@@ -667,7 +667,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void remove(BillItem b) {
-        getBillItems().remove(b.getSearialNo());
+        getBillItems().remove(b);
+        int i = 0;
+        for (BillItem bi : getBillItems()) {
+            bi.setSearialNo(i++);
+        }
     }
 
     public PharmacyCalculation getPharmacyBillBean() {
