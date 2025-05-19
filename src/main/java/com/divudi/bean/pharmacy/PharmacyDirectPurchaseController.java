@@ -59,6 +59,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -577,6 +578,26 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         currentBillItem.getPharmaceuticalBillItem().setPurchaseRate(currentBillItem.getPharmaceuticalBillItem().getRetailRate() / 1.15);
         currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate() * 1.08);
+    }
+
+    public double calcProfitMargin(BillItem ph) {
+        if (ph == null || ph.getBillItemFinanceDetails() == null) {
+            return 0.0;
+        }
+        BigDecimal retail = Optional.ofNullable(ph.getBillItemFinanceDetails().getValueAtRetailRate()).orElse(BigDecimal.ZERO);
+        BigDecimal cost = Optional.ofNullable(ph.getBillItemFinanceDetails().getValueAtCostRate()).orElse(BigDecimal.ZERO);
+        if (cost.compareTo(BigDecimal.ZERO) == 0) {
+            return 0.0;
+        }
+        return retail.subtract(cost).divide(cost, 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100")).doubleValue();
+    }
+
+    public boolean isProfitMarginExcessive(BillItem ph) {
+        if (ph == null || ph.getItem() == null || ph.getItem().getCategory() == null) {
+            return false;
+        }
+        double margin = calcProfitMargin(ph);
+        return ph.getItem().getCategory().getProfitMargin() > margin;
     }
 
     public List<PharmacyStockRow> getRows() {
