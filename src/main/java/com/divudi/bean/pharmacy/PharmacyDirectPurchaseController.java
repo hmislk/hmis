@@ -842,6 +842,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public void addExpense() {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
+            if (getBill().getBillFinanceDetails() == null) {
+                getBill().setBillFinanceDetails(new BillFinanceDetails(getBill()));
+            }
         }
         if (getCurrentExpense().getItem() == null) {
             JsfUtil.addErrorMessage("Expense ?");
