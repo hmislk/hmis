@@ -2484,10 +2484,74 @@ public class PharmacyReportController implements Serializable {
             calculateOpeningStock();
             calculateStockCorrection();
             calculateGrnCashAndCredit();
+            calculateGrnReturnTotals();
             calculateClosingStock();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateGrnReturnTotals() {
+        try {
+            List<BillTypeAtomic> returnTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_GRN_CANCELLED,
+                    BillTypeAtomic.PHARMACY_GRN_REFUND,
+                    BillTypeAtomic.PHARMACY_GRN_RETURN
+            );
+
+            // 1. First check without any filters
+            StringBuilder testJpql = new StringBuilder("SELECT COUNT(b) FROM Bill b ")
+                    .append("WHERE b.billTypeAtomic IN :returnTypes ")
+                    .append("AND b.retired = false ")
+                    .append("AND b.createdAt BETWEEN :fd AND :td ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("returnTypes", returnTypes);
+            params.put("fd", CommonFunctions.getStartOfDay(fromDate));
+            params.put("td", CommonFunctions.getEndOfDay(toDate));
+
+            // First test without any additional filters
+            Object testResult = billFacade.findAggregate(testJpql.toString(), params, TemporalType.TIMESTAMP);
+            long testCount = testResult instanceof Number ? ((Number) testResult).longValue() : 0;
+            System.out.println("Bills found WITHOUT filters: " + testCount);
+
+            // Now add filters and test again
+            addFilter(testJpql, params, "b.institution", "ins", institution);
+            addFilter(testJpql, params, "b.department.site", "sit", site);
+            addFilter(testJpql, params, "b.department", "dep", department);
+            Object filteredResult = billFacade.findAggregate(testJpql.toString(), params, TemporalType.TIMESTAMP);
+            long filteredCount = filteredResult instanceof Number ? ((Number) filteredResult).longValue() : 0;
+            System.out.println("Bills found WITH filters: " + filteredCount);
+
+            // Print filter values for debugging
+            System.out.println("Filter values:");
+            System.out.println("Institution: " + institution);
+            System.out.println("Department: " + department);
+            System.out.println("Site: " + site);
+
+            // 2. Get the sum with all conditions
+            StringBuilder sumJpql = new StringBuilder("SELECT SUM(b.netTotal) FROM Bill b ")
+                    .append("WHERE b.billTypeAtomic IN :returnTypes ")
+                    .append("AND b.retired = false ")
+                    .append("AND b.createdAt BETWEEN :fd AND :td ")
+                    .append("AND b.netTotal IS NOT NULL ");
+
+            addFilter(sumJpql, params, "b.institution", "ins", institution);
+            addFilter(sumJpql, params, "b.department.site", "sit", site);
+            addFilter(sumJpql, params, "b.department", "dep", department);
+
+            Object sumResult = billFacade.findAggregate(sumJpql.toString(), params, TemporalType.TIMESTAMP);
+            double returnTotal = sumResult instanceof Number ? ((Number) sumResult).doubleValue() : 0.0;
+
+            System.out.println("Final calculated return total: " + returnTotal);
+            cogs.put("GRN RETURN/CANCEL TOTAL", returnTotal);
+
+        } catch (Exception e) {
+            System.err.println("Error in calculateGrnReturnTotals: " + e.getMessage());
+            e.printStackTrace();
+            JsfUtil.addErrorMessage(e, "Error calculating GRN return totals");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2528,8 +2592,8 @@ public class PharmacyReportController implements Serializable {
                 }
             }
 
-            cogs.put("GRN CASH TOTAL", 0.0-cashTotal);
-            cogs.put("GRN CREDIT TOTAL", 0.0-creditTotal);
+            cogs.put("GRN CASH TOTAL", 0.0 - cashTotal);
+            cogs.put("GRN CREDIT TOTAL", 0.0 - creditTotal);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
@@ -3248,7 +3312,12 @@ public class PharmacyReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         List<BillType> bts = Arrays.asList(billTypes);
-        Class[] btsa = {PreBill.class, CancelledBill.class, RefundBill.class, BilledBill.class};
+        Class[] btsa = {PreBill.class,
+            CancelledBill.class,
+            RefundBill.class,
+            BilledBill.class
+
+        };
         List<Class> bcts = Arrays.asList(btsa);
         m.put("bt", bts);
         m.put("bct", bcts);
@@ -3336,7 +3405,12 @@ public class PharmacyReportController implements Serializable {
         m.put("td", toDate);
         m.put("bt", bts);
 
-        Class[] btsa = {PreBill.class, CancelledBill.class, RefundBill.class, BilledBill.class};
+        Class[] btsa = {PreBill.class,
+            CancelledBill.class,
+            RefundBill.class,
+            BilledBill.class
+
+        };
         List<Class> bcts = Arrays.asList(btsa);
         m.put("bct", bcts);
         BillItem bi = new BillItem();
@@ -3513,7 +3587,9 @@ public class PharmacyReportController implements Serializable {
         );
         m.put("bType", bTypes);  // Use 'bType' for IN clause
 
-        m.put("invType", Investigation.class);
+        m
+                .put("invType", Investigation.class
+                );
 
         if (institution != null) {
             m.put("ins", institution);
