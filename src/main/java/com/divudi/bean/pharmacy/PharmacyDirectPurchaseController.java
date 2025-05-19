@@ -343,11 +343,23 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setNetRate(f.getLineNetRate());
             f.setBillNetRate(f.getLineNetRate());
 
-            // Percentages for info/reporting — not user-editable
-            f.setTotalDiscountPercentage(f.getTotalDiscount().multiply(BigDecimal.valueOf(100)).divide(grossTotal, 2, RoundingMode.HALF_UP));
-            f.setTotalExpensePercentage(f.getTotalExpense().multiply(BigDecimal.valueOf(100)).divide(grossTotal, 2, RoundingMode.HALF_UP));
-            f.setTotalTaxPercentage(f.getTotalTax().multiply(BigDecimal.valueOf(100)).divide(grossTotal, 2, RoundingMode.HALF_UP));
-            f.setTotalCostPercentage(costRate.multiply(BigDecimal.valueOf(100)).divide(f.getLineGrossRate(), 2, RoundingMode.HALF_UP));
+// Percentages for info/reporting — not user-editable
+            if (grossTotal != null && grossTotal.compareTo(BigDecimal.ZERO) != 0) {
+                f.setTotalDiscountPercentage(f.getTotalDiscount().multiply(BigDecimal.valueOf(100)).divide(grossTotal, 2, RoundingMode.HALF_UP));
+                f.setTotalExpensePercentage(f.getTotalExpense().multiply(BigDecimal.valueOf(100)).divide(grossTotal, 2, RoundingMode.HALF_UP));
+                f.setTotalTaxPercentage(f.getTotalTax().multiply(BigDecimal.valueOf(100)).divide(grossTotal, 2, RoundingMode.HALF_UP));
+            } else {
+                f.setTotalDiscountPercentage(BigDecimal.ZERO);
+                f.setTotalExpensePercentage(BigDecimal.ZERO);
+                f.setTotalTaxPercentage(BigDecimal.ZERO);
+            }
+
+            if (f.getLineGrossRate() != null && f.getLineGrossRate().compareTo(BigDecimal.ZERO) != 0) {
+                f.setTotalCostPercentage(costRate.multiply(BigDecimal.valueOf(100)).divide(f.getLineGrossRate(), 2, RoundingMode.HALF_UP));
+            } else {
+                f.setTotalCostPercentage(BigDecimal.ZERO);
+            }
+
         }
     }
 
