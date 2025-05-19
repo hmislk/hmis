@@ -425,10 +425,10 @@ public class AmpController implements Serializable {
     }
     List<Amp> ampList = null;
 
-    public List<Item> getPharmaceuticalAndStoreItemAmp() {
+    public List<Item> getPharmaceuticalAndStoreItemAmp(String qry) {
         List<Item> a = new ArrayList<>();
-        a.addAll(completeAmp(""));
-        a.addAll(itemController.completeStoreItemOnly(""));
+        a.addAll(completeAmp(qry));
+        a.addAll(itemController.completeStoreItemOnly(qry));
 
         return a;
     }
