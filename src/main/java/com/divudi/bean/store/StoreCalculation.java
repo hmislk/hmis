@@ -547,6 +547,7 @@ public class StoreCalculation {
 //        ib.setBatchNo(pbi.getStringValue());
         ib.setPurcahseRate(purchase);
         ib.setRetailsaleRate(retail);
+        ib.setBatchNo(pbi.getStringValue());
 
         HashMap hash = new HashMap();
         String sql;
