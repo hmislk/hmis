@@ -2186,7 +2186,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
-            1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
     };
 
     private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
@@ -2242,10 +2242,10 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
 
             String[] headers = {
-                    "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
-                    "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
-                    "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
-                    "Closing Stock", "Rate", "Closing Value"
+                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                "Closing Stock", "Rate", "Closing Value"
             };
 
             addTableHeaders(table, headerFont, headers);
@@ -2527,7 +2527,7 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
-                    "Purchase Rate", "Purchase Value", "Retail Rate", "Sale Value"};
+                "Purchase Rate", "Purchase Value", "Retail Rate", "Sale Value"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -2590,11 +2590,105 @@ public class PharmacyReportController implements Serializable {
             }
 
 //            StringBuilder jpql = new StringBuilder("SELECT sh FROM StockHistory sh WHERE ");
-
             calculateOpeningStock();
+            calculateStockCorrection();
+            calculateGrnCashAndCredit();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateGrnCashAndCredit() {
+        try {
+            StringBuilder jpql = new StringBuilder("SELECT b.paymentMethod, SUM(b.netTotal) FROM Bill b ")
+                    .append("WHERE b.retired = false ")
+                    .append("AND b.billTypeAtomic = :bType ")
+                    .append("AND b.createdAt BETWEEN :fd AND :td ")
+                    .append("AND b.paymentMethod IN (:cash, :credit) ")
+                    .append("GROUP BY b.paymentMethod");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("bType", BillTypeAtomic.PHARMACY_GRN);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("cash", PaymentMethod.Cash);
+            params.put("credit", PaymentMethod.Credit);
+
+            // Add filters if needed
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+
+            List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            double cashTotal = 0.0;
+            double creditTotal = 0.0;
+
+            for (Object[] result : results) {
+                PaymentMethod pm = (PaymentMethod) result[0];
+                Number total = (Number) result[1]; // Could be Double, Long, or BigDecimal
+
+                if (pm == PaymentMethod.Cash) {
+                    cashTotal = total != null ? total.doubleValue() : 0.0;
+                } else if (pm == PaymentMethod.Credit) {
+                    creditTotal = total != null ? total.doubleValue() : 0.0;
+                }
+            }
+
+            // Store as negative values (assuming this is intentional for accounting purposes)
+            cogs.put("GRN CASH TOTAL", 0.0 - cashTotal);
+            cogs.put("GRN CREDIT TOTAL", 0.0 - creditTotal);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateStockCorrection() {
+        try {
+            List<BillType> billTypes = Arrays.asList(
+                    BillType.PharmacyAdjustmentSaleRate,
+                    BillType.PharmacyAdjustmentPurchaseRate,
+                    BillType.PharmacyAdjustmentWholeSaleRate
+            );
+
+            StringBuilder jpql = new StringBuilder("SELECT bi, phi.retailRate, phi.stock.stock FROM BillItem bi ")
+                    .append("JOIN bi.pharmaceuticalBillItem phi ")
+                    .append("JOIN phi.stock s ")
+                    .append("WHERE bi.retired = false ")
+                    .append("AND bi.bill.billType IN :bType ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("bType", billTypes);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+
+            // Add filters if needed
+            addFilter(jpql, params, "bi.bill.institution", "ins", institution);
+            addFilter(jpql, params, "bi.bill.department.site", "sit", site);
+            addFilter(jpql, params, "bi.bill.department", "dep", department);
+
+            jpql.append(" ORDER BY bi.bill.createdAt");
+
+            List<Object[]> results = getBillItemFacade().findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            double totalVariance = results.stream()
+                    .mapToDouble(result -> {
+                        BillItem billItem = (BillItem) result[0];
+                        double oldRate = (Double) result[1];
+                        double qty = (Double) result[2];
+                        return qty * (billItem.getRate() - oldRate);
+                    })
+                    .sum();
+
+            cogs.put("Stock Correction", totalVariance);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2904,9 +2998,9 @@ public class PharmacyReportController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
 
             String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
-                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
-                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+                "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
 
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -3010,8 +3104,8 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
-                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
-                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+                "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
