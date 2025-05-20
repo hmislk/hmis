@@ -51,13 +51,16 @@
                             <tbody>
                                 <tr>
                                     <td><strong>Correct Reference Bill in GRN Returns</strong></td>
-                                    <td>Correct Reference Bill in GRN Returns - description will come here</td>
+                                    <td>
+                                        This issue was caused by a bug where GRN Returns were recorded with incorrect references to the original Order Bills, leading to errors in calculating remaining quantities for subsequent GRNs. The bug has now been fixed and will not affect future records. This correction will update existing GRN Returns to point to the correct Order Bills, ensuring accurate remaining quantity calculations.
+                                    </td>
+
                                     <td>
                                         <h:form>
                                             <p:commandButton 
                                                 action="#{billController.fixReferancesInPharmacyGrnReturns()}"
                                                 ajax="false"
-                                                value="Correction Button will appear here"  />
+                                                value="Correct Reference Bill in GRN Returns"  />
                                         </h:form>
                                     </td>
                                     <td>
