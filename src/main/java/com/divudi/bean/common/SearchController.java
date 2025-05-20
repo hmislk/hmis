@@ -14710,6 +14710,7 @@ public class SearchController implements Serializable {
     public void generateCashierDetailed() {
         reportTimerController.trackReportExecution(() -> {
             bundle = new ReportTemplateRowBundle();
+            bundle.setName("Cashier Detailed");
 
             double collectionForTheDay = 0.0;
             double netCashCollection = 0.0;
@@ -19130,7 +19131,7 @@ public class SearchController implements Serializable {
 
     public StreamedContent getBundleAsExcel() {
         try {
-            downloadingExcel = excelController.createExcelForBundle(bundle);
+            downloadingExcel = excelController.createExcelForBundle(bundle,fromDate,toDate);
         } catch (IOException e) {
             // Handle IOException
         }

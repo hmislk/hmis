@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,8 +45,10 @@ public class ExcelController {
      */
     public ExcelController() {
     }
-
-    public StreamedContent createExcelForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
+    public StreamedContent createExcelForBundle(ReportTemplateRowBundle rootBundle) throws IOException{
+        return createExcelForBundle(rootBundle,searchController.getFromDate(),searchController.getToDate());
+    }
+    public StreamedContent createExcelForBundle(ReportTemplateRowBundle rootBundle, Date fromDate, Date toDate) throws IOException {
         if (rootBundle == null) {
             return null;
         }
@@ -60,7 +63,7 @@ public class ExcelController {
 
         Row titleRow = dataSheet.createRow(0);
         Cell headerCell = titleRow.createCell(0);
-        headerCell.setCellValue("Daily Return  -  " + CommonFunctions.getDateTimeFormat24(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat24(searchController.getToDate()));
+        headerCell.setCellValue(rootBundle.getName()+ "  -  " + CommonFunctions.getDateTimeFormat24(fromDate) + " to " + CommonFunctions.getDateTimeFormat24(toDate));
         headerCell.setCellStyle(style);
         dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
