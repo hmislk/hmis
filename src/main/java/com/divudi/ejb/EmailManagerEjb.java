@@ -5,19 +5,26 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.facade.EmailFacade;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.Multipart;
@@ -38,6 +45,9 @@ public class EmailManagerEjb {
 
     @EJB
     private EmailFacade emailFacade;
+
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @SuppressWarnings("unused")
     @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
@@ -120,6 +130,55 @@ public class EmailManagerEjb {
             return false;
         }
 
+    }
+
+    // Latest Email Sender
+    public boolean sendEmail(final List<String> recipients, final String body, final String subject, final boolean isHtml) {
+        final String username = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Username", "");
+        final String password = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Password", "");
+        final String smtpHost = configOptionApplicationController.getShortTextValueByKey("Email Gateway - SMTP Host", "");
+        final String messengerServiceURL = configOptionApplicationController.getShortTextValueByKey("Email Gateway - URL", "");
+
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("subject", subject);
+            payload.put("body", body);
+            payload.put("isHtml", isHtml);
+
+            JSONArray recipientArray = new JSONArray();
+            for (String recipient : recipients) {
+                recipientArray.put(recipient);
+            }
+            payload.put("recipients", recipientArray);
+
+            JSONObject smtpConfig = new JSONObject();
+            smtpConfig.put("username", username);
+            smtpConfig.put("password", password);
+            smtpConfig.put("smtpHost", smtpHost);
+            smtpConfig.put("smtpPort", 587);
+            smtpConfig.put("smtpAuth", true);
+            smtpConfig.put("smtpStarttlsEnable", true);
+            smtpConfig.put("smtpSslEnable", false);
+
+            payload.put("smtpConfig", smtpConfig);
+
+            URL url = new URL(messengerServiceURL);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+
+            try (OutputStream os = connection.getOutputStream()) {
+                os.write(payload.toString().getBytes());
+                os.flush();
+            }
+
+            return connection.getResponseCode() == 200;
+        } catch (Exception e) {
+            Logger.getLogger(EmailManagerEjb.class.getName()).log(
+                   Level.SEVERE, "Failed to send email: " + e.getMessage(), e);
+            return false;
+        }
     }
 
     public EmailFacade getEmailFacade() {
