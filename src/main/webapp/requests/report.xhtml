@@ -190,6 +190,7 @@
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </ui:repeat>
+                                        
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                             <h:panelGroup 
                                                 layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'Image'}" >
