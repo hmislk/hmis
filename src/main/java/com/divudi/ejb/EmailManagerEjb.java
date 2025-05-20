@@ -35,6 +35,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  *
@@ -163,7 +164,7 @@ public class EmailManagerEjb {
             payload.put("smtpConfig", smtpConfig);
 
             URL url = new URL(messengerServiceURL);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
