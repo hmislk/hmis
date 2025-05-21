@@ -5747,8 +5747,32 @@ public class CommonReport implements Serializable {
         // Add results from the second query (Institution-based)
         combinedResults.addAll(rtrsByReferredByInstitution);
 
+        List<ReportTemplateRow> mergedResults = new ArrayList<>();
+
+        for (ReportTemplateRow row: combinedResults) {
+            if (row.getReferringInstitution() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringInstitution().getName());
+
+                mergedResults.add(newRow);
+            }
+
+            if (row.getReferringStaff() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringStaff().getPerson().getName());
+
+                mergedResults.add(newRow);
+            }
+        }
+
         // Set the combined results in the bundle
-        bundle.setReportTemplateRows(combinedResults);
+        bundle.setReportTemplateRows(mergedResults);
 
         // Format the report name with fromDate and toDate
         String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
@@ -5803,8 +5827,32 @@ public class CommonReport implements Serializable {
         // Add results from the second query (Institution-based)
         combinedResults.addAll(rtrsByReferredByInstitution);
 
+        List<ReportTemplateRow> mergedResults = new ArrayList<>();
+
+        for (ReportTemplateRow row: combinedResults) {
+            if (row.getReferringInstitution() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringInstitution().getName());
+
+                mergedResults.add(newRow);
+            }
+
+            if (row.getReferringStaff() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringStaff().getPerson().getNameWithTitle());
+
+                mergedResults.add(newRow);
+            }
+        }
+
         // Set the combined results in the bundle
-        bundle.setReportTemplateRows(combinedResults);
+        bundle.setReportTemplateRows(mergedResults);
 
         // Format the report name with fromDate and toDate
         String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
