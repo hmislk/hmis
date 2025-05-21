@@ -49,15 +49,10 @@
                                     icon="fas fa-search"
                                     class="ui-button-warning w-100 mt-2"
                                     value="Search" 
-                                    action="#{searchController.createTableByBillType}">
+                                    action="#{searchController.processPharmacyBillSearch}">
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Search All" 
-                                    action="#{searchController.createTableByBillTypeAllDepartment}" 
-                                    rendered="false">
-                                </p:commandButton>                                
+                                                                
                             </div>
                             <div class="col-10">
                                 <h:panelGroup id="detail">
@@ -65,7 +60,7 @@
                                         <se:grn/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyGrnReturn'}" >
+                                    <h:panelGroup  >
                                         <se:grn_return />
                                     </h:panelGroup>
 

@@ -370,76 +370,34 @@ public enum BillTypeAtomic {
     private final BillFinanceType billFinanceType;
     private final CountedServiceType countedServiceType;
     private final PaymentCategory paymentCategory;
+    private final BillType billType;
 
-    public static BillTypeAtomic getBillTypeAtomic(BillType billType, BillClassType billClassType) {
-        System.out.println("getBillTypeAtomic");
-        System.out.println("billClassType = " + billClassType);
-        System.out.println("billType = " + billType);
-        switch (billClassType) {
-            case Bill:
-                switch (billType) {
-                    case PharmacyWholeSale:
-                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
-                    case PharmacyPurchaseBill:
-                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
-                }
-                break;
-            case BilledBill:
-                switch (billType) {
-                    case PharmacyGrnBill:
-                        return BillTypeAtomic.PHARMACY_GRN;
-                    case PharmacyWholeSale:
-                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
-                    case PharmacyPurchaseBill:
-                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
-                }
-            case CancelledBill:
-                switch (billType) {
-                    case PharmacyGrnBill:
-                        return BillTypeAtomic.PHARMACY_GRN_CANCELLED;
-                    case PharmacyWholeSale:
-                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
-                    case PharmacyPurchaseBill:
-                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
-                }
-            case OtherBill:
-                return null;
-            case PreBill:
-                switch (billType) {
-                    case PharmacyBhtPre:
-                        return BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
-                    case PharmacyWholeSale:
-                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
-                    case PharmacyPurchaseBill:
-                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
-                    case PharmacyPre:
-                        return BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE;
-                }
-                return null;
-            case RefundBill:
-                switch (billType) {
-                    case PharmacyGrnBill:
-                        return BillTypeAtomic.PHARMACY_GRN_REFUND;
-                    case PharmacyWholeSale:
-                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND;
-                    case PharmacyPurchaseBill:
-                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
-                }
-
-            default:
-                return null;
-        }
-        return null;
+    public BillType getBillType() {
+        return billType;
     }
 
-    BillTypeAtomic(String label, BillCategory billCategory, ServiceType serviceType, BillFinanceType billFinanceType, CountedServiceType countedServiceType, PaymentCategory paymentCategory) {
+    BillTypeAtomic(String label, BillCategory billCategory, ServiceType serviceType, BillFinanceType billFinanceType, CountedServiceType countedServiceType, PaymentCategory paymentCategory, BillType billType) {
         this.label = label;
         this.billCategory = billCategory;
         this.serviceType = serviceType;
         this.billFinanceType = billFinanceType;
         this.countedServiceType = countedServiceType;
         this.paymentCategory = paymentCategory;
+        this.billType = billType;
     }
+
+    BillTypeAtomic(String label, BillCategory billCategory, ServiceType serviceType, BillFinanceType billFinanceType, CountedServiceType countedServiceType, PaymentCategory paymentCategory) {
+        this(label, billCategory, serviceType, billFinanceType, countedServiceType, paymentCategory, null);
+    }
+
+//    BillTypeAtomic(String label, BillCategory billCategory, ServiceType serviceType, BillFinanceType billFinanceType, CountedServiceType countedServiceType, PaymentCategory paymentCategory) {
+//        this.label = label;
+//        this.billCategory = billCategory;
+//        this.serviceType = serviceType;
+//        this.billFinanceType = billFinanceType;
+//        this.countedServiceType = countedServiceType;
+//        this.paymentCategory = paymentCategory;
+//    }
 
     public static List<BillTypeAtomic> findByServiceTypeAndPaymentCategory(ServiceType serviceType, PaymentCategory paymentCategory) {
         return Arrays.stream(BillTypeAtomic.values())
