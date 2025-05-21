@@ -17,110 +17,120 @@
 
                         </f:facet>
                         <div class="row">
-                            <div class="col-2">
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar id="fromDate" value="#{searchController.fromDate}" class="w-100" inputStyleClass="w-100" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                </p:calendar>
-                                <p:spacer height="1" ></p:spacer>
+                            <div class="col-2" style="overflow: auto;">
 
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" class="w-100" inputStyleClass="w-100" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                </p:calendar>
-                                <p:spacer height="1" ></p:spacer>
+                                <h:panelGrid 
+                                    class="w-100"
+                                    columns="1" >
 
-                                <h:outputLabel value="Bill Type"/>
-                                <p:selectOneMenu 
-                                    filter="true"
-                                    filterMatchMode="contains"
-                                    value="#{searchController.billTypeAtomic}" 
-                                    class="w-100">
-                                    <f:selectItem itemLabel="Select Bill Type"/>
-                                    <f:selectItems value="#{enumController.allUtilizedBillTypeAtomicsForPharmacy}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
-                                    <f:ajax  event="change" execute="@this" render="detail" listener="#{searchController.makeNull}"/>
-                                </p:selectOneMenu>
-                                <p:spacer height="1" ></p:spacer>
 
-                                <h:outputLabel value="List Count"/>
-                                <p:inputText autocomplete="off" value="#{searchController.maxResult}" class="w-100" />
 
-                                <p:commandButton 
-                                    id="btnSearch" 
-                                    ajax="false"
-                                    icon="fas fa-search"
-                                    class="ui-button-warning w-100 mt-2"
-                                    value="Search" 
-                                    action="#{searchController.processPharmacyBillSearch}">
-                                </p:commandButton>
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" class="w-100" inputStyleClass="w-100" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                    </p:calendar>
+                                    <p:spacer height="1" ></p:spacer>
 
-                                                                
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" class="w-100" inputStyleClass="w-100" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                    </p:calendar>
+                                    <p:spacer height="1" ></p:spacer>
+
+                                    <h:outputLabel value="Bill Type"/>
+                                    <p:selectOneMenu 
+                                        styleClass="w-100"
+                                        panelStyle="width:100%;"
+                                        style="width:100%;"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{searchController.billTypeAtomic}">
+                                        <f:selectItem itemLabel="Select Bill Type"/>
+                                        <f:selectItems value="#{enumController.allUtilizedBillTypeAtomicsForPharmacy}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
+                                        <f:ajax event="change" execute="@this" render="detail" listener="#{searchController.makeNull}"/>
+                                    </p:selectOneMenu>
+
+                                    <p:spacer height="1" ></p:spacer>
+
+                                    <h:outputLabel value="List Count"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.maxResult}" class="w-100" />
+
+                                    <p:commandButton 
+                                        id="btnSearch" 
+                                        ajax="false"
+                                        icon="fas fa-search"
+                                        class="ui-button-warning w-100 mt-2"
+                                        value="Search" 
+                                        action="#{searchController.processPharmacyBillSearch}">
+                                    </p:commandButton>
+
+                                </h:panelGrid>                              
                             </div>
                             <div class="col-10">
-                                <h:panelGroup id="detail">
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyGrnBill'}" >
+                                <h:panelGroup id="detail" rendered="#{searchController.billTypeAtomic ne null}">
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyGrnBill'}" >
                                         <se:grn/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup  >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyGrnReturn'}" >
                                         <se:grn_return />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyReturnWithoutTraising'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyReturnWithoutTraising'}" >
                                         <se:grn_return_without_traising />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyOrder'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyOrder'}" >
                                         <se:po_request />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferRequest'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyTransferRequest'}" >
                                         <se:transfer_request />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferIssue'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyTransferIssue'}" >
                                         <se:transfer_issue />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'StoreTransferReceive'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'StoreTransferReceive'}" >
                                         <se:transfer_recieve />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyOrderApprove'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyOrderApprove'}" >
                                         <se:po_approve />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyPre'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyPre'}" >
                                         <se:pre_bill />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyPurchaseBill'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyPurchaseBill'}" >
                                         <se:purchase />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PurchaseReturn'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PurchaseReturn'}" >
                                         <se:purchase_return />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacySale'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacySale'}" >
                                         <se:sale />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyAdjustment'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyAdjustment'}" >
                                         <se:adjustment />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyWholeSale'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyWholeSale'}" >
                                         <se:pharmacy_whole_sale />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyIssue'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyIssue'}" >
                                         <se:pharmacy_issue />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferReceive'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyTransferReceive'}" >
                                         <se:pharmacy_transfer_recieve />
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{searchController.billType eq 'GrnPaymentPre'}" >
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'GrnPaymentPre'}" >
                                         <se:grn_payment />
                                     </h:panelGroup>
                                 </h:panelGroup>
