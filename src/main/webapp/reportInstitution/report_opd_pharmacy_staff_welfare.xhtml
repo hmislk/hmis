@@ -116,7 +116,7 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </p:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{serviceSummery.totalBill+serviceSummery.discountBill}">
+                            <h:outputLabel value="#{serviceSummery.totalBill}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
@@ -143,7 +143,7 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </p:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{serviceSummery.totalBill}">
+                            <h:outputLabel value="#{serviceSummery.totalBill-serviceSummery.discountBill}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
