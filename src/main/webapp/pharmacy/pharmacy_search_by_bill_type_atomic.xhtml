@@ -17,14 +17,10 @@
 
                         </f:facet>
                         <div class="row">
-                            <div class="col-2" style="overflow: auto;">
-
+                            <div class="col-2" >
                                 <h:panelGrid 
                                     class="w-100"
                                     columns="1" >
-
-
-
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar id="fromDate" value="#{searchController.fromDate}" class="w-100" inputStyleClass="w-100" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                     </p:calendar>
@@ -38,7 +34,6 @@
                                     <h:outputLabel value="Bill Type"/>
                                     <p:selectOneMenu 
                                         styleClass="w-100"
-                                        panelStyle="width:100%;"
                                         style="width:100%;"
                                         filter="true"
                                         filterMatchMode="contains"
@@ -64,7 +59,7 @@
 
                                 </h:panelGrid>                              
                             </div>
-                            <div class="col-10">
+                            <div class="col-10" style="overflow: scroll;">
                                 <h:panelGroup id="detail" rendered="#{searchController.billTypeAtomic ne null}">
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyGrnBill'}" >
                                         <se:grn/>
