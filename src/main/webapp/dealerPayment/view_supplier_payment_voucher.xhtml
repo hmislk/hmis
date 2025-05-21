@@ -15,7 +15,8 @@
                     <p:commandButton value="Print" ajax="false" action="#" icon="pi pi-print"  styleClass="ui-button-secondary m-1" >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
-                    <p:selectBooleanCheckbox value="#{supplierPaymentController.acPayeeOnly}"
+                    <h:panelGroup rendered="#{supplierPaymentController.current.paymentMethod eq 'Cheque'}">
+                        <p:selectBooleanCheckbox value="#{supplierPaymentController.acPayeeOnly}"
                                              label="A/C Payee Only" itemLabel="A/C Payee Only"
                                              class="mx-2">
                         <p:ajax process="@this" update="@all"/>
@@ -23,6 +24,7 @@
                     <p:commandButton value="Print Cheque" class="mx-2" ajax="false" action="#" icon="pi pi-print" >
                         <p:printer target="gpBillPreview1" ></p:printer>
                     </p:commandButton>
+                    </h:panelGroup>
                     <p:panel   id="gpBillPreview">
                         <bi:grn_payment_with_pre_bill billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current.referenceBill}"/>
                     </p:panel>
