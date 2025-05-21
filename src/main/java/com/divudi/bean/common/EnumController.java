@@ -18,12 +18,15 @@ import com.divudi.core.data.lab.Priority;
 import com.divudi.core.data.lab.SearchDateType;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Person;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -33,8 +36,11 @@ import javax.inject.Named;
  * @author safrin
  */
 @Named
-@SessionScoped
+@ApplicationScoped
 public class EnumController implements Serializable {
+
+    @EJB
+    BillService billService;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -57,6 +63,9 @@ public class EnumController implements Serializable {
     private List<PaymentMethod> paymentTypeOfPaymentMethods;
 
     private List<PatientInvestigationStatus> availableStatusforCancel;
+
+    private List<BillTypeAtomic> allUtilizedBillTypeAtomics;
+    private List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy;
 
     @PostConstruct
     public void init() {
@@ -1139,6 +1148,44 @@ public class EnumController implements Serializable {
             }
         }
         return null;
+    }
+
+    public List<BillTypeAtomic> getAllUtilizedBillTypeAtomics() {
+        if (allUtilizedBillTypeAtomics == null) {
+            allUtilizedBillTypeAtomics = billService.fetchAllUtilizedBillTypeAtomics();
+        }
+        return allUtilizedBillTypeAtomics;
+    }
+
+    public void setAllUtilizedBillTypeAtomics(List<BillTypeAtomic> allUtilizedBillTypeAtomics) {
+        this.allUtilizedBillTypeAtomics = allUtilizedBillTypeAtomics;
+    }
+
+    public List<BillTypeAtomic> getAllUtilizedBillTypeAtomicsForPharmacy() {
+        if (allUtilizedBillTypeAtomicsForPharmacy == null) {
+            allUtilizedBillTypeAtomicsForPharmacy = filterBillTypeAtomics(getAllUtilizedBillTypeAtomics(), ServiceType.PHARMACY);
+        }
+        return allUtilizedBillTypeAtomicsForPharmacy;
+    }
+
+    public List<BillTypeAtomic> filterBillTypeAtomics(List<BillTypeAtomic> btas, ServiceType serviceType) {
+        List<BillTypeAtomic> filteredList = new ArrayList<>();
+
+        if (btas == null || serviceType == null) {
+            return filteredList;
+        }
+
+        for (BillTypeAtomic bta : btas) {
+            if (bta != null && serviceType.equals(bta.getServiceType())) {
+                filteredList.add(bta);
+            }
+        }
+
+        return filteredList;
+    }
+
+    public void setAllUtilizedBillTypeAtomicsForPharmacy(List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy) {
+        this.allUtilizedBillTypeAtomicsForPharmacy = allUtilizedBillTypeAtomicsForPharmacy;
     }
 
 }
