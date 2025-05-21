@@ -3105,8 +3105,8 @@ public class SupplierPaymentController implements Serializable {
             } else {
                 p = findPaymentFromBill(b.getReferenceBill());
             }
-            
-            if(p.getPaymentMethod() != PaymentMethod.Cheque){
+
+            if (p.getPaymentMethod() != PaymentMethod.Cheque) {
                 s = "";
                 return s;
             }
@@ -3121,7 +3121,7 @@ public class SupplierPaymentController implements Serializable {
             DecimalFormat formatter = new DecimalFormat("#,###,##0.00");
             String formattedAmount = formatter.format(amount);
 
-           filledFooter = s.replace("{{bank_name}}", bankName)
+            filledFooter = s.replace("{{bank_name}}", bankName)
                     .replace("{{cheque_date}}", chequeDate)
                     .replace("{{cheque_no}}", chequeNo)
                     .replace("{{amount}}", formattedAmount);
