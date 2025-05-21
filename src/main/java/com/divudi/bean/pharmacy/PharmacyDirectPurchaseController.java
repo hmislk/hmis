@@ -208,7 +208,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BigDecimal lineGrossTotal = lineGrossRate.multiply(totalQty);
         BigDecimal lineDiscountValue = lineGrossTotal.multiply(lineDiscountRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         BigDecimal lineNetTotal = lineGrossTotal.subtract(lineDiscountValue);
-        BigDecimal lineCostRate = lineNetTotal.divide(totalQty);
+        BigDecimal lineCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
+                ? lineNetTotal.divide(totalQty, 4, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+
         BigDecimal retailValue = retailRate.multiply(totalQty);
 
         // Assign only line-level fields
@@ -519,12 +522,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
         getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(pr));
         getCurrentBillItem().getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(rr));
 
-        if(item instanceof Ampp){
+        if (item instanceof Ampp) {
             getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.valueOf(item.getDblValue()));
-        }else{
+        } else {
             getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.ONE);
         }
-        
+
         recalculateFinancialsBeforeAddingBillItem(getCurrentBillItem().getBillItemFinanceDetails());
     }
 
