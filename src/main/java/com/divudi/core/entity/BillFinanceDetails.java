@@ -16,7 +16,7 @@ import javax.persistence.TemporalType;
 /**
  *
  * @author Dr Buddhika Ariyaratne
- * 
+ *
  */
 @Entity
 public class BillFinanceDetails implements Serializable {
@@ -25,24 +25,86 @@ public class BillFinanceDetails implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @OneToOne(mappedBy = "billFinanceDetails", cascade = CascadeType.ALL)
     private Bill bill;
 
+    // ------------------ DISCOUNTS ------------------
+    // Discount applied directly to the Bill (not tied to specific lines)
     private BigDecimal billDiscount = BigDecimal.ZERO;
-    private BigDecimal totalOfBillLineDiscounts = BigDecimal.ZERO;
+
+    // Total of all line-level discounts (sum of discounts on individual BillItems)
+    private BigDecimal lineDiscount = BigDecimal.ZERO;
+
+    // Total discount (bill-level + all line-level)
     private BigDecimal totalDiscount = BigDecimal.ZERO;
+
+    // ------------------ EXPENSES ------------------
+    // Expense applied to the Bill itself (e.g., delivery fee, service charge)
+    private BigDecimal billExpense = BigDecimal.ZERO;
+
+    // Total of all expenses from individual BillItems
+    private BigDecimal lineExpense = BigDecimal.ZERO;
+
+    // Total expense (bill-level + all line-level)
     private BigDecimal totalExpense = BigDecimal.ZERO;
-    private BigDecimal totalOfFreeItemValues = BigDecimal.ZERO;
+
+    // ------------------ COST ------------------
+    // Cost incurred for the Bill as a whole (not specific to lines)
+    private BigDecimal billCostValue = BigDecimal.ZERO;
+
+    // Sum of cost values from each BillItem
+    private BigDecimal lineCostValue = BigDecimal.ZERO;
+
+    // Total cost (bill-level + all line-level)
     private BigDecimal totalCostValue = BigDecimal.ZERO;
-    private BigDecimal totalPurchaseValue = BigDecimal.ZERO;
-    private BigDecimal totalQuantity = BigDecimal.ZERO;
-    private BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+    // ------------------ TAXES ------------------
+    // Tax applied to the whole Bill (e.g., VAT)
+    private BigDecimal billTaxValue = BigDecimal.ZERO;
+
+    // Total of tax amounts from all BillItems
+    private BigDecimal itemTaxValue = BigDecimal.ZERO;
+
+    // Total tax (bill-level + all line-level)
     private BigDecimal totalTaxValue = BigDecimal.ZERO;
+
+    // ------------------ VALUES ------------------
+    // Total purchase value for all BillItems (excluding discounts/taxes)
+    private BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+
+    // Estimated value of items given free of charge
+    private BigDecimal totalOfFreeItemValues = BigDecimal.ZERO;
+
+    // Expected total if all items sold at retail rate
     private BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+
+    // Expected total if all items sold at wholesale rate
     private BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+
+    // ------------------ QUANTITIES ------------------
+    // Total quantity of all BillItems (excluding free)
+    private BigDecimal totalQuantity = BigDecimal.ZERO;
+
+    // Total of free quantities across BillItems
+    private BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+    // Quantity in atomic units (e.g., tablets instead of boxes)
     private BigDecimal totalQuantityInAtomicUnitOfMeasurement = BigDecimal.ZERO;
+
+    // Free quantity in atomic units
     private BigDecimal totalFreeQuantityInAtomicUnitOfMeasurement = BigDecimal.ZERO;
 
+    private BigDecimal lineGrossTotal = BigDecimal.ZERO;
+    private BigDecimal billGrossTotal = BigDecimal.ZERO;
+    private BigDecimal grossTotal = BigDecimal.ZERO;
+
+    // Value after deductions
+    private BigDecimal lineNetTotal = BigDecimal.ZERO;
+    private BigDecimal billNetTotal = BigDecimal.ZERO;
+    private BigDecimal netTotal = BigDecimal.ZERO;
+
+    // Getters and setters omitted for brevity
     // Payment method totals
     private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
     private BigDecimal totalPaidAsCard = BigDecimal.ZERO;
@@ -75,21 +137,48 @@ public class BillFinanceDetails implements Serializable {
     @Override
     public BillFinanceDetails clone() {
         BillFinanceDetails clone = new BillFinanceDetails();
+
+        // ------------------ DISCOUNTS ------------------
         clone.setBillDiscount(this.billDiscount);
-        clone.setTotalOfBillLineDiscounts(this.totalOfBillLineDiscounts);
+        clone.setLineDiscount(this.lineDiscount);
         clone.setTotalDiscount(this.totalDiscount);
+
+        // ------------------ EXPENSES ------------------
+        clone.setBillExpense(this.billExpense);
+        clone.setLineExpense(this.lineExpense);
         clone.setTotalExpense(this.totalExpense);
-        clone.setTotalOfFreeItemValues(this.totalOfFreeItemValues);
+
+        // ------------------ COST ------------------
+        clone.setBillCostValue(this.billCostValue);
+        clone.setLineCostValue(this.lineCostValue);
         clone.setTotalCostValue(this.totalCostValue);
-        clone.setTotalPurchaseValue(this.totalPurchaseValue);
-        clone.setTotalQuantity(this.totalQuantity);
-        clone.setTotalFreeQuantity(this.totalFreeQuantity);
+
+        // ------------------ TAXES ------------------
+        clone.setBillTaxValue(this.billTaxValue);
+        clone.setItemTaxValue(this.itemTaxValue);
         clone.setTotalTaxValue(this.totalTaxValue);
+
+        // ------------------ VALUES ------------------
+        clone.setTotalPurchaseValue(this.totalPurchaseValue);
+        clone.setTotalOfFreeItemValues(this.totalOfFreeItemValues);
         clone.setTotalRetailSaleValue(this.totalRetailSaleValue);
         clone.setTotalWholesaleValue(this.totalWholesaleValue);
+
+        // ------------------ QUANTITIES ------------------
+        clone.setTotalQuantity(this.totalQuantity);
+        clone.setTotalFreeQuantity(this.totalFreeQuantity);
         clone.setTotalQuantityInAtomicUnitOfMeasurement(this.totalQuantityInAtomicUnitOfMeasurement);
         clone.setTotalFreeQuantityInAtomicUnitOfMeasurement(this.totalFreeQuantityInAtomicUnitOfMeasurement);
 
+        // ------------------ GROSS & NET ------------------
+        clone.setLineGrossTotal(this.lineGrossTotal);
+        clone.setBillGrossTotal(this.billGrossTotal);
+        clone.setGrossTotal(this.grossTotal);
+        clone.setLineNetTotal(this.lineNetTotal);
+        clone.setBillNetTotal(this.billNetTotal);
+        clone.setNetTotal(this.netTotal);
+
+        // ------------------ PAYMENT METHODS ------------------
         clone.setTotalPaidAsCash(this.totalPaidAsCash);
         clone.setTotalPaidAsCard(this.totalPaidAsCard);
         clone.setTotalPaidAsMultiplePaymentMethods(this.totalPaidAsMultiplePaymentMethods);
@@ -109,7 +198,7 @@ public class BillFinanceDetails implements Serializable {
         clone.setTotalPaidAsYouOweMe(this.totalPaidAsYouOweMe);
         clone.setTotalPaidAsNone(this.totalPaidAsNone);
 
-        // note: skip ID, createdAt, createdBy; handle as needed elsewhere
+        // Note: skip ID, createdAt, etc. – those should be managed by persistence layer
         return clone;
     }
 
@@ -168,12 +257,12 @@ public class BillFinanceDetails implements Serializable {
         this.billDiscount = billDiscount;
     }
 
-    public BigDecimal getTotalOfBillLineDiscounts() {
-        return totalOfBillLineDiscounts;
+    public BigDecimal getLineDiscount() {
+        return lineDiscount;
     }
 
-    public void setTotalOfBillLineDiscounts(BigDecimal totalOfBillLineDiscounts) {
-        this.totalOfBillLineDiscounts = totalOfBillLineDiscounts;
+    public void setLineDiscount(BigDecimal lineDiscount) {
+        this.lineDiscount = lineDiscount;
     }
 
     public BigDecimal getTotalDiscount() {
@@ -430,6 +519,102 @@ public class BillFinanceDetails implements Serializable {
 
     public void setCreatedBy(WebUser createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public BigDecimal getBillExpense() {
+        return billExpense;
+    }
+
+    public void setBillExpense(BigDecimal billExpense) {
+        this.billExpense = billExpense;
+    }
+
+    public BigDecimal getLineExpense() {
+        return lineExpense;
+    }
+
+    public void setLineExpense(BigDecimal lineExpense) {
+        this.lineExpense = lineExpense;
+    }
+
+    public BigDecimal getBillCostValue() {
+        return billCostValue;
+    }
+
+    public void setBillCostValue(BigDecimal billCostValue) {
+        this.billCostValue = billCostValue;
+    }
+
+    public BigDecimal getLineCostValue() {
+        return lineCostValue;
+    }
+
+    public void setLineCostValue(BigDecimal lineCostValue) {
+        this.lineCostValue = lineCostValue;
+    }
+
+    public BigDecimal getBillTaxValue() {
+        return billTaxValue;
+    }
+
+    public void setBillTaxValue(BigDecimal billTaxValue) {
+        this.billTaxValue = billTaxValue;
+    }
+
+    public BigDecimal getItemTaxValue() {
+        return itemTaxValue;
+    }
+
+    public void setItemTaxValue(BigDecimal itemTaxValue) {
+        this.itemTaxValue = itemTaxValue;
+    }
+
+    public BigDecimal getLineGrossTotal() {
+        return lineGrossTotal;
+    }
+
+    public void setLineGrossTotal(BigDecimal lineGrossTotal) {
+        this.lineGrossTotal = lineGrossTotal;
+    }
+
+    public BigDecimal getBillGrossTotal() {
+        return billGrossTotal;
+    }
+
+    public void setBillGrossTotal(BigDecimal billGrossTotal) {
+        this.billGrossTotal = billGrossTotal;
+    }
+
+    public BigDecimal getGrossTotal() {
+        return grossTotal;
+    }
+
+    public void setGrossTotal(BigDecimal grossTotal) {
+        this.grossTotal = grossTotal;
+    }
+
+    public BigDecimal getLineNetTotal() {
+        return lineNetTotal;
+    }
+
+    public void setLineNetTotal(BigDecimal lineNetTotal) {
+        this.lineNetTotal = lineNetTotal;
+    }
+
+    public BigDecimal getBillNetTotal() {
+        return billNetTotal;
+    }
+
+    public void setBillNetTotal(BigDecimal billNetTotal) {
+        this.billNetTotal = billNetTotal;
+    }
+
+    public BigDecimal getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(BigDecimal netTotal) {
+        this.netTotal = netTotal;
     }
 
 }
