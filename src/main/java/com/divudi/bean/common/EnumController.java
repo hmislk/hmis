@@ -1170,11 +1170,17 @@ public class EnumController implements Serializable {
 
     public List<BillTypeAtomic> filterBillTypeAtomics(List<BillTypeAtomic> btas, ServiceType serviceType) {
         List<BillTypeAtomic> filteredList = new ArrayList<>();
+
+        if (btas == null || serviceType == null) {
+            return filteredList;
+        }
+
         for (BillTypeAtomic bta : btas) {
-            if (bta.getServiceType().equals(serviceType)) {
+            if (bta != null && serviceType.equals(bta.getServiceType())) {
                 filteredList.add(bta);
             }
         }
+
         return filteredList;
     }
 
