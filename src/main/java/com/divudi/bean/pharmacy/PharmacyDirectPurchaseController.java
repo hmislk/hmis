@@ -205,8 +205,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Derived Totals
         BigDecimal totalQty = qty.add(freeQty);
-        BigDecimal lineGrossTotal = lineGrossRate.multiply(totalQty);
-        BigDecimal lineDiscountValue = lineGrossTotal.multiply(lineDiscountRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal lineGrossTotal = lineGrossRate.multiply(qty);
+        BigDecimal lineDiscountValue = lineDiscountRate.multiply(qty);
         BigDecimal lineNetTotal = lineGrossTotal.subtract(lineDiscountValue);
         BigDecimal lineCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
                 ? lineNetTotal.divide(totalQty, 4, RoundingMode.HALF_UP)
@@ -964,7 +964,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
             saveBillFee(i);
-            ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
+            ItemBatch itemBatch = getPharmacyBillBean().saveItemBatchWithCosting(i);
             double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
 
             tmpPh.setItemBatch(itemBatch);
