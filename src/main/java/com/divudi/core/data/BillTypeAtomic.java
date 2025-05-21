@@ -67,32 +67,31 @@ STORE_STAFF_STOCK_ADJUSTMENT("Store Staff Stock Adjustment", BillCategory.BILL, 
 STORE_PURCHASE_RATE_ADJUSTMENT("Store Purchase Rate Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND, BillType.StoreAdjustment),
 STORE_SALE_RATE_ADJUSTMENT("Store Sale Rate Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND, BillType.StoreAdjustment),
 STORE_EXPIRY_DATE_ADJUSTMENT("Store Expiry Date Adjustment", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND, BillType.StoreAdjustment),
-    // Direct Issue of store items to inward patients
-    DIRECT_ISSUE_STORE_INWARD("Direct Issue of Store Items to Inward Patients", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    DIRECT_ISSUE_STORE_INWARD_CANCELLATION("Direct Issue of Store Items to Inward Patients Cancellation", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    DIRECT_ISSUE_STORE_INWARD_RETURN("Direct Issue of Store Items to Inward Patients Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    // Direct issue of store items to theatre
-    DIRECT_ISSUE_STORE_THEATRE("Direct Issue of Store Items to Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    DIRECT_ISSUE_STORE_THEATRE_CANCELLATION("Direct Issue of Store Items to Theatre Cancellation", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    DIRECT_ISSUE_STORE_THEATRE_RETURN("Direct Issue of Store Items to Theatre Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    // Requests for store items for inward and theatre
-    STORE_REQUEST_INWARD("Store Request for Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    STORE_REQUEST_INWARD_CANCELLATION("Cancel Store Request for Inward", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    STORE_REQUEST_THEATRE("Store Request for Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    STORE_REQUEST_THEATRE_CANCELLATION("Cancel Store Request for Theatre", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    // Issuing store items based on requests
-    STORE_ISSUE_ON_REQUEST_INWARD("Issue Store Items on Request to Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    STORE_ISSUE_ON_REQUEST_INWARD_CANCELLATION("Cancel Issue of Store Items on Request to Inward", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    STORE_ISSUE_ON_REQUEST_THEATRE("Issue Store Items on Request to Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    STORE_ISSUE_ON_REQUEST_THEATRE_CANCELLATION("Cancel Issue of Store Items on Request to Theatre", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    // Acceptance of issued store items
-    ACCEPT_ISSUED_STORE_INWARD("Accept Issued Store Items Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    ACCEPT_ISSUED_STORE_THEATRE("Accept Issued Store Items Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    // Returns and handling at store
-    RETURN_STORE_INWARD("Return Store Items Inward", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    ACCEPT_RETURN_STORE_INWARD("Accept Returned Store Items Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    RETURN_STORE_THEATRE("Return Store Items Theatre", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
-    ACCEPT_RETURN_STORE_THEATRE("Accept Returned Store Items Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT),
+DIRECT_ISSUE_STORE_INWARD("Direct Issue of Store Items to Inward Patients", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreBhtPre),
+DIRECT_ISSUE_STORE_INWARD_CANCELLATION("Direct Issue of Store Items to Inward Patients Cancellation", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreBhtPre),
+DIRECT_ISSUE_STORE_INWARD_RETURN("Direct Issue of Store Items to Inward Patients Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreBhtPre),
+
+DIRECT_ISSUE_STORE_THEATRE("Direct Issue of Store Items to Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreBhtPre),
+DIRECT_ISSUE_STORE_THEATRE_CANCELLATION("Direct Issue of Store Items to Theatre Cancellation", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreBhtPre),
+DIRECT_ISSUE_STORE_THEATRE_RETURN("Direct Issue of Store Items to Theatre Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreBhtPre),
+
+STORE_REQUEST_INWARD("Store Request for Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferRequest),
+STORE_REQUEST_INWARD_CANCELLATION("Cancel Store Request for Inward", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferRequest),
+STORE_REQUEST_THEATRE("Store Request for Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferRequest),
+STORE_REQUEST_THEATRE_CANCELLATION("Cancel Store Request for Theatre", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferRequest),
+
+STORE_ISSUE_ON_REQUEST_INWARD("Issue Store Items on Request to Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
+STORE_ISSUE_ON_REQUEST_INWARD_CANCELLATION("Cancel Issue of Store Items on Request to Inward", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
+STORE_ISSUE_ON_REQUEST_THEATRE("Issue Store Items on Request to Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
+STORE_ISSUE_ON_REQUEST_THEATRE_CANCELLATION("Cancel Issue of Store Items on Request to Theatre", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
+
+ACCEPT_ISSUED_STORE_INWARD("Accept Issued Store Items Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferReceive),
+ACCEPT_ISSUED_STORE_THEATRE("Accept Issued Store Items Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferReceive),
+
+RETURN_STORE_INWARD("Return Store Items Inward", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
+ACCEPT_RETURN_STORE_INWARD("Accept Returned Store Items Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferReceive),
+RETURN_STORE_THEATRE("Return Store Items Theatre", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
+ACCEPT_RETURN_STORE_THEATRE("Accept Returned Store Items Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferReceive),
     // PHARMACY
     PHARMACY_RETAIL_SALE("Pharmacy Retail Sale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY,
             PaymentCategory.NON_CREDIT_COLLECTION),
