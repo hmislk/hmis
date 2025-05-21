@@ -233,6 +233,7 @@ public class SearchController implements Serializable {
     private String backLink;
     private int maxResult = 50;
     private BillType billType;
+    private BillTypeAtomic billTypeAtomic;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
     private List<Bill> bills;
@@ -248,7 +249,6 @@ public class SearchController implements Serializable {
     private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     private List<PatientReport> patientReports;
     private List<PatientInvestigation> patientInvestigationsSigle;
-    private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
     private String selectedOpdPackageBillSelector;
     private List<String> OpdPackageBillSelector;
@@ -3630,6 +3630,10 @@ public class SearchController implements Serializable {
         totalOfOtherPayments = 0.0;
         billCount = 0.0;
         totalPaying = 0.0;
+    }
+
+    public void processPharmacyBillSearch() {
+
     }
 
     public void createTableByBillType() {
@@ -7278,6 +7282,12 @@ public class SearchController implements Serializable {
         duplicateBillView = true;
 
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
+    }
+
+    public String navigateToPharmcyBillSearch() {
+        printPreview = true;
+        duplicateBillView = true;
+        return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
     }
 
     public String navigateToItemizedSaleSummary() {
@@ -16888,6 +16898,8 @@ public class SearchController implements Serializable {
         return pb;
     }
 
+    
+    
     public ReportTemplateRowBundle generateAgencyCollection() {
         ReportTemplateRowBundle ap;
         List<BillTypeAtomic> ccCollection = new ArrayList<>();
