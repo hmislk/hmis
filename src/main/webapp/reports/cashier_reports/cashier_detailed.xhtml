@@ -205,6 +205,14 @@
                         <p:printer target="printPanel"/>
                     </p:commandButton>
                     <p:commandButton
+                            ajax="false"
+                            icon="fas fa-file-excel"
+                            class="ui-button-success"
+                            value="Excel"
+                            onclick="PrimeFaces.monitorDownload(start, stop);" >
+                        <p:fileDownload value="#{searchController.bundleAsExcel}" />
+                    </p:commandButton>
+                    <p:commandButton
                             class="mx-2 ui-button-danger"
                             icon="fas fa-file-pdf"
                             value="PDF"
@@ -213,13 +221,6 @@
                                 type="pdf"
                                 target=""
                                 fileName="Cashier_details_report"/>
-                    </p:commandButton>
-                    <p:commandButton
-                            ajax="false"
-                            icon="fas fa-file-excel"
-                            class="ui-button-success"
-                            value="Excel">
-                        <p:fileDownload value="#{searchController.getBundleAsExcelinCashierDetail}" />
                     </p:commandButton>
                 </div>
                 <h:panelGroup id="printPanel">
