@@ -1011,6 +1011,7 @@ public class ChannelBean {
         SessionInstance newSs = new SessionInstance();
         newSs.setOriginatingSession(ss);
         newSs.setName(ss.getName());
+        newSs.setAcceptOnlineBookings(ss.isAcceptOnlineBookings());
         newSs.setMaxNo(ss.getMaxNo());
         newSs.setStartingTime(ss.getStartingTime());
         newSs.setSessionWeekday(ss.getSessionWeekday());

@@ -20,10 +20,34 @@
 
 
                     <p:outputLabel value="Bill Type Atomic" ></p:outputLabel>
-                    <p:outputLabel value="#{cc.attrs.bill.billTypeAtomic}" ></p:outputLabel>
+                    <p:selectOneMenu
+                        filter="true"
+                        filterMatchMode="contains"
+                        id="billTypeAtomic" 
+                        class="w-100"
+                        value="#{cc.attrs.bill.billTypeAtomic}" >
+                        <f:selectItem itemLabel="All Types" ></f:selectItem>
+                        <f:selectItems 
+                            var="billTypeAtomic"
+                            itemLabel="#{billTypeAtomic}"           
+                            itemValue="#{billTypeAtomic}" 
+                            value="#{enumController.billTypesAtomic}" ></f:selectItems>
+                    </p:selectOneMenu>
 
                     <p:outputLabel value="Bill Type" ></p:outputLabel>
-                    <p:outputLabel value="#{cc.attrs.bill.billType}" ></p:outputLabel>
+                    <p:selectOneMenu
+                        id="billType"
+                        class="w-100" 
+                        filter="true"
+                        filterMatchMode="contains"
+                        value="#{cc.attrs.bill.billType}" >
+                        <f:selectItem itemLabel="All Types" ></f:selectItem>
+                        <f:selectItems 
+                            var="billType"
+                            itemLabel="#{billType.label}"           
+                            itemValue="#{billType}" 
+                            value="#{enumController.billTypes}" ></f:selectItems>
+                    </p:selectOneMenu>
 
 
                     <p:outputLabel value="Bill Created at" ></p:outputLabel>
@@ -131,6 +155,15 @@
 
                     <h:outputLabel value="Net Total" ></h:outputLabel>
                     <p:inputText class="text-end  text-white bg-warning"  value="#{cc.attrs.bill.netTotal}" ></p:inputText>
+                    
+                    
+                    <p:separator ></p:separator>
+                    <p:separator ></p:separator>
+                    
+                    <h:outputLabel value="Paid Amount" ></h:outputLabel>
+                    <p:inputText class="text-end  text-white bg-warning"  value="#{cc.attrs.bill.paidAmount}" ></p:inputText>
+                    
+                    
                 </h:panelGrid>
             </p:tab>
             <p:tab title="Referances" >
@@ -283,6 +316,27 @@
                             itemValue="#{pta}"
                             forceSelection="true"
                             value="#{cc.attrs.bill.institution}" >
+                            <p:ajax process="acIns" update="cmbDept"/>
+                        </p:autoComplete>
+                    </h:panelGroup>
+                    
+                    <p:outputLabel value="Credit Company" ></p:outputLabel>
+                    <h:panelGroup >
+                        <p:outputLabel
+                            value="#{cc.attrs.bill.creditCompany.name}"
+                            rendered="#{not webUserController.hasPrivilege('Developers')}">
+                        </p:outputLabel>
+                        <p:autoComplete
+                            id="acCreditCompany"
+                            rendered="#{webUserController.hasPrivilege('Developers')}"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            completeMethod="#{institutionController.completeCreditCompany}"
+                            var="pta"
+                            itemLabel="#{pta.name}"
+                            itemValue="#{pta}"
+                            forceSelection="true"
+                            value="#{cc.attrs.bill.creditCompany}" >
                             <p:ajax process="acIns" update="cmbDept"/>
                         </p:autoComplete>
                     </h:panelGroup>

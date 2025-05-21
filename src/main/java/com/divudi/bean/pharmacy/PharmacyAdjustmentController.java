@@ -1008,52 +1008,6 @@ public class PharmacyAdjustmentController implements Serializable {
 
     }
 
-    public void tem() {
-        Stock s = new Stock();
-        Bill toBill = new PreBill();
-        int i = 0;
-
-        BillItem toBi = new BillItem();
-        PharmaceuticalBillItem toPbi = new PharmaceuticalBillItem();
-        toBi.setPharmaceuticalBillItem(null);
-        toPbi.setStock(s);
-        toBi.setItem(s.getItemBatch().getItem());
-        toBi.setQty(0 - s.getStock());
-        //pharmaceutical Bill Item
-        toPbi.setDoe(s.getItemBatch().getDateOfExpire());
-        toPbi.setFreeQty(0.0);
-        toPbi.setItemBatch(s.getItemBatch());
-        toPbi.setQty(toBi.getQty());
-        //Rates
-        toBi.setNetRate(s.getItemBatch().getPurcahseRate());
-        toBi.setRate(s.getItemBatch().getRetailsaleRate());
-        //Values
-        toBi.setGrossValue(s.getItemBatch().getRetailsaleRate() * s.getStock());
-        toBi.setNetValue(s.getStock() * toBi.getNetRate());
-        toBi.setDiscount(0.0);
-        toBi.setInwardChargeType(InwardChargeType.Medicine);
-        toBi.setItem(s.getItemBatch().getItem());
-        toBi.setBill(toBill);
-        toBi.setSearialNo(i + 1);
-        toBi.setCreatedAt(Calendar.getInstance().getTime());
-        toBi.setCreater(getSessionController().getLoggedUser());
-
-        toPbi.setBillItem(null);
-
-        if (toPbi.getId() == null) {
-            getPharmaceuticalBillItemFacade().create(toPbi);
-        }
-        toBi.setPharmaceuticalBillItem(toPbi);
-        if (toBi.getId() == null) {
-            getBillItemFacade().create(toBi);
-        }
-        toPbi.setBillItem(toBi);
-        getPharmaceuticalBillItemFacade().edit(toPbi);
-        toBill.getBillItems().add(toBi);
-        getBillFacade().edit(toBill);
-
-    }
-
     public void adjustDepartmentStock() {
         if (errorCheck()) {
             return;

@@ -1849,11 +1849,13 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (performingInstitution != null) {
-            // Add logic if needed
+            jpql += " AND pi.performDepartment.institution = :performingInstitution";
+            params.put("performingInstitution", performingInstitution);
         }
 
         if (performingDepartment != null) {
-            // Add logic if needed
+            jpql += " AND pi.performDepartment = :performingDepartment";
+            params.put("performingDepartment", performingDepartment);
         }
 
         if (collectionCenter != null) {
@@ -2036,21 +2038,23 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (orderedInstitution != null) {
-            jpql += " AND b.institution = :orderedInstitution";
+            jpql += " AND b.fromInstitution = :orderedInstitution";
             params.put("orderedInstitution", getOrderedInstitution());
         }
 
         if (orderedDepartment != null) {
-            jpql += " AND b.toDepartment = :orderedDepartment";
+            jpql += " AND b.fromDepartment = :orderedDepartment";
             params.put("orderedDepartment", getOrderedDepartment());
         }
 
         if (performingInstitution != null) {
-            // Add logic if needed
+            jpql += " AND b.toInstitution = :performingInstitution";
+            params.put("performingInstitution", performingInstitution);
         }
 
         if (performingDepartment != null) {
-            // Add logic if needed
+            jpql += " AND b.toDepartment = :performingDepartment";
+            params.put("performingDepartment", performingDepartment);
         }
 
         if (collectionCenter != null) {
@@ -2375,11 +2379,13 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (performingInstitution != null) {
-            // Add logic if needed
+            jpql += " AND b.toInstitution = :performingInstitution";
+            params.put("performingInstitution", performingInstitution);
         }
 
         if (performingDepartment != null) {
-            // Add logic if needed
+            jpql += " AND b.toDepartment = :performingDepartment";
+            params.put("performingDepartment", performingDepartment);
         }
 
         if (collectionCenter != null) {
@@ -3191,8 +3197,8 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (performingInstitution != null) {
-            jpql += " AND i.performInstitution = :peformingInstitution ";
-            params.put("peformingInstitution", getPerformingInstitution());
+            jpql += " AND i.performInstitution = :performInstitution ";
+            params.put("performInstitution", getPerformingInstitution());
         }
 
         if (performingDepartment != null) {
