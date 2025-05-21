@@ -3105,6 +3105,11 @@ public class SupplierPaymentController implements Serializable {
             } else {
                 p = findPaymentFromBill(b.getReferenceBill());
             }
+            
+            if(p.getPaymentMethod() != PaymentMethod.Cheque){
+                s = "";
+                return s;
+            }
 
             String filledFooter;
 
