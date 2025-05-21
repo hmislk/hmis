@@ -5765,7 +5765,7 @@ public class CommonReport implements Serializable {
 
                 newRow.setRowValue(row.getRowValue());
                 newRow.setLong1(row.getLong1());
-                newRow.setRowType(row.getReferringStaff().getPerson().getName());
+                newRow.setRowType(row.getReferringStaff().getPerson().getNameWithTitle());
 
                 mergedResults.add(newRow);
             }
