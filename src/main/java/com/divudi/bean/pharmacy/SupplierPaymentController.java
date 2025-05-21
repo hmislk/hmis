@@ -3106,6 +3106,11 @@ public class SupplierPaymentController implements Serializable {
                 p = findPaymentFromBill(b.getReferenceBill());
             }
 
+            if (p.getPaymentMethod() != PaymentMethod.Cheque) {
+                s = "";
+                return s;
+            }
+
             String filledFooter;
 
             String bankName = (p != null ? p.getBank().getName() : "");
@@ -3116,7 +3121,7 @@ public class SupplierPaymentController implements Serializable {
             DecimalFormat formatter = new DecimalFormat("#,###,##0.00");
             String formattedAmount = formatter.format(amount);
 
-           filledFooter = s.replace("{{bank_name}}", bankName)
+            filledFooter = s.replace("{{bank_name}}", bankName)
                     .replace("{{cheque_date}}", chequeDate)
                     .replace("{{cheque_no}}", chequeNo)
                     .replace("{{amount}}", formattedAmount);
