@@ -331,8 +331,8 @@
                                                 <ui:repeat value="#{entry.value}" var="b">
                                                     <tr style="border-bottom: 1px solid #d9d9d9;">
                                                         <td style="min-width: 6rem; ">#{b.creditCompany.name}</td>
-                                                        <td style="min-width: 6rem; ">#{b.patientEncounter.policyNo}</td>
-                                                        <td style="min-width: 6rem; ">#{b.patientEncounter.referanceNo}</td>
+                                                        <td style="min-width: 6rem; ">#{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.creditCompany.name)}</td>
+                                                        <td style="min-width: 6rem; ">#{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.creditCompany.name)}</td>
                                                         <td style="width: 6rem; text-align: right">
                                                             <h:outputText value="#{b.netTotal}">
                                                                 <f:convertNumber pattern="#,##0.00"/>

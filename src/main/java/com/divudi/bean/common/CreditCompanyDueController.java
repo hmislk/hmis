@@ -81,6 +81,8 @@ public class CreditCompanyDueController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
 
     @EJB
     AdmissionFacade admissionFacade;
@@ -97,6 +99,8 @@ public class CreditCompanyDueController implements Serializable {
     private Institution site;
 
     Map<PatientEncounter, List<Bill>> billPatientEncounterMap = new HashMap<>();
+    private Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap;
+
     private int rowCounter = 0;
 
     private List<Bill> bills = new ArrayList<>();
@@ -115,6 +119,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
         this.patientEncounters = patientEncounters;
+    }
+
+    public EncounterCreditCompanyFacade getEncounterCreditCompanyFacade() {
+        return encounterCreditCompanyFacade;
+    }
+
+    public void setEncounterCreditCompanyFacade(EncounterCreditCompanyFacade encounterCreditCompanyFacade) {
+        this.encounterCreditCompanyFacade = encounterCreditCompanyFacade;
     }
 
     public Institution getInstitutionOfDepartment() {
@@ -155,6 +167,18 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setBillPatientEncounterMap(Map<PatientEncounter, List<Bill>> billPatientEncounterMap) {
         this.billPatientEncounterMap = billPatientEncounterMap;
+    }
+
+    public Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanyMap() {
+        if (encounterCreditCompanyMap == null) {
+            encounterCreditCompanyMap = new HashMap<>();
+        }
+
+        return encounterCreditCompanyMap;
+    }
+
+    public void setEncounterCreditCompanyMap(Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap) {
+        this.encounterCreditCompanyMap = encounterCreditCompanyMap;
     }
 
     public double getPayableByPatient() {
@@ -1525,6 +1549,8 @@ public class CreditCompanyDueController implements Serializable {
         setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
         calculateCreditCompanyAmounts();
 
+        setEncounterCreditCompanyMap(getEncounterCreditCompanies());
+
         billed = 0;
         paidByPatient = 0;
         paidByCompany = 0;
@@ -1535,6 +1561,30 @@ public class CreditCompanyDueController implements Serializable {
             paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
             payableByPatient += calculatePayableByPatient(p, getBillPatientEncounterMap().get(p));
         }
+    }
+
+    public String getPolicyNumberFromEncounterCreditCompanyMap(final String bht, final String creditCompanyName) {
+        Map<String, EncounterCreditCompany> creditCompanyMap = getEncounterCreditCompanyMap().get(bht);
+
+        if (creditCompanyMap != null) {
+            EncounterCreditCompany ecc = creditCompanyMap.get(creditCompanyName);
+            if (ecc != null) {
+                return ecc.getPolicyNo();
+            }
+        }
+        return null;
+    }
+
+    public String getReferenceNumberFromEncounterCreditCompanyMap(final String bht, final String creditCompanyName) {
+        Map<String, EncounterCreditCompany> creditCompanyMap = getEncounterCreditCompanyMap().get(bht);
+
+        if (creditCompanyMap != null) {
+            EncounterCreditCompany ecc = creditCompanyMap.get(creditCompanyName);
+            if (ecc != null) {
+                return ecc.getReferanceNo();
+            }
+        }
+        return null;
     }
 
     public double calculatePayableByPatient(final PatientEncounter patientEncounter, final List<Bill> bills) {
@@ -1609,6 +1659,37 @@ public class CreditCompanyDueController implements Serializable {
             paidByPatient += p.getFinalBill().getSettledAmountByPatient();
             paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
         }
+    }
+
+    // Map<bht, Map<Credit Company, Encounter Credit Company>>
+    private Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanies() {
+        List<PatientEncounter> patientEncounters = new ArrayList<>(getBillPatientEncounterMap().keySet());
+        List<Long> patientEncounterIds = patientEncounters.stream()
+                .map(PatientEncounter::getId).collect(Collectors.toList());
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "SELECT ecc from EncounterCreditCompany ecc "
+                + "WHERE ecc.patientEncounter.id in :patientEncounterIds ";
+
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        List<EncounterCreditCompany> rs = (List<EncounterCreditCompany>) encounterCreditCompanyFacade.findByJpql(jpql, parameters);
+
+        Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap = new HashMap<>();
+
+        for (EncounterCreditCompany ecc : rs) {
+            if (!encounterCreditCompanyMap.containsKey(ecc.getPatientEncounter().getBhtNo())) {
+                encounterCreditCompanyMap.put(ecc.getPatientEncounter().getBhtNo(), new HashMap<>());
+            }
+
+            Map<String, EncounterCreditCompany> creditCompanyMap = encounterCreditCompanyMap.get(ecc.getPatientEncounter().getBhtNo());
+            if (!creditCompanyMap.containsKey(ecc.getInstitution().getName())) {
+                creditCompanyMap.put(ecc.getInstitution().getName(), ecc);
+            }
+        }
+
+        return encounterCreditCompanyMap;
     }
 
     private Map<PatientEncounter, List<Bill>> getCreditCompanyBills(List<PatientEncounter> patientEncounters, String dueType) {
@@ -2005,8 +2086,8 @@ public class CreditCompanyDueController implements Serializable {
                 for (Bill bill : bills) {
                     Row billRow = sheet.createRow(rowIndex++);
                     billRow.createCell(10).setCellValue(bill.getCreditCompany().getName());
-                    billRow.createCell(11).setCellValue(bill.getPatientEncounter().getPolicyNo());
-                    billRow.createCell(12).setCellValue(bill.getPatientEncounter().getReferanceNo());
+                    billRow.createCell(11).setCellValue(getPolicyNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getCreditCompany().getName()));
+                    billRow.createCell(12).setCellValue(getReferenceNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getCreditCompany().getName()));
                     billRow.createCell(13).setCellValue(bill.getNetTotal());
                     billRow.createCell(14).setCellValue(bill.getPaidAmount());
                     billRow.createCell(15).setCellValue(bill.getNetTotal() - bill.getPaidAmount());
@@ -2123,8 +2204,8 @@ public class CreditCompanyDueController implements Serializable {
 
                 for (Bill bill : bills) {
                     nestedTable.addCell(new Phrase(bill.getCreditCompany().getName(), normalFont));
-                    nestedTable.addCell(new Phrase(bill.getPatientEncounter().getPolicyNo(), normalFont));
-                    nestedTable.addCell(new Phrase(bill.getPatientEncounter().getReferanceNo(), normalFont));
+                    nestedTable.addCell(new Phrase(getPolicyNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getCreditCompany().getName()), normalFont));
+                    nestedTable.addCell(new Phrase(getReferenceNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getCreditCompany().getName()), normalFont));
                     nestedTable.addCell(new Phrase(String.valueOf(bill.getNetTotal()), normalFont));
                     nestedTable.addCell(new Phrase(String.valueOf(bill.getPaidAmount()), normalFont));
                     nestedTable.addCell(new Phrase(String.valueOf(bill.getNetTotal() - bill.getPaidAmount()), normalFont));
