@@ -204,27 +204,27 @@ public class BillFinanceDetails implements Serializable {
         clone.setBillNetTotal(this.billNetTotal);
         clone.setNetTotal(this.netTotal);
 
-        // ------------------ PAYMENT METHODS ------------------
-        clone.setTotalPaidAsCash(this.totalPaidAsCash);
-        clone.setTotalPaidAsCard(this.totalPaidAsCard);
-        clone.setTotalPaidAsMultiplePaymentMethods(this.totalPaidAsMultiplePaymentMethods);
-        clone.setTotalPaidAsStaff(this.totalPaidAsStaff);
-        clone.setTotalPaidAsCredit(this.totalPaidAsCredit);
-        clone.setTotalPaidAsStaffWelfare(this.totalPaidAsStaffWelfare);
-        clone.setTotalPaidAsVoucher(this.totalPaidAsVoucher);
-        clone.setTotalPaidAsIOU(this.totalPaidAsIOU);
-        clone.setTotalPaidAsAgent(this.totalPaidAsAgent);
-        clone.setTotalPaidAsCheque(this.totalPaidAsCheque);
-        clone.setTotalPaidAsSlip(this.totalPaidAsSlip);
-        clone.setTotalPaidAsEwallet(this.totalPaidAsEwallet);
-        clone.setTotalPaidAsPatientDeposit(this.totalPaidAsPatientDeposit);
-        clone.setTotalPaidAsPatientPoints(this.totalPaidAsPatientPoints);
-        clone.setTotalPaidAsOnlineSettlement(this.totalPaidAsOnlineSettlement);
-        clone.setTotalPaidAsOnCall(this.totalPaidAsOnCall);
-        clone.setTotalPaidAsYouOweMe(this.totalPaidAsYouOweMe);
-        clone.setTotalPaidAsNone(this.totalPaidAsNone);
-
-        // Note: skip ID, createdAt, etc. – those should be managed by persistence layer
+//        // ------------------ PAYMENT METHODS ------------------
+//        clone.setTotalPaidAsCash(this.totalPaidAsCash);
+//        clone.setTotalPaidAsCard(this.totalPaidAsCard);
+//        clone.setTotalPaidAsMultiplePaymentMethods(this.totalPaidAsMultiplePaymentMethods);
+//        clone.setTotalPaidAsStaff(this.totalPaidAsStaff);
+//        clone.setTotalPaidAsCredit(this.totalPaidAsCredit);
+//        clone.setTotalPaidAsStaffWelfare(this.totalPaidAsStaffWelfare);
+//        clone.setTotalPaidAsVoucher(this.totalPaidAsVoucher);
+//        clone.setTotalPaidAsIOU(this.totalPaidAsIOU);
+//        clone.setTotalPaidAsAgent(this.totalPaidAsAgent);
+//        clone.setTotalPaidAsCheque(this.totalPaidAsCheque);
+//        clone.setTotalPaidAsSlip(this.totalPaidAsSlip);
+//        clone.setTotalPaidAsEwallet(this.totalPaidAsEwallet);
+//        clone.setTotalPaidAsPatientDeposit(this.totalPaidAsPatientDeposit);
+//        clone.setTotalPaidAsPatientPoints(this.totalPaidAsPatientPoints);
+//        clone.setTotalPaidAsOnlineSettlement(this.totalPaidAsOnlineSettlement);
+//        clone.setTotalPaidAsOnCall(this.totalPaidAsOnCall);
+//        clone.setTotalPaidAsYouOweMe(this.totalPaidAsYouOweMe);
+//        clone.setTotalPaidAsNone(this.totalPaidAsNone);
+//
+//        // Note: skip ID, createdAt, etc. – those should be managed by persistence layer
         return clone;
     }
 
