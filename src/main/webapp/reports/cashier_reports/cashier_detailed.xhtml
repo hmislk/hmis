@@ -208,8 +208,7 @@
                             ajax="false"
                             icon="fas fa-file-excel"
                             class="ui-button-success"
-                            value="Excel"
-                            onclick="PrimeFaces.monitorDownload(start, stop);" >
+                            value="Excel">
                         <p:fileDownload value="#{searchController.bundleAsExcel}" />
                     </p:commandButton>
                     <p:commandButton
@@ -219,7 +218,7 @@
                             ajax="false" >
                         <p:dataExporter
                                 type="pdf"
-                                target=""
+                                target="printPanel"
                                 fileName="Cashier_details_report"/>
                     </p:commandButton>
                 </div>
