@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.core.data.AuditEventStatus;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -194,6 +195,24 @@ public class AuditEventController implements Serializable {
         for (AuditEvent ae : items) {
             ae.calculateDifference();
         }
+    }
+    
+    public List<AuditEvent> fillAllAuditEvents(Long objectId, String eventTrigger ) {
+        String jpql;
+        List<AuditEvent> auditEvents;
+        HashMap params = new HashMap();
+        jpql = "select a from AuditEvent a "
+                + " where a.eventStatus=:status "
+                + " and a.eventTrigger=:trigger "
+                + " and a.objectId=:id "
+                + " order by a.id asc";
+        
+        params.put("status", AuditEventStatus.COMPLETED.getLabel());
+        params.put("trigger", eventTrigger);
+        params.put("id", objectId);
+        
+        auditEvents = getFacade().findByJpql(jpql, params);
+        return auditEvents;
     }
 
     public void prepareAdd() {

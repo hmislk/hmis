@@ -23,12 +23,17 @@ import com.divudi.core.facade.AgentReferenceBookFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -46,7 +51,7 @@ public class AgentReferenceBookController implements Serializable {
     private static final long serialVersionUID = 1L;
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-    
+
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
@@ -76,6 +81,58 @@ public class AgentReferenceBookController implements Serializable {
     private Institution collectingCentre;
 
     private AgentReferenceBook current;
+
+    public String navigateToBookEditHistory(Long refBookID) {
+        fillBookEditDetails(refBookID);
+        return "/collecting_centre/cc_book_edit_history?faces-redirect=true;";
+    }
+
+    public String navigateToBackCCBookSearch() {
+        return "/collecting_centre/report_collecting_center_referece_book?faces-redirect=true;";
+    }
+
+    private List<AuditEvent> refBookEditDetails;
+
+    public void fillBookEditDetails(Long refBookID) {
+        refBookEditDetails = new ArrayList();
+        String eventTrigger = "Edit Collection Centre Referance Book";
+        refBookEditDetails = auditEventController.fillAllAuditEvents(refBookID, eventTrigger);
+    }
+
+    public static String findDifferences(String beforeJson, String afterJson) {
+        Map<String, String> differences = new HashMap<>();
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            Map<String, Object> map1 = mapper.readValue(beforeJson, Map.class);
+            Map<String, Object> map2 = mapper.readValue(afterJson, Map.class);
+
+            Set<String> allKeys = new HashSet<>();
+            allKeys.addAll(map1.keySet());
+            allKeys.addAll(map2.keySet());
+
+            for (String key : allKeys) {
+                Object val1 = map1.get(key);
+                Object val2 = map2.get(key);
+
+                if (!Objects.equals(val1, val2)) {
+                    differences.put(key, String.valueOf(val1) + "  ->  " + String.valueOf(val2));
+                }
+            }
+        } catch (JsonProcessingException e) {
+            return "Error parsing JSON: " + e.getMessage();
+        }
+        // Build a string from the differences map
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, String> entry : differences.entrySet()) {
+            result.append(entry.getKey())
+                    .append("  =  ")
+                    .append(entry.getValue())
+                    .append("\n");
+        }
+
+        return result.toString().replace("\n", "<br/>");
+    }
 
     public List<Institution> completeAgent(String query) {
         List<Institution> suggestions;
@@ -228,7 +285,7 @@ public class AgentReferenceBookController implements Serializable {
     public void searchReferenceBooks() {
         createAllBookTable();
     }
-    
+
     public void updateAgentBook(AgentReferenceBook book) {
         if (book == null) {
             JsfUtil.addErrorMessage("No Book Selected");
@@ -572,6 +629,14 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setWebUserController(WebUserController webUserController) {
         this.webUserController = webUserController;
+    }
+
+    public List<AuditEvent> getRefBookEditDetails() {
+        return refBookEditDetails;
+    }
+
+    public void setRefBookEditDetails(List<AuditEvent> refBookEditDetails) {
+        this.refBookEditDetails = refBookEditDetails;
     }
 
 }
