@@ -12191,7 +12191,6 @@ public class SearchController implements Serializable {
             } else if (b.getBillItems().get(0).getPatientEncounter() != null) {
                 billType = "IP";
             } else {
-                System.out.println("b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic() = " + b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic());
                 billType = checkBillTypeByBill(b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic());
             }
 
@@ -12215,7 +12214,7 @@ public class SearchController implements Serializable {
             case INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY:
                 return "IP";
             default:
-                return "ALL";
+                return "";
         }
     }
 
