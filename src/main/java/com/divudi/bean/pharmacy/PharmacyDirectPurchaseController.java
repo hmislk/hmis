@@ -1001,14 +1001,15 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
-        //System.err.println("5 " + bi.getItem().getName());
-        //System.err.println("6 " + bi.getSearialNo());
-        getBillItems().remove(bi.getSearialNo());
+        getBillItems().remove(bi);
+
+        int i = 0;
+        for (BillItem it : getBillItems()) {
+            it.setSearialNo(i++);
+        }
 
         calTotal();
-
         currentBillItem = null;
-
     }
 
     public Payment createPayment(Bill bill) {
