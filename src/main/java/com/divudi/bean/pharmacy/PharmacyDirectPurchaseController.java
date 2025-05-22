@@ -186,6 +186,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setRetailRate(f.getRetailSaleRate().doubleValue());
         }
 
+        recalculateFinancialsBeforeAddingBillItem(f);
+        
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
 
@@ -983,8 +985,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 totalForExpenses += expense.getNetValue();
             }
 
-            getBill().setExpenseTotal(-totalForExpenses);
-            getBill().setNetTotal(getBill().getNetTotal() - totalForExpenses);
+            getBill().setExpenseTotal(- Math.abs(totalForExpenses));
+            getBill().setNetTotal(getBill().getNetTotal() + totalForExpenses);
         }
 
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
