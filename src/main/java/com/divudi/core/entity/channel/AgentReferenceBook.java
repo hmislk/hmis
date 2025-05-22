@@ -116,7 +116,7 @@ public class AgentReferenceBook implements Serializable {
                 + ", \"Institution Name\":"  + "\"" + (getInstitution() != null ? getInstitution().getName() + "\"" : "\"Missing Institution\"")
                 + ", \"Starting Ref.Number\":" + getStartingReferenceNumber()
                 + ", \"Ending Ref. Number\":" + getEndingReferenceNumber()
-                + ", \"Active\":" + (getActive() == true ? "\"Active\"" : "\"Deactivate\"")
+                + ", \"Book Status\":" + (getActive() == true ? "\"Active\"" : "\"Deactivate\"")
                 + "}";
     }
 
