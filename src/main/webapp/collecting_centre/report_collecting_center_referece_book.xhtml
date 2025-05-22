@@ -194,7 +194,8 @@
                                                     process="@this"
                                                     update="edit"
                                                     oncomplete="PF('edit').show()"
-                                                    >
+                                                    actionListener="#{agentReferenceBookController.beginCcBookAudit}">
+                                                    <f:attribute name="refBook" value="#{refBook}" />
                                                 </p:commandButton>
                                                 <p:commandButton
                                                     class="ui-button-danger"

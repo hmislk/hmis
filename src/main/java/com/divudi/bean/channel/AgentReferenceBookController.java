@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 
@@ -14,6 +15,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.channel.ReferenceBookEnum;
 
 import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.facade.AgentHistoryFacade;
@@ -53,12 +55,15 @@ public class AgentReferenceBookController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    private AuditEventController auditEventController;
 
-    List<AgentReferenceBook> agentReferenceBooks;
-    List<AgentReferenceBook> selectedList;
+    private List<AgentReferenceBook> agentReferenceBooks;
+    private List<AgentReferenceBook> selectedList;
     private List<AgentReferenceBook> agentRefBookList;
-    Date frmDate;
-    Date toDate;
+    private Date frmDate;
+    private Date toDate;
+    private AuditEvent editingCcBookEvent;
 
     private String comment;
 
@@ -158,6 +163,13 @@ public class AgentReferenceBookController implements Serializable {
 
     }
 
+    public void beginCcBookAudit(javax.faces.event.ActionEvent event) {
+        AgentReferenceBook book = (AgentReferenceBook) event.getComponent()
+                .getAttributes()
+                .get("refBook");
+        editingCcBookEvent = auditEventController.createNewAuditEvent("Edit Collection Centre Referance Book", book.toString(), book.getId());
+    }
+
     public void saveAgentBook(ReferenceBookEnum bookEnum) {
         // Validate inputs
         if (agentReferenceBook.getInstitution() == null) {
@@ -228,6 +240,10 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addErrorMessage("No Reference Book Selected");
             return;
         }
+        if (editingCcBookEvent == null) {
+            JsfUtil.addErrorMessage("No Audit Event");
+            return;
+        }
 
         if (!getWebUserController().hasPrivilege("EditData")) {
             searchReferenceBooks();
@@ -237,6 +253,9 @@ public class AgentReferenceBookController implements Serializable {
         book.setEditedAt(new Date());
         book.setEditor(sessionController.getLoggedUser());
         getAgentReferenceBookFacade().edit(book);
+
+        auditEventController.completeAuditEvent(editingCcBookEvent, book.toString());
+
         JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Updated");
     }
 
@@ -249,7 +268,7 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addErrorMessage("You have No Privilege for Delete Book.");
             return;
         }
-        
+
         agentReferenceBook.setRetired(true);
         agentReferenceBook.setRetiredAt(new Date());
         agentReferenceBook.setRetirer(sessionController.getLoggedUser());
