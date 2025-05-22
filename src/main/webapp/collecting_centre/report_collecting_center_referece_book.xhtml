@@ -184,7 +184,7 @@
                                             </div>
                                         </p:column>
 
-                                        <p:column headerText="Action" style="padding: 6px;" width="10">
+                                        <p:column headerText="Action" style="padding: 9px;" width="10">
                                             <div class="d-flex gap-2">
                                                 <p:commandButton
                                                     class="ui-button-warning"
@@ -203,8 +203,15 @@
                                                     disabled="#{refBook.retired or refBook.fullyUtilized}"
                                                     process="@this"
                                                     update="dlg"
-                                                    oncomplete="PF('dlg').show()"
-                                                    >
+                                                    oncomplete="PF('dlg').show()">
+                                                </p:commandButton>
+                                                <p:commandButton
+                                                    class="ui-button-secondary"
+                                                    icon="fa fa-history"
+                                                    ajax="false"
+                                                    title="To Edit History"
+                                                    action="#{agentReferenceBookController.navigateToBookEditHistory(refBook.id)}">
+                                                    <f:setPropertyActionListener value="#{refBook}" target="#{agentReferenceBookController.current}"/>
                                                 </p:commandButton>
                                             </div>
 

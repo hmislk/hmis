@@ -225,6 +225,19 @@ public class WebUserController implements Serializable {
             getFacade().edit(wu);
         }
     }
+    
+    public WebUser findWebUserById(Long userID) {
+        if (userID == null) {
+            return null;
+        } else {
+            return getFacade().find(userID);
+        }
+    }
+    
+    public String findWebUserNameWithTitleById(Long userID) {
+        WebUser user = findWebUserById(userID);
+        return user.getWebUserPerson().getNameWithTitle();
+    }
 
     public void saveUser() {
         if (current == null) {
