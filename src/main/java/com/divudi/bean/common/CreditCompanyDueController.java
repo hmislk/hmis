@@ -2622,8 +2622,8 @@ public class CreditCompanyDueController implements Serializable {
 
                     dataRow.createCell(colIndex++).setCellValue(institution.getInstitution().getName());
                     dataRow.createCell(colIndex++).setCellValue(bill.getDeptId());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getPayments().get(0).getPolicyNo());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getPayments().get(0).getReferenceNo());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getPayments() != null && !bill.getPayments().isEmpty() ? bill.getPayments().get(0).getPolicyNo() : "N/A");
+                    dataRow.createCell(colIndex++).setCellValue(bill.getPayments() != null && !bill.getPayments().isEmpty() ? bill.getPayments().get(0).getReferenceNo() : "N/A");
                     dataRow.createCell(colIndex++).setCellValue(bill.getPatient().getPerson().getNameWithTitle());
                     dataRow.createCell(colIndex++).setCellValue(bill.getCreatedAt().toString());
                     dataRow.createCell(colIndex++).setCellValue(bill.getNetTotal());
