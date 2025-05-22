@@ -782,14 +782,6 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-
-    public void setTransThisIsStockOut(boolean transThisIsStockOut) {
-        this.transThisIsStockOut = transThisIsStockOut;
-    }
-
-    public void setTransThisIsStockIn(boolean transThisIsStockIn) {
-        this.transThisIsStockIn = transThisIsStockIn;
-    }
     
 
 }
