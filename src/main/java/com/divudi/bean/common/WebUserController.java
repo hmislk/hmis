@@ -225,7 +225,7 @@ public class WebUserController implements Serializable {
             getFacade().edit(wu);
         }
     }
-    
+
     public WebUser findWebUserById(Long userID) {
         if (userID == null) {
             return null;
@@ -233,9 +233,12 @@ public class WebUserController implements Serializable {
             return getFacade().find(userID);
         }
     }
-    
+
     public String findWebUserNameWithTitleById(Long userID) {
         WebUser user = findWebUserById(userID);
+        if (user == null || user.getWebUserPerson() == null) {
+            return "";
+        }
         return user.getWebUserPerson().getNameWithTitle();
     }
 
@@ -537,7 +540,7 @@ public class WebUserController implements Serializable {
         getCurrent().setLoginPage(loginPage);
 
         getCurrent().setSite(site);
-        
+
         getPersonFacade().create(getCurrent().getWebUserPerson());
         if (createOnlyUserForExsistingUser) {
             getCurrent().getWebUserPerson().setName(getStaff().getPerson().getName());
@@ -1368,7 +1371,5 @@ public class WebUserController implements Serializable {
     public void setUserNotificationCount(int userNotificationCount) {
         this.userNotificationCount = userNotificationCount;
     }
-    
-    
 
 }

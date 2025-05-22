@@ -99,24 +99,28 @@ public class AgentReferenceBookController implements Serializable {
         refBookEditDetails = auditEventController.fillAllAuditEvents(refBookID, eventTrigger);
     }
 
-    public static String findDifferences(String beforeJson, String afterJson) throws JsonProcessingException {
+    public static String findDifferences(String beforeJson, String afterJson) {
         Map<String, String> differences = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
 
-        Map<String, Object> map1 = mapper.readValue(beforeJson, Map.class);
-        Map<String, Object> map2 = mapper.readValue(afterJson, Map.class);
+        try {
+            Map<String, Object> map1 = mapper.readValue(beforeJson, Map.class);
+            Map<String, Object> map2 = mapper.readValue(afterJson, Map.class);
 
-        Set<String> allKeys = new HashSet<>();
-        allKeys.addAll(map1.keySet());
-        allKeys.addAll(map2.keySet());
+            Set<String> allKeys = new HashSet<>();
+            allKeys.addAll(map1.keySet());
+            allKeys.addAll(map2.keySet());
 
-        for (String key : allKeys) {
-            Object val1 = map1.get(key);
-            Object val2 = map2.get(key);
+            for (String key : allKeys) {
+                Object val1 = map1.get(key);
+                Object val2 = map2.get(key);
 
-            if (!Objects.equals(val1, val2)) {
-                differences.put(key, String.valueOf(val1) + "  ->  " + String.valueOf(val2));
+                if (!Objects.equals(val1, val2)) {
+                    differences.put(key, String.valueOf(val1) + "  ->  " + String.valueOf(val2));
+                }
             }
+        } catch (JsonProcessingException e) {
+            return "Error parsing JSON: " + e.getMessage();
         }
         // Build a string from the differences map
         StringBuilder result = new StringBuilder();
