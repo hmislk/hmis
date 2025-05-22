@@ -1219,39 +1219,44 @@ public class PharmacyDirectPurchaseController implements Serializable {
             saleValue += (pbi.getQty() + pbi.getFreeQty()) * pbi.getRetailRate();
 
             if (f != null) {
-                // Line-level
-                totalLineDiscounts = totalLineDiscounts.add(f.getLineDiscount());
-                totalLineExpenses = totalLineExpenses.add(f.getLineExpense());
-                totalTaxLines = totalTaxLines.add(f.getLineTax());
-                totalCostLines = totalCostLines.add(f.getLineCost());
+                BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
+                BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
+                BigDecimal costRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
+                BigDecimal retailRate = Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO);
+                BigDecimal wholesaleRate = Optional.ofNullable(f.getWholesaleRate()).orElse(BigDecimal.ZERO);
 
-                // Combined totals
-                totalDiscount = totalDiscount.add(f.getTotalDiscount());
-                totalExpense = totalExpense.add(f.getTotalExpense());
-                totalCost = totalCost.add(f.getTotalCost());
-                totalTax = totalTax.add(f.getTotalTax());
+                BigDecimal qtyTotal = qty.add(freeQty);
+                BigDecimal retailValue = retailRate.multiply(qtyTotal);
+                BigDecimal wholesaleValue = wholesaleRate.multiply(qtyTotal);
+                BigDecimal freeItemValue = costRate.multiply(freeQty);
 
-                totalFreeItemValue = totalFreeItemValue.add(
-                        f.getFreeValueAtCostRate() != null ? f.getFreeValueAtCostRate() : BigDecimal.ZERO
-                );
-                totalPurchase = totalPurchase.add(f.getGrossTotal());
-                totalRetail = totalRetail.add(f.getValueAtRetailRate());
-                totalWholesale = totalWholesale.add(
-                        f.getValueAtWholesaleRate() != null ? f.getValueAtWholesaleRate() : BigDecimal.ZERO
-                );
+                totalLineDiscounts = totalLineDiscounts.add(Optional.ofNullable(f.getLineDiscount()).orElse(BigDecimal.ZERO));
+                totalLineExpenses = totalLineExpenses.add(Optional.ofNullable(f.getLineExpense()).orElse(BigDecimal.ZERO));
+                totalTaxLines = totalTaxLines.add(Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO));
+                totalCostLines = totalCostLines.add(Optional.ofNullable(f.getLineCost()).orElse(BigDecimal.ZERO));
 
-                totalQty = totalQty.add(f.getQuantity());
-                totalFreeQty = totalFreeQty.add(f.getFreeQuantity());
-                totalQtyAtomic = totalQtyAtomic.add(f.getQuantityByUnits());
-                totalFreeQtyAtomic = totalFreeQtyAtomic.add(f.getFreeQuantityByUnits());
+                totalDiscount = totalDiscount.add(Optional.ofNullable(f.getTotalDiscount()).orElse(BigDecimal.ZERO));
+                totalExpense = totalExpense.add(Optional.ofNullable(f.getTotalExpense()).orElse(BigDecimal.ZERO));
+                totalCost = totalCost.add(Optional.ofNullable(f.getTotalCost()).orElse(BigDecimal.ZERO));
+                totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
 
-                // Gross and net totals
-                grossTotal = grossTotal.add(f.getGrossTotal());
-                lineGrossTotal = lineGrossTotal.add(f.getLineGrossTotal());
+                totalFreeItemValue = totalFreeItemValue.add(freeItemValue);
+                totalPurchase = totalPurchase.add(Optional.ofNullable(f.getGrossTotal()).orElse(BigDecimal.ZERO));
+                totalRetail = totalRetail.add(retailValue);
+                totalWholesale = totalWholesale.add(wholesaleValue);
 
-                netTotal = netTotal.add(f.getNetTotal());
-                lineNetTotal = lineNetTotal.add(f.getLineNetTotal());
+                totalQty = totalQty.add(qty);
+                totalFreeQty = totalFreeQty.add(freeQty);
+                totalQtyAtomic = totalQtyAtomic.add(Optional.ofNullable(f.getQuantityByUnits()).orElse(BigDecimal.ZERO));
+                totalFreeQtyAtomic = totalFreeQtyAtomic.add(Optional.ofNullable(f.getFreeQuantityByUnits()).orElse(BigDecimal.ZERO));
+
+                grossTotal = grossTotal.add(Optional.ofNullable(f.getGrossTotal()).orElse(BigDecimal.ZERO));
+                lineGrossTotal = lineGrossTotal.add(Optional.ofNullable(f.getLineGrossTotal()).orElse(BigDecimal.ZERO));
+
+                netTotal = netTotal.add(Optional.ofNullable(f.getNetTotal()).orElse(BigDecimal.ZERO));
+                lineNetTotal = lineNetTotal.add(Optional.ofNullable(f.getLineNetTotal()).orElse(BigDecimal.ZERO));
             }
+
         }
 
         // Assign legacy totals
