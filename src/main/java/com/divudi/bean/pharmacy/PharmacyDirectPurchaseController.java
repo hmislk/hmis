@@ -223,7 +223,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         f.setLineNetTotal(lineNetTotal);
         f.setLineCost(lineNetTotal);
         f.setLineCostRate(lineCostRate);
-        f.setValueAtRetailRate(retailValue);
+//        f.setValueAtRetailRate(retailValue);
         f.setTotalQuantity(totalQty);
 
         // Determine unitsPerPack: default to 1 if null or zero
@@ -348,23 +348,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             f.setNetRate(f.getLineNetRate());
             f.setBillNetRate(f.getLineNetRate());
-
-// Percentages for info/reporting — not user-editable
-            if (grossTotal != null && grossTotal.compareTo(BigDecimal.ZERO) != 0) {
-                f.setTotalDiscountPercentage(f.getTotalDiscount().multiply(BigDecimal.valueOf(100)).divide(grossTotal, 2, RoundingMode.HALF_UP));
-                f.setTotalExpensePercentage(f.getTotalExpense().multiply(BigDecimal.valueOf(100)).divide(grossTotal, 2, RoundingMode.HALF_UP));
-                f.setTotalTaxPercentage(f.getTotalTax().multiply(BigDecimal.valueOf(100)).divide(grossTotal, 2, RoundingMode.HALF_UP));
-            } else {
-                f.setTotalDiscountPercentage(BigDecimal.ZERO);
-                f.setTotalExpensePercentage(BigDecimal.ZERO);
-                f.setTotalTaxPercentage(BigDecimal.ZERO);
-            }
-
-            if (f.getLineGrossRate() != null && f.getLineGrossRate().compareTo(BigDecimal.ZERO) != 0) {
-                f.setTotalCostPercentage(costRate.multiply(BigDecimal.valueOf(100)).divide(f.getLineGrossRate(), 2, RoundingMode.HALF_UP));
-            } else {
-                f.setTotalCostPercentage(BigDecimal.ZERO);
-            }
 
         }
     }
@@ -613,12 +596,23 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (ph == null || ph.getBillItemFinanceDetails() == null) {
             return 0.0;
         }
-        BigDecimal retail = Optional.ofNullable(ph.getBillItemFinanceDetails().getValueAtRetailRate()).orElse(BigDecimal.ZERO);
-        BigDecimal cost = Optional.ofNullable(ph.getBillItemFinanceDetails().getValueAtCostRate()).orElse(BigDecimal.ZERO);
+
+        BillItemFinanceDetails f = ph.getBillItemFinanceDetails();
+        BigDecimal qty = Optional.ofNullable(f.getTotalQuantity()).orElse(BigDecimal.ZERO);
+        BigDecimal retailRate = Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO);
+        BigDecimal costRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
+
+        BigDecimal retail = retailRate.multiply(qty);
+        BigDecimal cost = costRate.multiply(qty);
+
         if (cost.compareTo(BigDecimal.ZERO) == 0) {
             return 0.0;
         }
-        return retail.subtract(cost).divide(cost, 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100")).doubleValue();
+
+        return retail.subtract(cost)
+                .divide(cost, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .doubleValue();
     }
 
     public boolean isProfitMarginExcessive(BillItem ph) {
