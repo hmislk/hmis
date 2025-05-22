@@ -182,6 +182,7 @@ public class ExcelController {
             case "PatientDeposit":
             case "PatientDepositCancel":
             case "PatientDepositRefund":
+            case "PharmacyCreditBills":
                 return addDataToExcelForCreditCompanyPaymentOPCancel(dataSheet, startRow, addingBundle);
             case "CollectingCentrePaymentReceive":
             case "CollectingCentrePaymentCancel":
