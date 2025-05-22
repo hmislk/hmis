@@ -697,9 +697,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
         ph.setPurchaseRate(itemBatch.getPurcahseRate());
         ph.setRetailRate(itemBatch.getRetailsaleRate());
-        ph.setTransThisIsStockOut(true);
         ph.setStock(stock);
-        ph.setQty(stock.getStock());
+        ph.setQty(0 - stock.getStock());
 
         ph.setBillItem(tbi);
         tbi.setPharmaceuticalBillItem(ph);
@@ -708,8 +707,10 @@ public class PharmacyAdjustmentController implements Serializable {
 
         boolean returnFlag = getPharmacyBean().deductFromStock(
                 getStock(), Math.abs(getStock().getStock()), ph, getDeptAdjustmentPreBill().getDepartment());
+        if (!returnFlag) {
+            JsfUtil.addErrorMessage("Stock deduction failed – transaction rolled back?");
+        }
 
-        
     }
 
     private void saveRsrAdjustmentBillItems() {
@@ -733,22 +734,20 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
 
-        
         ph.setPurchaseRate(itemBatch.getPurcahseRate());
         ph.setBeforeAdjustmentValue(itemBatch.getRetailsaleRate());
         ph.setAfterAdjustmentValue(rsr);
         ph.setRetailRate(rsr);
         ph.setStock(stock);
+        ph.setQty(stock.getStock());
 
         ph.setBillItem(tbi);
         tbi.setPharmaceuticalBillItem(ph);
-        
+
         getBillItemFacade().create(tbi);
 
         boolean addFlag = getPharmacyBean().addToStock(
                 getStock(), Math.abs(getStock().getStock()), ph, getDeptAdjustmentPreBill().getDepartment());
-
-        
 
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
