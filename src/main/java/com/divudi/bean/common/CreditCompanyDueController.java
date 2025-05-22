@@ -28,6 +28,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -38,6 +39,7 @@ import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 
 import com.itextpdf.text.*;
+import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -286,7 +288,7 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-//    public void createInwardAgeTableWithFilters() {
+    //    public void createInwardAgeTableWithFilters() {
 //        Date startTime = new Date();
 //
 //        makeNull();
@@ -840,7 +842,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod,
-            Institution institutionOfDepartment, Department department, Institution site) {
+                                 Institution institutionOfDepartment, Department department, Institution site) {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(
                 inst, true, paymentMethod, institutionOfDepartment, department, site);
         for (PatientEncounter b : lst) {
@@ -1931,171 +1933,127 @@ public class CreditCompanyDueController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Inward_Cash_Due.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=Inward_Cash_Due_Report.xlsx");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Inward Cash Due");
             int rowIndex = 0;
 
-            XSSFCellStyle amountStyle = workbook.createCellStyle();
-            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
-
-            XSSFCellStyle boldStyle = workbook.createCellStyle();
             XSSFFont boldFont = workbook.createFont();
             boldFont.setBold(true);
+
+            CellStyle boldStyle = workbook.createCellStyle();
             boldStyle.setFont(boldFont);
 
-            Row titleRow = sheet.createRow(rowIndex++);
-            Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("Inward Cash Due");
-            titleCell.setCellStyle(boldStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
-
-            Row headerRow = sheet.createRow(rowIndex++);
-
-            Cell headerCell = headerRow.createCell(0);
-            headerCell.setCellValue("No");
+            Row mainHeader = sheet.createRow(rowIndex++);
+            Cell headerCell = mainHeader.createCell(0);
+            headerCell.setCellValue("Inward Cash Due");
             headerCell.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 10));
 
-            Cell headerCell1 = headerRow.createCell(1);
-            headerCell1.setCellValue("BHT");
-            headerCell1.setCellStyle(boldStyle);
-
-            Cell headerCell2 = headerRow.createCell(2);
-            headerCell2.setCellValue("Admitted At");
-            headerCell2.setCellStyle(boldStyle);
-
-            Cell headerCell3 = headerRow.createCell(3);
-            headerCell3.setCellValue("Discharged At");
-            headerCell3.setCellStyle(boldStyle);
-
-            Cell headerCell4 = headerRow.createCell(4);
-            headerCell4.setCellValue("Final Total");
-            headerCell4.setCellStyle(boldStyle);
-
-            Cell headerCell5 = headerRow.createCell(5);
-            headerCell5.setCellValue("Paid by Patient");
-            headerCell5.setCellStyle(boldStyle);
-
-            Cell headerCell6 = headerRow.createCell(6);
-            headerCell6.setCellValue("Paid by Companies");
-            headerCell6.setCellStyle(boldStyle);
-
-            Cell headerCell7 = headerRow.createCell(7);
-            headerCell7.setCellValue("Due");
-            headerCell7.setCellStyle(boldStyle);
+            Row columnHeader = sheet.createRow(rowIndex++);
+            String[] headers = {
+                    "", "BHT", "Admitted At", "Discharged At", "Final Total", "GOP by Patient", "Paid by Patient",
+                    "Patient Due", "Paid by Companies", "Total Due", "Company Details"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = columnHeader.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
 
             int counter = 1;
-
             for (Map.Entry<PatientEncounter, List<Bill>> entry : getBillPatientEncounterMap().entrySet()) {
                 PatientEncounter pe = entry.getKey();
                 List<Bill> bills = entry.getValue();
 
-                Row dataRow = sheet.createRow(rowIndex++);
-                dataRow.createCell(0).setCellValue(counter++);
-                dataRow.createCell(1).setCellValue(pe.getBhtNo());
-                dataRow.createCell(2).setCellValue(pe.getDateOfAdmission().toString());
-                dataRow.createCell(3).setCellValue(pe.getDateOfDischarge() != null ? pe.getDateOfDischarge().toString() : "");
+                Row row = sheet.createRow(rowIndex++);
+                int col = 0;
 
-                double netTotal = pe.getFinalBill().getNetTotal();
-                double paidByPatient = pe.getFinalBill().getSettledAmountByPatient();
-                double paidBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
-                double due = netTotal - paidByPatient - paidBySponsor;
-
-                Cell netTotalCell = dataRow.createCell(4);
-                netTotalCell.setCellValue(netTotal);
-                netTotalCell.setCellStyle(amountStyle);
-
-                Cell paidPatientCell = dataRow.createCell(5);
-                paidPatientCell.setCellValue(paidByPatient);
-                paidPatientCell.setCellStyle(amountStyle);
-
-                Cell paidSponsorCell = dataRow.createCell(6);
-                paidSponsorCell.setCellValue(paidBySponsor);
-                paidSponsorCell.setCellStyle(amountStyle);
-
-                Cell dueCell = dataRow.createCell(7);
-                dueCell.setCellValue(due);
-                dueCell.setCellStyle(amountStyle);
+                row.createCell(col++).setCellValue(counter++);
+                row.createCell(col++).setCellValue(pe.getBhtNo());
+                row.createCell(col++).setCellValue(sdf.format(pe.getDateOfAdmission()));
+                row.createCell(col++).setCellValue(sdf.format(pe.getDateOfDischarge()));
+                row.createCell(col++).setCellValue(pe.getFinalBill().getNetTotal());
+                row.createCell(col++).setCellValue(calculatePayableByPatient(pe, bills));
+                row.createCell(col++).setCellValue(pe.getFinalBill().getSettledAmountByPatient());
+                row.createCell(col++).setCellValue(
+                        calculatePayableByPatient(pe, bills) - pe.getFinalBill().getSettledAmountByPatient()
+                );
+                row.createCell(col++).setCellValue(pe.getFinalBill().getSettledAmountBySponsor());
+                row.createCell(col++).setCellValue(
+                        pe.getFinalBill().getNetTotal() -
+                                pe.getFinalBill().getSettledAmountByPatient() -
+                                pe.getFinalBill().getSettledAmountBySponsor()
+                );
 
                 Row subHeader = sheet.createRow(rowIndex++);
-                Cell subHeaderCell1 = subHeader.createCell(1);
-                subHeaderCell1.setCellValue("Company Name");
-                subHeaderCell1.setCellStyle(boldStyle);
-
-                Cell subHeaderCell2 = subHeader.createCell(2);
-                subHeaderCell2.setCellValue("Payable");
-                subHeaderCell2.setCellStyle(boldStyle);
-
-                Cell subHeaderCell3 = subHeader.createCell(3);
-                subHeaderCell3.setCellValue("Paid by Company");
-                subHeaderCell3.setCellStyle(boldStyle);
-
-                Cell subHeaderCell4 = subHeader.createCell(4);
-                subHeaderCell4.setCellValue("Company Due");
-                subHeaderCell4.setCellStyle(boldStyle);
-
-                for (Bill b : bills) {
-                    Row subRow = sheet.createRow(rowIndex++);
-                    subRow.createCell(1).setCellValue(b.getCreditCompany().getName());
-
-                    Cell payableCell = subRow.createCell(2);
-                    payableCell.setCellValue(b.getNetTotal());
-                    payableCell.setCellStyle(amountStyle);
-
-                    Cell paidCell = subRow.createCell(3);
-                    paidCell.setCellValue(b.getPaidAmount());
-                    paidCell.setCellStyle(amountStyle);
-
-                    Cell companyDueCell = subRow.createCell(4);
-                    companyDueCell.setCellValue(b.getNetTotal() - b.getPaidAmount());
-                    companyDueCell.setCellStyle(amountStyle);
+                String[] innerHeaders = {
+                        "Company Name", "Policy Number", "Reference Number", "GOP by Company",
+                        "Paid by Company", "Company Due"
+                };
+                for (int i = 0; i < innerHeaders.length; i++) {
+                    Cell cell = subHeader.createCell(i + 10);
+                    cell.setCellValue(innerHeaders[i]);
+                    cell.setCellStyle(boldStyle);
                 }
 
-                Row subtotalRow = sheet.createRow(rowIndex++);
-                Cell subTotalLabel = subtotalRow.createCell(1);
-                subTotalLabel.setCellValue("Sub Total");
-                subTotalLabel.setCellStyle(boldStyle);
+                for (Bill bill : bills) {
+                    Row billRow = sheet.createRow(rowIndex++);
+                    billRow.createCell(10).setCellValue(bill.getCreditCompany().getName());
+                    billRow.createCell(11).setCellValue(bill.getPatientEncounter().getPolicyNo());
+                    billRow.createCell(12).setCellValue(bill.getPatientEncounter().getReferanceNo());
+                    billRow.createCell(13).setCellValue(bill.getNetTotal());
+                    billRow.createCell(14).setCellValue(bill.getPaidAmount());
+                    billRow.createCell(15).setCellValue(bill.getNetTotal() - bill.getPaidAmount());
+                }
 
-                Cell subPayableCell = subtotalRow.createCell(2);
-                subPayableCell.setCellValue(pe.getTransPaid());
-                subPayableCell.setCellStyle(amountStyle);
+                Row totalsRow = sheet.createRow(rowIndex++);
+                Cell totalLabelCell = totalsRow.createCell(10);
+                totalLabelCell.setCellValue("Total");
+                totalLabelCell.setCellStyle(boldStyle);
 
-                Cell subPaidCell = subtotalRow.createCell(3);
-                subPaidCell.setCellValue(pe.getTransPaidByCompany());
-                subPaidCell.setCellStyle(amountStyle);
+                Cell total1 = totalsRow.createCell(13);
+                total1.setCellValue(pe.getTransPaid());
+                total1.setCellStyle(boldStyle);
 
-                Cell subDueCell = subtotalRow.createCell(4);
-                subDueCell.setCellValue(pe.getTransPaid() - pe.getTransPaidByCompany());
-                subDueCell.setCellStyle(amountStyle);
+                Cell total2 = totalsRow.createCell(14);
+                total2.setCellValue(pe.getTransPaidByCompany());
+                total2.setCellStyle(boldStyle);
+
+                Cell total3 = totalsRow.createCell(15);
+                total3.setCellValue(pe.getTransPaid() - pe.getTransPaidByCompany());
+                total3.setCellStyle(boldStyle);
             }
 
-            Row totalRow = sheet.createRow(rowIndex++);
-            Cell totalLabelCell = totalRow.createCell(3);
-            totalLabelCell.setCellValue("Grand Total");
-            totalLabelCell.setCellStyle(boldStyle);
+            Row totalFooter = sheet.createRow(rowIndex++);
+            Cell footerLabel = totalFooter.createCell(0);
+            footerLabel.setCellValue("Total");
+            footerLabel.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 3));
 
-            Cell totalFinalCell = totalRow.createCell(4);
-            totalFinalCell.setCellValue(billed);
-            totalFinalCell.setCellStyle(amountStyle);
+            int[] footerCols = {4, 5, 6, 7, 8, 9};
+            double[] footerValues = {
+                    getBilled(),
+                    getPayableByPatient(),
+                    getPaidByPatient(),
+                    getPayableByPatient() - getPaidByPatient(),
+                    getPaidByCompany(),
+                    getBilled() - (getPaidByCompany() + getPaidByPatient())
+            };
 
-            Cell totalPaidPatientCell = totalRow.createCell(5);
-            totalPaidPatientCell.setCellValue(paidByPatient);
-            totalPaidPatientCell.setCellStyle(amountStyle);
-
-            Cell totalPaidCompanyCell = totalRow.createCell(6);
-            totalPaidCompanyCell.setCellValue(paidByCompany);
-            totalPaidCompanyCell.setCellStyle(amountStyle);
-
-            Cell totalDueCell = totalRow.createCell(7);
-            totalDueCell.setCellValue(billed - (paidByCompany + paidByPatient));
-            totalDueCell.setCellStyle(amountStyle);
+            for (int i = 0; i < footerCols.length; i++) {
+                Cell cell = totalFooter.createCell(footerCols[i]);
+                cell.setCellValue(footerValues[i]);
+                cell.setCellStyle(boldStyle);
+            }
 
             workbook.write(out);
             context.responseComplete();
-
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
         }
     }
 
@@ -2104,106 +2062,101 @@ public class CreditCompanyDueController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Inward_Cash_Due.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Inward_Cash_Due_Report.pdf");
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
+
             document.open();
 
-            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
 
-            Paragraph title = new Paragraph("INWARD CASH DUE", titleFont);
+            Paragraph title = new Paragraph("Inward Cash Due", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
             title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(20);
             document.add(title);
+            document.add(Chunk.NEWLINE);
 
-            PdfPTable table = new PdfPTable(8);
-            table.setWidthPercentage(100);
-            table.setWidths(new float[]{1f, 2f, 2f, 2f, 2.5f, 2.5f, 2.5f, 2.5f});
+            PdfPTable mainTable = new PdfPTable(11);
+            mainTable.setWidthPercentage(100);
+            mainTable.setWidths(new float[]{0.6f, 1.2f, 1.8f, 1.8f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 8.0f});
 
-            String[] headers = {"No", "BHT", "Admitted At", "Discharged At", "Final Total", "Paid by Patient", "Paid by Companies", "Due"};
+            String[] headers = {"", "BHT", "Admitted At", "Discharged At", "Final Total", "GOP by Patient", "Paid by Patient", "Patient Due", "Paid by Companies", "Total Due", "Company Details"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table.addCell(cell);
+                mainTable.addCell(cell);
             }
 
-            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
             int counter = 1;
-            double billed = 0, paidByPatient = 0, paidByCompany = 0;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss a");
 
             for (Map.Entry<PatientEncounter, List<Bill>> entry : getBillPatientEncounterMap().entrySet()) {
                 PatientEncounter pe = entry.getKey();
                 List<Bill> bills = entry.getValue();
 
-                double netTotal = pe.getFinalBill().getNetTotal();
-                double paidPatient = pe.getFinalBill().getSettledAmountByPatient();
-                double paidSponsor = pe.getFinalBill().getSettledAmountBySponsor();
-                double due = netTotal - paidPatient - paidSponsor;
+                mainTable.addCell(new Phrase(String.valueOf(counter++), normalFont));
+                mainTable.addCell(new Phrase(pe.getBhtNo(), normalFont));
+                mainTable.addCell(new Phrase(sdf.format(pe.getDateOfAdmission()), normalFont));
+                mainTable.addCell(new Phrase(sdf.format(pe.getDateOfDischarge()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(pe.getFinalBill().getNetTotal()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(calculatePayableByPatient(pe, bills)), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(pe.getFinalBill().getSettledAmountByPatient()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(calculatePayableByPatient(pe, bills) - pe.getFinalBill().getSettledAmountByPatient()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(pe.getFinalBill().getSettledAmountBySponsor()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(
+                        pe.getFinalBill().getNetTotal() - pe.getFinalBill().getSettledAmountByPatient() - pe.getFinalBill().getSettledAmountBySponsor()), normalFont));
 
-                billed += netTotal;
-                paidByPatient += paidPatient;
-                paidByCompany += paidSponsor;
+                PdfPTable nestedTable = new PdfPTable(6);
+                nestedTable.setWidthPercentage(100);
+                nestedTable.setWidths(new float[]{3f, 2.5f, 2.5f, 2f, 2f, 2f});
 
-                table.addCell(String.valueOf(counter++));
-                table.addCell(pe.getBhtNo());
-                table.addCell(pe.getDateOfAdmission().toString());
-                table.addCell(pe.getDateOfDischarge() != null ? pe.getDateOfDischarge().toString() : "");
-                table.addCell(decimalFormat.format(netTotal));
-                table.addCell(decimalFormat.format(paidPatient));
-                table.addCell(decimalFormat.format(paidSponsor));
-                table.addCell(decimalFormat.format(due));
-
-                PdfPTable subTable = new PdfPTable(4);
-                subTable.setWidthPercentage(100);
-                subTable.setWidths(new float[]{4f, 2.5f, 2.5f, 2.5f});
-
-                String[] subHeaders = {"Company Name", "Payable", "Paid by Company", "Company Due"};
-                for (String h : subHeaders) {
-                    PdfPCell hCell = new PdfPCell(new Phrase(h, boldFont));
-                    hCell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    subTable.addCell(hCell);
+                String[] subHeaders = {"Company Name", "Policy Number", "Reference Number", "GOP by Company", "Paid by Company", "Company Due"};
+                for (String sh : subHeaders) {
+                    PdfPCell shCell = new PdfPCell(new Phrase(sh, boldFont));
+                    shCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    nestedTable.addCell(shCell);
                 }
 
-                for (Bill b : bills) {
-                    subTable.addCell(new Phrase(b.getCreditCompany().getName(), normalFont));
-                    subTable.addCell(decimalFormat.format(b.getNetTotal()));
-                    subTable.addCell(decimalFormat.format(b.getPaidAmount()));
-                    subTable.addCell(decimalFormat.format(b.getNetTotal() - b.getPaidAmount()));
+                for (Bill bill : bills) {
+                    nestedTable.addCell(new Phrase(bill.getCreditCompany().getName(), normalFont));
+                    nestedTable.addCell(new Phrase(bill.getPatientEncounter().getPolicyNo(), normalFont));
+                    nestedTable.addCell(new Phrase(bill.getPatientEncounter().getReferanceNo(), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getNetTotal()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getPaidAmount()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getNetTotal() - bill.getPaidAmount()), normalFont));
                 }
 
-                PdfPCell subTotalLabel = new PdfPCell(new Phrase("Sub Total", boldFont));
-                subTotalLabel.setColspan(1);
-                subTable.addCell(subTotalLabel);
+                nestedTable.addCell(new Phrase("Total", boldFont));
+                nestedTable.addCell("");
+                nestedTable.addCell("");
+                nestedTable.addCell(new Phrase(String.valueOf(pe.getTransPaid()), boldFont));
+                nestedTable.addCell(new Phrase(String.valueOf(pe.getTransPaidByCompany()), boldFont));
+                nestedTable.addCell(new Phrase(String.valueOf(pe.getTransPaid() - pe.getTransPaidByCompany()), boldFont));
 
-                subTable.addCell(new Phrase(decimalFormat.format(pe.getTransPaid()), boldFont));
-                subTable.addCell(new Phrase(decimalFormat.format(pe.getTransPaidByCompany()), boldFont));
-                subTable.addCell(new Phrase(decimalFormat.format(pe.getTransPaid() - pe.getTransPaidByCompany()), boldFont));
-
-                PdfPCell subTableWrapper = new PdfPCell(subTable);
-                subTableWrapper.setColspan(8);
-                table.addCell(subTableWrapper);
+                PdfPCell nestedCell = new PdfPCell(nestedTable);
+                nestedCell.setColspan(1);
+                mainTable.addCell(nestedCell);
             }
 
-            PdfPCell totalLabel = new PdfPCell(new Phrase("Grand Total", boldFont));
-            totalLabel.setColspan(4);
-            totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(totalLabel);
+            PdfPCell footerLabel = new PdfPCell(new Phrase("Total", boldFont));
+            footerLabel.setColspan(4);
+            footerLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            mainTable.addCell(footerLabel);
 
-            table.addCell(new Phrase(decimalFormat.format(billed), boldFont));
-            table.addCell(new Phrase(decimalFormat.format(paidByPatient), boldFont));
-            table.addCell(new Phrase(decimalFormat.format(paidByCompany), boldFont));
-            table.addCell(new Phrase(decimalFormat.format(billed - (paidByPatient + paidByCompany)), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getBilled()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient() - getPaidByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByCompany()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont));
 
-            document.add(table);
+            document.add(mainTable);
             document.close();
             context.responseComplete();
-
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage());
         }
     }
 
