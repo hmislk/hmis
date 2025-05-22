@@ -100,7 +100,7 @@ public class GoodsReturnController implements Serializable {
 
     public Bill getReturnBill() {
         if (returnBill == null) {
-            returnBill = new RefundBill();
+            returnBill = new BilledBill();
             returnBill.setBillType(BillType.PharmacyGrnReturn);
             returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_RETURN);
             returnBill.setReferenceBill(getBill());
