@@ -12192,7 +12192,12 @@ public class SearchController implements Serializable {
             } else if (b.getBillItems().get(0).getPatientEncounter() != null) {
                 billType = "IP";
             } else {
-                billType = checkBillTypeByBill(b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic());
+                if (b.getBillItems().get(0).getReferenceBill() != null
+                        && b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic() != null) {
+                    billType = checkBillTypeByBill(b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic());
+                } else {
+                    billType = "";
+                }
             }
 
             // Only add bills that match the status filter
