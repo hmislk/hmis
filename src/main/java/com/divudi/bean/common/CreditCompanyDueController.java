@@ -1951,7 +1951,7 @@ public class CreditCompanyDueController implements Serializable {
             Cell headerCell = mainHeader.createCell(0);
             headerCell.setCellValue("Inward Cash Due");
             headerCell.setCellStyle(boldStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 10));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 15));
 
             Row columnHeader = sheet.createRow(rowIndex++);
             String[] headers = {
@@ -1963,6 +1963,8 @@ public class CreditCompanyDueController implements Serializable {
                 cell.setCellValue(headers[i]);
                 cell.setCellStyle(boldStyle);
             }
+
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 10, 15));
 
             int counter = 1;
             for (Map.Entry<PatientEncounter, List<Bill>> entry : getBillPatientEncounterMap().entrySet()) {
