@@ -112,7 +112,7 @@ public class AuditEventController implements Serializable {
     }
 
     public AuditEvent createNewAuditEvent(String eventName, String beforeJson) {
-        return createNewAuditEvent(eventName, "", null);
+        return createNewAuditEvent(eventName, beforeJson, null);
     }
 
     public AuditEvent createNewAuditEvent(String eventName, String beforeJson, Long objectId) {

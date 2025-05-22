@@ -113,7 +113,7 @@ public class AgentReferenceBook implements Serializable {
         return "AgentReferenceBook{"
                 + "id=" + getId() + '\''
                 + ", strbookNumber='" + getStrbookNumber() + '\''
-                + ", institutionID=" + getInstitution().getId() + '\''
+                + ", institutionID=" + (getInstitution() != null ? getInstitution().getId() : "null") + '\''
                 + ", startingReferenceNumber=" + getStartingReferenceNumber() + '\''
                 + ", endingReferenceNumber=" + getEndingReferenceNumber() + '\''
                 + ", active=" + getActive() + '\''
