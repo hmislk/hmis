@@ -1572,7 +1572,7 @@ public class CreditCompanyDueController implements Serializable {
                 return ecc.getPolicyNo();
             }
         }
-        return null;
+        return "";
     }
 
     public String getReferenceNumberFromEncounterCreditCompanyMap(final String bht, final String creditCompanyName) {
@@ -1584,7 +1584,7 @@ public class CreditCompanyDueController implements Serializable {
                 return ecc.getReferanceNo();
             }
         }
-        return null;
+        return "";
     }
 
     public double calculatePayableByPatient(final PatientEncounter patientEncounter, final List<Bill> bills) {
@@ -1663,30 +1663,29 @@ public class CreditCompanyDueController implements Serializable {
 
     // Map<bht, Map<Credit Company, Encounter Credit Company>>
     private Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanies() {
-        List<PatientEncounter> patientEncounters = new ArrayList<>(getBillPatientEncounterMap().keySet());
-        List<Long> patientEncounterIds = patientEncounters.stream()
-                .map(PatientEncounter::getId).collect(Collectors.toList());
+        List<Long> patientEncounterIds = getBillPatientEncounterMap().keySet().stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
 
+        if (patientEncounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT ecc FROM EncounterCreditCompany ecc WHERE ecc.patientEncounter.id IN :patientEncounterIds";
         Map<String, Object> parameters = new HashMap<>();
-
-        String jpql = "SELECT ecc from EncounterCreditCompany ecc "
-                + "WHERE ecc.patientEncounter.id in :patientEncounterIds ";
-
         parameters.put("patientEncounterIds", patientEncounterIds);
 
-        List<EncounterCreditCompany> rs = (List<EncounterCreditCompany>) encounterCreditCompanyFacade.findByJpql(jpql, parameters);
+        List<EncounterCreditCompany> results = encounterCreditCompanyFacade.findByJpql(jpql, parameters);
 
         Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap = new HashMap<>();
 
-        for (EncounterCreditCompany ecc : rs) {
-            if (!encounterCreditCompanyMap.containsKey(ecc.getPatientEncounter().getBhtNo())) {
-                encounterCreditCompanyMap.put(ecc.getPatientEncounter().getBhtNo(), new HashMap<>());
-            }
+        for (EncounterCreditCompany ecc : results) {
+            String bhtNo = ecc.getPatientEncounter().getBhtNo();
+            String institutionName = ecc.getInstitution().getName();
 
-            Map<String, EncounterCreditCompany> creditCompanyMap = encounterCreditCompanyMap.get(ecc.getPatientEncounter().getBhtNo());
-            if (!creditCompanyMap.containsKey(ecc.getInstitution().getName())) {
-                creditCompanyMap.put(ecc.getInstitution().getName(), ecc);
-            }
+            encounterCreditCompanyMap
+                    .computeIfAbsent(bhtNo, k -> new HashMap<>())
+                    .putIfAbsent(institutionName, ecc);
         }
 
         return encounterCreditCompanyMap;
