@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 
@@ -14,6 +15,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.channel.ReferenceBookEnum;
 
 import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.facade.AgentHistoryFacade;
@@ -41,9 +43,10 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class AgentReferenceBookController implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-    AgentReferenceBook agentReferenceBook;
+    
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
@@ -53,12 +56,18 @@ public class AgentReferenceBookController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    private AuditEventController auditEventController;
+    @Inject
+    private WebUserController webUserController;
 
-    List<AgentReferenceBook> agentReferenceBooks;
-    List<AgentReferenceBook> selectedList;
+    AgentReferenceBook agentReferenceBook;
+    private List<AgentReferenceBook> agentReferenceBooks;
+    private List<AgentReferenceBook> selectedList;
     private List<AgentReferenceBook> agentRefBookList;
-    Date frmDate;
-    Date toDate;
+    private Date frmDate;
+    private Date toDate;
+    private AuditEvent editingCcBookEvent;
 
     private String comment;
 
@@ -158,6 +167,11 @@ public class AgentReferenceBookController implements Serializable {
 
     }
 
+    public void beginCcBookAudit(AgentReferenceBook agentReferenceBook) {
+        String bookJson = agentReferenceBook.toString();
+        editingCcBookEvent = auditEventController.createNewAuditEvent("Edit Collection Centre Referance Book", bookJson, agentReferenceBook.getId());
+    }
+
     public void saveAgentBook(ReferenceBookEnum bookEnum) {
         // Validate inputs
         if (agentReferenceBook.getInstitution() == null) {
@@ -214,11 +228,7 @@ public class AgentReferenceBookController implements Serializable {
     public void searchReferenceBooks() {
         createAllBookTable();
     }
-    @Inject
-    private WebUserController webUserController;
-
-    private AgentReferenceBook editingBook;
-
+    
     public void updateAgentBook(AgentReferenceBook book) {
         if (book == null) {
             JsfUtil.addErrorMessage("No Book Selected");
@@ -226,6 +236,10 @@ public class AgentReferenceBookController implements Serializable {
         }
         if (book.getId() == null) {
             JsfUtil.addErrorMessage("No Reference Book Selected");
+            return;
+        }
+        if (editingCcBookEvent == null) {
+            JsfUtil.addErrorMessage("No Audit Event");
             return;
         }
 
@@ -237,6 +251,9 @@ public class AgentReferenceBookController implements Serializable {
         book.setEditedAt(new Date());
         book.setEditor(sessionController.getLoggedUser());
         getAgentReferenceBookFacade().edit(book);
+
+        auditEventController.completeAuditEvent(editingCcBookEvent, book.toString());
+
         JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Updated");
     }
 
@@ -249,7 +266,7 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addErrorMessage("You have No Privilege for Delete Book.");
             return;
         }
-        
+
         agentReferenceBook.setRetired(true);
         agentReferenceBook.setRetiredAt(new Date());
         agentReferenceBook.setRetirer(sessionController.getLoggedUser());
@@ -555,14 +572,6 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setWebUserController(WebUserController webUserController) {
         this.webUserController = webUserController;
-    }
-
-    public AgentReferenceBook getEditingBook() {
-        return editingBook;
-    }
-
-    public void setEditingBook(AgentReferenceBook editingBook) {
-        this.editingBook = editingBook;
     }
 
 }
