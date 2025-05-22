@@ -233,6 +233,7 @@ public class SearchController implements Serializable {
     private String backLink;
     private int maxResult = 50;
     private BillType billType;
+    private BillTypeAtomic billTypeAtomic;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
     private List<Bill> bills;
@@ -248,7 +249,6 @@ public class SearchController implements Serializable {
     private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     private List<PatientReport> patientReports;
     private List<PatientInvestigation> patientInvestigationsSigle;
-    private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
     private String selectedOpdPackageBillSelector;
     private List<String> OpdPackageBillSelector;
@@ -3630,6 +3630,90 @@ public class SearchController implements Serializable {
         totalOfOtherPayments = 0.0;
         billCount = 0.0;
         totalPaying = 0.0;
+    }
+
+    public void processPharmacyBillSearch() {
+        if (billTypeAtomic == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :billTypeAtomic  "
+                + " and b.department=:dep "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and  ((b.deptId) like :billNo )";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+            jpql += " and  ((b.insId) like :requestNo )";
+            params.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            jpql += " and  ((b.netTotal) like :netTotal )";
+            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
+            jpql += " and  ((b.fromInstitution.name) like :frmIns )";
+            params.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
+            jpql += " and  ((b.fromDepartment.name) like :frmDept )";
+            params.put("frmDept", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
+            jpql += " and  ((b.toInstitution.name) like :toIns )";
+            params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
+            jpql += " and  ((b.toDepartment.name) like :toDept )";
+            params.put("toDept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
+            jpql += " and  ((b.referenceBill.deptId) like :refId )";
+            params.put("refId", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
+            jpql += " and  ((b.invoiceNumber) like :inv )";
+            params.put("inv", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            jpql += " and b.id in (select bItem.bill.id  "
+                    + " from BillItem bItem where bItem.retired=false and  "
+                    + " ((bItem.item.name) like :itm ))";
+            params.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
+            jpql += " and b.id in (select bItem.bill.id  "
+                    + " from BillItem bItem where bItem.retired=false and  "
+                    + " ((bItem.item.code) like :cde ))";
+            params.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
+        }
+
+        jpql += " order by b.createdAt desc  ";
+
+        params.put("billTypeAtomic", billTypeAtomic);
+        params.put("dep", getSessionController().getDepartment());
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        //temMap.put("dep", getSessionController().getDepartment());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, maxResult);
+        //     //System.err.println("SIZE : " + lst.size());
+
     }
 
     public void createTableByBillType() {
@@ -7278,6 +7362,12 @@ public class SearchController implements Serializable {
         duplicateBillView = true;
 
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
+    }
+
+    public String navigateToPharmcyBillSearch() {
+        printPreview = true;
+        duplicateBillView = true;
+        return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
     }
 
     public String navigateToItemizedSaleSummary() {

@@ -34,7 +34,7 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal billDiscount = BigDecimal.ZERO;
 
     // Total of all line-level discounts (sum of discounts on individual BillItems)
-    private BigDecimal totalOfBillLineDiscounts = BigDecimal.ZERO;
+    private BigDecimal lineDiscount = BigDecimal.ZERO;
 
     // Total discount (bill-level + all line-level)
     private BigDecimal totalDiscount = BigDecimal.ZERO;
@@ -44,7 +44,7 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal billExpense = BigDecimal.ZERO;
 
     // Total of all expenses from individual BillItems
-    private BigDecimal totalOfBillLineExpense = BigDecimal.ZERO;
+    private BigDecimal lineExpense = BigDecimal.ZERO;
 
     // Total expense (bill-level + all line-level)
     private BigDecimal totalExpense = BigDecimal.ZERO;
@@ -54,7 +54,7 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal billCostValue = BigDecimal.ZERO;
 
     // Sum of cost values from each BillItem
-    private BigDecimal billOfBillLineCostValue = BigDecimal.ZERO;
+    private BigDecimal lineCostValue = BigDecimal.ZERO;
 
     // Total cost (bill-level + all line-level)
     private BigDecimal totalCostValue = BigDecimal.ZERO;
@@ -64,7 +64,7 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal billTaxValue = BigDecimal.ZERO;
 
     // Total of tax amounts from all BillItems
-    private BigDecimal totalOfBillLineTaxValue = BigDecimal.ZERO;
+    private BigDecimal itemTaxValue = BigDecimal.ZERO;
 
     // Total tax (bill-level + all line-level)
     private BigDecimal totalTaxValue = BigDecimal.ZERO;
@@ -140,22 +140,22 @@ public class BillFinanceDetails implements Serializable {
 
         // ------------------ DISCOUNTS ------------------
         clone.setBillDiscount(this.billDiscount);
-        clone.setTotalOfBillLineDiscounts(this.totalOfBillLineDiscounts);
+        clone.setLineDiscount(this.lineDiscount);
         clone.setTotalDiscount(this.totalDiscount);
 
         // ------------------ EXPENSES ------------------
         clone.setBillExpense(this.billExpense);
-        clone.setTotalOfBillLineExpense(this.totalOfBillLineExpense);
+        clone.setLineExpense(this.lineExpense);
         clone.setTotalExpense(this.totalExpense);
 
         // ------------------ COST ------------------
         clone.setBillCostValue(this.billCostValue);
-        clone.setBillOfBillLineCostValue(this.billOfBillLineCostValue);
+        clone.setLineCostValue(this.lineCostValue);
         clone.setTotalCostValue(this.totalCostValue);
 
         // ------------------ TAXES ------------------
         clone.setBillTaxValue(this.billTaxValue);
-        clone.setTotalOfBillLineTaxValue(this.totalOfBillLineTaxValue);
+        clone.setItemTaxValue(this.itemTaxValue);
         clone.setTotalTaxValue(this.totalTaxValue);
 
         // ------------------ VALUES ------------------
@@ -257,12 +257,12 @@ public class BillFinanceDetails implements Serializable {
         this.billDiscount = billDiscount;
     }
 
-    public BigDecimal getTotalOfBillLineDiscounts() {
-        return totalOfBillLineDiscounts;
+    public BigDecimal getLineDiscount() {
+        return lineDiscount;
     }
 
-    public void setTotalOfBillLineDiscounts(BigDecimal totalOfBillLineDiscounts) {
-        this.totalOfBillLineDiscounts = totalOfBillLineDiscounts;
+    public void setLineDiscount(BigDecimal lineDiscount) {
+        this.lineDiscount = lineDiscount;
     }
 
     public BigDecimal getTotalDiscount() {
@@ -529,12 +529,12 @@ public class BillFinanceDetails implements Serializable {
         this.billExpense = billExpense;
     }
 
-    public BigDecimal getTotalOfBillLineExpense() {
-        return totalOfBillLineExpense;
+    public BigDecimal getLineExpense() {
+        return lineExpense;
     }
 
-    public void setTotalOfBillLineExpense(BigDecimal totalOfBillLineExpense) {
-        this.totalOfBillLineExpense = totalOfBillLineExpense;
+    public void setLineExpense(BigDecimal lineExpense) {
+        this.lineExpense = lineExpense;
     }
 
     public BigDecimal getBillCostValue() {
@@ -545,12 +545,12 @@ public class BillFinanceDetails implements Serializable {
         this.billCostValue = billCostValue;
     }
 
-    public BigDecimal getBillOfBillLineCostValue() {
-        return billOfBillLineCostValue;
+    public BigDecimal getLineCostValue() {
+        return lineCostValue;
     }
 
-    public void setBillOfBillLineCostValue(BigDecimal billOfBillLineCostValue) {
-        this.billOfBillLineCostValue = billOfBillLineCostValue;
+    public void setLineCostValue(BigDecimal lineCostValue) {
+        this.lineCostValue = lineCostValue;
     }
 
     public BigDecimal getBillTaxValue() {
@@ -561,12 +561,12 @@ public class BillFinanceDetails implements Serializable {
         this.billTaxValue = billTaxValue;
     }
 
-    public BigDecimal getTotalOfBillLineTaxValue() {
-        return totalOfBillLineTaxValue;
+    public BigDecimal getItemTaxValue() {
+        return itemTaxValue;
     }
 
-    public void setTotalOfBillLineTaxValue(BigDecimal totalOfBillLineTaxValue) {
-        this.totalOfBillLineTaxValue = totalOfBillLineTaxValue;
+    public void setItemTaxValue(BigDecimal itemTaxValue) {
+        this.itemTaxValue = itemTaxValue;
     }
 
     public BigDecimal getLineGrossTotal() {

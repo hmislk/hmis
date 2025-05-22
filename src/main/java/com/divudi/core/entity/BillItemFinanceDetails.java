@@ -35,7 +35,7 @@ public class BillItemFinanceDetails implements Serializable {
     private WebUser createdBy;
 
     // Conversion: number of units per pack (e.g., tablets in a blister)
-    private BigDecimal unitsPerPack = BigDecimal.ZERO;
+    private BigDecimal unitsPerPack = BigDecimal.ONE;
 
     // ------------------ RATES ------------------
     // Base price before any deductions
