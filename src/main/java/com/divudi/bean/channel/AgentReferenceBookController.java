@@ -43,9 +43,10 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class AgentReferenceBookController implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-    AgentReferenceBook agentReferenceBook;
+    
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
@@ -57,7 +58,10 @@ public class AgentReferenceBookController implements Serializable {
     SessionController sessionController;
     @Inject
     private AuditEventController auditEventController;
+    @Inject
+    private WebUserController webUserController;
 
+    AgentReferenceBook agentReferenceBook;
     private List<AgentReferenceBook> agentReferenceBooks;
     private List<AgentReferenceBook> selectedList;
     private List<AgentReferenceBook> agentRefBookList;
@@ -163,11 +167,9 @@ public class AgentReferenceBookController implements Serializable {
 
     }
 
-    public void beginCcBookAudit(javax.faces.event.ActionEvent event) {
-        AgentReferenceBook book = (AgentReferenceBook) event.getComponent()
-                .getAttributes()
-                .get("refBook");
-        editingCcBookEvent = auditEventController.createNewAuditEvent("Edit Collection Centre Referance Book", book.toString(), book.getId());
+    public void beginCcBookAudit(AgentReferenceBook agentReferenceBook) {
+        String bookJson = agentReferenceBook.toString();
+        editingCcBookEvent = auditEventController.createNewAuditEvent("Edit Collection Centre Referance Book", bookJson, agentReferenceBook.getId());
     }
 
     public void saveAgentBook(ReferenceBookEnum bookEnum) {
@@ -226,11 +228,7 @@ public class AgentReferenceBookController implements Serializable {
     public void searchReferenceBooks() {
         createAllBookTable();
     }
-    @Inject
-    private WebUserController webUserController;
-
-    private AgentReferenceBook editingBook;
-
+    
     public void updateAgentBook(AgentReferenceBook book) {
         if (book == null) {
             JsfUtil.addErrorMessage("No Book Selected");
@@ -574,14 +572,6 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setWebUserController(WebUserController webUserController) {
         this.webUserController = webUserController;
-    }
-
-    public AgentReferenceBook getEditingBook() {
-        return editingBook;
-    }
-
-    public void setEditingBook(AgentReferenceBook editingBook) {
-        this.editingBook = editingBook;
     }
 
 }
