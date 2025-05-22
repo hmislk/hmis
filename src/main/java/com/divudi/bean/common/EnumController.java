@@ -1150,9 +1150,14 @@ public class EnumController implements Serializable {
         return null;
     }
 
-    public List<BillTypeAtomic> getAllUtilizedBillTypeAtomics() {
+    public synchronized List<BillTypeAtomic> getAllUtilizedBillTypeAtomics() {
         if (allUtilizedBillTypeAtomics == null) {
-            allUtilizedBillTypeAtomics = billService.fetchAllUtilizedBillTypeAtomics();
+            try {
+                allUtilizedBillTypeAtomics = billService.fetchAllUtilizedBillTypeAtomics();
+            } catch (Exception e) {
+                java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, "Error fetching BillTypeAtomics", e);
+                allUtilizedBillTypeAtomics = new ArrayList<>();
+            }
         }
         return allUtilizedBillTypeAtomics;
     }
@@ -1161,7 +1166,7 @@ public class EnumController implements Serializable {
         this.allUtilizedBillTypeAtomics = allUtilizedBillTypeAtomics;
     }
 
-    public List<BillTypeAtomic> getAllUtilizedBillTypeAtomicsForPharmacy() {
+    public synchronized List<BillTypeAtomic> getAllUtilizedBillTypeAtomicsForPharmacy() {
         if (allUtilizedBillTypeAtomicsForPharmacy == null) {
             allUtilizedBillTypeAtomicsForPharmacy = filterBillTypeAtomics(getAllUtilizedBillTypeAtomics(), ServiceType.PHARMACY);
         }
