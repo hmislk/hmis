@@ -19131,7 +19131,7 @@ public class SearchController implements Serializable {
 
     public StreamedContent getBundleAsExcel() {
         try {
-            downloadingExcel = excelController.createExcelForBundle(bundle,fromDate,toDate);
+            downloadingExcel = excelController.createExcelForBundle(bundle, fromDate, toDate);
         } catch (IOException e) {
             // Handle IOException
         }
