@@ -1999,53 +1999,63 @@ public class CommonReport implements Serializable {
 
     }
 
-    private List<Bill> getBills(List<BillTypeAtomic> billTypeAtomics, Department dep, Institution paramInstitution, Institution paramFromInstitution, Institution paramToInstitution,
+    private List<Bill> getBills(List<BillTypeAtomic> billTypeAtomics,
+            Department dep,
+            Institution paramInstitution,
+            Institution paramFromInstitution,
+            Institution paramToInstitution,
             Institution paramReferanceInstitution,
             String paramDeptId) {
 
-        String jpql = "SELECT b FROM Bill b "
-                + " WHERE b.retired = false "
-                + " AND b.billTypeAtomic IN :billTypeAtomics "
-                + " AND b.createdAt BETWEEN :fromDate AND :toDate ";
+        if (billTypeAtomics == null || billTypeAtomics.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b"
+                + " WHERE b.retired = false"
+                + " AND b.billTypeAtomic IN :billTypeAtomics"
+                + " AND b.createdAt BETWEEN :fromDate AND :toDate"
+        );
+
+        Map<String, Object> params = new HashMap<>(8);
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
         params.put("billTypeAtomics", billTypeAtomics);
 
         if (dep != null) {
-            jpql += " AND b.department = :dep ";
+            jpql.append(" AND b.department = :dep");
             params.put("dep", dep);
         }
 
         if (paramInstitution != null) {
-            jpql += " AND b.institution = :ins ";
+            jpql.append(" AND b.institution = :ins");
             params.put("ins", paramInstitution);
         }
 
         if (paramFromInstitution != null) {
-            jpql += " AND b.fromInstitution IS NOT NULL AND b.fromInstitution = :fIns ";
+            jpql.append(" AND b.fromInstitution IS NOT NULL AND b.fromInstitution = :fIns");
             params.put("fIns", paramFromInstitution);
         }
 
         if (paramToInstitution != null) {
-            jpql += " AND b.toInstitution IS NOT NULL AND b.toInstitution = :tIns ";
+            jpql.append(" AND b.toInstitution IS NOT NULL AND b.toInstitution = :tIns");
             params.put("tIns", paramToInstitution);
         }
 
         if (paramReferanceInstitution != null) {
-            jpql += " AND b.referenceInstitution = :refIns ";
+            jpql.append(" AND b.referenceInstitution = :refIns");
             params.put("refIns", paramReferanceInstitution);
         }
 
         if (paramDeptId != null && !paramDeptId.trim().isEmpty()) {
-            jpql += " AND b.deptId LIKE :deptId ";
-            params.put("deptId", "%" + paramDeptId + "%");
+            jpql.append(" AND b.deptId LIKE :deptId");
+            params.put("deptId", "%" + paramDeptId.trim() + "%");
         }
 
-        jpql += " ORDER BY b.id ";
+        jpql.append(" ORDER BY b.id");
 
-        return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     private List<Bill> getBills(Bill billClass, List<BillType> billTypes, Department dep) {
@@ -5833,7 +5843,7 @@ public class CommonReport implements Serializable {
 
         List<ReportTemplateRow> mergedResults = new ArrayList<>();
 
-        for (ReportTemplateRow row: combinedResults) {
+        for (ReportTemplateRow row : combinedResults) {
             if (row.getReferringInstitution() != null) {
                 ReportTemplateRow newRow = new ReportTemplateRow();
 
@@ -5913,7 +5923,7 @@ public class CommonReport implements Serializable {
 
         List<ReportTemplateRow> mergedResults = new ArrayList<>();
 
-        for (ReportTemplateRow row: combinedResults) {
+        for (ReportTemplateRow row : combinedResults) {
             if (row.getReferringInstitution() != null) {
                 ReportTemplateRow newRow = new ReportTemplateRow();
 
