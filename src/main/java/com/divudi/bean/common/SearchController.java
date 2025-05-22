@@ -1055,6 +1055,7 @@ public class SearchController implements Serializable {
         searchKeyword = null;
         printPreview = false;
         showLoggedDepartmentOnly = true;
+        settledBillType = null;
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
