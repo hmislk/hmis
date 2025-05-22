@@ -42,7 +42,8 @@ public class AuditEvent implements Serializable {
     private String eventTrigger;
     private Long institutionId;
     private Long departmentId;
-
+    private Long objectId;
+    
     @Lob
     private String beforeJson;
     @Lob
@@ -57,6 +58,8 @@ public class AuditEvent implements Serializable {
     @Transient
     private String difference;
 
+    
+    
     public Long getId() {
         return id;
     }
@@ -281,6 +284,14 @@ public class AuditEvent implements Serializable {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public Long getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(Long objectId) {
+        this.objectId = objectId;
     }
 
 }

@@ -108,6 +108,14 @@ public class AuditEventController implements Serializable {
     }
 
     public AuditEvent createNewAuditEvent(String eventName) {
+        return createNewAuditEvent(eventName, "");
+    }
+
+    public AuditEvent createNewAuditEvent(String eventName, String beforeJson) {
+        return createNewAuditEvent(eventName, beforeJson, null);
+    }
+
+    public AuditEvent createNewAuditEvent(String eventName, String beforeJson, Long objectId) {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -128,8 +136,10 @@ public class AuditEventController implements Serializable {
             auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
         }
         auditEvent.setUrl(url);
+        auditEvent.setObjectId(objectId);
         auditEvent.setIpAddress(ipAddress);
         auditEvent.setEventTrigger(eventName);
+        auditEvent.setBeforeJson(beforeJson);
         String uuid = UUID.randomUUID().toString();
         auditEvent.setUuid(uuid);
         auditEventApplicationController.saveAuditEvent(auditEvent);
@@ -137,6 +147,10 @@ public class AuditEventController implements Serializable {
     }
 
     public void completeAuditEvent(AuditEvent auditEvent) {
+        completeAuditEvent(auditEvent, "");
+    }
+
+    public void completeAuditEvent(AuditEvent auditEvent, String afterJson) {
         if (auditEvent == null) {
             return;
         }
@@ -146,6 +160,7 @@ public class AuditEventController implements Serializable {
         auditEvent.setEventEndTime(endTime);
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
+        auditEvent.setAfterJson(afterJson);
         auditEventApplicationController.saveAuditEvent(auditEvent);
     }
 

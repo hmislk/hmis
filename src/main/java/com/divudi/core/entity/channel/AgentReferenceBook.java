@@ -10,6 +10,9 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbConfig;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -72,6 +75,11 @@ public class AgentReferenceBook implements Serializable {
 
     private boolean active = true;
 
+    // --- static Jsonb (re-used for every call) ---
+    private static final Jsonb JSONB = JsonbBuilder.create(
+            new JsonbConfig().withFormatting(false) // pretty-print true/false as you wish
+    );
+
     public Long getId() {
         return id;
     }
@@ -102,7 +110,14 @@ public class AgentReferenceBook implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.core.entity.channel.AgentReferenceBook[ id=" + id + " ]";
+        return "AgentReferenceBook{"
+                + "id=" + getId() + '\''
+                + ", strbookNumber='" + getStrbookNumber() + '\''
+                + ", institutionID=" + (getInstitution() != null ? getInstitution().getId() : "null") + '\''
+                + ", startingReferenceNumber=" + getStartingReferenceNumber() + '\''
+                + ", endingReferenceNumber=" + getEndingReferenceNumber() + '\''
+                + ", active=" + getActive() + '\''
+                + '}';
     }
 
     public double getStartingReferenceNumber() {
