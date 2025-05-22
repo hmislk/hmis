@@ -110,14 +110,14 @@ public class AgentReferenceBook implements Serializable {
 
     @Override
     public String toString() {
-        return "AgentReferenceBook{"
-                + "id=" + getId() + '\''
-                + ", strbookNumber='" + getStrbookNumber() + '\''
-                + ", institutionID=" + (getInstitution() != null ? getInstitution().getId() : "null") + '\''
-                + ", startingReferenceNumber=" + getStartingReferenceNumber() + '\''
-                + ", endingReferenceNumber=" + getEndingReferenceNumber() + '\''
-                + ", active=" + getActive() + '\''
-                + '}';
+        return "{"
+                + "\"Book ID\":" + getId()
+                + ", \"Book Number\":\"" + getStrbookNumber() + "\""
+                + ", \"Institution Name\":"  + "\"" + (getInstitution() != null ? getInstitution().getName() + "\"" : "\"Missing Institution\"")
+                + ", \"Starting Ref.Number\":" + getStartingReferenceNumber()
+                + ", \"Ending Ref. Number\":" + getEndingReferenceNumber()
+                + ", \"Active\":" + (getActive() == true ? "\"Active\"" : "\"Deactivate\"")
+                + "}";
     }
 
     public double getStartingReferenceNumber() {
