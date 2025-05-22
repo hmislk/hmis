@@ -243,7 +243,7 @@
                             <table id="tblExport1" style="width: 100%; border-collapse: collapse;">
                                 <thead>
                                 <tr>
-                                    <th colspan="9"
+                                    <th colspan="11"
                                         style="font-size: 18px; font-weight: bold; text-align: center; background-color: lightgrey;">
                                         Inward Cash Due
                                     </th>
@@ -254,9 +254,11 @@
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Admitted At</th>
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Discharged At</th>
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Final Total</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">GOP by Patient</th>
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Paid by Patient</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Due</th>
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Paid by Companies</th>
-                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Due</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Total Due</th>
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Company Details</th>
                                 </tr>
                                 </thead>
@@ -286,7 +288,19 @@
                                             </h:outputText>
                                         </td>
                                         <td>
+                                            <h:outputText
+                                                    value="#{creditCompanyDueController.calculatePayableByPatient(entry.key, entry.value)}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td>
                                             <h:outputText value="#{entry.key.finalBill.settledAmountByPatient}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{creditCompanyDueController.calculatePayableByPatient(entry.key, entry.value) -
+                                            entry.key.finalBill.settledAmountByPatient}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
@@ -306,7 +320,9 @@
                                                 <thead>
                                                 <tr>
                                                     <th style="min-width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Company Name</th>
-                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Payable</th>
+                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Policy Number</th>
+                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Reference Number</th>
+                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">GOP by Company</th>
                                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Paid by Company</th>
                                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Company Due</th>
                                                 </tr>
@@ -315,6 +331,8 @@
                                                 <ui:repeat value="#{entry.value}" var="b">
                                                     <tr style="border-bottom: 1px solid #d9d9d9;">
                                                         <td style="min-width: 6rem; ">#{b.creditCompany.name}</td>
+                                                        <td style="min-width: 6rem; ">#{b.patientEncounter.policyNo}</td>
+                                                        <td style="min-width: 6rem; ">#{b.patientEncounter.referanceNo}</td>
                                                         <td style="width: 6rem; text-align: right">
                                                             <h:outputText value="#{b.netTotal}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -335,7 +353,7 @@
                                                 </tbody>
                                                 <tfoot>
                                                 <tr>
-                                                    <td style="font-weight: bold;">Total</td>
+                                                    <td style="font-weight: bold;" colspan="3">Total</td>
                                                     <td style="text-align: right">
                                                         <h:outputText
                                                                 value="#{entry.key.transPaid}"
@@ -376,7 +394,21 @@
                                     </td>
                                     <td style="vertical-align: middle;">
                                         <h:outputText
+                                                value="#{creditCompanyDueController.payableByPatient}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
                                                 value="#{creditCompanyDueController.paidByPatient}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.payableByPatient- creditCompanyDueController.paidByPatient}"
                                                 style="font-weight: bold;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>

@@ -88,6 +88,7 @@ public class CreditCompanyDueController implements Serializable {
     double finalPaidTotalPatient;
     double finalTransPaidTotal;
     double finalTransPaidTotalPatient;
+    private double payableByPatient;
 
     private Institution institutionOfDepartment;
     private Department department;
@@ -152,6 +153,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setBillPatientEncounterMap(Map<PatientEncounter, List<Bill>> billPatientEncounterMap) {
         this.billPatientEncounterMap = billPatientEncounterMap;
+    }
+
+    public double getPayableByPatient() {
+        return payableByPatient;
+    }
+
+    public void setPayableByPatient(double payableByPatient) {
+        this.payableByPatient = payableByPatient;
     }
 
     public void makeNull() {
@@ -1517,11 +1526,23 @@ public class CreditCompanyDueController implements Serializable {
         billed = 0;
         paidByPatient = 0;
         paidByCompany = 0;
+        payableByPatient = 0;
         for (PatientEncounter p : getBillPatientEncounterMap().keySet()) {
             billed += p.getFinalBill().getNetTotal();
             paidByPatient += p.getFinalBill().getSettledAmountByPatient();
             paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
+            payableByPatient += calculatePayableByPatient(p, getBillPatientEncounterMap().get(p));
         }
+    }
+
+    public double calculatePayableByPatient(final PatientEncounter patientEncounter, final List<Bill> bills) {
+        final double netTotal = patientEncounter.getFinalBill().getNetTotal();
+
+        final double payableNetTotalByCreditCompanies = bills.stream()
+                .mapToDouble(Bill::getNetTotal)
+                .sum();
+
+        return netTotal - payableNetTotalByCreditCompanies;
     }
 
     public void createInwardCashExcess() {
