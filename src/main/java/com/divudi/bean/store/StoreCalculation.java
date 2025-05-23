@@ -547,6 +547,7 @@ public class StoreCalculation {
 //        ib.setBatchNo(pbi.getStringValue());
         ib.setPurcahseRate(purchase);
         ib.setRetailsaleRate(retail);
+        ib.setBatchNo(pbi.getStringValue());
 
         HashMap hash = new HashMap();
         String sql;
@@ -584,6 +585,8 @@ public class StoreCalculation {
         ib.setSerialNo(tmp.getPharmaceuticalBillItem().getSerialNo());
         ib.setManufacturer(pbi.getManufacturer());
         getItemBatchFacade().edit(ib);
+        ib.setBatchNo(pbi.getStringValue());
+
         return ib;
     }
 

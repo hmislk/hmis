@@ -113,9 +113,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 
 import com.divudi.core.facade.ItemFacade;
+
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Pubudu Piyankara
@@ -312,6 +315,8 @@ public class PharmacyReportController implements Serializable {
 
     private Institution fromSite;
     private Institution toSite;
+
+    private boolean consignmentItem;
 
     //Constructor
     public PharmacyReportController() {
@@ -2084,12 +2089,12 @@ public class PharmacyReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
                 + " from StockHistory sh "
-                + " where sh.retired = :ret "
-                + " and (sh.itemBatch.item.departmentType is null "
-                + "      or sh.itemBatch.item.departmentType = :depty) ");
+                + " where sh.retired = :ret ");
+//                + " and (sh.itemBatch.item.departmentType is null "
+//                + "      or sh.itemBatch.item.departmentType = :depty) ");
 
         // Set query parameters
-        params.put("depty", DepartmentType.Pharmacy);
+//        params.put("depty", DepartmentType.Pharmacy);
         params.put("ret", false);
 
         if (institution != null) {
@@ -2150,10 +2155,22 @@ public class PharmacyReportController implements Serializable {
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
 
+            if (isConsignmentItem()) {
+                if (batchQty > 0) {
+                    continue;
+                }
+            } else {
+                if (batchQty <= 0) {
+                    continue;
+                }
+            }
+
             // Populate row values directly (no accumulation needed, as each batch is its own row)
             row.setQuantity(batchQty);
             row.setPurchaseValue(batchQty * batchPurchaseRate);
             row.setSaleValue(batchQty * batchSaleRate);
+            row.setPurchaseRate(batchPurchaseRate);
+            row.setRetailRate(batchSaleRate);
 
             rows.add(row);
         }
@@ -2169,7 +2186,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
-        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+            1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
     };
 
     private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
@@ -2225,10 +2242,10 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
 
             String[] headers = {
-                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
-                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
-                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
-                "Closing Stock", "Rate", "Closing Value"
+                    "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                    "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                    "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                    "Closing Stock", "Rate", "Closing Value"
             };
 
             addTableHeaders(table, headerFont, headers);
@@ -2364,11 +2381,11 @@ public class PharmacyReportController implements Serializable {
         List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
-                + " from StockHistory sh where sh.retired=:ret "
-                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+                + " from StockHistory sh where sh.retired=:ret ");
+//                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
 
         // Set query parameters
-        params.put("depty", DepartmentType.Pharmacy);
+//        params.put("depty", DepartmentType.Pharmacy);
         params.put("ret", false);
 
         if (institution != null) {
@@ -2400,7 +2417,8 @@ public class PharmacyReportController implements Serializable {
         jpql.append("and sh.createdAt < :et ");
         params.put("et", CommonFunctions.getEndOfDay(toDate));
 
-        jpql.append("group by sh.department, sh.itemBatch.item ");
+//        jpql.append("group by sh.department, sh.itemBatch.item ");
+        jpql.append("group by sh.department, sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
 
         // Fetch the IDs of the latest StockHistory rows per ItemBatch
@@ -2422,7 +2440,8 @@ public class PharmacyReportController implements Serializable {
             // Assign class-level 'item' so it is not shadowed by a local variable
             item = shx.getItemBatch().getItem();
 
-            double batchQty = shx.getItemStock();
+//            double batchQty = shx.getItemStock();
+            double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
 
@@ -2443,6 +2462,16 @@ public class PharmacyReportController implements Serializable {
                 matchingRow.setPurchaseValue(0.0);
                 matchingRow.setSaleValue(0.0);
                 rows.add(matchingRow);
+            }
+
+            if (isConsignmentItem() && matchingRow.getQuantity() + batchQty > 0) {
+                rows.remove(matchingRow);
+                continue;
+            } else {
+                if (matchingRow.getQuantity() + batchQty <= 0) {
+                    rows.remove(matchingRow);
+                    continue;
+                }
             }
 
             // Accumulate the quantities and values
@@ -2470,6 +2499,82 @@ public class PharmacyReportController implements Serializable {
                 stockSaleValue += pr.getSaleValue();
                 stockQty += pr.getQuantity();
             }
+        }
+    }
+
+    public void exportBatchWisePharmacyStockToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            PdfPTable table = new PdfPTable(12);
+            table.setWidthPercentage(100);
+            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2f, 2f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
+                    "Purchase Rate", "Purchase Value", "Retail Rate", "Sale Value"};
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<PharmacyRow> rows = getRows();
+
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
+            int serial = 1;
+            for (PharmacyRow f : rows) {
+                table.addCell(String.valueOf(serial++));
+                table.addCell(f.getItem().getCategory() != null ? f.getItem().getCategory().getName() : "-");
+                table.addCell(f.getItem().getCode() != null ? f.getItem().getCode() : "-");
+                table.addCell(f.getItem().getName() != null ? f.getItem().getName() : "-");
+                table.addCell(f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-");
+                table.addCell(f.getItemBatch() != null && f.getItemBatch().getDateOfExpire() != null ? sdf.format(f.getItemBatch().getDateOfExpire()) : "-");
+                table.addCell(f.getItemBatch() != null ? f.getItemBatch().getBatchNo() : "-");
+                table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
+                table.addCell(f.getPurchaseRate() != null ? String.format("%.2f", f.getPurchaseRate()) : "0.00");
+                table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
+                table.addCell(f.getRetailRate() != null ? String.format("%.2f", f.getRetailRate()) : "0.00");
+                table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
+            }
+
+            PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(7);
+            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(footerCell);
+            table.addCell(String.format("%.2f", getStockQty()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockPurchaseValue()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockSaleValue()));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
         }
     }
 
@@ -2537,7 +2642,7 @@ public class PharmacyReportController implements Serializable {
         }
 
         cogs.put("OPENING STOCK VALUE", totalSaleValue);
-        
+
     }
 
     public Map<String, Double> getCogs() {
@@ -2545,7 +2650,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void setCogs(Map<String, Double> cogs) {
-        this.cogs = new HashMap<>(cogs); 
+        this.cogs = new HashMap<>(cogs);
     }
 
     @Deprecated
@@ -2799,9 +2904,9 @@ public class PharmacyReportController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
 
             String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
-                "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
-                "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
 
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -2905,8 +3010,8 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
-                "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
-                "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -4061,5 +4166,13 @@ public class PharmacyReportController implements Serializable {
 
     public void setShowData(boolean showData) {
         this.showData = showData;
+    }
+
+    public boolean isConsignmentItem() {
+        return consignmentItem;
+    }
+
+    public void setConsignmentItem(boolean consignmentItem) {
+        this.consignmentItem = consignmentItem;
     }
 }

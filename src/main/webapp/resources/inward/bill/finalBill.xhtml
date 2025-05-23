@@ -220,7 +220,7 @@
 
                         <div class="row">
                             <div class="row col-6 d-flex justify-content-between">
-                                <h:panelGroup rendered="#{cc.attrs.bill.creditCompany ne null}">
+                                <h:panelGroup rendered="#{cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
                                     <div class="col-5 d-flex justify-content-between">
                                         <h:outputLabel value="Credit Company " />
                                         <h:outputLabel value=":" style="width: 20px; text-align: center;"/>

@@ -39,7 +39,7 @@
                     </p:commandButton>
 
                     <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
-                        <p:dataExporter type="xlsx" target="opd" fileName="Service_Summery"  />
+                        <p:dataExporter type="xlsx" target="opd" fileName="Staff_Welfare"  />
                     </p:commandButton>
                 </h:panelGrid>
                 <p:panel id="panelPrint"  styleClass="summeryBorder">
@@ -116,7 +116,7 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </p:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{serviceSummery.totalBill+serviceSummery.discountBill}">
+                            <h:outputLabel value="#{serviceSummery.totalBill}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
@@ -143,7 +143,7 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </p:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{serviceSummery.totalBill}">
+                            <h:outputLabel value="#{serviceSummery.totalBill-serviceSummery.discountBill}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>

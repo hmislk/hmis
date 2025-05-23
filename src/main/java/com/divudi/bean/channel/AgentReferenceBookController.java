@@ -5,7 +5,9 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.InstitutionType;
@@ -13,6 +15,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.channel.ReferenceBookEnum;
 
 import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.facade.AgentHistoryFacade;
@@ -20,12 +23,17 @@ import com.divudi.core.facade.AgentReferenceBookFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -40,9 +48,10 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class AgentReferenceBookController implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-    AgentReferenceBook agentReferenceBook;
+
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
@@ -52,12 +61,18 @@ public class AgentReferenceBookController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    private AuditEventController auditEventController;
+    @Inject
+    private WebUserController webUserController;
 
-    List<AgentReferenceBook> agentReferenceBooks;
-    List<AgentReferenceBook> selectedList;
+    AgentReferenceBook agentReferenceBook;
+    private List<AgentReferenceBook> agentReferenceBooks;
+    private List<AgentReferenceBook> selectedList;
     private List<AgentReferenceBook> agentRefBookList;
-    Date frmDate;
-    Date toDate;
+    private Date frmDate;
+    private Date toDate;
+    private AuditEvent editingCcBookEvent;
 
     private String comment;
 
@@ -66,6 +81,58 @@ public class AgentReferenceBookController implements Serializable {
     private Institution collectingCentre;
 
     private AgentReferenceBook current;
+
+    public String navigateToBookEditHistory(Long refBookID) {
+        fillBookEditDetails(refBookID);
+        return "/collecting_centre/cc_book_edit_history?faces-redirect=true;";
+    }
+
+    public String navigateToBackCCBookSearch() {
+        return "/collecting_centre/report_collecting_center_referece_book?faces-redirect=true;";
+    }
+
+    private List<AuditEvent> refBookEditDetails;
+
+    public void fillBookEditDetails(Long refBookID) {
+        refBookEditDetails = new ArrayList();
+        String eventTrigger = "Edit Collection Centre Referance Book";
+        refBookEditDetails = auditEventController.fillAllAuditEvents(refBookID, eventTrigger);
+    }
+
+    public static String findDifferences(String beforeJson, String afterJson) {
+        Map<String, String> differences = new HashMap<>();
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            Map<String, Object> map1 = mapper.readValue(beforeJson, Map.class);
+            Map<String, Object> map2 = mapper.readValue(afterJson, Map.class);
+
+            Set<String> allKeys = new HashSet<>();
+            allKeys.addAll(map1.keySet());
+            allKeys.addAll(map2.keySet());
+
+            for (String key : allKeys) {
+                Object val1 = map1.get(key);
+                Object val2 = map2.get(key);
+
+                if (!Objects.equals(val1, val2)) {
+                    differences.put(key, String.valueOf(val1) + "  ->  " + String.valueOf(val2));
+                }
+            }
+        } catch (JsonProcessingException e) {
+            return "Error parsing JSON: " + e.getMessage();
+        }
+        // Build a string from the differences map
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, String> entry : differences.entrySet()) {
+            result.append(entry.getKey())
+                    .append("  =  ")
+                    .append(entry.getValue())
+                    .append("\n");
+        }
+
+        return result.toString().replace("\n", "<br/>");
+    }
 
     public List<Institution> completeAgent(String query) {
         List<Institution> suggestions;
@@ -157,6 +224,11 @@ public class AgentReferenceBookController implements Serializable {
 
     }
 
+    public void beginCcBookAudit(AgentReferenceBook agentReferenceBook) {
+        String bookJson = agentReferenceBook.toString();
+        editingCcBookEvent = auditEventController.createNewAuditEvent("Edit Collection Centre Referance Book", bookJson, agentReferenceBook.getId());
+    }
+
     public void saveAgentBook(ReferenceBookEnum bookEnum) {
         // Validate inputs
         if (agentReferenceBook.getInstitution() == null) {
@@ -216,17 +288,29 @@ public class AgentReferenceBookController implements Serializable {
 
     public void updateAgentBook(AgentReferenceBook book) {
         if (book == null) {
-            JsfUtil.addSuccessMessage("No Book Selected");
+            JsfUtil.addErrorMessage("No Book Selected");
             return;
         }
         if (book.getId() == null) {
-            JsfUtil.addSuccessMessage("No Reference Book Selected");
+            JsfUtil.addErrorMessage("No Reference Book Selected");
+            return;
+        }
+        if (editingCcBookEvent == null) {
+            JsfUtil.addErrorMessage("No Audit Event");
             return;
         }
 
+        if (!getWebUserController().hasPrivilege("EditData")) {
+            searchReferenceBooks();
+            JsfUtil.addErrorMessage("You have No Privilege for Edit Book.");
+            return;
+        }
         book.setEditedAt(new Date());
         book.setEditor(sessionController.getLoggedUser());
         getAgentReferenceBookFacade().edit(book);
+
+        auditEventController.completeAuditEvent(editingCcBookEvent, book.toString());
+
         JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Updated");
     }
 
@@ -235,6 +319,11 @@ public class AgentReferenceBookController implements Serializable {
             JsfUtil.addErrorMessage("Enter the comment");
             return;
         }
+        if (!getWebUserController().hasPrivilege("DeleteData")) {
+            JsfUtil.addErrorMessage("You have No Privilege for Delete Book.");
+            return;
+        }
+
         agentReferenceBook.setRetired(true);
         agentReferenceBook.setRetiredAt(new Date());
         agentReferenceBook.setRetirer(sessionController.getLoggedUser());
@@ -532,6 +621,22 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setBookActive(boolean bookActive) {
         this.bookActive = bookActive;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
+    }
+
+    public List<AuditEvent> getRefBookEditDetails() {
+        return refBookEditDetails;
+    }
+
+    public void setRefBookEditDetails(List<AuditEvent> refBookEditDetails) {
+        this.refBookEditDetails = refBookEditDetails;
     }
 
 }

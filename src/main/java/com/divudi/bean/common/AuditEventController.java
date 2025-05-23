@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.core.data.AuditEventStatus;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -52,12 +53,13 @@ public class AuditEventController implements Serializable {
     private Date fromDate;
     private Date toDate;
 
-    public void updateAuditEvent(String buddhika) {
+    @Deprecated // Please use completeAuditEvent or faileAUditEvent
+    public void updateAuditEvent(String auditEventUUID) {
         String jpql = " select a "
                 + " from AuditEvent a "
-                + " where a.uuid=:niluka ";
+                + " where a.uuid=:aeuuid ";
         Map m = new HashMap();
-        m.put("niluka", buddhika);
+        m.put("aeuuid", auditEventUUID);
         AuditEvent auditEvent = getFacade().findFirstByJpql(jpql, m);
         if (auditEvent == null) {
             return;
@@ -76,6 +78,7 @@ public class AuditEventController implements Serializable {
         return "/analytics/audit_event_list";
     }
 
+    @Deprecated // Please use createNewAuditEvent
     public String createAuditEvent(String eventName) {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -105,21 +108,79 @@ public class AuditEventController implements Serializable {
         return auditEvent.getUuid();
     }
 
-    public List<AuditEvent> completeAuditEvent(String qry) {
-        List<AuditEvent> list;
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "select c from AuditEvent c "
-                + " where c.retired=false "
-                + " and (c.name) like :q "
-                + " order by c.name";
-        hm.put("q", "%" + qry.toUpperCase() + "%");
-        list = getFacade().findByJpql(sql, hm);
+    public AuditEvent createNewAuditEvent(String eventName) {
+        return createNewAuditEvent(eventName, "");
+    }
 
-        if (list == null) {
-            list = new ArrayList<>();
+    public AuditEvent createNewAuditEvent(String eventName, String beforeJson) {
+        return createNewAuditEvent(eventName, beforeJson, null);
+    }
+
+    public AuditEvent createNewAuditEvent(String eventName, String beforeJson, Long objectId) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        String url = request.getRequestURL().toString();
+        String ipAddress = request.getRemoteAddr();
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
         }
-        return list;
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setObjectId(objectId);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger(eventName);
+        auditEvent.setBeforeJson(beforeJson);
+        String uuid = UUID.randomUUID().toString();
+        auditEvent.setUuid(uuid);
+        auditEventApplicationController.saveAuditEvent(auditEvent);
+        return auditEvent;
+    }
+
+    public void completeAuditEvent(AuditEvent auditEvent) {
+        completeAuditEvent(auditEvent, "");
+    }
+
+    public void completeAuditEvent(AuditEvent auditEvent, String afterJson) {
+        if (auditEvent == null) {
+            return;
+        }
+        Long duration;
+        Date endTime = new Date();
+        duration = endTime.getTime() - auditEvent.getEventDataTime().getTime();
+        auditEvent.setEventEndTime(endTime);
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEvent.setAfterJson(afterJson);
+        auditEventApplicationController.saveAuditEvent(auditEvent);
+    }
+
+    public void failAuditEvent(AuditEvent auditEvent, String failureDescription) {
+        if (auditEvent == null) {
+            return;
+        }
+
+        Long duration;
+        Date endTime = new Date();
+        duration = endTime.getTime() - auditEvent.getEventDataTime().getTime();
+        auditEvent.setEventEndTime(endTime);
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Failed");
+
+        String afterJson = "{ \"error\": \"" + failureDescription.replace("\"", "\\\"") + "\" }";
+        auditEvent.setAfterJson(afterJson);
+
+        auditEventApplicationController.saveAuditEvent(auditEvent);
     }
 
     public void fillAllAuditEvents() {
@@ -134,6 +195,24 @@ public class AuditEventController implements Serializable {
         for (AuditEvent ae : items) {
             ae.calculateDifference();
         }
+    }
+    
+    public List<AuditEvent> fillAllAuditEvents(Long objectId, String eventTrigger ) {
+        String jpql;
+        List<AuditEvent> auditEvents;
+        HashMap params = new HashMap();
+        jpql = "select a from AuditEvent a "
+                + " where a.eventStatus=:status "
+                + " and a.eventTrigger=:trigger "
+                + " and a.objectId=:id "
+                + " order by a.id asc";
+        
+        params.put("status", AuditEventStatus.COMPLETED.getLabel());
+        params.put("trigger", eventTrigger);
+        params.put("id", objectId);
+        
+        auditEvents = getFacade().findByJpql(jpql, params);
+        return auditEvents;
     }
 
     public void prepareAdd() {

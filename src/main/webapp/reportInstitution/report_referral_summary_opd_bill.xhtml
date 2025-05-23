@@ -57,13 +57,15 @@
                         </f:facet>
 
                         <p:column headerText="Referred By"
-                                  sortBy="#{b.referringInstitution.name}"
-                                  filterBy="#{b.referringInstitution.name}">
-                            <f:facet name="header">  
+                                  sortBy="#{b.rowType}"
+                                  filterBy="#{b.rowType}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
                                 <h:outputLabel value="Referred By" style="float: left"/>
-                            </f:facet> 
-                            <h:outputLabel value="#{b.referringInstitution.name}"/>
-                            <h:outputLabel value="#{b.referringStaff.person.nameWithTitle}"/>
+                            </f:facet>
+                            <h:outputLabel value="#{b.rowType}"/>
+<!--                            <h:outputLabel value="#{b.referringInstitution.name}"/>-->
+<!--                            <h:outputLabel value="#{b.referringStaff.person.nameWithTitle}"/>-->
                         </p:column>
 
 
