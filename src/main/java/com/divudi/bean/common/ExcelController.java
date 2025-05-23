@@ -1338,7 +1338,11 @@ public class ExcelController {
 
                 // Serial number
                 excelRow.createCell(0).setCellValue(serialNumber++);
-                excelRow.createCell(1).setCellValue(row.getBill().getCreatedAt());
+                Cell dateCell = excelRow.createCell(1);
+                dateCell.setCellValue(row.getBill().getCreatedAt());
+                CellStyle dateStyle = dataSheet.getWorkbook().createCellStyle();
+                dateStyle.setDataFormat(dataSheet.getWorkbook().getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+                dateCell.setCellStyle(dateStyle);
                 excelRow.createCell(2).setCellValue(row.getBill().getInsId());
                 excelRow.createCell(3).setCellValue(row.getBill().getBillTypeAtomic().toString());
                 excelRow.createCell(4).setCellValue(row.getBill().getPatient().getPerson().getNameWithTitle());
