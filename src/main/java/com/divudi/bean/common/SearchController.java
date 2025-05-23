@@ -253,6 +253,15 @@ public class SearchController implements Serializable {
     private String selectedOpdPackageBillSelector;
     private List<String> OpdPackageBillSelector;
     private ReportTemplateRow selectedChannelBookingBillRow;
+    String settledBillType;
+
+    public String getSettledBillType() {
+        return settledBillType;
+    }
+
+    public void setSettledBillType(String settledBillType) {
+        this.settledBillType = settledBillType;
+    }
 
     public ReportTemplateRow getSelectedChannelBookingBillRow() {
         return selectedChannelBookingBillRow;
@@ -1046,6 +1055,7 @@ public class SearchController implements Serializable {
         searchKeyword = null;
         printPreview = false;
         showLoggedDepartmentOnly = true;
+        settledBillType = null;
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -12249,6 +12259,52 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
+        if (settledBillType != null) {
+            bills = filterBills(bills, settledBillType);
+        }
+
+    }
+
+    private List<Bill> filterBills(List<Bill> bills, String settledBillType) {
+        List<Bill> filteredBills = new ArrayList<>();
+        String billType;
+
+        for (Bill b : bills) {
+            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+                billType = "";
+            } else if (b.getBillItems().get(0).getPatientEncounter() != null) {
+                billType = "IP";
+            } else {
+                if (b.getBillItems().get(0).getReferenceBill() != null
+                        && b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic() != null) {
+                    billType = checkBillTypeByBill(b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic());
+                } else {
+                    billType = "";
+                }
+            }
+
+            // Only add bills that match the status filter
+            if (billType.equals(settledBillType)) {
+                filteredBills.add(b);
+            }
+        }
+
+        return filteredBills; // Return the filtered list of bills
+    }
+
+    public String checkBillTypeByBill(BillTypeAtomic bta) {
+        switch (bta) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+            case OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+                return "OP";
+            case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
+            case PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+                return "PACKAGE";
+            case INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY:
+                return "IP";
+            default:
+                return "";
+        }
     }
 
     public void createCreditTableBillItemAll() {
