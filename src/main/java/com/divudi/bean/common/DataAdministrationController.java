@@ -863,20 +863,44 @@ public class DataAdministrationController implements Serializable {
         int end = sql.lastIndexOf(")");
         String columnsSection = sql.substring(start + 1, end);
 
-        String[] definitions = columnsSection.split(",");
-        for (String def : definitions) {
-            def = def.trim();
-            // Skip constraints
-            if (def.toUpperCase().startsWith("PRIMARY KEY")
-                    || def.toUpperCase().startsWith("FOREIGN KEY")
-                    || def.toUpperCase().startsWith("CONSTRAINT")
-                    || def.toUpperCase().startsWith("UNIQUE")
-                    || def.toUpperCase().startsWith("CHECK")) {
-                continue;
+        StringBuilder current = new StringBuilder();
+        int parens = 0;
+
+        for (char c : columnsSection.toCharArray()) {
+            if (c == '(') {
+                parens++;
+            } else if (c == ')') {
+                parens--;
             }
-            columns.add(def);
+
+            if (c == ',' && parens == 0) {
+                String def = current.toString().trim();
+                if (!isConstraintDefinition(def)) {
+                    columns.add(def);
+                }
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
         }
+
+        if (current.length() > 0) {
+            String def = current.toString().trim();
+            if (!isConstraintDefinition(def)) {
+                columns.add(def);
+            }
+        }
+
         return columns;
+    }
+
+    private boolean isConstraintDefinition(String def) {
+        String upper = def.toUpperCase();
+        return upper.startsWith("PRIMARY KEY")
+                || upper.startsWith("FOREIGN KEY")
+                || upper.startsWith("CONSTRAINT")
+                || upper.startsWith("UNIQUE")
+                || upper.startsWith("CHECK");
     }
 
     private List<String> extractConstraintDefinitions(String sql) {
@@ -919,7 +943,6 @@ public class DataAdministrationController implements Serializable {
     public void createTablesAndFieldsForAllCreateStatements() {
         StringBuilder executionResults = new StringBuilder();
 
-
         String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
         int counter = 0;
 
@@ -946,7 +969,6 @@ public class DataAdministrationController implements Serializable {
                     executionResults.append("<br/>Skipped malformed CREATE TABLE statement.");
                     continue;
                 }
-
 
                 String alterSql = generateAlterStatements(createStatement);
 
