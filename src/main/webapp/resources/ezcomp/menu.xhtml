@@ -906,12 +906,13 @@
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
 
-                        <p:menuitem ajax="false" 
-                                    action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  
-                                    value="Issue for Requests" 
-                                    actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementIssurForRequest')}" 
-                                    icon="fas fa-prescription-bottle-alt"></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  
+                            value="Issue for Requests" 
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('PharmacyDisbursementIssurForRequest')}" 
+                            icon="fas fa-prescription-bottle-alt"></p:menuitem>
 
                         <p:menuitem ajax="false" 
                                     action="#{transferIssueController.navigateToDirectPharmacyIssue}"  
