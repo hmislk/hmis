@@ -865,11 +865,18 @@
 
 
                     <p:submenu label="Disposal" icon="fas fa-trash-alt" rendered="#{webUserController.hasPrivilege('PharmacyDisposalMenue')}">
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_issue?faces-redirect=true"  
-                                     value="Issue" actionListener="#{pharmacyIssueController.resetAll()}" 
-                                     rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" ></p:menuitem>                                       
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
-                                     value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBill')}" ></p:menuitem>                                        
+                        <p:menuitem  
+                            ajax="false"
+                            action="/pharmacy/pharmacy_issue?faces-redirect=true"  
+                            value="Issue"
+                            actionListener="#{pharmacyIssueController.resetAll()}" 
+                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" ></p:menuitem>                                       
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_search_issue_bill?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}" 
+                            value="Search Issue Bill" 
+                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBill')}" ></p:menuitem>                                        
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_item?faces-redirect=true" actionListener="#{searchController.makeListNull}"   
                                      value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBillItems')}" ></p:menuitem>  
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_return?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
