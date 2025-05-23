@@ -46,9 +46,9 @@
                             action="#{dataAdministrationController.createTablesAndFieldsForAllCreateStatements}" />
 
                         <p:outputLabel value="Execution Feedback" />
-                        <p:outputPanel escape="false">
+                        <h:outputText escape="false">
                             <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.executionFeedback}</textarea>
-                        </p:outputPanel>
+                        </h:outputText>
                     </p:panelGrid>
 
                 </p:tab>
