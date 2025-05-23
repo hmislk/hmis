@@ -313,10 +313,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setBillExpense(itemExpense);
             f.setBillTax(itemTax);
 
-            // Totals = line + bill
-            f.setTotalDiscount(f.getLineDiscount().add(f.getBillDiscount()));
-            f.setTotalExpense(f.getLineExpense().add(f.getBillExpense()));
-            f.setTotalTax(f.getLineTax().add(f.getBillTax()));
+// Totals = line + bill
+            BigDecimal lineDiscount = Optional.ofNullable(f.getLineDiscount()).orElse(BigDecimal.ZERO);
+            BigDecimal lineExpense = Optional.ofNullable(f.getLineExpense()).orElse(BigDecimal.ZERO);
+            BigDecimal lineTax = Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO);
+
+            f.setTotalDiscount(lineDiscount.add(f.getBillDiscount()));
+            f.setTotalExpense(lineExpense.add(f.getBillExpense()));
+            f.setTotalTax(lineTax.add(f.getBillTax()));
 
             // Total net = gross - discount + tax + expense
             BigDecimal grossTotal = f.getLineGrossTotal(); // already calculated earlier
