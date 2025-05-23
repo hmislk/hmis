@@ -281,7 +281,9 @@ public class ExcelController {
                 if (row.getBill() != null && row.getBill().getCreatedAt() != null) {
                     Cell dateCell = excelRow.createCell(colIndex++);
                     dateCell.setCellValue(row.getBill().getCreatedAt());
-                    // You might want to apply date formatting here
+                    CellStyle dateStyle = dataSheet.getWorkbook().createCellStyle();
+                        dateStyle.setDataFormat(dataSheet.getWorkbook().getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+                        dateCell.setCellStyle(dateStyle);
                 } else {
                     excelRow.createCell(colIndex++).setCellValue("");
                 }
@@ -507,7 +509,9 @@ public class ExcelController {
                 if (row.getBill() != null && row.getBill().getCreatedAt() != null) {
                     Cell dateCell = excelRow.createCell(colIndex++);
                     dateCell.setCellValue(row.getBill().getCreatedAt());
-                    // You might want to apply date formatting here
+                    CellStyle dateStyle = dataSheet.getWorkbook().createCellStyle();
+                    dateStyle.setDataFormat(dataSheet.getWorkbook().getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+                    dateCell.setCellStyle(dateStyle);
                 } else {
                     excelRow.createCell(colIndex++).setCellValue("");
                 }
@@ -729,7 +733,9 @@ public class ExcelController {
                 if (row.getBill() != null && row.getBill().getCreatedAt() != null) {
                     Cell dateCell = excelRow.createCell(colIndex++);
                     dateCell.setCellValue(row.getBill().getCreatedAt());
-                    // You might want to apply date formatting here
+                    CellStyle dateStyle = dataSheet.getWorkbook().createCellStyle();
+                    dateStyle.setDataFormat(dataSheet.getWorkbook().getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+                    dateCell.setCellStyle(dateStyle);
                 } else {
                     excelRow.createCell(colIndex++).setCellValue("");
                 }
@@ -948,7 +954,9 @@ public class ExcelController {
                 if (row.getBill() != null && row.getBill().getCreatedAt() != null) {
                     Cell dateCell = excelRow.createCell(colIndex++);
                     dateCell.setCellValue(row.getBill().getCreatedAt());
-                    // You might want to apply date formatting here
+                    CellStyle dateStyle = dataSheet.getWorkbook().createCellStyle();
+                    dateStyle.setDataFormat(dataSheet.getWorkbook().getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+                    dateCell.setCellStyle(dateStyle);
                 } else {
                     excelRow.createCell(colIndex++).setCellValue("");
                 }
@@ -1159,7 +1167,9 @@ public class ExcelController {
                 if (row.getBill() != null && row.getBill().getCreatedAt() != null) {
                     Cell dateCell = excelRow.createCell(colIndex++);
                     dateCell.setCellValue(row.getBill().getCreatedAt());
-                    // You might want to apply date formatting here
+                    CellStyle dateStyle = dataSheet.getWorkbook().createCellStyle();
+                    dateStyle.setDataFormat(dataSheet.getWorkbook().getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+                    dateCell.setCellStyle(dateStyle);
                 } else {
                     excelRow.createCell(colIndex++).setCellValue("");
                 }
@@ -1436,7 +1446,9 @@ public class ExcelController {
                 if (row.getBill() != null && row.getBill().getCreatedAt() != null) {
                     Cell dateCell = excelRow.createCell(colIndex++);
                     dateCell.setCellValue(row.getBill().getCreatedAt());
-                    // You might want to apply date formatting here
+                    CellStyle dateStyle = dataSheet.getWorkbook().createCellStyle();
+                    dateStyle.setDataFormat(dataSheet.getWorkbook().getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+                    dateCell.setCellStyle(dateStyle);
                 } else {
                     excelRow.createCell(colIndex++).setCellValue("");
                 }
