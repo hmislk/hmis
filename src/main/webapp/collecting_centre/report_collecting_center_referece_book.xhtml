@@ -13,7 +13,7 @@
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputText styleClass="fas fa-search" />
-                            <h:outputLabel value="Collection Center Refferance Book " class="mx-4"/>
+                            <h:outputLabel value="Collection Center Reference Book " class="mx-4"/>
                         </f:facet>
 
                         <div class="row">
@@ -184,7 +184,7 @@
                                             </div>
                                         </p:column>
 
-                                        <p:column headerText="Action" style="padding: 6px;" width="10">
+                                        <p:column headerText="Action" style="padding: 9px;" width="10">
                                             <div class="d-flex gap-2">
                                                 <p:commandButton
                                                     class="ui-button-warning"
@@ -194,7 +194,7 @@
                                                     process="@this"
                                                     update="edit"
                                                     oncomplete="PF('edit').show()"
-                                                    >
+                                                    actionListener="#{agentReferenceBookController.beginCcBookAudit(refBook)}">
                                                 </p:commandButton>
                                                 <p:commandButton
                                                     class="ui-button-danger"
@@ -203,8 +203,15 @@
                                                     disabled="#{refBook.retired or refBook.fullyUtilized}"
                                                     process="@this"
                                                     update="dlg"
-                                                    oncomplete="PF('dlg').show()"
-                                                    >
+                                                    oncomplete="PF('dlg').show()">
+                                                </p:commandButton>
+                                                <p:commandButton
+                                                    class="ui-button-secondary"
+                                                    icon="fa fa-history"
+                                                    ajax="false"
+                                                    title="To Edit History"
+                                                    action="#{agentReferenceBookController.navigateToBookEditHistory(refBook.id)}">
+                                                    <f:setPropertyActionListener value="#{refBook}" target="#{agentReferenceBookController.current}"/>
                                                 </p:commandButton>
                                             </div>
 
