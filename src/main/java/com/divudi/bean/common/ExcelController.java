@@ -525,13 +525,16 @@ public class ExcelController {
                     excelRow.createCell(colIndex++).setCellValue("");
                 }
 
-                // Patient
-                if (row.getBill() != null && row.getBill().getPatient() != null &&
-                        row.getBill().getPatient().getPerson() != null) {
-                    excelRow.createCell(colIndex++).setCellValue(row.getBill().getPatient().getPerson().getNameWithTitle());
+                // Collecting Center
+                if (row.getBill() != null && row.getBill().getFromInstitution() != null) {
+                    String code = row.getBill().getFromInstitution().getCode();
+                    String name = row.getBill().getFromInstitution().getName();
+                    String value = (code != null ? code : "") + " - " + (name != null ? name : "");
+                    excelRow.createCell(colIndex++).setCellValue(value);
                 } else {
                     excelRow.createCell(colIndex++).setCellValue("");
                 }
+
 
                 // Net Total
                 if (row.getBill() != null) {
