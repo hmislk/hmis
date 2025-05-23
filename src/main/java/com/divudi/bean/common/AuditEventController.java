@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.core.data.AuditEventStatus;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -108,6 +109,14 @@ public class AuditEventController implements Serializable {
     }
 
     public AuditEvent createNewAuditEvent(String eventName) {
+        return createNewAuditEvent(eventName, "");
+    }
+
+    public AuditEvent createNewAuditEvent(String eventName, String beforeJson) {
+        return createNewAuditEvent(eventName, beforeJson, null);
+    }
+
+    public AuditEvent createNewAuditEvent(String eventName, String beforeJson, Long objectId) {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -128,8 +137,10 @@ public class AuditEventController implements Serializable {
             auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
         }
         auditEvent.setUrl(url);
+        auditEvent.setObjectId(objectId);
         auditEvent.setIpAddress(ipAddress);
         auditEvent.setEventTrigger(eventName);
+        auditEvent.setBeforeJson(beforeJson);
         String uuid = UUID.randomUUID().toString();
         auditEvent.setUuid(uuid);
         auditEventApplicationController.saveAuditEvent(auditEvent);
@@ -137,6 +148,10 @@ public class AuditEventController implements Serializable {
     }
 
     public void completeAuditEvent(AuditEvent auditEvent) {
+        completeAuditEvent(auditEvent, "");
+    }
+
+    public void completeAuditEvent(AuditEvent auditEvent, String afterJson) {
         if (auditEvent == null) {
             return;
         }
@@ -146,6 +161,7 @@ public class AuditEventController implements Serializable {
         auditEvent.setEventEndTime(endTime);
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
+        auditEvent.setAfterJson(afterJson);
         auditEventApplicationController.saveAuditEvent(auditEvent);
     }
 
@@ -179,6 +195,24 @@ public class AuditEventController implements Serializable {
         for (AuditEvent ae : items) {
             ae.calculateDifference();
         }
+    }
+    
+    public List<AuditEvent> fillAllAuditEvents(Long objectId, String eventTrigger ) {
+        String jpql;
+        List<AuditEvent> auditEvents;
+        HashMap params = new HashMap();
+        jpql = "select a from AuditEvent a "
+                + " where a.eventStatus=:status "
+                + " and a.eventTrigger=:trigger "
+                + " and a.objectId=:id "
+                + " order by a.id asc";
+        
+        params.put("status", AuditEventStatus.COMPLETED.getLabel());
+        params.put("trigger", eventTrigger);
+        params.put("id", objectId);
+        
+        auditEvents = getFacade().findByJpql(jpql, params);
+        return auditEvents;
     }
 
     public void prepareAdd() {
