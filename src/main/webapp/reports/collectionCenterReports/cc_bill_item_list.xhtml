@@ -188,6 +188,20 @@
                         </h:outputLabel>
                     </p:column>
 
+                    <!-- Bill Item ID ID Column -->
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID" >
+                        <h:outputLabel 
+                            value="#{billItem.id}" >
+                        </h:outputLabel>
+                    </p:column>
+
+                    <!-- Bill ID ID Column -->
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="BILL ID" >
+                        <h:outputLabel 
+                            value="#{billItem.bill.id}" >
+                        </h:outputLabel>
+                    </p:column>
+
                     <!-- Bill Date Column -->
                     <p:column headerText="Bill Date" filterBy="#{billItem.bill.createdAt}" sortBy="#{billItem.bill.createdAt}">
                         <h:outputLabel value="#{billItem.bill.createdAt}">
@@ -330,7 +344,7 @@
                             rendered="#{billItem.bill.cancelled}" 
                             value="#{billItem.bill.cancelledBill.deptId}">
                         </h:outputLabel>
-                        
+
                     </p:column>
 
                     <p:column headerText="Refunded">

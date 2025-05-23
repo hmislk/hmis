@@ -53,6 +53,7 @@ public class UserDepartmentController implements Serializable {
     private WebUserDepartment current;
     private WebUser selectedUser;
     private Institution currentInstituion;
+    private Institution currentSite;
     Department currentDepartment;
     private List<Department> lstDep;
     private List<Department> currentInsDepartments;
@@ -315,6 +316,8 @@ public class UserDepartmentController implements Serializable {
     public List<Department> getLstDep() {
         return lstDep;
     }
+    
+    
 
     public void setLstDep(List<Department> lstDep) {
         this.lstDep = lstDep;
@@ -322,6 +325,14 @@ public class UserDepartmentController implements Serializable {
 
     public void setItems(List<WebUserDepartment> items) {
         this.items = items;
+    }
+
+    public Institution getCurrentSite() {
+        return currentSite;
+    }
+
+    public void setCurrentSite(Institution currentSite) {
+        this.currentSite = currentSite;
     }
 
     /**

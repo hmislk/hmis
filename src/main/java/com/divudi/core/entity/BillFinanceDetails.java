@@ -3,6 +3,8 @@ package com.divudi.core.entity;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,7 +16,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author buddhika
+ * @author Dr Buddhika Ariyaratne
+ *
  */
 @Entity
 public class BillFinanceDetails implements Serializable {
@@ -23,43 +26,130 @@ public class BillFinanceDetails implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @OneToOne(mappedBy = "billFinanceDetails")
+
+    @OneToOne(mappedBy = "billFinanceDetails", cascade = CascadeType.ALL)
     private Bill bill;
 
+    // ------------------ DISCOUNTS ------------------
+    // Discount applied directly to the Bill (not tied to specific lines)
+    @Column(precision = 18, scale = 4)
     private BigDecimal billDiscount = BigDecimal.ZERO;
-    private BigDecimal totalOfBillLineDiscounts = BigDecimal.ZERO;
+
+    // Total of all line-level discounts (sum of discounts on individual BillItems)
+    @Column(precision = 18, scale = 4)
+    private BigDecimal lineDiscount = BigDecimal.ZERO;
+
+    // Total discount (bill-level + all line-level)
+    @Column(precision = 18, scale = 4)
     private BigDecimal totalDiscount = BigDecimal.ZERO;
+
+    // ------------------ EXPENSES ------------------
+    // Expense applied to the Bill itself (e.g., delivery fee, service charge)
+    @Column(precision = 18, scale = 4)
+    private BigDecimal billExpense = BigDecimal.ZERO;
+
+    // Total of all expenses from individual BillItems
+    @Column(precision = 18, scale = 4)
+    private BigDecimal lineExpense = BigDecimal.ZERO;
+
+    // Total expense (bill-level + all line-level)
+    @Column(precision = 18, scale = 4)
     private BigDecimal totalExpense = BigDecimal.ZERO;
-    private BigDecimal totalOfFreeItemValues = BigDecimal.ZERO;
+
+    // ------------------ COST ------------------
+    // Cost incurred for the Bill as a whole (not specific to lines)
+    @Column(precision = 18, scale = 4)
+    private BigDecimal billCostValue = BigDecimal.ZERO;
+
+    // Sum of cost values from each BillItem
+    @Column(precision = 18, scale = 4)
+    private BigDecimal lineCostValue = BigDecimal.ZERO;
+
+    // Total cost (bill-level + all line-level)
+    @Column(precision = 18, scale = 4)
     private BigDecimal totalCostValue = BigDecimal.ZERO;
-    private BigDecimal totalPurchaseValue = BigDecimal.ZERO;
-    private BigDecimal totalQuantity = BigDecimal.ZERO;
-    private BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+    // ------------------ TAXES ------------------
+    // Tax applied to the whole Bill (e.g., VAT)
+    @Column(precision = 18, scale = 4)
+    private BigDecimal billTaxValue = BigDecimal.ZERO;
+
+    // Total of tax amounts from all BillItems
+    @Column(precision = 18, scale = 4)
+    private BigDecimal itemTaxValue = BigDecimal.ZERO;
+
+    // Total tax (bill-level + all line-level)
+    @Column(precision = 18, scale = 4)
     private BigDecimal totalTaxValue = BigDecimal.ZERO;
+
+    // ------------------ VALUES ------------------
+    // Total purchase value for all BillItems (excluding discounts/taxes)
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+
+    // Estimated value of items given free of charge
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalOfFreeItemValues = BigDecimal.ZERO;
+
+    // Expected total if all items sold at retail rate
+    @Column(precision = 18, scale = 4)
     private BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+
+    // Expected total if all items sold at wholesale rate
+    @Column(precision = 18, scale = 4)
     private BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+
+    // ------------------ QUANTITIES ------------------
+    // Total quantity of all BillItems (excluding free)
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalQuantity = BigDecimal.ZERO;
+
+    // Total of free quantities across BillItems
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+    // Quantity in atomic units (e.g., tablets instead of boxes)
+    @Column(precision = 18, scale = 4)
     private BigDecimal totalQuantityInAtomicUnitOfMeasurement = BigDecimal.ZERO;
+
+    // Free quantity in atomic units
+    @Column(precision = 18, scale = 4)
     private BigDecimal totalFreeQuantityInAtomicUnitOfMeasurement = BigDecimal.ZERO;
 
-    // Payment method totals
-    private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsCard = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsMultiplePaymentMethods = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsStaff = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsCredit = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsStaffWelfare = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsVoucher = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsIOU = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsAgent = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsCheque = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsSlip = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsEwallet = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsPatientDeposit = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsPatientPoints = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsOnlineSettlement = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsOnCall = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsYouOweMe = BigDecimal.ZERO;
-    private BigDecimal totalPaidAsNone = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4)
+    private BigDecimal lineGrossTotal = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4)
+    private BigDecimal billGrossTotal = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4)
+    private BigDecimal grossTotal = BigDecimal.ZERO;
+
+    // Value after deductions
+    @Column(precision = 18, scale = 4)
+    private BigDecimal lineNetTotal = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4)
+    private BigDecimal billNetTotal = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4)
+    private BigDecimal netTotal = BigDecimal.ZERO;
+
+//    // Payment method totals
+//    private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsCard = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsMultiplePaymentMethods = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsStaff = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsCredit = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsStaffWelfare = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsVoucher = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsIOU = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsAgent = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsCheque = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsSlip = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsEwallet = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsPatientDeposit = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsPatientPoints = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsOnlineSettlement = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsOnCall = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsYouOweMe = BigDecimal.ZERO;
+//    private BigDecimal totalPaidAsNone = BigDecimal.ZERO;
 
     public BillFinanceDetails() {
         createdAt = new Date();
@@ -73,41 +163,68 @@ public class BillFinanceDetails implements Serializable {
     @Override
     public BillFinanceDetails clone() {
         BillFinanceDetails clone = new BillFinanceDetails();
+
+        // ------------------ DISCOUNTS ------------------
         clone.setBillDiscount(this.billDiscount);
-        clone.setTotalOfBillLineDiscounts(this.totalOfBillLineDiscounts);
+        clone.setLineDiscount(this.lineDiscount);
         clone.setTotalDiscount(this.totalDiscount);
+
+        // ------------------ EXPENSES ------------------
+        clone.setBillExpense(this.billExpense);
+        clone.setLineExpense(this.lineExpense);
         clone.setTotalExpense(this.totalExpense);
-        clone.setTotalOfFreeItemValues(this.totalOfFreeItemValues);
+
+        // ------------------ COST ------------------
+        clone.setBillCostValue(this.billCostValue);
+        clone.setLineCostValue(this.lineCostValue);
         clone.setTotalCostValue(this.totalCostValue);
-        clone.setTotalPurchaseValue(this.totalPurchaseValue);
-        clone.setTotalQuantity(this.totalQuantity);
-        clone.setTotalFreeQuantity(this.totalFreeQuantity);
+
+        // ------------------ TAXES ------------------
+        clone.setBillTaxValue(this.billTaxValue);
+        clone.setItemTaxValue(this.itemTaxValue);
         clone.setTotalTaxValue(this.totalTaxValue);
+
+        // ------------------ VALUES ------------------
+        clone.setTotalPurchaseValue(this.totalPurchaseValue);
+        clone.setTotalOfFreeItemValues(this.totalOfFreeItemValues);
         clone.setTotalRetailSaleValue(this.totalRetailSaleValue);
         clone.setTotalWholesaleValue(this.totalWholesaleValue);
+
+        // ------------------ QUANTITIES ------------------
+        clone.setTotalQuantity(this.totalQuantity);
+        clone.setTotalFreeQuantity(this.totalFreeQuantity);
         clone.setTotalQuantityInAtomicUnitOfMeasurement(this.totalQuantityInAtomicUnitOfMeasurement);
         clone.setTotalFreeQuantityInAtomicUnitOfMeasurement(this.totalFreeQuantityInAtomicUnitOfMeasurement);
 
-        clone.setTotalPaidAsCash(this.totalPaidAsCash);
-        clone.setTotalPaidAsCard(this.totalPaidAsCard);
-        clone.setTotalPaidAsMultiplePaymentMethods(this.totalPaidAsMultiplePaymentMethods);
-        clone.setTotalPaidAsStaff(this.totalPaidAsStaff);
-        clone.setTotalPaidAsCredit(this.totalPaidAsCredit);
-        clone.setTotalPaidAsStaffWelfare(this.totalPaidAsStaffWelfare);
-        clone.setTotalPaidAsVoucher(this.totalPaidAsVoucher);
-        clone.setTotalPaidAsIOU(this.totalPaidAsIOU);
-        clone.setTotalPaidAsAgent(this.totalPaidAsAgent);
-        clone.setTotalPaidAsCheque(this.totalPaidAsCheque);
-        clone.setTotalPaidAsSlip(this.totalPaidAsSlip);
-        clone.setTotalPaidAsEwallet(this.totalPaidAsEwallet);
-        clone.setTotalPaidAsPatientDeposit(this.totalPaidAsPatientDeposit);
-        clone.setTotalPaidAsPatientPoints(this.totalPaidAsPatientPoints);
-        clone.setTotalPaidAsOnlineSettlement(this.totalPaidAsOnlineSettlement);
-        clone.setTotalPaidAsOnCall(this.totalPaidAsOnCall);
-        clone.setTotalPaidAsYouOweMe(this.totalPaidAsYouOweMe);
-        clone.setTotalPaidAsNone(this.totalPaidAsNone);
+        // ------------------ GROSS & NET ------------------
+        clone.setLineGrossTotal(this.lineGrossTotal);
+        clone.setBillGrossTotal(this.billGrossTotal);
+        clone.setGrossTotal(this.grossTotal);
+        clone.setLineNetTotal(this.lineNetTotal);
+        clone.setBillNetTotal(this.billNetTotal);
+        clone.setNetTotal(this.netTotal);
 
-        // note: skip ID, createdAt, createdBy; handle as needed elsewhere
+//        // ------------------ PAYMENT METHODS ------------------
+//        clone.setTotalPaidAsCash(this.totalPaidAsCash);
+//        clone.setTotalPaidAsCard(this.totalPaidAsCard);
+//        clone.setTotalPaidAsMultiplePaymentMethods(this.totalPaidAsMultiplePaymentMethods);
+//        clone.setTotalPaidAsStaff(this.totalPaidAsStaff);
+//        clone.setTotalPaidAsCredit(this.totalPaidAsCredit);
+//        clone.setTotalPaidAsStaffWelfare(this.totalPaidAsStaffWelfare);
+//        clone.setTotalPaidAsVoucher(this.totalPaidAsVoucher);
+//        clone.setTotalPaidAsIOU(this.totalPaidAsIOU);
+//        clone.setTotalPaidAsAgent(this.totalPaidAsAgent);
+//        clone.setTotalPaidAsCheque(this.totalPaidAsCheque);
+//        clone.setTotalPaidAsSlip(this.totalPaidAsSlip);
+//        clone.setTotalPaidAsEwallet(this.totalPaidAsEwallet);
+//        clone.setTotalPaidAsPatientDeposit(this.totalPaidAsPatientDeposit);
+//        clone.setTotalPaidAsPatientPoints(this.totalPaidAsPatientPoints);
+//        clone.setTotalPaidAsOnlineSettlement(this.totalPaidAsOnlineSettlement);
+//        clone.setTotalPaidAsOnCall(this.totalPaidAsOnCall);
+//        clone.setTotalPaidAsYouOweMe(this.totalPaidAsYouOweMe);
+//        clone.setTotalPaidAsNone(this.totalPaidAsNone);
+//
+//        // Note: skip ID, createdAt, etc. – those should be managed by persistence layer
         return clone;
     }
 
@@ -166,12 +283,12 @@ public class BillFinanceDetails implements Serializable {
         this.billDiscount = billDiscount;
     }
 
-    public BigDecimal getTotalOfBillLineDiscounts() {
-        return totalOfBillLineDiscounts;
+    public BigDecimal getLineDiscount() {
+        return lineDiscount;
     }
 
-    public void setTotalOfBillLineDiscounts(BigDecimal totalOfBillLineDiscounts) {
-        this.totalOfBillLineDiscounts = totalOfBillLineDiscounts;
+    public void setLineDiscount(BigDecimal lineDiscount) {
+        this.lineDiscount = lineDiscount;
     }
 
     public BigDecimal getTotalDiscount() {
@@ -270,148 +387,100 @@ public class BillFinanceDetails implements Serializable {
         this.totalFreeQuantityInAtomicUnitOfMeasurement = totalFreeQuantityInAtomicUnitOfMeasurement;
     }
 
-    public BigDecimal getTotalPaidAsCash() {
-        return totalPaidAsCash;
+    public BigDecimal getBillExpense() {
+        return billExpense;
     }
 
-    public void setTotalPaidAsCash(BigDecimal totalPaidAsCash) {
-        this.totalPaidAsCash = totalPaidAsCash;
+    public void setBillExpense(BigDecimal billExpense) {
+        this.billExpense = billExpense;
     }
 
-    public BigDecimal getTotalPaidAsCard() {
-        return totalPaidAsCard;
+    public BigDecimal getLineExpense() {
+        return lineExpense;
     }
 
-    public void setTotalPaidAsCard(BigDecimal totalPaidAsCard) {
-        this.totalPaidAsCard = totalPaidAsCard;
+    public void setLineExpense(BigDecimal lineExpense) {
+        this.lineExpense = lineExpense;
     }
 
-    public BigDecimal getTotalPaidAsMultiplePaymentMethods() {
-        return totalPaidAsMultiplePaymentMethods;
+    public BigDecimal getBillCostValue() {
+        return billCostValue;
     }
 
-    public void setTotalPaidAsMultiplePaymentMethods(BigDecimal totalPaidAsMultiplePaymentMethods) {
-        this.totalPaidAsMultiplePaymentMethods = totalPaidAsMultiplePaymentMethods;
+    public void setBillCostValue(BigDecimal billCostValue) {
+        this.billCostValue = billCostValue;
     }
 
-    public BigDecimal getTotalPaidAsStaff() {
-        return totalPaidAsStaff;
+    public BigDecimal getLineCostValue() {
+        return lineCostValue;
     }
 
-    public void setTotalPaidAsStaff(BigDecimal totalPaidAsStaff) {
-        this.totalPaidAsStaff = totalPaidAsStaff;
+    public void setLineCostValue(BigDecimal lineCostValue) {
+        this.lineCostValue = lineCostValue;
     }
 
-    public BigDecimal getTotalPaidAsCredit() {
-        return totalPaidAsCredit;
+    public BigDecimal getBillTaxValue() {
+        return billTaxValue;
     }
 
-    public void setTotalPaidAsCredit(BigDecimal totalPaidAsCredit) {
-        this.totalPaidAsCredit = totalPaidAsCredit;
+    public void setBillTaxValue(BigDecimal billTaxValue) {
+        this.billTaxValue = billTaxValue;
     }
 
-    public BigDecimal getTotalPaidAsStaffWelfare() {
-        return totalPaidAsStaffWelfare;
+    public BigDecimal getItemTaxValue() {
+        return itemTaxValue;
     }
 
-    public void setTotalPaidAsStaffWelfare(BigDecimal totalPaidAsStaffWelfare) {
-        this.totalPaidAsStaffWelfare = totalPaidAsStaffWelfare;
+    public void setItemTaxValue(BigDecimal itemTaxValue) {
+        this.itemTaxValue = itemTaxValue;
     }
 
-    public BigDecimal getTotalPaidAsVoucher() {
-        return totalPaidAsVoucher;
+    public BigDecimal getLineGrossTotal() {
+        return lineGrossTotal;
     }
 
-    public void setTotalPaidAsVoucher(BigDecimal totalPaidAsVoucher) {
-        this.totalPaidAsVoucher = totalPaidAsVoucher;
+    public void setLineGrossTotal(BigDecimal lineGrossTotal) {
+        this.lineGrossTotal = lineGrossTotal;
     }
 
-    public BigDecimal getTotalPaidAsIOU() {
-        return totalPaidAsIOU;
+    public BigDecimal getBillGrossTotal() {
+        return billGrossTotal;
     }
 
-    public void setTotalPaidAsIOU(BigDecimal totalPaidAsIOU) {
-        this.totalPaidAsIOU = totalPaidAsIOU;
+    public void setBillGrossTotal(BigDecimal billGrossTotal) {
+        this.billGrossTotal = billGrossTotal;
     }
 
-    public BigDecimal getTotalPaidAsAgent() {
-        return totalPaidAsAgent;
+    public BigDecimal getGrossTotal() {
+        return grossTotal;
     }
 
-    public void setTotalPaidAsAgent(BigDecimal totalPaidAsAgent) {
-        this.totalPaidAsAgent = totalPaidAsAgent;
+    public void setGrossTotal(BigDecimal grossTotal) {
+        this.grossTotal = grossTotal;
     }
 
-    public BigDecimal getTotalPaidAsCheque() {
-        return totalPaidAsCheque;
+    public BigDecimal getLineNetTotal() {
+        return lineNetTotal;
     }
 
-    public void setTotalPaidAsCheque(BigDecimal totalPaidAsCheque) {
-        this.totalPaidAsCheque = totalPaidAsCheque;
+    public void setLineNetTotal(BigDecimal lineNetTotal) {
+        this.lineNetTotal = lineNetTotal;
     }
 
-    public BigDecimal getTotalPaidAsSlip() {
-        return totalPaidAsSlip;
+    public BigDecimal getBillNetTotal() {
+        return billNetTotal;
     }
 
-    public void setTotalPaidAsSlip(BigDecimal totalPaidAsSlip) {
-        this.totalPaidAsSlip = totalPaidAsSlip;
+    public void setBillNetTotal(BigDecimal billNetTotal) {
+        this.billNetTotal = billNetTotal;
     }
 
-    public BigDecimal getTotalPaidAsEwallet() {
-        return totalPaidAsEwallet;
+    public BigDecimal getNetTotal() {
+        return netTotal;
     }
 
-    public void setTotalPaidAsEwallet(BigDecimal totalPaidAsEwallet) {
-        this.totalPaidAsEwallet = totalPaidAsEwallet;
-    }
-
-    public BigDecimal getTotalPaidAsPatientDeposit() {
-        return totalPaidAsPatientDeposit;
-    }
-
-    public void setTotalPaidAsPatientDeposit(BigDecimal totalPaidAsPatientDeposit) {
-        this.totalPaidAsPatientDeposit = totalPaidAsPatientDeposit;
-    }
-
-    public BigDecimal getTotalPaidAsPatientPoints() {
-        return totalPaidAsPatientPoints;
-    }
-
-    public void setTotalPaidAsPatientPoints(BigDecimal totalPaidAsPatientPoints) {
-        this.totalPaidAsPatientPoints = totalPaidAsPatientPoints;
-    }
-
-    public BigDecimal getTotalPaidAsOnlineSettlement() {
-        return totalPaidAsOnlineSettlement;
-    }
-
-    public void setTotalPaidAsOnlineSettlement(BigDecimal totalPaidAsOnlineSettlement) {
-        this.totalPaidAsOnlineSettlement = totalPaidAsOnlineSettlement;
-    }
-
-    public BigDecimal getTotalPaidAsOnCall() {
-        return totalPaidAsOnCall;
-    }
-
-    public void setTotalPaidAsOnCall(BigDecimal totalPaidAsOnCall) {
-        this.totalPaidAsOnCall = totalPaidAsOnCall;
-    }
-
-    public BigDecimal getTotalPaidAsYouOweMe() {
-        return totalPaidAsYouOweMe;
-    }
-
-    public void setTotalPaidAsYouOweMe(BigDecimal totalPaidAsYouOweMe) {
-        this.totalPaidAsYouOweMe = totalPaidAsYouOweMe;
-    }
-
-    public BigDecimal getTotalPaidAsNone() {
-        return totalPaidAsNone;
-    }
-
-    public void setTotalPaidAsNone(BigDecimal totalPaidAsNone) {
-        this.totalPaidAsNone = totalPaidAsNone;
+    public void setNetTotal(BigDecimal netTotal) {
+        this.netTotal = netTotal;
     }
 
     public Date getCreatedAt() {
@@ -430,4 +499,7 @@ public class BillFinanceDetails implements Serializable {
         this.createdBy = createdBy;
     }
 
+
+    
+    
 }
