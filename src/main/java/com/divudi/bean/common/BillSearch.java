@@ -2329,9 +2329,18 @@ public class BillSearch implements Serializable {
             }
 
         }
+        // Now if the payment method is NULL, payments are created as in the original bill
+//        if (getPaymentMethod() == null) {
+//            JsfUtil.addErrorMessage("Please select a payment scheme for Cancellation.");
+//            return true;
+//        }
+
         if (getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a payment scheme for Cancellation.");
-            return true;
+            boolean hasMoreThanoneIndividualBillsForTHisIndividualBill = billService.hasMultipleIndividualBillsForBatchBillOfThisIndividualBill(getBill());
+            if (hasMoreThanoneIndividualBillsForTHisIndividualBill) {
+                JsfUtil.addErrorMessage("You can't use Same as Billed when there are multiple bills for a Batch bill. Please select a Payment Method");
+                return true;
+            }
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
@@ -2388,17 +2397,20 @@ public class BillSearch implements Serializable {
 
     public void cancelOpdBill() {
         if (getBill() == null) {
-            JsfUtil.addErrorMessage("No bill");
+            JsfUtil.addErrorMessage("No Original Bill Selected To Cancel");
             return;
         }
         if (getBill().getId() == null) {
-            JsfUtil.addErrorMessage("No Saved bill");
+            JsfUtil.addErrorMessage("No Saved Original Bill");
+            return;
+        }
+        if (getBill().getBackwardReferenceBill() == null) {
+            JsfUtil.addErrorMessage("No Batch Bill found for the Individual Bill which is selected to Cancel");
             return;
         }
 
         if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
-
             if (items != null && !items.isEmpty()) {
                 JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be canceled.");
                 return;
@@ -2412,17 +2424,6 @@ public class BillSearch implements Serializable {
         if (professionalPaymentService.isProfessionalFeePaid(bill)) {
             JsfUtil.addErrorMessage("Payments are already made to Staff or Outside Institute. Please cancel them first before cancelling the bill.");
             return;
-        }
-
-        if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            if (getBill().getPatient().getHasAnAccount() == null) {
-//                JsfUtil.addErrorMessage("Create Patient Account First");
-//                return;
-//            }
-//            if (!getBill().getPatient().getHasAnAccount()) {
-//                JsfUtil.addErrorMessage("Create Patient Account First");
-//                return;
-//            }
         }
 
         if (paymentMethod == PaymentMethod.Staff) {
@@ -2463,8 +2464,8 @@ public class BillSearch implements Serializable {
 
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
-        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
-        List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
+        List<Payment> ps = getOpdPreSettleController().createPaymentsForCancellationsforOPDBill(cancellationBill, paymentMethod);
+        List<BillItem> list = cancelBillItems(getBill(), cancellationBill, ps);
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
 
@@ -2472,7 +2473,7 @@ public class BillSearch implements Serializable {
         getBill().setCancelledBill(cancellationBill);
 
         billController.save(getBill());
-        drawerController.updateDrawerForOuts(p);
+        drawerController.updateDrawerForOuts(ps);
         JsfUtil.addSuccessMessage("Cancelled");
 
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -2882,7 +2883,7 @@ public class BillSearch implements Serializable {
         return newlyCreatedCancellationBillItems;
     }
 
-    private List<BillItem> cancelBillItems(Bill originalBill, Bill cancellationBill, Payment p) {
+    private List<BillItem> cancelBillItems(Bill originalBill, Bill cancellationBill, List<Payment> ps) {
         List<BillItem> list = new ArrayList<>();
         for (BillItem nB : originalBill.getBillItems()) {
             BillItem b = new BillItem();
@@ -2926,12 +2927,11 @@ public class BillSearch implements Serializable {
             List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
             cancelBillFee(cancellationBill, b, tmp);
 
-            //create BillFeePayments For cancel
-            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
-            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
-            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(cancellationBill, tmpC, p);
-            //
-
+//            //create BillFeePayments For cancel
+//            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
+//            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
+//            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(cancellationBill, tmpC, p);
+//            //
             list.add(b);
 
         }
@@ -2989,8 +2989,8 @@ public class BillSearch implements Serializable {
     }
 
     public void cancelBillFee(Bill cancellationProfessionalPaymentBill,
-                              BillItem cancellationProfessionalBillItem,
-                              List<BillFee> originalProfessionalPaymentFeesForBillItem) {
+            BillItem cancellationProfessionalBillItem,
+            List<BillFee> originalProfessionalPaymentFeesForBillItem) {
         for (BillFee originalProfessionalPaymentFeeForBillItem : originalProfessionalPaymentFeesForBillItem) {
             BillFee newCancellingBillFee = new BillFee();
             newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
@@ -3214,7 +3214,12 @@ public class BillSearch implements Serializable {
         //System.out.println("bill = " + bill.getIdStr());
 
         if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
-            paymentMethod = bill.getPaymentMethod();
+            boolean moreThanOneIndividualBillsForTheBatchBillOfThisIndividualBill = billService.hasMultipleIndividualBillsForBatchBillOfThisIndividualBill(bill);
+            if (moreThanOneIndividualBillsForTheBatchBillOfThisIndividualBill) {
+                paymentMethod = bill.getPaymentMethod();
+            } else {
+                paymentMethod = null;
+            }
         } else {
             paymentMethod = PaymentMethod.Cash;
         }
@@ -5592,7 +5597,6 @@ public class BillSearch implements Serializable {
     public void setViewingPatientInvestigations(List<PatientInvestigation> viewingPatientInvestigations) {
         this.viewingPatientInvestigations = viewingPatientInvestigations;
     }
-
 
     public class PaymentSummary {
 

@@ -122,6 +122,11 @@ public class ItemFeeManager implements Serializable {
         itemFees = new ArrayList<>();
         return "/admin/pricing/upload_to_replace_site_fees_by_item_code?faces-redirect=true";
     }
+    
+    public String navigateToUploadToAddSiteFeesByItemCode() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/upload_to_add_site_fees_by_item_code?faces-redirect=true";
+    }
 
     public String navigateToDownloadItemFeesForSites() {
         itemFees = new ArrayList<>();
@@ -799,7 +804,7 @@ public class ItemFeeManager implements Serializable {
                 + "f.item.department.name, "
                 + "f.item.name, "
                 + "f.item.code, "
-                + "f.item.total, "
+                + " sum(f.fee), "
                 + "f.item.department.id) "
                 + " from ItemFee f "
                 + " where f.retired=:ret ";
