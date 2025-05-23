@@ -60,6 +60,7 @@ public class ExcelController {
         CellStyle style = workbook.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
 
         Row titleRow = dataSheet.createRow(0);
         Cell headerCell = titleRow.createCell(0);
