@@ -281,6 +281,7 @@ public class DataUploadController implements Serializable {
     private StreamedContent templateForAmpMinimalUpload;
     private StreamedContent templateForCreditCompanyUpload;
     private StreamedContent templateForItemFeeUpload;
+    private StreamedContent templateForDepartmentUpload;
 
     List<Item> itemsToSave;
     List<Item> itemsSaved;
@@ -5694,7 +5695,7 @@ public class DataUploadController implements Serializable {
         } catch (IOException e) {
             // Handle IOException
         }
-        return templateForItemFeeUpload;
+        return templateForDepartmentUpload;
     }
 
     public void createTemplateForDepartmentUpload() throws IOException {
@@ -5724,7 +5725,7 @@ public class DataUploadController implements Serializable {
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 
         // Set the downloading file
-        templateForItemFeeUpload = DefaultStreamedContent.builder()
+        templateForDepartmentUpload = DefaultStreamedContent.builder()
                 .name("template_for_Department_upload.xlsx")
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
