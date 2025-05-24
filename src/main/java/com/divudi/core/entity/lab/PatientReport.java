@@ -698,8 +698,8 @@ public class PatientReport implements Serializable, RetirableEntity {
 
         transHasAbst = false;
         for (PatientReportItemValue priva : this.patientReportItemValues) {
-            if (priva.strValue != null) {
-                if (priva.strValue.equals("SENSITIVE") || priva.strValue.equals("Resistant") || priva.strValue.equals("Intermediate")) {
+            if (priva.getStrValue() != null) {
+                if (priva.getStrValue().equals("SENSITIVE") || priva.getStrValue().equals("Resistant") || priva.getStrValue().equals("Intermediate")) {
                     transHasAbst = true;
                     return transHasAbst;
                 }

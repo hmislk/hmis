@@ -319,41 +319,53 @@
                                                            value="#{patientReportController.currentPatientReport.patientReportGroups}"  
                                                            var="group"   
                                                            >
+                                                    <tr>
+                                                        <td  colspan="3">
+                                                            <h:outputLabel value="#{group.groupName}" ></h:outputLabel>
+                                                        </td>
+                                                    </tr>
 
                                                     <ui:repeat id="tblMicValsGrouped" 
                                                                value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                                var="pvm"   
                                                                >
-                                                        <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value' or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
-                                                            <tr>
-                                                                <td  style="min-width: 280px!important;">
-                                                                    <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
-                                                                </td>
-                                                                <td >
+                                                        <h:panelGroup 
+                                                            rendered="#{pvm.patientReportGroup eq group}" >
 
-                                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                        <p:inputTextarea 
-                                                                            rendered="true" 
-                                                                            id="txtMicMemoValGrouped" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
-                                                                            completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                            value="#{pvm.lobValue}" >
-                                                                            <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
-                                                                        </p:inputTextarea>
-                                                                    </h:panelGroup>
-                                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
-                                                                        <p:selectOneMenu 
-                                                                            id="cmbMicStrValGrouped" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
-                                                                            <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
-                                                                            <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
-                                                                            <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
-                                                                            <f:ajax event="change"  execute="@this" 
-                                                                                    listener="#{patientReportController.savePatientReportItemValues()}" ></f:ajax>
-                                                                        </p:selectOneMenu>
-                                                                    </h:panelGroup>
+                                                            <h:panelGroup 
+                                                                rendered="#{pvm.investigationItem.ixItemType eq 'Value'  or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
+                                                                <tr>
+                                                                    <td  style="min-width: 280px!important;">
+                                                                        <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
+                                                                    </td>
+                                                                    <td >
 
-                                                                </td>
-                                                            </tr>
+                                                                        <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
+                                                                            <p:inputTextarea 
+                                                                                rendered="true" 
+                                                                                id="txtMicMemoValGrouped" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
+                                                                                completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                                value="#{pvm.lobValue}" >
+                                                                                <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
+                                                                            </p:inputTextarea>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
+                                                                            <p:selectOneMenu 
+                                                                                id="cmbMicStrValGrouped" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                                                <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
+                                                                                <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
+                                                                                <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
+                                                                                <f:ajax event="change"  execute="@this" 
+                                                                                        listener="#{patientReportController.savePatientReportItemValues()}" ></f:ajax>
+                                                                            </p:selectOneMenu>
+                                                                        </h:panelGroup>
+
+                                                                    </td>
+                                                                </tr>
+                                                            </h:panelGroup>
+
                                                         </h:panelGroup>
+
                                                     </ui:repeat>
 
                                                 </ui:repeat>
