@@ -46,16 +46,13 @@
                             action="#{dataAdministrationController.createTablesAndFieldsForAllCreateStatements}" />
 
                         <p:outputLabel value="Execution Feedback" />
-                        <p:outputPanel escape="false">
+                        <h:outputText escape="false">
                             <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.executionFeedback}</textarea>
-                        </p:outputPanel>
+                        </h:outputText>
                     </p:panelGrid>
 
                 </p:tab>
-                <p:tab title="Check Missing Fields add individual tables" >
-
-
-
+                <p:tab title="Check Missing Fields and Add Fields" >
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
@@ -67,7 +64,6 @@
                                 value="Check Missing Fields"  
                                 class="w-25"
                                 />
-
                         </f:facet>
                         <p:outputLabel value="Errors" ></p:outputLabel>
                         <p:inputTextarea 

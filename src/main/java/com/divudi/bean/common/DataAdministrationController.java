@@ -758,12 +758,26 @@ public class DataAdministrationController implements Serializable {
 
     public void checkMissingFields() {
         suggestedSql = "";
-        List<EntityFieldError> entityFieldErrors = new ArrayList<>();
+        List<EntityFieldError> missingFieldErrors = new ArrayList<>();
+        List<EntityFieldError> missingTableErrors = new ArrayList<>();
 
         for (Class<?> entityClass : findEntityClassNames()) {
+            // Get root entity class name (skip base classes like Item if needed)
+            Class<?> rootEntityClass = entityClass;
+            while (rootEntityClass.getSuperclass() != null
+                    && rootEntityClass.getSuperclass().getAnnotation(javax.persistence.Entity.class) != null) {
+                rootEntityClass = rootEntityClass.getSuperclass();
+            }
+
+            // Skip subclasses so we only evaluate root-level entities
+            if (!entityClass.equals(rootEntityClass)) {
+                continue;
+            }
+
             String entityName = entityClass.getSimpleName();
             EntityFieldError entityFieldError = new EntityFieldError(entityName);
             String jpql = "SELECT e FROM " + entityName + " e";
+
             try {
                 itemFacade.executeQueryFirstResult(entityClass, jpql);
             } catch (Exception e) {
@@ -773,26 +787,52 @@ public class DataAdministrationController implements Serializable {
                 }
                 if (cause != null) {
                     String message = cause.getMessage();
-                    Pattern pattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
-                    Matcher matcher = pattern.matcher(message);
-                    while (matcher.find()) {
-                        String missingColumn = matcher.group(1);
+
+                    // Check for missing table
+                    Pattern tablePattern = Pattern.compile("Table '.*?\\.(.*?)' doesn't exist");
+                    Matcher tableMatcher = tablePattern.matcher(message);
+                    if (tableMatcher.find()) {
+                        String missingTable = tableMatcher.group(1);
+                        entityFieldError.addMissingField("Table not found: " + missingTable);
+                        missingTableErrors.add(entityFieldError);
+                        continue;
+                    }
+
+                    // Check for missing fields
+                    Pattern columnPattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
+                    Matcher columnMatcher = columnPattern.matcher(message);
+                    while (columnMatcher.find()) {
+                        String missingColumn = columnMatcher.group(1);
                         entityFieldError.addMissingField(missingColumn);
                     }
-                    if (!entityFieldError.missingFields.isEmpty()) {
-                        entityFieldErrors.add(entityFieldError);
+
+                    if (!entityFieldError.getMissingFields().isEmpty()) {
+                        missingFieldErrors.add(entityFieldError);
                     }
                 }
             }
         }
 
-        // Convert the list of EntityFieldError objects to a string
-        StringBuilder errorsBuilder = new StringBuilder();
-        for (EntityFieldError error : entityFieldErrors) {
-            errorsBuilder.append(error.toString()).append("\n");
+        StringBuilder outputBuilder = new StringBuilder();
+
+        if (!missingTableErrors.isEmpty()) {
+            outputBuilder.append("=== Missing Tables ===\n");
+            for (EntityFieldError error : missingTableErrors) {
+                for (String field : error.getMissingFields()) {
+                    outputBuilder.append("Entity: ").append(error.getEntityName())
+                            .append(", ").append(field).append("\n");
+                }
+            }
         }
 
-        errors = errorsBuilder.toString();
+        if (!missingFieldErrors.isEmpty()) {
+            outputBuilder.append("\n=== Missing Fields ===\n");
+            for (EntityFieldError error : missingFieldErrors) {
+                outputBuilder.append(error.toString()).append("\n");
+            }
+        }
+
+        errors = outputBuilder.toString().trim();
     }
 
     public List<Class<?>> findEntityClassNames() {
