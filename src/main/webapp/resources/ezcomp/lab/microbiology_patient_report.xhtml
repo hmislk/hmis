@@ -4,6 +4,7 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
       xmlns:p="http://primefaces.org/ui">
 
@@ -15,6 +16,7 @@
     <cc:implementation>
 
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
+
             <div id="divReportM"  class="labReport"   >
                 <ez:common_report showBackground="#{patientReportController.showBackground}" commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                   patientReport="#{patientReportController.currentPatientReport}"/>
@@ -104,7 +106,7 @@
                                        value="#{patientReportController.currentPatientReport.patientReportGroups}"  
                                        var="group"   
                                        >
-                                
+
                                 <h1>#{group.groupName}</h1>
 
                                 <div class="row">
