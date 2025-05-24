@@ -274,6 +274,15 @@
                                 <!--                            Microbiology                        -->
                                 <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                     <f:view contentType="text/html">
+                                        
+                                        <p:panelGrid columns="3" >
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Add Group" ></h:outputLabel>
+                                            </f:facet>
+                                            <p:outputLabel value="Group Name" ></p:outputLabel>
+                                            <p:inputText value="#{patientReportController}" ></p:inputText>
+                                            <p:commandButton value="Add Group" ></p:commandButton>
+                                        </p:panelGrid>
 
                                         <h:panelGroup rendered="#{empty patientReportController.currentPatientReport.patientReportGroups}">
                                             <table >
