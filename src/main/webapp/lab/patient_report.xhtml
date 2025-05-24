@@ -277,6 +277,33 @@
                                     id="panelDataEntryForMicrobiology"
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                     <f:view contentType="text/html">
+                                        <h:panelGroup >
+                                            <table class="w-100">
+                                                <ui:repeat id="tblMicValsExceptAntibiotics" 
+                                                           value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
+                                                           var="pvm"   
+                                                           >
+                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value'}" >
+                                                        <tr>
+                                                            <td  style="min-width: 280px!important;">
+                                                                <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
+                                                            </td>
+                                                            <td >
+                                                                <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
+                                                                    <p:inputTextarea 
+                                                                        rendered="true" id="txtMicMemoVal" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
+                                                                        completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                        value="#{pvm.lobValue}" >
+                                                                        <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
+                                                                    </p:inputTextarea>
+                                                                </h:panelGroup>
+                                                            </td>
+                                                        </tr>
+                                                    </h:panelGroup>
+                                                </ui:repeat>
+                                            </table>
+                                        </h:panelGroup>
+
 
                                         <p:panelGrid columns="3" >
                                             <f:facet name="header" >
@@ -343,6 +370,7 @@
                                                     <tr>
                                                         <td  colspan="3">
                                                             <h:outputText 
+                                                                class="h1"
                                                                 escape="false"
                                                                 value="#{group.groupName}" ></h:outputText>
                                                         </td>
@@ -353,7 +381,7 @@
                                                                var="pvm"   
                                                                >
                                                         <h:panelGroup 
-                                                            rendered="#{pvm.patientReportGroup eq group}" >
+                                                            rendered="#{pvm.patientReportGroup.groupName eq group.groupName}" >
 
                                                             <h:panelGroup 
                                                                 rendered="#{pvm.investigationItem.ixItemType eq 'Value'  or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
@@ -687,95 +715,61 @@
                     <h:panelGroup rendered="true" >
                         <p:panel header="Debug" rendered="#{webUserController.hasPrivilege('Developers')}">
 
-                            <table class="table table-stripped">
+                            <p:panel header="Patient Report Items">
+                                <p:commandButton 
+                                    value="Export to Excel" 
+                                    icon="pi pi-file-excel"
+                                    styleClass="mb-2"
+                                    ajax="false">
+                                    <p:dataExporter type="xlsx" target="reportTable" fileName="Patient_Report_Items"/>
+                                </p:commandButton>
 
-                                <tr>
-                                    <th>
-                                        Name
-                                    </th>
-                                    <th>
-                                        Retired
-                                    </th>
-                                    <th>
-                                        CSS
-                                    </th>
-                                    <th>
-                                        LOB
-                                    </th>
-                                    <th>
-                                        Str
-                                    </th>
-                                    <th>
-                                        Display
-                                    </th>
-                                    <th>
-                                        Double
-                                    </th>
-                                    <th>
-                                        Value
-                                    </th>
-                                </tr>
+                                <p:dataTable 
+                                    id="reportTable"
+                                    var="prv" 
+                                    value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
+                                    rowKey="#{prv.id}">
 
-                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                    <p:column headerText="Name">
+                                        <h:outputText value="#{prv.investigationItem.name}"/>
+                                    </p:column>
 
-                                    <tr>
-                                        <td>
-                                            #{prv.investigationItem.name}
-                                        </td>
-                                        <td>
-                                            #{prv.investigationItem.ixItemType}
-                                        </td>
+                                    <p:column headerText="Group Name">
+                                        <h:outputText value="#{prv.patientReportGroup.groupName}"/>
+                                    </p:column>
 
-                                        <td>
-                                            #{prv.investigationItem.retired}
-                                        </td>
-                                        <td>
-                                            #{prv.investigationItem.cssStyle}
-                                        </td>
-                                        <td>
-                                            #{prv.lobValue}
-                                        </td>
-                                        <td>
-                                            #{prv.strValue}
-                                        </td>
-                                        <td>
-                                            #{prv.displayValue}
-                                        </td>
-                                        <td>
-                                            #{prv.doubleValue}
-                                        </td>
+                                    <p:column headerText="Type">
+                                        <h:outputText value="#{prv.investigationItem.ixItemType}"/>
+                                    </p:column>
 
-                                        <td>
-                                            <p:graphicImage 
-                                                cache="false"
-                                                value="#{byteArrayToStreamContentController.imageById}"
-                                                style="width: 100px; overflow: visible; display: block; z-index: 800;"
-                                                height="100"
-                                                width="100">
-                                                <f:param name="id" value="#{prv.id}" />
-                                            </p:graphicImage>
-                                        </td>
+                                    <p:column headerText="Retired">
+                                        <h:outputText value="#{prv.investigationItem.retired}"/>
+                                    </p:column>
 
-                                        <td>
-                                            #{prv.value}
+                                    <p:column headerText="CSS">
+                                        <h:outputText value="#{prv.investigationItem.cssStyle}"/>
+                                    </p:column>
 
-                                            PRIV : #{prv} <br/>
+                                    <p:column headerText="LOB">
+                                        <h:outputText value="#{prv.lobValue}"/>
+                                    </p:column>
 
-                                            ID : #{prv.id} <br/>
+                                    <p:column headerText="Str">
+                                        <h:outputText value="#{prv.strValue}"/>
+                                    </p:column>
 
-                                            image : #{prv.baImage} <br/>
+                                    <p:column headerText="Display">
+                                        <h:outputText value="#{prv.displayValue}"/>
+                                    </p:column>
 
-                                            File Name : #{prv.fileName} <br/>
+                                    <p:column headerText="Double">
+                                        <h:outputText value="#{prv.doubleValue}"/>
+                                    </p:column>
 
-                                            File Type: #{prv.fileType} <br/>
+                                </p:dataTable>
+                            </p:panel>
 
-                                        </td>
 
-                                    </tr>
-
-                                </ui:repeat>
-
-                            </table>
 
                         </p:panel>
                     </h:panelGroup>
