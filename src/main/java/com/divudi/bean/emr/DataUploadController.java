@@ -5693,7 +5693,8 @@ public class DataUploadController implements Serializable {
         try {
             createTemplateForDepartmentUpload();
         } catch (IOException e) {
-            // Handle IOException
+            JsfUtil.addErrorMessage("Error creating department upload template: " + e.getMessage());
+            return null;
         }
         return templateForDepartmentUpload;
     }
@@ -5736,7 +5737,8 @@ public class DataUploadController implements Serializable {
         try {
             createTemplateForItemFeeUpload();
         } catch (IOException e) {
-            // Handle IOException
+            JsfUtil.addErrorMessage("Error creating Item Fee template: " + e.getMessage());
+            return null;
         }
         return templateForItemFeeUpload;
     }
