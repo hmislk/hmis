@@ -32,23 +32,26 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ManyToOne
-    Patient patient;
+    private Patient patient;
     @ManyToOne
-    PatientEncounter patientEncounter;
+    private PatientEncounter patientEncounter;
     @ManyToOne
-    InvestigationItem investigationItem;
+    private InvestigationItem investigationItem;
     @ManyToOne
-    PatientReport patientReport;
+    private PatientReport patientReport;
     private String codeSystem;
     private String codeSystemCode;
-    String strValue;
+    private String strValue;
     @Lob
     private String lobValue;
     @Lob
-    byte[] baImage;
-    String fileName;
-    String fileType;
-    Double doubleValue;
+    private byte[] baImage;
+    private String fileName;
+    private String fileType;
+    private Double doubleValue;
+    
+    @ManyToOne
+    private PatientReportGroup patientReportGroup;
 
     @Transient
     private String value;
@@ -290,5 +293,17 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
+
+    public PatientReportGroup getPatientReportGroup() {
+        return patientReportGroup;
+    }
+
+    public void setPatientReportGroup(PatientReportGroup patientReportGroup) {
+        this.patientReportGroup = patientReportGroup;
+    }
+
+   
+    
+    
 
 }
