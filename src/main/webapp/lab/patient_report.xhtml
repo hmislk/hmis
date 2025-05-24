@@ -362,7 +362,6 @@
                                                                         <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
                                                                     </td>
                                                                     <td >
-
                                                                         <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
                                                                             <p:inputTextarea 
                                                                                 rendered="true" 
@@ -685,7 +684,7 @@
 
                     </p:panel>
 
-                    <h:panelGroup rendered="false" >
+                    <h:panelGroup rendered="true" >
                         <p:panel header="Debug" rendered="#{webUserController.hasPrivilege('Developers')}">
 
                             <table class="table table-stripped">

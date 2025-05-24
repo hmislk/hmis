@@ -1913,23 +1913,24 @@ public class PatientReportController implements Serializable {
         int groupCount = currentPatientReport.getPatientReportGroups().size();
 
         if (groupCount == 1) {
+            System.out.println("first group");
             for (PatientReportItemValue pvm : currentPatientReport.getPatientReportItemValues()) {
                 if (pvm.getInvestigationItem() != null
                         && pvm.getInvestigationItem().getIxItemType() != null
-                        && (pvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Value || pvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic)) {
+                        && pvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic) {
                     pvm.setPatientReportGroup(newlyAddedGroup);
                 }
             }
         } else {
+            System.out.println("more than one group");
             PatientReportGroup firstGroup = currentPatientReport.getPatientReportGroups().get(0);
-
+            System.out.println("firstGroup = " + firstGroup.getGroupName());
             // Step 1: Filter the base items first
             List<PatientReportItemValue> baseAntibioticItems = new ArrayList<>();
             for (PatientReportItemValue basePvm : currentPatientReport.getPatientReportItemValues()) {
                 if (basePvm.getInvestigationItem() != null
                         && basePvm.getInvestigationItem().getIxItemType() != null
-                        && (basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Value
-                        || basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic)
+                        && basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic
                         && basePvm.getPatientReportGroup().equals(firstGroup)) {
                     baseAntibioticItems.add(basePvm);
                 }
@@ -1942,6 +1943,7 @@ public class PatientReportController implements Serializable {
                 currentPatientReport.getPatientReportItemValues().add(clonedPvm);
             }
         }
+        savePatientReport();
     }
 
     public PatientReportGroup addPatientReportGroup() {
