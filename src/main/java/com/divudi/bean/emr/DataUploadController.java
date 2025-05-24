@@ -5688,6 +5688,48 @@ public class DataUploadController implements Serializable {
             }
         }
     }
+    public StreamedContent getTemplateForDepartmentUpload() {
+        try {
+            createTemplateForDepartmentUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForItemFeeUpload;
+    }
+
+    public void createTemplateForDepartmentUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Department Code", "Department Name", "Bill Prefix", "Department Type", "Phone", "Email", "Address", "Institution", "Active"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForItemFeeUpload = DefaultStreamedContent.builder()
+                .name("template_for_Department_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
 
     public StreamedContent getTemplateForItemFeeUpload() {
         try {
