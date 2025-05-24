@@ -1922,15 +1922,24 @@ public class PatientReportController implements Serializable {
             }
         } else {
             PatientReportGroup firstGroup = currentPatientReport.getPatientReportGroups().get(0);
+
+            // Step 1: Filter the base items first
+            List<PatientReportItemValue> baseAntibioticItems = new ArrayList<>();
             for (PatientReportItemValue basePvm : currentPatientReport.getPatientReportItemValues()) {
                 if (basePvm.getInvestigationItem() != null
                         && basePvm.getInvestigationItem().getIxItemType() != null
-                        && (basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Value || basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic)
+                        && (basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Value
+                        || basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic)
                         && basePvm.getPatientReportGroup().equals(firstGroup)) {
-                    PatientReportItemValue clonedPvm = basePvm.clone();
-                    clonedPvm.setPatientReportGroup(newlyAddedGroup);
-                    currentPatientReport.getPatientReportItemValues().add(clonedPvm);
+                    baseAntibioticItems.add(basePvm);
                 }
+            }
+
+            // Step 2: Safely clone and add
+            for (PatientReportItemValue basePvm : baseAntibioticItems) {
+                PatientReportItemValue clonedPvm = basePvm.clone();
+                clonedPvm.setPatientReportGroup(newlyAddedGroup);
+                currentPatientReport.getPatientReportItemValues().add(clonedPvm);
             }
         }
     }

@@ -272,16 +272,28 @@
                                 </p:panel>
 
                                 <!--                            Microbiology                        -->
-                                <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
+                                <p:panel 
+                                    header="Microbiology"    
+                                    id="panelDataEntryForMicrobiology"
+                                    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                     <f:view contentType="text/html">
-                                        
+
                                         <p:panelGrid columns="3" >
                                             <f:facet name="header" >
                                                 <h:outputLabel value="Add Group" ></h:outputLabel>
                                             </f:facet>
-                                            <p:outputLabel value="Group Name" ></p:outputLabel>
-                                            <p:inputText value="#{patientReportController}" ></p:inputText>
-                                            <p:commandButton value="Add Group" ></p:commandButton>
+                                            <p:outputLabel 
+                                                for="txtGroupName"
+                                                value="Group Name" ></p:outputLabel>
+                                            <p:inputText
+                                                id="txtGroupName"
+                                                value="#{patientReportController.groupName}" ></p:inputText>
+                                            <p:commandButton 
+                                                id="btnAddPatientReportGroupForMicrobiology"
+                                                value="Add Group"
+                                                action="#{patientReportController.addPatientReportGroupForMicrobiology()}"
+                                                process="txtGroupName btnAddPatientReportGroupForMicrobiology"
+                                                update="panelDataEntryForMicrobiology"></p:commandButton>
                                         </p:panelGrid>
 
                                         <h:panelGroup rendered="#{empty patientReportController.currentPatientReport.patientReportGroups}">
@@ -330,7 +342,9 @@
                                                            >
                                                     <tr>
                                                         <td  colspan="3">
-                                                            <h:outputLabel value="#{group.groupName}" ></h:outputLabel>
+                                                            <h:outputText 
+                                                                escape="false"
+                                                                value="#{group.groupName}" ></h:outputText>
                                                         </td>
                                                     </tr>
 
