@@ -6,15 +6,21 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:reports="http://xmlns.jcp.org/jsf/composite/ezcomp/reports"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
 
-                <reports:cc_statement />
-
-
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('CollectingCentreReports')}">
+                    <na:not_authorize />
+                </h:panelGroup>
+                
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('CollectingCentreReports')}">
+                    <reports:cc_statement />
+                </h:panelGroup>
+                
             </ui:define>
         </ui:composition>
     </h:body>
