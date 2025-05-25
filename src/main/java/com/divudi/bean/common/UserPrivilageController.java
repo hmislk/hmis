@@ -370,8 +370,6 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillCancel, "Payment Cancel"), paymentNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillRefund, "Payment Refund"), paymentNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillReactivation, "Payment Reactivation"), paymentNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCreditLimitInCC, "Change Credit Limit in Collecting Centre"), paymentNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillCancellationApprove, "Petty Cash Bill Cancellation Approval"), paymentNode);
 
         // Reports Privileges
         TreeNode reportsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Reports"), allNode);
@@ -408,7 +406,6 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminFilterWithoutDepartment, "Filter Without Department"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchAll, "Search All"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeProfessionalFee, "Change Professional Fee"), adminNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCollectingCentre, "Change Collecting Centre"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SendBulkSMS, "Send Bulk SMS"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Developers, "Only For Developers"), adminNode);
 
@@ -494,7 +491,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentDueSearch, "Delor Due Search"), storeDealorPaymentNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentDueByAge, "Delor Due By Age"), storeDealorPaymentNode);
         TreeNode storePaymentNode = new DefaultTreeNode(new PrivilegeHolder(null, "Payment"), storeDealorPaymentNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPayment, "Payment Menu"), storePaymentNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPayment, "Payment Menu"), storePaymentNode);       
         new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPaymentGRN, "GRN Payment"), storePaymentNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPaymentGRNSelect, "GRN Payment (Select)"), storePaymentNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentGRNDoneSearch, "GRN Payment Due Search"), storeDealorPaymentNode);
@@ -512,8 +509,26 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewStatistics, "Courier View Statistics"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewBillReports, "Courier View Bill Reports"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewPaymentReports, "Courier View Payment Reports"), courierNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreReports, "Courier View Collecting Centre Reports"), courierNode);
 
+        TreeNode collectingCentreNode = new DefaultTreeNode(new PrivilegeHolder(null, "Collecting Centre"), allNode);
+        
+        TreeNode collectingCentreManageNode = new DefaultTreeNode(new PrivilegeHolder(null, "Collecting Centre Manage"), collectingCentreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreManageMenu, "Collecting Centre Manage Menu"), collectingCentreManageNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CCPaymentReceive, "Collecting Centre Payment Receive"), collectingCentreManageNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchCCPaymentReceive, "Search Collecting Centre Payment Receive"), collectingCentreManageNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.IssueReferenceBook, "Collecting Centre Issue Reference Book"), collectingCentreManageNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchIssuedReferenceBook, "Search Collecting Centre Reference Book"), collectingCentreManageNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCreditLimitInCC, "Change Collecting Centre Credit Limit"), collectingCentreManageNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PayCollectingCentre, "Pay Collecting Centre"), collectingCentreManageNode);
+        
+        TreeNode creditDebitNoteNode = new DefaultTreeNode(new PrivilegeHolder(null, "Credit/Debit Note"), collectingCentreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreCreditDebitNoteMenu, "Credit/Debit Note Menu"), creditDebitNoteNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreCreditNote, "Collecting Centre Credit Note"), creditDebitNoteNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreDebitNote, "Collecting Centre Debit Note"), creditDebitNoteNode);
+        
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreReports, "Collecting Centre Reports"), collectingCentreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCollectingCentre, "Change Collecting Centre"), collectingCentreNode);
+ 
         // User Menu
         TreeNode userNode = new DefaultTreeNode(new PrivilegeHolder(null, "User"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.UserMenu, "User Menu"), userNode);

@@ -18,91 +18,155 @@
                                     <p:ajax process="@this"></p:ajax>
 
                                     <!-- Manage Section -->
-                                    <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                    <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('CollectingCentreManageMenu')}">
                                         <h:panelGrid columns="1" class="w-100" >
-                                            <p:commandButton icon="fa fa-check-circle" 
-                                                             ajax="false" 
-                                                             value="Accept Collecting Centre Deposits"
-                                                             action="#{agentAndCcPaymentController.navigateToCcDeposit}"
-                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search" ajax="false" value="Search Collecting Centre Deposits"
-                                                             action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
-                                                             actionListener="#{searchController.makeListNull}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-book" ajax="false" value="Issue Collecting Centre Books"
-                                                             action="/collecting_centre/cc_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-list-alt" ajax="false" value="Search Collecting Centre Book Issues"
-                                                             action="/collecting_centre/report_collecting_center_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-credit-card" ajax="false" value="Update Collecting Centre Credit Limit"
-                                                             action="/collecting_centre/cc_update_credit_limit?faces-redirect=true"
-                                                             actionListener="#{institutionController.makeNull()}"
-                                                             rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
-                                                             class="w-100 m-1"/>
+                                            <p:commandButton 
+                                                icon="fa fa-check-circle" 
+                                                ajax="false" 
+                                                value="Accept Collecting Centre Deposits"
+                                                rendered="#{webUserController.hasPrivilege('CCPaymentReceive')}"
+                                                action="#{agentAndCcPaymentController.navigateToCcDeposit}"
+                                                actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-search" 
+                                                ajax="false" 
+                                                value="Search Collecting Centre Deposits"
+                                                rendered="#{webUserController.hasPrivilege('SearchCCPaymentReceive')}"
+                                                action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
+                                                actionListener="#{searchController.makeListNull}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-book" 
+                                                ajax="false" 
+                                                value="Issue Collecting Centre Books"
+                                                action="/collecting_centre/cc_referece_book?faces-redirect=true"
+                                                rendered="#{webUserController.hasPrivilege('IssueReferenceBook')}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-list-alt" 
+                                                ajax="false" 
+                                                value="Search Collecting Centre Book Issues"
+                                                rendered="#{webUserController.hasPrivilege('SearchIssuedReferenceBook')}"
+                                                action="/collecting_centre/report_collecting_center_referece_book?faces-redirect=true"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-credit-card" 
+                                                ajax="false" 
+                                                value="Update Collecting Centre Credit Limit"
+                                                action="/collecting_centre/cc_update_credit_limit?faces-redirect=true"
+                                                actionListener="#{institutionController.makeNull()}"
+                                                rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
 
-                                            <p:commandButton icon="fa fa-check-circle" ajax="false" value="Pay Collecting Centres"
-                                                             action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
-                                                             class="w-100 m-1"/>
+                                            <p:commandButton 
+                                                icon="fa fa-check-circle" 
+                                                ajax="false" 
+                                                value="Pay Collecting Centres"
+                                                action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
+                                                rendered="#{webUserController.hasPrivilege('PayCollectingCentre')}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
 
-                                            <p:commandButton class="w-100 m-1" icon="fa fa-receipt" ajax="false" value="Collecting Centre Payment" 
-                                                             action="#{agentAndCcPaymentController.navigateToCcDeposit}" 
-                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}" />
-                                            <p:commandButton class="w-100 m-1" icon="fa fa-magnifying-glass-dollar" ajax="false" value="Collecting Centre Bill Search" 
-                                                             action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true" 
-                                                             actionListener="#{searchController.makeListNull}" />
-
-
+                                            <p:commandButton 
+                                                class="w-100 m-1" 
+                                                icon="fa fa-magnifying-glass-dollar" 
+                                                ajax="false" value="Collecting Centre Bill Search"        
+                                                action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
+                                                actionListener="#{searchController.makeListNull}">
+                                            </p:commandButton>
+                                            
                                         </h:panelGrid>
                                     </p:tab>
 
                                     <!-- Credit/Debit Note Section -->
                                     <p:tab title="Credit/Debit Note"
-                                           rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}">
+                                           rendered="#{webUserController.hasPrivilege('CollectingCentreCreditDebitNoteMenu')}">
                                         <h:panelGrid columns="1" class="w-100" >
-                                            <p:commandButton icon="fa fa-plus-circle" ajax="false" value="Credit Note"
-                                                             action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true"
-                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
-                                                             rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search-plus" ajax="false" value="Credit Note Search"
-                                                             action="/collecting_centre/collecting_center_credit_note_bill_search_own?faces-redirect=true"
-                                                             actionListener="#{searchController.makeListNull}"
-                                                             rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-minus-circle" ajax="false" value="Debit Note"
-                                                             action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true"
-                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
-                                                             rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search-minus" ajax="false" value="Debit Note Search"
-                                                             action="/collecting_centre/collecting_center_note_bill_search_own?faces-redirect=true"
-                                                             actionListener="#{searchController.makeListNull}"
-                                                             rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}"
-                                                             class="w-100 m-1"/>
+                                            <p:commandButton 
+                                                icon="fa fa-plus-circle" 
+                                                ajax="false" 
+                                                value="Credit Note"
+                                                action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true"
+                                                actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
+                                                rendered="#{webUserController.hasPrivilege('CollectingCentreCreditNote') and webUserController.hasPrivilege('CollectingCentreCreditDebitNoteMenu')}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-search-plus" 
+                                                ajax="false" 
+                                                value="Credit Note Search"
+                                                action="/collecting_centre/collecting_center_credit_note_bill_search_own?faces-redirect=true"
+                                                actionListener="#{searchController.makeListNull}"
+                                                rendered="#{webUserController.hasPrivilege('CollectingCentreCreditNote') and webUserController.hasPrivilege('CollectingCentreCreditDebitNoteMenu')}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-minus-circle" 
+                                                ajax="false" 
+                                                value="Debit Note"
+                                                action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true"
+                                                actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
+                                                rendered="#{webUserController.hasPrivilege('CollectingCentreDebitNote') and webUserController.hasPrivilege('CollectingCentreCreditDebitNoteMenu')}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-search-minus" 
+                                                ajax="false" 
+                                                value="Debit Note Search"
+                                                action="/collecting_centre/collecting_center_note_bill_search_own?faces-redirect=true"
+                                                actionListener="#{searchController.makeListNull}"
+                                                rendered="#{webUserController.hasPrivilege('CollectingCentreDebitNote') and webUserController.hasPrivilege('CollectingCentreCreditDebitNoteMenu')}"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
                                         </h:panelGrid>
                                     </p:tab>
 
                                     <!-- Collecting Centre Book Issuing Section -->
-                                    <p:tab title="Collecting Centre Reports">
+                                    <p:tab title="Collecting Centre Reports" 
+                                           rendered="#{webUserController.hasPrivilege('CollectingCentreReports')}">
                                         <h:panelGrid columns="1" class="w-100" >
-                                            <p:commandButton icon="fa fa-statement" ajax="false" value="Collecting Centre Statement"
-                                                             action="/collecting_centre/cc_statement?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-archive" ajax="false" value="Collecting Centre Book Issuance Report"
-                                                             action="/collecting_centre/report_collecting_center_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-history" ajax="false" value="Collecting Centre History"
-                                                             action="/reportLab/collecting_centre_report_agent_history?faces-redirect=true"
-                                                             class="w-100 m-1"/>
+                                            <p:commandButton 
+                                                icon="fa fa-statement" 
+                                                ajax="false" 
+                                                value="Collecting Centre Statement"
+                                                action="/collecting_centre/cc_statement?faces-redirect=true"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-archive" 
+                                                ajax="false" 
+                                                value="Collecting Centre Book Issuance Report"
+                                                action="/collecting_centre/report_collecting_center_referece_book?faces-redirect=true"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-history" 
+                                                ajax="false" 
+                                                value="Collecting Centre History"
+                                                action="/reportLab/collecting_centre_report_agent_history?faces-redirect=true"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
 
-                                            <p:commandButton icon="fa fa-dollar-sign" ajax="false" value="Collecting Centre Deposits"
-                                                             action="/reportLab/report_collecting_center_payment_bill?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-balance-scale" ajax="false" value="Collecting Centre Current Balance"
-                                                             action="/reportLab/report_collecting_center_balance?faces-redirect=true"
-                                                             class="w-100 m-1"/>
+                                            <p:commandButton 
+                                                icon="fa fa-dollar-sign" 
+                                                ajax="false" 
+                                                value="Collecting Centre Deposits"
+                                                action="/reportLab/report_collecting_center_payment_bill?faces-redirect=true"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="fa fa-balance-scale" 
+                                                ajax="false" 
+                                                value="Collecting Centre Current Balance"
+                                                action="/reportLab/report_collecting_center_balance?faces-redirect=true"
+                                                class="w-100 m-1">
+                                            </p:commandButton>
                                         </h:panelGrid>
                                     </p:tab>
 
@@ -111,7 +175,8 @@
                                             ajax="false" 
                                             value="Edit Collecting Centre Balance History Record"
                                             action="/reportLab/report_collecting_center_balance?faces-redirect=true"
-                                            class="w-100 m-1"/>
+                                            class="w-100">
+                                        </p:commandButton>
                                     </p:tab>
 
                                 </p:accordionPanel>
