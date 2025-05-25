@@ -2059,6 +2059,7 @@ public class PatientReportController implements Serializable {
             tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));
         }
         if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            // ONLY Fully Paid Bills will get the SMS. For Partial Payments, have to manually send the sms upon receiving the full payment
             if (getCurrentPtIx().getBillItem().getBill().getBackwardReferenceBill().getBalance() < 1.0) {
                 if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
                     Sms e = new Sms();
