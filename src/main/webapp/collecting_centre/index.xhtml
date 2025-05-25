@@ -18,12 +18,13 @@
                                     <p:ajax process="@this"></p:ajax>
 
                                     <!-- Manage Section -->
-                                    <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                    <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('CollectingCentreManageMenu')}">
                                         <h:panelGrid columns="1" class="w-100" >
                                             <p:commandButton 
                                                 icon="fa fa-check-circle" 
                                                 ajax="false" 
                                                 value="Accept Collecting Centre Deposits"
+                                                rendered="#{webUserController.hasPrivilege('CCPaymentReceive')}"
                                                 action="#{agentAndCcPaymentController.navigateToCcDeposit}"
                                                 actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
                                                 class="w-100 m-1">
@@ -32,6 +33,7 @@
                                                 icon="fa fa-search" 
                                                 ajax="false" 
                                                 value="Search Collecting Centre Deposits"
+                                                rendered="#{webUserController.hasPrivilege('SearchCCPaymentReceive')}"
                                                 action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
                                                 actionListener="#{searchController.makeListNull}"
                                                 class="w-100 m-1">
@@ -41,12 +43,14 @@
                                                 ajax="false" 
                                                 value="Issue Collecting Centre Books"
                                                 action="/collecting_centre/cc_referece_book?faces-redirect=true"
+                                                rendered="#{webUserController.hasPrivilege('IssueReferenceBook')}"
                                                 class="w-100 m-1">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 icon="fa fa-list-alt" 
                                                 ajax="false" 
                                                 value="Search Collecting Centre Book Issues"
+                                                rendered="#{webUserController.hasPrivilege('SearchIssuedReferenceBook')}"
                                                 action="/collecting_centre/report_collecting_center_referece_book?faces-redirect=true"
                                                 class="w-100 m-1">
                                             </p:commandButton>
@@ -65,22 +69,15 @@
                                                 ajax="false" 
                                                 value="Pay Collecting Centres"
                                                 action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
+                                                rendered="#{webUserController.hasPrivilege('PayCollectingCentre')}"
                                                 class="w-100 m-1">
                                             </p:commandButton>
 
                                             <p:commandButton 
                                                 class="w-100 m-1" 
-                                                icon="fa fa-receipt" 
-                                                ajax="false" 
-                                                value="Collecting Centre Payment" 
-                                                action="#{agentAndCcPaymentController.navigateToCcDeposit}" 
-                                                actionListener="#{agentAndCcPaymentController.prepareNewBill()}">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                class="w-100 m-1" 
                                                 icon="fa fa-magnifying-glass-dollar" 
                                                 ajax="false" value="Collecting Centre Bill Search"        
-                                                action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true" 
+                                                action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
                                                 actionListener="#{searchController.makeListNull}">
                                             </p:commandButton>
                                             
