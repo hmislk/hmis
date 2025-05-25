@@ -577,7 +577,7 @@ public enum Privileges {
     CCPaymentReceive("CC Payment Receive"),
     SearchCCPaymentReceive("Search CC Payment Receive"),
     IssueReferenceBook("CC Issue Reference Book"),
-    SearchIssueReferenceBook("Search CC Reference Book"),
+    SearchIssuedReferenceBook("Search CC Reference Book"),
     ChangeCreditLimitInCC("Change CC Credit Limit"),
     PayCollectingCentre("Pay Collecting Centre"),
     CollectingCentreCreditDebitNoteMenu("CC Credit/Debit Note Menu"),
