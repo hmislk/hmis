@@ -561,7 +561,7 @@ public enum Privileges {
     OphthalmologyRepairManagement("Ophthalmology Repair Management"),
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="Collecting Centre">
+    //<editor-fold defaultstate="collapsed" desc="Courier">
     Courier("Courier"),
     CourierCollectSamples("Courier Collect Samples"),
     CourierHandoverSamplesToLab("Courier Handover Samples to Lab"),
@@ -570,9 +570,20 @@ public enum Privileges {
     CourierViewStatistics("Courier View Statistics"),
     CourierViewBillReports("Courier View Bill Reports"),
     CourierViewPaymentReports("Courier View Payment Reports"),
-    ChangeCreditLimitInCC("Change Credit Limit in Collecting Centre"),
-    CollectingCentreReports("Collecting Centre Reports"),
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Collecting Centre">
+    CCPaymentReceive("CC Payment Receive"),
+    SearchCCPaymentReceive("Search CC Payment Receive"),
+    IssueReferenceBook("CC Issue Reference Book"),
+    SearchIssueReferenceBook("Search CC Reference Book"),
+    ChangeCreditLimitInCC("Change CC Credit Limit"),
+    PayCollectingCentre("Pay Collecting Centre"),
+    CollectingCentreCreditNote("CC Credit Note"),
+    CollectingCentreDebitNote("CC Debit Note"),
+    CollectingCentreReports("CC Reports"),
     ChangeCollectingCentre("Change Collecting Centre"),
+    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="User">
