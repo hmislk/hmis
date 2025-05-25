@@ -97,7 +97,7 @@ public class CreditCompanyDueController implements Serializable {
     private Institution institutionOfDepartment;
     private Department department;
     private Institution site;
-    
+
     private String billType;
 
     Map<PatientEncounter, List<Bill>> billPatientEncounterMap = new HashMap<>();
@@ -1023,7 +1023,7 @@ public class CreditCompanyDueController implements Serializable {
             default:
                 btas = billService.fetchBillTypeAtomicsForOpdFinance();
         }
-        
+
         List<Institution> setIns = getCreditBean().getCreditInstitution(btas, getFromDate(), getToDate(), true);
         items = new ArrayList<>();
         for (Institution ins : setIns) {
@@ -1033,6 +1033,10 @@ public class CreditCompanyDueController implements Serializable {
             newIns.setPayments(payments);
 
             for (Payment p : payments) {
+                if (p.getBill() == null) {
+                    continue;
+                }
+                
                 newIns.setTotal(newIns.getTotal() + p.getBill().getNetTotal());
                 newIns.setPaidTotal(newIns.getPaidTotal() + p.getBill().getPaidAmount());
             }
@@ -2604,7 +2608,7 @@ public class CreditCompanyDueController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
             String[] headers = {"Institution Name", "Bill No", "Policy No", "Ref No", "Client Name", "Bill Date", "Billed Amount", "Staff Fee", "Paid Amount", "Net Amount"};
             int colIndex = 0;
-            
+
             double total = 0;
             double paidTotal = 0;
             double DueTotal = 0;
@@ -2631,10 +2635,10 @@ public class CreditCompanyDueController implements Serializable {
                     dataRow.createCell(colIndex++).setCellValue(bill.getPaidAmount());
                     dataRow.createCell(colIndex++).setCellValue(bill.getNetTotal() - bill.getPaidAmount());
                 }
-                
+
                 total += institution.getTotal();
                 paidTotal += institution.getPaidTotal();
-                DueTotal += (institution.getTotal()- institution.getPaidTotal());
+                DueTotal += (institution.getTotal() - institution.getPaidTotal());
             }
 
             // Add totals row below all data
