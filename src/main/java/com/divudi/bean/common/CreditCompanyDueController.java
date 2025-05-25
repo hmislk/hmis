@@ -1027,14 +1027,14 @@ public class CreditCompanyDueController implements Serializable {
         List<Institution> setIns = getCreditBean().getCreditInstitution(btas, getFromDate(), getToDate(), true);
         items = new ArrayList<>();
         for (Institution ins : setIns) {
-            List<Bill> bills = getCreditBean().getCreditBills(ins, btas, getFromDate(), getToDate(), true);
+            List<Payment> payments = getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true);
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
-            newIns.setBills(bills);
+            newIns.setPayments(payments);
 
-            for (Bill b : bills) {
-                newIns.setTotal(newIns.getTotal() + b.getNetTotal());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidAmount());
+            for (Payment p : payments) {
+                newIns.setTotal(newIns.getTotal() + p.getBill().getNetTotal());
+                newIns.setPaidTotal(newIns.getPaidTotal() + p.getBill().getPaidAmount());
             }
 
             items.add(newIns);
