@@ -8,6 +8,7 @@ package com.divudi.ejb;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.MessageType;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.facade.SessionInstanceFacade;
@@ -63,7 +64,8 @@ public class SmsManagerEjb {
 
     private static final boolean doNotSendAnySms = false;
 
-    // ChatGPT contributed method
+// ChatGPT and CodeRabbitAI contributed method:
+// Processes pending lab report approval SMS messages based on configurable delay strategies
     @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
     private void processPendingLabReportApprovalSmsQueue() {
         if (configOptionApplicationController == null || smsFacade == null) {
@@ -116,20 +118,41 @@ public class SmsManagerEjb {
         Calendar minCreatedAt = (Calendar) now.clone();
         minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
 
-        String jpql = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt between :from and :to";
+        String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
+                + "and e.smsType = :smsType and e.createdAt between :from and :to";
         Map<String, Object> params = new HashMap<>();
         params.put("from", minCreatedAt.getTime());
         params.put("to", delayThreshold.getTime());
+        params.put("smsType", MessageType.LabReport);
 
         List<Sms> smses = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
         for (Sms sms : smses) {
-            boolean success = sendSms(sms);
-            sms.setSentSuccessfully(success);
-            sms.setPending(!success);
-            if (success) {
-                sms.setSentAt(new Date());
+            try {
+                // Skip if investigation is null
+                if (sms.getPatientInvestigation() == null) {
+                    continue;
+                }
+
+                Bill bill = sms.getPatientInvestigation().getBillItem() != null
+                        ? sms.getPatientInvestigation().getBillItem().getBill()
+                        : null;
+
+                if (bill == null || bill.getBalance() > 0.99) {
+                    continue;
+                }
+
+                boolean success = sendSms(sms);
+                sms.setSentSuccessfully(success);
+                sms.setPending(!success);
+                if (success) {
+                    sms.setSentAt(new Date());
+                }
+                smsFacade.edit(sms);
+            } catch (Exception e) {
+                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE,
+                        "Failed to process SMS ID: " + (sms != null ? sms.getId() : "unknown"), e);
             }
-            smsFacade.edit(sms);
         }
     }
 
