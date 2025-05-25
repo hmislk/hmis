@@ -1032,11 +1032,15 @@ public class CreditCompanyDueController implements Serializable {
             newIns.setInstitution(ins);
             newIns.setPayments(payments);
 
+            Set<Long> countedBillIds = new HashSet<>(); // Assuming bill.getId() is Long
+
             for (Payment p : payments) {
-                if (p.getBill() == null) {
+                if (p.getBill() == null || countedBillIds.contains(p.getBill().getId())) {
                     continue;
                 }
-                
+
+                countedBillIds.add(p.getBill().getId());
+
                 newIns.setTotal(newIns.getTotal() + p.getBill().getNetTotal());
                 newIns.setPaidTotal(newIns.getPaidTotal() + p.getBill().getPaidAmount());
             }
