@@ -45,6 +45,9 @@ public class PatientReport implements Serializable, RetirableEntity {
     @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PatientReportItemValue> patientReportItemValues;
 
+    @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<PatientReportGroup> patientReportGroups;
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -176,8 +179,6 @@ public class PatientReport implements Serializable, RetirableEntity {
         printed = false;
         approved = false;
     }
-
-
 
     public PatientReportItemValue getTemplateItem() {
 
@@ -697,8 +698,8 @@ public class PatientReport implements Serializable, RetirableEntity {
 
         transHasAbst = false;
         for (PatientReportItemValue priva : this.patientReportItemValues) {
-            if (priva.strValue != null) {
-                if (priva.strValue.equals("SENSITIVE") || priva.strValue.equals("Resistant") || priva.strValue.equals("Intermediate")) {
+            if (priva.getStrValue() != null) {
+                if (priva.getStrValue().equals("SENSITIVE") || priva.getStrValue().equals("Resistant") || priva.getStrValue().equals("Intermediate")) {
                     transHasAbst = true;
                     return transHasAbst;
                 }
@@ -828,6 +829,16 @@ public class PatientReport implements Serializable, RetirableEntity {
     public void setReportType(ReportType reportType) {
         this.reportType = reportType;
     }
+
+    public List<PatientReportGroup> getPatientReportGroups() {
+        return patientReportGroups;
+    }
+
+    public void setPatientReportGroups(List<PatientReportGroup> patientReportGroups) {
+        this.patientReportGroups = patientReportGroups;
+    }
+    
+    
 
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {
 
