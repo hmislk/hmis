@@ -9,6 +9,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.dataStructure.DealerDueDetailRow;
+import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
 import com.divudi.core.data.dataStructure.InstitutionBills;
 import com.divudi.core.data.dataStructure.InstitutionEncounters;
 import com.divudi.core.data.table.String1Value5;
@@ -93,6 +94,8 @@ public class CreditCompanyDueController implements Serializable {
     double finalTransPaidTotal;
     double finalTransPaidTotalPatient;
     private double payableByPatient;
+    private double payableByCompany;
+    private double gopAmount;
 
     private Institution institutionOfDepartment;
     private Department department;
@@ -106,6 +109,48 @@ public class CreditCompanyDueController implements Serializable {
     private int rowCounter = 0;
 
     private List<Bill> bills = new ArrayList<>();
+
+    Map<Institution, Double> instituteGopMap = new HashMap<>();
+    Map<Institution, Double> institutPaidByCompanyMap = new HashMap<>();
+    Map<Institution, Double> institutePayableByCompanyMap = new HashMap<>();
+
+    Map<Institution, List<InstitutionBillEncounter>> billInstitutionEncounterMap;
+
+    public Map<Institution, List<InstitutionBillEncounter>> getBillInstitutionEncounterMap() {
+        return billInstitutionEncounterMap;
+    }
+
+    public void setBillInstitutionEncounterMap(Map<Institution, List<InstitutionBillEncounter>> billInstitutionEncounterMap) {
+        if (billInstitutionEncounterMap == null) {
+            billInstitutionEncounterMap = new HashMap<>();
+        }
+
+        this.billInstitutionEncounterMap = billInstitutionEncounterMap;
+    }
+
+    public Map<Institution, Double> getInstituteGopMap() {
+        return instituteGopMap;
+    }
+
+    public void setInstituteGopMap(Map<Institution, Double> instituteGopMap) {
+        this.instituteGopMap = instituteGopMap;
+    }
+
+    public Map<Institution, Double> getInstitutPaidByCompanyMap() {
+        return institutPaidByCompanyMap;
+    }
+
+    public void setInstitutPaidByCompanyMap(Map<Institution, Double> institutPaidByCompanyMap) {
+        this.institutPaidByCompanyMap = institutPaidByCompanyMap;
+    }
+
+    public Map<Institution, Double> getInstitutePayableByCompanyMap() {
+        return institutePayableByCompanyMap;
+    }
+
+    public void setInstitutePayableByCompanyMap(Map<Institution, Double> institutePayableByCompanyMap) {
+        this.institutePayableByCompanyMap = institutePayableByCompanyMap;
+    }
 
     public List<Bill> getBills() {
         return bills;
@@ -185,6 +230,22 @@ public class CreditCompanyDueController implements Serializable {
 
     public double getPayableByPatient() {
         return payableByPatient;
+    }
+
+    public double getPayableByCompany() {
+        return payableByCompany;
+    }
+
+    public void setPayableByCompany(double payableByCompany) {
+        this.payableByCompany = payableByCompany;
+    }
+
+    public double getGopAmount() {
+        return gopAmount;
+    }
+
+    public void setGopAmount(double gopAmount) {
+        this.gopAmount = gopAmount;
     }
 
     public void setPayableByPatient(double payableByPatient) {
@@ -1153,49 +1214,132 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
+//    public void createInwardCreditDueWithAdditionalFilters() {
+//        Date startTime = new Date();
+//
+//        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounterWithFinalizedPayments(getFromDate(), getToDate(),
+//                PaymentMethod.Credit, institutionOfDepartment, department, site);
+//        institutionEncounters = new ArrayList<>();
+//        finalTotal = 0.0;
+//        finalPaidTotal = 0.0;
+//        finalPaidTotalPatient = 0.0;
+//        finalTransPaidTotal = 0.0;
+//        finalTransPaidTotalPatient = 0.0;
+//        for (Institution ins : setIns) {
+//            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounterWithFinalizedPayments(ins, getFromDate(), getToDate(),
+//                    PaymentMethod.Credit, institutionOfDepartment, department, site);
+//
+//            updateSettledAmountsForIP(lst);
+//
+//            if (withOutDueUpdate) {
+//                removeSettledAndExcessBills(lst);
+//            }
+//
+//            InstitutionEncounters newIns = new InstitutionEncounters();
+//            newIns.setInstitution(ins);
+//            newIns.setPatientEncounters(lst);
+//
+//            for (PatientEncounter b : lst) {
+////                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
+////                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
+//
+//                newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
+//                newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getSettledAmountByPatient());
+//                newIns.setPaidTotal(newIns.getPaidTotal() + b.getFinalBill().getSettledAmountBySponsor());
+//            }
+//
+//            finalTotal += newIns.getTotal();
+//            finalPaidTotal += newIns.getPaidTotal();
+//            finalPaidTotalPatient += newIns.getPaidTotalPatient();
+//
+//            if (newIns.getPatientEncounters().isEmpty()) {
+//                continue;
+//            }
+//
+//            institutionEncounters.add(newIns);
+//        }
+//    }
+
     public void createInwardCreditDueWithAdditionalFilters() {
-        Date startTime = new Date();
+        HashMap m = new HashMap();
+        String sql = " Select b from PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " where b.retired=false "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td ";
 
-        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounterWithFinalizedPayments(getFromDate(), getToDate(),
-                PaymentMethod.Credit, institutionOfDepartment, department, site);
-        institutionEncounters = new ArrayList<>();
-        finalTotal = 0.0;
-        finalPaidTotal = 0.0;
-        finalPaidTotalPatient = 0.0;
-        finalTransPaidTotal = 0.0;
-        finalTransPaidTotalPatient = 0.0;
-        for (Institution ins : setIns) {
-            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounterWithFinalizedPayments(ins, getFromDate(), getToDate(),
-                    PaymentMethod.Credit, institutionOfDepartment, department, site);
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
 
-            updateSettledAmountsForIP(lst);
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
 
-            if (withOutDueUpdate) {
-                removeSettledAndExcessBills(lst);
+        if (institutionOfDepartment != null) {
+            sql += "AND fb.institution = :insd ";
+            m.put("insd", institutionOfDepartment);
+        }
+
+        if (department != null) {
+            sql += "AND fb.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += "AND fb.department.site = :site ";
+            m.put("site", site);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        if (patientEncounters == null) {
+            return;
+        }
+
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
+
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
+        calculateCreditCompanyAmounts();
+
+        List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(
+                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), true));
+
+        setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
+        calculateCreditCompanyDueTotals();
+    }
+
+    private void calculateCreditCompanyDueTotals() {
+        gopAmount = 0;
+        paidByCompany = 0;
+        payableByCompany = 0;
+
+        for (Institution ins : getBillInstitutionEncounterMap().keySet()) {
+            double gop = 0;
+            double paidByComp = 0;
+            double payableByComp = 0;
+
+            List<InstitutionBillEncounter> encounters = getBillInstitutionEncounterMap().get(ins);
+
+            for (InstitutionBillEncounter ibe : encounters) {
+                gop += ibe.getGopAmount();
+                paidByComp += ibe.getPaidByCompany();
+                payableByComp += ibe.getCompanyDue();
             }
 
-            InstitutionEncounters newIns = new InstitutionEncounters();
-            newIns.setInstitution(ins);
-            newIns.setPatientEncounters(lst);
+            instituteGopMap.put(ins, gop);
+            institutPaidByCompanyMap.put(ins, paidByComp);
+            institutePayableByCompanyMap.put(ins, payableByComp);
 
-            for (PatientEncounter b : lst) {
-//                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
-//                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
-
-                newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
-                newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getSettledAmountByPatient());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getFinalBill().getSettledAmountBySponsor());
-            }
-
-            finalTotal += newIns.getTotal();
-            finalPaidTotal += newIns.getPaidTotal();
-            finalPaidTotalPatient += newIns.getPaidTotalPatient();
-
-            if (newIns.getPatientEncounters().isEmpty()) {
-                continue;
-            }
-
-            institutionEncounters.add(newIns);
+            gopAmount += gop;
+            paidByCompany += paidByComp;
+            payableByCompany += payableByComp;
         }
     }
 
