@@ -9,6 +9,8 @@
         <ui:composition template="/analytics/index.xhtml">
             <ui:define name="report">
                 <h:form>
+                    <p:growl id="msgs" showDetail="true" life="5000" />
+
                     <p:panel header="Send Test Email" styleClass="p-3">
                         <p:panelGrid columns="2" styleClass="w-100">
 
@@ -28,6 +30,7 @@
                                 styleClass="ui-button-success"
                                 ajax="false"
                                 action="#{emailController.sendManualEmail}" />
+
                         </p:panelGrid>
 
                         <p:outputLabel value="#{emailController.output}" styleClass="text-success mt-3" />
