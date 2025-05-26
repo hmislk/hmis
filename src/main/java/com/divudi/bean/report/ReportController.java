@@ -1595,7 +1595,7 @@ public class ReportController implements Serializable {
             m.put("site", site);
         }
 
-        if (siteIds != null && !siteIds.isEmpty() && !siteIds.contains("ALL_SITES")) {
+        if (siteIds != null && !siteIds.isEmpty()) {
             jpql += " and bi.bill.department.site.id in :siteIds";
 
             m.put("siteIds", siteIds);
