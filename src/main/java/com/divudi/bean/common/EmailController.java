@@ -99,8 +99,19 @@ public class EmailController implements Serializable {
         JsfUtil.addSuccessMessage(success ? "Resent Successfully" : "Resending failed");
     }
 
-    // ---------------- Getters & Setters ---------------- //
+    public String navigateToEmailList() {
+        return "/analytics/email_list?faces-redirect=true";
+    }
 
+    public String navigateToFailedEmailList() {
+        return "/analytics/email_failed_list?faces-redirect=true";
+    }
+
+    public String navigateToSendEmail() {
+        return "/analytics/email_send?faces-redirect=true";
+    }
+
+    // ---------------- Getters & Setters ---------------- //
     public List<AppEmail> getEmails() {
         return emails;
     }
