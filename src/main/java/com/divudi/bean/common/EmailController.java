@@ -211,23 +211,11 @@ public class EmailController implements Serializable {
         return emailFacade;
     }
 
-    public void setEmailFacade(EmailFacade emailFacade) {
-        this.emailFacade = emailFacade;
-    }
-
     public EmailManagerEjb getEmailManager() {
         return emailManager;
     }
 
-    public void setEmailManager(EmailManagerEjb emailManager) {
-        this.emailManager = emailManager;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
     }
 }
