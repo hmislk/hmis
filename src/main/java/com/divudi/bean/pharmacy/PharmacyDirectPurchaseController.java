@@ -259,7 +259,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BigDecimal totalBasis = BigDecimal.ZERO;
         Map<BillItem, BigDecimal> itemBases = new HashMap<>();
 
-        // Step 1: Calculate total basis for proportional allocation
         for (BillItem bi : billItems) {
             BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
             if (f == null) {
@@ -279,20 +278,24 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
-        // Step 2: Get bill-level totals
-        BigDecimal billDiscountTotal = bill.getBillFinanceDetails().getBillDiscount() != null
-                ? bill.getBillFinanceDetails().getBillDiscount()
-                : BigDecimal.ZERO;
+        BigDecimal totalLineDiscount = BigDecimal.ZERO;
+        BigDecimal totalLineExpense = BigDecimal.ZERO;
+        BigDecimal totalLineTax = BigDecimal.ZERO;
 
-        BigDecimal billExpenseTotal = bill.getBillFinanceDetails().getTotalExpense() != null
-                ? bill.getBillFinanceDetails().getTotalExpense()
-                : BigDecimal.ZERO;
+        for (BillItem bi : billItems) {
+            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+            if (f == null) {
+                continue;
+            }
+            totalLineDiscount = totalLineDiscount.add(Optional.ofNullable(f.getLineDiscount()).orElse(BigDecimal.ZERO));
+            totalLineExpense = totalLineExpense.add(Optional.ofNullable(f.getLineExpense()).orElse(BigDecimal.ZERO));
+            totalLineTax = totalLineTax.add(Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO));
+        }
 
-        BigDecimal billTaxTotal = bill.getBillFinanceDetails().getTotalTaxValue() != null
-                ? bill.getBillFinanceDetails().getTotalTaxValue()
-                : BigDecimal.ZERO;
+        BigDecimal billLevelDiscount = Optional.ofNullable(bill.getBillFinanceDetails().getBillDiscount()).orElse(BigDecimal.ZERO).subtract(totalLineDiscount);
+        BigDecimal billLevelExpense = Optional.ofNullable(bill.getBillFinanceDetails().getTotalExpense()).orElse(BigDecimal.ZERO).subtract(totalLineExpense);
+        BigDecimal billLevelTax = Optional.ofNullable(bill.getBillFinanceDetails().getTotalTaxValue()).orElse(BigDecimal.ZERO).subtract(totalLineTax);
 
-        // Step 3: Distribute to bill items
         for (BillItem bi : billItems) {
             BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
             if (f == null) {
@@ -302,18 +305,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
             BigDecimal basis = itemBases.getOrDefault(bi, BigDecimal.ZERO);
             BigDecimal ratio = basis.divide(totalBasis, 12, RoundingMode.HALF_UP);
 
-            // Proportional values
-            BigDecimal itemDiscount = billDiscountTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal itemExpense = billExpenseTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal itemTax = billTaxTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
+            f.setBillDiscount(billLevelDiscount.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
+            f.setBillExpense(billLevelExpense.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
+            f.setBillTax(billLevelTax.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
 
-            // User-entered values are left untouched: lineGrossRate, lineDiscountRate, retailSaleRate
-            // Assign bill-level proportional components
-            f.setBillDiscount(itemDiscount);
-            f.setBillExpense(itemExpense);
-            f.setBillTax(itemTax);
-
-// Totals = line + bill
             BigDecimal lineDiscount = Optional.ofNullable(f.getLineDiscount()).orElse(BigDecimal.ZERO);
             BigDecimal lineExpense = Optional.ofNullable(f.getLineExpense()).orElse(BigDecimal.ZERO);
             BigDecimal lineTax = Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO);
@@ -322,34 +317,22 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setTotalExpense(lineExpense.add(f.getBillExpense()));
             f.setTotalTax(lineTax.add(f.getBillTax()));
 
-            // Total net = gross - discount + tax + expense
-            BigDecimal grossTotal = f.getLineGrossTotal(); // already calculated earlier
-            BigDecimal netTotal = grossTotal
-                    .subtract(f.getTotalDiscount())
-                    .add(f.getTotalTax())
-                    .add(f.getTotalExpense());
-
+            BigDecimal grossTotal = f.getLineGrossTotal();
+            BigDecimal netTotal = grossTotal.subtract(f.getTotalDiscount()).add(f.getTotalTax()).add(f.getTotalExpense());
             f.setNetTotal(netTotal);
 
-            // Cost
             f.setTotalCost(netTotal);
             f.setBillCost(netTotal);
 
-            // Quantities
-            BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
+            BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
             BigDecimal totalQty = qty.add(freeQty);
             f.setTotalQuantity(totalQty);
 
-            // Cost Rate
-            BigDecimal costRate = totalQty.compareTo(BigDecimal.ZERO) > 0
-                    ? netTotal.divide(totalQty, 6, RoundingMode.HALF_UP)
-                    : BigDecimal.ZERO;
-
+            BigDecimal costRate = totalQty.compareTo(BigDecimal.ZERO) > 0 ? netTotal.divide(totalQty, 6, RoundingMode.HALF_UP) : BigDecimal.ZERO;
             f.setBillCostRate(costRate.setScale(4, RoundingMode.HALF_UP));
             f.setTotalCostRate(costRate.setScale(4, RoundingMode.HALF_UP));
 
-            // System-calculated rates
             f.setGrossRate(f.getLineGrossRate());
             f.setBillGrossRate(f.getLineGrossRate());
 
@@ -362,7 +345,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             f.setNetRate(f.getLineNetRate());
             f.setBillNetRate(f.getLineNetRate());
-
         }
     }
 
