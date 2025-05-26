@@ -15,13 +15,30 @@
                         <p:panelGrid columns="2" styleClass="w-100">
 
                             <h:outputLabel for="recipient" value="Recipient Email:" />
-                            <p:inputText id="recipient" value="#{emailController.recipient}" styleClass="w-100" />
+                            <p:inputText id="recipient" 
+                                value="#{emailController.recipient}" 
+                                styleClass="w-100"
+                                required="true"
+                                requiredMessage="Recipient email is required"
+                                validatorMessage="Please enter a valid email address">
+                                <f:validateRegex pattern="^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$" />
+                            </p:inputText>
 
                             <h:outputLabel for="subject" value="Subject:" />
-                            <p:inputText id="subject" value="#{emailController.subject}" styleClass="w-100" />
+                            <p:inputText id="subject" 
+                                value="#{emailController.subject}" 
+                                styleClass="w-100"
+                                required="true"
+                                requiredMessage="Subject is required" />
 
                             <h:outputLabel for="body" value="Body:" />
-                            <p:inputTextarea id="body" value="#{emailController.body}" rows="6" autoResize="true" styleClass="w-100" />
+                            <p:inputTextarea id="body" 
+                                value="#{emailController.body}" 
+                                rows="6" 
+                                autoResize="true" 
+                                styleClass="w-100"
+                                required="true"
+                                requiredMessage="Email body is required" />
 
                             <p:spacer />
                             <p:commandButton
