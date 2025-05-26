@@ -580,6 +580,27 @@ public class BillService {
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        return btas;
+    }
+    
+    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyOpdBills(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        return btas;
+    }
+    
+    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyPackageBills(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);

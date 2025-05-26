@@ -7,6 +7,7 @@ package com.divudi.core.entity;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
 import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
@@ -444,6 +445,9 @@ public class Bill implements Serializable, RetirableEntity {
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
     private BillFinanceDetails billFinanceDetails;
+
+    @Transient
+    private Institution transientSupplier;
 
     public Bill() {
         if (status == null) {
@@ -2767,8 +2771,6 @@ public class Bill implements Serializable, RetirableEntity {
     public void setPaymentGenerated(boolean paymentGenerated) {
         this.paymentGenerated = paymentGenerated;
     }
-    
-    
 
     public WebUser getPaymentGeneratedBy() {
         return paymentGeneratedBy;
@@ -2894,5 +2896,19 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setIndication(String indication) {
         this.indication = indication;
+    }
+
+    public Institution getTransientSupplier() {
+        if (this.getBillTypeAtomic() == null) {
+            return transientSupplier = this.getFromInstitution();
+        }
+        switch (this.getBillTypeAtomic()) {
+            case PHARMACY_GRN_RETURN:
+                transientSupplier = this.getToInstitution();
+                break;
+            default:
+                transientSupplier = this.getFromInstitution();
+        }
+        return transientSupplier;
     }
 }

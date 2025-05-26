@@ -675,46 +675,80 @@ public class PharmacyAdjustmentController implements Serializable {
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
 
-    private void saveRsrAdjustmentBillItems() {
+    private void deductBeforeAdjustmentItemFromStock() {
         if (stock == null) {
             JsfUtil.addErrorMessage("Please select a stock");
             return;
         }
-        billItem = null;
-        BillItem tbi = getBillItem();
-        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
+
+        BillItem tbi = new BillItem();
+        PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
         ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
-        ph.setBillItem(null);
-        ph.setPurchaseRate(itemBatch.getPurcahseRate());
-        ph.setRetailRate(itemBatch.getRetailsaleRate());
+
         tbi.setItem(getStock().getItemBatch().getItem());
-        tbi.setRate(rsr);
-        //pharmaceutical Bill Item
-        ph.setStock(stock);
-        //Rates
-        //Values
         tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
         tbi.setNetValue(getStock().getStock() * tbi.getNetRate());
         tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
         tbi.setInwardChargeType(InwardChargeType.Medicine);
-        tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setBill(getDeptAdjustmentPreBill());
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
 
-        if (ph.getId() == null) {
-            getPharmaceuticalBillItemFacade().create(ph);
-        }
-        tbi.setPharmaceuticalBillItem(ph);
-
-        if (tbi.getId() == null) {
-            getBillItemFacade().edit(tbi);
-        }
+        ph.setPurchaseRate(itemBatch.getPurcahseRate());
+        ph.setRetailRate(itemBatch.getRetailsaleRate());
+        ph.setStock(stock);
+        ph.setQty(0 - stock.getStock());
 
         ph.setBillItem(tbi);
-        getPharmaceuticalBillItemFacade().edit(ph);
-//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+        tbi.setPharmaceuticalBillItem(ph);
+
+        getBillItemFacade().create(tbi);
+
+        boolean returnFlag = getPharmacyBean().deductFromStock(
+                getStock(), Math.abs(getStock().getStock()), ph, getDeptAdjustmentPreBill().getDepartment());
+        if (!returnFlag) {
+            JsfUtil.addErrorMessage("Stock deduction failed – transaction rolled back?");
+        }
+
+    }
+
+    private void saveRsrAdjustmentBillItems() {
+        if (stock == null) {
+            JsfUtil.addErrorMessage("Please select a stock");
+            return;
+        }
+
+        BillItem tbi = new BillItem();
+        PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+        ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
+
+        tbi.setItem(getStock().getItemBatch().getItem());
+        tbi.setRate(rsr);
+        tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
+        tbi.setNetValue(getStock().getStock() * tbi.getNetRate());
+        tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
+        tbi.setInwardChargeType(InwardChargeType.Medicine);
+        tbi.setBill(getDeptAdjustmentPreBill());
+        tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
+        tbi.setCreatedAt(Calendar.getInstance().getTime());
+        tbi.setCreater(getSessionController().getLoggedUser());
+
+        ph.setPurchaseRate(itemBatch.getPurcahseRate());
+        ph.setBeforeAdjustmentValue(itemBatch.getRetailsaleRate());
+        ph.setAfterAdjustmentValue(rsr);
+        ph.setRetailRate(rsr);
+        ph.setStock(stock);
+        ph.setQty(stock.getStock());
+
+        ph.setBillItem(tbi);
+        tbi.setPharmaceuticalBillItem(ph);
+
+        getBillItemFacade().create(tbi);
+
+        boolean addFlag = getPharmacyBean().addToStock(
+                getStock(), Math.abs(getStock().getStock()), ph, getDeptAdjustmentPreBill().getDepartment());
+
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
@@ -1204,6 +1238,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
 
         saveSaleRateAdjustmentBill();
+        deductBeforeAdjustmentItemFromStock();
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());

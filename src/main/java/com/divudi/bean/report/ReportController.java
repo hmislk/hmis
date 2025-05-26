@@ -218,6 +218,8 @@ public class ReportController implements Serializable {
     private Speciality speciality;
     private String reportTemplateFileIndexName;
 
+    private List<String> siteIds;
+
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
             return ""; // Default style or no style
@@ -1591,6 +1593,12 @@ public class ReportController implements Serializable {
         if (site != null) {
             jpql += " and bi.bill.department.site = :site ";
             m.put("site", site);
+        }
+
+        if (siteIds != null && !siteIds.isEmpty()) {
+            jpql += " and bi.bill.department.site.id in :siteIds";
+
+            m.put("siteIds", siteIds);
         }
 
         List<BillTypeAtomic> bTypes = Arrays.asList(
@@ -4040,6 +4048,14 @@ public class ReportController implements Serializable {
 
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public List<String> getSiteIds() {
+        return siteIds;
+    }
+
+    public void setSiteIds(List<String> siteIds) {
+        this.siteIds = siteIds;
     }
 
     public String getReportTemplateFileIndexName() {

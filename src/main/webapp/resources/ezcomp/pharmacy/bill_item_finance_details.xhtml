@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="pbi" type="com.divudi.core.entity.BillItem" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <p:tabView styleClass="w-100">
+
+            <!-- === Item Info Tab === -->
+            <p:tab title="Item Info">
+                <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                    <p:outputLabel value="Item Name" />
+                    <p:outputLabel value="#{cc.attrs.pbi.item.name}" />
+
+                    <p:outputLabel value="Item Code" />
+                    <p:outputLabel value="#{cc.attrs.pbi.item.code}" />
+
+                    <p:outputLabel value="Item Type" />
+                    <p:outputLabel value="#{cc.attrs.pbi.item.class.simpleName}" />
+
+                    <p:outputLabel value="Units Per Pack" />
+                    <p:outputLabel value="#{cc.attrs.pbi.item.dblValue}" styleClass="text-end" />
+                </p:panelGrid>
+            </p:tab>
+
+            <!-- === Quantity Tab === -->
+            <p:tab title="Quantities">
+                <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                    <p:outputLabel value="Quantity" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.quantity}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Free Quantity" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.freeQuantity}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                </p:panelGrid>
+            </p:tab>
+
+            <!-- === Bill Rates Tab === -->
+            <p:tab title="Bill Item Rates">
+                <p:panelGrid layout="tabular" columns="4" styleClass="w-100">
+                    <p:outputLabel value="Description" />
+                    <p:outputLabel value="Line Rate" />
+                    <p:outputLabel value="Bill Rate" />
+                    <p:outputLabel value="Net Rate" />
+
+                    <p:outputLabel value="Purchase Rate" />
+                    <p:spacer />
+                    <p:spacer />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.grossRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Retail Rate" />
+                    <p:spacer />
+                    <p:spacer />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.retailSaleRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Gross Rates" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineGrossRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billGrossRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.grossRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Discount Rates" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineDiscountRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billDiscountRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalDiscountRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Net Rates" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineNetRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billNetRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.netRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Expense Rate" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineExpenseRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billExpenseRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalExpenseRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Tax Rate" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineTaxRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billTaxRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalTaxRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Cost Rate" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineCostRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billCostRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalCostRate}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                </p:panelGrid>
+            </p:tab>
+
+
+            <!-- === Values Tab === -->
+            <p:tab title="Values">
+                <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+
+                    <p:outputLabel value="Line Discount Value" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineDiscount}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Bill Discount from Bill" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.billDiscount}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Total Discount" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalDiscount}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Gross Total" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.grossTotal}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Net Total" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.netTotal}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Retail Sale Value" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalCostRate * cc.attrs.pbi.billItemFinanceDetails.totalQuantity}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
+
+                </p:panelGrid>
+            </p:tab>
+
+        </p:tabView>
+
+
+    </cc:implementation>
+</html>

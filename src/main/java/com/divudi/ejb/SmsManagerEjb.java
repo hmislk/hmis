@@ -8,6 +8,7 @@ package com.divudi.ejb;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.MessageType;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.facade.SessionInstanceFacade;
@@ -34,6 +35,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +63,98 @@ public class SmsManagerEjb {
     private SessionController sessionController;
 
     private static final boolean doNotSendAnySms = false;
+
+    // ChatGPT and CodeRabbitAI contributed method:
+    // Processes pending lab report approval SMS messages based on configurable delay strategies
+    @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
+    private void processPendingLabReportApprovalSmsQueue() {
+        if (configOptionApplicationController == null || smsFacade == null) {
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Do Not Sent Automatically", false)) {
+            return;
+        }
+
+        // Ensure all strategy keys are registered with one default true
+        configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Send after one minute", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Send after two minutes", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Send after 5 minutes", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Send after 10 minutes", true); // Default true
+        configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Send after 15 minutes", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Send after 20 minutes", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Send after half an hour", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Send after one hour", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Send after two hours", false);
+
+        Map<String, Integer> strategyMinutes = new LinkedHashMap<>();
+        strategyMinutes.put("Sending SMS After Lab Report Approval Strategy - Send after one minute", 1);
+        strategyMinutes.put("Sending SMS After Lab Report Approval Strategy - Send after two minutes", 2);
+        strategyMinutes.put("Sending SMS After Lab Report Approval Strategy - Send after 5 minutes", 5);
+        strategyMinutes.put("Sending SMS After Lab Report Approval Strategy - Send after 10 minutes", 10);
+        strategyMinutes.put("Sending SMS After Lab Report Approval Strategy - Send after 15 minutes", 15);
+        strategyMinutes.put("Sending SMS After Lab Report Approval Strategy - Send after 20 minutes", 20);
+        strategyMinutes.put("Sending SMS After Lab Report Approval Strategy - Send after half an hour", 30);
+        strategyMinutes.put("Sending SMS After Lab Report Approval Strategy - Send after one hour", 60);
+        strategyMinutes.put("Sending SMS After Lab Report Approval Strategy - Send after two hours", 120);
+
+        int delayMinutes = 0;
+        for (Map.Entry<String, Integer> entry : strategyMinutes.entrySet()) {
+            if (configOptionApplicationController.getBooleanValueByKey(entry.getKey(), false)) {
+                delayMinutes = entry.getValue();
+                break;
+            }
+        }
+
+        if (delayMinutes == 0) {
+            return;
+        }
+
+        Calendar now = Calendar.getInstance();
+
+        Calendar delayThreshold = (Calendar) now.clone();
+        delayThreshold.add(Calendar.MINUTE, -delayMinutes);
+
+        Calendar minCreatedAt = (Calendar) now.clone();
+        minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
+
+        String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
+                + "and e.smsType = :smsType and e.createdAt between :from and :to";
+        Map<String, Object> params = new HashMap<>();
+        params.put("from", minCreatedAt.getTime());
+        params.put("to", delayThreshold.getTime());
+        params.put("smsType", MessageType.LabReport);
+
+        List<Sms> smses = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        for (Sms sms : smses) {
+            try {
+                // Skip if investigation is null
+                if (sms.getPatientInvestigation() == null) {
+                    continue;
+                }
+
+                Bill bill = sms.getPatientInvestigation().getBillItem() != null
+                        ? sms.getPatientInvestigation().getBillItem().getBill()
+                        : null;
+
+                if (bill == null || bill.getBalance() > 0.99) {
+                    continue;
+                }
+
+                boolean success = sendSms(sms);
+                sms.setSentSuccessfully(success);
+                sms.setPending(!success);
+                if (success) {
+                    sms.setSentAt(new Date());
+                }
+                smsFacade.edit(sms);
+            } catch (Exception e) {
+                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE,
+                        "Failed to process SMS ID: " + (sms != null ? sms.getId() : "unknown"), e);
+            }
+        }
+    }
 
     // Schedule sendSmsToDoctorsBeforeSession to run every 30 minutes
     @SuppressWarnings("unused")
