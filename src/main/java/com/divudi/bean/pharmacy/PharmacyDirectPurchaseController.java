@@ -265,10 +265,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 continue;
             }
 
-            BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
-            BigDecimal lineGrossRate = f.getLineGrossRate() != null ? f.getLineGrossRate() : BigDecimal.ZERO;
-
+            BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal lineGrossRate = Optional.ofNullable(f.getLineGrossRate()).orElse(BigDecimal.ZERO);
             BigDecimal basis = lineGrossRate.multiply(qty.add(freeQty));
             itemBases.put(bi, basis);
             totalBasis = totalBasis.add(basis);
@@ -278,23 +277,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
-        BigDecimal totalLineDiscount = BigDecimal.ZERO;
-        BigDecimal totalLineExpense = BigDecimal.ZERO;
-        BigDecimal totalLineTax = BigDecimal.ZERO;
-
-        for (BillItem bi : billItems) {
-            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-            if (f == null) {
-                continue;
-            }
-            totalLineDiscount = totalLineDiscount.add(Optional.ofNullable(f.getLineDiscount()).orElse(BigDecimal.ZERO));
-            totalLineExpense = totalLineExpense.add(Optional.ofNullable(f.getLineExpense()).orElse(BigDecimal.ZERO));
-            totalLineTax = totalLineTax.add(Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO));
-        }
-
-        BigDecimal billLevelDiscount = Optional.ofNullable(bill.getBillFinanceDetails().getBillDiscount()).orElse(BigDecimal.ZERO).subtract(totalLineDiscount);
-        BigDecimal billLevelExpense = Optional.ofNullable(bill.getBillFinanceDetails().getTotalExpense()).orElse(BigDecimal.ZERO).subtract(totalLineExpense);
-        BigDecimal billLevelTax = Optional.ofNullable(bill.getBillFinanceDetails().getTotalTaxValue()).orElse(BigDecimal.ZERO).subtract(totalLineTax);
+        BigDecimal billDiscountTotal = Optional.ofNullable(bill.getBillFinanceDetails().getBillDiscount()).orElse(BigDecimal.ZERO);
+        BigDecimal billExpenseTotal = Optional.ofNullable(bill.getBillFinanceDetails().getTotalExpense()).orElse(BigDecimal.ZERO);
+        BigDecimal billTaxTotal = Optional.ofNullable(bill.getBillFinanceDetails().getTotalTaxValue()).orElse(BigDecimal.ZERO);
 
         for (BillItem bi : billItems) {
             BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
@@ -302,49 +287,69 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 continue;
             }
 
-            BigDecimal basis = itemBases.getOrDefault(bi, BigDecimal.ZERO);
+            BigDecimal basis = itemBases.get(bi);
             BigDecimal ratio = basis.divide(totalBasis, 12, RoundingMode.HALF_UP);
-
-            f.setBillDiscount(billLevelDiscount.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
-            f.setBillExpense(billLevelExpense.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
-            f.setBillTax(billLevelTax.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
 
             BigDecimal lineDiscount = Optional.ofNullable(f.getLineDiscount()).orElse(BigDecimal.ZERO);
             BigDecimal lineExpense = Optional.ofNullable(f.getLineExpense()).orElse(BigDecimal.ZERO);
             BigDecimal lineTax = Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO);
 
-            f.setTotalDiscount(lineDiscount.add(f.getBillDiscount()));
-            f.setTotalExpense(lineExpense.add(f.getBillExpense()));
-            f.setTotalTax(lineTax.add(f.getBillTax()));
+            BigDecimal billDiscount = billDiscountTotal.signum() > 0 ? billDiscountTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+            BigDecimal billExpense = billExpenseTotal.signum() > 0 ? billExpenseTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+            BigDecimal billTax = billTaxTotal.signum() > 0 ? billTaxTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
 
-            BigDecimal grossTotal = f.getLineGrossTotal();
+            f.setBillDiscount(billDiscount);
+            f.setBillExpense(billExpense);
+            f.setBillTax(billTax);
+
+            f.setTotalDiscount(lineDiscount.add(billDiscount));
+            f.setTotalExpense(lineExpense.add(billExpense));
+            f.setTotalTax(lineTax.add(billTax));
+
+            BigDecimal grossTotal = Optional.ofNullable(f.getLineGrossTotal()).orElse(BigDecimal.ZERO);
             BigDecimal netTotal = grossTotal.subtract(f.getTotalDiscount()).add(f.getTotalTax()).add(f.getTotalExpense());
+
             f.setNetTotal(netTotal);
-
             f.setTotalCost(netTotal);
-            f.setBillCost(netTotal);
 
-            BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
-            BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
-            BigDecimal totalQty = qty.add(freeQty);
+            BigDecimal lineNetTotal = Optional.ofNullable(f.getLineNetTotal()).orElse(BigDecimal.ZERO);
+            BigDecimal billCost = (billDiscount.signum() > 0 || billExpense.signum() > 0 || billTax.signum() > 0)
+                    ? netTotal.subtract(lineNetTotal)
+                    : BigDecimal.ZERO;
+            f.setBillCost(billCost);
+
+            BigDecimal totalQty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO)
+                    .add(Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO));
             f.setTotalQuantity(totalQty);
 
-            BigDecimal costRate = totalQty.compareTo(BigDecimal.ZERO) > 0 ? netTotal.divide(totalQty, 6, RoundingMode.HALF_UP) : BigDecimal.ZERO;
-            f.setBillCostRate(costRate.setScale(4, RoundingMode.HALF_UP));
-            f.setTotalCostRate(costRate.setScale(4, RoundingMode.HALF_UP));
+            BigDecimal lineCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
+                    ? lineNetTotal.divide(totalQty, 6, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+            BigDecimal billCostRate = billCost.compareTo(BigDecimal.ZERO) > 0 && totalQty.compareTo(BigDecimal.ZERO) > 0
+                    ? billCost.divide(totalQty, 6, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+            BigDecimal totalCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
+                    ? netTotal.divide(totalQty, 6, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
 
-            f.setGrossRate(f.getLineGrossRate());
-            f.setBillGrossRate(f.getLineGrossRate());
+            f.setLineCostRate(lineCostRate.setScale(4, RoundingMode.HALF_UP));
+            f.setBillCostRate(billCostRate.setScale(4, RoundingMode.HALF_UP));
+            f.setTotalCostRate(totalCostRate.setScale(4, RoundingMode.HALF_UP));
+
+            BigDecimal lineGrossRate = Optional.ofNullable(f.getLineGrossRate()).orElse(BigDecimal.ZERO);
+            f.setLineGrossRate(lineGrossRate);
+            f.setBillGrossRate(BigDecimal.ZERO);
+            f.setGrossRate(lineGrossRate);
 
             if (f.getLineNetRate() == null || f.getLineNetRate().compareTo(BigDecimal.ZERO) == 0) {
                 BigDecimal lineNetRate = totalQty.compareTo(BigDecimal.ZERO) > 0
-                        ? f.getLineNetTotal().divide(totalQty, 4, RoundingMode.HALF_UP)
+                        ? lineNetTotal.divide(totalQty, 4, RoundingMode.HALF_UP)
                         : BigDecimal.ZERO;
                 f.setLineNetRate(lineNetRate);
             }
 
+            f.setBillNetRate(BigDecimal.ZERO);
             f.setNetRate(f.getLineNetRate());
-            f.setBillNetRate(f.getLineNetRate());
         }
     }
 
