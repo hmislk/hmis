@@ -2058,44 +2058,31 @@ public class PatientReportController implements Serializable {
             Patient tmp = currentPtIx.getBillItem().getBill().getPatient();
             tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));
         }
-        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            if (getCurrentPtIx().getBillItem().getBill().getBackwardReferenceBill().getBalance() < 1.0) {
-                if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
-                    Sms e = new Sms();
-                    e.setPending(true);
-                    e.setCreatedAt(new Date());
-                    e.setCreater(sessionController.getLoggedUser());
-                    e.setBill(currentPtIx.getBillItem().getBill());
-                    e.setPatientReport(currentPatientReport);
-                    e.setPatientInvestigation(currentPtIx);
-                    e.setCreatedAt(new Date());
-                    e.setCreater(sessionController.getLoggedUser());
-                    e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
-                    e.setSendingMessage(smsBody(currentPatientReport));
-                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-                    e.setSentSuccessfully(false);
-                    getSmsFacade().create(e);
-                }
-            }
-        } else {
-            if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
-                Sms e = new Sms();
-                e.setPending(true);
-                e.setCreatedAt(new Date());
-                e.setCreater(sessionController.getLoggedUser());
-                e.setBill(currentPtIx.getBillItem().getBill());
-                e.setPatientReport(currentPatientReport);
-                e.setPatientInvestigation(currentPtIx);
-                e.setCreatedAt(new Date());
-                e.setCreater(sessionController.getLoggedUser());
-                e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
-                e.setSendingMessage(smsBody(currentPatientReport));
-                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-                e.setSentSuccessfully(false);
-                getSmsFacade().create(e);
-            }
+// ChatGPT and CodeRabbitAI contributed logic:
+// Always create the SMS for lab report approval, regardless of payment status.
+// The timer service will handle delayed sending and check full payment before dispatch.
+        if (currentPtIx != null
+                && currentPtIx.getBillItem() != null
+                && currentPtIx.getBillItem().getBill() != null
+                && currentPtIx.getBillItem().getBill().getPatient() != null
+                && currentPtIx.getBillItem().getBill().getPatient().getPerson() != null
+                && currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber() != null
+                && !currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().isEmpty()) {
+
+            Sms e = new Sms();
+            e.setPending(true);
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(currentPtIx.getBillItem().getBill());
+            e.setPatientReport(currentPatientReport);
+            e.setPatientInvestigation(currentPtIx);
+            e.setSmsType(MessageType.LabReport);
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(smsBody(currentPatientReport));
+            e.setDepartment(sessionController.getLoggedUser().getDepartment());
+            e.setInstitution(sessionController.getLoggedUser().getInstitution());
+            e.setSentSuccessfully(false);
+            getSmsFacade().create(e);
         }
         if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
 
