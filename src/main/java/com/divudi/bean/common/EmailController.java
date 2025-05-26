@@ -63,21 +63,34 @@ public class EmailController implements Serializable {
     }
 
     public void sendManualEmail() {
+        if (recipient == null || recipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Recipient email is required.");
+            return;
+        }
+
         List<String> recipients = new ArrayList<>();
-        recipients.add(recipient);
+        recipients.add(recipient.trim());
 
         boolean success = emailManager.sendEmail(recipients, body, subject, true);
-        output = success ? "Email sent successfully" : "Failed to send email";
 
         if (success) {
+            JsfUtil.addSuccessMessage("Email sent successfully");
+
             AppEmail e = new AppEmail();
-            e.setReceipientEmail(recipient);
+            e.setReceipientEmail(recipient.trim());
             e.setMessageSubject(subject);
             e.setMessageBody(body);
             e.setSentSuccessfully(true);
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
             emailFacade.create(e);
+
+            // Clear form
+            recipient = null;
+            subject = null;
+            body = null;
+        } else {
+            JsfUtil.addErrorMessage("Failed to send email");
         }
     }
 
@@ -96,7 +109,11 @@ public class EmailController implements Serializable {
         selectedEmail.setSentAt(new Date());
         emailFacade.edit(selectedEmail);
 
-        JsfUtil.addSuccessMessage(success ? "Resent Successfully" : "Resending failed");
+        if (success) {
+            JsfUtil.addSuccessMessage("Email resent successfully");
+        } else {
+            JsfUtil.addErrorMessage("Failed to resend email");
+        }
     }
 
     public String navigateToEmailList() {
