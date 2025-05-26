@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -65,11 +66,14 @@ public class EmailManagerEjb {
             return false;
         }
 
+        HttpURLConnection connection = null;
         try {
             JSONObject payload = buildEmailJsonPayload(subject, body, recipients, isHtml);
 
             URL url = new URL(messengerServiceURL);
-            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(30000);
+            connection.setReadTimeout(30000);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
@@ -80,6 +84,25 @@ public class EmailManagerEjb {
             }
 
             int responseCode = connection.getResponseCode();
+
+            // Always consume the response body to allow connection reuse
+            try (InputStream is = connection.getInputStream()) {
+                byte[] buffer = new byte[1024];
+                while (is.read(buffer) != -1) {
+                    // Consume response - code will be added later in seperate issue
+                }
+            } catch (Exception ex) {
+                try (InputStream es = connection.getErrorStream()) {
+                    if (es != null) {
+                        byte[] buffer = new byte[1024];
+                        while (es.read(buffer) != -1) {
+                            // Consume response - code will be added later in seperate issue
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+
             if (responseCode == 200) {
                 return true;
             } else {
@@ -89,6 +112,10 @@ public class EmailManagerEjb {
         } catch (Exception e) {
             Logger.getLogger(EmailManagerEjb.class.getName()).log(Level.SEVERE, "Exception in sendEmailViaRestGateway: " + e.getMessage(), e);
             return false;
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
 
@@ -170,7 +197,6 @@ public class EmailManagerEjb {
         }
     }
 
-    
     @Deprecated // Will be remove soon
     public boolean sendEmail(
             final String senderUsername,
