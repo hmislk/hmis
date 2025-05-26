@@ -2655,37 +2655,45 @@ public class PharmacyReportController implements Serializable {
                     BillType.PharmacyAdjustmentWholeSaleRate
             );
 
-            StringBuilder jpql = new StringBuilder("SELECT bi, phi.retailRate, phi.stock.stock FROM BillItem bi ")
-                    .append("JOIN bi.pharmaceuticalBillItem phi ")
-                    .append("JOIN phi.stock s ")
-                    .append("WHERE bi.retired = false ")
-                    .append("AND bi.bill.billType IN :bType ")
-                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+            StringBuilder jpql = new StringBuilder()
+                    .append("SELECT sh2.id FROM StockHistory sh2 ")
+                    .append("WHERE sh2.retired = false ")
+                    .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("OR sh2.itemBatch.item.departmentType = :depty) ");
 
             Map<String, Object> params = new HashMap<>();
             params.put("bType", billTypes);
             params.put("fd", fromDate);
             params.put("td", toDate);
+            jpql.append(" s.pbItem.billItem.bill.billType in :doctype");
+            params.put("doctype", billTypes);
 
             // Add filters if needed
-            addFilter(jpql, params, "bi.bill.institution", "ins", institution);
-            addFilter(jpql, params, "bi.bill.department.site", "sit", site);
-            addFilter(jpql, params, "bi.bill.department", "dep", department);
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
 
-            jpql.append(" ORDER BY bi.bill.createdAt");
+            jpql.append(" ORDER BY sh2.createdAt");
 
-            List<Object[]> results = getBillItemFacade().findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+            List<Long> latestStockHistoryIds = facade.findLongValuesByJpql(jpql.toString(), params);
+            
+            double totalCorrection = 0.0;
+            
+            for (Long shid : latestStockHistoryIds) {
+                StockHistory sh = facade.find(shid);
+                if (sh == null || sh.getItemBatch() == null || sh.getItemBatch().getItem() == null) {
+                    continue;
+                }
 
-            double totalVariance = results.stream()
-                    .mapToDouble(result -> {
-                        BillItem billItem = (BillItem) result[0];
-                        double oldRate = (Double) result[1];
-                        double qty = (Double) result[2];
-                        return qty * (billItem.getRate() - oldRate);
-                    })
-                    .sum();
+                double stockQty = sh.getStockQty();
+                double saleRate = sh.getItemBatch().getRetailsaleRate();
 
-            cogs.put("Stock Correction", totalVariance);
+//            totalQty += stockQty;
+                totalCorrection += stockQty * saleRate;
+//            totalPurchaseValue += stockQty * purchaseRate;
+            }
+
+            cogs.put("Stock Correction", totalCorrection);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
