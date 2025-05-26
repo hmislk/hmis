@@ -2905,6 +2905,7 @@ public class Bill implements Serializable, RetirableEntity {
         switch (this.getBillTypeAtomic()) {
             case PHARMACY_GRN_RETURN:
                 transientSupplier = this.getToInstitution();
+                break;
             default:
                 transientSupplier = this.getFromInstitution();
         }
