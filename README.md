@@ -79,6 +79,9 @@ The features available to different roles of the users are stated in detail in t
 ## Project Manager
 * Mr Ramath Manjitha - From 2024 to date
 
+## Technical Lead
+* Mr Geeth Madhushan - From 2024 to date
+
 ## Business Analyst
 * Miss Binuthi Nilakna Ariyaratne - From 2024 to date
   
@@ -103,7 +106,10 @@ The features available to different roles of the users are stated in detail in t
 * Mr Pasindu Wathsara (Active)
 * Mr Damith Deshan (Active)
 * Mr Lawan Chaamindu Jayalath Samarasekara (Active)
-* Mr Chinthaka Prasad Wajerathna (Active) 
+* Mr Chinthaka Prasad Wajerathna (Active)
+* Mr Imesh Ranawella (Active)
+* Mr Pubudu Piyankara (Active)
+* Miss Dinuri Kithmini (Active)
 
 ## Quantity Control Feedback
 
