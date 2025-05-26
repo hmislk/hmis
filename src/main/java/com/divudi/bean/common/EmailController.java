@@ -62,37 +62,43 @@ public class EmailController implements Serializable {
         failedEmails = emailFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
-    public void sendManualEmail() {
-        if (recipient == null || recipient.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Recipient email is required.");
-            return;
-        }
-
-        List<String> recipients = new ArrayList<>();
-        recipients.add(recipient.trim());
-
-        boolean success = emailManager.sendEmail(recipients, body, subject, true);
-
-        if (success) {
-            JsfUtil.addSuccessMessage("Email sent successfully");
-
-            AppEmail e = new AppEmail();
-            e.setReceipientEmail(recipient.trim());
-            e.setMessageSubject(subject);
-            e.setMessageBody(body);
-            e.setSentSuccessfully(true);
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            emailFacade.create(e);
-
-            // Clear form
-            recipient = null;
-            subject = null;
-            body = null;
-        } else {
-            JsfUtil.addErrorMessage("Failed to send email");
-        }
+public void sendManualEmail() {
+    if (recipient == null || recipient.trim().isEmpty()) {
+        JsfUtil.addErrorMessage("Recipient email is required.");
+        return;
     }
+
+    List<String> recipients = new ArrayList<>();
+    recipients.add(recipient.trim());
+
+    boolean success = false;
+    try {
+        success = emailManager.sendEmail(recipients, body, subject, true);
+    } catch (Exception e) {
+        JsfUtil.addErrorMessage("An error occurred while sending the email: " + e.getMessage());
+        return;
+    }
+
+    if (success) {
+        JsfUtil.addSuccessMessage("Email sent successfully");
+
+        AppEmail e = new AppEmail();
+        e.setReceipientEmail(recipient.trim());
+        e.setMessageSubject(subject);
+        e.setMessageBody(body);
+        e.setSentSuccessfully(true);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        emailFacade.create(e);
+
+        // Clear form
+        recipient = null;
+        subject = null;
+        body = null;
+    } else {
+        JsfUtil.addErrorMessage("Failed to send email");
+    }
+}
 
     public void resendSelectedEmail() {
         if (selectedEmail == null) {
@@ -211,23 +217,11 @@ public class EmailController implements Serializable {
         return emailFacade;
     }
 
-    public void setEmailFacade(EmailFacade emailFacade) {
-        this.emailFacade = emailFacade;
-    }
-
     public EmailManagerEjb getEmailManager() {
         return emailManager;
     }
 
-    public void setEmailManager(EmailManagerEjb emailManager) {
-        this.emailManager = emailManager;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
     }
 }
