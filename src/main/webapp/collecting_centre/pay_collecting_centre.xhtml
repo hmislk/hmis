@@ -4,6 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
@@ -12,25 +13,33 @@
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form  >
-                    <h:panelGroup >
+
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('PayCollectingCentre') and !webUserController.hasPrivilege('CollectingCentreManageMenu')}">
+                        <na:not_authorize />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('PayCollectingCentre') and webUserController.hasPrivilege('CollectingCentreManageMenu')}">
+
                         <p:panel rendered="#{!collectingCentreController.printPreview}" styleClass="ui-panel-info" >
                             <f:facet name="header">
                                 <h:outputLabel value="Pay Collecting Centre" styleClass="ui-label-info"/>
                             </f:facet>
 
                             <h:panelGroup rendered="#{collectingCentreController.collectingCentre eq null}" >
-                                <p:autoComplete id="creditCom1" forceSelection="true" value="#{collectingCentreController.collectingCentre}"
-                                                class="w-100"
-                                                inputStyleClass="w-100"
-                                                completeMethod="#{institutionController.completeCollectingCenter}"
-                                                var="ix" 
-                                                itemLabel="#{ix.name}" 
-                                                itemValue="#{ix}" 
-                                                size="30"
-                                                >
+                                <p:autoComplete 
+                                    id="creditCom1" forceSelection="true" 
+                                    value="#{collectingCentreController.collectingCentre}"
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    completeMethod="#{institutionController.completeCollectingCenter}"
+                                    var="ix" 
+                                    itemLabel="#{ix.name}" 
+                                    itemValue="#{ix}" 
+                                    size="30"
+                                    >
                                     <f:ajax event="itemSelect" execute="creditCom1"/>
-                                    <p:column>#{ix.institutionCode}</p:column>
-                                    <p:column>#{ix.name}</p:column>
+                                    <p:column style="padding: 6px;">#{ix.institutionCode}</p:column>
+                                    <p:column style="padding: 6px;">#{ix.name}</p:column>
                                 </p:autoComplete>
                                 <p:commandButton value="To Pay" ajax="false" action="#{collectingCentreController.prepairColectingCentrePaymentDetails()}"></p:commandButton>
                             </h:panelGroup>
@@ -38,30 +47,37 @@
                             <h:panelGroup rendered="#{collectingCentreController.collectingCentre ne null}" >
                                 <p:panelGrid columns="2" styleClass="w-100 ui-grid-info"  >
                                     <p:outputLabel value="Collecting Center" styleClass="ui-outputlabel-info"/>
-                                    <p:autoComplete id="creditCom" forceSelection="true" value="#{collectingCentreController.collectingCentre}"
-                                                    class="w-100"
-                                                    inputStyleClass="w-100"
-                                                    completeMethod="#{institutionController.completeCollectingCenter}"
-                                                    var="ix" 
-                                                    itemLabel="#{ix.name}" 
-                                                    itemValue="#{ix}" 
-                                                    size="30"
-                                                    >
+                                    <p:autoComplete 
+                                        id="creditCom" 
+                                        forceSelection="true" 
+                                        value="#{collectingCentreController.collectingCentre}"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        completeMethod="#{institutionController.completeCollectingCenter}"
+                                        var="ix" 
+                                        itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" 
+                                        size="30"
+                                        >
                                         <f:ajax event="itemSelect" execute="creditCom"/>
-                                        <p:column>#{ix.institutionCode}</p:column>
-                                        <p:column>#{ix.name}</p:column>
+                                        <p:column style="padding: 6px;">#{ix.institutionCode}</p:column>
+                                        <p:column style="padding: 6px;">#{ix.name}</p:column>
                                     </p:autoComplete>
                                     <p:outputLabel value="Amount" styleClass="ui-outputlabel-info"/>
-                                    <p:inputText onfocus="this.select();" autocomplete="off" 
-                                                 value="#{collectingCentreController.bill.netTotal}" 
-                                                 styleClass="ui-inputtext-info"/>
+                                    <p:inputText 
+                                        onfocus="this.select();" 
+                                        autocomplete="off" 
+                                        value="#{collectingCentreController.bill.netTotal}" 
+                                        styleClass="ui-inputtext-info"/>
 
                                     <p:outputLabel value="Payment Method" styleClass="ui-outputlabel-info"/>
                                     <p:selectOneMenu value="#{collectingCentreController.bill.paymentMethod}"  >
                                         <f:selectItem itemLabel="Select Payment Method"></f:selectItem>
-                                        <f:selectItems value="#{enumController.paymentMethods}" var="pm" 
-                                                       itemValue="#{pm}"
-                                                       itemLabel="#{pm.label}" ></f:selectItems>
+                                        <f:selectItems 
+                                            value="#{enumController.paymentMethods}" var="pm" 
+                                            itemValue="#{pm}"
+                                            itemLabel="#{pm.label}" >
+                                        </f:selectItems>
                                     </p:selectOneMenu>                      
 
 
@@ -70,24 +86,26 @@
                                         class="w-100"
                                         value="#{collectingCentreController.bill.comments}" styleClass="ui-inputtextarea-info"/>
 
-
                                     <p:commandButton 
-                                        value="New Bill" class="ui-button-info" icon="fas fa-plus" ajax="false" 
+                                        value="New Bill" 
+                                        class="ui-button-info" 
+                                        icon="fas fa-plus" 
+                                        ajax="false" 
                                         action="#{collectingCentreController.navigateToPayToCollectingCentre()}" 
                                         styleClass="ui-button-info"/>
                                     <p:commandButton
                                         id="btnSettle" value="Settle" 
-                                        action="#{collectingCentreController.settlePaymentBillToCollectingCentrePaymenMade()}" ajax="false"
-                                        class="ui-button-success mx-1" icon="fas fa-check">
+                                        action="#{collectingCentreController.settlePaymentBillToCollectingCentrePaymenMade()}" 
+                                        ajax="false"
+                                        class="ui-button-success mx-1" 
+                                        icon="fas fa-check">
                                         <p:defaultCommand target="btnSettle"/>
                                     </p:commandButton>
                                 </p:panelGrid>
                             </h:panelGroup>
-
                         </p:panel>
 
                     </h:panelGroup>
-
 
                     <h:panelGroup rendered="#{collectingCentreController.printPreview}" >
                         <p:panel>
@@ -98,10 +116,12 @@
                                     </div>
                                     <div>
                                         <h:panelGrid columns="4">
-                                            <p:commandButton value="New Bill" 
-                                                             class="ui-button-success mx-1"
-                                                             icon="fas fa-plus" ajax="false" 
-                                                             action="#{collectingCentreController.navigateToPayToCollectingCentre()}"  ></p:commandButton>
+                                            <p:commandButton 
+                                                value="New Bill" 
+                                                class="ui-button-success mx-1"
+                                                icon="fas fa-plus" ajax="false" 
+                                                action="#{collectingCentreController.navigateToPayToCollectingCentre()}"  >
+                                            </p:commandButton>
                                             <p:commandButton value="Print" class="ui-button-info" icon="fas fa-print">
                                                 <p:printer target="print" />
                                             </p:commandButton>
