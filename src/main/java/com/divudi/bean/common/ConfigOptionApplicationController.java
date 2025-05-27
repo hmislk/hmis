@@ -68,6 +68,19 @@ public class ConfigOptionApplicationController implements Serializable {
             applicationOptions.put(option.getOptionKey(), option);
         }
 //        initializeDenominations();
+        loadEmailGatewayConfigurationDefaults();
+    }
+
+    private void loadEmailGatewayConfigurationDefaults() {
+        getIntegerValueByKey("Email Gateway - SMTP Port", 587);
+        getBooleanValueByKey("Email Gateway - SMTP Auth Enabled", true);
+        getBooleanValueByKey("Email Gateway - StartTLS Enabled", true);
+        getBooleanValueByKey("Email Gateway - SSL Enabled", false);
+        // DO NOT set defaults for these, just trigger their presence in DB:
+        getShortTextValueByKey("Email Gateway - Username", "");
+        getShortTextValueByKey("Email Gateway - Password", "");
+        getShortTextValueByKey("Email Gateway - SMTP Host", "");
+        getShortTextValueByKey("Email Gateway - URL", "");
     }
 
     public ConfigOption getApplicationOption(String key) {

@@ -107,49 +107,49 @@
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
-                                <p:subTable value="#{i.bills}" var="b">
+                                <p:subTable value="#{i.payments}" var="p">
                                     <f:facet name="header">
                                         <h:outputLabel  value="#{i.institution.name}"/>
                                     </f:facet>
                                     <p:column>
                                         <p:commandLink 
-                                            value="#{b.deptId}" 
+                                            value="#{p.bill.deptId}" 
                                             ajax="false"
                                             action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
-                                            <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}" />
+                                            <f:setPropertyActionListener value="#{p.bill}" target="#{billSearch.bill}" />
                                         </p:commandLink>                            
                                     </p:column>
                                     <p:column>                              
-                                        <h:outputLabel value="#{not empty b.payments ? b.payments[0].policyNo : 'N/A'}" />                              
+                                        <h:outputLabel value="#{not empty p.policyNo ? p.policyNo : 'N/A'}" />                              
                                     </p:column>
                                     <p:column> 
-                                        <h:outputLabel value="#{not empty b.payments ? b.payments[0].referenceNo : 'N/A'}" />                                
+                                        <h:outputLabel value="#{not empty p.referenceNo ? p.referenceNo : 'N/A'}" />                                
                                     </p:column>
                                     <p:column>                               
-                                        <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
+                                        <h:outputLabel value="#{p.bill.patient.person.nameWithTitle}" />                                 
                                     </p:column>
                                     <p:column>                                
-                                        <h:outputLabel value="#{b.createdAt}" >
+                                        <h:outputLabel value="#{p.bill.createdAt}" >
                                             <f:convertDateTime pattern="yyyy MM dd" />
                                         </h:outputLabel>                                 
                                     </p:column>
                                     <p:column style="text-align: right;">                                
-                                        <h:outputLabel value="#{b.netTotal}" >
+                                        <h:outputLabel value="#{p.bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                 
                                     </p:column>
                                     <p:column style="text-align: right;" rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee',false)}">                                
-                                        <h:outputLabel value="#{b.staffFee}" >
+                                        <h:outputLabel value="#{p.bill.staffFee}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                 
                                     </p:column>
                                     <p:column style="text-align: right;">                              
-                                        <h:outputLabel value="#{b.paidAmount}" >
+                                        <h:outputLabel value="#{p.bill.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column style="text-align: right;">                              
-                                        <h:outputLabel value="#{b.netTotal - b.paidAmount}" >
+                                        <h:outputLabel value="#{p.bill.netTotal - p.bill.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
