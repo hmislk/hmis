@@ -57,6 +57,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.text.DecimalFormat;
 
@@ -5035,118 +5037,113 @@ public class ReportsController implements Serializable {
         response.setHeader("Content-Disposition", "attachment; filename=OPD_AND_INWARD.xlsx");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
-
             XSSFSheet sheet = workbook.createSheet("OPD and Inward Report");
+
             int rowIndex = 0;
+            int serialNumber = 1;
 
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
-
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm");
             XSSFCellStyle amountStyle = workbook.createCellStyle();
             amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
 
             Row headerRow = sheet.createRow(rowIndex++);
-            headerRow.createCell(0).setCellValue("S. No");
-            headerRow.createCell(1).setCellValue("BHT No");
-            headerRow.createCell(2).setCellValue("Invoice Date");
-            headerRow.createCell(3).setCellValue("Invoice No");
-            headerRow.createCell(4).setCellValue("Customer Reference No");
-            headerRow.createCell(5).setCellValue("MRNO");
-            headerRow.createCell(6).setCellValue("Patient Name");
-            headerRow.createCell(7).setCellValue("Gross Amt");
-            headerRow.createCell(8).setCellValue("Disc Amt");
-            headerRow.createCell(9).setCellValue("Net Amt");
-            headerRow.createCell(10).setCellValue("Patient Share");
-            headerRow.createCell(11).setCellValue("Sponsor Share");
-            headerRow.createCell(12).setCellValue("Due Amt");
+            String[] headers = {
+                    "Sr.No", "BHT No", "Invoice Date", "Invoice No", "Customer Ref No", "MRNO", "Patient Name",
+                    "Gross Amt", "Disc Amt", "Net Amt", "GOP (Pat)", "Paid (Pat)", "Due (Pat)",
+                    "GOP (Spon)", "Paid (Spon)", "Due (Spon)", "Total Due"
+            };
 
-            int serialNumber = 1;
-            for (Map.Entry<Institution, List<Bill>> entrySet : getBundle().getGroupedBillItemsByInstitution().entrySet()) {
-                Institution institution = entrySet.getKey();
-                List<Bill> bills = entrySet.getValue();
-
-                Row institutionRow = sheet.createRow(rowIndex++);
-                institutionRow.createCell(0).setCellValue(institution.getName());
-
-                for (Bill bill : bills) {
-                    Row dataRow = sheet.createRow(rowIndex++);
-                    dataRow.createCell(0).setCellValue(serialNumber++);
-                    dataRow.createCell(1).setCellValue(bill.getPatientEncounter().getBhtNo());
-                    String formattedDate = dateFormatter.format(bill.getPatientEncounter().getFinalBill().getCreatedAt());
-                    dataRow.createCell(2).setCellValue(formattedDate);
-                    dataRow.createCell(3).setCellValue(bill.getPatientEncounter().getFinalBill().getDeptId());
-                    dataRow.createCell(4).setCellValue(bill.getPatientEncounter().getFinalBill().getReferenceNumber());
-                    dataRow.createCell(5).setCellValue(bill.getPatient().getPhn());
-                    dataRow.createCell(6).setCellValue(bill.getPatient().getPerson().getName());
-                    Cell grossAmtCell = dataRow.createCell(7);
-                    grossAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getGrantTotal());
-                    grossAmtCell.setCellStyle(amountStyle);
-                    Cell discAmtCell = dataRow.createCell(8);
-                    discAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getDiscount());
-                    discAmtCell.setCellStyle(amountStyle);
-                    Cell netAmtCell = dataRow.createCell(9);
-                    netAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal());
-                    netAmtCell.setCellStyle(amountStyle);
-                    Cell patientShareCell = dataRow.createCell(10);
-                    patientShareCell.setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
-                    patientShareCell.setCellStyle(amountStyle);
-                    Cell sponsorShareCell = dataRow.createCell(11);
-                    sponsorShareCell.setCellValue(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor());
-                    sponsorShareCell.setCellStyle(amountStyle);
-                    Cell dueAmtCell = dataRow.createCell(12);
-                    dueAmtCell.setCellValue(bill.getPatientEncounter().getFinalBill().getNetTotal()
-                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
-                            - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient());
-                    dueAmtCell.setCellStyle(amountStyle);
-                }
-
-                Row institutionTotalRow = sheet.createRow(rowIndex++);
-                institutionTotalRow.createCell(6).setCellValue("Sub Total");
-                Cell subTotalGrossAmtCell = institutionTotalRow.createCell(7);
-                subTotalGrossAmtCell.setCellValue(calculateIpGrossAmountSubTotalByBills(bills));
-                subTotalGrossAmtCell.setCellStyle(amountStyle);
-                Cell subTotalDiscAmtCell = institutionTotalRow.createCell(8);
-                subTotalDiscAmtCell.setCellValue(calculateIpDiscountSubTotalByBills(bills));
-                subTotalDiscAmtCell.setCellStyle(amountStyle);
-                Cell subTotalNetAmtCell = institutionTotalRow.createCell(9);
-                subTotalNetAmtCell.setCellValue(calculateIpNetAmountSubTotalByBills(bills));
-                subTotalNetAmtCell.setCellStyle(amountStyle);
-                Cell subTotalPatientShareCell = institutionTotalRow.createCell(10);
-                subTotalPatientShareCell.setCellValue(calculateIpPatientShareSubTotalByBills(bills));
-                subTotalPatientShareCell.setCellStyle(amountStyle);
-                Cell subTotalSponsorShareCell = institutionTotalRow.createCell(11);
-                subTotalSponsorShareCell.setCellValue(calculateIpSponsorShareSubTotalByBills(bills));
-                subTotalSponsorShareCell.setCellStyle(amountStyle);
-                Cell subTotalDueAmtCell = institutionTotalRow.createCell(12);
-                subTotalDueAmtCell.setCellValue(calculateIpDueAmountSubTotalByBills(bills));
-                subTotalDueAmtCell.setCellStyle(amountStyle);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
             }
 
-            Row footerRow = sheet.createRow(rowIndex++);
-            footerRow.createCell(6).setCellValue("Net Total");
-            Cell netTotalGrossAmtCell = footerRow.createCell(7);
-            netTotalGrossAmtCell.setCellValue(calculateIpGrossAmountNetTotal());
-            netTotalGrossAmtCell.setCellStyle(amountStyle);
-            Cell netTotalDiscAmtCell = footerRow.createCell(8);
-            netTotalDiscAmtCell.setCellValue(calculateIpDiscountNetTotal());
-            netTotalDiscAmtCell.setCellStyle(amountStyle);
-            Cell netTotalNetAmtCell = footerRow.createCell(9);
-            netTotalNetAmtCell.setCellValue(calculateIpNetAmountNetTotal());
-            netTotalNetAmtCell.setCellStyle(amountStyle);
-            Cell netTotalPatientShareCell = footerRow.createCell(10);
-            netTotalPatientShareCell.setCellValue(calculateIpPatientShareNetTotal());
-            netTotalPatientShareCell.setCellStyle(amountStyle);
-            Cell netTotalSponsorShareCell = footerRow.createCell(11);
-            netTotalSponsorShareCell.setCellValue(calculateIpSponsorShareNetTotal());
-            netTotalSponsorShareCell.setCellStyle(amountStyle);
-            Cell netTotalDueAmtCell = footerRow.createCell(12);
-            netTotalDueAmtCell.setCellValue(calculateIpDueAmountNetTotal());
-            netTotalDueAmtCell.setCellStyle(amountStyle);
+            for (Map.Entry<Institution, List<InstitutionBillEncounter>> entry : getBillInstitutionEncounterMap().entrySet()) {
+                Institution institution = entry.getKey();
+                List<InstitutionBillEncounter> bills = entry.getValue();
+
+                Row groupRow = sheet.createRow(rowIndex++);
+                groupRow.createCell(0).setCellValue(institution.getName());
+
+                for (InstitutionBillEncounter b : bills) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+
+                    dataRow.createCell(0).setCellValue(serialNumber++);
+                    dataRow.createCell(1).setCellValue(b.getBhtNo());
+                    dataRow.createCell(2).setCellValue(dateFormatter.format(b.getPatientEncounter().getFinalBill().getCreatedAt()));
+                    dataRow.createCell(3).setCellValue(b.getPatientEncounter().getFinalBill().getDeptId());
+                    dataRow.createCell(4).setCellValue(getReferenceNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()));
+                    dataRow.createCell(5).setCellValue(b.getPatient().getPhn());
+                    dataRow.createCell(6).setCellValue(b.getPatient().getPerson().getName());
+
+                    Cell grossAmt = dataRow.createCell(7);
+                    grossAmt.setCellValue(b.getPatientEncounter().getFinalBill().getGrantTotal());
+                    grossAmt.setCellStyle(amountStyle);
+
+                    Cell discAmt = dataRow.createCell(8);
+                    discAmt.setCellValue(b.getPatientEncounter().getFinalBill().getDiscount());
+                    discAmt.setCellStyle(amountStyle);
+
+                    Cell netAmt = dataRow.createCell(9);
+                    netAmt.setCellValue(b.getNetTotal());
+                    netAmt.setCellStyle(amountStyle);
+
+                    Cell gopPat = dataRow.createCell(10);
+                    gopPat.setCellValue(b.getNetTotal() - b.getGopAmount());
+                    gopPat.setCellStyle(amountStyle);
+
+                    Cell paidPat = dataRow.createCell(11);
+                    paidPat.setCellValue(b.getPaidByPatient());
+                    paidPat.setCellStyle(amountStyle);
+
+                    Cell duePat = dataRow.createCell(12);
+                    duePat.setCellValue(b.getPatientDue());
+                    duePat.setCellStyle(amountStyle);
+
+                    Cell gopSpon = dataRow.createCell(13);
+                    gopSpon.setCellValue(b.getGopAmount());
+                    gopSpon.setCellStyle(amountStyle);
+
+                    Cell paidSpon = dataRow.createCell(14);
+                    paidSpon.setCellValue(b.getPaidByCompany());
+                    paidSpon.setCellStyle(amountStyle);
+
+                    Cell dueSpon = dataRow.createCell(15);
+                    dueSpon.setCellValue(b.getCompanyDue());
+                    dueSpon.setCellStyle(amountStyle);
+
+                    Cell totalDue = dataRow.createCell(16);
+                    totalDue.setCellValue(b.getTotalDue());
+                    totalDue.setCellStyle(amountStyle);
+                }
+
+                Row subTotalRow = sheet.createRow(rowIndex++);
+                subTotalRow.createCell(0).setCellValue("Sub Total:");
+                subTotalRow.createCell(13).setCellValue(getInstituteGopMap().get(institution));
+                subTotalRow.getCell(13).setCellStyle(amountStyle);
+                subTotalRow.createCell(14).setCellValue(getInstitutPaidByCompanyMap().get(institution));
+                subTotalRow.getCell(14).setCellStyle(amountStyle);
+                subTotalRow.createCell(15).setCellValue(getInstitutePayableByCompanyMap().get(institution));
+                subTotalRow.getCell(15).setCellStyle(amountStyle);
+            }
+
+            Row totalRow = sheet.createRow(rowIndex++);
+            totalRow.createCell(0).setCellValue("Net Total:");
+            totalRow.createCell(13).setCellValue(getGopAmount());
+            totalRow.getCell(13).setCellStyle(amountStyle);
+            totalRow.createCell(14).setCellValue(getPaidByCompany());
+            totalRow.getCell(14).setCellStyle(amountStyle);
+            totalRow.createCell(15).setCellValue(getPayableByCompany());
+            totalRow.getCell(15).setCellStyle(amountStyle);
+
+            for (int i = 0; i <= 16; i++) {
+                sheet.autoSizeColumn(i);
+            }
 
             workbook.write(out);
             context.responseComplete();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error exporting OPD and Inward IP to Excel", e);
         }
     }
 
@@ -5163,94 +5160,107 @@ public class ReportsController implements Serializable {
             document.open();
 
             com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Paragraph title = new Paragraph("OPD and Inward Report", titleFont);
+            Paragraph title = new Paragraph("OPD_AND_INWARD Report", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(20);
             document.add(title);
 
-            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
-
-            PdfPTable table = new PdfPTable(13);
-            table.setWidthPercentage(100);
-
-            float[] columnWidths = {1.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f, 3.0f};
-            table.setWidths(columnWidths);
-
-            String[] headers = {"S. No", "BHT No", "Invoice Date", "Invoice No", "Customer Reference No", "MRNO", "Patient Name",
-                    "Gross Amt", "Disc Amt", "Net Amt", "Patient Share", "Sponsor Share", "Due Amt"};
-            for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
-                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table.addCell(cell);
-            }
-
-            int serialNumber = 1;
-
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
             DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm");
 
-            for (Map.Entry<Institution, List<Bill>> entrySet : getBundle().getGroupedBillItemsByInstitution().entrySet()) {
-                Institution institution = entrySet.getKey();
-                List<Bill> bills = entrySet.getValue();
+            int srNo = 1;
 
-                PdfPCell institutionCell = new PdfPCell(new Phrase(institution.getName(), boldFont));
-                institutionCell.setColspan(13);
-                table.addCell(institutionCell);
+            for (Map.Entry<Institution, List<InstitutionBillEncounter>> entry : getBillInstitutionEncounterMap().entrySet()) {
+                Institution institution = entry.getKey();
+                List<InstitutionBillEncounter> bills = entry.getValue();
 
-                for (Bill bill : bills) {
-                    table.addCell(new PdfPCell(new Phrase(String.valueOf(serialNumber++), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getBhtNo(), normalFont)));
-                    String formattedDate = dateFormatter.format(bill.getPatientEncounter().getFinalBill().getCreatedAt());
-                    table.addCell(new PdfPCell(new Phrase(formattedDate, normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getFinalBill().getDeptId(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(bill.getPatientEncounter().getFinalBill().getReferenceNumber(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPhn(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(bill.getPatient().getPerson().getName(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getGrantTotal()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getDiscount()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getNetTotal()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(bill.getPatientEncounter().getFinalBill().getNetTotal()
-                            - bill.getPatientEncounter().getFinalBill().getSettledAmountBySponsor()
-                            - bill.getPatientEncounter().getFinalBill().getSettledAmountByPatient()), normalFont)));
+                Paragraph groupHeader = new Paragraph(institution.getName(), boldFont);
+                groupHeader.setSpacingBefore(10);
+                groupHeader.setSpacingAfter(5);
+                document.add(groupHeader);
+
+                PdfPTable table = new PdfPTable(17);
+                table.setWidthPercentage(100);
+                float[] widths = {1.2f, 2f, 3f, 2.5f, 3f, 2f, 3f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f};
+                table.setWidths(widths);
+
+                String[] headers = {"Sr.No", "BHT No", "Invoice Date", "Invoice No", "Customer Ref No", "MRNO", "Patient Name",
+                        "Gross Amt", "Disc Amt", "Net Amt", "GOP (Pat)", "Paid (Pat)", "Due (Pat)",
+                        "GOP (Spon)", "Paid (Spon)", "Due (Spon)", "Total Due"};
+
+                for (String h : headers) {
+                    PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    table.addCell(cell);
                 }
 
-                table.addCell(new PdfPCell(new Phrase("", normalFont)));
-                table.addCell(new PdfPCell(new Phrase("", normalFont)));
-                table.addCell(new PdfPCell(new Phrase("", normalFont)));
-                table.addCell(new PdfPCell(new Phrase("", normalFont)));
-                table.addCell(new PdfPCell(new Phrase("", normalFont)));
-                table.addCell(new PdfPCell(new Phrase("", normalFont)));
-                table.addCell(new PdfPCell(new Phrase("Sub Total", boldFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpGrossAmountSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDiscountSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpNetAmountSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpPatientShareSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpSponsorShareSubTotalByBills(bills)), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDueAmountSubTotalByBills(bills)), normalFont)));
+                for (InstitutionBillEncounter b : bills) {
+                    table.addCell(new PdfPCell(new Phrase(String.valueOf(srNo++), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(b.getBhtNo(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(dateFormatter.format(b.getPatientEncounter().getFinalBill().getCreatedAt()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(b.getPatientEncounter().getFinalBill().getDeptId(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(getReferenceNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(b.getPatient().getPhn(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(b.getPatient().getPerson().getName(), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getPatientEncounter().getFinalBill().getGrantTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getPatientEncounter().getFinalBill().getDiscount()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getNetTotal()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getNetTotal() - b.getGopAmount()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getPaidByPatient()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getPatientDue()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getGopAmount()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getPaidByCompany()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getCompanyDue()), normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getTotalDue()), normalFont)));
+                }
+
+                PdfPCell subtotalLabelCell = new PdfPCell(new Phrase("Sub Total:", boldFont));
+                subtotalLabelCell.setColspan(6);
+                subtotalLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(subtotalLabelCell);
+
+                for (int i = 0; i < 7; i++) {
+                    table.addCell(new PdfPCell(new Phrase("")));
+                }
+
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getInstituteGopMap().get(institution)), boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getInstitutPaidByCompanyMap().get(institution)), boldFont)));
+                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getInstitutePayableByCompanyMap().get(institution)), boldFont)));
+                table.addCell(new PdfPCell(new Phrase("")));
+
+                document.add(table);
             }
 
-            table.addCell(new PdfPCell(new Phrase("", normalFont)));
-            table.addCell(new PdfPCell(new Phrase("", normalFont)));
-            table.addCell(new PdfPCell(new Phrase("", normalFont)));
-            table.addCell(new PdfPCell(new Phrase("", normalFont)));
-            table.addCell(new PdfPCell(new Phrase("", normalFont)));
-            table.addCell(new PdfPCell(new Phrase("", normalFont)));
-            table.addCell(new PdfPCell(new Phrase("Net Total", boldFont)));
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpGrossAmountNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDiscountNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpNetAmountNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpPatientShareNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpSponsorShareNetTotal()), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(calculateIpDueAmountNetTotal()), normalFont)));
+            Paragraph spacer = new Paragraph("\n");
+            document.add(spacer);
 
-            document.add(table);
+            PdfPTable totalTable = new PdfPTable(17);
+            totalTable.setWidthPercentage(100);
+            float[] totalWidths = {1.2f, 2f, 3f, 2.5f, 3f, 2f, 3f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f};
+            totalTable.setWidths(totalWidths);
+
+            PdfPCell totalLabel = new PdfPCell(new Phrase("Net Total:", boldFont));
+            totalLabel.setColspan(6);
+            totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            totalTable.addCell(totalLabel);
+
+            for (int i = 0; i < 7; i++) {
+                totalTable.addCell(new PdfPCell(new Phrase("")));
+            }
+
+            totalTable.addCell(new PdfPCell(new Phrase(decimalFormat.format(getGopAmount()), boldFont)));
+            totalTable.addCell(new PdfPCell(new Phrase(decimalFormat.format(getPaidByCompany()), boldFont)));
+            totalTable.addCell(new PdfPCell(new Phrase(decimalFormat.format(getPayableByCompany()), boldFont)));
+            totalTable.addCell(new PdfPCell(new Phrase("")));
+
+            document.add(totalTable);
+
             document.close();
             context.responseComplete();
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error exporting OPD and Inward IP to PDF", e);
         }
     }
 
