@@ -47,9 +47,12 @@
                                     styleClass="ui-button-secondary"
                                     value="Retry"
                                     action="#{emailController.resendSelectedEmail}"
-                                    update=":form:msgs"
+                                    update="@form"
                                     process="@this"
                                     ajax="true" />
+                                <f:setPropertyActionListener
+                                    target="#{emailController.selectedEmail}"
+                                    value="#{e}" />
                             </p:column>
                         </p:dataTable>
                     </p:panel>
