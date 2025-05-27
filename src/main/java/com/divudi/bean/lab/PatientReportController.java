@@ -2236,8 +2236,6 @@ public class PatientReportController implements Serializable {
                 e.setReceipientEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail());
                 e.setMessageSubject("This Report is Reversed after Athorizing");
                 e.setMessageBody(cancelApprovalEmailMessageBody(currentPatientReport));
-//                e.setAttachment1(createPDFAndSaveAsaFile());
-
                 e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword());
                 e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());
                 e.setSenderEmail(getCurrentPatientReport().getApproveInstitution().getEmail());
