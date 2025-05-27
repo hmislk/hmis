@@ -40,6 +40,10 @@ public class AppEmail implements Serializable {
     private Bill bill;
 
     @Enumerated(EnumType.STRING)
+    private MessageType messageType;
+    
+    @Deprecated
+    @Enumerated(EnumType.STRING)
     private MessageType smsType;
 
     @ManyToOne
@@ -320,5 +324,15 @@ public class AppEmail implements Serializable {
     public void setPending(boolean pending) {
         this.pending = pending;
     }
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
+    }
+    
+    
 
 }

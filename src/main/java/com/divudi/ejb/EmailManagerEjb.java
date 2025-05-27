@@ -59,7 +59,7 @@ public class EmailManagerEjb {
     // ChatGPT and CodeRabbitAI contributed method:
 // Processes pending lab report approval emails based on configurable delay strategies
     @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
-    private void processPendingLabReportApprovalEmailQueue() {
+    public void processPendingLabReportApprovalEmailQueue() {
         if (configOptionApplicationController == null || emailFacade == null || emailManager == null) {
             return;
         }
@@ -109,11 +109,11 @@ public class EmailManagerEjb {
         minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
 
         String jpql = "Select e from AppEmail e where e.sentSuccessfully <> true and e.retired=false "
-                + "and e.smsType = :emailType and e.createdAt between :from and :to";
+                + "and e.messageType = :messageType and e.createdAt between :from and :to";
         Map<String, Object> params = new HashMap<>();
         params.put("from", minCreatedAt.getTime());
         params.put("to", delayThreshold.getTime());
-        params.put("emailType", MessageType.LabReport);
+        params.put("messageType", MessageType.LabReport);
 
         List<AppEmail> emails = emailFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -151,12 +151,12 @@ public class EmailManagerEjb {
         }
     }
 
-    @SuppressWarnings("unused")
-    @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
-    public void myTimer() {
-//        sendReportApprovalEmails();
-
-    }
+//    @SuppressWarnings("unused")
+//    @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
+//    public void myTimer() {
+////        sendReportApprovalEmails();
+//
+//    }
 
     private boolean sendEmailViaRestGateway(String subject, String body, List<String> recipients, boolean isHtml) {
         String messengerServiceURL = configOptionApplicationController.getShortTextValueByKey("Email Gateway - URL", "");
