@@ -68,15 +68,11 @@ public class SmsManagerEjb {
     // Processes pending lab report approval SMS messages based on configurable delay strategies
     @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
     public void processPendingLabReportApprovalSmsQueue() {
-        System.out.println("processPendingLabReportApprovalSmsQueue");
-        System.out.println("time " + new Date());
         if (configOptionApplicationController == null || smsFacade == null) {
-            System.out.println("nulls");
             return;
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Sending SMS After Lab Report Approval Strategy - Do Not Sent Automatically", false)) {
-            System.out.println("no emails automatically");
             return;
         }
 
@@ -123,11 +119,11 @@ public class SmsManagerEjb {
         minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
 
         String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
-                + "and e.messageType = :messageType and e.createdAt between :from and :to";
+                + "and e.smsType = :smsType and e.createdAt between :from and :to";
         Map<String, Object> params = new HashMap<>();
         params.put("from", minCreatedAt.getTime());
         params.put("to", delayThreshold.getTime());
-        params.put("messageType", MessageType.LabReport);
+        params.put("smsType", MessageType.LabReport);
 
         List<Sms> smses = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 

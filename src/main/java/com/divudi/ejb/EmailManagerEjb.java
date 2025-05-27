@@ -50,8 +50,6 @@ public class EmailManagerEjb {
 
     @EJB
     private EmailFacade emailFacade;
-    @EJB
-    EmailManagerEjb emailManager;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -60,14 +58,12 @@ public class EmailManagerEjb {
 // Processes pending lab report approval emails based on configurable delay strategies
     @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
     public void processPendingLabReportApprovalEmailQueue() {
-        if (configOptionApplicationController == null || emailFacade == null || emailManager == null) {
+        if (configOptionApplicationController == null || emailFacade == null) {
             return;
         }
-
         if (configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Do Not Sent Automatically", false)) {
             return;
         }
-
         configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one minute", false);
         configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two minutes", false);
         configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 5 minutes", false);
@@ -131,7 +127,7 @@ public class EmailManagerEjb {
                     continue;
                 }
 
-                boolean success = emailManager.sendEmail(
+                boolean success = sendEmail(
                         Collections.singletonList(email.getReceipientEmail()),
                         email.getMessageBody(),
                         email.getMessageSubject(),
