@@ -2603,27 +2603,20 @@ public class PharmacyReportController implements Serializable {
 
     private void calOther() {
         try {
-            List<BillType> billTypes = new ArrayList<>();
+            // Common base query parts
+            String baseQuery = "SELECT sh2 FROM StockHistory sh2 "
+                    + "WHERE sh2.retired = false "
+                    + "AND sh2.createdAt BETWEEN :fd AND :td "
+                    + "AND (sh2.itemBatch.item.departmentType IS NULL "
+                    + "OR sh2.itemBatch.item.departmentType = :depty) ";
 
-            StringBuilder jpql = new StringBuilder()
-                    .append("SELECT sh2.id FROM StockHistory sh2 ")
-                    .append("WHERE sh2.retired = false ")
-                    .append("AND sh2.createdAt BETWEEN :fd AND :td ")
-                    .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
-                    .append("OR sh2.itemBatch.item.departmentType = :depty) ");
+            Map<String, Object> commonParams = new HashMap<>();
+            commonParams.put("depty", DepartmentType.Pharmacy);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
 
-            Map<String, Object> params = new HashMap<>();
-            params.put("depty", DepartmentType.Pharmacy);
-            params.put("fd", fromDate);
-            params.put("td", toDate);
-
-            // Add filters if needed
-            addFilter(jpql, params, "sh2.institution", "ins", institution);
-            addFilter(jpql, params, "sh2.department.site", "sit", site);
-            addFilter(jpql, params, "sh2.department", "dep", department);
-
-            calDrugReturnOp(jpql, params);
-            calDrugReturnIp(jpql, params);
+            calDrugReturnIp(baseQuery, new HashMap<>(commonParams));
+            calDrugReturnOp(baseQuery, new HashMap<>(commonParams));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
@@ -2631,61 +2624,67 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calDrugReturnIp(StringBuilder jpql, Map<String, Object> params) {
+    private void calDrugReturnIp(String baseQuery, Map<String, Object> params) {
         try {
-            List<BillType> billTypes = new ArrayList<>();
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
 
-            billTypes.add(BillType.PharmacyBhtPre);
-            jpql.append("AND sh2.pbItem.billItem.bill.billType in :doctype ");
-            jpql.append(" ORDER BY sh2.createdAt");
-            params.put("doctype", billTypes);
-            List<StockHistory> stockCorrectionsIds = new ArrayList<>();
-            stockCorrectionsIds = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :ipDoctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("ipDoctype", billTypeAtomics);
+
+            List<StockHistory> stockCorrectionsIds = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
             double totalReturnsIp = 0.0;
-
             for (StockHistory sh : stockCorrectionsIds) {
-
-                double stockQty = sh.getPbItem().getBillItem().getQty();
                 double value = sh.getPbItem().getBillItem().getNetValue();
-
                 totalReturnsIp += value;
             }
 
-            cogs.put("totalReturnsIp ", totalReturnsIp);
+            cogs.put("totalReturnsIp", totalReturnsIp);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
             cogs.put("ERROR", -1.0);
         }
     }
 
-    private void calDrugReturnOp(StringBuilder jpql, Map<String, Object> params) {
+    private void calDrugReturnOp(String baseQuery, Map<String, Object> params) {
         try {
-
+            StringBuilder jpql = new StringBuilder(baseQuery);
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :doctype ");
-            jpql.append(" ORDER BY sh2.createdAt");
-            params.put("doctype", billTypeAtomics);
+
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :opDoctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("opDoctype", billTypeAtomics);
+
             List<StockHistory> stockCorrectionsIds = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
             double totalReturnsOp = 0.0;
-
             for (StockHistory sh : stockCorrectionsIds) {
-
-                double stockQty = sh.getPbItem().getBillItem().getQty();
                 double value = sh.getPbItem().getBillItem().getNetValue();
-
                 totalReturnsOp += value;
             }
 
-            cogs.put("totalReturnsOp ", totalReturnsOp);
+            cogs.put("totalReturnsOp", totalReturnsOp);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
+            JsfUtil.addErrorMessage(e, "Error calculating OP returns");
             cogs.put("ERROR", -1.0);
         }
     }
