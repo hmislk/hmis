@@ -28,7 +28,7 @@ public class BillLight {
     private String referringDoctorName;
     private BillTypeAtomic billTypeAtomic;
     private Long count;
-    private Department todDpartment;
+    private Department toDpartment;
 
     public BillLight() {
     }
@@ -38,14 +38,14 @@ public class BillLight {
         this.count = count;
     }
     
-    public BillLight(Department  todDpartment, Long count) {
-        this.todDpartment = todDpartment;
+    public BillLight(Department  toDpartment, Long count) {
+        this.toDpartment = toDpartment;
         this.count = count;
     }
     
-    public BillLight(Department  todDpartment, BillTypeAtomic  billTypeAtomic, Long count) {
+    public BillLight(Department  toDpartment, BillTypeAtomic  billTypeAtomic, Long count) {
         this.billTypeAtomic = billTypeAtomic;
-        this.todDpartment = todDpartment;
+        this.toDpartment = toDpartment;
         this.count = count;
     }
 
@@ -261,12 +261,12 @@ public class BillLight {
         this.count = count;
     }
 
-    public Department getTodDpartment() {
-        return todDpartment;
+    public Department getToDpartment() {
+        return toDpartment;
     }
 
-    public void setTodDpartment(Department todDpartment) {
-        this.todDpartment = todDpartment;
+    public void setTodDpartment(Department toDpartment) {
+        this.toDpartment = toDpartment;
     }
 
 }

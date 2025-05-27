@@ -103,7 +103,7 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="cmbIns" update="cmbDept" />
+                                <p:ajax process="cmbToIns" update="cmbToDept" />
                             </p:selectOneMenu>
 
                             <p:spacer ></p:spacer>
@@ -113,13 +113,13 @@
                                 <h:outputLabel value="Service Site" for="TositeMenu" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
-                                id="TositeMenu"
+                                id="toSiteMenu"
                                 styleClass="w-100 form-control"  
                                 value="#{searchController.toSite}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="siteMenu" update="cmbDept" />
+                                <p:ajax process="toSiteMenu" update="cmbToDept" />
                             </p:selectOneMenu>
 
 

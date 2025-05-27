@@ -686,7 +686,7 @@ public class SearchController implements Serializable {
                 ReportTemplateRow subBillsrow = new ReportTemplateRow();
                 subBillsrow.setRowType("SubRow");
                 subBillsrow.setCounter(subRowCount);
-                subBillsrow.setToDepartment(subBill.getTodDpartment());
+                subBillsrow.setToDepartment(subBill.getToDpartment());
                 subBillsrow.setCategoryCount(subBill.getCount());
                 bundle.getReportTemplateRows().add(subBillsrow);
                 subRowCount++;
