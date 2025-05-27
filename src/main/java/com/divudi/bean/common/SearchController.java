@@ -648,27 +648,27 @@ public class SearchController implements Serializable {
                     + " and b.toDepartment is not null";
             if (institution != null) {
                 jpql +=" and b.institution =:ins";
-                temMap.put("ins", getInstitution());
+                params.put("ins", getInstitution());
             }
             if (site != null) {
                 jpql +=" and b.department.site =:site";
-                temMap.put("site", getSite());
+                params.put("site", getSite());
             }
             if (department != null) {
                 jpql +=" and b.department =:dept";
-                temMap.put("dept", getDepartment());
+                params.put("dept", getDepartment());
             }
             if (toInstitution != null) {
                 jpql +=" and b.toInstitution =:toIns";
-                temMap.put("toIns", getToInstitution());
+                params.put("toIns", getToInstitution());
             }
             if (toSite != null) {
                 jpql +=" and b.toDepartment.site =:toSite";
-                temMap.put("toSite", getToSite());
+                params.put("toSite", getToSite());
             }
             if (toDepartment != null) {
                 jpql +=" and b.toDepartment =:toDept";
-                temMap.put("toDept", getToDepartment());
+                params.put("toDept", getToDepartment());
             }
      
             jpql +=" group by b.toDepartment";
