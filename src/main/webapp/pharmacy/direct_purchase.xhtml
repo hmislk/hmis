@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-                xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/ezcomp/pharmacy">
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="maincss.css" ></h:outputStylesheet>
@@ -327,7 +328,7 @@
                                         id="txtRetailValue"
                                         disabled="true"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.valueAtRetailRate}" >
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate * pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.totalQuantity}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </div>
@@ -386,120 +387,7 @@
                                           resizable="false"
                                           class="w-75"
                                           dynamic="true">
-                                    <p:tabView styleClass="w-100">
-
-                                        <!-- === Item Info Tab === -->
-                                        <p:tab title="Item Info">
-                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
-                                                <p:outputLabel value="Item Name" />
-                                                <p:outputLabel value="#{ph.item.name}" />
-
-                                                <p:outputLabel value="Item Code" />
-                                                <p:outputLabel value="#{ph.item.code}" />
-
-                                                <p:outputLabel value="Item Type" />
-                                                <p:outputLabel value="#{ph.item.class.simpleName}" />
-
-                                                <p:outputLabel value="Units Per Pack" />
-                                                <p:outputLabel value="#{ph.item.dblValue}" styleClass="text-end" />
-                                            </p:panelGrid>
-                                        </p:tab>
-
-                                        <!-- === Quantity Tab === -->
-                                        <p:tab title="Quantities">
-                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
-                                                <p:outputLabel value="Quantity" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.quantity}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Free Quantity" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.freeQuantity}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-                                            </p:panelGrid>
-                                        </p:tab>
-
-                                        <!-- === Rates Tab === -->
-                                        <p:tab title="Rates">
-                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
-                                                <p:outputLabel value="Purchase Rate" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.grossRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Retail Rate" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Line Discount Rate" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Cost Rate (From Bill)" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billCostRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Total Cost Rate" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalCostRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.0000" />
-                                                </p:outputLabel>
-                                            </p:panelGrid>
-                                        </p:tab>
-
-                                        <!-- === Values Tab === -->
-                                        <p:tab title="Values">
-                                            <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
-
-                                                <p:outputLabel value="Line Discount Value" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.lineDiscount}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Bill Discount from Bill" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.billTaxRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Total Discount" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalTaxRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Gross Total" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.grossTotal}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Net Total" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.netTotal}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Retail Sale Value" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.valueAtCostRate}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Retail Value Per Unit" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.retailSaleValueByUnit}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                                <p:outputLabel value="Total Cost" />
-                                                <p:outputLabel value="#{ph.billItemFinanceDetails.totalCost}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-
-                                            </p:panelGrid>
-                                        </p:tab>
-
-                                    </p:tabView>
-
-
+                                    <ph:bill_item_finance_details pbi="#{ph}"/>
                                 </p:dialog>
                             </p:column>
 
