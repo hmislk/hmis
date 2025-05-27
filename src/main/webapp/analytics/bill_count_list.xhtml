@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form >
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="Bill Count List"/>                          
+                        </f:facet>
+
+                        <h:panelGrid columns="8" styleClass="w-100" >
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Service Institution" for="cmbToIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbToIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.toInstitution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Service Site" for="TositeMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="TositeMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.toSite}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Service Department" for="cmbToDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbToDept"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.toDepartment}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <div class="d-flex gap-3 my-3">
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-magnifying-glass" 
+                                id="btnSearch"
+                                ajax="false" 
+                                value="List Bill Count" 
+                                action="#{searchController.findBillcount()}" />
+
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Calculating bill count using the item in bills',true) eq true}"
+                                value="Download Excel" >
+                                <p:dataExporter fileName="Bill Count" type="xlsx" target="tbl" ></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Calculating bill count using the item in bills',true) eq false}"
+                                value="Download Excel" >
+                                <p:dataExporter fileName="Bill Count" type="xlsx" target="tbl2" ></p:dataExporter>
+                            </p:commandButton>
+                        </div>
+                        <style>
+                            .main-row {
+                                background-color: #a2f2fa !important;
+                            }
+                            .other-row {
+                                background-color: #ffffff !important;
+                            }
+                        </style>
+                        
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Calculating bill count using the item in bills',true) eq true}">
+                            <p:dataTable 
+                                rowIndexVar="i" 
+                                id="tbl" 
+                                value="#{searchController.bundle.reportTemplateRows}" 
+                                scrollable="true"
+                                var="row"
+                                rowStyleClass="#{row.rowType eq 'MainRow' ? 'main-row' : 'other-row'}"
+                                >
+
+                                <p:column headerText="Type">   
+                                    #{row.billTypeAtomic.label}
+                                </p:column>
+                                <p:column headerText="Department">
+                                    #{row.toDepartment}
+                                </p:column>
+                                <p:column headerText="Count" style="width: 5em;">                                
+                                    <h:outputLabel value="#{row.itemCount}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Calculating bill count using the item in bills',true) eq false}">
+                            <p:dataTable 
+                                rowIndexVar="i" 
+                                id="tbl2" 
+                                value="#{searchController.bundle.reportTemplateRows}" 
+                                scrollable="true"
+                                var="row"
+                                rowStyleClass="#{row.rowType eq 'MainRow' ? 'main-row' : 'other-row'}"
+                                >
+                                <p:column headerText="#" style="width: 3em;">                                
+                                    <h:outputLabel value="#{row.counter}." rendered="#{row.rowType eq 'MainRow'}"/>
+                                </p:column>
+                                <p:column headerText="Type">                                
+                                    <h:outputLabel value="#{row.billTypeAtomic.label}" rendered="#{row.rowType eq 'MainRow'}"/>
+                                    <h:outputLabel value="#{row.counter}." rendered="#{row.rowType eq 'SubRow'}" style="margin-left: 20px;"/>
+                                    <h:outputLabel value="#{row.toDepartment.name}" rendered="#{row.rowType eq 'SubRow'}" style="margin-left: 20px;"/>
+                                </p:column>
+                                <p:column headerText="Count" style="width: 5em;">                                
+                                    <h:outputLabel value="#{row.categoryCount}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+                        
+                    </p:panel>
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+</html>

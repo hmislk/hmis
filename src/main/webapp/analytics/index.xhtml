@@ -33,7 +33,6 @@
                                                 class="w-100">
                                             </p:commandButton>
 
-
                                         </div>
                                     </p:tab>
                                     <p:tab title="Lists">
@@ -45,11 +44,20 @@
                                                 action="#{searchController.navigateToBillTypeList()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Bill Count List"
+                                                style="background-color: #55633a; color: #ffffff;" 
+                                                action="#{searchController.navigateToBillCountList()}"
+                                                actionListener="#{searchController.resetAllFiltersExceptDateRange}"
+                                                class="w-100 ui-bu">
+                                            </p:commandButton>
 
 
                                             <p:commandButton 
                                                 ajax="false" 
-                                                value="Bill List" 
+                                                value="Bill List"
                                                 action="#{searchController.navigateToBillList}"
                                                 class="w-100">
                                             </p:commandButton>
@@ -77,15 +85,12 @@
                                                 class="w-100">
                                             </p:commandButton>
 
-
-
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Download Bills " 
                                                 action="#{billSearch.navigateToDownloadBillsAndBillItems()}"
                                                 class="w-100">
                                             </p:commandButton>
-
 
                                             <p:commandButton 
                                                 ajax="false" 
@@ -100,6 +105,7 @@
                                                 action="#{financialTransactionController.navigateToDayEndSummary()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="User Bill Summary" 
@@ -107,6 +113,7 @@
                                                 action="#{searchController.navigateToUserFinancialTransactionSummaryByBill()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary" 
@@ -114,6 +121,7 @@
                                                 action="#{searchController.navigateToAllFinancialTransactionSummary()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary by cashier" 
@@ -121,6 +129,7 @@
                                                 action="#{searchController.navigateToAllFinancialTransactionSummaryCashier()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary - Payment Method" 
@@ -128,6 +137,7 @@
                                                 action="#{searchController.navigateToFinancialTransactionSummaryPaymentMethod()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary - Cashiers" 
@@ -135,6 +145,7 @@
                                                 action="#{searchController.navigateToFinancialTransactionSummaryByUsers()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary - Cashier Payment Method" 
@@ -157,6 +168,7 @@
                                                 action="/analytics/all_bills"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" value="List of Bills of Other Institutions"
                                                 action="#{searchController.navigateToListOtherInstitutionBills()}"
@@ -278,8 +290,7 @@
                             </h:form>
                         </div>
                         <div class="col-md-9" >
-                            <ui:insert name="report">
-                            </ui:insert>
+                            <ui:insert name="report"></ui:insert>
                         </div>
                     </div>
                 </p:panel>
