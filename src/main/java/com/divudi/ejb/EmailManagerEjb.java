@@ -6,7 +6,9 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.data.MessageType;
 import com.divudi.core.entity.AppEmail;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.facade.EmailFacade;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,6 +39,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.net.ssl.HttpsURLConnection;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -51,12 +54,111 @@ public class EmailManagerEjb {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
-    @SuppressWarnings("unused")
-    @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
-    public void myTimer() {
-//        sendReportApprovalEmails();
+    // ChatGPT and CodeRabbitAI contributed method:
+// Processes pending lab report approval emails based on configurable delay strategies
+    @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
+    public void processPendingLabReportApprovalEmailQueue() {
+        System.out.println("processPendingLabReportApprovalEmailQueue = " + new Date());
+        if (configOptionApplicationController == null || emailFacade == null) {
+            System.out.println("null return");
+            return;
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Do Not Sent Automatically", false)) {
+            System.out.println("config return");
+            return;
+        }
+        configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one minute", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two minutes", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 5 minutes", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 10 minutes", true);
+        configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 15 minutes", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 20 minutes", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after half an hour", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one hour", false);
+        configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two hours", false);
 
+        Map<String, Integer> strategyMinutes = new LinkedHashMap<>();
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after one minute", 1);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after two minutes", 2);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after 5 minutes", 5);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after 10 minutes", 10);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after 15 minutes", 15);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after 20 minutes", 20);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after half an hour", 30);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after one hour", 60);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after two hours", 120);
+
+        int delayMinutes = 0;
+        for (Map.Entry<String, Integer> entry : strategyMinutes.entrySet()) {
+            if (configOptionApplicationController.getBooleanValueByKey(entry.getKey(), false)) {
+                delayMinutes = entry.getValue();
+                break;
+            }
+        }
+
+        if (delayMinutes == 0) {
+            return;
+        }
+
+        Calendar now = Calendar.getInstance();
+        Calendar delayThreshold = (Calendar) now.clone();
+        delayThreshold.add(Calendar.MINUTE, -delayMinutes);
+
+        Calendar minCreatedAt = (Calendar) now.clone();
+        minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
+
+        String jpql = "Select e from AppEmail e where e.sentSuccessfully <> true and e.retired=false "
+                + "and e.messageType = :messageType and e.createdAt between :from and :to";
+        Map<String, Object> params = new HashMap<>();
+        params.put("from", minCreatedAt.getTime());
+        params.put("to", delayThreshold.getTime());
+        params.put("messageType", MessageType.LabReport);
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        List<AppEmail> emails = emailFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("emails = " + emails);
+        for (AppEmail email : emails) {
+            System.out.println("email = " + email);
+            try {
+                if (email.getPatientInvestigation() == null || email.getReceipientEmail() == null) {
+                    System.out.println("no ptix or reeipient email");
+                    continue;
+                }
+
+                Bill bill = email.getPatientInvestigation().getBillItem() != null
+                        ? email.getPatientInvestigation().getBillItem().getBill()
+                        : null;
+
+                if (bill == null || bill.getBalance() > 0.99) {
+                    continue;
+                }
+
+                boolean success = sendEmail(
+                        Collections.singletonList(email.getReceipientEmail()),
+                        email.getMessageBody(),
+                        email.getMessageSubject(),
+                        true
+                );
+
+                email.setSentSuccessfully(success);
+                email.setPending(!success);
+                if (success) {
+                    email.setSentAt(new Date());
+                }
+                emailFacade.edit(email);
+            } catch (Exception e) {
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE,
+                        "Failed to process Email ID: " + (email != null ? email.getId() : "unknown"), e);
+            }
+        }
     }
+
+//    @SuppressWarnings("unused")
+//    @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
+//    public void myTimer() {
+////        sendReportApprovalEmails();
+//
+//    }
 
     private boolean sendEmailViaRestGateway(String subject, String body, List<String> recipients, boolean isHtml) {
         String messengerServiceURL = configOptionApplicationController.getShortTextValueByKey("Email Gateway - URL", "");

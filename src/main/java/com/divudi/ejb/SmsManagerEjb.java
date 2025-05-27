@@ -67,7 +67,7 @@ public class SmsManagerEjb {
     // ChatGPT and CodeRabbitAI contributed method:
     // Processes pending lab report approval SMS messages based on configurable delay strategies
     @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
-    private void processPendingLabReportApprovalSmsQueue() {
+    public void processPendingLabReportApprovalSmsQueue() {
         if (configOptionApplicationController == null || smsFacade == null) {
             return;
         }
