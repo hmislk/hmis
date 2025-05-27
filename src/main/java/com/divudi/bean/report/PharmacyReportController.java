@@ -2649,7 +2649,7 @@ public class PharmacyReportController implements Serializable {
                 totalReturnsIp += value;
             }
 
-            cogs.put("totalReturnsIp", totalReturnsIp);
+            cogs.put("Drug Return IP", totalReturnsIp);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating IP returns");
@@ -2681,7 +2681,7 @@ public class PharmacyReportController implements Serializable {
                 totalReturnsOp += value;
             }
 
-            cogs.put("totalReturnsOp", totalReturnsOp);
+            cogs.put("Drug Return Op", totalReturnsOp);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating OP returns");
