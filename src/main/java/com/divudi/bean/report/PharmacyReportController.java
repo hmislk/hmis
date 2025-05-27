@@ -2593,9 +2593,99 @@ public class PharmacyReportController implements Serializable {
             calculateOpeningStock();
             calculateStockCorrection();
             calculateGrnCashAndCredit();
+            calOther();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calOther() {
+        try {
+            List<BillType> billTypes = new ArrayList<>();
+
+            StringBuilder jpql = new StringBuilder()
+                    .append("SELECT sh2.id FROM StockHistory sh2 ")
+                    .append("WHERE sh2.retired = false ")
+                    .append("AND sh2.createdAt BETWEEN :fd AND :td ")
+                    .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("OR sh2.itemBatch.item.departmentType = :depty) ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+
+            // Add filters if needed
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            calDrugReturnOp(jpql, params);
+            calDrugReturnIp(jpql, params);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calDrugReturnIp(StringBuilder jpql, Map<String, Object> params) {
+        try {
+            List<BillType> billTypes = new ArrayList<>();
+
+            billTypes.add(BillType.PharmacyBhtPre);
+            jpql.append("AND sh2.pbItem.billItem.bill.billType in :doctype ");
+            jpql.append(" ORDER BY sh2.createdAt");
+            params.put("doctype", billTypes);
+            List<StockHistory> stockCorrectionsIds = new ArrayList<>();
+            stockCorrectionsIds = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            double totalReturnsIp = 0.0;
+
+            for (StockHistory sh : stockCorrectionsIds) {
+
+                double stockQty = sh.getPbItem().getBillItem().getQty();
+                double value = sh.getPbItem().getBillItem().getNetValue();
+
+                totalReturnsIp += value;
+            }
+
+            cogs.put("totalReturnsIp ", totalReturnsIp);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calDrugReturnOp(StringBuilder jpql, Map<String, Object> params) {
+        try {
+
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :doctype ");
+            jpql.append(" ORDER BY sh2.createdAt");
+            params.put("doctype", billTypeAtomics);
+            List<StockHistory> stockCorrectionsIds = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            double totalReturnsOp = 0.0;
+
+            for (StockHistory sh : stockCorrectionsIds) {
+
+                double stockQty = sh.getPbItem().getBillItem().getQty();
+                double value = sh.getPbItem().getBillItem().getNetValue();
+
+                totalReturnsOp += value;
+            }
+
+            cogs.put("totalReturnsOp ", totalReturnsOp);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2658,14 +2748,15 @@ public class PharmacyReportController implements Serializable {
             StringBuilder jpql = new StringBuilder()
                     .append("SELECT sh2.id FROM StockHistory sh2 ")
                     .append("WHERE sh2.retired = false ")
+                    .append("AND sh2.createdAt BETWEEN :fd AND :td ")
                     .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
-                    .append("OR sh2.itemBatch.item.departmentType = :depty) ");
+                    .append("OR sh2.itemBatch.item.departmentType = :depty) ")
+                    .append("AND sh2.pbItem.billItem.bill.billType in :doctype ");
 
             Map<String, Object> params = new HashMap<>();
-            params.put("bType", billTypes);
+            params.put("depty", DepartmentType.Pharmacy);
             params.put("fd", fromDate);
             params.put("td", toDate);
-            jpql.append(" s.pbItem.billItem.bill.billType in :doctype");
             params.put("doctype", billTypes);
 
             // Add filters if needed
@@ -2675,21 +2766,22 @@ public class PharmacyReportController implements Serializable {
 
             jpql.append(" ORDER BY sh2.createdAt");
 
-            List<Long> latestStockHistoryIds = facade.findLongValuesByJpql(jpql.toString(), params);
-            
+            List<Long> stockCorrectionsIds = facade.findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
             double totalCorrection = 0.0;
-            
-            for (Long shid : latestStockHistoryIds) {
+
+            for (Long shid : stockCorrectionsIds) {
                 StockHistory sh = facade.find(shid);
                 if (sh == null || sh.getItemBatch() == null || sh.getItemBatch().getItem() == null) {
                     continue;
                 }
 
-                double stockQty = sh.getStockQty();
-                double saleRate = sh.getItemBatch().getRetailsaleRate();
+                double stockQty = sh.getPbItem().getQty();
+                double newRate = sh.getPbItem().getAfterAdjustmentValue();
+                double oldRate = sh.getPbItem().getBeforeAdjustmentValue();
 
 //            totalQty += stockQty;
-                totalCorrection += stockQty * saleRate;
+                totalCorrection += stockQty * (newRate - oldRate);
 //            totalPurchaseValue += stockQty * purchaseRate;
             }
 
