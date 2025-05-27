@@ -2617,9 +2617,41 @@ public class PharmacyReportController implements Serializable {
 
             calDrugReturnIp(baseQuery, new HashMap<>(commonParams));
             calDrugReturnOp(baseQuery, new HashMap<>(commonParams));
+            calStockConsumption(baseQuery, new HashMap<>(commonParams));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calStockConsumption(String baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacyIssue);
+
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billType in :conDoctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("conDoctype", billTypes);
+
+            List<StockHistory> stockCorrectionsIds = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            double totalConsumption = 0.0;
+            for (StockHistory sh : stockCorrectionsIds) {
+                double value = sh.getPbItem().getBillItem().getNetValue();
+                totalConsumption += value;
+            }
+
+            cogs.put("Stock Consumption", totalConsumption);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
             cogs.put("ERROR", -1.0);
         }
     }
