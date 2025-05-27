@@ -46,6 +46,7 @@ public class AppEmail implements Serializable {
     private Institution institution;
     @ManyToOne
     private Department department;
+    private boolean pending;
 
     private String receipientEmail;
     private String messageSubject;
@@ -303,6 +304,16 @@ public class AppEmail implements Serializable {
     public void setDepartment(Department department) {
         this.department = department;
     }
+
+    public boolean isPending() {
+        return pending;
+    }
+
+    public void setPending(boolean pending) {
+        this.pending = pending;
+    }
+
+
 
 
 
