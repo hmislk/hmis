@@ -5,10 +5,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class InstitutionBillEncounter {
     private Institution institution;
@@ -21,21 +18,34 @@ public class InstitutionBillEncounter {
     private Double patientDue;
     private Double paidByCompany;
     private Double companyDue;
+    private PatientEncounter patientEncounter;
+    private Double totalPaidByCompanies;
+    private Double totalDue;
 
     public InstitutionBillEncounter() {
     }
 
-    public static List<InstitutionBillEncounter> createInstitutionBillEncounter(Map<PatientEncounter, List<Bill>> patientEncounterBills, boolean onlyDue) {
+    public static List<InstitutionBillEncounter> createInstitutionBillEncounter(Map<PatientEncounter, List<Bill>> patientEncounterBills, String dueType) {
+        if (dueType == null || (!dueType.equalsIgnoreCase("due") && !dueType.equalsIgnoreCase("any")
+                && !dueType.equalsIgnoreCase("excess") && !dueType.equalsIgnoreCase("settled"))) {
+            return new ArrayList<>();
+        }
+
         List<InstitutionBillEncounter> institutionBillEncounters = new ArrayList<>();
 
         for (Map.Entry<PatientEncounter, List<Bill>> entry : patientEncounterBills.entrySet()) {
             PatientEncounter patientEncounter = entry.getKey();
             List<Bill> bills = entry.getValue();
 
-            double totalGopOfCompanies = bills.stream()
-                    .filter(bill -> bill.getCreditCompany() != null)
-                    .mapToDouble(Bill::getNetTotal)
-                    .sum();
+            double totalGopOfCompanies = 0.0;
+            double totalPaidByCompanies = 0.0;
+
+            for (Bill bill : bills) {
+                if (bill.getCreditCompany() != null) {
+                    totalGopOfCompanies += bill.getNetTotal();
+                    totalPaidByCompanies += bill.getPaidAmount();
+                }
+            }
 
             for (Bill bill : bills) {
                 if (bill.getCreditCompany() != null) {
@@ -52,9 +62,21 @@ public class InstitutionBillEncounter {
                             totalGopOfCompanies - patientEncounter.getFinalBill().getSettledAmountByPatient());
                     institutionBillEncounter.setPaidByCompany(bill.getPaidAmount());
                     institutionBillEncounter.setCompanyDue(bill.getNetTotal() - bill.getPaidAmount());
+                    institutionBillEncounter.setPatientEncounter(patientEncounter);
+                    institutionBillEncounter.setTotalPaidByCompanies(totalPaidByCompanies);
+                    institutionBillEncounter.setTotalDue(institutionBillEncounter.getNetTotal() -
+                            (institutionBillEncounter.getPaidByPatient() + institutionBillEncounter.getTotalPaidByCompanies()));
 
-                    if (onlyDue) {
+                    if (dueType.equalsIgnoreCase("due")) {
                         if (institutionBillEncounter.getPatientDue() > 0 || institutionBillEncounter.getCompanyDue() > 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        }
+                    } else if (dueType.equalsIgnoreCase("excess")) {
+                        if (institutionBillEncounter.getPatientDue() < 0 || institutionBillEncounter.getCompanyDue() < 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        }
+                    } else if (dueType.equalsIgnoreCase("settled")) {
+                        if (institutionBillEncounter.getPatientDue() == 0 || institutionBillEncounter.getCompanyDue() == 0) {
                             institutionBillEncounters.add(institutionBillEncounter);
                         }
                     } else {
@@ -150,5 +172,29 @@ public class InstitutionBillEncounter {
 
     public void setCompanyDue(Double companyDue) {
         this.companyDue = companyDue;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public Double getTotalPaidByCompanies() {
+        return totalPaidByCompanies;
+    }
+
+    public void setTotalPaidByCompanies(Double totalPaidByCompanies) {
+        this.totalPaidByCompanies = totalPaidByCompanies;
+    }
+
+    public Double getTotalDue() {
+        return totalDue;
+    }
+
+    public void setTotalDue(Double totalDue) {
+        this.totalDue = totalDue;
     }
 }
