@@ -274,6 +274,10 @@
                                 </p:column>
                                 <p:column headerText="Patient Name">
                                 </p:column>
+                                <p:column headerText="Policy Number">
+                                </p:column>
+                                <p:column headerText="Reference Number">
+                                </p:column>
                                 <p:column headerText="Billed Amount">
                                 </p:column>
                                 <p:column headerText="GOP Amount">
@@ -303,6 +307,12 @@
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.bhtNo, entry.key.name)}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.bhtNo, entry.key.name)}"/>
                             </p:column>
                             <p:column style="text-align: right;">
                                 <h:outputLabel value="#{b.netTotal}">
@@ -336,7 +346,7 @@
                             </p:column>
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column footerText="" colspan="3"/>
+                                    <p:column footerText="" colspan="5"/>
                                     <p:column footerText=""/>
                                     <p:column style="text-align: right;">
                                         <f:facet name="footer">
@@ -369,7 +379,7 @@
                         </p:subTable>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column footerText="Total" colspan="3"/>
+                                <p:column footerText="Total" colspan="5"/>
                                 <p:column footerText=""/>
                                 <p:column style="text-align: right;">
                                     <f:facet name="footer">
