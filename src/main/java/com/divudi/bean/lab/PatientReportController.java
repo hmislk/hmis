@@ -2083,7 +2083,7 @@ public class PatientReportController implements Serializable {
             e.setBill(currentPtIx.getBillItem().getBill());
             e.setPatientReport(currentPatientReport);
             e.setPatientInvestigation(currentPtIx);
-            e.setSmsType(MessageType.LabReport);
+            e.setMessageType(MessageType.LabReport);
             
             e.setSentSuccessfully(false);
             e.setPending(true);
