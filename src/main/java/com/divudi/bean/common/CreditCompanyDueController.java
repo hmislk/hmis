@@ -1313,6 +1313,8 @@ public class CreditCompanyDueController implements Serializable {
 
         setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
         calculateCreditCompanyDueTotals();
+
+        setEncounterCreditCompanyMap(getEncounterCreditCompanies());
     }
 
     private void calculateCreditCompanyDueTotals() {
@@ -1368,7 +1370,8 @@ public class CreditCompanyDueController implements Serializable {
             mergedStyle.setFont(boldFont);
 
             Row headerRow = sheet.createRow(rowIndex++);
-            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
+            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name","Policy Number", "Reference Number",
+                    "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -1389,41 +1392,43 @@ public class CreditCompanyDueController implements Serializable {
                     dataRow.createCell(0).setCellValue(b.getBhtNo());
                     dataRow.createCell(1).setCellValue(b.getDateOfDischarge().toString());
                     dataRow.createCell(2).setCellValue(b.getPatient().getPerson().getNameWithTitle());
-                    dataRow.createCell(3).setCellValue(b.getNetTotal());
-                    dataRow.createCell(4).setCellValue(b.getGopAmount());
-                    dataRow.createCell(5).setCellValue(b.getPaidByPatient());
-                    dataRow.createCell(6).setCellValue(b.getPatientDue());
-                    dataRow.createCell(7).setCellValue(b.getPaidByCompany());
-                    dataRow.createCell(8).setCellValue(b.getCompanyDue());
+                    dataRow.createCell(3).setCellValue(getPolicyNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()));
+                    dataRow.createCell(4).setCellValue(getReferenceNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()));
+                    dataRow.createCell(5).setCellValue(b.getNetTotal());
+                    dataRow.createCell(6).setCellValue(b.getGopAmount());
+                    dataRow.createCell(7).setCellValue(b.getPaidByPatient());
+                    dataRow.createCell(8).setCellValue(b.getPatientDue());
+                    dataRow.createCell(9).setCellValue(b.getPaidByCompany());
+                    dataRow.createCell(10).setCellValue(b.getCompanyDue());
 
-                    for (int j = 3; j <= 8; j++) {
+                    for (int j = 5; j <= 10; j++) {
                         dataRow.getCell(j).setCellStyle(amountStyle);
                     }
                 }
 
                 Row subtotalRow = sheet.createRow(rowIndex++);
-                subtotalRow.createCell(4).setCellValue(getInstituteGopMap().get(institution));
-                subtotalRow.createCell(7).setCellValue(getInstitutPaidByCompanyMap().get(institution));
-                subtotalRow.createCell(8).setCellValue(getInstitutePayableByCompanyMap().get(institution));
+                subtotalRow.createCell(6).setCellValue(getInstituteGopMap().get(institution));
+                subtotalRow.createCell(9).setCellValue(getInstitutPaidByCompanyMap().get(institution));
+                subtotalRow.createCell(10).setCellValue(getInstitutePayableByCompanyMap().get(institution));
 
-                subtotalRow.getCell(4).setCellStyle(mergedStyle);
-                subtotalRow.getCell(7).setCellStyle(mergedStyle);
-                subtotalRow.getCell(8).setCellStyle(mergedStyle);
+                subtotalRow.getCell(6).setCellStyle(mergedStyle);
+                subtotalRow.getCell(9).setCellStyle(mergedStyle);
+                subtotalRow.getCell(10).setCellStyle(mergedStyle);
             }
 
             Row footerRow = sheet.createRow(rowIndex++);
             footerRow.createCell(0).setCellValue("Total");
             footerRow.getCell(0).setCellStyle(boldStyle);
 
-            footerRow.createCell(4).setCellValue(getGopAmount());
-            footerRow.createCell(7).setCellValue(getPaidByCompany());
-            footerRow.createCell(8).setCellValue(getPayableByCompany());
+            footerRow.createCell(6).setCellValue(getGopAmount());
+            footerRow.createCell(9).setCellValue(getPaidByCompany());
+            footerRow.createCell(10).setCellValue(getPayableByCompany());
 
-            footerRow.getCell(4).setCellStyle(mergedStyle);
-            footerRow.getCell(7).setCellStyle(mergedStyle);
-            footerRow.getCell(8).setCellStyle(mergedStyle);
+            footerRow.getCell(6).setCellStyle(mergedStyle);
+            footerRow.getCell(9).setCellStyle(mergedStyle);
+            footerRow.getCell(10).setCellStyle(mergedStyle);
 
-            for (int i = 0; i <= 8; i++) {
+            for (int i = 0; i <= 10; i++) {
                 sheet.autoSizeColumn(i);
             }
 
@@ -1464,11 +1469,12 @@ public class CreditCompanyDueController implements Serializable {
             dateRange.setSpacingAfter(10);
             document.add(dateRange);
 
-            PdfPTable table = new PdfPTable(9);
+            PdfPTable table = new PdfPTable(11);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{1.2f, 2.5f, 3f, 2f, 2f, 2f, 2f, 2f, 2f});
+            table.setWidths(new float[]{1.2f, 2.5f, 3f, 1.2f, 1.2f, 2f, 2f, 2f, 2f, 2f, 2f});
 
-            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
+            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name","Policy Number", "Reference Number",
+                    "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
             for (String h : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -1482,7 +1488,7 @@ public class CreditCompanyDueController implements Serializable {
                 List<InstitutionBillEncounter> encounters = entry.getValue();
 
                 PdfPCell groupHeader = new PdfPCell(new Phrase(institution.getName(), boldFont));
-                groupHeader.setColspan(9);
+                groupHeader.setColspan(11);
                 groupHeader.setBackgroundColor(BaseColor.LIGHT_GRAY);
                 table.addCell(groupHeader);
 
@@ -1490,6 +1496,8 @@ public class CreditCompanyDueController implements Serializable {
                     table.addCell(new Phrase(b.getBhtNo(), normalFont));
                     table.addCell(new Phrase(sdf.format(b.getDateOfDischarge()), normalFont));
                     table.addCell(new Phrase(b.getPatient().getPerson().getNameWithTitle(), normalFont));
+                    table.addCell(new Phrase(getPolicyNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()), normalFont));
+                    table.addCell(new Phrase(getReferenceNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()), normalFont));
                     table.addCell(new Phrase(df.format(b.getNetTotal()), normalFont));
                     table.addCell(new Phrase(df.format(b.getGopAmount()), normalFont));
                     table.addCell(new Phrase(df.format(b.getPaidByPatient()), normalFont));
@@ -1499,7 +1507,7 @@ public class CreditCompanyDueController implements Serializable {
                 }
 
                 PdfPCell subtotalLabel = new PdfPCell(new Phrase("Sub Total", boldFont));
-                subtotalLabel.setColspan(4);
+                subtotalLabel.setColspan(6);
                 subtotalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(subtotalLabel);
                 table.addCell(new Phrase(df.format(getInstituteGopMap().get(institution)), boldFont));
@@ -1510,7 +1518,7 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             PdfPCell netTotalLabel = new PdfPCell(new Phrase("Net Total", boldFont));
-            netTotalLabel.setColspan(4);
+            netTotalLabel.setColspan(6);
             netTotalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
             table.addCell(netTotalLabel);
             table.addCell(new Phrase(df.format(getGopAmount()), boldFont));
