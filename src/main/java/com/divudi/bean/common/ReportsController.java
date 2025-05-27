@@ -314,6 +314,16 @@ public class ReportsController implements Serializable {
 
     private Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap;
 
+    private Institution institutionOfDepartment;
+
+    public Institution getInstitutionOfDepartment() {
+        return institutionOfDepartment;
+    }
+
+    public void setInstitutionOfDepartment(Institution institutionOfDepartment) {
+        this.institutionOfDepartment = institutionOfDepartment;
+    }
+
     public Map<Institution, List<InstitutionBillEncounter>> getBillInstitutionEncounterMap() {
         return billInstitutionEncounterMap;
     }
@@ -4315,19 +4325,29 @@ public class ReportsController implements Serializable {
             m.put("pm", paymentMethod);
         }
 
-//        if (institutionOfDepartment != null) {
-//            sql += "AND fb.institution = :insd ";
-//            m.put("insd", institutionOfDepartment);
-//        }
+        if (institutionOfDepartment != null) {
+            sql += "AND b.institution = :insd ";
+            m.put("insd", institutionOfDepartment);
+        }
 
         if (department != null) {
-            sql += "AND fb.department = :dep ";
+            sql += "AND b.department = :dep ";
             m.put("dep", department);
         }
 
         if (site != null) {
-            sql += "AND fb.department.site = :site ";
+            sql += "AND b.department.site = :site ";
             m.put("site", site);
+        }
+
+        if (visitType != null && (visitType.equalsIgnoreCase("IP") && dischargedStatus != null && !dischargedStatus.trim().isEmpty())) {
+            if (dischargedStatus.equalsIgnoreCase("notDischarged")) {
+                sql += "AND b.discharged = :status ";
+                m.put("status", false);
+            } else if (dischargedStatus.equalsIgnoreCase("discharged")) {
+                sql += "AND b.discharged = :status ";
+                m.put("status", true);
+            }
         }
 
         sql += " order by  b.dateOfDischarge";
@@ -4342,11 +4362,17 @@ public class ReportsController implements Serializable {
 
         updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
 
-        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
+        if (reportType == null) {
+            reportType = "any";
+        }
+
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, reportType.equalsIgnoreCase("paid") ?
+                "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any"));
         calculateCreditCompanyAmounts();
 
         List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(
-                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), true));
+                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), reportType.equalsIgnoreCase("paid") ?
+                        "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any"));
 
         setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
         calculateCreditCompanyDueTotals();
@@ -4433,9 +4459,9 @@ public class ReportsController implements Serializable {
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
-        if (institution != null) {
+        if (creditCompany != null) {
             jpql += " and bill.creditCompany =:ins ";
-            parameters.put("ins", institution);
+            parameters.put("ins", creditCompany);
         }
 
         List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);

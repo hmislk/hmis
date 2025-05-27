@@ -5,10 +5,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class InstitutionBillEncounter {
     private Institution institution;
@@ -28,7 +25,12 @@ public class InstitutionBillEncounter {
     public InstitutionBillEncounter() {
     }
 
-    public static List<InstitutionBillEncounter> createInstitutionBillEncounter(Map<PatientEncounter, List<Bill>> patientEncounterBills, boolean onlyDue) {
+    public static List<InstitutionBillEncounter> createInstitutionBillEncounter(Map<PatientEncounter, List<Bill>> patientEncounterBills, String dueType) {
+        if (dueType == null || (!dueType.equalsIgnoreCase("due") && !dueType.equalsIgnoreCase("any")
+                && !dueType.equalsIgnoreCase("excess") && !dueType.equalsIgnoreCase("settled"))) {
+            return new ArrayList<>();
+        }
+
         List<InstitutionBillEncounter> institutionBillEncounters = new ArrayList<>();
 
         for (Map.Entry<PatientEncounter, List<Bill>> entry : patientEncounterBills.entrySet()) {
@@ -65,8 +67,16 @@ public class InstitutionBillEncounter {
                     institutionBillEncounter.setTotalDue(institutionBillEncounter.getNetTotal() -
                             (institutionBillEncounter.getPaidByPatient() + institutionBillEncounter.getTotalPaidByCompanies()));
 
-                    if (onlyDue) {
+                    if (dueType.equalsIgnoreCase("due")) {
                         if (institutionBillEncounter.getPatientDue() > 0 || institutionBillEncounter.getCompanyDue() > 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        }
+                    } else if (dueType.equalsIgnoreCase("excess")) {
+                        if (institutionBillEncounter.getPatientDue() < 0 || institutionBillEncounter.getCompanyDue() < 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        }
+                    } else if (dueType.equalsIgnoreCase("settled")) {
+                        if (institutionBillEncounter.getPatientDue() == 0 || institutionBillEncounter.getCompanyDue() == 0) {
                             institutionBillEncounters.add(institutionBillEncounter);
                         }
                     } else {
