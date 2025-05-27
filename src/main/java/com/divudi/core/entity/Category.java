@@ -5,28 +5,6 @@
 package com.divudi.core.entity;
 
 
-import com.divudi.core.util.CommonFunctions;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Temporal;
-import javax.persistence.Transient;
-
-
-import com.divudi.bean.pharmacy.RouteOfAdministration;
 import com.divudi.core.data.CategoryType;
 import com.divudi.core.data.SymanticHyrachi;
 import com.divudi.core.entity.hr.Designation;
@@ -36,30 +14,19 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.Room;
 import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.inward.TimedItemCategory;
-import com.divudi.core.entity.lab.InvestigationCategory;
-import com.divudi.core.entity.lab.InvestigationItemValueCategory;
-import com.divudi.core.entity.lab.InvestigationTube;
-import com.divudi.core.entity.lab.Machine;
-import com.divudi.core.entity.lab.ReportFormat;
-import com.divudi.core.entity.lab.Sample;
-import com.divudi.core.entity.lab.WorksheetFormat;
+import com.divudi.core.entity.lab.*;
 import com.divudi.core.entity.membership.MembershipScheme;
-import com.divudi.core.entity.pharmacy.AdjustmentCategory;
-import com.divudi.core.entity.pharmacy.DiscardCategory;
-import com.divudi.core.entity.pharmacy.FrequencyUnit;
-import com.divudi.core.entity.pharmacy.Make;
-import com.divudi.core.entity.pharmacy.MeasurementUnit;
-import com.divudi.core.entity.pharmacy.PharmaceuticalCategory;
-import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
-import com.divudi.core.entity.pharmacy.StoreItemCategory;
+import com.divudi.core.entity.pharmacy.*;
+import com.divudi.core.util.CommonFunctions;
 
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 
 /**
- *
  * @author IT B
- *
  */
 @Entity
 @Inheritance

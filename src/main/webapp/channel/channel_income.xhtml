@@ -64,15 +64,15 @@
                                         <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
                                         <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
                                     </h:panelGroup>
-                                        <p:selectOneMenu
-                                            id="cmbDept"
-                                            style="width: 350px;"  
-                                            class="w-100" 
-                                            value="#{searchController.department}" 
-                                            filter="true">
-                                            <f:selectItem itemLabel="All Departments" />
-                                            <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                        </p:selectOneMenu>
+                                    <p:selectOneMenu
+                                        id="cmbDept"
+                                        style="width: 350px;"  
+                                        class="w-100" 
+                                        value="#{searchController.department}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                    </p:selectOneMenu>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf2b9;" styleClass="fa mr-2" /> 
@@ -95,7 +95,7 @@
                                         <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
                                         <h:outputLabel value="Doctor" for="scStaff" class="mx-3"/>
                                     </h:panelGroup>
-                                        <p:selectOneMenu id="scStaff" 
+                                    <p:selectOneMenu id="scStaff" 
                                                      value="#{searchController.staff}" 
                                                      filter="true" 
                                                      filterMatchMode="contains" 
@@ -107,7 +107,7 @@
                                             itemLabel="#{staff.person.nameWithTitle}" 
                                             itemValue="#{staff}" />
                                     </p:selectOneMenu>
-                               
+
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText styleClass="fas fa-user mr-2" />
                                         <h:outputLabel value="User" class="mx-3"/>
@@ -120,9 +120,9 @@
                                         <f:selectItem itemLabel="Select a user"/>
                                         <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}" itemValue="#{st}"/>
                                     </p:selectOneMenu>
-                                    
-                                     <p:spacer width="50" ></p:spacer>
-                                    
+
+                                    <p:spacer width="50" ></p:spacer>
+
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText styleClass="fas fa-user mr-2" />
                                         <h:outputLabel value="Booking Type" class="mx-3"/>
@@ -174,16 +174,32 @@
                             </div>
                         </div>
 
+                        <p:remoteCommand name="onBillRowClick"
+                                         actionListener="#{searchController.handleChannelBillRowClick}"
+                                         update="tbl"
+                                         />
+
+                        <script>
+                            function handleRowClick() {
+                                onBillRowClick(); // triggers AJAX to server
+                            }
+                        </script>
+
+
                         <p:dataTable 
                             id="tbl"
                             value="#{searchController.bundle.reportTemplateRows}"
                             var="row"
+                            widgetVar="billTableWidget"
+                            selectionMode="single"
+                            selection="#{searchController.selectedChannelBookingBillRow}"
+                            onRowClick="handleRowClick()"
                             paginator="true"
                             rows="10"
                             rowIndexVar="n"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
-                            rowKey="#{row.id}">
+                            rowKey="#{row.bill.id}">
 
                             <p:column width="2em">
                                 <f:facet name="header">
@@ -206,8 +222,9 @@
                                     <h:outputText value="Bill No" />
                                 </f:facet>
                                 <h:outputText value="#{row.bill.deptId}" />
-                                <p:badge value="Cancelled" severity="danger" rendered="#{b.cancelled}"/>
-                                <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
+                                <p:badge value="Cancelled" severity="danger" rendered="#{row.bill.cancelled}"/>
+                                <p:badge value="Refunded" severity="warning" rendered="#{row.bill.refunded}"/>
+                                <p:badge value="Cancel Bill" severity="info" rendered="#{row.bill.total lt 0}"/>
                             </p:column>
 
                             <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
@@ -221,7 +238,13 @@
                                 <f:facet name="header">
                                     <h:outputText value="Patient" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.patient.person.nameWithTitle}">
+                                <h:outputText rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.patient.person.nameWithTitle}">
+                                </h:outputText>
+
+                                <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.referenceBill.onlineBooking.patientName}">
+                                </h:outputText>
+
+                                <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{row.bill.billedBill.referenceBill.onlineBooking.patientName}">
                                 </h:outputText>
                             </p:column>
 
@@ -274,11 +297,11 @@
                                 <h:outputText value="#{row.bill.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-<!--                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.discount}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>-->
+                                <!--                                <f:facet name="footer">
+                                                                    <h:outputText value="#{searchController.bundle.discount}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputText>
+                                                                </f:facet>-->
                             </p:column>
 
                             <p:column class="text-end">
@@ -294,7 +317,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column class="text-end"  sortBy="#{row.cashValue}" filterBy="#{row.cashValue}"  rendered="#{searchController.bundle.hasCashTransaction}" >
                                 <f:facet name="header">
                                     <h:outputText value="Cash" />
@@ -441,42 +464,42 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:ajax event="filter" oncomplete="updateTotals();"></p:ajax>
                             <p:ajax event="page" oncomplete="updateTotals();"></p:ajax>
 
                         </p:dataTable>
-                        
+
                         <script>
-                                function calculateTotals(selector, targeter){
-                                    const values = Array.from(document.querySelectorAll(selector));
-                                    const totalValue = values
+                            function calculateTotals(selector, targeter) {
+                                const values = Array.from(document.querySelectorAll(selector));
+                                const totalValue = values
                                         .map(value => {
-                                            const cleanValue = value.innerText.replace(/,/g ,"");
-                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);                                           
+                                            const cleanValue = value.innerText.replace(/,/g, "");
+                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
                                         })
                                         .reduce((total, value) => total + value, 0);
-                                
-                                    const targetElement = document.querySelector(targeter);
-                                    if(targetElement){
-                                        targetElement.innerText = totalValue.toFixed(2);
-                                    }
-                                    
-                                }
-                                
-                                function updateTotals(){
-                                    calculateTotals('.grossValue', '.totalGrossValue');
-                                    calculateTotals('.hosValue', '.totalHosValue');
-                                    calculateTotals('.staffValue', '.totalStaffValue');
-                                    calculateTotals('.netValue', '.totalNetValue');
-                                    calculateTotals('.cashValue', '.totalCashValue');
-                                    calculateTotals('.cardValue', '.totalCardValue');
-                                    calculateTotals('.agentValue', '.totalAgentValue');
-                                }
-                                
-                                setTimeout(updateTotals, 100);
 
-                            </script>
+                                const targetElement = document.querySelector(targeter);
+                                if (targetElement) {
+                                    targetElement.innerText = totalValue.toFixed(2);
+                                }
+
+                            }
+
+                            function updateTotals() {
+                                calculateTotals('.grossValue', '.totalGrossValue');
+                                calculateTotals('.hosValue', '.totalHosValue');
+                                calculateTotals('.staffValue', '.totalStaffValue');
+                                calculateTotals('.netValue', '.totalNetValue');
+                                calculateTotals('.cashValue', '.totalCashValue');
+                                calculateTotals('.cardValue', '.totalCardValue');
+                                calculateTotals('.agentValue', '.totalAgentValue');
+                            }
+
+                            setTimeout(updateTotals, 100);
+
+                        </script>
 
                     </p:panel>
                 </h:form>

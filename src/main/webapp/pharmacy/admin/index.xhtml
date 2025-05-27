@@ -194,6 +194,7 @@
                                     </p:tab>
                                     <p:tab title="Set up">
                                         <div class="d-grid gap-2">
+                                            
                                             <p:commandButton class="w-100" ajax="false" value="Check Item Differences with other Database" icon="fa fa-database" action="#{pharmacyController.navigateToItemMismatchReport()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Import from Excel" icon="fa fa-file-excel" action="#{pharmacyController.navigateToItemImport()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Import from Excel With Stock" icon="fa fa-boxes" action="#{pharmacyController.navigateToItemImportWithStock()}" />
@@ -217,6 +218,13 @@
                                             <p:commandButton class="w-100" ajax="false" value="Correct Name by Barcode" icon="fa fa-barcode" action="#{pharmacyController.navigateToItemNamesMissing()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Correct Name by Snapshot" icon="fa fa-camera" action="#{pharmacyController.navigateToItemNamesCorrectionBySnapshot()}" />
 
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Add Item Name to All Stocks"
+                                                icon="fa fa-database"
+                                                action="#{stockController.addItemNamesToAllStocks()}" />
+                                            
                                         </div>
                                     </p:tab> 
                                 </p:accordionPanel>

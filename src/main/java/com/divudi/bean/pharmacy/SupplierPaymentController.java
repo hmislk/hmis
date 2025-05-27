@@ -61,6 +61,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.text.DecimalFormat;
 
 /**
  *
@@ -147,6 +148,7 @@ public class SupplierPaymentController implements Serializable {
     private List<String> supplierPaymentStatusList;
     private String supplierPaymentStatus;
     boolean changed = false;
+    private boolean acPayeeOnly;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -713,7 +715,7 @@ public class SupplierPaymentController implements Serializable {
         }
         getCurrent().setNetTotal(0 - n);
     }
-    
+
     public void calTotalWithResetingIndexSelected() {
         int index = 0;
         double n = 0.0;
@@ -752,13 +754,13 @@ public class SupplierPaymentController implements Serializable {
         getBillItems().remove(billItem); // removes by object, not by index
         calTotalWithResetingIndex();
     }
-    
+
     public void removeselected(BillItem billItem) {
         getSelectedBillItems().remove(billItem); // removes by object, not by index
         calTotalWithResetingIndexSelected();
         calculateTotalBySelectedBillItems();
     }
-    
+
     public void removeFromCurrent(BillItem billItem) {
         getCurrent().getBillItems().remove(billItem); // removes by object, not by index
         updateReferanceBillAsNotPaymentGenerated(billItem);
@@ -770,17 +772,17 @@ public class SupplierPaymentController implements Serializable {
         getBillItems().remove(billItem.getSearialNo());
 
     }
-    
-    public void updateReferanceBillAsNotPaymentGenerated(BillItem billItemsWithReferanceToSettlingBills){
-            Bill originalBill = billItemsWithReferanceToSettlingBills.getReferenceBill();
 
-            originalBill.setPaymentGenerated(false);
-            originalBill.setPaymentGeneratedAt(null);
-            originalBill.setPaymentGeneratedBy(null);
+    public void updateReferanceBillAsNotPaymentGenerated(BillItem billItemsWithReferanceToSettlingBills) {
+        Bill originalBill = billItemsWithReferanceToSettlingBills.getReferenceBill();
 
-            originalBill.setPaymentApproved(false);
+        originalBill.setPaymentGenerated(false);
+        originalBill.setPaymentGeneratedAt(null);
+        originalBill.setPaymentGeneratedBy(null);
 
-            billFacade.edit(originalBill);
+        originalBill.setPaymentApproved(false);
+
+        billFacade.edit(originalBill);
     }
 
     private boolean errorCheck() {
@@ -3095,41 +3097,53 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String fillFooterDataOfPaymentVoucher(String s, Bill b) {
-        if(configOptionApplicationController.getBooleanValueByKey("Supplier Payment - Fill Footer Data",false)){
-            Payment p; 
-            
-            if(b.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT){
+        if (configOptionApplicationController.getBooleanValueByKey("Supplier Payment - Fill Footer Data", false)) {
+            Payment p;
+
+            if (b.getBillTypeAtomic() == BillTypeAtomic.SUPPLIER_PAYMENT) {
                 p = findPaymentFromBill(b);
-            }else{
+            } else {
                 p = findPaymentFromBill(b.getReferenceBill());
             }
-            
+
+            if (p.getPaymentMethod() != PaymentMethod.Cheque) {
+                s = "";
+                return s;
+            }
+
             String filledFooter;
-           
+
             String bankName = (p != null ? p.getBank().getName() : "");
-            String chequeDate = (p != null ? CommonFunctions.getDateFormat(p.getChequeDate(), sessionController.getApplicationPreference().getShortDateFormat()) : "");
+            String chequeDate = (p != null ? CommonFunctions.getDateFormat(p.getChequeDate(), sessionController.getApplicationPreference().getLongDateFormat()) : "");
             String chequeNo = (p != null ? p.getChequeRefNo() : "");
             Double amount = (p != null ? Math.abs(p.getPaidValue()) : 0.0);
+
+            DecimalFormat formatter = new DecimalFormat("#,###,##0.00");
+            String formattedAmount = formatter.format(amount);
 
             filledFooter = s.replace("{{bank_name}}", bankName)
                     .replace("{{cheque_date}}", chequeDate)
                     .replace("{{cheque_no}}", chequeNo)
-                    .replace("{{amount}}", String.valueOf(amount));
+                    .replace("{{amount}}", formattedAmount);
 
             return filledFooter;
-        }else{
+        } else {
             return s;
         }
     }
 
-    public Payment findPaymentFromBill(Bill b){
-        String jpql = "Select p From Payment p Where " +
-                "p.bill = :bill and " +
-                "p.retired = false";
+    public String convertToWord(Double d) {
+        return CommonFunctions.convertToWord(d);
+    }
+
+    public Payment findPaymentFromBill(Bill b) {
+        String jpql = "Select p From Payment p Where "
+                + "p.bill = :bill and "
+                + "p.retired = false";
         HashMap hm = new HashMap();
         hm.put("bill", b);
 
-        return getPaymentFacade().findFirstByJpql(jpql,hm);
+        return getPaymentFacade().findFirstByJpql(jpql, hm);
     }
 
     public void setCurrentBillItem(BillItem currentBillItem) {
@@ -3542,5 +3556,13 @@ public class SupplierPaymentController implements Serializable {
 
     public void setChanged(boolean changed) {
         this.changed = changed;
+    }
+
+    public boolean isAcPayeeOnly() {
+        return acPayeeOnly;
+    }
+
+    public void setAcPayeeOnly(boolean acPayeeOnly) {
+        this.acPayeeOnly = acPayeeOnly;
     }
 }

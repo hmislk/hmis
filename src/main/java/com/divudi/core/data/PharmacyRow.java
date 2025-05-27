@@ -175,6 +175,9 @@ public class PharmacyRow  implements Serializable{
     private double staffTotal;
     private double ccTotal;
 
+    private double purchaseRate;
+    private double retailRate;
+
     private double qty;
 
     private long duration;
@@ -1338,4 +1341,19 @@ public class PharmacyRow  implements Serializable{
         this.admissionType = admissionType;
     }
 
+    public Double getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(double purchaseRate) {
+        this.purchaseRate = purchaseRate;
+    }
+
+    public Double getRetailRate() {
+        return retailRate;
+    }
+
+    public void setRetailRate(double retailRate) {
+        this.retailRate = retailRate;
+    }
 }

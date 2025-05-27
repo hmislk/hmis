@@ -1,7 +1,13 @@
 package com.divudi.core.data.reports;
 
+
+
 public enum SummaryReports implements IReportType {
-    PHARMACY_INCOME_REPORT("Pharmacy Income Report");
+    PHARMACY_INCOME_REPORT("Pharmacy Income Report"),
+    DAILY_STOCK_BALANCE_REPORT("Daily Stock Balance Report"),
+    PHARMACY_INCOME_AND_COST_REPORT("Pharmacy Income and Cost Report"),
+    BILL_TYPE_LIST_REPORT("Bill Type List Report"),;
+
 
     private final String displayName;
 

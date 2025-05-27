@@ -154,25 +154,22 @@
                                                 <th style="width: 25mm;font-weight: 700;">
                                                     <h:outputText value="Bill No" style="margin-left: 1mm;"/>
                                                 </th>
-                                                <th style="width: 67mm; font-weight: 700; text-align: left;">
+                                                <th style="width: 25mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Staff Code" style="margin-left:  1mm;"/>
                                                 </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="Staff Name" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="Bill Type" style="margin-right: 1mm;"/>
+                                                <th style="width: 50mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Staff Name" style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Date" style="margin-left:  1mm;"/>
                                                 </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 30mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Total Amount" style="margin-right: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Discount" style="margin-right: 1mm;"/>
                                                 </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                <th style="width: 30mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Net Amount" style="margin-right: 1mm;"/>
                                                 </th>
                                             </tr>
@@ -186,23 +183,19 @@
                                                     <td style="width: 25mm; text-align: left;">
                                                         <h:outputText value="#{b.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
-                                                    <td style="width: 67mm; text-align: left;">
-                                                        <h:outputText value="#{b.toStaff.code}" style="margin-left: 1mm;"></h:outputText>
+                                                    <td style="width: 25mm; text-align: left;">
+                                                        <h:outputText value="#{b.toStaff.code}" style="margin-left: 1mm;"/>
                                                     </td>
-                                                    <td style="width: 17mm; text-align: right;">
+                                                    <td style="width: 50mm; text-align: right;">
                                                         <h:outputText value="#{b.toStaff.person.nameWithTitle}" style="margin-right: 1mm;">
                                                         </h:outputText>
-                                                    </td>
-                                                    <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="Pharmacy Bill" rendered="#{b.billType ne 'OpdBill'}" style="margin-right: 1mm;"/>
-                                                        <h:outputText value="OPD Bill" rendered="#{b.billType eq 'OpdBill'}" style="margin-right: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
                                                         <h:outputText value="#{b.createdAt}" style="margin-left: 1mm;">
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 17mm; text-align: right;">
+                                                    <td style="width: 30mm; text-align: right;">
                                                         <h:outputText value="#{b.total}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
@@ -212,7 +205,7 @@
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 17mm; text-align: right;">
+                                                    <td style="width: 30mm; text-align: right;">
                                                         <h:outputText value="#{b.netTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
@@ -222,13 +215,10 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td style="width: 8mm;" ></td>
-                                                <td style="width: 25mm; text-align: left;"></td>
-                                                <td style="width: 67mm; text-align: left;"></td>
-                                                <td style="width: 17mm; text-align: left;"></td>
-                                                <td style="width: 17mm; text-align: left;"></td>
-                                                <td style="width: 17mm; text-align: left;"></td>
-                                                <td style="width: 17mm; text-align: right;">
+                                                <td colspan="5" style="margin-left: 1mm;">
+                                                    <h:outputText value="Total" style="margin-left:  1mm;"/>
+                                                </td>
+                                                <td style="width: 30mm; text-align: right;">
                                                     <h:outputText value="#{serviceSummery.totalBill}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
@@ -238,7 +228,7 @@
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
-                                                <td style="width: 17mm; text-align: right;">
+                                                <td style="width: 30mm; text-align: right;">
                                                     <h:outputText value="#{serviceSummery.netTotalBill}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>

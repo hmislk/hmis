@@ -151,98 +151,72 @@
                                 </div>
 
                                 <div>
-                                    <table>
+                                    <table style="width: 100%; border-collapse: collapse;">
                                         <thead>
-                                            <tr>
-                                                <th style="width: 25mm; font-weight: 700;text-align: left">
-                                                    <h:outputText value="Bill No" style="margin-left: 1mm;"/>
-                                                </th>
-                                                <th style="width: 25mm;font-weight: 700; text-align: left">
-                                                    <h:outputText value="Date/Time" style="margin-left: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="Sent from" style="margin-left:  1mm;"/>
-                                                </th>
-                                                <th style="width: 50mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="To be Received by" style="margin-left:  1mm;"/>
-                                                </th>
-                                                <th style="width: 40mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="Transporter" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 10mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="Remarks" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 40mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="Purchase Value" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 40mm; font-weight: 700; text-align: right;">
-                                                    <h:outputText value="Sale Value" style="margin-right: 1mm;"/>
-                                                </th>
-                                            </tr>
+                                        <tr>
+                                            <th style="text-align: left;">Bill No</th>
+                                            <th style="text-align: left;">Date/Time</th>
+                                            <th style="text-align: left;">Sent from</th>
+                                            <th style="text-align: left;">To be Received by</th>
+                                            <th style="text-align: left;">Transporter</th>
+                                            <th style="text-align: left;">Remarks</th>
+                                            <th style="text-align: right;">Purchase Value</th>
+                                            <th style="text-align: right;">Sale Value</th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{reportsTransfer.transferBills}" var="i">
-                                                <tr>
-                                                    <td style="width: 25mm; font-weight: 700;text-align: left" >
-                                                        <h:outputText value="#{i.deptId}" style="margin-left: 1mm;"/>
-                                                    </td>
-                                                    <td style="width: 25mm;font-weight: 700; text-align: left">
-                                                        <h:outputText value="#{i.createdAt}" style="margin-left: 1mm;">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                                        </h:outputText>
-                                                    </td>
-                                                    <td style="width: 17mm; font-weight: 700; text-align: left;">
-                                                        <h:outputText value="#{i.fromDepartment.name}" style="margin-left: 1mm;"/>
-                                                    </td>
-                                                    <td style="width: 50mm; font-weight: 700; text-align: left;">
-                                                        <h:outputText value="#{i.toDepartment.name}" style="margin-left: 1mm;"/>
-                                                    </td>
-                                                    <td style="width: 40mm; font-weight: 700; text-align: left;">
-                                                        <h:outputText value="#{i.toStaff.person.nameWithTitle}" style="margin-right: 1mm;"/>
-                                                    </td>
-                                                    <td style="width: 10mm; font-weight: 700; text-align: left;">
-                                                        <h:panelGroup rendered="#{i.cancelled}">
-                                                            <h:outputText value="Cancelled " style="margin-right: 1mm;" />
-                                                            <h:outputLabel value="#{i.cancelledBill.deptId}" style="padding: 0px!important; margin: 0px!important;" />
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{i.refunded}">
-                                                            <h:outputText value="Returned" style="margin-right: 1mm;" />
-                                                        </h:panelGroup>
-                                                    </td>
-                                                    <td style="width: 40mm; font-weight: 700; text-align: right;">
-                                                        <h:outputLabel value="#{-i.netTotal}"   style="padding: 0px!important; margin: 0px!important;" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </td>
-                                                    <td style="width: 40mm; font-weight: 700; text-align: right;">
-                                                        <h:outputLabel value="#{-i.saleValue}"   style="padding: 0px!important; margin: 0px!important;" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </td>
-                                                </tr>
-                                            </ui:repeat>
-                                        </tbody>
-                                        <tfoot>
+                                        <ui:repeat value="#{reportsTransfer.transferBills}" var="i">
                                             <tr>
-                                                <td style="width: 25mm;"/>
-                                                <td style="width: 25mm; text-align: left;"/>
-                                                <td style="width: 17mm; text-align: left;"/>
-                                                <td style="width: 50mm; text-align: left;"/>
-                                                <td style="width: 40mm; text-align: left;"/>
-                                                <td style="width: 10mm; text-align: left;"/>
-                                                <td style="width: 40mm; text-align: right;">
-                                                    <h:outputLabel value="#{-reportsTransfer.netTotalValues}"  style="padding: 0px!important; margin: 0px!important;" >
+                                                <td><h:outputText value="#{i.deptId}" /></td>
+                                                <td>
+                                                    <h:outputText value="#{i.createdAt}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td><h:outputText value="#{i.fromDepartment.name}" /></td>
+                                                <td><h:outputText value="#{i.toDepartment.name}" /></td>
+                                                <td><h:outputText value="#{i.toStaff.person.nameWithTitle}" /></td>
+                                                <td>
+                                                    <h:panelGroup rendered="#{i.cancelled}">
+                                                        <h:outputText value="Cancelled " />
+                                                        <h:outputLabel value="#{i.cancelledBill.deptId}" />
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{i.refunded}">
+                                                        <h:outputText value="Returned" />
+                                                    </h:panelGroup>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel value="#{-i.netTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </td>
-                                                <td style="width: 40mm; text-align: right;">
-                                                    <h:outputLabel value="#{-reportsTransfer.totalsValue}"  style="padding: 0px!important; margin: 0px!important;" >
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel value="#{-i.saleValue}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </td>
                                             </tr>
+                                        </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <td colspan="6" style="text-align: left; font-weight: 700;" >
+                                                <h:outputText value="Total" />
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{-reportsTransfer.netTotalValues}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{-reportsTransfer.totalsValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
                                         </tfoot>
                                     </table>
+
 
                                 </div>
 

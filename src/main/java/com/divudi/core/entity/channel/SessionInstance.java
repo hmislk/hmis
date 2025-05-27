@@ -66,6 +66,7 @@ public class SessionInstance implements Serializable {
     Institution forInstitution;
     @ManyToOne
     Department forDepartment;
+    private boolean acceptOnlineBookings = true;
 
     @Transient
     private boolean currentlyOngoing;
@@ -258,6 +259,14 @@ public class SessionInstance implements Serializable {
     private ArrivalRecord arrivalRecord;
 
     private int reportPatients = 0;
+
+    public boolean isAcceptOnlineBookings() {
+        return acceptOnlineBookings;
+    }
+
+    public void setAcceptOnlineBookings(boolean acceptOnlineBookings) {
+        this.acceptOnlineBookings = acceptOnlineBookings;
+    }
 
     @Lob
     private String specialNoticeSessionInstance;

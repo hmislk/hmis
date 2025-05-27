@@ -6,13 +6,18 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form  >
-                    <h:panelGroup >
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('CollectingCentreCreditNote') and !webUserController.hasPrivilege('CollectingCentreCreditDebitNoteMenu')}">
+                        <na:not_authorize />
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('CollectingCentreCreditNote') and webUserController.hasPrivilege('CollectingCentreCreditDebitNoteMenu')}">
                         <p:panel rendered="#{!agentAndCcPaymentController.printPreview}" styleClass="ui-panel-info" >
                             <f:facet name="header">
                                 <h:outputLabel value="Collecting Center Credit Note" styleClass="ui-label-info"/>

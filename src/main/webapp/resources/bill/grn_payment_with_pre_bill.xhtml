@@ -3,8 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -14,168 +15,465 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher CSS')}" >
+        <style>
 
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header CSS')}" >
-                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header Text')}" escape="false" ></h:outputText>
-            </div>
+            @media screen{
+                .paper{
+                    position: static !important;
+                    width: 210mm!important;
+                    zoom: 1.3;
+                }
 
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    font-size: 13px!important;
+                    margin-top: 3mm!important;
+                }
 
+                th, td {
+                    border: 1px solid #000;
+                    padding: 3px!important;
+                    margin: 2px!important;
+                    text-align: left;
+                    margin-left: 5mm!important;
+                }
 
-            <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
-            </div>
-            <div class="institutionContact" >
-                <div >
-                    <h:outputLabel value="Telephone : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.phone} / #{cc.attrs.bill.referenceBill.creater.department.telephone1}"/>
+                .toinsdept{
+                    font-size: 16px!important;
+                }
+
+                .headerDetails{
+                    font-size: 14px!important;
+                }
+
+                .fotter-box{
+                    border: 1px solid black;
+                }
+
+                .fotter-box{
+                    margin-top: 5mm!important;
+                }
+
+                .signature-box{
+                    margin-top: 8mm;
+                }
+
+                .payment-data{
+                    display: flex;
+                    width: 100%;
+                    margin-top: 3mm;
+                    font-size: 15px;
+                }
+
+                .payment-data-box{
+                    border: 1px solid black;
+                    width: 85mm;
+                    height: 43mm;
+                    font-size: 18px;
+                    justify-content: center;
+                    padding: 3mm;
+                }
+
+                .amount-world{
+                    width: 140mm;
+                }
+
+                .amount-world-text{
+                    font-weight: 700;
+                    width: 98mm;
+                    line-height: 1.2;
+                    font-size: 16px;
+                }
+
+                .user{
+                    font-size: 16px;
+                    line-height: 1.1;
+                    margin-top: 2mm;
+                }
+
+                .user-data{
+                    display: flex;
+                }
+
+                .amount-box{
+                    border: 1px solid black;
+                    display: flex;
+                    font-weight: 700;
+                    width: 70mm;
+                    height: 13mm;
+                    font-size: 18px;
+                    justify-content: center;
+                }
+
+                .total-line{
+                    display: flex;
+                }
+                
+                .print-footer{
+                    display: none;
+                }
+
+            }
+
+            @media print {
+
+                .paper{
+                    margin: 5mm!important;
+                    margin-left: 15mm!important;
+                    padding: 5mm!important;
+                    position: relative !important;
+                    width: 210mm!important;
+                    height: 275mm!important;
+                    border: 1px solid black;
+
+                }
+
+                .header{
+                    line-height: 1.1;
+                    margin: 0mm!important;
+                }
+
+                table {
+                    border-collapse: collapse;
+                    width: 99%;
+                    font-size: 13px!important;
+                    margin-top: 3mm!important;
+                }
+
+                th, td {
+                    border: 1px solid #000;
+                    padding-top : 2px!important;
+                    padding-bottom : 2px!important;
+                    margin-left: 1mm!important;
+                }
+
+                th {
+
+                }
+
+                .toinsdept{
+                    font-size: 14px!important;
+                }
+
+                .headerDetails{
+                    font-size: 16px!important;
+                }
+
+                .fotter-box{
+                    width: 180mm;
+                    height: 90mm;
+                    border-top: 1px solid black;
+                    position: fixed;
+                    bottom: 5mm;
+                    left: 0;
+                    margin: 5mm!important;
+                    margin-left: 20mm!important;
+                }
+
+                .print-footer {
+                    position: fixed;
+                    bottom: 0;
+                    width: 100%;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #000;
+                    padding-bottom: 14px;
+                    background: white;
+                }
+
+                .signature-box{
+                    margin-top: 8mm;
+                }
+
+                .payment-data{
+                    display: flex;
+                    width: 100%;
+                    margin-top: 3mm;
+                    font-size: 15px;
+                }
+
+                .payment-data-box{
+                    border: 1px solid black;
+                    width: 85mm;
+                    height: 43mm;
+                    font-size: 18px;
+                    justify-content: center;
+                    padding: 3mm;
+                }
+                
+                .amount-world{
+                    width: 133mm;
+                    font-size: 16px;
+                }
+                
+                .amount-world-title{
+                    font-size: 18px;
+                }
+
+                .amount-world-text{
+                    font-weight: 700;
+                    width: 95mm;
+                    line-height: 1.0;
+                    font-size: 16px;
+                }
+
+                .user{
+                    font-size: 16px;
+                    line-height: 1.1;
+                    margin-top: 2mm;
+                }
+
+                .user-data{
+                    display: flex;
+                }
+
+                .amount-box{
+                    border: 1px solid black;
+                    display: flex;
+                    font-weight: 700;
+                    width: 75mm;
+                    height: 13mm;
+                    font-size: 18px;
+                    justify-content: center;
+                    margin-right: 12mm ;
+                }
+
+                .total-line{
+                    display: flex;
+                    min-height: 20mm;
+                    
+                }
+
+            }
+
+        </style>
+
+        <h:panelGroup id="reportView" class="d-flex justify-content-center ">
+            <div class="paper">
+                <div class="header" >
+                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;">
+                        <h:outputText value="#{sessionController.institution.name}"/>
+                    </div>
+                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                        <h:outputText value="Payment Voucher"/>
+                    </div>
                 </div>
-                <!--                <div >
-                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.department.telephone1} "/>
-                                </div>-->
-                <div >
-                    <h:outputLabel value="Fax : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.fax}"/>
+
+                <div style="line-height: 1.2;">
+                    <div class="d-flex headerDetails mt-2">
+                        <h:outputText value="Payee" style="width: 35mm;"/>
+                        <h:outputText value="#{cc.attrs.bill.toInstitution.name}"/>
+                    </div>
+                    <div class="d-flex justify-content-between headerDetails" >
+                        <div style="line-height: 1.2;">
+                            <div class="d-flex">
+                                <h:outputText value="Address" style="width: 35mm;"/>
+                                <h:outputText value="#{cc.attrs.bill.toInstitution.address}"/>
+                            </div>
+                            <div class="d-flex">
+                                <h:outputText value="Phone" style="width: 35mm;"/>
+                                <h:outputText value="#{cc.attrs.bill.toInstitution.phone}"/>
+                            </div>
+                        </div>
+                        <div >
+                            <div style="line-height: 1.2;">
+                                <div class="d-flex">
+                                    <h:outputText value="Voucher No" style="width: 35mm;"/>
+                                    <h:outputText value="#{cc.attrs.bill.referenceBill.deptId}"/>
+                                </div>
+                                <div class="d-flex">
+                                    <h:outputText value="Voucher Date" style="width: 35mm;"/>
+                                    <h:outputText value="#{cc.attrs.bill.createdAt}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                    </h:outputText>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div >
-                    <h:outputLabel value="Email : &nbsp;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.department.email}"/>
-                </div>
-            </div>
-
-            <div >
-                <h4 style="color: #000000; text-align: center " >
-                    <h:outputLabel value="Payment Voucher" style="text-decoration: underline; font-size: 0.9em"/>
-                </h4>
-            </div>
-
-            <div class="row" >
-                <div class="col-6" >
-                    <h:panelGrid columns="2" class="w-75" >
-                        <h:outputLabel value="Payee : " />
-                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
-                        <h:outputLabel value="Address : " />
-                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.address}"/>
-                        <h:outputLabel value="Phone : " />
-                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.phone}"/>
-                    </h:panelGrid>
-                </div>
-                <div class="col-6" >
-                    <h:panelGrid columns="2" class="w-75" >
-                        <h:outputLabel value="Voucher No : " />
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
-                    </h:panelGrid>
-
-                </div>
-            </div>
-
-            <div>
-
-                <!--
-                                <div>
-                                    <h:outputLabel value="Payee : " style="text-align: right!important;"/>
-                                    <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
-                                    <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
-                                    <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="position: relative; left: 70%;" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputLabel>
-
-                                </div>-->
-
                 <div>
-
-                    <p:dataTable value="#{cc.attrs.billItems}" var="bi" sortBy="#{bi.referenceBill.invoiceNumber}">
-
-                        <p:column headerText="PO Number">
-                            <p:outputLabel value="#{bi.referenceBill.referenceBill.deptId}" ></p:outputLabel>
-<!--                            <p:outputLabel value="#{bi.referenceBill.referenceBill.createdAt}" style="text-align: center;">
-                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>
-                            </p:outputLabel>-->
-                        </p:column>
-
-                        <p:column headerText="Invoice Number" >
-                            <p:outputLabel value="#{bi.referenceBill.invoiceNumber}" style="text-align: center;"/>
-                        </p:column>
-
-                        <p:column headerText="GRN Number" >
-                            <p:outputLabel value="#{bi.referenceBill.deptId}" style="text-align: center;"/>
-                        </p:column>
-
-
-                        <p:column headerText="GRN Date">
-                            <p:outputLabel value="#{bi.referenceBill.createdAt}" style="text-align: center;">
-                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>
-
-                            </p:outputLabel>
-                        </p:column>
-
-                        <p:column headerText="Bill Value" class="text-end">
-                            <p:outputLabel value="#{0-bi.referenceBill.netTotal}" style="text-align: right;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-
-                        <p:column headerText="Returned Value" class="text-end">
-                            <p:outputLabel value="#{0-bi.referenceBill.refundAmount}" style="text-align: right;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-
-                        <p:column headerText="Paying Value" class="text-end">
-                            <p:outputLabel value="#{0-bi.netValue}" style="text-align: right;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-
-                    </p:dataTable>
-
-                </div>
-
-                <div class="row" >
-                    <div class="col-6" >
-
-                    </div>
-                    <div class="col-6 p-4" >
-                        <h:panelGrid columns="2" class="w-100" columnClasses="text-start, text-end" >
-                            <h:outputLabel value="Total : " />
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
-                            <h:outputLabel value="Discount : " />
-                            <h:outputLabel value="#{cc.attrs.bill.discount}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
-                            <h:outputLabel value="Net : " />
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
-                        </h:panelGrid>
-                    </div>
-                </div>
-
-                <div class="row" >
-                    <div class="col-4" >
-                        <h:outputLabel value="Prepared By :" /> <br/>
-                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}" />
-                    </div>
-
-                    <div class="col-4" >
-                        <h:outputLabel value="Checked By :" /> <br/>
-                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.completedBy.webUserPerson.nameWithTitle}" />
-                    </div>
-
-                     <div class="col-4" >
-                        <h:outputLabel value="Approved By :" /> <br/>
-                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.paymentApprovedBy.webUserPerson.nameWithTitle}" />
-                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 8mm; font-weight: 700;">
+                                    <h:outputText value="No" style="margin-left: 1mm;"/>
+                                </th>
+                                <th style="width: 46mm; font-weight: 700;">
+                                    <h:outputText value="Invoice Number" style="margin-left: 1mm;"/>
+                                </th>
+                                <th style="width: 22mm; font-weight: 700; text-align: right;">
+                                    <h:outputText value="GRN Number" style="margin-right: 1mm;"/>
+                                </th>
+                                <th style="width: 30mm; font-weight: 700; text-align: right;">
+                                    <h:outputText value="GRN Date" style="margin-right: 1mm;"/>
+                                </th>
+                                <th style="width: 28mm; font-weight: 700; text-align: right;">
+                                    <h:outputText value="GRN Value" style="margin-right: 1mm;"/>
+                                </th>
+                                <th style="width: 30mm; font-weight: 700; text-align: right;">
+                                    <h:outputText value="Return Value" style="margin-right: 1mm;"/>
+                                </th>
+                                <th style="width: 28mm; font-weight: 700; text-align: right;">
+                                    <h:outputText value="Net Value" style="margin-right: 1mm;"/>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="i">
+                                <tr>
+                                    <td style="width: 8mm;" >
+                                        <h:outputText value="#{i.index +1}" style="margin-left: 1mm;"/>
+                                    </td>
+                                    <td style="width: 46mm;" >
+                                        <h:outputText value="#{item.referenceBill.invoiceNumber}" style="margin-left: 1mm;"/>
+                                    </td>
+                                    <td style="width: 22mm; text-align: right;">
+                                        <h:outputText value="#{item.referenceBill.deptId}" style="margin-right: 1mm;"></h:outputText>
+                                    </td>
+                                    <td style="width: 30mm; text-align: right;">
+                                        <h:outputText value="#{item.referenceBill.createdAt}" style="margin-right: 1mm;">
+                                            <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="width: 28mm; text-align: right;">
+                                        <h:outputText value="#{0-item.referenceBill.netTotal}" style="margin-right: 1mm;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                    <td style="width: 30mm; text-align: right;">
+                                        <h:outputText value="#{0-item.referenceBill.refundAmount}" style="margin-right: 1mm;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                    <td style="width: 28mm; text-align: right;">
+                                        <h:outputText value="#{0-item.netValue}" style="margin-right: 1mm;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                    </table>
 
                 </div>
 
+                <div class="d-flex justify-content-between headerDetails mt-2" >
+                    <div style="width: 88mm;"></div>
+                    <div >
+                        <div style="line-height: 1.3;">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Total" style="width: 60mm;"/>
+                                <h:outputText value="#{-cc.attrs.bill.total}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Discount" style="width: 60mm;"/>
+                                <h:outputText value="#{cc.attrs.bill.discount}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Net Total" style="width: 60mm;"/>
+                                <h:outputText value="#{-cc.attrs.bill.netTotal}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--            Fotter Box-->
+                <div class="fotter-box" style="padding: 3mm;">
+                    <div class="total-line">
+                        <div class="amount-world">
+                            <h:outputLabel value="AMOUNT IN WORDS" class="amount-world-title"/><br/>
+                            <h:outputLabel 
+                                class="amount-world-text"
+                                value="** #{supplierPaymentController.convertToWord(-cc.attrs.bill.netTotal)} Only **">
+                            </h:outputLabel>
+                        </div>
+                        <div>
+                            <div class="amount-box">
+                                <h:outputLabel value="Total" style="width: 15mm;" class="mt-2"/>
+                                <h:outputLabel value="#{-cc.attrs.bill.netTotal}"  style="width: 50mm; text-align: end" class="mt-2 " >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user">
+                        <div class="user-data" >
+                            <h:outputLabel value="Prepared By" style="width: 35mm;" />
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}" />
+                        </div>
+
+                        <div class="user-data">
+                            <h:outputLabel value="Checked By"  style="width: 35mm;"/> 
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.completedBy.webUserPerson.nameWithTitle}" />
+                        </div>
+
+                        <div class="user-data">
+                            <h:outputLabel value="Approved By" style="width: 35mm;" />
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.paymentApprovedBy.webUserPerson.nameWithTitle}" />
+                        </div>
+                    </div>
+
+                    <div class="payment-data justify-content-between">
+                        <div class="payment-data-box">
+                            <div style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer CSS')}" >
+                                <h:outputText 
+                                    value="#{supplierPaymentController.fillFooterDataOfPaymentVoucher(configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text'), cc.attrs.bill)}" 
+                                    escape="false" >
+                                </h:outputText>
+                            </div>
+
+                            <div style="display: flex;" class="justify-content-between signature-box">
+                                <div class="d-grid text-center" style="width: 70mm; line-height: 0.8;">
+                                    <h:outputLabel value="................................"  />
+                                    <h:outputLabel value="Approved By" />
+                                </div>
+
+                                <div class="d-grid text-center" style="width: 70mm; line-height: 0.8;">
+                                    <h:outputLabel value="................................" />
+                                    <h:outputLabel value="Approved By"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="payment-data-box">
+                            <div style="display: grid; line-height: 1.3;">
+                                <div class="d-flex">
+                                    <h:outputLabel value="Name" style="width: 23mm;" />
+                                    <h:outputLabel value=":" style="width: 5mm;" />
+                                    <h:outputLabel value="..............................................."  />
+                                </div>
+                                <div class="d-flex">
+                                    <h:outputLabel value="Signature" style="width: 23mm;" />
+                                    <h:outputLabel value=":" style="width: 5mm;" />
+                                    <h:outputLabel value="..............................................."  />
+                                </div>
+                                <div class="d-flex">
+                                    <h:outputLabel value="NIC No" style="width: 23mm;" />
+                                    <h:outputLabel value=":" style="width: 5mm;" />
+                                    <h:outputLabel value="..............................................."  />
+                                </div>
+                                <div class="d-flex">
+                                    <h:outputLabel value="Date" style="width: 23mm;" />
+                                    <h:outputLabel value=":" style="width: 5mm;" />
+                                    <h:outputLabel value="..............................................."  />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="print-footer">
+                        <h:outputLabel value="Softwere by Carecode Solutions" />
+                    </div>
+
+                </div>
             </div>
 
-
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer CSS')}" >
-                <h:outputText value="#{supplierPaymentController.fillFooterDataOfPaymentVoucher(configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text'), cc.attrs.bill)}" escape="false" ></h:outputText>
-            </div>
-        </div>
+        </h:panelGroup>
     </cc:implementation>
 </html>

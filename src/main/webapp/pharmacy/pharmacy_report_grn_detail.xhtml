@@ -54,32 +54,55 @@
                     <h:panelGrid columns="3" class="my-2">
                         <p:commandButton 
                             id="btnRefresh" 
-                            ajax="false" 
-                            value="Fill" 
-                            icon="fa-solid fa-fill"
-                            class="ui-button-warning"
+                            ajax="false"
+                            value="Process"
+                            styleClass="ui-button-success m-1"
+                            icon="pi pi-cog"
                             actionListener="#{commonReport.createGrnDetailTable()}"
                             style="float: right;" />  
 
                         <p:commandButton 
                             actionListener="#{commonReport.createGrnDetailTable()}" 
-                            ajax="false" 
-                            value="Excel" 
-                            icon="fa-solid fa-file-excel"
-                            class="ui-button-success mx-2" 
+                            ajax="false"
+                            value="Download"
+                            styleClass="ui-button-info m-1"
+                            icon="pi pi-download"
                             style="float: right;" >
-                            <p:dataExporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum" fileName="report_grn_detail"  />
+                            <p:dataExporter type="xlsx" target="billed,cancelled,returned,returnCancelled,sum" fileName="report_grn_detail"  />
                         </p:commandButton>
 
                         <p:commandButton 
-                            ajax="false" 
-                            value="Print"
-                            icon="fa-solid fa-print"
-                            class="ui-button-info"
-                            style="float: right;" >
-                            <p:printer target="reportPrint"/>
-                        </p:commandButton>  
+                            ajax="false"
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            style="float: right;"
+                            action="pharmacy_report_grn_detail_print?faces-redirect=true"
+                            actionListener="#{commonReport.createGrnDetailTable()}"/>
+
                     </h:panelGrid>
+
+
+                    <h:panelGroup layout="block" class="w-100 m-1 text-white bg-success"
+                                  rendered="#{not (commonReport.grnBilled.bills.size()!=0)}">
+                        <h:outputText value="No GRNs" class="m-3 h-2 w-100 text-center" />
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" class="w-100 m-1 text-white bg-danger"
+                                  rendered="#{not (commonReport.grnCancelled.bills.size()!=0)}">
+                        <h:outputText value="No GRN Cancellations" class="m-3 h-2 w-100 text-center" />
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" class="w-100 m-1 text-white bg-warning"
+                                  rendered="#{not (commonReport.grnReturn.bills.size()!=0)}">
+                        <h:outputText value="No GRN Returns" class="m-3 h-2 w-100 text-center" />
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" class="w-100 m-1 text-white bg-info"
+                                  rendered="#{not (commonReport.grnReturnCancel.bills.size()!=0)}">
+                        <h:outputText value="No Cancellation of GRN Returns" class="m-3 h-2 w-100 text-center" />
+                    </h:panelGroup>
+
 
                     <p:panel id="reportPriview">
                         <h:panelGrid columns="2" styleClass="printBlock" >
@@ -105,19 +128,11 @@
                             id="billed"  
                             value="#{commonReport.grnBilled.bills}"
                             var="b" 
-                            rendered="#{commonReport.grnBilled.bills ne null}" 
+                            rendered="#{commonReport.grnBilled.bills.size()!=0}"
                             sortBy="#{b.billType}"
                             rowKey="#{b.id}">
 
                             <f:facet name="header">  
-                                <h:outputLabel value="From :" />&nbsp;&nbsp;
-                                <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                </h:outputLabel>                          
-                                &nbsp;&nbsp;<h:outputLabel value="To :"/>&nbsp;&nbsp;
-                                <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                </h:outputLabel><br/>
                                 <h:outputLabel value="GRN"/>
                             </f:facet>
 
@@ -128,14 +143,6 @@
                                     process="@this" >
                                 </p:commandLink>
                             </p:column>
-
-                            <!--                            <p:column headerText="Invoice No" >
-                                                            <f:facet name="header">  
-                                                                <h:outputLabel value="Invoice No"/>
-                                                            </f:facet> 
-                                                            <h:outputLabel value="#{b.invoiceNumber}"/>
-                                                        </p:column>-->
-
                             <p:column headerText="Created At"  >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Created At"/>
@@ -148,15 +155,7 @@
                             <p:column headerText="Supplier Name">
                                 <h:outputLabel value="#{b.fromInstitution.name}"/>
                             </p:column>
-
-                            <!--                            <p:column headerText="Reference Institution"  >
-                                                            <f:facet name="header">  
-                                                                <h:outputLabel value="Reference Institution"/>
-                                                            </f:facet> 
-                                                            <h:outputLabel value="#{b.referenceInstitution.name}"/>
-                                                        </p:column>-->
-
-                            <p:column headerText="Po No" 
+                            <p:column headerText="PO No"
                                       width="11em"
                                       sortBy="#{b.referenceBill.deptId}"
                                       filterBy="#{b.referenceBill.deptId}"
@@ -212,13 +211,8 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Remark"/>
                                 </f:facet> 
-                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" />
                             </p:column>
-
-                            <!--                            <p:column headerText="Remark" exportable="false" >
-                                                            <p:commandButton value="View" action="#{commonReport.navigateToViewGrnBillFromGRNSummary(b)}" process="@this" >
-                                                            </p:commandButton>
-                                                        </p:column>-->
 
                             <p:columnGroup type="footer">  
                                 <p:row >  
@@ -289,8 +283,10 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="cancelled"  value="#{commonReport.grnCancelled.bills}" var="b1"  
-                                     rendered="#{commonReport.grnCancelled.bills.size()!=0}" >
+                        <p:dataTable 
+                            id="cancelled"  
+                            value="#{commonReport.grnCancelled.bills}" var="b1"  
+                            rendered="#{commonReport.grnCancelled.bills.size()!=0}" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled GRN "/>
                             </f:facet> 
@@ -423,7 +419,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="refunded"  value="#{commonReport.grnReturn.bills}" var="b" 
+                        <p:dataTable id="returned"  value="#{commonReport.grnReturn.bills}" var="b" 
                                      rendered="#{commonReport.grnReturn.bills.size()!=0}" 
                                      sortBy="#{b.billType}" 
                                      rowKey="#{b.id}" >
@@ -526,7 +522,7 @@
                                 <f:facet name="header">  
                                     <h:outputLabel value="Remark"/>
                                 </f:facet> 
-                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" />
                             </p:column>
                             <p:columnGroup type="footer">  
                                 <p:row >  
@@ -934,7 +930,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="refunded_print"  value="#{commonReport.grnReturn.bills}" 
+                        <p:dataTable id="returned_print"  value="#{commonReport.grnReturn.bills}" 
                                      var="b" 
                                      style="padding: 0px!important; margin: 0px!important; font-size: 10px;" 
                                      styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
