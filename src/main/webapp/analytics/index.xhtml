@@ -93,9 +93,9 @@
                                         </div>
 
                                     </p:tab>
-                                    
-                                    
-                                     <p:tab title="Additional Lists">
+
+
+                                    <p:tab title="Additional Lists">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 ajax="false" 
@@ -103,15 +103,15 @@
                                                 action="#{searchController.navigateToCancellationBillList}"
                                                 class="w-100">
                                             </p:commandButton>
-                                             <p:commandButton 
+                                            <p:commandButton 
                                                 ajax="false" 
                                                 value="Return Bill List" 
                                                 action="#{searchController.navigateToReturnBillList()}"
                                                 class="w-100">
                                             </p:commandButton>
                                         </div>
-                                     </p:tab>
-                                    
+                                    </p:tab>
+
                                     <p:tab title="Downloads">
                                         <div class="d-grid gap-2">
 
@@ -233,7 +233,7 @@
                                                 value="OPD Summary by Item"
                                                 action="#{searchController.navigateToOpdSummaryByItem()}">
                                             </p:commandButton>
-                                            
+
 
                                         </div>
                                     </p:tab>
@@ -300,6 +300,31 @@
                                             <p:commandButton ajax="false" value="Sent SMS" action="#{searchController.navigateToSendSms()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>  
+                                    <p:tab title="Email">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                icon="pi pi-list" 
+                                                value="Email List" 
+                                                styleClass="ui-button-info" 
+                                                action="#{emailController.navigateToEmailList()}" />
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                icon="pi pi-times-circle" 
+                                                value="Failed Emails" 
+                                                styleClass="ui-button-danger" 
+                                                action="#{emailController.navigateToFailedEmailList()}" />
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                icon="pi pi-send" 
+                                                value="Send Email" 
+                                                styleClass="ui-button-success" 
+                                                action="#{emailController.navigateToSendEmail()}" />
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Audit Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
