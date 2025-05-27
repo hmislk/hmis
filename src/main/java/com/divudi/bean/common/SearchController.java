@@ -389,6 +389,12 @@ public class SearchController implements Serializable {
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigators">
+    public String navigateToBillCountList() {
+        fromDate = CommonFunctions.getStartOfMonth(new Date());
+        toDate = CommonFunctions.getEndOfMonth(new Date());
+        return "/analytics/bill_count_list?faces-redirect=true";
+    }
+    
     public String navigateToMyDepartmentAllCashierSummary() {
         department = sessionController.getDepartment();
         institution = sessionController.getInstitution();
@@ -530,6 +536,249 @@ public class SearchController implements Serializable {
             return;
         } else {
             bills = new ArrayList<>();
+        }
+    }
+    
+    public void findBillcount() {
+        if(configOptionApplicationController.getBooleanValueByKey("Calculating bill count using the item in bills", true)){
+            findBillcountUsingBillItem();
+        }else{
+            findBillcountUsingBills();
+        }
+    }
+
+    public void findBillcountUsingBills() {
+        String sql;
+        List<BillTypeAtomic> billTypeAtomic = new ArrayList<>();
+        //OPD Types
+        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_REFUND);
+        //Package Types
+        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+//        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        //CC Types
+        billTypeAtomic.add(BillTypeAtomic.CC_BILL);
+//        billTypeAtomic.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.CC_BILL_REFUND);
+        //Pharmacy Types
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+//        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+
+        //Pharmacy Types
+        billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+//        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        bundle = new ReportTemplateRowBundle();
+
+        Long mainRowCount = 1L;
+        
+        for (BillTypeAtomic atomic : billTypeAtomic) {
+            Map temMap = new HashMap();
+            sql = "select new com.divudi.core.light.common.BillLight( b.billTypeAtomic, count(b) )"
+                    + " from Bill b where "
+                    + " b.createdAt between :fromDate and :toDate "
+                    + " and b.cancelled=false "
+                    + " and b.billTypeAtomic =:billTypes ";
+
+            if (institution != null) {
+                sql +=" and b.institution =:ins";
+                temMap.put("ins", getInstitution());
+            }
+            if (site != null) {
+                sql +=" and b.department.site =:site";
+                temMap.put("site", getSite());
+            }
+            if (department != null) {
+                sql +=" and b.department =:dept";
+                temMap.put("dept", getDepartment());
+            }
+            if (toInstitution != null) {
+                sql +=" and b.toInstitution =:toIns";
+                temMap.put("toIns", getToInstitution());
+            }
+            if (toSite != null) {
+                sql +=" and b.toDepartment.site =:toSite";
+                temMap.put("toSite", getToSite());
+            }
+            if (toDepartment != null) {
+                sql +=" and b.toDepartment =:toDept";
+                temMap.put("toDept", getToDepartment());
+            }
+
+            sql +=" group by b.billTypeAtomic";
+            temMap.put("toDate", getToDate());
+            temMap.put("fromDate", getFromDate());
+            temMap.put("billTypes", atomic);
+            List<BillLight> mainBills = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+            if (mainBills == null) {
+                continue;
+            }
+
+            for (BillLight mainBill : mainBills) {
+                ReportTemplateRow mainBillRow = new ReportTemplateRow();
+                mainBillRow.setRowType("MainRow");
+                mainBillRow.setCounter(mainRowCount);
+                mainBillRow.setBillTypeAtomic(mainBill.getBillTypeAtomic());
+                mainBillRow.setCategoryCount(mainBill.getCount());
+                bundle.getReportTemplateRows().add(mainBillRow);
+                mainRowCount++;
+            }
+
+            Map params = new HashMap();
+            
+            String jpql = "select new com.divudi.core.light.common.BillLight( b.toDepartment, count(b) )"
+                    + " from Bill b where "
+                    + " b.createdAt between :fromDate and :toDate "
+                    + " and b.billTypeAtomic =:billTypes "
+                    + " and b.cancelled=false "
+                    + " and b.toDepartment is not null";
+            if (institution != null) {
+                jpql +=" and b.institution =:ins";
+                temMap.put("ins", getInstitution());
+            }
+            if (site != null) {
+                jpql +=" and b.department.site =:site";
+                temMap.put("site", getSite());
+            }
+            if (department != null) {
+                jpql +=" and b.department =:dept";
+                temMap.put("dept", getDepartment());
+            }
+            if (toInstitution != null) {
+                jpql +=" and b.toInstitution =:toIns";
+                temMap.put("toIns", getToInstitution());
+            }
+            if (toSite != null) {
+                jpql +=" and b.toDepartment.site =:toSite";
+                temMap.put("toSite", getToSite());
+            }
+            if (toDepartment != null) {
+                jpql +=" and b.toDepartment =:toDept";
+                temMap.put("toDept", getToDepartment());
+            }
+     
+            jpql +=" group by b.toDepartment";
+            params.put("toDate", getToDate());
+            params.put("fromDate", getFromDate());
+            params.put("billTypes", atomic);
+            List<BillLight> subBills = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+            if (subBills == null) {
+                continue;
+            }
+
+            Long subRowCount = 1L;
+            for (BillLight subBill : subBills) {
+                ReportTemplateRow subBillsrow = new ReportTemplateRow();
+                subBillsrow.setRowType("SubRow");
+                subBillsrow.setCounter(subRowCount);
+                subBillsrow.setToDepartment(subBill.getTodDpartment());
+                subBillsrow.setCategoryCount(subBill.getCount());
+                bundle.getReportTemplateRows().add(subBillsrow);
+                subRowCount++;
+            }
+
+        }
+    }
+
+    public void findBillcountUsingBillItem() {
+        String sql;
+        List<BillTypeAtomic> billTypeAtomic = new ArrayList<>();
+        //OPD Types
+        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_REFUND);
+        //Package Types
+        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+//        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        //CC Types
+        billTypeAtomic.add(BillTypeAtomic.CC_BILL);
+//        billTypeAtomic.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.CC_BILL_REFUND);
+        //Pharmacy Types
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+//        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+
+        //Pharmacy Types
+        billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+//        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        bundle = new ReportTemplateRowBundle();
+
+        Long mainRowCount = 1L;
+        
+        for (BillTypeAtomic atomic : billTypeAtomic) {
+            Map temMap = new HashMap();
+            sql = "select new com.divudi.core.data.ReportTemplateRow(bi.item.department, b.billTypeAtomic, count(b) )"
+                    + " from BillItem bi "
+                    + " Join bi.bill b"
+                    + " where "
+                    + " b.createdAt between :fromDate and :toDate "
+                    + " and b.cancelled=false "
+                    + " and b.billTypeAtomic =:billTypes ";
+
+            if (institution != null) {
+                sql +=" and b.institution =:ins";
+                temMap.put("ins", institution);
+            }
+            if (site != null) {
+                sql +=" and b.department.site =:site";
+                temMap.put("site", site);
+            }
+            if (department != null) {
+                sql +=" and b.department =:dept";
+                temMap.put("dept", department);
+            }
+            if (toInstitution != null) {
+                sql +=" and b.toInstitution =:toIns";
+                temMap.put("toIns", toInstitution);
+            }
+            if (toSite != null) {
+                sql +=" and b.toDepartment.site =:toSite";
+                temMap.put("toSite", toSite);
+            }
+            if (toDepartment != null) {
+                sql +=" and b.toDepartment =:toDept";
+                temMap.put("toDept", toDepartment);
+            }
+
+            sql +=" group by bi.item.department, b.billTypeAtomic";
+            temMap.put("toDate", getToDate());
+            temMap.put("fromDate", getFromDate());
+            temMap.put("billTypes", atomic);
+            List<ReportTemplateRow> mainBills = (List<ReportTemplateRow>)getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+            if (mainBills == null) {
+                continue;
+            }
+            
+            bundle.getReportTemplateRows().addAll(mainBills);
         }
     }
 
