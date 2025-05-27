@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
+import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.*;
 import com.divudi.core.data.analytics.ReportTemplateType;
@@ -91,7 +92,11 @@ public class ReportsController implements Serializable {
     @EJB
     PatientEncounterFacade peFacade;
     @EJB
+    PatientEncounterFacade patientEncounterFacade;
+    @EJB
     private ReportTimerController reportTimerController;
+    @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
 
     /**
      * Inject
@@ -164,6 +169,13 @@ public class ReportsController implements Serializable {
     List<BillItem> billItem;
     List<PatientInvestigation> userPatientInvestigations;
     double netTotalValue;
+    private double payableByPatient;
+    private double payableByCompany;
+    private double gopAmount;
+    private double dueByCompany;
+    double billed;
+    double paidByPatient;
+    double paidByCompany;
 
     private ItemLight investigationCode;
 
@@ -289,7 +301,70 @@ public class ReportsController implements Serializable {
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap7to1;
     Map<Integer, Map<String, Map<Integer, Double>>> weeklyDailyBillItemMap1to7;
 
+    Map<PatientEncounter, List<Bill>> billPatientEncounterMap = new HashMap<>();
+
+    private Map<Institution, List<InstitutionBillEncounter>> billInstitutionEncounterMap;
+
     private int globalIndex;
+
+    Map<Institution, Double> instituteGopMap = new HashMap<>();
+    Map<Institution, Double> institutPaidByCompanyMap = new HashMap<>();
+    Map<Institution, Double> institutePayableByCompanyMap = new HashMap<>();
+    Map<Institution, Double> instituteDueByCompanyMap = new HashMap<>();
+
+    private Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap;
+
+    public Map<Institution, List<InstitutionBillEncounter>> getBillInstitutionEncounterMap() {
+        return billInstitutionEncounterMap;
+    }
+
+    public void setBillInstitutionEncounterMap(Map<Institution, List<InstitutionBillEncounter>> billInstitutionEncounterMap) {
+        if (billInstitutionEncounterMap == null) {
+            billInstitutionEncounterMap = new HashMap<>();
+        }
+
+        this.billInstitutionEncounterMap = billInstitutionEncounterMap;
+    }
+
+    public Map<Institution, Double> getInstituteGopMap() {
+        return instituteGopMap;
+    }
+
+    public void setInstituteGopMap(Map<Institution, Double> instituteGopMap) {
+        this.instituteGopMap = instituteGopMap;
+    }
+
+    public Map<Institution, Double> getInstitutPaidByCompanyMap() {
+        return institutPaidByCompanyMap;
+    }
+
+    public void setInstitutPaidByCompanyMap(Map<Institution, Double> institutPaidByCompanyMap) {
+        this.institutPaidByCompanyMap = institutPaidByCompanyMap;
+    }
+
+    public Map<Institution, Double> getInstitutePayableByCompanyMap() {
+        return institutePayableByCompanyMap;
+    }
+
+    public void setInstitutePayableByCompanyMap(Map<Institution, Double> institutePayableByCompanyMap) {
+        this.institutePayableByCompanyMap = institutePayableByCompanyMap;
+    }
+
+    public Map<Institution, Double> getInstituteDueByCompanyMap() {
+        return instituteDueByCompanyMap;
+    }
+
+    public void setInstituteDueByCompanyMap(Map<Institution, Double> instituteDueByCompanyMap) {
+        this.instituteDueByCompanyMap = instituteDueByCompanyMap;
+    }
+
+    public PatientEncounterFacade getPatientEncounterFacade() {
+        return patientEncounterFacade;
+    }
+
+    public void setPatientEncounterFacade(PatientEncounterFacade patientEncounterFacade) {
+        this.patientEncounterFacade = patientEncounterFacade;
+    }
 
     public int getGlobalIndex() {
         return globalIndex;
@@ -301,6 +376,50 @@ public class ReportsController implements Serializable {
 
     public void resetGlobalIndex() {
         globalIndex = 0;
+    }
+
+    public double getPayableByPatient() {
+        return payableByPatient;
+    }
+
+    public double getPayableByCompany() {
+        return payableByCompany;
+    }
+
+    public void setPayableByCompany(double payableByCompany) {
+        this.payableByCompany = payableByCompany;
+    }
+
+    public double getDueByCompany() {
+        return dueByCompany;
+    }
+
+    public void setDueByCompany(double dueByCompany) {
+        this.dueByCompany = dueByCompany;
+    }
+
+    public double getGopAmount() {
+        return gopAmount;
+    }
+
+    public void setGopAmount(double gopAmount) {
+        this.gopAmount = gopAmount;
+    }
+
+    public void setPayableByPatient(double payableByPatient) {
+        this.payableByPatient = payableByPatient;
+    }
+
+    public Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanyMap() {
+        if (encounterCreditCompanyMap == null) {
+            encounterCreditCompanyMap = new HashMap<>();
+        }
+
+        return encounterCreditCompanyMap;
+    }
+
+    public void setEncounterCreditCompanyMap(Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap) {
+        this.encounterCreditCompanyMap = encounterCreditCompanyMap;
     }
 
     public int getNextIndex() {
@@ -695,6 +814,14 @@ public class ReportsController implements Serializable {
 
     public void setGroupedBillItemsWeeklyValues1to7(Map<String, Map<Integer, Double>> groupedBillItemsWeeklyValues1to7) {
         this.groupedBillItemsWeeklyValues1to7 = groupedBillItemsWeeklyValues1to7;
+    }
+
+    public Map<PatientEncounter, List<Bill>> getBillPatientEncounterMap() {
+        return billPatientEncounterMap;
+    }
+
+    public void setBillPatientEncounterMap(Map<PatientEncounter, List<Bill>> billPatientEncounterMap) {
+        this.billPatientEncounterMap = billPatientEncounterMap;
     }
 
     public void setMaxDate(Date maxDate) {
@@ -1374,6 +1501,30 @@ public class ReportsController implements Serializable {
 
     public void setPis(List<PatientInvestigation> pis) {
         this.pis = pis;
+    }
+
+    public double getBilled() {
+        return billed;
+    }
+
+    public void setBilled(double billed) {
+        this.billed = billed;
+    }
+
+    public double getPaidByPatient() {
+        return paidByPatient;
+    }
+
+    public void setPaidByPatient(double paidByPatient) {
+        this.paidByPatient = paidByPatient;
+    }
+
+    public double getPaidByCompany() {
+        return paidByCompany;
+    }
+
+    public void setPaidByCompany(double paidByCompany) {
+        this.paidByCompany = paidByCompany;
     }
 
     public List<Patient> getPatients() {
@@ -4054,6 +4205,59 @@ public class ReportsController implements Serializable {
         rs.addAll(reportRowMap.values());
     }
 
+//    public void generateOpdAndInwardDueReport() {
+//        if (visitType == null || visitType.trim().isEmpty()) {
+//            JsfUtil.addErrorMessage("Please select a visit type");
+//            return;
+//        }
+//
+//        bundle = new ReportTemplateRowBundle();
+//
+//        List<BillTypeAtomic> opdBts = new ArrayList<>();
+//        bundle = new ReportTemplateRowBundle();
+//
+//        if (visitType.equalsIgnoreCase("IP")) {
+////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+////            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
+////            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+////            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+////            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+//        } else if (visitType.equalsIgnoreCase("OP")) {
+////            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+////            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+//        }
+//
+//        bundle.setName("Bills");
+//        bundle.setBundleType("billList");
+//
+//        bundle = generateOpdAndInwardDueBills(opdBts, null);
+//
+//        if (visitType.equalsIgnoreCase("IP")) {
+//            updateSettledAmountsForIP();
+//        } else if (visitType.equalsIgnoreCase("OP")) {
+//            updateSettledAmountsForOP();
+//        }
+//
+//        groupBills();
+//    }
+
     public void generateOpdAndInwardDueReport() {
         if (visitType == null || visitType.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please select a visit type");
@@ -4065,20 +4269,7 @@ public class ReportsController implements Serializable {
         List<BillTypeAtomic> opdBts = new ArrayList<>();
         bundle = new ReportTemplateRowBundle();
 
-        if (visitType.equalsIgnoreCase("IP")) {
-//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-//            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-            opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
-//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-//            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
-//            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-        } else if (visitType.equalsIgnoreCase("OP")) {
+        if (visitType.equalsIgnoreCase("OP")) {
 //            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
 //            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -4096,15 +4287,360 @@ public class ReportsController implements Serializable {
         bundle.setName("Bills");
         bundle.setBundleType("billList");
 
-        bundle = generateOpdAndInwardDueBills(opdBts, null);
-
         if (visitType.equalsIgnoreCase("IP")) {
-            updateSettledAmountsForIP();
+            generateOpdAndInwardDueIPBills();
         } else if (visitType.equalsIgnoreCase("OP")) {
+            bundle = generateOpdAndInwardDueBills(opdBts, null);
+
             updateSettledAmountsForOP();
+            groupBills();
+        }
+    }
+
+    public void generateOpdAndInwardDueIPBills() {
+        HashMap m = new HashMap();
+        String sql = " Select b from PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " where b.retired=false "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
         }
 
-        groupBills();
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+//        if (institutionOfDepartment != null) {
+//            sql += "AND fb.institution = :insd ";
+//            m.put("insd", institutionOfDepartment);
+//        }
+
+        if (department != null) {
+            sql += "AND fb.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += "AND fb.department.site = :site ";
+            m.put("site", site);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        if (patientEncounters == null) {
+            return;
+        }
+
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
+
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
+        calculateCreditCompanyAmounts();
+
+        List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(
+                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), true));
+
+        setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
+        calculateCreditCompanyDueTotals();
+
+        setEncounterCreditCompanyMap(getEncounterCreditCompanies());
+    }
+
+    public String getPolicyNumberFromEncounterCreditCompanyMap(final String bht, final String creditCompanyName) {
+        Map<String, EncounterCreditCompany> creditCompanyMap = getEncounterCreditCompanyMap().get(bht);
+
+        if (creditCompanyMap != null) {
+            EncounterCreditCompany ecc = creditCompanyMap.get(creditCompanyName);
+            if (ecc != null) {
+                return ecc.getPolicyNo();
+            }
+        }
+        return "";
+    }
+
+    public String getReferenceNumberFromEncounterCreditCompanyMap(final String bht, final String creditCompanyName) {
+        Map<String, EncounterCreditCompany> creditCompanyMap = getEncounterCreditCompanyMap().get(bht);
+
+        if (creditCompanyMap != null) {
+            EncounterCreditCompany ecc = creditCompanyMap.get(creditCompanyName);
+            if (ecc != null) {
+                return ecc.getReferanceNo();
+            }
+        }
+        return "";
+    }
+
+    // Map<bht, Map<Credit Company, Encounter Credit Company>>
+    private Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanies() {
+        List<Long> patientEncounterIds = getBillPatientEncounterMap().keySet().stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        if (patientEncounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT ecc FROM EncounterCreditCompany ecc WHERE ecc.patientEncounter.id IN :patientEncounterIds";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        List<EncounterCreditCompany> results = encounterCreditCompanyFacade.findByJpql(jpql, parameters);
+
+        Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap = new HashMap<>();
+
+        for (EncounterCreditCompany ecc : results) {
+            String bhtNo = ecc.getPatientEncounter().getBhtNo();
+            String institutionName = ecc.getInstitution().getName();
+
+            encounterCreditCompanyMap
+                    .computeIfAbsent(bhtNo, k -> new HashMap<>())
+                    .putIfAbsent(institutionName, ecc);
+        }
+
+        return encounterCreditCompanyMap;
+    }
+
+    private Map<PatientEncounter, List<Bill>> getCreditCompanyBills(List<PatientEncounter> patientEncounters, String dueType) {
+        if (dueType == null || (!dueType.equalsIgnoreCase("due") && !dueType.equalsIgnoreCase("any")
+                && !dueType.equalsIgnoreCase("excess") && !dueType.equalsIgnoreCase("settled"))) {
+            return Collections.emptyMap();
+        }
+
+        List<Long> patientEncounterIds = patientEncounters.stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill from Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.patientEncounter.id in :patientEncounterIds ";
+
+        parameters.put("br", true);
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += " and bill.creditCompany =:ins ";
+            parameters.put("ins", institution);
+        }
+
+        List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
+
+        List<Bill> detachedClones = rs.stream()
+                .map(b -> {
+                    Bill clonedBill = new Bill();
+                    clonedBill.clone(b);
+                    return clonedBill;
+                })
+                .collect(Collectors.toList());
+
+        Map<Long, PatientEncounter> encounterMap = patientEncounters.stream()
+                .collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
+
+        if (dueType.equalsIgnoreCase("settled")) {
+            return detachedClones.stream()
+                    .filter(bill -> {
+                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
+                        Bill referenceBill = bill.getReferenceBill();
+
+                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
+                            return false;
+                        }
+
+                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
+                            bill.setNetTotal(0.0);
+                        }
+
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
+                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
+
+                        return (netTotal - settledByPatient - settledBySponsor) == 0;
+                    })
+                    .collect(Collectors.groupingBy(
+                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                    ));
+        }
+
+        if (dueType.equalsIgnoreCase("excess")) {
+            return detachedClones.stream()
+                    .filter(bill -> {
+                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
+                        Bill referenceBill = bill.getReferenceBill();
+
+                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
+                            return false;
+                        }
+
+                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
+                            bill.setNetTotal(0.0);
+                        }
+
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
+                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
+
+                        return (netTotal - settledByPatient - settledBySponsor) < 0;
+                    })
+                    .collect(Collectors.groupingBy(
+                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                    ));
+        }
+
+        if (dueType.equalsIgnoreCase("due")) {
+            return detachedClones.stream()
+                    .filter(bill -> {
+                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
+
+                        Bill referenceBill = bill.getReferenceBill();
+
+                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
+                            return false;
+                        }
+
+                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
+                            bill.setNetTotal(0.0);
+                        }
+
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
+                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
+
+                        return (netTotal - settledByPatient - settledBySponsor) > 0;
+                    })
+                    .collect(Collectors.groupingBy(
+                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                    ));
+        }
+
+        return detachedClones.stream()
+                .collect(Collectors.groupingBy(
+                        bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                ));
+    }
+
+    private void calculateCreditCompanyDueTotals() {
+        gopAmount = 0;
+        paidByCompany = 0;
+        payableByCompany = 0;
+        dueByCompany = 0;
+
+        for (Institution ins : getBillInstitutionEncounterMap().keySet()) {
+            double gop = 0;
+            double paidByComp = 0;
+            double payableByComp = 0;
+            double dueByComp = 0;
+
+            List<InstitutionBillEncounter> encounters = getBillInstitutionEncounterMap().get(ins);
+
+            for (InstitutionBillEncounter ibe : encounters) {
+                gop += ibe.getGopAmount();
+                paidByComp += ibe.getPaidByCompany();
+                payableByComp += ibe.getCompanyDue();
+                dueByComp += ibe.getCompanyDue() + ibe.getPatientDue();
+            }
+
+            instituteGopMap.put(ins, gop);
+            institutPaidByCompanyMap.put(ins, paidByComp);
+            institutePayableByCompanyMap.put(ins, payableByComp);
+            instituteDueByCompanyMap.put(ins, dueByComp);
+
+            gopAmount += gop;
+            paidByCompany += paidByComp;
+            payableByCompany += payableByComp;
+            dueByCompany += dueByComp;
+        }
+    }
+
+    private void calculateCreditCompanyAmounts() {
+        for (Map.Entry<PatientEncounter, List<Bill>> entry : getBillPatientEncounterMap().entrySet()) {
+
+            PatientEncounter patientEncounter = entry.getKey();
+            List<Bill> bills = entry.getValue();
+
+            double totalPayableByCompanies = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+            double totalPaidByCompanies = bills.stream().mapToDouble(Bill::getPaidAmount).sum();
+
+            patientEncounter.setTransPaid(totalPayableByCompanies);
+            patientEncounter.setTransPaidByCompany(totalPaidByCompanies);
+        }
+    }
+
+    private void updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(List<PatientEncounter> patientEncounters) {
+        if (patientEncounters == null || patientEncounters.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> settledAmounts = calculateSettledSponsorBillIP(patientEncounters);
+
+        for (PatientEncounter patientEncounter : patientEncounters) {
+            Bill finalBill = patientEncounter.getFinalBill();
+
+            if (finalBill.isCancelled() || finalBill.isRefunded()) {
+                continue;
+            }
+
+            List<Bill> bills = calculateSettledPatientBillIP(finalBill);
+            double total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountByPatient(total);
+            }
+
+            total = settledAmounts.getOrDefault(patientEncounter.getId(), 0.0);
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountBySponsor(total);
+            }
+        }
+    }
+
+    private Map<Long, Double> calculateSettledSponsorBillIP(List<PatientEncounter> patientEncounters) {
+        List<Long> patientEncounterIds = patientEncounters.stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill from Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.patientEncounter.id in :patientEncounterIds ";
+
+        parameters.put("br", true);
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += " and bill.creditCompany =:ins ";
+            parameters.put("ins", institution);
+        }
+
+        List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
+
+        return rs.stream()
+                .collect(Collectors.groupingBy(
+                        bill -> bill.getPatientEncounter().getId(),
+                        Collectors.summingDouble(Bill::getPaidAmount)
+                ));
     }
 
     private List<ReportTemplateRow> filterByCreditCompanyPaymentMethod(List<ReportTemplateRow> rows) {
@@ -5865,7 +6401,7 @@ public class ReportsController implements Serializable {
                 document.add(title);
 
                 document.add(new Paragraph("Week: " + week, headerFont));
-                document.add(new Paragraph(getDateRangeText(week,false), headerFont));
+                document.add(new Paragraph(getDateRangeText(week, false), headerFont));
                 document.add(new Paragraph("Report Type: Detail", regularFont));
                 document.add(Chunk.NEWLINE);
 

@@ -21,6 +21,9 @@ public class InstitutionBillEncounter {
     private Double patientDue;
     private Double paidByCompany;
     private Double companyDue;
+    private PatientEncounter patientEncounter;
+    private Double totalPaidByCompanies;
+    private Double totalDue;
 
     public InstitutionBillEncounter() {
     }
@@ -32,10 +35,15 @@ public class InstitutionBillEncounter {
             PatientEncounter patientEncounter = entry.getKey();
             List<Bill> bills = entry.getValue();
 
-            double totalGopOfCompanies = bills.stream()
-                    .filter(bill -> bill.getCreditCompany() != null)
-                    .mapToDouble(Bill::getNetTotal)
-                    .sum();
+            double totalGopOfCompanies = 0.0;
+            double totalPaidByCompanies = 0.0;
+
+            for (Bill bill : bills) {
+                if (bill.getCreditCompany() != null) {
+                    totalGopOfCompanies += bill.getNetTotal();
+                    totalPaidByCompanies += bill.getPaidAmount();
+                }
+            }
 
             for (Bill bill : bills) {
                 if (bill.getCreditCompany() != null) {
@@ -52,6 +60,10 @@ public class InstitutionBillEncounter {
                             totalGopOfCompanies - patientEncounter.getFinalBill().getSettledAmountByPatient());
                     institutionBillEncounter.setPaidByCompany(bill.getPaidAmount());
                     institutionBillEncounter.setCompanyDue(bill.getNetTotal() - bill.getPaidAmount());
+                    institutionBillEncounter.setPatientEncounter(patientEncounter);
+                    institutionBillEncounter.setTotalPaidByCompanies(totalPaidByCompanies);
+                    institutionBillEncounter.setTotalDue(institutionBillEncounter.getNetTotal() -
+                            (institutionBillEncounter.getPaidByPatient() + institutionBillEncounter.getTotalPaidByCompanies()));
 
                     if (onlyDue) {
                         if (institutionBillEncounter.getPatientDue() > 0 || institutionBillEncounter.getCompanyDue() > 0) {
@@ -150,5 +162,29 @@ public class InstitutionBillEncounter {
 
     public void setCompanyDue(Double companyDue) {
         this.companyDue = companyDue;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public Double getTotalPaidByCompanies() {
+        return totalPaidByCompanies;
+    }
+
+    public void setTotalPaidByCompanies(Double totalPaidByCompanies) {
+        this.totalPaidByCompanies = totalPaidByCompanies;
+    }
+
+    public Double getTotalDue() {
+        return totalDue;
+    }
+
+    public void setTotalDue(Double totalDue) {
+        this.totalDue = totalDue;
     }
 }
