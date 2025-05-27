@@ -36,7 +36,56 @@
                 <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3_without_header.css" />
             </h:panelGroup>
 
+            <style>
+                @font-face {
+                    font-family: 'OCR-B';
+                    src: url('../../fonts/OCR-B.ttf') format('truetype');
+                    /* Add other font properties like font-weight, font-style if necessary */
+                }
 
+                @media print {
+                    .receipt-container {
+                        border: none;
+                        width: 10cm!important;
+                        height: 9.5cm!important;
+                        margin-left: 0cm!important;
+                        margin-right: 2.5cm!important;
+                        margin-bottom: 1.0cm!important;
+                        margin-top: 1.7cm!important;
+                        font-family: "OCR-B", sans-serif !important;
+                        padding-left: 0.25cm;
+                        /*        font-family: sans-serif !important;
+                                border: none;
+                                width: 11cm!important;
+                                height: 14cm!important;
+                                margin-left: 0cm!important;
+                                margin-right: 1.5cm!important;
+                                margin-top: 1cm!important;
+                                margin-bottom: 0cm!important;
+                                padding: 2px!important;
+                                line-height: 1.2!important;*/
+                    }
+
+                    .hospital-name {
+                        font-size: 12px;
+                        font-family: sans-serif !important;
+                        line-height: 1.2;
+                    }
+
+                    .receipt-table th,
+                    .receipt-table td {
+                        padding: 2px;
+                        font-family: sans-serif !important;
+                        line-height: 1.2;
+                    }
+
+                    .separator {
+                        margin: 2px;
+                        font-family: sans-serif !important;
+                        line-height: 1.2;
+                    }
+                }
+            </style>
 
             <div class="receipt-container">
                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}">
