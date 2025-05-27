@@ -24,6 +24,20 @@
         <cc:implementation>
             <h:outputStylesheet library="css" name="opd_bill_five_five_custom_3.css" />
 
+            <style>
+                .receipt-container {
+                    font-family: "Courier New", "Liberation Mono", monospace;
+                    font-size: 12px;
+                    line-height: 1.2;
+                    width: 11cm;
+                    height: 14cm;
+                    margin: auto;
+                    padding: 2px;
+                    box-sizing: border-box;
+                    border: 1px solid #000;
+                }
+            </style>
+
 
             <div class="receipt-container">
                 <!-- Header Section -->
@@ -53,10 +67,10 @@
                             </h:panelGroup>
                         </tr>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="false" >
-                    #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
-                </h:panelGroup>
+                        #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
+                    </h:panelGroup>
 
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
@@ -102,11 +116,11 @@
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
                                 <td>#{item.item.name}</td>
-<!--                                <td>
-                                    <h:outputLabel value="#{item.netRate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>-->
+                                <!--                                <td>
+                                                                    <h:outputLabel value="#{item.netRate}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </td>-->
                                 <td>
                                     <h:outputLabel value="#{item.qty}">
                                         <f:convertNumber integerOnly="true" />
