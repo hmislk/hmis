@@ -14,6 +14,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.BillService;
 
 import java.util.ArrayList;
@@ -44,6 +45,8 @@ public class CreditBean {
     PatientEncounterFacade patientEncounterFacade;
     @EJB
     BillService billService;
+    @EJB
+    PaymentFacade paymentFacade;
 
     public List<Bill> getCreditBills(Institution ins, BillType billType, Date fromDate, Date toDate, boolean lessThan) {
         String sql = "Select b From BilledBill b"
@@ -98,6 +101,36 @@ public class CreditBean {
 
 
         List<Bill> bs = (List<Bill>) getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        return bs;
+
+    }
+    
+    public List<Payment> getCreditPayments(Institution ins, List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, boolean lessThan) {
+        String jpql = "Select p From Payment p"
+                + " where p.retired=false "
+                + " and p.bill.createdAt  between :frm and :to ";
+
+        if (lessThan) {
+            jpql += " and (abs(p.bill.netTotal)-abs(p.bill.paidAmount))>:val ";
+        } else {
+            jpql += " and (abs(p.bill.netTotal)-abs(p.bill.paidAmount))<:val ";
+        }
+
+        jpql += " and p.bill.creditCompany=:cc "
+                + " and p.bill.paymentMethod= :pm "
+                + " and p.bill.billTypeAtomic in :billTypeAtomics ";
+
+        HashMap params = new HashMap();
+        params.put("frm", fromDate);
+        params.put("to", toDate);
+        params.put("cc", ins);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("billTypeAtomics", billTypeAtomics);
+        params.put("val", 0.1);
+
+
+        List<Payment> bs = (List<Payment>) paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return bs;
 
