@@ -10,7 +10,20 @@
     <h:head>
         <!-- Include the custom CSS for styling -->
 <!--        <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />-->
-        <style>
+        
+    </h:head>
+
+    <h:body>
+        <!-- Composite Component Interface -->
+        <cc:interface>
+            <!-- Attributes passed to the component -->
+            <cc:attribute name="bill" required="true" />
+            <cc:attribute name="duplicate" required="false" />
+        </cc:interface>
+
+        <!-- Composite Component Implementation -->
+        <cc:implementation>
+            <style>
                 .receipt-container {
                     border: none;
                     width: 10cm!important;
@@ -52,18 +65,6 @@
                     line-height: 1.2;
                 }
             </style>
-    </h:head>
-
-    <h:body>
-        <!-- Composite Component Interface -->
-        <cc:interface>
-            <!-- Attributes passed to the component -->
-            <cc:attribute name="bill" required="true" />
-            <cc:attribute name="duplicate" required="false" />
-        </cc:interface>
-
-        <!-- Composite Component Implementation -->
-        <cc:implementation>
             <h:outputStylesheet library="css" name="opd_bill_five_five_custom_3.css" />
 
 
