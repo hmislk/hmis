@@ -1,5 +1,7 @@
 package com.divudi.core.light.common;
 
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.Department;
 import java.util.Date;
 import java.util.Objects;
 
@@ -24,8 +26,27 @@ public class BillLight {
     private Long patientId;
     private String canterName;
     private String referringDoctorName;
+    private BillTypeAtomic billTypeAtomic;
+    private Long count;
+    private Department todDpartment;
 
     public BillLight() {
+    }
+    
+    public BillLight(BillTypeAtomic  billTypeAtomic, Long count) {
+        this.billTypeAtomic = billTypeAtomic;
+        this.count = count;
+    }
+    
+    public BillLight(Department  todDpartment, Long count) {
+        this.todDpartment = todDpartment;
+        this.count = count;
+    }
+    
+    public BillLight(Department  todDpartment, BillTypeAtomic  billTypeAtomic, Long count) {
+        this.billTypeAtomic = billTypeAtomic;
+        this.todDpartment = todDpartment;
+        this.count = count;
     }
 
     public BillLight(Long id, String billNo, Date billDate, Date billTime, String patientName, Double netValue) {
@@ -222,6 +243,30 @@ public class BillLight {
 
     public void setCanterName(String canterName) {
         this.canterName = canterName;
+    }
+
+    public BillTypeAtomic  getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic  billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public Long getCount() {
+        return count;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
+    }
+
+    public Department getTodDpartment() {
+        return todDpartment;
+    }
+
+    public void setTodDpartment(Department todDpartment) {
+        this.todDpartment = todDpartment;
     }
 
 }
