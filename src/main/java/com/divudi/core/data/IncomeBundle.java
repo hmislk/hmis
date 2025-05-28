@@ -328,26 +328,87 @@ public class IncomeBundle implements Serializable {
                     break;
             }
 
-//            System.out.println("---- Item ----");
-//            System.out.println("BillCategory: " + bc);
-//            System.out.println("Original Qty: " + q);
-//            System.out.println("Retail Rate: " + rRate);
-//            System.out.println("Purchase Rate: " + pRate);
-//            System.out.println("Adjusted Qty: " + ((bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -qty : qty));
-//            System.out.println("Retail Total: " + retailTotal);
-//            System.out.println("Purchase Total: " + purchaseTotal);
-//            System.out.println("Gross Profit: " + grossProfit);
+
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+            grossProfitValue += grossProfit;
+        }
+    }
+
+    public void generateRetailAndCostDetailsForByItems() {
+        saleValue = 0;
+        purchaseValue = 0;
+        grossProfitValue = 0;
+
+        
+        
+        for (IncomeRow r : getRows()) {
+            PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
+            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
+                continue;
+            }
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b.getBillItem())
+                    .map(BillItem::getBill)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+            if (bta == null || bta.getBillCategory() == null) {
+                continue; // unable to categorise safely
+            }
+            BillCategory bc = bta.getBillCategory();
+
+            Double q = b.getQty();
+            Double rRate = b.getRetailRate();
+            if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                rRate = b.getBillItem().getNetRate();
+            }
+
+            Double pRate = b.getPurchaseRate();
+
+            if (q == null || rRate == null || pRate == null) {
+                continue;
+            }
+
+            double qty = Math.abs(q);
+            double retail = Math.abs(rRate);
+            double purchase = Math.abs(pRate);
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+            double grossProfit = 0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    grossProfit = (retail - purchase) * qty;
+                    break;
+
+                case CANCELLATION:
+                case REFUND:
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    grossProfit = -(retail - purchase) * qty;
+                    break;
+
+                default:
+                    break;
+            }
+
+            
+
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
             grossProfitValue += grossProfit;
         }
 
-        System.out.println("==== Final Totals ====");
-        System.out.println("Total Sale Value: " + saleValue);
-        System.out.println("Total Purchase Value: " + purchaseValue);
-        System.out.println("Total Gross Profit: " + grossProfitValue);
+
     }
 
+    
+    
     public void generateRetailAndCostDetailsForPharmaceuticalBill() {
         saleValue = 0;
         purchaseValue = 0;
@@ -366,26 +427,10 @@ public class IncomeBundle implements Serializable {
             saleValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
             purchaseValue += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
             grossProfitValue += (b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() - b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue());
-
-//            System.out.println("---- Item ----");
-//            System.out.println("BillCategory: " + bc);
-//            System.out.println("Original Qty: " + q);
-//            System.out.println("Retail Rate: " + rRate);
-//            System.out.println("Purchase Rate: " + pRate);
-//            System.out.println("Adjusted Qty: " + ((bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -qty : qty));
-//            System.out.println("Retail Total: " + retailTotal);
-//            System.out.println("Purchase Total: " + purchaseTotal);
-//            System.out.println("Gross Profit: " + grossProfit);          
         }
-
-        System.out.println("==== Final Totals ====");
-        System.out.println("Total Sale Value: " + saleValue);
-        System.out.println("Total Purchase Value: " + purchaseValue);
-        System.out.println("Total Gross Profit: " + grossProfitValue);
     }
 
     public void generateRetailAndCostDetailsForPharmaceuticalBillType() {
-        System.out.println("generateRetailAndCostDetailsForPharmaceuticalBillType");
         saleValue = 0;
         purchaseValue = 0;
         grossProfitValue = 0;
@@ -461,20 +506,9 @@ public class IncomeBundle implements Serializable {
         }
 
         // Replace old rows with grouped values
-        System.out.println("Bafore getRows().size() = " + getRows().size());
 
         getRows().clear();
         getRows().addAll(grouped.values());
-
-        System.out.println("grouped.size() = " + grouped.size());
-
-        System.out.println("After getRows().size() = " + getRows().size());
-
-        System.out.println("==== Final Totals ====");
-        System.out.println("Total Sale Value: " + saleValue);
-        System.out.println("Total Purchase Value: " + purchaseValue);
-        System.out.println("Total Gross Profit: " + grossProfitValue);
-
     }
 
     public void generateProcurementDetailsForBillItems() {

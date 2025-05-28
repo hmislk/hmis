@@ -306,7 +306,8 @@ public class EnumController implements Serializable {
                 ReportViewType.BY_BILL,
                 ReportViewType.BY_BILL_TYPE,
                 ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
-                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_ITEM
         );
     }
 
