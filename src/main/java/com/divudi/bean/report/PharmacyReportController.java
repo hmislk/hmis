@@ -13,6 +13,7 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemCount;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
@@ -2635,9 +2636,35 @@ public class PharmacyReportController implements Serializable {
             calPurchaseReturn(baseQuery, new HashMap<>(commonParams));
             calTransferIssueValue(baseQuery, new HashMap<>(commonParams));
             calTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
+            calSaleCreditValue(baseQuery, new HashMap<>(commonParams));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+
+            List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
+            creditTypePaymentMethods.add(PaymentMethod.Credit);
+            creditTypePaymentMethods.add(PaymentMethod.Staff);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod in :pm ");
+            params.put("Doctype", billTypeAtomics);
+            params.put("pm", creditTypePaymentMethods);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalSaleCreditValue = calTotal(jpql, params);
+            cogs.put("Sale Credit Value", totalSaleCreditValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2660,6 +2687,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("ERROR", -1.0);
         }
     }
+
     private void calTransferReceiveValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
@@ -2678,6 +2706,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("ERROR", -1.0);
         }
     }
+
     private void calPurchaseReturn(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
