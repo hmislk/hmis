@@ -2602,19 +2602,32 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private double calTotal(StringBuilder query, Map<String, Object> params) {
+        try {
+            return facade.findDoubleByJpql(query.toString(), params, TemporalType.TIMESTAMP);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            return -1.0;
+        }
+    }
+
     private void calOther() {
         try {
-            // Common base query parts
-            String baseQuery = "SELECT sh2 FROM StockHistory sh2 "
+            StringBuilder baseQuery = new StringBuilder("SELECT SUM(sh2.pbItem.billItem.netValue) FROM StockHistory sh2 "
                     + "WHERE sh2.retired = false "
                     + "AND sh2.createdAt BETWEEN :fd AND :td "
                     + "AND (sh2.itemBatch.item.departmentType IS NULL "
-                    + "OR sh2.itemBatch.item.departmentType = :depty) ";
+                    + "OR sh2.itemBatch.item.departmentType = :depty) ");
 
             Map<String, Object> commonParams = new HashMap<>();
             commonParams.put("depty", DepartmentType.Pharmacy);
             commonParams.put("fd", fromDate);
             commonParams.put("td", toDate);
+
+            addFilter(baseQuery, commonParams, "sh2.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "sh2.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "sh2.department", "dep", department);
 
             calDrugReturnIp(baseQuery, new HashMap<>(commonParams));
             calDrugReturnOp(baseQuery, new HashMap<>(commonParams));
@@ -2626,29 +2639,18 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calStockConsumption(String baseQuery, Map<String, Object> params) {
+    private void calStockConsumption(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
 
             List<BillType> billTypes = new ArrayList<>();
             billTypes.add(BillType.PharmacyIssue);
 
-            addFilter(jpql, params, "sh2.institution", "ins", institution);
-            addFilter(jpql, params, "sh2.department.site", "sit", site);
-            addFilter(jpql, params, "sh2.department", "dep", department);
-
             jpql.append("AND sh2.pbItem.billItem.bill.billType in :conDoctype ");
             jpql.append("ORDER BY sh2.createdAt");
             params.put("conDoctype", billTypes);
-
-            List<StockHistory> stockCorrectionsIds = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            double totalConsumption = 0.0;
-            for (StockHistory sh : stockCorrectionsIds) {
-                double value = sh.getPbItem().getBillItem().getNetValue();
-                totalConsumption += value;
-            }
-
+            
+            double totalConsumption = calTotal(jpql, params);
             cogs.put("Stock Consumption", totalConsumption);
 
         } catch (Exception e) {
@@ -2657,7 +2659,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calDrugReturnIp(String baseQuery, Map<String, Object> params) {
+    private void calDrugReturnIp(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -2666,22 +2668,11 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
 
-            addFilter(jpql, params, "sh2.institution", "ins", institution);
-            addFilter(jpql, params, "sh2.department.site", "sit", site);
-            addFilter(jpql, params, "sh2.department", "dep", department);
-
             jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :ipDoctype ");
             jpql.append("ORDER BY sh2.createdAt");
             params.put("ipDoctype", billTypeAtomics);
 
-            List<StockHistory> stockCorrectionsIds = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            double totalReturnsIp = 0.0;
-            for (StockHistory sh : stockCorrectionsIds) {
-                double value = sh.getPbItem().getBillItem().getNetValue();
-                totalReturnsIp += value;
-            }
-
+            double totalReturnsIp = calTotal(jpql, params);
             cogs.put("Drug Return IP", totalReturnsIp);
 
         } catch (Exception e) {
@@ -2690,7 +2681,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calDrugReturnOp(String baseQuery, Map<String, Object> params) {
+    private void calDrugReturnOp(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -2698,22 +2689,11 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
 
-            addFilter(jpql, params, "sh2.institution", "ins", institution);
-            addFilter(jpql, params, "sh2.department.site", "sit", site);
-            addFilter(jpql, params, "sh2.department", "dep", department);
-
             jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :opDoctype ");
             jpql.append("ORDER BY sh2.createdAt");
             params.put("opDoctype", billTypeAtomics);
 
-            List<StockHistory> stockCorrectionsIds = facade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            double totalReturnsOp = 0.0;
-            for (StockHistory sh : stockCorrectionsIds) {
-                double value = sh.getPbItem().getBillItem().getNetValue();
-                totalReturnsOp += value;
-            }
-
+            double totalReturnsOp = calTotal(jpql, params);
             cogs.put("Drug Return Op", totalReturnsOp);
 
         } catch (Exception e) {
