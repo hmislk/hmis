@@ -1591,6 +1591,40 @@ public class PatientReportController implements Serializable {
         return b;
     }
 
+    public String emailBody(PatientReport r) {
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().isEmpty()) {
+            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+        String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(), securityKey);
+        String reportLink = CommonFunctions.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
+
+        String template = configOptionApplicationController.getLongTextValueByKey(
+                "Email Body for Lab Report Email",
+                "Dear {patient_name},\n\nYour report for {investigation_name} is now available.\n\nPlease use the following link to view your report:\n{report_link}\n\nThank you."
+        );
+
+        String patientName = r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle();
+        String investigationName = r.getPatientInvestigation().getInvestigation().getName();
+
+        return template
+                .replace("{patient_name}", patientName)
+                .replace("{investigation_name}", investigationName)
+                .replace("{report_link}", reportLink);
+    }
+
+    public String emailSubject(PatientReport r) {
+        String template = configOptionApplicationController.getLongTextValueByKey(
+                "Email Subject for Lab Report Email",
+                "Your report for {investigation_name} is ready"
+        );
+
+        String investigationName = r.getPatientInvestigation().getInvestigation().getName();
+
+        return template.replace("{investigation_name}", investigationName);
+    }
+
     public String smsBody(PatientReport r, String old) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
@@ -2027,33 +2061,36 @@ public class PatientReportController implements Serializable {
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
 
-        UserPreference pf = getSessionController().getApplicationPreference();
+        if (CommonFunctions.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
+            AppEmail e;
+            e = new AppEmail();
+            
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail());
+            e.setMessageSubject(emailSubject(currentPatientReport));
+//            e.setMessageBody(emailMessageBody(currentPatientReport)); // No longer User. We do NOT send the report within the email. Instead we send the Link
+            e.setMessageBody(emailBody(currentPatientReport));
+//                e.setAttachment1(createPDFAndSaveAsaFile());// No longer User. We do NOT send the report within the email. Instead we send the Link
 
-        if (pf != null && pf.getSentEmailWithInvestigationReportApproval()) {
-            if (CommonFunctions.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
-                AppEmail e;
+//            e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword()); // THese are taken from configuration options
+//            e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());// THese are taken from configuration options
+//            e.setSenderEmail(getCurrentPatientReport().getApproveInstitution().getEmail());// THese are taken from configuration options
 
-                e = new AppEmail();
-                e.setCreatedAt(new Date());
-                e.setCreater(sessionController.getLoggedUser());
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            
+            e.setBill(currentPtIx.getBillItem().getBill());
+            e.setPatientReport(currentPatientReport);
+            e.setPatientInvestigation(currentPtIx);
+            e.setSmsType(MessageType.LabReport);
+            
+            e.setSentSuccessfully(false);
+            e.setPending(true);
 
-                e.setReceipientEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail());
-                e.setMessageSubject("Your Report is Ready");
-                e.setMessageBody(emailMessageBody(currentPatientReport));
-//                e.setAttachment1(createPDFAndSaveAsaFile());
-
-                e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword());
-                e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());
-                e.setSenderEmail(getCurrentPatientReport().getApproveInstitution().getEmail());
-
-                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-
-                e.setSentSuccessfully(false);
-
-                getEmailFacade().create(e);
-            }
+            getEmailFacade().create(e);
         }
+
         if (currentPtIx.getBillItem().getBill().getPatient().getPatientPhoneNumber() != null) {
             Patient tmp = currentPtIx.getBillItem().getBill().getPatient();
             tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));

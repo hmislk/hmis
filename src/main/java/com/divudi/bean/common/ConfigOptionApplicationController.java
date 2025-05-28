@@ -81,6 +81,16 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("Email Gateway - Password", "");
         getShortTextValueByKey("Email Gateway - SMTP Host", "");
         getShortTextValueByKey("Email Gateway - URL", "");
+        //
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one minute", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 5 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 10 minutes", true);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 15 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 20 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after half an hour", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one hour", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two hours", false);
     }
 
     public ConfigOption getApplicationOption(String key) {
