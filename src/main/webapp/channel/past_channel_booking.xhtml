@@ -212,7 +212,8 @@
                             </p:column>
 
                             <p:column style="width: 60px!important;">
-                                <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
+                                <h:outputText rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" />
+                                <h:outputText rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" />
                             </p:column>
 
                             <p:column style="width: 20px!important;">
