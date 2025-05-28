@@ -66,6 +66,14 @@ public class PatientInvestigation implements Serializable, RetirableEntity {
     private Packege packege;
     @ManyToOne
     private PatientEncounter encounter;
+    //Sample Accepted
+    private Boolean ordered = true;
+    @ManyToOne
+    private WebUser orderedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date orderedAt;
+    @ManyToOne
+    private Department orderedDepartment;
     //Sample Collection
     private Boolean barcodeGenerated = false;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -281,7 +289,6 @@ public class PatientInvestigation implements Serializable, RetirableEntity {
 
     String sampleIds;
 
-
     public PatientInvestigation() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -298,7 +305,6 @@ public class PatientInvestigation implements Serializable, RetirableEntity {
     public void setSampleIds(String sampleIds) {
         this.sampleIds = sampleIds;
     }
-
 
     public List<PatientReport> getPatientReports() {
         if (patientReports == null) {
@@ -1331,4 +1337,58 @@ public class PatientInvestigation implements Serializable, RetirableEntity {
     public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
         this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
     }
+
+    public Department getOrderedDepartment() {
+        if (orderedDepartment == null) {
+            if (this.getBillItem() != null) {
+                if (this.getBillItem().getBill() != null) {
+                    orderedDepartment = this.getBillItem().getBill().getFromDepartment();
+                }
+            }
+        }
+        return orderedDepartment;
+    }
+
+    public void setOrderedDepartment(Department orderedDepartment) {
+        this.orderedDepartment = orderedDepartment;
+    }
+
+    public Boolean getOrdered() {
+        return ordered;
+    }
+
+    public void setOrdered(Boolean ordered) {
+        this.ordered = ordered;
+    }
+
+    public WebUser getOrderedBy() {
+        if (orderedBy == null) {
+            if (this.getBillItem() != null) {
+                if (this.getBillItem().getBill() != null) {
+                    orderedBy = this.getBillItem().getBill().getCreater();
+                }
+            }
+        }
+        return orderedBy;
+    }
+
+    public void setOrderedBy(WebUser orderedBy) {
+        this.orderedBy = orderedBy;
+    }
+
+    public Date getOrderedAt() {
+        if (orderedAt == null) {
+            if (this.getBillItem() != null) {
+                if (this.getBillItem().getBill() != null) {
+                    orderedAt = this.getBillItem().getBill().getCreatedAt();
+                }
+            }
+        }
+        return orderedAt;
+    }
+
+    public void setOrderedAt(Date orderedAt) {
+        this.orderedAt = orderedAt;
+    }
+
 }

@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/collecting_centre/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" >
+                            <i class="fa fa-history mt-2" aria-hidden="true"></i>
+                            <h:outputLabel value="History of changes to the book #{agentReferenceBookController.current.strbookNumber}" class="mx-2 mt-2"/>
+                            <p:commandButton  
+                                class="ui-button-secondary d-flex justify-content-end mx-2"
+                                style="float: right"
+                                value="Back To Search"
+                                icon="fa-solid fa-arrow-left"
+                                action="#{agentReferenceBookController.navigateToBackCCBookSearch()}"
+                                ajax="false">
+                            </p:commandButton>
+                        </f:facet>
+
+                        <div class="row">
+
+                            <p:dataTable
+                                rowIndexVar="i"
+                                id="tblrefBook"
+                                value="#{agentReferenceBookController.refBookEditDetails}"
+                                var="audit"
+                                style="min-width: 100%;"
+                                rows ="20"
+                                rowKey="#{audit.id}"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                rowsPerPageTemplate="20,50,100,500"
+                                >
+
+                                <p:column
+                                    style="padding: 8px;"
+                                    headerText="S. No"
+                                    width="4em;">
+                                    <h:outputLabel value="#{i+1}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Date / Time" 
+                                    style="padding: 8px;"
+                                    styleClass="alignTop" 
+                                    width="15em;">
+                                    <h:outputLabel value="#{audit.eventDataTime}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Edit By" 
+                                    style="padding: 8px;"
+                                    styleClass="alignTop" 
+                                    width="15em;">
+                                    <h:outputLabel value="#{webUserController.findWebUserNameWithTitleById(audit.webUserId)}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Book Changes" 
+                                    style="padding: 8px;"
+                                    styleClass="alignTop">
+                                    <h:outputText 
+                                        escape="false"
+                                        rendered="#{!agentReferenceBookController.findDifferences(audit.beforeJson,audit.afterJson).blank}"
+                                        value="#{agentReferenceBookController.findDifferences(audit.beforeJson,audit.afterJson)}">
+                                    </h:outputText>
+                                    <h:outputText 
+                                        escape="false"
+                                        rendered="#{agentReferenceBookController.findDifferences(audit.beforeJson,audit.afterJson).blank}"
+                                        value="Nothing has changed.">
+                                    </h:outputText>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </div>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

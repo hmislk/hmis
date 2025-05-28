@@ -64,32 +64,32 @@
     </style>
 
         <div class="wrapper">
-            <div class="vertical-text" style="left: 135mm; top: 56mm;  font-size: 10pt;">
+            <div class="vertical-text" style="left: 8mm; top: 56mm;  font-size: 10pt;">
                 <h:outputLabel value="#{sessionController.currentDate}" style="letter-spacing: 4.5mm;">
                     <f:convertDateTime pattern="ddMMyyyy" />
                 </h:outputLabel>
             </div>
-            <div class="vertical-text-border" style="left: 135mm; top: 100mm; text-transform: uppercase !important;  font-size: 10pt;">
+            <div class="vertical-text-border" style="left: 8mm; top: 100mm; text-transform: uppercase !important;  font-size: 10pt;">
                 <h:outputLabel value="A/C PAYEE ONLY"  rendered="#{cc.attrs.acPayeeOnly}"/>
             </div>
-            <div class="vertical-text" style="left: 148mm; top: 158mm; text-transform: uppercase !important;  font-size: 10pt;">
+            <div class="vertical-text" style="left: 21mm; top: 158mm; text-transform: uppercase !important;  font-size: 10pt;">
                 <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" />
             </div>
-            <div class="vertical-text" style="left: 158mm; top: 158mm; text-transform: uppercase !important;  font-size: 10pt; width: 84mm">
+            <div class="vertical-text" style="left: 31mm; top: 158mm; text-transform: uppercase !important;  font-size: 10pt; width: 84mm">
                 <h:outputLabel value="**#{supplierPaymentController.convertToWord(-cc.attrs.bill.netTotal)} ONLY**" />
             </div>
-            <div class="vertical-text" style="left: 163mm; top: 54mm; text-transform: uppercase !important; font-weight: bold;  font-size: 10pt;">
+            <div class="vertical-text" style="left: 36mm; top: 54mm; text-transform: uppercase !important; font-weight: bold;  font-size: 10pt;">
                 <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
                     <f:convertNumber pattern="#,###,###.00" />
                 </h:outputLabel>
             </div>
-            <div class="vertical-text" style="left: 174mm; top: 52mm; text-transform: uppercase !important; font-family: 'Times New Roman'; text-align: center; font-size: 8pt;">
-                <h:outputLabel value="GALLE CO-OPERATIVE  HOSPITAL LTD." />
+            <div class="vertical-text" style="left: 47mm; top: 52mm; text-transform: uppercase !important; font-family: 'Times New Roman'; text-align: center; font-size: 8pt; max-width: 40mm">
+               <h:outputText value="GALLE CO-OPERATIVE HOSPITAL LTD." escape="false" />
             </div>
-            <div class="vertical-text" style="left: 191mm; top: 68mm; text-transform: uppercase !important; font-size: 8pt;">
+            <div class="vertical-text" style="left: 64mm; top: 68mm; text-transform: uppercase !important; font-size: 8pt;">
                 <h:outputLabel value="............................................................................................................." />
             </div>
-            <div class="vertical-text" style="left: 197mm; top: 65mm; font-size: 8pt; font-family: 'Times New Roman'; width: 80mm">
+            <div class="vertical-text" style="left: 68mm; top: 65mm; font-size: 8pt; font-family: 'Times New Roman'; width: 80mm">
                 <h:outputLabel value="Chairman   Vice Chairman   General Manager   Accountant" />
             </div>
         </div>

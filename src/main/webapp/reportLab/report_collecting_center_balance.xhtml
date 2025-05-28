@@ -5,6 +5,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
                 xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
                 >
 
@@ -12,97 +13,106 @@
 
         <h:form>
 
-            <p:panel header="Collecting Center Current Balance">
-                <f:facet name="header" >
-                    <p:outputLabel value="Collecting Center Current Balance" />
-                    <p:commandButton id="btnBack" value="Back" rendered="false"
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
-                </f:facet>
-                <h:panelGrid>
-                    <h:panelGrid columns="3" >
-                        <p:commandButton value="Fill" action="#{channelReportTempController.createCollectingcenterBalanceTable()}" ajax="false" ></p:commandButton>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
-                            <p:printer target="reportPrint"  />
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('CollectingCentreReports')}">
+                <na:not_authorize />
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('CollectingCentreReports')}">
+                <p:panel header="Collecting Center Current Balance">
+                    <f:facet name="header" >
+                        <p:outputLabel value="Collecting Center Current Balance" />
+                        <p:commandButton 
+                            id="btnBack" 
+                            value="Back" 
+                            rendered="false"
+                            action="/channel/channel_reports" 
+                            style="float: right;"
+                            ajax="false">
                         </p:commandButton>
-                        <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton">
-                            <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_balance"  />
-                        </p:commandButton>
+                    </f:facet>
+                    <h:panelGrid>
+                        <h:panelGrid columns="3" >
+                            <p:commandButton value="Fill" action="#{channelReportTempController.createCollectingcenterBalanceTable()}" ajax="false" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                            <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton">
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_balance"  />
+                            </p:commandButton>
+                        </h:panelGrid>
                     </h:panelGrid>
-                </h:panelGrid>
-                <p:panel id="reportPrint" styleClass="summeryBorder noBorder">
-                    <p:dataTable value="#{channelReportTempController.agencies}" var="a" id="tbl1" rowIndexVar="i">
-                        <f:facet name="header">
-                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
-                            <br></br>
-                            <p:outputLabel value="Collecting Center Current Balance" />
-                            <br></br>
-                            <p:outputLabel value="Print Time" />
-                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
-                            </p:outputLabel>
-                        </f:facet>
-                        <p:column>
+                    <p:panel id="reportPrint" styleClass="summeryBorder noBorder">
+                        <p:dataTable value="#{channelReportTempController.agencies}" var="a" id="tbl1" rowIndexVar="i">
                             <f:facet name="header">
-                                <p:outputLabel value="No" />
+                                <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                                <br></br>
+                                <p:outputLabel value="Collecting Center Current Balance" />
+                                <br></br>
+                                <p:outputLabel value="Print Time" />
+                                <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
+                                    <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                                </p:outputLabel>
                             </f:facet>
-                            <p:outputLabel value="#{i+1}" />
-                        </p:column>
-                        <p:column sortBy="#{a.institutionCode}">
-                            <f:facet name="header">
-                                <p:outputLabel value="Agent Code" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.institutionCode}" />
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="No" />
+                                </f:facet>
+                                <p:outputLabel value="#{i+1}" />
+                            </p:column>
+                            <p:column sortBy="#{a.institutionCode}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Agent Code" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.institutionCode}" />
 
-                        </p:column>
-                        <p:column sortBy="#{a.name}">
-                            <f:facet name="header">
-                                <p:outputLabel value="Agent Name" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.name}" >
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column styleClass="numberCol" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Allowed Max C.L." />
-                            </f:facet>
-                            <p:outputLabel value="#{a.maxCreditLimit}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column styleClass="numberCol" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Standerd C.L." />
-                            </f:facet>
-                            <p:outputLabel value="#{a.standardCreditLimit}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column styleClass="numberCol" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Allowed C.L." />
-                            </f:facet>
-                            <p:outputLabel value="#{a.allowedCredit}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column styleClass="numberCol" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Balance" />
-                            </f:facet>
-                            <p:outputLabel value="#{a.ballance}" >
-                                <f:convertNumber pattern="#,##,##0.00" />
-                            </p:outputLabel>
-                        </p:column>
+                            </p:column>
+                            <p:column sortBy="#{a.name}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Agent Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.name}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Allowed Max C.L." />
+                                </f:facet>
+                                <p:outputLabel value="#{a.maxCreditLimit}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Standerd C.L." />
+                                </f:facet>
+                                <p:outputLabel value="#{a.standardCreditLimit}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Allowed C.L." />
+                                </f:facet>
+                                <p:outputLabel value="#{a.allowedCredit}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Balance" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.ballance}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
 
-                    </p:dataTable>
+                        </p:dataTable>
+                    </p:panel>
+
                 </p:panel>
-
-            </p:panel>
+            </h:panelGroup>
 
         </h:form>
     </ui:define>
-
 
 </ui:composition>

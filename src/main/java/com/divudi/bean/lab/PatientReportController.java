@@ -45,6 +45,7 @@ import com.divudi.core.data.UploadType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.lab.PatientReportGroup;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.entity.lab.ReportFormat;
@@ -152,6 +153,7 @@ public class PatientReportController implements Serializable {
 
     //Class Variables
     String selectText = "";
+    private String groupName;
     private PatientInvestigation currentPtIx;
     private PatientReport currentPatientReport;
     private PatientSample currentPatientSample;
@@ -1190,7 +1192,6 @@ public class PatientReportController implements Serializable {
     }
 
     public void savePatientReport() {
-        Date startTime = new Date();
         if (currentPatientReport == null || currentPtIx == null) {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
@@ -1898,6 +1899,87 @@ public class PatientReportController implements Serializable {
         return allowNewReport;
     }
 
+    public void addPatientReportGroupForMicrobiology() {
+        if (!validateAndPrepareGroupAddition()) {
+            return;
+        }
+
+        PatientReportGroup newlyAddedGroup = addPatientReportGroup();
+
+        if (newlyAddedGroup == null) {
+            return;
+        }
+
+        int groupCount = currentPatientReport.getPatientReportGroups().size();
+
+        if (groupCount == 1) {
+            System.out.println("first group");
+            for (PatientReportItemValue pvm : currentPatientReport.getPatientReportItemValues()) {
+                if (pvm.getInvestigationItem() != null
+                        && pvm.getInvestigationItem().getIxItemType() != null
+                        && pvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic) {
+                    pvm.setPatientReportGroup(newlyAddedGroup);
+                }
+            }
+        } else {
+            System.out.println("more than one group");
+            PatientReportGroup firstGroup = currentPatientReport.getPatientReportGroups().get(0);
+            System.out.println("firstGroup = " + firstGroup.getGroupName());
+            // Step 1: Filter the base items first
+            List<PatientReportItemValue> baseAntibioticItems = new ArrayList<>();
+            for (PatientReportItemValue basePvm : currentPatientReport.getPatientReportItemValues()) {
+                if (basePvm.getInvestigationItem() != null
+                        && basePvm.getInvestigationItem().getIxItemType() != null
+                        && basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic
+                        && basePvm.getPatientReportGroup().equals(firstGroup)) {
+                    baseAntibioticItems.add(basePvm);
+                }
+            }
+
+            // Step 2: Safely clone and add
+            for (PatientReportItemValue basePvm : baseAntibioticItems) {
+                PatientReportItemValue clonedPvm = basePvm.clone();
+                clonedPvm.setPatientReportGroup(newlyAddedGroup);
+                currentPatientReport.getPatientReportItemValues().add(clonedPvm);
+            }
+        }
+        savePatientReport();
+    }
+
+    public PatientReportGroup addPatientReportGroup() {
+        if (!validateAndPrepareGroupAddition()) {
+            return null;
+        }
+
+        PatientReportGroup prg = new PatientReportGroup();
+        prg.setGroupName(groupName);
+        prg.setPatientReport(currentPatientReport);
+        prg.setCreatedAt(new Date());
+        prg.setCreater(sessionController.getLoggedUser());
+
+        if (currentPatientReport.getPatientReportGroups() == null) {
+            currentPatientReport.setPatientReportGroups(new ArrayList<>());
+        }
+
+        currentPatientReport.getPatientReportGroups().add(prg);
+        savePatientReport();
+        return prg;
+    }
+
+    private boolean validateAndPrepareGroupAddition() {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("No patient report available");
+            return false;
+        }
+
+        if (groupName == null || groupName.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter a Group Name");
+            return false;
+        }
+
+        return true;
+    }
+
     public void approvePatientReport() {
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
@@ -1976,44 +2058,31 @@ public class PatientReportController implements Serializable {
             Patient tmp = currentPtIx.getBillItem().getBill().getPatient();
             tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));
         }
-        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            if (getCurrentPtIx().getBillItem().getBill().getBackwardReferenceBill().getBalance() < 1.0) {
-                if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
-                    Sms e = new Sms();
-                    e.setPending(true);
-                    e.setCreatedAt(new Date());
-                    e.setCreater(sessionController.getLoggedUser());
-                    e.setBill(currentPtIx.getBillItem().getBill());
-                    e.setPatientReport(currentPatientReport);
-                    e.setPatientInvestigation(currentPtIx);
-                    e.setCreatedAt(new Date());
-                    e.setCreater(sessionController.getLoggedUser());
-                    e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
-                    e.setSendingMessage(smsBody(currentPatientReport));
-                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-                    e.setSentSuccessfully(false);
-                    getSmsFacade().create(e);
-                }
-            }
-        } else {
-            if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
-                Sms e = new Sms();
-                e.setPending(true);
-                e.setCreatedAt(new Date());
-                e.setCreater(sessionController.getLoggedUser());
-                e.setBill(currentPtIx.getBillItem().getBill());
-                e.setPatientReport(currentPatientReport);
-                e.setPatientInvestigation(currentPtIx);
-                e.setCreatedAt(new Date());
-                e.setCreater(sessionController.getLoggedUser());
-                e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
-                e.setSendingMessage(smsBody(currentPatientReport));
-                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-                e.setSentSuccessfully(false);
-                getSmsFacade().create(e);
-            }
+// ChatGPT and CodeRabbitAI contributed logic:
+// Always create the SMS for lab report approval, regardless of payment status.
+// The timer service will handle delayed sending and check full payment before dispatch.
+        if (currentPtIx != null
+                && currentPtIx.getBillItem() != null
+                && currentPtIx.getBillItem().getBill() != null
+                && currentPtIx.getBillItem().getBill().getPatient() != null
+                && currentPtIx.getBillItem().getBill().getPatient().getPerson() != null
+                && currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber() != null
+                && !currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().isEmpty()) {
+
+            Sms e = new Sms();
+            e.setPending(true);
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(currentPtIx.getBillItem().getBill());
+            e.setPatientReport(currentPatientReport);
+            e.setPatientInvestigation(currentPtIx);
+            e.setSmsType(MessageType.LabReport);
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(smsBody(currentPatientReport));
+            e.setDepartment(sessionController.getLoggedUser().getDepartment());
+            e.setInstitution(sessionController.getLoggedUser().getInstitution());
+            e.setSentSuccessfully(false);
+            getSmsFacade().create(e);
         }
         if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
 
@@ -2727,11 +2796,11 @@ public class PatientReportController implements Serializable {
             if (configOptionApplicationController.getBooleanValueByKey("Obtaining the report format related to the logged-in department's site.", false)) {
                 avalilableReportFormats = reportFormatController.fillReportFormatsForLoggedDepartmentSite(patientReport);
 
-                if(!avalilableReportFormats.isEmpty()){
-                    if(avalilableReportFormats.size()>=1){
+                if (!avalilableReportFormats.isEmpty()) {
+                    if (avalilableReportFormats.size() >= 1) {
                         patientReport.setReportFormat(avalilableReportFormats.get(0));
                     }
-                }else{
+                } else {
                     ReportFormat currentPatientReportFormat = (ReportFormat) patientReport.getPatientInvestigation().getInvestigation().getReportFormat();
                     avalilableReportFormats.add(currentPatientReportFormat);
                     patientReport.setReportFormat(currentPatientReportFormat);
@@ -2739,7 +2808,7 @@ public class PatientReportController implements Serializable {
             } else {
                 avalilableReportFormats = reportFormatController.getParentFormat();
             }
-        }else{
+        } else {
             avalilableReportFormats.add((ReportFormat) patientReport.getReportFormat());
         }
 
@@ -2971,6 +3040,14 @@ public class PatientReportController implements Serializable {
 
     public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
         this.configOptionApplicationController = configOptionApplicationController;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     @FacesConverter(forClass = PatientReport.class)

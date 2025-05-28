@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,8 @@ public class ReportController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    PharmacyReportController pharmacyReportController;
 
     private int reportIndex;
     private Institution institution;
@@ -214,6 +217,8 @@ public class ReportController implements Serializable {
     private String reportType;
     private Speciality speciality;
     private String reportTemplateFileIndexName;
+
+    private List<String> siteIds;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -1227,112 +1232,89 @@ public class ReportController implements Serializable {
     }
 
     public void createDebtorSettlement() {
-        String jpql = "SELECT cb "
-                + "FROM Bill cb "
-                + "WHERE cb.retired = :ret "
-                + "AND cb.paymentMethod = :pm "
-                + "AND cb.billType in :bts ";
-
+        StringBuilder jpql = new StringBuilder(
+                "SELECT bi FROM BillItem bi " +
+                "WHERE bi.retired = :ret " +
+                "AND bi.bill.billTypeAtomic IN :btas");
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        m.put("pm", PaymentMethod.Credit);
-        List<BillType> bts = new ArrayList<>();
-        bts.add(BillType.OpdBill);
-        m.put("bts", bts);
-
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        m.put("btas", btas);
         if (institution != null) {
-            jpql += "AND cb.creditCompany = :cc ";
+            jpql.append(" AND bi.bill.fromInstitution = :cc");
             m.put("cc", institution);
         }
-
-        jpql += "AND cb.createdAt BETWEEN :fromDate AND :toDate";
+        jpql.append(" AND bi.createdAt BETWEEN :fromDate AND :toDate");
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
 
-        bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        billItems = billItemFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        
         if (selectedVoucherStatusOnDebtorSettlement != null) {
             // Filter the bills list based on the statusFilter
-            bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
+            billItems = filterBillsByStatus(billItems, selectedVoucherStatusOnDebtorSettlement);
         }
+
+        Set<Bill> processedBills = new HashSet<>();
         netTotal = 0.0;
 
-        for (Bill b : bills) {
-            BillItem voucher = findVoucherIsAvailable(b);  // Call it once per loop
-            if (voucher != null) {
-                netTotal += voucher.getBill().getNetTotal();
+        for (BillItem bi : billItems) {
+            Bill bill = bi.getBill();
+            if (bill != null && !processedBills.contains(bill)) {
+                switch (bi.getBill().getBillTypeAtomic()) {
+                    case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                        netTotal += Math.abs(bill.getTotal());
+                        break;
+                    case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                        netTotal -= Math.abs(bill.getTotal());
+                        break;
+                    default:
+                        continue;
+                }
+                
+                processedBills.add(bill);
             }
         }
+
     }
 
-    private List<Bill> filterBillsByStatus(List<Bill> bills, String statusFilter) {
-        List<Bill> filteredBills = new ArrayList<>();
+    private List<BillItem> filterBillsByStatus(List<BillItem> billItems, String statusFilter) {
+        List<BillItem> filteredBillItems = new ArrayList<>();
 
-        for (Bill bill : bills) {
-            String status = classifyVoucherSettlementStatus(bill);
+        for (BillItem bi : billItems) {
+            String status = classifyVoucherSettlementStatus(bi);
 
             // Only add bills that match the status filter
             if (status.equals(statusFilter)) {
-                filteredBills.add(bill);
+                filteredBillItems.add(bi);
             }
         }
 
-        return filteredBills; // Return the filtered list of bills
+        return filteredBillItems; // Return the filtered list of bills
     }
 
-    private String classifyVoucherSettlementStatus(Bill bill) {
-        BillItem voucher = findVoucherIsAvailable(bill);
+    private String classifyVoucherSettlementStatus(BillItem billitem) {
 
-        if (voucher == null) {
+        if (billitem == null) {
             return "Unsettled";
         }
 
-        if (bill.getNetTotal() == voucher.getBill().getNetTotal()) {
+        Bill ref = billitem.getReferenceBill();
+        if (ref == null) {
+            return "Unsettled";
+        }
+        // safe equality check
+        if (Objects.equals(ref.getPaidAmount(), ref.getNetTotal())) {
             return "Settled";
         }
-
-        if (bill.getNetTotal() > voucher.getBill().getNetTotal()) {
+        // numeric comparison (primitive or compareTo for BigDecimal)
+        if (ref.getNetTotal() > ref.getPaidAmount()) {
             return "Partially Settled";
         }
 
         return "Unsettled"; // Default case for safety
-    }
-
-    public BillItem findVoucherIsAvailable(Bill b) {
-        voucherItem = null;
-
-        String jpql = "SELECT bi "
-                + "FROM BillItem bi "
-                + "WHERE bi.retired = :ret "
-                + "AND bi.referenceBill = :b "
-                + "AND bi.bill.billType in :bts";
-
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        m.put("b", b);
-        List<BillType> bts = new ArrayList<>();
-        bts.add(BillType.CashRecieveBill);
-        m.put("bts", bts);
-
-        List<BillItem> bis = billItemFacade.findByJpql(jpql, m);
-
-        if (bis.size() == 1) {
-            voucherItem = billItemFacade.findFirstByJpql(jpql, m);
-            voucherItem.getBill().setNetTotal(voucherItem.getNetValue());
-            if (voucherItem.getNetValue() < b.getNetTotal()) {
-                voucherItem.getBill().setAdjustedTotal(Math.abs(voucherItem.getNetValue()));
-                voucherItem.getBill().setBalance(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getNetValue()));
-            }
-        } else if (bis.size() > 1) {
-            Double NetTotal = 0.0;
-            for (BillItem bi : bis) {
-                voucherItem = bi;
-                NetTotal += voucherItem.getNetValue();
-            }
-            voucherItem.getBill().setNetTotal(NetTotal);
-            voucherItem.getBill().setBalance(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getBill().getNetTotal()));
-        }
-
-        return voucherItem;
     }
 
     public void processPettyCashPayment() {
@@ -1598,6 +1580,27 @@ public class ReportController implements Serializable {
             m.put("machine", machine);
         }
 
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and bi.bill.department.site = :site ";
+            m.put("site", site);
+        }
+
+        if (siteIds != null && !siteIds.isEmpty()) {
+            jpql += " and bi.bill.department.site.id in :siteIds";
+
+            m.put("siteIds", siteIds);
+        }
+
         List<BillTypeAtomic> bTypes = Arrays.asList(
                 BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
                 BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
@@ -1657,10 +1660,10 @@ public class ReportController implements Serializable {
 
         //Add All Lab Test Count
         for (ItemCount count : allLabTestCounts) {
-            if (count.getTestCount() != 0.0) {
+//            if (count.getTestCount() != 0.0) {
                 categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L)).getItems().add(count);
                 categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
-            }
+//            }
         }
 
         // Convert the map values to a list to be used in the JSF page
@@ -2896,11 +2899,18 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToconsumption() {
-
         return "/reports/inventoryReports/consumption?faces-redirect=true";
     }
 
     public String navigateToClosingStockReport() {
+        pharmacyReportController.setReportType("itemWise");
+        reportTemplateFileIndexName = "Closing Stock Report";
+        return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
+    }
+
+    public String navigateToBatchWiseStockReport() {
+        pharmacyReportController.setReportType("batchWise");
+        reportTemplateFileIndexName = "Batch Wise Stock Report";
         return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
     }
 
@@ -4038,6 +4048,14 @@ public class ReportController implements Serializable {
 
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public List<String> getSiteIds() {
+        return siteIds;
+    }
+
+    public void setSiteIds(List<String> siteIds) {
+        this.siteIds = siteIds;
     }
 
     public String getReportTemplateFileIndexName() {

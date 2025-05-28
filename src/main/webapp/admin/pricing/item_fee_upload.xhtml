@@ -23,6 +23,14 @@
                         <p:commandButton value="Upload"
                                          action="#{dataUploadController.uploadItemFeesToUpdateFees()}"
                                          ajax="false"/>
+                        <p:commandButton
+                                value="Download Template"
+                                ajax="false"
+                                style="float: right;"
+                                class="ui-button-warning"
+                                icon="fa fa-download">
+                            <p:fileDownload value="#{dataUploadController.getTemplateForItemFeeUpload()}" />
+                        </p:commandButton>
 
                     </h:form>
                     <p>Please use xlsx file format. the xls format is NOT supported.</p>

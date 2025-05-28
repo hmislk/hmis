@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.membership;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.PaymentMethod;
@@ -48,6 +49,8 @@ public class PaymentSchemeController implements Serializable {
     private PaymentSchemeFacade ejbFacade;
     @EJB
     AllowedPaymentMethodFacade allowedPaymentMethodFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     MembershipScheme membershipScheme;
     AllowedPaymentMethod paymentSchemeAllowedPaymentMethod;
     List<PaymentScheme> selectedItems;
@@ -93,7 +96,13 @@ public class PaymentSchemeController implements Serializable {
         this.membershipScheme = membershipScheme;
     }
 
+    @Deprecated // Use method with the same name in the Payment Service
     public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+        return checkPaymentMethodError(paymentMethod, paymentMethodData, null, null);
+    }
+
+    @Deprecated // Use method with the same name in the Payment Service
+    public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Double cashPaid) {
         if (paymentMethod == PaymentMethod.Cheque) {
             if (paymentMethodData.getCheque().getInstitution() == null
                     || paymentMethodData.getCheque().getNo() == null
@@ -126,6 +135,21 @@ public class PaymentSchemeController implements Serializable {
                     || paymentMethodData.getEwallet().getNo() == null) {
                 JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
                 return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill", true)) {
+            if (paymentMethod == PaymentMethod.Cash) {
+                if (cashPaid != null && netTotal != null) {
+                    if (cashPaid == 0.0) {
+                        JsfUtil.addErrorMessage("Please enter the paid amount");
+                        return true;
+                    }
+                    if (cashPaid < netTotal) {
+                        JsfUtil.addErrorMessage("Please select tendered amount correctly");
+                        return true;
+                    }
+                }
             }
         }
         return false;

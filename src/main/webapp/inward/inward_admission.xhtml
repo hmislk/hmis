@@ -286,16 +286,28 @@
                                             </p:tabView>
                                         </p:panel>
                                     </div>
-                                        <p:panel header="Additonal Info" style="margin-top: 10px;">
-                                            <h:panelGrid id="ad1" columns="1" class="my-1 w-100" >
-                                                <h:outputLabel for="acPrimRes" value="Primary Reason"/>
-                                                <p:autoComplete id="acPrimRes" forceSelection="true" placeholder="Search &amp; select the Reason"
-                                                                value="#{admissionController.current.primaryReason}"
-                                                                completeMethod="#{symptomController.completeSymptom}" var="myItem"
-                                                                class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"
-                                                                itemValue="#{myItem}" itemLabel="#{myItem.name}" />
-                                            </h:panelGrid>
-                                        </p:panel>
+                                    <p:panel header="Additonal Info" style="margin-top: 10px;">
+                                        <h:panelGrid id="ad1" columns="1" class="my-1 w-100" >
+                                            <h:outputLabel for="acPrimRes" value="Primary Reason"/>
+                                            <p:autoComplete id="acPrimRes" forceSelection="true" placeholder="Search &amp; select a Referring Method"
+                                                            value="#{admissionController.current.primaryReason}"
+                                                            completeMethod="#{symptomController.completeSymptom}" var="myItem"
+                                                            class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"
+                                                            itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                            <h:outputLabel for="acRefMeth" value="Referred From" rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}"/>
+                                            <p:selectOneMenu id="acRefMeth" value="#{admissionController.current.referringMethod}" editable="false" filter="true" 
+                                                             placeholder="Search &amp; select a Referring Method" filterMatchMode="contains" styleClass="w-100" required="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Require Referred From in Patient Admission')}" 
+                                                             requiredMessage="Need a Referring Method " class="w-100 form-control" 
+                                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}">
+                                                <f:selectItem itemLabel="Search &amp; select a Method" itemValue="" noSelectionOption="true"/>
+                                                <f:selectItems 
+                                                    value="#{configOptionApplicationController.getListOfCustomOptions('Patient Admit - Referred From Methods')}" 
+                                                    var="option" 
+                                                    itemLabel="#{option}" 
+                                                    itemValue="#{option}"/>
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
+                                    </p:panel>
                                 </div>
                             </div>
                         </div>
@@ -322,7 +334,7 @@
                                         <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
                                         <p:badge value="#{admissionController.lastCreditCompany.name}"
                                                  rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
-                                        />
+                                                 />
 
                                         <p:outputLabel value="Payment Method*"/>
                                         <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >

@@ -216,8 +216,32 @@
                                                         </div>
                                                     </div>
                                                 </f:facet>
+                                                
                                                 <div class="row">
 
+                                                    <h:panelGroup  rendered="#{billBhtController.inwardItemDepartments ne null}" id="departments">
+                                                        <div class="row mt-1 mb-2 mx-1">
+                                                            <div class="col-3"></div>
+                                                            <div class="col-9">
+                                                                <div class="row" >
+                                                                    <div class="col-md-12" >
+                                                                        <ui:repeat  value="#{billBhtController.inwardItemDepartments}" var="dept">
+                                                                            <p:commandButton 
+                                                                                value="#{dept.name}"
+                                                                                process="@this"
+                                                                                update=":#{p:resolveFirstComponentWithId('itm',view).clientId} :#{p:resolveFirstComponentWithId('departments',view).clientId}"
+                                                                                action="#{billBhtController.departmentChanged}"
+                                                                                class="m-1 #{dept eq billBhtController.selectedInwardItemDepartment ? 'ui-button-success' : 'ui-button-primary'}">
+                                                                                <f:setPropertyActionListener value="#{dept}" target="#{billBhtController.selectedInwardItemDepartment}"></f:setPropertyActionListener>
+                                                                            </p:commandButton>
+                                                                        </ui:repeat>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    
                                                     <div class="row mt-1 mb-2 mx-1">
                                                         <div class="col-3">
                                                             <h:outputLabel value="Investigation or Service"/>
@@ -231,7 +255,7 @@
                                                                 filterMatchMode="contains"
                                                                 class="w-100"
                                                                 converter="itemLightConverter">
-                                                                <f:selectItems value="#{billBhtController.inwardItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
+                                                                <f:selectItems value="#{billBhtController.departmentInwardItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
                                                                 <p:column>
                                                                     <h:outputLabel value="#{t.name}"/>
                                                                 </p:column>
@@ -530,7 +554,7 @@
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>
-                                                    
+
                                                     <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                             <print:five_eight_opd_bill bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>

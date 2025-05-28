@@ -777,6 +777,14 @@ public class GrnController implements Serializable {
         return freeTotal;
     }
 
+    public double calFreeQuantitySaleValue(Bill b) {
+        double freeTotal = 0.0;
+        for (BillItem bi : b.getBillItems()) {
+            freeTotal = freeTotal + (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getRetailRate());
+        }
+        return freeTotal;
+    }
+
     private void updateBalanceForGrn(Bill grn) {
         if (grn == null) {
             return;
@@ -983,7 +991,8 @@ public class GrnController implements Serializable {
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            double remains = i.getQtyInUnit() - getPharmacyCalculation().calQtyInTwoSql(i);
+            double calculatedReturns = getPharmacyCalculation().calQtyInTwoSql(i);
+            double remains = Math.abs(i.getQtyInUnit()) - Math.abs(calculatedReturns);
             double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
 
             if (remains > 0 || remainFreeQty > 0) {
