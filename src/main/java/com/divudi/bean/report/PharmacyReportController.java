@@ -2596,6 +2596,7 @@ public class PharmacyReportController implements Serializable {
             calculateStockCorrection();
             calculateGrnCashAndCredit();
             calOther();
+            calculateClosingStock();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
@@ -2640,9 +2641,21 @@ public class PharmacyReportController implements Serializable {
             calBhtIssueValue(baseQuery, new HashMap<>(commonParams));
             calSaleCreditCard(baseQuery, new HashMap<>(commonParams));
             calSaleCash(baseQuery, new HashMap<>(commonParams));
+            calculatedClosingStockValue();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculatedClosingStockValue() {
+        try {
+            double total = this.cogs.values().stream().mapToDouble(Double::doubleValue).sum();
+            cogs.put("Calculated Closing Stock Value", total);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2664,6 +2677,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("ERROR", -1.0);
         }
     }
+
     private void calSaleCreditCard(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
@@ -2964,6 +2978,50 @@ public class PharmacyReportController implements Serializable {
 
             Double totalOpeningStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
             cogs.put("OPENING STOCK VALUE", totalOpeningStockValue != null ? totalOpeningStockValue : 0.0);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+    private void calculateClosingStock() {
+        try {
+            StringBuilder jpql = new StringBuilder();
+            Map<String, Object> params = new HashMap<>();
+
+            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.retailsaleRate) ")
+                    .append("FROM StockHistory sh ")
+                    .append("WHERE sh.retired = false ")
+                    .append("AND sh.id IN (")
+                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                    .append("  WHERE sh2.retired = false ")
+                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
+                    .append("  AND sh2.createdAt < :et ");
+
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("et", CommonFunctions.getStartOfDay(toDate));
+
+            // Subquery filters
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+            if (amp != null) {
+                addFilter(jpql, params, "sh2.itemBatch.item", "itm", amp);
+            }
+
+            jpql.append("  GROUP BY sh2.itemBatch.item ")
+                    .append(") ");
+
+            addFilter(jpql, params, "sh.institution", "ins", institution);
+            addFilter(jpql, params, "sh.department.site", "sit", site);
+            addFilter(jpql, params, "sh.department", "dep", department);
+            if (amp != null) {
+                addFilter(jpql, params, "sh.itemBatch.item", "itm", amp);
+            }
+
+            Double totalClosingStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            cogs.put("Closing Stock Value", totalClosingStockValue != null ? totalClosingStockValue : 0.0);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
