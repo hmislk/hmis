@@ -2604,12 +2604,12 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private double calTotal(StringBuilder query, Map<String, Object> params) {
+    private double executeQueryAndCalculateTotal(StringBuilder query, Map<String, Object> params) {
         try {
             return facade.findDoubleByJpql(query.toString(), params, TemporalType.TIMESTAMP);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            JsfUtil.addErrorMessage(e, "Error in executing aggregate query");
             return -1.0;
         }
     }
@@ -2683,7 +2683,7 @@ public class PharmacyReportController implements Serializable {
             params.put("pm", PaymentMethod.Cash);
             jpql.append("ORDER BY sh2.createdAt");
 
-            double totalSaleCash = calTotal(jpql, params);
+            double totalSaleCash = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("Sale Cash", totalSaleCash);
 
         } catch (Exception e) {
@@ -2701,7 +2701,7 @@ public class PharmacyReportController implements Serializable {
             params.put("pm", PaymentMethod.Card);
             jpql.append("ORDER BY sh2.createdAt");
 
-            double totalSaleCreditCard = calTotal(jpql, params);
+            double totalSaleCreditCard = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("Sale Credit Card", totalSaleCreditCard);
 
         } catch (Exception e) {
@@ -2718,7 +2718,7 @@ public class PharmacyReportController implements Serializable {
             params.put("Doctype", BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             jpql.append("ORDER BY sh2.createdAt");
 
-            double totalBhtIssueValue = calTotal(jpql, params);
+            double totalBhtIssueValue = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("BHT Issue Value", totalBhtIssueValue);
 
         } catch (Exception e) {
@@ -2741,7 +2741,7 @@ public class PharmacyReportController implements Serializable {
             params.put("pm", creditTypePaymentMethods);
             jpql.append("ORDER BY sh2.createdAt");
 
-            double totalSaleCreditValue = calTotal(jpql, params);
+            double totalSaleCreditValue = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("Sale Credit Value", totalSaleCreditValue);
 
         } catch (Exception e) {
@@ -2758,7 +2758,7 @@ public class PharmacyReportController implements Serializable {
             jpql.append("ORDER BY sh2.createdAt");
             params.put("Doctype", BillType.PharmacyTransferIssue);
 
-            double totalTransferIssueValue = calTotal(jpql, params);
+            double totalTransferIssueValue = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("Transfer Issue Value", totalTransferIssueValue);
 
         } catch (Exception e) {
@@ -2775,7 +2775,7 @@ public class PharmacyReportController implements Serializable {
             jpql.append("ORDER BY sh2.createdAt");
             params.put("Doctype", BillType.PharmacyTransferReceive);
 
-            double totalTransferReceiveValue = calTotal(jpql, params);
+            double totalTransferReceiveValue = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("Transfer Receive Value", totalTransferReceiveValue);
 
         } catch (Exception e) {
@@ -2801,7 +2801,7 @@ public class PharmacyReportController implements Serializable {
             jpql.append("ORDER BY sh2.createdAt");
             params.put("Doctype", billTypeAtomics);
 
-            double totalPurchaseReturn = calTotal(jpql, params);
+            double totalPurchaseReturn = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("Purchase Return", totalPurchaseReturn);
 
         } catch (Exception e) {
@@ -2818,7 +2818,7 @@ public class PharmacyReportController implements Serializable {
             jpql.append("ORDER BY sh2.createdAt");
             params.put("conDoctype", BillType.PharmacyIssue);
 
-            double totalConsumption = calTotal(jpql, params);
+            double totalConsumption = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("Stock Consumption", totalConsumption);
 
         } catch (Exception e) {
@@ -2840,7 +2840,7 @@ public class PharmacyReportController implements Serializable {
             jpql.append("ORDER BY sh2.createdAt");
             params.put("ipDoctype", billTypeAtomics);
 
-            double totalReturnsIp = calTotal(jpql, params);
+            double totalReturnsIp = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("Drug Return IP", totalReturnsIp);
 
         } catch (Exception e) {
@@ -2861,7 +2861,7 @@ public class PharmacyReportController implements Serializable {
             jpql.append("ORDER BY sh2.createdAt");
             params.put("opDoctype", billTypeAtomics);
 
-            double totalReturnsOp = calTotal(jpql, params);
+            double totalReturnsOp = executeQueryAndCalculateTotal(jpql, params);
             cogs.put("Drug Return Op", totalReturnsOp);
 
         } catch (Exception e) {
