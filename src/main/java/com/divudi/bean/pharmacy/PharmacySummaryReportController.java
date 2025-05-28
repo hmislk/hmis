@@ -842,7 +842,6 @@ public class PharmacySummaryReportController implements Serializable {
             List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             pharmacyBundle = new PharmacyBundle(pbis);
             pharmacyBundle.groupSaleDetailsByItems();
-            bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {
