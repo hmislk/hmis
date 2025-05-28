@@ -578,7 +578,7 @@ public class LaboratoryManagementController implements Serializable {
         selectAll = false;
     }
 
-    public void nonReciecedSampleList() {
+    public void nonReceivedSampleList() {
         selectedPatientSamples = new ArrayList();
         List<PatientInvestigationStatus> status = new ArrayList();
         status.add(PatientInvestigationStatus.SAMPLE_SENT);
