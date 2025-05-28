@@ -2638,9 +2638,28 @@ public class PharmacyReportController implements Serializable {
             calTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
             calSaleCreditValue(baseQuery, new HashMap<>(commonParams));
             calBhtIssueValue(baseQuery, new HashMap<>(commonParams));
+            calSaleCreditCard(baseQuery, new HashMap<>(commonParams));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calSaleCreditCard(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod = :pm ");
+            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            params.put("pm", PaymentMethod.Card);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalSaleCreditCard = calTotal(jpql, params);
+            cogs.put("Sale Credit Card", totalSaleCreditCard);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
             cogs.put("ERROR", -1.0);
         }
     }
