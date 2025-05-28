@@ -2687,7 +2687,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("Sale Cash", totalSaleCash);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating sale cash value");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2705,7 +2705,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("Sale Credit Card", totalSaleCreditCard);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2722,7 +2722,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("BHT Issue Value", totalBhtIssueValue);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating BHT issues");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2745,7 +2745,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("Sale Credit Value", totalSaleCreditValue);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit value");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2762,7 +2762,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("Transfer Issue Value", totalTransferIssueValue);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating transfer issue");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2779,7 +2779,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("Transfer Receive Value", totalTransferReceiveValue);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating tranfer receive");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2805,7 +2805,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("Purchase Return", totalPurchaseReturn);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2822,7 +2822,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("Stock Consumption", totalConsumption);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating stock consumption");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2844,7 +2844,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("Drug Return IP", totalReturnsIp);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating drug return IP");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -3013,7 +3013,7 @@ public class PharmacyReportController implements Serializable {
             totalClosingStockValueByDatabaseQuery = totalClosingStockValue;
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
+            JsfUtil.addErrorMessage(e, "Error in calculate closing Stock");
             cogs.put("ERROR", -1.0);
         }
     }
