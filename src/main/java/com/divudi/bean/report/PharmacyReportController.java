@@ -2679,8 +2679,8 @@ public class PharmacyReportController implements Serializable {
             jpql.append("ORDER BY sh2.createdAt");
             params.put("Doctype", billTypes);
 
-            double totalPurchaseReturn = calTotal(jpql, params);
-            cogs.put("Transfer Issue Value", totalPurchaseReturn);
+            double totalTransferIssueValue = calTotal(jpql, params);
+            cogs.put("Transfer Issue Value", totalTransferIssueValue);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating IP returns");
@@ -2698,8 +2698,8 @@ public class PharmacyReportController implements Serializable {
             jpql.append("ORDER BY sh2.createdAt");
             params.put("Doctype", billTypes);
 
-            double totalPurchaseReturn = calTotal(jpql, params);
-            cogs.put("Transfer Receive Value", totalPurchaseReturn);
+            double totalTransferReceiveValue = calTotal(jpql, params);
+            cogs.put("Transfer Receive Value", totalTransferReceiveValue);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating IP returns");
