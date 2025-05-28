@@ -41,6 +41,7 @@ public class ServiceSession extends Item implements Serializable {
     int maxNo;
 
     boolean continueNumbers;
+    private boolean acceptOnlineBookings = true;
 
     @OneToOne
     ServiceSession afterSession;
@@ -103,6 +104,14 @@ public class ServiceSession extends Item implements Serializable {
     private String dataEntryForms;
     @Lob
     private String specialNotice;
+
+    public boolean isAcceptOnlineBookings() {
+        return acceptOnlineBookings;
+    }
+
+    public void setAcceptOnlineBookings(boolean acceptOnlineBookings) {
+        this.acceptOnlineBookings = acceptOnlineBookings;
+    }
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;

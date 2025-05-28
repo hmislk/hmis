@@ -10,6 +10,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,11 +26,13 @@ import javax.persistence.Transient;
  * @author safrin
  */
 @Entity
-@Table(
-    indexes = {
-        @Index(name = "idx_stock_department", columnList = "department"),
-        @Index(name = "idx_stock_stock", columnList = "stock")
-    }
+@Table(name = "stock",
+        indexes = {
+            @Index(name = "idx_dept_stock_itemname", columnList = "DEPARTMENT_ID, STOCK, ITEMNAME"),
+            @Index(name = "idx_dept_stock_code", columnList = "DEPARTMENT_ID, STOCK, CODE"),
+            @Index(name = "idx_dept_stock_barcode", columnList = "DEPARTMENT_ID, STOCK, BARCODE"),
+            @Index(name = "idx_dept_stock_longcode", columnList = "DEPARTMENT_ID, STOCK, LONGCODE")
+        }
 )
 public class Stock implements Serializable, RetirableEntity {
 
@@ -37,7 +40,21 @@ public class Stock implements Serializable, RetirableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    // ChatGPT contributed - 2025-05
+    @Column(name = "ITEMNAME", length = 100)
+    private String itemName;
+
+    @Column(name = "BARCODE", length = 30)
+    private String barcode;
+
+    @Column(name = "LONGCODE")
+    private Long longCode;
+
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date dateOfExpire;
+
     private Double stock = 0.0;
+
     @Transient
     private double calculated = 0;
     @ManyToOne
@@ -46,9 +63,11 @@ public class Stock implements Serializable, RetirableEntity {
     private Department department;
     @ManyToOne
     Staff staff;
+    @Column(name = "CODE")
     String code;
     private Long startBarcode;
     private Long endBarcode;
+    private double retailsaleRate;
 
     private boolean retired;
 
@@ -61,32 +80,8 @@ public class Stock implements Serializable, RetirableEntity {
     private String retireComments;
     private String stockLocator;
 
-//    @ManyToOne
-//    Stock parentStock;
-//
-//    @OneToMany(mappedBy = "parentStock", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    List<Stock> childStocks;
-
     @Transient
     private Double transItemStockQty;
-
-
-
-//    public List<Stock> getChildStocks() {
-//        return childStocks;
-//    }
-//
-//    public void setChildStocks(List<Stock> childStocks) {
-//        this.childStocks = childStocks;
-//    }
-//
-//    public Stock getParentStock() {
-//        return parentStock;
-//    }
-//
-//    public void setParentStock(Stock parentStock) {
-//        this.parentStock = parentStock;
-//    }
 
     public String getCode() {
         return code;
@@ -231,6 +226,46 @@ public class Stock implements Serializable, RetirableEntity {
 
     public void setStockLocator(String stockLocator) {
         this.stockLocator = stockLocator;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
+
+    public Long getLongCode() {
+        return longCode;
+    }
+
+    public void setLongCode(Long longCode) {
+        this.longCode = longCode;
+    }
+
+    public Date getDateOfExpire() {
+        return dateOfExpire;
+    }
+
+    public void setDateOfExpire(Date dateOfExpire) {
+        this.dateOfExpire = dateOfExpire;
+    }
+
+    public double getRetailsaleRate() {
+        return retailsaleRate;
+    }
+
+    public void setRetailsaleRate(double retailsaleRate) {
+        this.retailsaleRate = retailsaleRate;
     }
 
 }

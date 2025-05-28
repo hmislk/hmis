@@ -95,45 +95,43 @@
                         </p:column>
                         <p:column headerText="0-30" width="30rem">
                             <p:panel style="float: top;">
-                                <p:dataTable value="#{i.value1PatientEncounters}" var="p1">
+                                <p:dataTable value="#{i.value1Bills}" var="b">
                                     <p:column>
-                                        <p:commandLink id="colp1Detail" value="#{p1.bhtNo}"
+                                        <p:commandLink id="colp1Detail" value="#{b.patientEncounter.bhtNo}"
                                                        action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
-                                            <f:setPropertyActionListener value="#{p1}"
+                                            <f:setPropertyActionListener value="#{b.patientEncounter}"
                                                                          target="#{bhtSummeryFinalizedController.patientEncounter}"/>
                                         </p:commandLink>
                                         <p:tooltip for="colp1Detail">
-                                            <h:outputLabel value="Duration Days : #{p1.transDayCount}">
+                                            <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">
                                             </h:outputLabel>
                                             <br/>
-                                            <h:outputLabel value="Ploicy Number : #{p1.policyNo}">
+                                            <h:outputLabel value="Ploicy Number : #{b.patientEncounter.policyNo}">
                                             </h:outputLabel>
                                             <br/>
-                                            <h:outputLabel value="Referance Number : #{p1.referanceNo}">
+                                            <h:outputLabel value="Referance Number : #{b.patientEncounter.referanceNo}">
                                             </h:outputLabel>
                                             <br/>
-                                            <h:outputLabel value="Credit Limit : #{p1.creditLimit}">
+                                            <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">
                                             </h:outputLabel>
                                         </p:tooltip>
                                     </p:column>
                                     <p:column>
-                                        #{p1.patient.person.name}
+                                        #{b.patientEncounter.patient.person.name}
                                     </p:column>
                                     <p:column>
-                                        <h:outputLabel value="#{p1.dateOfAdmission}">
+                                        <h:outputLabel value="#{b.patientEncounter.dateOfAdmission}">
                                             <f:convertDateTime pattern="dd/MM/yy"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
-                                        <h:outputLabel value="#{p1.dateOfDischarge}">
+                                        <h:outputLabel value="#{b.patientEncounter.dateOfDischarge}">
                                             <f:convertDateTime pattern="dd/MM/yy"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
-                                        <!--                                            <h:outputLabel-->
-                                        <!--                                                value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                         <h:outputLabel
-                                                value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
+                                                value="#{b.netTotal - b.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <f:facet name="footer">
@@ -147,45 +145,43 @@
                         </p:column>
                         <p:column headerText="30-60" style="text-align: left;" width="30rem">
 
-                            <p:dataTable value="#{i.value2PatientEncounters}" var="p1">
+                            <p:dataTable value="#{i.value2Bills}" var="b">
                                 <p:column>
-                                    <p:commandLink id="colp2Detail" value="#{p1.bhtNo}"
+                                    <p:commandLink id="colp2Detail" value="#{b.patientEncounter.bhtNo}"
                                                    action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
-                                        <f:setPropertyActionListener value="#{p1}"
+                                        <f:setPropertyActionListener value="#{b.patientEncounter}"
                                                                      target="#{bhtSummeryFinalizedController.patientEncounter}"/>
                                     </p:commandLink>
                                     <p:tooltip for="colp2Detail">
-                                        <h:outputLabel value="Duration Days : #{p1.transDayCount}">
+                                        <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Ploicy Number : #{p1.policyNo}">
+                                        <h:outputLabel value="Ploicy Number : #{b.patientEncounter.policyNo}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Referance Number : #{p1.referanceNo}">
+                                        <h:outputLabel value="Referance Number : #{b.patientEncounter.referanceNo}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Credit Limit : #{p1.creditLimit}">
+                                        <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">
                                         </h:outputLabel>
                                     </p:tooltip>
                                 </p:column>
                                 <p:column>
-                                    #{p1.patient.person.name}
+                                    #{b.patientEncounter.patient.person.name}
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{p1.dateOfAdmission}">
+                                    <h:outputLabel value="#{b.patientEncounter.dateOfAdmission}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{p1.dateOfDischarge}">
+                                    <h:outputLabel value="#{b.patientEncounter.dateOfDischarge}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <!--                                        <h:outputLabel-->
-                                    <!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                     <h:outputLabel
-                                            value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
+                                            value="#{b.netTotal - b.paidAmount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -197,45 +193,43 @@
                             </p:dataTable>
                         </p:column>
                         <p:column headerText="60-90" style="text-align: left;" width="30rem">
-                            <p:dataTable value="#{i.value3PatientEncounters}" var="p1">
+                            <p:dataTable value="#{i.value3Bills}" var="b">
                                 <p:column>
-                                    <p:commandLink id="colp3Detail" value="#{p1.bhtNo}"
+                                    <p:commandLink id="colp3Detail" value="#{b.patientEncounter.bhtNo}"
                                                    action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
-                                        <f:setPropertyActionListener value="#{p1}"
+                                        <f:setPropertyActionListener value="#{b.patientEncounter}"
                                                                      target="#{bhtSummeryFinalizedController.patientEncounter}"/>
                                     </p:commandLink>
                                     <p:tooltip for="colp3Detail">
-                                        <h:outputLabel value="Duration Days : #{p1.transDayCount}">
+                                        <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Ploicy Number : #{p1.policyNo}">
+                                        <h:outputLabel value="Ploicy Number : #{b.patientEncounter.policyNo}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Referance Number : #{p1.referanceNo}">
+                                        <h:outputLabel value="Referance Number : #{b.patientEncounter.referanceNo}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Credit Limit : #{p1.creditLimit}">
+                                        <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">
                                         </h:outputLabel>
                                     </p:tooltip>
                                 </p:column>
                                 <p:column>
-                                    #{p1.patient.person.name}
+                                    #{b.patientEncounter.patient.person.name}
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{p1.dateOfAdmission}">
+                                    <h:outputLabel value="#{b.patientEncounter.dateOfAdmission}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{p1.dateOfDischarge}">
+                                    <h:outputLabel value="#{b.patientEncounter.dateOfDischarge}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <!--                                        <h:outputLabel-->
-                                    <!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                     <h:outputLabel
-                                            value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
+                                            value="#{b.netTotal - b.paidAmount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -250,45 +244,43 @@
                             <h:outputLabel value="#{i.value4}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <p:dataTable value="#{i.value4PatientEncounters}" var="p1">
+                            <p:dataTable value="#{i.value4Bills}" var="b">
                                 <p:column>
-                                    <p:commandLink id="colp4Detail" value="#{p1.bhtNo}"
+                                    <p:commandLink id="colp4Detail" value="#{b.patientEncounter.bhtNo}"
                                                    action="#{bhtSummeryFinalizedController.createBhtBillFinalized}">
-                                        <f:setPropertyActionListener value="#{p1}"
+                                        <f:setPropertyActionListener value="#{b.patientEncounter}"
                                                                      target="#{bhtSummeryFinalizedController.patientEncounter}"/>
                                     </p:commandLink>
                                     <p:tooltip for="colp4Detail">
-                                        <h:outputLabel value="Duration Days : #{p1.transDayCount}">
+                                        <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Ploicy Number : #{p1.policyNo}">
+                                        <h:outputLabel value="Ploicy Number : #{b.patientEncounter.policyNo}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Referance Number : #{p1.referanceNo}">
+                                        <h:outputLabel value="Referance Number : #{b.patientEncounter.referanceNo}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Credit Limit : #{p1.creditLimit}">
+                                        <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">
                                         </h:outputLabel>
                                     </p:tooltip>
                                 </p:column>
                                 <p:column>
-                                    #{p1.patient.person.name}
+                                    #{b.patientEncounter.patient.person.name}
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{p1.dateOfAdmission}">
+                                    <h:outputLabel value="#{b.patientEncounter.dateOfAdmission}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{p1.dateOfDischarge}">
+                                    <h:outputLabel value="#{b.patientEncounter.dateOfDischarge}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <!--                                        <h:outputLabel-->
-                                    <!--                                            value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}">-->
                                     <h:outputLabel
-                                            value="#{p1.creditUsedAmount + p1.creditPaidAmount}">
+                                            value="#{b.netTotal - b.paidAmount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">

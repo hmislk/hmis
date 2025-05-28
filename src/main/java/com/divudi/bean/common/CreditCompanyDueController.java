@@ -9,6 +9,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.dataStructure.DealerDueDetailRow;
+import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
 import com.divudi.core.data.dataStructure.InstitutionBills;
 import com.divudi.core.data.dataStructure.InstitutionEncounters;
 import com.divudi.core.data.table.String1Value5;
@@ -19,6 +20,7 @@ import com.divudi.core.entity.*;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 
 import java.io.OutputStream;
 
@@ -27,6 +29,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -37,13 +40,12 @@ import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 
 import com.itextpdf.text.*;
+import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -55,6 +57,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 @Named
 @SessionScoped
 public class CreditCompanyDueController implements Serializable {
+
+    @EJB
+    private CreditBean creditBean;
+    @EJB
+    BillService billService;
 
     private Date fromDate;
     private Date toDate;
@@ -75,6 +82,8 @@ public class CreditCompanyDueController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
 
     @EJB
     AdmissionFacade admissionFacade;
@@ -84,12 +93,64 @@ public class CreditCompanyDueController implements Serializable {
     double finalPaidTotalPatient;
     double finalTransPaidTotal;
     double finalTransPaidTotalPatient;
+    private double payableByPatient;
+    private double payableByCompany;
+    private double gopAmount;
 
     private Institution institutionOfDepartment;
     private Department department;
     private Institution site;
 
+    private String billType;
+
+    Map<PatientEncounter, List<Bill>> billPatientEncounterMap = new HashMap<>();
+    private Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap;
+
+    private int rowCounter = 0;
+
     private List<Bill> bills = new ArrayList<>();
+
+    Map<Institution, Double> instituteGopMap = new HashMap<>();
+    Map<Institution, Double> institutPaidByCompanyMap = new HashMap<>();
+    Map<Institution, Double> institutePayableByCompanyMap = new HashMap<>();
+
+    Map<Institution, List<InstitutionBillEncounter>> billInstitutionEncounterMap;
+
+    public Map<Institution, List<InstitutionBillEncounter>> getBillInstitutionEncounterMap() {
+        return billInstitutionEncounterMap;
+    }
+
+    public void setBillInstitutionEncounterMap(Map<Institution, List<InstitutionBillEncounter>> billInstitutionEncounterMap) {
+        if (billInstitutionEncounterMap == null) {
+            billInstitutionEncounterMap = new HashMap<>();
+        }
+
+        this.billInstitutionEncounterMap = billInstitutionEncounterMap;
+    }
+
+    public Map<Institution, Double> getInstituteGopMap() {
+        return instituteGopMap;
+    }
+
+    public void setInstituteGopMap(Map<Institution, Double> instituteGopMap) {
+        this.instituteGopMap = instituteGopMap;
+    }
+
+    public Map<Institution, Double> getInstitutPaidByCompanyMap() {
+        return institutPaidByCompanyMap;
+    }
+
+    public void setInstitutPaidByCompanyMap(Map<Institution, Double> institutPaidByCompanyMap) {
+        this.institutPaidByCompanyMap = institutPaidByCompanyMap;
+    }
+
+    public Map<Institution, Double> getInstitutePayableByCompanyMap() {
+        return institutePayableByCompanyMap;
+    }
+
+    public void setInstitutePayableByCompanyMap(Map<Institution, Double> institutePayableByCompanyMap) {
+        this.institutePayableByCompanyMap = institutePayableByCompanyMap;
+    }
 
     public List<Bill> getBills() {
         return bills;
@@ -105,6 +166,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
         this.patientEncounters = patientEncounters;
+    }
+
+    public EncounterCreditCompanyFacade getEncounterCreditCompanyFacade() {
+        return encounterCreditCompanyFacade;
+    }
+
+    public void setEncounterCreditCompanyFacade(EncounterCreditCompanyFacade encounterCreditCompanyFacade) {
+        this.encounterCreditCompanyFacade = encounterCreditCompanyFacade;
     }
 
     public Institution getInstitutionOfDepartment() {
@@ -131,6 +200,58 @@ public class CreditCompanyDueController implements Serializable {
         this.site = site;
     }
 
+    public int nextRowCounter() {
+        return ++rowCounter;
+    }
+
+    public void resetCounter() {
+        rowCounter = 0;
+    }
+
+    public Map<PatientEncounter, List<Bill>> getBillPatientEncounterMap() {
+        return billPatientEncounterMap;
+    }
+
+    public void setBillPatientEncounterMap(Map<PatientEncounter, List<Bill>> billPatientEncounterMap) {
+        this.billPatientEncounterMap = billPatientEncounterMap;
+    }
+
+    public Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanyMap() {
+        if (encounterCreditCompanyMap == null) {
+            encounterCreditCompanyMap = new HashMap<>();
+        }
+
+        return encounterCreditCompanyMap;
+    }
+
+    public void setEncounterCreditCompanyMap(Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap) {
+        this.encounterCreditCompanyMap = encounterCreditCompanyMap;
+    }
+
+    public double getPayableByPatient() {
+        return payableByPatient;
+    }
+
+    public double getPayableByCompany() {
+        return payableByCompany;
+    }
+
+    public void setPayableByCompany(double payableByCompany) {
+        this.payableByCompany = payableByCompany;
+    }
+
+    public double getGopAmount() {
+        return gopAmount;
+    }
+
+    public void setGopAmount(double gopAmount) {
+        this.gopAmount = gopAmount;
+    }
+
+    public void setPayableByPatient(double payableByPatient) {
+        this.payableByPatient = payableByPatient;
+    }
+
     public void makeNull() {
         fromDate = null;
         toDate = null;
@@ -141,17 +262,10 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createAgeTable() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         makeNull();
         Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getCreditCompanyFromBills(true);
-
+        List<Institution> list = getCreditBean().getCreditCompanyFromBillsFromBillTypeAtomic(true);
         setIns.addAll(list);
-
         creditCompanyAge = new ArrayList<>();
         for (Institution ins : setIns) {
             if (ins == null) {
@@ -261,25 +375,50 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
+    //    public void createInwardAgeTableWithFilters() {
+//        Date startTime = new Date();
+//
+//        makeNull();
+//        Set<Institution> setIns = new HashSet<>();
+//
+//        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
+//                true, PaymentMethod.Credit, institutionOfDepartment, department, site);
+//        setIns.addAll(list);
+//
+//        creditCompanyAge = new ArrayList<>();
+//        for (Institution ins : setIns) {
+//            if (ins == null) {
+//                continue;
+//            }
+//
+//            String1Value5 newRow = new String1Value5();
+//            newRow.setInstitution(ins);
+//            setInwardValues(ins, newRow, PaymentMethod.Credit, institutionOfDepartment, department, site);
+//
+//            if (newRow.getValue1() != 0
+//                    || newRow.getValue2() != 0
+//                    || newRow.getValue3() != 0
+//                    || newRow.getValue4() != 0) {
+//                creditCompanyAge.add(newRow);
+//            }
+//        }
+//    }
     public void createInwardAgeTableWithFilters() {
         Date startTime = new Date();
 
         makeNull();
-        Set<Institution> setIns = new HashSet<>();
 
-        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
-                true, PaymentMethod.Credit, institutionOfDepartment, department, site);
-        setIns.addAll(list);
+        Map<Institution, List<Bill>> institutionMap = getCreditCompanyBillsGroupedByCreditCompany();
 
         creditCompanyAge = new ArrayList<>();
-        for (Institution ins : setIns) {
+        for (Institution ins : institutionMap.keySet()) {
             if (ins == null) {
                 continue;
             }
 
             String1Value5 newRow = new String1Value5();
             newRow.setInstitution(ins);
-            setInwardValues(ins, newRow, PaymentMethod.Credit, institutionOfDepartment, department, site);
+            setInwardValues(newRow, institutionMap.get(ins));
 
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
@@ -288,6 +427,30 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
+    }
+
+    private Map<Institution, List<Bill>> getCreditCompanyBillsGroupedByCreditCompany() {
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill FROM Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.billTypeAtomic IN :bts";
+
+        parameters.put("br", true);
+        parameters.put("bts", bts);
+
+        if (institutionOfDepartment != null) {
+            jpql += " AND bill.institution = :ins";
+            parameters.put("ins", institutionOfDepartment);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql, parameters);
+
+        return bills.stream()
+                .filter(b -> b.getCreditCompany() != null)
+                .collect(Collectors.groupingBy(Bill::getCreditCompany));
     }
 
     public void exportCreditCompanyDueAgeDetailToExcel() {
@@ -304,42 +467,83 @@ public class CreditCompanyDueController implements Serializable {
             XSSFCellStyle amountStyle = workbook.createCellStyle();
             amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
 
-            XSSFCellStyle boldStyle = workbook.createCellStyle();
             XSSFFont boldFont = workbook.createFont();
             boldFont.setBold(true);
+
+            XSSFCellStyle boldStyle = workbook.createCellStyle();
             boldStyle.setFont(boldFont);
 
-            Row headerRow = sheet.createRow(rowIndex++);
-            headerRow.createCell(0).setCellValue("Credit Company");
-            headerRow.createCell(1).setCellValue("0-30 Days");
-            headerRow.createCell(2).setCellValue("30-60 Days");
-            headerRow.createCell(3).setCellValue("60-90 Days");
-            headerRow.createCell(4).setCellValue("90+ Days");
+            XSSFCellStyle boldStyleCentered = workbook.createCellStyle();
+            boldStyleCentered.setFont(boldFont);
+            boldStyleCentered.setAlignment(HorizontalAlignment.CENTER);
+            boldStyleCentered.setVerticalAlignment(VerticalAlignment.CENTER);
 
-            for (int i = 0; i <= 4; i++) {
-                headerRow.getCell(i).setCellStyle(boldStyle);
-            }
+            Row headerRow = sheet.createRow(rowIndex++);
+            Cell cell0 = headerRow.createCell(0);
+            cell0.setCellValue("Credit Company");
+            cell0.setCellStyle(boldStyle);
+
+            Cell cell1 = headerRow.createCell(1);
+            cell1.setCellValue("0-30 Days");
+            cell1.setCellStyle(boldStyleCentered);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 5));
+
+            Cell cell2 = headerRow.createCell(6);
+            cell2.setCellValue("30-60 Days");
+            cell2.setCellStyle(boldStyleCentered);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 6, 10));
+
+            Cell cell3 = headerRow.createCell(11);
+            cell3.setCellValue("60-90 Days");
+            cell3.setCellStyle(boldStyleCentered);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 11, 15));
+
+            Cell cell4 = headerRow.createCell(16);
+            cell4.setCellValue("90+ Days");
+            cell4.setCellStyle(boldStyleCentered);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 16, 20));
+
+            XSSFCellStyle mergedStyle = workbook.createCellStyle();
+            mergedStyle.cloneStyleFrom(amountStyle);
+            mergedStyle.setFont(boldFont);
+            mergedStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            mergedStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             for (String1Value5 i : getCreditCompanyAge()) {
                 Row row = sheet.createRow(rowIndex++);
                 row.createCell(0).setCellValue(i.getInstitution().getName());
+                row.getCell(0).setCellStyle(mergedStyle);
+
                 row.createCell(1).setCellValue(i.getValue1());
-                row.createCell(2).setCellValue(i.getValue2());
-                row.createCell(3).setCellValue(i.getValue3());
-                row.createCell(4).setCellValue(i.getValue4());
+                row.getCell(1).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 1, 5));
 
-                XSSFCellStyle mergedStyle = workbook.createCellStyle();
-                mergedStyle.cloneStyleFrom(amountStyle);
-                mergedStyle.setFont(boldFont);
+                row.createCell(6).setCellValue(i.getValue2());
+                row.getCell(6).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 6, 10));
 
-                for (int j = 0; j <= 4; j++) {
-                    row.getCell(j).setCellStyle(mergedStyle);
+                row.createCell(11).setCellValue(i.getValue3());
+                row.getCell(11).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 11, 15));
+
+                row.createCell(16).setCellValue(i.getValue4());
+                row.getCell(16).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 16, 20));
+
+                int maxRows = Math.max(
+                        Math.max(i.getValue1Bills().size(), i.getValue2Bills().size()),
+                        Math.max(i.getValue3Bills().size(), i.getValue4Bills().size())
+                );
+
+                for (int j = 0; j < maxRows; j++) {
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    dataRow.createCell(0).setCellValue(" ");
+
+                    insertBillCell(dataRow, i.getValue1Bills(), j, 1, amountStyle);
+                    insertBillCell(dataRow, i.getValue2Bills(), j, 6, amountStyle);
+                    insertBillCell(dataRow, i.getValue3Bills(), j, 11, amountStyle);
+                    insertBillCell(dataRow, i.getValue4Bills(), j, 16, amountStyle);
                 }
-
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue1PatientEncounters(), "0-30 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue2PatientEncounters(), "30-60 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue3PatientEncounters(), "60-90 Days");
-                rowIndex = exportInnerDataTable(sheet, rowIndex, i.getValue4PatientEncounters(), "90+ Days");
             }
 
             workbook.write(out);
@@ -349,24 +553,26 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    private int exportInnerDataTable(XSSFSheet sheet, int rowIndex, List<PatientEncounter> encounters, String period) {
-        for (PatientEncounter p1 : encounters) {
-            Row dataRow = sheet.createRow(rowIndex++);
-            dataRow.createCell(0).setCellValue(" ");
-            dataRow.createCell(1).setCellValue(period);
-            dataRow.createCell(2).setCellValue(p1.getBhtNo());
-            dataRow.createCell(3).setCellValue(p1.getPatient().getPerson().getName());
-            dataRow.createCell(4).setCellValue(p1.getDateOfAdmission().toString());
-            dataRow.createCell(5).setCellValue(p1.getDateOfDischarge().toString());
-            dataRow.createCell(6).setCellValue(p1.getCreditUsedAmount() + p1.getCreditPaidAmount());
+    private void insertBillCell(Row row, List<Bill> bills, int index, int startCol, XSSFCellStyle amountStyle) {
+        if (index < bills.size()) {
+            Bill b = bills.get(index);
+            row.createCell(startCol).setCellValue(b.getPatientEncounter().getBhtNo());
+            row.createCell(startCol + 1).setCellValue(b.getPatientEncounter().getPatient().getPerson().getName());
+            Date doa = b.getPatientEncounter().getDateOfDischarge();
+            row.createCell(startCol + 2).setCellValue(doa != null ? doa.toString() : "");
+            Date dod = b.getPatientEncounter().getDateOfDischarge();
+            row.createCell(startCol + 3).setCellValue(dod != null ? dod.toString() : "");
 
-            XSSFCellStyle amountStyle = sheet.getWorkbook().createCellStyle();
-            amountStyle.setDataFormat(sheet.getWorkbook().createDataFormat().getFormat("#,##0.00"));
-            dataRow.getCell(6).setCellStyle(amountStyle);
+            Cell valueCell = row.createCell(startCol + 4);
+            valueCell.setCellValue(b.getNetTotal() - b.getPaidAmount());
+
+            valueCell.setCellStyle(amountStyle);
+        } else {
+            for (int k = 0; k < 5; k++) {
+                row.createCell(startCol + k).setCellValue("");
+            }
         }
-        return rowIndex;
     }
-
 
     List<DealerDueDetailRow> dealerDueDetailRows;
 
@@ -752,6 +958,32 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
+    private void setInwardValues(String1Value5 dataTable5Value, List<Bill> bills) {
+        for (Bill b : bills) {
+            long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
+
+            double finalValue = b.getNetTotal() - b.getPaidAmount();
+
+            if (finalValue == 0) {
+                continue;
+            }
+
+            if (dayCount < 30) {
+                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+                dataTable5Value.getValue1Bills().add(b);
+            } else if (dayCount < 60) {
+                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+                dataTable5Value.getValue2Bills().add(b);
+            } else if (dayCount < 90) {
+                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+                dataTable5Value.getValue3Bills().add(b);
+            } else {
+                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+                dataTable5Value.getValue4Bills().add(b);
+            }
+        }
+    }
+
     private void setInwardValuesAccess(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
 
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, false, paymentMethod);
@@ -820,12 +1052,8 @@ public class CreditCompanyDueController implements Serializable {
         this.toDate = toDate;
     }
 
-    @EJB
-    private CreditBean creditBean;
-
+    @Deprecated // UsecreateOpdCreditDueByBillTypeAtomic
     public void createOpdCreditDue() {
-        Date startTime = new Date();
-
         List<Institution> setIns = getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), true);
         items = new ArrayList<>();
         for (Institution ins : setIns) {
@@ -833,10 +1061,49 @@ public class CreditCompanyDueController implements Serializable {
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
             newIns.setBills(bills);
-
             for (Bill b : bills) {
                 newIns.setTotal(newIns.getTotal() + b.getNetTotal());
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidAmount());
+            }
+            items.add(newIns);
+        }
+    }
+
+    public void createOpdCreditDueByBillTypeAtomic() {
+        List<BillTypeAtomic> btas;
+        switch (billType) {
+            case "ALL":
+                btas = billService.fetchBillTypeAtomicsForOpdFinance();
+                break;
+            case "OPD":
+                btas = billService.fetchBillTypeAtomicsForOnlyOpdBills();
+                break;
+            case "PACKAGE":
+                btas = billService.fetchBillTypeAtomicsForOnlyPackageBills();
+                break;
+            default:
+                btas = billService.fetchBillTypeAtomicsForOpdFinance();
+        }
+
+        List<Institution> setIns = getCreditBean().getCreditInstitution(btas, getFromDate(), getToDate(), true);
+        items = new ArrayList<>();
+        for (Institution ins : setIns) {
+            List<Payment> payments = getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true);
+            InstitutionBills newIns = new InstitutionBills();
+            newIns.setInstitution(ins);
+            newIns.setPayments(payments);
+
+            Set<Long> countedBillIds = new HashSet<>(); // Assuming bill.getId() is Long
+
+            for (Payment p : payments) {
+                if (p.getBill() == null || countedBillIds.contains(p.getBill().getId())) {
+                    continue;
+                }
+
+                countedBillIds.add(p.getBill().getId());
+
+                newIns.setTotal(newIns.getTotal() + p.getBill().getNetTotal());
+                newIns.setPaidTotal(newIns.getPaidTotal() + p.getBill().getPaidAmount());
             }
 
             items.add(newIns);
@@ -947,49 +1214,134 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
+//    public void createInwardCreditDueWithAdditionalFilters() {
+//        Date startTime = new Date();
+//
+//        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounterWithFinalizedPayments(getFromDate(), getToDate(),
+//                PaymentMethod.Credit, institutionOfDepartment, department, site);
+//        institutionEncounters = new ArrayList<>();
+//        finalTotal = 0.0;
+//        finalPaidTotal = 0.0;
+//        finalPaidTotalPatient = 0.0;
+//        finalTransPaidTotal = 0.0;
+//        finalTransPaidTotalPatient = 0.0;
+//        for (Institution ins : setIns) {
+//            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounterWithFinalizedPayments(ins, getFromDate(), getToDate(),
+//                    PaymentMethod.Credit, institutionOfDepartment, department, site);
+//
+//            updateSettledAmountsForIP(lst);
+//
+//            if (withOutDueUpdate) {
+//                removeSettledAndExcessBills(lst);
+//            }
+//
+//            InstitutionEncounters newIns = new InstitutionEncounters();
+//            newIns.setInstitution(ins);
+//            newIns.setPatientEncounters(lst);
+//
+//            for (PatientEncounter b : lst) {
+////                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
+////                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
+//
+//                newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
+//                newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getSettledAmountByPatient());
+//                newIns.setPaidTotal(newIns.getPaidTotal() + b.getFinalBill().getSettledAmountBySponsor());
+//            }
+//
+//            finalTotal += newIns.getTotal();
+//            finalPaidTotal += newIns.getPaidTotal();
+//            finalPaidTotalPatient += newIns.getPaidTotalPatient();
+//
+//            if (newIns.getPatientEncounters().isEmpty()) {
+//                continue;
+//            }
+//
+//            institutionEncounters.add(newIns);
+//        }
+//    }
+
     public void createInwardCreditDueWithAdditionalFilters() {
-        Date startTime = new Date();
+        HashMap m = new HashMap();
+        String sql = " Select b from PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " where b.retired=false "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td ";
 
-        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounterWithFinalizedPayments(getFromDate(), getToDate(),
-                PaymentMethod.Credit, institutionOfDepartment, department, site);
-        institutionEncounters = new ArrayList<>();
-        finalTotal = 0.0;
-        finalPaidTotal = 0.0;
-        finalPaidTotalPatient = 0.0;
-        finalTransPaidTotal = 0.0;
-        finalTransPaidTotalPatient = 0.0;
-        for (Institution ins : setIns) {
-            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounterWithFinalizedPayments(ins, getFromDate(), getToDate(),
-                    PaymentMethod.Credit, institutionOfDepartment, department, site);
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
 
-            updateSettledAmountsForIP(lst);
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
 
-            if (withOutDueUpdate) {
-                removeSettledAndExcessBills(lst);
+        if (institutionOfDepartment != null) {
+            sql += "AND fb.institution = :insd ";
+            m.put("insd", institutionOfDepartment);
+        }
+
+        if (department != null) {
+            sql += "AND fb.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += "AND fb.department.site = :site ";
+            m.put("site", site);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        if (patientEncounters == null) {
+            return;
+        }
+
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
+
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
+        calculateCreditCompanyAmounts();
+
+        List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(
+                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), true));
+
+        setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
+        calculateCreditCompanyDueTotals();
+
+        setEncounterCreditCompanyMap(getEncounterCreditCompanies());
+    }
+
+    private void calculateCreditCompanyDueTotals() {
+        gopAmount = 0;
+        paidByCompany = 0;
+        payableByCompany = 0;
+
+        for (Institution ins : getBillInstitutionEncounterMap().keySet()) {
+            double gop = 0;
+            double paidByComp = 0;
+            double payableByComp = 0;
+
+            List<InstitutionBillEncounter> encounters = getBillInstitutionEncounterMap().get(ins);
+
+            for (InstitutionBillEncounter ibe : encounters) {
+                gop += ibe.getGopAmount();
+                paidByComp += ibe.getPaidByCompany();
+                payableByComp += ibe.getCompanyDue();
             }
 
-            InstitutionEncounters newIns = new InstitutionEncounters();
-            newIns.setInstitution(ins);
-            newIns.setPatientEncounters(lst);
+            instituteGopMap.put(ins, gop);
+            institutPaidByCompanyMap.put(ins, paidByComp);
+            institutePayableByCompanyMap.put(ins, payableByComp);
 
-            for (PatientEncounter b : lst) {
-//                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
-//                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
-
-                newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
-                newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getSettledAmountByPatient());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getFinalBill().getSettledAmountBySponsor());
-            }
-
-            finalTotal += newIns.getTotal();
-            finalPaidTotal += newIns.getPaidTotal();
-            finalPaidTotalPatient += newIns.getPaidTotalPatient();
-
-            if (newIns.getPatientEncounters().isEmpty()) {
-                continue;
-            }
-
-            institutionEncounters.add(newIns);
+            gopAmount += gop;
+            paidByCompany += paidByComp;
+            payableByCompany += payableByComp;
         }
     }
 
@@ -998,15 +1350,16 @@ public class CreditCompanyDueController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Due_Search_Credit_Company.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=Credit_Company_Due_Report.xlsx");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
-            XSSFSheet sheet = workbook.createSheet("Institution Encounters Report");
+            XSSFSheet sheet = workbook.createSheet("Credit Company Due");
             int rowIndex = 0;
 
-            XSSFCellStyle boldStyle = workbook.createCellStyle();
             XSSFFont boldFont = workbook.createFont();
             boldFont.setBold(true);
+
+            XSSFCellStyle boldStyle = workbook.createCellStyle();
             boldStyle.setFont(boldFont);
 
             XSSFCellStyle amountStyle = workbook.createCellStyle();
@@ -1017,58 +1370,72 @@ public class CreditCompanyDueController implements Serializable {
             mergedStyle.setFont(boldFont);
 
             Row headerRow = sheet.createRow(rowIndex++);
-            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Billed Amount", "Paid By Patient", "Paid By Company", "Net Amount"};
+            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name","Policy Number", "Reference Number",
+                    "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
                 cell.setCellStyle(boldStyle);
             }
 
-            for (InstitutionEncounters i : getInstitutionEncounters()) {
-                Row institutionRow = sheet.createRow(rowIndex++);
-                Cell institutionCell = institutionRow.createCell(0);
-                institutionCell.setCellValue(i.getInstitution().getName());
-                institutionCell.setCellStyle(boldStyle);
+            for (Map.Entry<Institution, List<InstitutionBillEncounter>> entry : getBillInstitutionEncounterMap().entrySet()) {
+                Institution institution = entry.getKey();
+                List<InstitutionBillEncounter> encounters = entry.getValue();
 
-                for (PatientEncounter b : i.getPatientEncounters()) {
+                Row instRow = sheet.createRow(rowIndex++);
+                Cell instCell = instRow.createCell(0);
+                instCell.setCellValue(institution.getName());
+                instCell.setCellStyle(boldStyle);
+
+                for (InstitutionBillEncounter b : encounters) {
                     Row dataRow = sheet.createRow(rowIndex++);
                     dataRow.createCell(0).setCellValue(b.getBhtNo());
                     dataRow.createCell(1).setCellValue(b.getDateOfDischarge().toString());
                     dataRow.createCell(2).setCellValue(b.getPatient().getPerson().getNameWithTitle());
-                    dataRow.createCell(3).setCellValue(b.getFinalBill().getNetTotal());
-                    dataRow.createCell(4).setCellValue(b.getFinalBill().getSettledAmountByPatient());
-                    dataRow.createCell(5).setCellValue(b.getFinalBill().getSettledAmountBySponsor());
-                    dataRow.createCell(6).setCellValue(b.getFinalBill().getNetTotal() - (b.getFinalBill().getSettledAmountByPatient() + b.getFinalBill().getSettledAmountBySponsor()));
+                    dataRow.createCell(3).setCellValue(getPolicyNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()));
+                    dataRow.createCell(4).setCellValue(getReferenceNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()));
+                    dataRow.createCell(5).setCellValue(b.getNetTotal());
+                    dataRow.createCell(6).setCellValue(b.getGopAmount());
+                    dataRow.createCell(7).setCellValue(b.getPaidByPatient());
+                    dataRow.createCell(8).setCellValue(b.getPatientDue());
+                    dataRow.createCell(9).setCellValue(b.getPaidByCompany());
+                    dataRow.createCell(10).setCellValue(b.getCompanyDue());
 
-                    for (int j = 3; j <= 6; j++) {
+                    for (int j = 5; j <= 10; j++) {
                         dataRow.getCell(j).setCellStyle(amountStyle);
                     }
                 }
-                Row institutionFooterRow = sheet.createRow(rowIndex++);
-                institutionFooterRow.createCell(3).setCellValue(i.getTotal());
-                institutionFooterRow.createCell(4).setCellValue(i.getPaidTotalPatient());
-                institutionFooterRow.createCell(5).setCellValue(i.getPaidTotal());
-                institutionFooterRow.createCell(6).setCellValue(i.getTotal() - (i.getPaidTotal() + i.getPaidTotalPatient()));
 
-                for (int j = 3; j <= 6; j++) {
-                    institutionFooterRow.getCell(j).setCellStyle(mergedStyle);
-                }
+                Row subtotalRow = sheet.createRow(rowIndex++);
+                subtotalRow.createCell(6).setCellValue(getInstituteGopMap().get(institution));
+                subtotalRow.createCell(9).setCellValue(getInstitutPaidByCompanyMap().get(institution));
+                subtotalRow.createCell(10).setCellValue(getInstitutePayableByCompanyMap().get(institution));
+
+                subtotalRow.getCell(6).setCellStyle(mergedStyle);
+                subtotalRow.getCell(9).setCellStyle(mergedStyle);
+                subtotalRow.getCell(10).setCellStyle(mergedStyle);
             }
 
             Row footerRow = sheet.createRow(rowIndex++);
-            footerRow.createCell(3).setCellValue(finalTotal);
-            footerRow.createCell(4).setCellValue(finalPaidTotalPatient);
-            footerRow.createCell(5).setCellValue(finalPaidTotal);
-            footerRow.createCell(6).setCellValue(finalTotal - (finalPaidTotal + finalPaidTotalPatient));
+            footerRow.createCell(0).setCellValue("Total");
+            footerRow.getCell(0).setCellStyle(boldStyle);
 
-            for (int j = 3; j <= 6; j++) {
-                footerRow.getCell(j).setCellStyle(mergedStyle);
+            footerRow.createCell(6).setCellValue(getGopAmount());
+            footerRow.createCell(9).setCellValue(getPaidByCompany());
+            footerRow.createCell(10).setCellValue(getPayableByCompany());
+
+            footerRow.getCell(6).setCellStyle(mergedStyle);
+            footerRow.getCell(9).setCellStyle(mergedStyle);
+            footerRow.getCell(10).setCellStyle(mergedStyle);
+
+            for (int i = 0; i <= 10; i++) {
+                sheet.autoSizeColumn(i);
             }
 
             workbook.write(out);
             context.responseComplete();
         } catch (Exception e) {
-            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -1077,75 +1444,95 @@ public class CreditCompanyDueController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Due_Search_Credit_Company.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Credit_Company_Due_Report.pdf");
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Paragraph title = new Paragraph("Institution Encounters Report", titleFont);
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            Paragraph title = new Paragraph("Due Search (Credit Company)", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(20);
+            title.setSpacingAfter(10);
             document.add(title);
 
-            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+            Paragraph dateRange = new Paragraph(
+                    "From: " + sdf.format(getFromDate()) +
+                            "    To: " + sdf.format(getToDate()),
+                    normalFont);
+            dateRange.setAlignment(Element.ALIGN_CENTER);
+            dateRange.setSpacingAfter(10);
+            document.add(dateRange);
 
-            PdfPTable table = new PdfPTable(7);
+            PdfPTable table = new PdfPTable(11);
             table.setWidthPercentage(100);
-            float[] columnWidths = {1.5f, 2.5f, 3.0f, 2.5f, 2.5f, 2.5f, 2.5f};
-            table.setWidths(columnWidths);
+            table.setWidths(new float[]{1.2f, 2.5f, 3f, 1.2f, 1.2f, 2f, 2f, 2f, 2f, 2f, 2f});
 
-            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Billed Amount", "Paid By Patient", "Paid By Company", "Net Amount"};
-            for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name","Policy Number", "Reference Number",
+                    "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
                 table.addCell(cell);
             }
 
-            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+            DecimalFormat df = new DecimalFormat("#,##0.00");
 
-            for (InstitutionEncounters i : getInstitutionEncounters()) {
-                PdfPCell institutionCell = new PdfPCell(new Phrase(i.getInstitution().getName(), boldFont));
-                institutionCell.setColspan(7);
-                table.addCell(institutionCell);
+            for (Map.Entry<Institution, List<InstitutionBillEncounter>> entry : getBillInstitutionEncounterMap().entrySet()) {
+                Institution institution = entry.getKey();
+                List<InstitutionBillEncounter> encounters = entry.getValue();
 
-                for (PatientEncounter b : i.getPatientEncounters()) {
-                    table.addCell(new PdfPCell(new Phrase(b.getBhtNo(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(dateFormatter.format(b.getDateOfDischarge()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(b.getPatient().getPerson().getNameWithTitle(), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getFinalBill().getNetTotal()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getFinalBill().getSettledAmountByPatient()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(b.getFinalBill().getSettledAmountBySponsor()), normalFont)));
-                    table.addCell(new PdfPCell(new Phrase(decimalFormat.format(
-                            b.getFinalBill().getNetTotal() - (b.getFinalBill().getSettledAmountByPatient() + b.getFinalBill().getSettledAmountBySponsor())), normalFont)));
+                PdfPCell groupHeader = new PdfPCell(new Phrase(institution.getName(), boldFont));
+                groupHeader.setColspan(11);
+                groupHeader.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(groupHeader);
+
+                for (InstitutionBillEncounter b : encounters) {
+                    table.addCell(new Phrase(b.getBhtNo(), normalFont));
+                    table.addCell(new Phrase(sdf.format(b.getDateOfDischarge()), normalFont));
+                    table.addCell(new Phrase(b.getPatient().getPerson().getNameWithTitle(), normalFont));
+                    table.addCell(new Phrase(getPolicyNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()), normalFont));
+                    table.addCell(new Phrase(getReferenceNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()), normalFont));
+                    table.addCell(new Phrase(df.format(b.getNetTotal()), normalFont));
+                    table.addCell(new Phrase(df.format(b.getGopAmount()), normalFont));
+                    table.addCell(new Phrase(df.format(b.getPaidByPatient()), normalFont));
+                    table.addCell(new Phrase(df.format(b.getPatientDue()), normalFont));
+                    table.addCell(new Phrase(df.format(b.getPaidByCompany()), normalFont));
+                    table.addCell(new Phrase(df.format(b.getCompanyDue()), normalFont));
                 }
 
                 PdfPCell subtotalLabel = new PdfPCell(new Phrase("Sub Total", boldFont));
-                subtotalLabel.setColspan(3);
+                subtotalLabel.setColspan(6);
+                subtotalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(subtotalLabel);
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(i.getTotal()), boldFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(i.getPaidTotalPatient()), boldFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(i.getPaidTotal()), boldFont)));
-                table.addCell(new PdfPCell(new Phrase(decimalFormat.format(i.getTotal() - (i.getPaidTotal() + i.getPaidTotalPatient())), boldFont)));
+                table.addCell(new Phrase(df.format(getInstituteGopMap().get(institution)), boldFont));
+                table.addCell(new Phrase("—", boldFont));
+                table.addCell(new Phrase("—", boldFont));
+                table.addCell(new Phrase(df.format(getInstitutPaidByCompanyMap().get(institution)), boldFont));
+                table.addCell(new Phrase(df.format(getInstitutePayableByCompanyMap().get(institution)), boldFont));
             }
 
             PdfPCell netTotalLabel = new PdfPCell(new Phrase("Net Total", boldFont));
-            netTotalLabel.setColspan(3);
+            netTotalLabel.setColspan(6);
+            netTotalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
             table.addCell(netTotalLabel);
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(finalTotal), boldFont)));
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(finalPaidTotalPatient), boldFont)));
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(finalPaidTotal), boldFont)));
-            table.addCell(new PdfPCell(new Phrase(decimalFormat.format(finalTotal - (finalPaidTotal + finalPaidTotalPatient)), boldFont)));
+            table.addCell(new Phrase(df.format(getGopAmount()), boldFont));
+            table.addCell(new Phrase("—", boldFont));
+            table.addCell(new Phrase("—", boldFont));
+            table.addCell(new Phrase(df.format(getPaidByCompany()), boldFont));
+            table.addCell(new Phrase(df.format(getPayableByCompany()), boldFont));
 
             document.add(table);
+
             document.close();
             context.responseComplete();
         } catch (Exception e) {
-            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -1327,10 +1714,10 @@ public class CreditCompanyDueController implements Serializable {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
         }
-        if (institution != null) {
-            sql += " and b.creditCompany =:ins ";
-            m.put("ins", institution);
-        }
+//        if (institution != null) {
+//            sql += " and b.creditCompany =:ins ";
+//            m.put("ins", institution);
+//        }
 
         if (paymentMethod != null) {
             sql += " and b.paymentMethod =:pm ";
@@ -1362,21 +1749,357 @@ public class CreditCompanyDueController implements Serializable {
             return;
         }
 
-        updateSettledAmountsForIP(patientEncounters);
-        removeSettledAndExcessBills(patientEncounters);
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
+
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due"));
+        calculateCreditCompanyAmounts();
+
+        setEncounterCreditCompanyMap(getEncounterCreditCompanies());
 
         billed = 0;
         paidByPatient = 0;
         paidByCompany = 0;
-        for (PatientEncounter p : patientEncounters) {
+        payableByPatient = 0;
+        for (PatientEncounter p : getBillPatientEncounterMap().keySet()) {
+            billed += p.getFinalBill().getNetTotal();
+            paidByPatient += p.getFinalBill().getSettledAmountByPatient();
+            paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
+            payableByPatient += calculatePayableByPatient(p, getBillPatientEncounterMap().get(p));
+        }
+    }
+
+    public String getPolicyNumberFromEncounterCreditCompanyMap(final String bht, final String creditCompanyName) {
+        Map<String, EncounterCreditCompany> creditCompanyMap = getEncounterCreditCompanyMap().get(bht);
+
+        if (creditCompanyMap != null) {
+            EncounterCreditCompany ecc = creditCompanyMap.get(creditCompanyName);
+            if (ecc != null) {
+                return ecc.getPolicyNo();
+            }
+        }
+        return "";
+    }
+
+    public String getReferenceNumberFromEncounterCreditCompanyMap(final String bht, final String creditCompanyName) {
+        Map<String, EncounterCreditCompany> creditCompanyMap = getEncounterCreditCompanyMap().get(bht);
+
+        if (creditCompanyMap != null) {
+            EncounterCreditCompany ecc = creditCompanyMap.get(creditCompanyName);
+            if (ecc != null) {
+                return ecc.getReferanceNo();
+            }
+        }
+        return "";
+    }
+
+    public double calculatePayableByPatient(final PatientEncounter patientEncounter, final List<Bill> bills) {
+        final double netTotal = patientEncounter.getFinalBill().getNetTotal();
+
+        final double payableNetTotalByCreditCompanies = bills.stream()
+                .mapToDouble(Bill::getNetTotal)
+                .sum();
+
+        return netTotal - payableNetTotalByCreditCompanies;
+    }
+
+    public void createInwardCashExcess() {
+        Date startTime = new Date();
+
+        HashMap m = new HashMap();
+        String sql = " Select b from PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " where b.retired=false "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
+//        if (institution != null) {
+//            sql += " and b.creditCompany =:ins ";
+//            m.put("ins", institution);
+//        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+        if (institutionOfDepartment != null) {
+            sql += "AND fb.institution = :insd ";
+            m.put("insd", institutionOfDepartment);
+        }
+
+        if (department != null) {
+            sql += "AND fb.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += "AND fb.department.site = :site ";
+            m.put("site", site);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        if (patientEncounters == null) {
+            return;
+        }
+
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
+
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "excess"));
+        calculateCreditCompanyAmounts();
+
+        billed = 0;
+        paidByPatient = 0;
+        paidByCompany = 0;
+        for (PatientEncounter p : getBillPatientEncounterMap().keySet()) {
             billed += p.getFinalBill().getNetTotal();
             paidByPatient += p.getFinalBill().getSettledAmountByPatient();
             paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
         }
     }
 
+    // Map<bht, Map<Credit Company, Encounter Credit Company>>
+    private Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanies() {
+        List<Long> patientEncounterIds = getBillPatientEncounterMap().keySet().stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        if (patientEncounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT ecc FROM EncounterCreditCompany ecc WHERE ecc.patientEncounter.id IN :patientEncounterIds";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        List<EncounterCreditCompany> results = encounterCreditCompanyFacade.findByJpql(jpql, parameters);
+
+        Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap = new HashMap<>();
+
+        for (EncounterCreditCompany ecc : results) {
+            String bhtNo = ecc.getPatientEncounter().getBhtNo();
+            String institutionName = ecc.getInstitution().getName();
+
+            encounterCreditCompanyMap
+                    .computeIfAbsent(bhtNo, k -> new HashMap<>())
+                    .putIfAbsent(institutionName, ecc);
+        }
+
+        return encounterCreditCompanyMap;
+    }
+
+    private Map<PatientEncounter, List<Bill>> getCreditCompanyBills(List<PatientEncounter> patientEncounters, String dueType) {
+        if (dueType == null || (!dueType.equalsIgnoreCase("due") && !dueType.equalsIgnoreCase("any")
+                && !dueType.equalsIgnoreCase("excess") && !dueType.equalsIgnoreCase("settled"))) {
+            return Collections.emptyMap();
+        }
+
+        List<Long> patientEncounterIds = patientEncounters.stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill from Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.patientEncounter.id in :patientEncounterIds ";
+
+        parameters.put("br", true);
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += " and bill.creditCompany =:ins ";
+            parameters.put("ins", institution);
+        }
+
+        List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
+
+        List<Bill> detachedClones = rs.stream()
+                .map(b -> {
+                    Bill clonedBill = new Bill();
+                    clonedBill.clone(b);
+                    return clonedBill;
+                })
+                .collect(Collectors.toList());
+
+        Map<Long, PatientEncounter> encounterMap = patientEncounters.stream()
+                .collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
+
+        if (dueType.equalsIgnoreCase("settled")) {
+            return detachedClones.stream()
+                    .filter(bill -> {
+                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
+                        Bill referenceBill = bill.getReferenceBill();
+
+                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
+                            return false;
+                        }
+
+                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
+                            bill.setNetTotal(0.0);
+                        }
+
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
+                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
+
+                        return (netTotal - settledByPatient - settledBySponsor) == 0;
+                    })
+                    .collect(Collectors.groupingBy(
+                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                    ));
+        }
+
+        if (dueType.equalsIgnoreCase("excess")) {
+            return detachedClones.stream()
+                    .filter(bill -> {
+                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
+                        Bill referenceBill = bill.getReferenceBill();
+
+                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
+                            return false;
+                        }
+
+                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
+                            bill.setNetTotal(0.0);
+                        }
+
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
+                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
+
+                        return (netTotal - settledByPatient - settledBySponsor) < 0;
+                    })
+                    .collect(Collectors.groupingBy(
+                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                    ));
+        }
+
+        if (dueType.equalsIgnoreCase("due")) {
+            return detachedClones.stream()
+                    .filter(bill -> {
+                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
+
+                        Bill referenceBill = bill.getReferenceBill();
+
+                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
+                            return false;
+                        }
+
+                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
+                            bill.setNetTotal(0.0);
+                        }
+
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
+                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
+
+                        return (netTotal - settledByPatient - settledBySponsor) > 0;
+                    })
+                    .collect(Collectors.groupingBy(
+                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                    ));
+        }
+
+        return detachedClones.stream()
+                .collect(Collectors.groupingBy(
+                        bill -> encounterMap.get(bill.getPatientEncounter().getId())
+                ));
+    }
+
+    private void calculateCreditCompanyAmounts() {
+        for (Map.Entry<PatientEncounter, List<Bill>> entry : getBillPatientEncounterMap().entrySet()) {
+
+            PatientEncounter patientEncounter = entry.getKey();
+            List<Bill> bills = entry.getValue();
+
+            double totalPayableByCompanies = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+            double totalPaidByCompanies = bills.stream().mapToDouble(Bill::getPaidAmount).sum();
+
+            patientEncounter.setTransPaid(totalPayableByCompanies);
+            patientEncounter.setTransPaidByCompany(totalPaidByCompanies);
+        }
+    }
+
     private void removeSettledAndExcessBills(List<PatientEncounter> patientEncounters) {
         patientEncounters.removeIf(p -> p.getFinalBill().getNetTotal() - (Math.abs(p.getFinalBill().getPaidAmount()) + Math.abs(p.getCreditPaidAmount())) <= 0);
+    }
+
+    private void updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(List<PatientEncounter> patientEncounters) {
+        if (patientEncounters == null || patientEncounters.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> settledAmounts = calculateSettledSponsorBillIP(patientEncounters);
+
+        for (PatientEncounter patientEncounter : patientEncounters) {
+            Bill finalBill = patientEncounter.getFinalBill();
+
+            if (finalBill.isCancelled() || finalBill.isRefunded()) {
+                continue;
+            }
+
+            List<Bill> bills = calculateSettledPatientBillIP(finalBill);
+            double total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountByPatient(total);
+            }
+
+            total = settledAmounts.getOrDefault(patientEncounter.getId(), 0.0);
+
+            synchronized (finalBill) {
+                finalBill.setSettledAmountBySponsor(total);
+            }
+        }
+    }
+
+    private Map<Long, Double> calculateSettledSponsorBillIP(List<PatientEncounter> patientEncounters) {
+        List<Long> patientEncounterIds = patientEncounters.stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        String jpql = "SELECT bill from Bill bill "
+                + "WHERE bill.retired <> :br "
+                + "AND bill.patientEncounter.id in :patientEncounterIds ";
+
+        parameters.put("br", true);
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += " and bill.creditCompany =:ins ";
+            parameters.put("ins", institution);
+        }
+
+        List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
+
+        return rs.stream()
+                .collect(Collectors.groupingBy(
+                        bill -> bill.getPatientEncounter().getId(),
+                        Collectors.summingDouble(Bill::getPaidAmount)
+                ));
     }
 
     private void updateSettledAmountsForIP(List<PatientEncounter> patientEncounters) {
@@ -1488,6 +2211,240 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setPaidByCompany(double paidByCompany) {
         this.paidByCompany = paidByCompany;
+    }
+
+    public void exportInwardCashDueToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Inward_Cash_Due_Report.xlsx");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Inward Cash Due");
+            int rowIndex = 0;
+
+            XSSFFont boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
+            Row mainHeader = sheet.createRow(rowIndex++);
+            Cell headerCell = mainHeader.createCell(0);
+            headerCell.setCellValue("Inward Cash Due");
+            headerCell.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 15));
+
+            Row columnHeader = sheet.createRow(rowIndex++);
+            String[] headers = {
+                    "", "BHT", "Admitted At", "Discharged At", "Final Total", "GOP by Patient", "Paid by Patient",
+                    "Patient Due", "Paid by Companies", "Total Due", "Company Details"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = columnHeader.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 10, 15));
+
+            int counter = 1;
+            for (Map.Entry<PatientEncounter, List<Bill>> entry : getBillPatientEncounterMap().entrySet()) {
+                PatientEncounter pe = entry.getKey();
+                List<Bill> bills = entry.getValue();
+
+                Row row = sheet.createRow(rowIndex++);
+                int col = 0;
+
+                row.createCell(col++).setCellValue(counter++);
+                row.createCell(col++).setCellValue(pe.getBhtNo());
+                row.createCell(col++).setCellValue(sdf.format(pe.getDateOfAdmission()));
+                row.createCell(col++).setCellValue(sdf.format(pe.getDateOfDischarge()));
+                row.createCell(col++).setCellValue(pe.getFinalBill().getNetTotal());
+                row.createCell(col++).setCellValue(calculatePayableByPatient(pe, bills));
+                row.createCell(col++).setCellValue(pe.getFinalBill().getSettledAmountByPatient());
+                row.createCell(col++).setCellValue(
+                        calculatePayableByPatient(pe, bills) - pe.getFinalBill().getSettledAmountByPatient()
+                );
+                row.createCell(col++).setCellValue(pe.getFinalBill().getSettledAmountBySponsor());
+                row.createCell(col++).setCellValue(
+                        pe.getFinalBill().getNetTotal()
+                                - pe.getFinalBill().getSettledAmountByPatient()
+                                - pe.getFinalBill().getSettledAmountBySponsor()
+                );
+
+                Row subHeader = sheet.createRow(rowIndex++);
+                String[] innerHeaders = {
+                        "Company Name", "Policy Number", "Reference Number", "GOP by Company",
+                        "Paid by Company", "Company Due"
+                };
+                for (int i = 0; i < innerHeaders.length; i++) {
+                    Cell cell = subHeader.createCell(i + 10);
+                    cell.setCellValue(innerHeaders[i]);
+                    cell.setCellStyle(boldStyle);
+                }
+
+                for (Bill bill : bills) {
+                    Row billRow = sheet.createRow(rowIndex++);
+                    billRow.createCell(10).setCellValue(bill.getCreditCompany().getName());
+                    billRow.createCell(11).setCellValue(getPolicyNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getCreditCompany().getName()));
+                    billRow.createCell(12).setCellValue(getReferenceNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getCreditCompany().getName()));
+                    billRow.createCell(13).setCellValue(bill.getNetTotal());
+                    billRow.createCell(14).setCellValue(bill.getPaidAmount());
+                    billRow.createCell(15).setCellValue(bill.getNetTotal() - bill.getPaidAmount());
+                }
+
+                Row totalsRow = sheet.createRow(rowIndex++);
+                Cell totalLabelCell = totalsRow.createCell(10);
+                totalLabelCell.setCellValue("Total");
+                totalLabelCell.setCellStyle(boldStyle);
+
+                Cell total1 = totalsRow.createCell(13);
+                total1.setCellValue(pe.getTransPaid());
+                total1.setCellStyle(boldStyle);
+
+                Cell total2 = totalsRow.createCell(14);
+                total2.setCellValue(pe.getTransPaidByCompany());
+                total2.setCellStyle(boldStyle);
+
+                Cell total3 = totalsRow.createCell(15);
+                total3.setCellValue(pe.getTransPaid() - pe.getTransPaidByCompany());
+                total3.setCellStyle(boldStyle);
+            }
+
+            Row totalFooter = sheet.createRow(rowIndex++);
+            Cell footerLabel = totalFooter.createCell(0);
+            footerLabel.setCellValue("Total");
+            footerLabel.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 3));
+
+            int[] footerCols = {4, 5, 6, 7, 8, 9};
+            double[] footerValues = {
+                    getBilled(),
+                    getPayableByPatient(),
+                    getPaidByPatient(),
+                    getPayableByPatient() - getPaidByPatient(),
+                    getPaidByCompany(),
+                    getBilled() - (getPaidByCompany() + getPaidByPatient())
+            };
+
+            for (int i = 0; i < footerCols.length; i++) {
+                Cell cell = totalFooter.createCell(footerCols[i]);
+                cell.setCellValue(footerValues[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportInwardCashDueToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Inward_Cash_Due_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            Paragraph title = new Paragraph("Inward Cash Due", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+            document.add(Chunk.NEWLINE);
+
+            PdfPTable mainTable = new PdfPTable(11);
+            mainTable.setWidthPercentage(100);
+            mainTable.setWidths(new float[]{0.6f, 1.2f, 1.8f, 1.8f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 8.0f});
+
+            String[] headers = {"", "BHT", "Admitted At", "Discharged At", "Final Total", "GOP by Patient", "Paid by Patient", "Patient Due", "Paid by Companies", "Total Due", "Company Details"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                mainTable.addCell(cell);
+            }
+
+            int counter = 1;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss a");
+
+            for (Map.Entry<PatientEncounter, List<Bill>> entry : getBillPatientEncounterMap().entrySet()) {
+                PatientEncounter pe = entry.getKey();
+                List<Bill> bills = entry.getValue();
+
+                mainTable.addCell(new Phrase(String.valueOf(counter++), normalFont));
+                mainTable.addCell(new Phrase(pe.getBhtNo(), normalFont));
+                mainTable.addCell(new Phrase(sdf.format(pe.getDateOfAdmission()), normalFont));
+                mainTable.addCell(new Phrase(sdf.format(pe.getDateOfDischarge()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(pe.getFinalBill().getNetTotal()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(calculatePayableByPatient(pe, bills)), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(pe.getFinalBill().getSettledAmountByPatient()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(calculatePayableByPatient(pe, bills) - pe.getFinalBill().getSettledAmountByPatient()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(pe.getFinalBill().getSettledAmountBySponsor()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(
+                        pe.getFinalBill().getNetTotal() - pe.getFinalBill().getSettledAmountByPatient() - pe.getFinalBill().getSettledAmountBySponsor()), normalFont));
+
+                PdfPTable nestedTable = new PdfPTable(6);
+                nestedTable.setWidthPercentage(100);
+                nestedTable.setWidths(new float[]{3f, 2.5f, 2.5f, 2f, 2f, 2f});
+
+                String[] subHeaders = {"Company Name", "Policy Number", "Reference Number", "GOP by Company", "Paid by Company", "Company Due"};
+                for (String sh : subHeaders) {
+                    PdfPCell shCell = new PdfPCell(new Phrase(sh, boldFont));
+                    shCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    nestedTable.addCell(shCell);
+                }
+
+                for (Bill bill : bills) {
+                    nestedTable.addCell(new Phrase(bill.getCreditCompany().getName(), normalFont));
+                    nestedTable.addCell(new Phrase(getPolicyNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getCreditCompany().getName()), normalFont));
+                    nestedTable.addCell(new Phrase(getReferenceNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getCreditCompany().getName()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getNetTotal()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getPaidAmount()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getNetTotal() - bill.getPaidAmount()), normalFont));
+                }
+
+                nestedTable.addCell(new Phrase("Total", boldFont));
+                nestedTable.addCell("");
+                nestedTable.addCell("");
+                nestedTable.addCell(new Phrase(String.valueOf(pe.getTransPaid()), boldFont));
+                nestedTable.addCell(new Phrase(String.valueOf(pe.getTransPaidByCompany()), boldFont));
+                nestedTable.addCell(new Phrase(String.valueOf(pe.getTransPaid() - pe.getTransPaidByCompany()), boldFont));
+
+                PdfPCell nestedCell = new PdfPCell(nestedTable);
+                nestedCell.setColspan(1);
+                mainTable.addCell(nestedCell);
+            }
+
+            PdfPCell footerLabel = new PdfPCell(new Phrase("Total", boldFont));
+            footerLabel.setColspan(4);
+            footerLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            mainTable.addCell(footerLabel);
+
+            mainTable.addCell(new Phrase(String.valueOf(getBilled()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient() - getPaidByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByCompany()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont));
+
+            document.add(mainTable);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
     }
 
     public void createInwardCreditAccess() {
@@ -1834,9 +2791,12 @@ public class CreditCompanyDueController implements Serializable {
 
             // Create Header Row
             Row headerRow = sheet.createRow(rowIndex++);
-            String[] headers = {"Institution Name", "Bill No", "Client Name", "Bill Date", "Billed Amount", "Staff Fee", "Paid Amount", "Net Amount"};
+            String[] headers = {"Institution Name", "Bill No", "Policy No", "Ref No", "Client Name", "Bill Date", "Billed Amount", "Staff Fee", "Paid Amount", "Net Amount"};
             int colIndex = 0;
 
+            double total = 0;
+            double paidTotal = 0;
+            double DueTotal = 0;
 
             for (String header : headers) {
                 Cell cell = headerRow.createCell(colIndex++);
@@ -1851,14 +2811,29 @@ public class CreditCompanyDueController implements Serializable {
 
                     dataRow.createCell(colIndex++).setCellValue(institution.getInstitution().getName());
                     dataRow.createCell(colIndex++).setCellValue(bill.getDeptId());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getPayments() != null && !bill.getPayments().isEmpty() ? bill.getPayments().get(0).getPolicyNo() : "N/A");
+                    dataRow.createCell(colIndex++).setCellValue(bill.getPayments() != null && !bill.getPayments().isEmpty() ? bill.getPayments().get(0).getReferenceNo() : "N/A");
                     dataRow.createCell(colIndex++).setCellValue(bill.getPatient().getPerson().getNameWithTitle());
                     dataRow.createCell(colIndex++).setCellValue(bill.getCreatedAt().toString());
                     dataRow.createCell(colIndex++).setCellValue(bill.getNetTotal());
                     dataRow.createCell(colIndex++).setCellValue(bill.getStaffFee());
                     dataRow.createCell(colIndex++).setCellValue(bill.getPaidAmount());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getNetTotal() + bill.getPaidAmount());
+                    dataRow.createCell(colIndex++).setCellValue(bill.getNetTotal() - bill.getPaidAmount());
                 }
+
+                total += institution.getTotal();
+                paidTotal += institution.getPaidTotal();
+                DueTotal += (institution.getTotal() - institution.getPaidTotal());
             }
+
+            // Add totals row below all data
+            Row totalRow = sheet.createRow(rowIndex++);
+
+            // Optional: Add label in first column
+            totalRow.createCell(0).setCellValue("Total");
+            totalRow.createCell(6).setCellValue(total);
+            totalRow.createCell(8).setCellValue(paidTotal);
+            totalRow.createCell(9).setCellValue(DueTotal);
 
             // Auto-size Columns
             for (int i = 0; i < headers.length; i++) {
@@ -2042,6 +3017,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setManagePharmacyDueAndAccessIndex(int managePharmacyDueAndAccessIndex) {
         this.managePharmacyDueAndAccessIndex = managePharmacyDueAndAccessIndex;
+    }
+
+    public String getBillType() {
+        return billType;
+    }
+
+    public void setBillType(String billType) {
+        this.billType = billType;
     }
 
 }

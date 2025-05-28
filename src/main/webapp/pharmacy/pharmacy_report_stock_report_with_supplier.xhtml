@@ -16,7 +16,7 @@
                     <p:panel header="Stock Report (with Suppliers)" >
 
                         <h:panelGrid columns="8" class="my-2" >
-                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <h:outputLabel value="Department" />
                             <p:autoComplete 
                                 class="mx-2" 
                                 completeMethod="#{departmentController.completeDept}" 
@@ -27,14 +27,14 @@
                                 forceSelection="true" 
                                 value="#{reportsStock.department}"  >
                                 <p:column headerText="Code" style="padding: 5px; width: 6em;">
-                                    <h:outputText value="#{dept.code}" ></h:outputText>
+                                    <h:outputText value="#{dept.code}" />
                                 </p:column>
                                 <p:column headerText="Name" style="padding: 5px; min-width: 20em;">
-                                    <h:outputText value="#{dept.name}" ></h:outputText>
+                                    <h:outputText value="#{dept.name}" />
                                 </p:column>
                             </p:autoComplete>
 
-                            <h:outputLabel value="Supplier" ></h:outputLabel>
+                            <h:outputLabel value="Supplier" />
                             <p:autoComplete 
                                 class="mx-2"
                                 completeMethod="#{institutionController.completeSuppliers}" 
@@ -45,36 +45,38 @@
                                 forceSelection="true" 
                                 value="#{reportsStock.institution}" >
                                 <p:column headerText="Code" style="padding: 5px; width: 6em;">
-                                    <h:outputText value="#{dept.code}" ></h:outputText>
+                                    <h:outputText value="#{dept.code}" />
                                 </p:column>
                                 <p:column headerText="Name" style="padding: 5px; min-width: 20em;">
-                                    <h:outputText value="#{dept.name}" ></h:outputText>
+                                    <h:outputText value="#{dept.name}" />
                                 </p:column>
                             </p:autoComplete>
 
                             <p:commandButton 
                                 ajax="false" 
-                                value="Process" 
-                                class="ui-button-warning " 
-                                icon="fas fa-cogs" 
+                                value="Process"
+                                styleClass="ui-button-success m-1"
+                                icon="pi pi-cog"
                                 action="#{reportsStock.fillSupplierStocks()}" >
                             </p:commandButton>
 
-                            <p:commandButton 
-                                class="ui-button-info mx-2" 
-                                icon="fas fa-print" 
-                                value="Print" 
-                                ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                            <p:commandButton
+                                    styleClass="ui-button-info m-1"
+                                    icon="pi pi-download"
+                                    value="Download"
+                                    ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Report_with_Suppliers"/>
                             </p:commandButton>
 
-                            <p:commandButton 
-                                class="ui-button-success" 
-                                icon="fas fa-file-excel"  
-                                value="Excel"
-                                ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"/>
+                            <p:commandButton
+                                    styleClass="ui-button-warning m-1"
+                                    icon="pi pi-print"
+                                    value="Print"
+                                    ajax="false"
+                                    action="pharmacy_report_stock_report_with_supplier_print?faces-redirect=true">
                             </p:commandButton>
+
+
                         </h:panelGrid>
 
                         <h:panelGroup styleClass="noBorder summeryBorder"  id="gpBillPreview">
@@ -107,7 +109,7 @@
                                     filterBy="#{i.itemBatch.item.code}" 
                                     filterMatchMode="contains"
                                     styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.code}" />
                                 </p:column>
 
                                 <p:column 
@@ -115,7 +117,7 @@
                                     sortBy="#{i.itemBatch.item.name}" 
                                     filterBy="#{i.itemBatch.item.name}" 
                                     filterMatchMode="contains">                                   
-                                    <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.name}" />
                                 </p:column>
 
                                 <p:column 
@@ -123,7 +125,7 @@
                                     sortBy="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}" 
                                     filterBy="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}" 
                                     filterMatchMode="contains">                                  
-                                    <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}" />
                                 </p:column>
 
                                 <p:column 
@@ -132,7 +134,7 @@
                                     style=" width: 100px!important;"
                                     sortBy="#{i.stock}">
                                     <h:outputLabel value="#{i.stock}"  >
-                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,###" />
                                     </h:outputLabel>                                  
                                 </p:column>
 
@@ -141,7 +143,7 @@
                                     style=" width: 100px!important;"
                                     styleClass="averageNumericColumn">
                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
-                                        <f:convertDateTime pattern="dd MMM yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="dd MMM yy" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -151,7 +153,7 @@
                                     sortBy="#{i.itemBatch.purcahseRate}"
                                     style="text-align: right; width: 100px!important;">
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -161,11 +163,11 @@
                                     sortBy="#{i.itemBatch.purcahseRate}" 
                                     style="text-align: right; width: 100px!important;">
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate * i.stock}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer" >
                                         <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
-                                            <f:convertNumber h:pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber h:pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -176,7 +178,7 @@
                                     sortBy="#{i.itemBatch.retailsaleRate}"
                                     style="text-align: right; width: 100px!important;">
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -186,11 +188,11 @@
                                     sortBy="#{i.itemBatch.retailsaleRate * i.stock}"
                                     style="text-align: right; width: 100px!important;">
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer" >
                                         <h:outputLabel value="#{reportsStock.stockSaleValue}" >
-                                            <f:convertNumber h:pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber h:pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>

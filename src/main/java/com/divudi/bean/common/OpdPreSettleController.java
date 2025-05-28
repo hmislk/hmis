@@ -53,6 +53,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.TokenFacade;
+import com.divudi.service.BillService;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -123,6 +124,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     StaffService staffBean;
     @EJB
     private StaffFacade staffFacade;
+    @EJB
+    BillService billService;
 
 /////////////////////////
     Item selectedAlternative;
@@ -1626,23 +1629,22 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         getBillFeePaymentFacade().create(bfp);
     }
 
-    public void setBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
-            bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-            bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
-        } else {
-            bfp.setInstitution(getSessionController().getInstitution());
-            bfp.setDepartment(getSessionController().getDepartment());
-        }
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
-    }
-
+//    public void setBillFeePaymentAndPayment(BillFee bf, Payment p) {
+//        BillFeePayment bfp = new BillFeePayment();
+//        bfp.setBillFee(bf);
+//        bfp.setAmount(bf.getSettleValue());
+//        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
+//            bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
+//            bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+//        } else {
+//            bfp.setInstitution(getSessionController().getInstitution());
+//            bfp.setDepartment(getSessionController().getDepartment());
+//        }
+//        bfp.setCreater(getSessionController().getLoggedUser());
+//        bfp.setCreatedAt(new Date());
+//        bfp.setPayment(p);
+//        getBillFeePaymentFacade().create(bfp);
+//    }
     public double calBillPaidValue(Bill b) {
         String jpql = "select sum(bfp.amount) "
                 + " from BillFeePayment bfp "
@@ -1685,16 +1687,14 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         }
     }
 
-    public void calculateBillfeePaymentsForCancelRefundBill(List<BillFee> billFees, Payment p) {
-        for (BillFee bf : billFees) {
-            setBillFeePaymentAndPayment(bf, p);
-        }
-    }
-
-    public void createOpdCancelRefundBillFeePayment(Bill bill, List<BillFee> billFees, Payment p) {
-        calculateBillfeePaymentsForCancelRefundBill(billFees, p);
-    }
-
+//    public void calculateBillfeePaymentsForCancelRefundBill(List<BillFee> billFees, List<Payment> ps) {
+//        for (BillFee bf : billFees) {
+//            setBillFeePaymentAndPayment(bf, ps);
+//        }
+//    }
+//    public void createOpdCancelRefundBillFeePayment(Bill bill, List<BillFee> billFees, List<Payment> ps) {
+//        calculateBillfeePaymentsForCancelRefundBill(billFees, ps);
+//    }
     public Payment createPaymentForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -1737,6 +1737,72 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         getPaymentFacade().edit(p);
         //System.out.println("End Payment");
         return p;
+    }
+
+    public List<Payment> createPaymentsForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
+        System.out.println("createPaymentsForCancellationsforOPDBill");
+        System.out.println("bill = " + bill);
+        System.out.println("pm = " + pm);
+        List<Payment> ps = new ArrayList<>();
+        if (pm == null) {
+            Bill originalIndividualBill = bill.getBilledBill();
+            if (originalIndividualBill == null) {
+                return ps;
+            }
+            Bill originalBathcBill = billService.fetchBatchBillOfIndividualBill(originalIndividualBill);
+            if (originalBathcBill == null) {
+                return ps;
+            }
+            List<Payment> originalBillPayments = billService.fetchBillPayments(originalBathcBill);
+            if (originalBillPayments == null || originalBillPayments.isEmpty()) {
+                return ps;
+            }
+            for (Payment originalBillPayment : originalBillPayments) {
+                Payment p = originalBillPayment.clonePaymentForNewBill();
+                p.invertValues();
+                p.setReferancePayment(originalBillPayment);
+                p.setBill(bill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+            bill.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
+            billFacade.edit(bill);
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            double valueToSet = 0 - Math.abs(bill.getNetTotal());
+            p.setPaidValue(valueToSet);
+
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(getSessionController().getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            if (pm == PaymentMethod.PatientDeposit) {
+                if (bill.getPatient().getRunningBalance() == null) {
+                    bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
+                } else {
+                    bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
+                }
+                patientFacade.edit(bill.getPatient());
+            }
+
+            if (pm == PaymentMethod.Staff) {
+                bill.getToStaff().setCurrentCreditValue(bill.getToStaff().getCurrentCreditValue() - Math.abs(bill.getNetTotal()));
+                staffFacade.edit(bill.getToStaff());
+            }
+            if (p.getId() == null) {
+                getPaymentFacade().create(p);
+            }
+            getPaymentFacade().edit(p);
+            ps.add(p);
+        }
+        return ps;
     }
 
     public Payment createPaymentForCollectingCenterBill(Bill bill) {

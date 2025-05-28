@@ -19,40 +19,40 @@
                 <p:ajax process="@this" ></p:ajax>
 
                 <p:tab 
-                    title="Add All Tables using create ddl fiel contents"  >
+                    title="Add All Tables using create ddl file contents"  >
 
 
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
-                            <h:outputLabel value="Run SQL Commands" class="mx-2"/>
+                            <h:outputLabel value="Update Database by DDL File" class="mx-2"/>
                         </f:facet>
-                        <p:outputLabel value="All Create Statements in ddl file" ></p:outputLabel>
+
+                        <p:outputLabel value="Instructions" />
+                        <p:outputLabel value="To generate the DDL file, replace the contents of your persistence.xml with the configuration from persistence_for_database_generation_script.xml. Adjust the output file path accordingly. Run the application to generate the DDL file. Then copy its contents and paste into the field below. Click 'Update Database' to apply all missing tables and fields. The latest version of the DDL file is available at https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide" />
+
+                        <p:outputLabel value="DDL Content" />
                         <p:inputTextarea
                             rows="6"
                             autoResize="false"
                             value="#{dataAdministrationController.allCreateStetements}" 
-                            class="w-100"/>
-                        <p:spacer ></p:spacer>
-                        <p:commandButton 
-                            value="RUN SQL" 
-                            ajax="false" 
-                            action="#{dataAdministrationController.createTablesAndFieldsForAllCreateStatements}" ></p:commandButton>
+                            class="w-100" />
 
-                        <p:outputLabel value="Execution Feedback" ></p:outputLabel>
-                        <p:inputTextarea
-                            rows="6"
-                            autoResize="false"
-                            value="#{dataAdministrationController.executionFeedback}" 
-                            readonly="true"
-                            class="w-100"/>
+                        <p:spacer />
+
+                        <p:commandButton 
+                            value="Update Database" 
+                            ajax="false" 
+                            action="#{dataAdministrationController.createTablesAndFieldsForAllCreateStatements}" />
+
+                        <p:outputLabel value="Execution Feedback" />
+                        <h:outputText escape="false">
+                            <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.executionFeedback}</textarea>
+                        </h:outputText>
                     </p:panelGrid>
 
                 </p:tab>
-                <p:tab title="Add Missing Fields using individual create statements" >
-
-
-
+                <p:tab title="Check Missing Fields and Add Fields" >
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
@@ -64,7 +64,6 @@
                                 value="Check Missing Fields"  
                                 class="w-25"
                                 />
-
                         </f:facet>
                         <p:outputLabel value="Errors" ></p:outputLabel>
                         <p:inputTextarea 
@@ -110,7 +109,7 @@
 
                 </p:tab>
 
-                <p:tab title="Run SQL Commands" >
+                <p:tab title="Run Custom SQL Commands" >
 
 
 

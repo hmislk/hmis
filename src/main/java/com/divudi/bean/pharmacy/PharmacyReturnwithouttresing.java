@@ -534,6 +534,12 @@ public class PharmacyReturnwithouttresing implements Serializable {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
+
+        if (getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add items");
+            return;
+        }
+
         if (checkAllBillItem()) {
             //   ////System.out.println("Check all bill Ietems");
             return;

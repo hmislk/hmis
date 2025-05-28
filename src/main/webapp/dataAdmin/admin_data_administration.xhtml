@@ -228,9 +228,17 @@
                                         <p:commandButton
                                             ajax="false" 
                                             action="#{dataAdministrationController.navigateToCheckMissingFields()}" 
-                                            value="Check Missing Fields"  
+                                            value="Update Database Structure"  
                                             class="w-100 m-1"
                                             />
+                                        
+                                        <p:commandButton
+                                            ajax="false" 
+                                            action="#{dataAdministrationController.navigateToDownloadLogFiles()}" 
+                                            value="To Download Log Files"  
+                                            class="w-100 m-1"
+                                            />
+                                        
                                         <p:commandButton
                                             ajax="false" 
                                             action="#{dataAdministrationController.navigateToNameToCode()}" 
@@ -241,8 +249,15 @@
                                             ajax="false" 
                                             action="admin_functions?faces-redirect=true" 
                                             value="Admin Functions"  
-                                            class="w-100 m-1"
+                                            class="m-1 w-100"
                                             />
+
+                                        <p:commandButton 
+                                            value="Test Error Handling"
+                                            action="#{dataAdministrationController.causeError}"
+                                            ajax="false"
+                                            styleClass="ui-button-danger w-100 m-1" />
+
                                     </div>
                                 </p:tab>
 

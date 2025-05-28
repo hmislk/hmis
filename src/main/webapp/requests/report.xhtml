@@ -66,7 +66,7 @@
                                 }
 
                                 /* Reset positioning for report content */
-                                .labReport, #divReport, #divReportM {
+                                .labReport, #divReport, #divReportM ,#divReportPH{
                                     position: static !important;
                                     top: auto !important;
                                     left: auto !important;
@@ -190,10 +190,11 @@
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </ui:repeat>
+                                        
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                             <h:panelGroup 
                                                 layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'Image'}" >
-                                                <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" ></img>
+                                                <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" />
                                                 <p:graphicImage
                                                     value="#{prv.baImage}"
                                                     style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block; z-index: 800; " 
@@ -349,7 +350,7 @@
 
                                 <!--PathologyOrHaematology-->
                                 <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'PathologyOrHaematology'}"  >
-                                    <div id="divReportM"  class="labReport"   >
+                                    <div id="divReportPH"  class="labReport"   >
                                         <ez:common_report 
                                             showBackground="#{patientReportController.showBackground}" 
                                             commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
