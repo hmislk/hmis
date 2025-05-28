@@ -304,24 +304,31 @@
                                             </table>
                                         </h:panelGroup>
 
-
-                                        <p:panelGrid columns="3" >
-                                            <f:facet name="header" >
-                                                <h:outputLabel value="Add Group" ></h:outputLabel>
-                                            </f:facet>
+                                        <p:divider >
+                                            <b>Add Group</b>
+                                        </p:divider>
+                                        <div class="d-flex gap-3 justify-content-between">
                                             <p:outputLabel 
                                                 for="txtGroupName"
-                                                value="Group Name" ></p:outputLabel>
+                                                class="mt-2"
+                                                value="Group Name" >
+                                            </p:outputLabel>
                                             <p:inputText
                                                 id="txtGroupName"
-                                                value="#{patientReportController.groupName}" ></p:inputText>
+                                                class="w-50"
+                                                value="#{patientReportController.groupName}" >
+                                            </p:inputText>
                                             <p:commandButton 
                                                 id="btnAddPatientReportGroupForMicrobiology"
                                                 value="Add Group"
-                                                action="#{patientReportController.addPatientReportGroupForMicrobiology()}"
-                                                process="txtGroupName btnAddPatientReportGroupForMicrobiology"
-                                                update="panelDataEntryForMicrobiology"></p:commandButton>
-                                        </p:panelGrid>
+                                                icon="fa fa-plus"
+                                                ajax="false"
+                                                class="ui-button-warning"
+                                                action="#{patientReportController.addPatientReportGroupForMicrobiology()}">
+                                            </p:commandButton>
+                                        </div>
+
+                                        <p:divider />
 
                                         <h:panelGroup rendered="#{empty patientReportController.currentPatientReport.patientReportGroups}">
                                             <table >
@@ -363,17 +370,20 @@
                                         <h:panelGroup rendered="#{not empty patientReportController.currentPatientReport.patientReportGroups}">
                                             <table >
 
-                                                <ui:repeat id="tblMicValsGroupes" 
+                                                <ui:repeat 
+                                                    id="tblMicValsGroupes" 
                                                            value="#{patientReportController.currentPatientReport.patientReportGroups}"  
                                                            var="group"   
                                                            >
                                                     <tr>
                                                         <td  colspan="3">
                                                             <h:outputText 
-                                                                class="h1"
                                                                 escape="false"
-                                                                value="#{group.groupName}" ></h:outputText>
+                                                                class="h4"
+                                                                value="#{group.groupName}" >
+                                                            </h:outputText>
                                                         </td>
+
                                                     </tr>
 
                                                     <ui:repeat id="tblMicValsGrouped" 
@@ -415,9 +425,14 @@
                                                             </h:panelGroup>
 
                                                         </h:panelGroup>
-
                                                     </ui:repeat>
-
+                                                    
+                                                    <tr>
+                                                        <td colspan="4">
+                                                            <p:divider />
+                                                        </td>
+                                                    </tr>
+                                                    
                                                 </ui:repeat>
                                             </table>
                                         </h:panelGroup>
@@ -712,7 +727,7 @@
 
                     </p:panel>
 
-                    <h:panelGroup rendered="true" >
+                    <h:panelGroup rendered="false" >
                         <p:panel header="Debug" rendered="#{webUserController.hasPrivilege('Developers')}">
 
                             <p:panel header="Patient Report Items">

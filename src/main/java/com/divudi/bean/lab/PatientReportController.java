@@ -1973,11 +1973,15 @@ public class PatientReportController implements Serializable {
             // Step 2: Safely clone and add
             for (PatientReportItemValue basePvm : baseAntibioticItems) {
                 PatientReportItemValue clonedPvm = basePvm.clone();
+                clonedPvm.setStrValue(null);
+                clonedPvm.setLobValue(null);
+                clonedPvm.setDisplayValue(null);
                 clonedPvm.setPatientReportGroup(newlyAddedGroup);
                 currentPatientReport.getPatientReportItemValues().add(clonedPvm);
             }
         }
         savePatientReport();
+        setGroupName(null);
     }
 
     public PatientReportGroup addPatientReportGroup() {
@@ -2659,6 +2663,8 @@ public class PatientReportController implements Serializable {
 //            getEjbFacade().edit(r);
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
+            setGroupName("Antibiotic Sensitivity Test");
+            addPatientReportGroupForMicrobiology();
             getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
             JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
@@ -2817,6 +2823,7 @@ public class PatientReportController implements Serializable {
             return null;
         }
 
+        
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
 

@@ -41,16 +41,9 @@
                             </ui:repeat>
                         </div>
 
-                        <div style="vertical-align: top; text-align: left;  padding-top: 1%; padding-bottom: 0%; clear: left;">
-                            <h:outputLabel value="Antibiotic Sensitivity Test" 
-                                           rendered="#{patientReportController.currentPatientReport.transHasAbst}"
-                                           style="font-size: 135%; margin-top: 5px; font-weight: bold;"></h:outputLabel>
-                        </div>
                         <h:outputLabel 
                             value="#{patientInvestigationController.findAntibioticForMicrobiologyReport(patientReportController.currentPatientReport.patientReportItemValues)}"
                             style="display:none;"/>
-
-
 
                         <h:panelGroup rendered="#{empty patientReportController.currentPatientReport.patientReportGroups}">
 
@@ -107,8 +100,13 @@
                                        var="group"   
                                        >
 
-                                <h1>#{group.groupName}</h1>
-
+                                <div style="vertical-align: top; text-align: left;  padding-top: 1%; padding-bottom: 0%; clear: left;">
+                                    <h:outputLabel 
+                                        value="#{group.groupName}" 
+                                        rendered="#{patientReportController.currentPatientReport.transHasAbst}"
+                                        style="font-size: 135%; margin-top: 5px; font-weight: bold;">
+                                    </h:outputLabel>
+                                </div>
                                 <div class="row">
                                     <div class="col-6">
                                         <ui:repeat  
