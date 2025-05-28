@@ -41,20 +41,19 @@
                                 <h:outputText value="#{e.messageSubject}" />
                             </p:column>
 
-                            <p:column headerText="Error">
-                                <h:outputText value="#{e.receivedMessage}" />
+                            <p:column headerText="Retry">
+                                <p:commandButton
+                                    icon="pi pi-replay"
+                                    styleClass="ui-button-secondary"
+                                    value="Retry"
+                                    action="#{emailController.resendSelectedEmail}"
+                                    update="@form"
+                                    process="@this"
+                                    ajax="true" />
+                                <f:setPropertyActionListener
+                                    target="#{emailController.selectedEmail}"
+                                    value="#{e}" />
                             </p:column>
-
-<p:column headerText="Retry">
-    <p:commandButton
-        icon="pi pi-replay"
-        styleClass="ui-button-secondary"
-        value="Retry"
-        action="#{emailController.resendSelectedEmail}"
-        update=":form:msgs"
-        process="@this"
-        ajax="true" />
-</p:column>
                         </p:dataTable>
                     </p:panel>
                     <p:growl id="msgs" showDetail="true" life="5000" />

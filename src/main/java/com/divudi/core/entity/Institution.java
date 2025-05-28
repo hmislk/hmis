@@ -145,11 +145,16 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @ManyToOne
     Institution bankBranch;
 
+    @Deprecated // Use Application Configuration Options
     String emailSendingUsername;
+    @Deprecated // Use Application Configuration Options
     String emailSendingPassword;
 
+    @Deprecated // Use Application Configuration Options
     private String smsSendingUsername;
+    @Deprecated // Use Application Configuration Options
     private String smsSendingPassword;
+    @Deprecated // Use Application Configuration Options
     private String smsSendingAlias;
 
     //Inactive Status
