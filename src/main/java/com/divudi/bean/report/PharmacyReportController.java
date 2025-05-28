@@ -2984,6 +2984,7 @@ public class PharmacyReportController implements Serializable {
             cogs.put("ERROR", -1.0);
         }
     }
+
     private void calculateClosingStock() {
         try {
             StringBuilder jpql = new StringBuilder();
