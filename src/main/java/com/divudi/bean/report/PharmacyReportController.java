@@ -2633,6 +2633,8 @@ public class PharmacyReportController implements Serializable {
             calDrugReturnOp(baseQuery, new HashMap<>(commonParams));
             calStockConsumption(baseQuery, new HashMap<>(commonParams));
             calPurchaseReturn(baseQuery, new HashMap<>(commonParams));
+            calTransferIssueValue(baseQuery, new HashMap<>(commonParams));
+            calTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
@@ -2640,6 +2642,42 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private void calTransferIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacyTransferIssue);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billType in :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", billTypes);
+
+            double totalPurchaseReturn = calTotal(jpql, params);
+            cogs.put("Transfer Issue Value", totalPurchaseReturn);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+    private void calTransferReceiveValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacyTransferReceive);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billType in :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", billTypes);
+
+            double totalPurchaseReturn = calTotal(jpql, params);
+            cogs.put("Transfer Receive Value", totalPurchaseReturn);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            cogs.put("ERROR", -1.0);
+        }
+    }
     private void calPurchaseReturn(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
