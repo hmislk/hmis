@@ -40,6 +40,10 @@ public class AppEmail implements Serializable {
     private Bill bill;
 
     @Enumerated(EnumType.STRING)
+    private MessageType messageType;
+    
+    @Deprecated
+    @Enumerated(EnumType.STRING)
     private MessageType smsType;
 
     @ManyToOne
@@ -47,28 +51,38 @@ public class AppEmail implements Serializable {
     @ManyToOne
     private Department department;
 
+    //Sending Properties
+    private Boolean sentSuccessfully;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date sentAt;
+
+    private boolean pending;
+
     private String receipientEmail;
     private String messageSubject;
     @Lob
     private String messageBody;
 
+    @Deprecated
     private String senderUsername;
+    @Deprecated
     private String senderPassword;
+    @Deprecated
     private String senderEmail;
 
+    @Deprecated
     private String attachment1;
+    @Deprecated
     private String attachment2;
+    @Deprecated
     private String attachment3;
+    @Deprecated
     private String attachment4;
     //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
-    //Sending Properties
-    private Boolean sentSuccessfully;
-    @Temporal(javax.persistence.TemporalType.DATE)
-    private Date sentAt;
     //Retairing properties
     private boolean retired;
     @ManyToOne
@@ -101,7 +115,6 @@ public class AppEmail implements Serializable {
     public void setPatientReport(PatientReport patientReport) {
         this.patientReport = patientReport;
     }
-
 
     public WebUser getCreater() {
         return creater;
@@ -304,6 +317,22 @@ public class AppEmail implements Serializable {
         this.department = department;
     }
 
+    public boolean isPending() {
+        return pending;
+    }
 
+    public void setPending(boolean pending) {
+        this.pending = pending;
+    }
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
+    }
+    
+    
 
 }

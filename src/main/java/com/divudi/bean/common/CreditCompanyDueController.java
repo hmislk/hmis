@@ -1309,7 +1309,7 @@ public class CreditCompanyDueController implements Serializable {
         calculateCreditCompanyAmounts();
 
         List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(
-                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), true));
+                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), "due"));
 
         setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
         calculateCreditCompanyDueTotals();
