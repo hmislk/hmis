@@ -2682,10 +2682,12 @@ public class CreditCompanyDueController implements Serializable {
                 instCell.setCellValue(institution.getName());
                 instCell.setCellStyle(boldStyle);
 
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+
                 for (InstitutionBillEncounter b : encounters) {
                     Row dataRow = sheet.createRow(rowIndex++);
                     dataRow.createCell(0).setCellValue(b.getBhtNo());
-                    dataRow.createCell(1).setCellValue(b.getDateOfDischarge().toString());
+                    dataRow.createCell(1).setCellValue(b.getDateOfDischarge() != null ? sdf.format(b.getDateOfDischarge()) : "");
                     dataRow.createCell(2).setCellValue(b.getPatient().getPerson().getNameWithTitle());
                     dataRow.createCell(3).setCellValue(getPolicyNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()));
                     dataRow.createCell(4).setCellValue(getReferenceNumberFromEncounterCreditCompanyMap(b.getBhtNo(), institution.getName()));
