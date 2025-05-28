@@ -2962,14 +2962,14 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh2.institution", "ins", institution);
             addFilter(jpql, params, "sh2.department.site", "sit", site);
             addFilter(jpql, params, "sh2.department", "dep", department);
-            
+
             jpql.append("  GROUP BY sh2.itemBatch.item ")
                     .append(") ");
 
             addFilter(jpql, params, "sh.institution", "ins", institution);
             addFilter(jpql, params, "sh.department.site", "sit", site);
             addFilter(jpql, params, "sh.department", "dep", department);
-            
+
             Double totalOpeningStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
             cogs.put("Opening Stock Value", totalOpeningStockValue != null ? totalOpeningStockValue : 0.0);
 
@@ -3000,14 +3000,14 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh2.institution", "ins", institution);
             addFilter(jpql, params, "sh2.department.site", "sit", site);
             addFilter(jpql, params, "sh2.department", "dep", department);
-            
+
             jpql.append("  GROUP BY sh2.itemBatch.item ")
                     .append(") ");
 
             addFilter(jpql, params, "sh.institution", "ins", institution);
             addFilter(jpql, params, "sh.department.site", "sit", site);
             addFilter(jpql, params, "sh.department", "dep", department);
-            
+
             Double totalClosingStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
             cogs.put("Closing Stock Value", totalClosingStockValue != null ? totalClosingStockValue : 0.0);
             totalClosingStockValueByDatabaseQuery = totalClosingStockValue;
