@@ -2632,9 +2632,35 @@ public class PharmacyReportController implements Serializable {
             calDrugReturnIp(baseQuery, new HashMap<>(commonParams));
             calDrugReturnOp(baseQuery, new HashMap<>(commonParams));
             calStockConsumption(baseQuery, new HashMap<>(commonParams));
+            calPurchaseReturn(baseQuery, new HashMap<>(commonParams));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calPurchaseReturn(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", billTypeAtomics);
+
+            double totalPurchaseReturn = calTotal(jpql, params);
+            cogs.put("Purchase Return", totalPurchaseReturn);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
             cogs.put("ERROR", -1.0);
         }
     }
@@ -2649,7 +2675,7 @@ public class PharmacyReportController implements Serializable {
             jpql.append("AND sh2.pbItem.billItem.bill.billType in :conDoctype ");
             jpql.append("ORDER BY sh2.createdAt");
             params.put("conDoctype", billTypes);
-            
+
             double totalConsumption = calTotal(jpql, params);
             cogs.put("Stock Consumption", totalConsumption);
 
