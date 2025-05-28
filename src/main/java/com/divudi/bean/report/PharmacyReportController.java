@@ -119,6 +119,7 @@ import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * @author Pubudu Piyankara
@@ -2737,30 +2738,21 @@ public class PharmacyReportController implements Serializable {
             params.put("cash", PaymentMethod.Cash);
             params.put("credit", PaymentMethod.Credit);
 
-            // Add filters if needed
             addFilter(jpql, params, "b.institution", "ins", institution);
             addFilter(jpql, params, "b.department.site", "sit", site);
             addFilter(jpql, params, "b.department", "dep", department);
 
             List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-            double cashTotal = 0.0;
-            double creditTotal = 0.0;
+            // Convert to Map<PaymentMethod, Double>
+            Map<PaymentMethod, Double> totalsByMethod = results.stream()
+                    .collect(Collectors.toMap(
+                            r -> (PaymentMethod) r[0],
+                            r -> r[1] != null ? ((Number) r[1]).doubleValue() : 0.0
+                    ));
 
-            for (Object[] result : results) {
-                PaymentMethod pm = (PaymentMethod) result[0];
-                Number total = (Number) result[1]; // Could be Double, Long, or BigDecimal
-
-                if (pm == PaymentMethod.Cash) {
-                    cashTotal = total != null ? total.doubleValue() : 0.0;
-                } else if (pm == PaymentMethod.Credit) {
-                    creditTotal = total != null ? total.doubleValue() : 0.0;
-                }
-            }
-
-            // Store as negative values (assuming this is intentional for accounting purposes)
-            cogs.put("GRN CASH TOTAL", 0.0 - cashTotal);
-            cogs.put("GRN CREDIT TOTAL", 0.0 - creditTotal);
+            cogs.put("GRN CASH TOTAL", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Cash, 0.0));
+            cogs.put("GRN CREDIT TOTAL", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Credit, 0.0));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
@@ -2776,13 +2768,12 @@ public class PharmacyReportController implements Serializable {
                     BillType.PharmacyAdjustmentWholeSaleRate
             );
 
-            StringBuilder jpql = new StringBuilder()
-                    .append("SELECT sh2.id FROM StockHistory sh2 ")
-                    .append("WHERE sh2.retired = false ")
-                    .append("AND sh2.createdAt BETWEEN :fd AND :td ")
-                    .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
-                    .append("OR sh2.itemBatch.item.departmentType = :depty) ")
-                    .append("AND sh2.pbItem.billItem.bill.billType in :doctype ");
+            StringBuilder jpql = new StringBuilder("SELECT SUM(sh2.pbItem.qty * (sh2.pbItem.afterAdjustmentValue - sh2.pbItem.beforeAdjustmentValue)) "
+                    + "FROM StockHistory sh2 "
+                    + "WHERE sh2.retired = false "
+                    + "AND sh2.createdAt BETWEEN :fd AND :td "
+                    + "AND (sh2.itemBatch.item.departmentType IS NULL OR sh2.itemBatch.item.departmentType = :depty) "
+                    + "AND sh2.pbItem.billItem.bill.billType IN :doctype");
 
             Map<String, Object> params = new HashMap<>();
             params.put("depty", DepartmentType.Pharmacy);
@@ -2790,33 +2781,12 @@ public class PharmacyReportController implements Serializable {
             params.put("td", toDate);
             params.put("doctype", billTypes);
 
-            // Add filters if needed
             addFilter(jpql, params, "sh2.institution", "ins", institution);
             addFilter(jpql, params, "sh2.department.site", "sit", site);
             addFilter(jpql, params, "sh2.department", "dep", department);
 
-            jpql.append(" ORDER BY sh2.createdAt");
-
-            List<Long> stockCorrectionsIds = facade.findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            double totalCorrection = 0.0;
-
-            for (Long shid : stockCorrectionsIds) {
-                StockHistory sh = facade.find(shid);
-                if (sh == null || sh.getItemBatch() == null || sh.getItemBatch().getItem() == null) {
-                    continue;
-                }
-
-                double stockQty = sh.getPbItem().getQty();
-                double newRate = sh.getPbItem().getAfterAdjustmentValue();
-                double oldRate = sh.getPbItem().getBeforeAdjustmentValue();
-
-//            totalQty += stockQty;
-                totalCorrection += stockQty * (newRate - oldRate);
-//            totalPurchaseValue += stockQty * purchaseRate;
-            }
-
-            cogs.put("Stock Correction", totalCorrection);
+            Double totalCorrection = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            cogs.put("Stock Correction", totalCorrection != null ? totalCorrection : 0.0);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
@@ -2825,49 +2795,49 @@ public class PharmacyReportController implements Serializable {
     }
 
     private void calculateOpeningStock() {
-        StringBuilder subQuery = new StringBuilder()
-                .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
-                .append("WHERE sh2.retired = false ")
-                .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
-                .append("OR sh2.itemBatch.item.departmentType = :depty) ");
+        try {
+            StringBuilder jpql = new StringBuilder();
+            Map<String, Object> params = new HashMap<>();
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("depty", DepartmentType.Pharmacy);
-        params.put("et", CommonFunctions.getStartOfDay(fromDate));
+            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.retailsaleRate) ")
+                    .append("FROM StockHistory sh ")
+                    .append("WHERE sh.retired = false ")
+                    .append("AND sh.id IN (")
+                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                    .append("  WHERE sh2.retired = false ")
+                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
+                    .append("  AND sh2.createdAt < :et ");
 
-        addFilter(subQuery, params, "sh2.institution", "ins", institution);
-        addFilter(subQuery, params, "sh2.department.site", "sit", site);
-        addFilter(subQuery, params, "sh2.department", "dep", department);
-        if (amp != null) {
-            addFilter(subQuery, params, "sh2.itemBatch.item", "itm", amp);
-        }
-        addFilter(subQuery, "AND sh2.createdAt < :et");
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("et", CommonFunctions.getStartOfDay(fromDate));
 
-        subQuery.append("GROUP BY sh2.itemBatch.item");
-
-        List<Long> latestStockHistoryIds = facade.findLongValuesByJpql(subQuery.toString(), params);
-
-//        double totalQty = 0.0;
-        double totalSaleValue = 0.0;
-//        double totalPurchaseValue = 0.0;
-
-        for (Long shid : latestStockHistoryIds) {
-            StockHistory sh = facade.find(shid);
-            if (sh == null || sh.getItemBatch() == null || sh.getItemBatch().getItem() == null) {
-                continue;
+            // Subquery filters
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+            if (amp != null) {
+                addFilter(jpql, params, "sh2.itemBatch.item", "itm", amp);
             }
 
-            double stockQty = sh.getItemStock();
-//            double purchaseRate = sh.getItemBatch().getPurcahseRate();
-            double saleRate = sh.getItemBatch().getRetailsaleRate();
+            jpql.append("  GROUP BY sh2.itemBatch.item ")
+                    .append(") ");
 
-//            totalQty += stockQty;
-            totalSaleValue += stockQty * saleRate;
-//            totalPurchaseValue += stockQty * purchaseRate;
+            // Outer query filters (match subquery for correctness)
+            addFilter(jpql, params, "sh.institution", "ins", institution);
+            addFilter(jpql, params, "sh.department.site", "sit", site);
+            addFilter(jpql, params, "sh.department", "dep", department);
+            if (amp != null) {
+                addFilter(jpql, params, "sh.itemBatch.item", "itm", amp);
+            }
+
+            Double totalOpeningStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            cogs.put("OPENING STOCK VALUE", totalOpeningStockValue != null ? totalOpeningStockValue : 0.0);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
+            cogs.put("ERROR", -1.0);
         }
-
-        cogs.put("OPENING STOCK VALUE", totalSaleValue);
-
     }
 
     public Map<String, Double> getCogs() {
