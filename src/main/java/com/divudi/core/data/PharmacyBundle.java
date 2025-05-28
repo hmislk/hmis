@@ -28,6 +28,7 @@ import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -71,6 +72,15 @@ public class PharmacyBundle implements Serializable {
     private double saleValue;
     private double purchaseValue;
     private double grossProfitValue;
+
+    private BigDecimal grossSaleRate = BigDecimal.ZERO;
+    private BigDecimal discountRate = BigDecimal.ZERO;
+    private BigDecimal marginRate = BigDecimal.ZERO;
+    private BigDecimal netSaleRate = BigDecimal.ZERO;
+    private BigDecimal grossSaleValue = BigDecimal.ZERO;
+    private BigDecimal marginValue = BigDecimal.ZERO;
+    private BigDecimal discountValue = BigDecimal.ZERO;
+    private BigDecimal netSaleValue = BigDecimal.ZERO;
 
     private double onCallValue;
     private double cashValue;
@@ -486,6 +496,63 @@ public class PharmacyBundle implements Serializable {
             freeQuantityValueAtRetailSaleRate += freeQty * retailRate;
             quantityPlusFreeQuantityValueAtRetailSaleRate += (qty + freeQty) * retailRate;
         }
+    }
+
+    public void groupSaleDetailsByItems() {
+
+        grossSaleValue = BigDecimal.ZERO;
+        marginValue = BigDecimal.ZERO;
+        discountValue = BigDecimal.ZERO;
+        netSaleValue = BigDecimal.ZERO;
+        quantity = 0.0;
+
+        Map<Item, PharmacyRow> itemRowMap = new HashMap<>();
+
+        for (PharmacyRow r : getRows()) {
+            BillItem bi = r.getBillItem();
+            if (bi == null || bi.getPharmaceuticalBillItem() == null || bi.getItem() == null) {
+                continue;
+            }
+
+            Item item = bi.getItem();
+            double qty = bi.getQty();
+
+            BigDecimal gross = BigDecimal.valueOf(bi.getGrossValue());
+            BigDecimal margin = BigDecimal.valueOf(bi.getMarginValue());
+            BigDecimal discount = BigDecimal.valueOf(bi.getDiscount());
+            BigDecimal net = BigDecimal.valueOf(bi.getNetValue());
+
+            PharmacyRow row = itemRowMap.get(item);
+            if (row == null) {
+                row = new PharmacyRow();
+                row.setItem(item);
+                row.setQuantity(0.0);
+                row.setGrossSaleValue(BigDecimal.ZERO);
+                row.setMarginValue(BigDecimal.ZERO);
+                row.setDiscountValue(BigDecimal.ZERO);
+                row.setNetSaleValue(BigDecimal.ZERO);
+                itemRowMap.put(item, row);
+            }
+
+            row.setQuantity(row.getQuantity() + qty);
+            row.setGrossSaleValue(row.getGrossSaleValue().add(gross));
+            row.setMarginValue(row.getMarginValue().add(margin));
+            row.setDiscountValue(row.getDiscountValue().add(discount));
+            row.setNetSaleValue(row.getNetSaleValue().add(net));
+
+            quantity += qty;
+            grossSaleValue = grossSaleValue.add(gross);
+            marginValue = marginValue.add(margin);
+            discountValue = discountValue.add(discount);
+            netSaleValue = netSaleValue.add(net);
+        }
+
+        setRows(new ArrayList<>(itemRowMap.values()));
+        summaryRow = new PharmacyRow();
+        summaryRow.setGrossSaleValue(grossSaleValue);
+        summaryRow.setMarginValue(marginValue);
+        summaryRow.setDiscountValue(discountValue);
+        summaryRow.setNetSaleValue(netSaleValue);
     }
 
     public void generatePaymentDetailsForBills() {
@@ -2110,6 +2177,70 @@ public class PharmacyBundle implements Serializable {
 
     public void setGrossProfitValue(double grossProfitValue) {
         this.grossProfitValue = grossProfitValue;
+    }
+
+    public BigDecimal getGrossSaleRate() {
+        return grossSaleRate;
+    }
+
+    public void setGrossSaleRate(BigDecimal grossSaleRate) {
+        this.grossSaleRate = grossSaleRate;
+    }
+
+    public BigDecimal getDiscountRate() {
+        return discountRate;
+    }
+
+    public void setDiscountRate(BigDecimal discountRate) {
+        this.discountRate = discountRate;
+    }
+
+    public BigDecimal getMarginRate() {
+        return marginRate;
+    }
+
+    public void setMarginRate(BigDecimal marginRate) {
+        this.marginRate = marginRate;
+    }
+
+    public BigDecimal getNetSaleRate() {
+        return netSaleRate;
+    }
+
+    public void setNetSaleRate(BigDecimal netSaleRate) {
+        this.netSaleRate = netSaleRate;
+    }
+
+    public BigDecimal getGrossSaleValue() {
+        return grossSaleValue;
+    }
+
+    public void setGrossSaleValue(BigDecimal grossSaleValue) {
+        this.grossSaleValue = grossSaleValue;
+    }
+
+    public BigDecimal getMarginValue() {
+        return marginValue;
+    }
+
+    public void setMarginValue(BigDecimal marginValue) {
+        this.marginValue = marginValue;
+    }
+
+    public BigDecimal getDiscountValue() {
+        return discountValue;
+    }
+
+    public void setDiscountValue(BigDecimal discountValue) {
+        this.discountValue = discountValue;
+    }
+
+    public BigDecimal getNetSaleValue() {
+        return netSaleValue;
+    }
+
+    public void setNetSaleValue(BigDecimal netSaleValue) {
+        this.netSaleValue = netSaleValue;
     }
 
 }

@@ -348,6 +348,87 @@ public class IncomeBundle implements Serializable {
         System.out.println("Total Gross Profit: " + grossProfitValue);
     }
 
+    public void generateRetailAndCostDetailsForByItems() {
+        saleValue = 0;
+        purchaseValue = 0;
+        grossProfitValue = 0;
+
+        
+        
+        for (IncomeRow r : getRows()) {
+            PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
+            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
+                continue;
+            }
+            Item itemInPharmaceuticalBillItem = b.getBillItem().getItem();
+
+            
+            
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b.getBillItem())
+                    .map(BillItem::getBill)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+            if (bta == null || bta.getBillCategory() == null) {
+                continue; // unable to categorise safely
+            }
+            BillCategory bc = bta.getBillCategory();
+
+            Double q = b.getQty();
+            Double rRate = b.getRetailRate();
+            if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                rRate = b.getBillItem().getNetRate();
+            }
+
+            Double pRate = b.getPurchaseRate();
+
+            if (q == null || rRate == null || pRate == null) {
+                continue;
+            }
+
+            double qty = Math.abs(q);
+            double retail = Math.abs(rRate);
+            double purchase = Math.abs(pRate);
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+            double grossProfit = 0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    grossProfit = (retail - purchase) * qty;
+                    break;
+
+                case CANCELLATION:
+                case REFUND:
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    grossProfit = -(retail - purchase) * qty;
+                    break;
+
+                default:
+                    break;
+            }
+
+            
+
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+            grossProfitValue += grossProfit;
+        }
+
+        System.out.println("==== Final Totals ====");
+        System.out.println("Total Sale Value: " + saleValue);
+        System.out.println("Total Purchase Value: " + purchaseValue);
+        System.out.println("Total Gross Profit: " + grossProfitValue);
+    }
+
+    
+    
     public void generateRetailAndCostDetailsForPharmaceuticalBill() {
         saleValue = 0;
         purchaseValue = 0;
