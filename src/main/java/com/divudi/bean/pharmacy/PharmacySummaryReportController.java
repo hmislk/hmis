@@ -249,6 +249,10 @@ public class PharmacySummaryReportController implements Serializable {
         return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
     }
 
+    public String navigateToPharmacyMovementWithStockReport() {
+        return "/pharmacy/reports/movement_reports/movement_out_with_stock_report?faces-redirect=true";
+    }
+    
     public String navigateToPharmacyProcurementReport() {
         return "/pharmacy/reports/procurement_reports/pharmacy_procurement_report?faces-redirect=true";
     }
