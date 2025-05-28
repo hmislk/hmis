@@ -2631,16 +2631,16 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "sh2.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "sh2.department", "dep", department);
 
-            calDrugReturnIp(baseQuery, new HashMap<>(commonParams));
-            calDrugReturnOp(baseQuery, new HashMap<>(commonParams));
-            calStockConsumption(baseQuery, new HashMap<>(commonParams));
-            calPurchaseReturn(baseQuery, new HashMap<>(commonParams));
-            calTransferIssueValue(baseQuery, new HashMap<>(commonParams));
-            calTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
-            calSaleCreditValue(baseQuery, new HashMap<>(commonParams));
-            calBhtIssueValue(baseQuery, new HashMap<>(commonParams));
-            calSaleCreditCard(baseQuery, new HashMap<>(commonParams));
-            calSaleCash(baseQuery, new HashMap<>(commonParams));
+            calculateDrugReturnIp(baseQuery, new HashMap<>(commonParams));
+            calculateDrugReturnOp(baseQuery, new HashMap<>(commonParams));
+            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
+            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
+            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
+            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
+            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
             calculateClosingStockValue();
 
         } catch (Exception e) {
@@ -2674,7 +2674,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calSaleCash(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateSaleCash(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
             jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
@@ -2692,7 +2692,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calSaleCreditCard(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateSaleCreditCard(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
             jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
@@ -2710,7 +2710,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calBhtIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateBhtIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
 
@@ -2727,7 +2727,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
 
@@ -2750,7 +2750,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calTransferIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateTransferIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
 
@@ -2767,7 +2767,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calTransferReceiveValue(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateTransferReceiveValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
 
@@ -2784,7 +2784,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calPurchaseReturn(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculatePurchaseReturn(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -2810,7 +2810,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calStockConsumption(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateStockConsumption(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
 
@@ -2827,7 +2827,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calDrugReturnIp(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateDrugReturnIp(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -2849,7 +2849,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calDrugReturnOp(StringBuilder baseQuery, Map<String, Object> params) {
+    private void calculateDrugReturnOp(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
