@@ -162,6 +162,12 @@ public class ReportTemplateRow implements Serializable {
         this.itemTotal = itemTotal;
         this.institution = institution;
     }
+    
+    public ReportTemplateRow(Department  toDpartment, BillTypeAtomic  billTypeAtomic, Long count) {
+        this.billTypeAtomic = billTypeAtomic;
+        this.toDepartment = toDpartment;
+        this.itemCount = count;
+    }
 
     public ReportTemplateRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
         this.itemCount = itemCount;
