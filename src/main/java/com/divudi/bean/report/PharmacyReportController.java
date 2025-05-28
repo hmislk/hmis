@@ -2644,7 +2644,7 @@ public class PharmacyReportController implements Serializable {
             calculateClosingStockValue();
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            JsfUtil.addErrorMessage(e, "Error in COGS components");
             cogs.put("ERROR", -1.0);
         }
     }
