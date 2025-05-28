@@ -106,10 +106,12 @@
                                             <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">
                                             </h:outputLabel>
                                             <br/>
-                                            <h:outputLabel value="Ploicy Number : #{b.patientEncounter.policyNo}">
+                                            <h:outputLabel
+                                                    value="Policy Number : #{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                             </h:outputLabel>
                                             <br/>
-                                            <h:outputLabel value="Referance Number : #{b.patientEncounter.referanceNo}">
+                                            <h:outputLabel
+                                                    value="Referance Number : #{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                             </h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">
@@ -156,10 +158,12 @@
                                         <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Ploicy Number : #{b.patientEncounter.policyNo}">
+                                        <h:outputLabel
+                                                value="Policy Number : #{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Referance Number : #{b.patientEncounter.referanceNo}">
+                                        <h:outputLabel
+                                                value="Referance Number : #{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                         </h:outputLabel>
                                         <br/>
                                         <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">
@@ -204,10 +208,12 @@
                                         <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Ploicy Number : #{b.patientEncounter.policyNo}">
+                                        <h:outputLabel
+                                                value="Policy Number : #{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Referance Number : #{b.patientEncounter.referanceNo}">
+                                        <h:outputLabel
+                                                value="Referance Number : #{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                         </h:outputLabel>
                                         <br/>
                                         <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">
@@ -255,10 +261,12 @@
                                         <h:outputLabel value="Duration Days : #{b.patientEncounter.transDayCount}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Ploicy Number : #{b.patientEncounter.policyNo}">
+                                        <h:outputLabel
+                                                value="Policy Number : #{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                         </h:outputLabel>
                                         <br/>
-                                        <h:outputLabel value="Referance Number : #{b.patientEncounter.referanceNo}">
+                                        <h:outputLabel
+                                                value="Referance Number : #{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(b.patientEncounter.bhtNo, i.institution.name)}">
                                         </h:outputLabel>
                                         <br/>
                                         <h:outputLabel value="Credit Limit : #{b.patientEncounter.creditLimit}">
@@ -368,7 +376,7 @@
                     <!--                            <p:column>-->
                     <!--                                <h:outputLabel id="colp1DetailDue" value="#{r.zeroToThirtyEncounter.bhtNo}"/>-->
                     <!--                                <p:tooltip for="colp1DetailDue">-->
-                    <!--                                    <h:outputLabel value="Ploicy Number : #{r.zeroToThirtyEncounter.policyNo}">-->
+                    <!--                                    <h:outputLabel value="Policy Number : #{r.zeroToThirtyEncounter.policyNo}">-->
                     <!--                                    </h:outputLabel>-->
                     <!--                                    <br/>-->
                     <!--                                    <h:outputLabel value="Referance Number : #{r.zeroToThirtyEncounter.referanceNo}">-->
@@ -409,7 +417,7 @@
                     <!--                            <p:column>-->
                     <!--                                <h:outputLabel id="colp1DetailDue2" value="#{r.thirtyToSixtyEncounter.bhtNo}"/>-->
                     <!--                                <p:tooltip for="colp1DetailDue2">-->
-                    <!--                                    <h:outputLabel value="Ploicy Number : #{r.thirtyToSixtyEncounter.policyNo}">-->
+                    <!--                                    <h:outputLabel value="Policy Number : #{r.thirtyToSixtyEncounter.policyNo}">-->
                     <!--                                    </h:outputLabel>-->
                     <!--                                    <br/>-->
                     <!--                                    <h:outputLabel value="Referance Number : #{r.thirtyToSixtyEncounter.referanceNo}">-->
@@ -450,7 +458,7 @@
                     <!--                            <p:column>-->
                     <!--                                <h:outputLabel id="colp1DetailDue3" value="#{r.sixtyToNintyEncounter.bhtNo}"/>-->
                     <!--                                <p:tooltip for="colp1DetailDue3">-->
-                    <!--                                    <h:outputLabel value="Ploicy Number : #{r.sixtyToNintyEncounter.policyNo}">-->
+                    <!--                                    <h:outputLabel value="Policy Number : #{r.sixtyToNintyEncounter.policyNo}">-->
                     <!--                                    </h:outputLabel>-->
                     <!--                                    <br/>-->
                     <!--                                    <h:outputLabel value="Referance Number : #{r.sixtyToNintyEncounter.referanceNo}">-->
@@ -491,7 +499,7 @@
                     <!--                            <p:column>-->
                     <!--                                <h:outputLabel id="colp1DetailDue4" value="#{r.moreThanNintyEncounter.bhtNo}"/>-->
                     <!--                                <p:tooltip for="colp1DetailDue4">-->
-                    <!--                                    <h:outputLabel value="Ploicy Number : #{r.moreThanNintyEncounter.policyNo}">-->
+                    <!--                                    <h:outputLabel value="Policy Number : #{r.moreThanNintyEncounter.policyNo}">-->
                     <!--                                    </h:outputLabel>-->
                     <!--                                    <br/>-->
                     <!--                                    <h:outputLabel value="Referance Number : #{r.moreThanNintyEncounter.referanceNo}">-->

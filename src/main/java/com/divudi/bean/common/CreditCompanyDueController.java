@@ -409,6 +409,7 @@ public class CreditCompanyDueController implements Serializable {
         makeNull();
 
         Map<Institution, List<Bill>> institutionMap = getCreditCompanyBillsGroupedByCreditCompany();
+        final List<PatientEncounter> allPatientEncounters = new ArrayList<>();
 
         creditCompanyAge = new ArrayList<>();
         for (Institution ins : institutionMap.keySet()) {
@@ -425,8 +426,42 @@ public class CreditCompanyDueController implements Serializable {
                     || newRow.getValue3() != 0
                     || newRow.getValue4() != 0) {
                 creditCompanyAge.add(newRow);
+
+                allPatientEncounters.addAll(newRow.getAllPatientEncountersByBills());
             }
         }
+
+        setEncounterCreditCompanyMap(getEncounterCreditCompanies(allPatientEncounters));
+    }
+
+    // Map<bht, Map<Credit Company, Encounter Credit Company>>
+    private Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanies(final List<PatientEncounter> patientEncounters) {
+        List<Long> patientEncounterIds = patientEncounters.stream()
+                .map(PatientEncounter::getId)
+                .collect(Collectors.toList());
+
+        if (patientEncounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT ecc FROM EncounterCreditCompany ecc WHERE ecc.patientEncounter.id IN :patientEncounterIds";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("patientEncounterIds", patientEncounterIds);
+
+        List<EncounterCreditCompany> results = encounterCreditCompanyFacade.findByJpql(jpql, parameters);
+
+        Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap = new HashMap<>();
+
+        for (EncounterCreditCompany ecc : results) {
+            String bhtNo = ecc.getPatientEncounter().getBhtNo();
+            String institutionName = ecc.getInstitution().getName();
+
+            encounterCreditCompanyMap
+                    .computeIfAbsent(bhtNo, k -> new HashMap<>())
+                    .putIfAbsent(institutionName, ecc);
+        }
+
+        return encounterCreditCompanyMap;
     }
 
     private Map<Institution, List<Bill>> getCreditCompanyBillsGroupedByCreditCompany() {
@@ -1370,7 +1405,7 @@ public class CreditCompanyDueController implements Serializable {
             mergedStyle.setFont(boldFont);
 
             Row headerRow = sheet.createRow(rowIndex++);
-            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name","Policy Number", "Reference Number",
+            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Policy Number", "Reference Number",
                     "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -1473,7 +1508,7 @@ public class CreditCompanyDueController implements Serializable {
             table.setWidthPercentage(100);
             table.setWidths(new float[]{1.2f, 2.5f, 3f, 1.2f, 1.2f, 2f, 2f, 2f, 2f, 2f, 2f});
 
-            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name","Policy Number", "Reference Number",
+            String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Policy Number", "Reference Number",
                     "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
             for (String h : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
