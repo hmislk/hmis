@@ -285,9 +285,9 @@ public class SearchController implements Serializable {
                     break;
                 }
             }
-        }else if(selectedChannelBookingBillRow.getBill() instanceof RefundBill){
-            for(ReportTemplateRow r : bundle.getReportTemplateRows()){
-                if(r.getBill()!= null && r.getBill().getRefundedBill() != null && r.getBill().getRefundedBill().equals(selectedChannelBookingBillRow.getBill())){
+        } else if (selectedChannelBookingBillRow.getBill() instanceof RefundBill) {
+            for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+                if (r.getBill() != null && r.getBill().getRefundedBill() != null && r.getBill().getRefundedBill().equals(selectedChannelBookingBillRow.getBill())) {
                     this.selectedChannelBookingBillRow = r;
                     break;
                 }
@@ -402,7 +402,7 @@ public class SearchController implements Serializable {
         toDate = CommonFunctions.getEndOfMonth(new Date());
         return "/analytics/bill_count_list?faces-redirect=true";
     }
-    
+
     public String navigateToMyDepartmentAllCashierSummary() {
         department = sessionController.getDepartment();
         institution = sessionController.getInstitution();
@@ -546,11 +546,11 @@ public class SearchController implements Serializable {
             bills = new ArrayList<>();
         }
     }
-    
+
     public void findBillcount() {
-        if(configOptionApplicationController.getBooleanValueByKey("Calculating bill count using the item in bills", true)){
+        if (configOptionApplicationController.getBooleanValueByKey("Calculating bill count using the item in bills", true)) {
             findBillcountUsingBillItem();
-        }else{
+        } else {
             findBillcountUsingBills();
         }
     }
@@ -592,7 +592,7 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
 
         Long mainRowCount = 1L;
-        
+
         for (BillTypeAtomic atomic : billTypeAtomic) {
             Map temMap = new HashMap();
             sql = "select new com.divudi.core.light.common.BillLight( b.billTypeAtomic, count(b) )"
@@ -602,31 +602,31 @@ public class SearchController implements Serializable {
                     + " and b.billTypeAtomic =:billTypes ";
 
             if (institution != null) {
-                sql +=" and b.institution =:ins";
+                sql += " and b.institution =:ins";
                 temMap.put("ins", getInstitution());
             }
             if (site != null) {
-                sql +=" and b.department.site =:site";
+                sql += " and b.department.site =:site";
                 temMap.put("site", getSite());
             }
             if (department != null) {
-                sql +=" and b.department =:dept";
+                sql += " and b.department =:dept";
                 temMap.put("dept", getDepartment());
             }
             if (toInstitution != null) {
-                sql +=" and b.toInstitution =:toIns";
+                sql += " and b.toInstitution =:toIns";
                 temMap.put("toIns", getToInstitution());
             }
             if (toSite != null) {
-                sql +=" and b.toDepartment.site =:toSite";
+                sql += " and b.toDepartment.site =:toSite";
                 temMap.put("toSite", getToSite());
             }
             if (toDepartment != null) {
-                sql +=" and b.toDepartment =:toDept";
+                sql += " and b.toDepartment =:toDept";
                 temMap.put("toDept", getToDepartment());
             }
 
-            sql +=" group by b.billTypeAtomic";
+            sql += " group by b.billTypeAtomic";
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
             temMap.put("billTypes", atomic);
@@ -647,7 +647,7 @@ public class SearchController implements Serializable {
             }
 
             Map params = new HashMap();
-            
+
             String jpql = "select new com.divudi.core.light.common.BillLight( b.toDepartment, count(b) )"
                     + " from Bill b where "
                     + " b.createdAt between :fromDate and :toDate "
@@ -655,31 +655,31 @@ public class SearchController implements Serializable {
                     + " and b.cancelled=false "
                     + " and b.toDepartment is not null";
             if (institution != null) {
-                jpql +=" and b.institution =:ins";
+                jpql += " and b.institution =:ins";
                 params.put("ins", getInstitution());
             }
             if (site != null) {
-                jpql +=" and b.department.site =:site";
+                jpql += " and b.department.site =:site";
                 params.put("site", getSite());
             }
             if (department != null) {
-                jpql +=" and b.department =:dept";
+                jpql += " and b.department =:dept";
                 params.put("dept", getDepartment());
             }
             if (toInstitution != null) {
-                jpql +=" and b.toInstitution =:toIns";
+                jpql += " and b.toInstitution =:toIns";
                 params.put("toIns", getToInstitution());
             }
             if (toSite != null) {
-                jpql +=" and b.toDepartment.site =:toSite";
+                jpql += " and b.toDepartment.site =:toSite";
                 params.put("toSite", getToSite());
             }
             if (toDepartment != null) {
-                jpql +=" and b.toDepartment =:toDept";
+                jpql += " and b.toDepartment =:toDept";
                 params.put("toDept", getToDepartment());
             }
-     
-            jpql +=" group by b.toDepartment";
+
+            jpql += " group by b.toDepartment";
             params.put("toDate", getToDate());
             params.put("fromDate", getFromDate());
             params.put("billTypes", atomic);
@@ -740,7 +740,7 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
 
         Long mainRowCount = 1L;
-        
+
         for (BillTypeAtomic atomic : billTypeAtomic) {
             Map temMap = new HashMap();
             sql = "select new com.divudi.core.data.ReportTemplateRow(bi.item.department, b.billTypeAtomic, count(b) )"
@@ -752,40 +752,40 @@ public class SearchController implements Serializable {
                     + " and b.billTypeAtomic =:billTypes ";
 
             if (institution != null) {
-                sql +=" and b.institution =:ins";
+                sql += " and b.institution =:ins";
                 temMap.put("ins", institution);
             }
             if (site != null) {
-                sql +=" and b.department.site =:site";
+                sql += " and b.department.site =:site";
                 temMap.put("site", site);
             }
             if (department != null) {
-                sql +=" and b.department =:dept";
+                sql += " and b.department =:dept";
                 temMap.put("dept", department);
             }
             if (toInstitution != null) {
-                sql +=" and b.toInstitution =:toIns";
+                sql += " and b.toInstitution =:toIns";
                 temMap.put("toIns", toInstitution);
             }
             if (toSite != null) {
-                sql +=" and b.toDepartment.site =:toSite";
+                sql += " and b.toDepartment.site =:toSite";
                 temMap.put("toSite", toSite);
             }
             if (toDepartment != null) {
-                sql +=" and b.toDepartment =:toDept";
+                sql += " and b.toDepartment =:toDept";
                 temMap.put("toDept", toDepartment);
             }
 
-            sql +=" group by bi.item.department, b.billTypeAtomic";
+            sql += " group by bi.item.department, b.billTypeAtomic";
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
             temMap.put("billTypes", atomic);
-            List<ReportTemplateRow> mainBills = (List<ReportTemplateRow>)getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+            List<ReportTemplateRow> mainBills = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
             if (mainBills == null) {
                 continue;
             }
-            
+
             bundle.getReportTemplateRows().addAll(mainBills);
         }
     }
@@ -5664,6 +5664,12 @@ public class SearchController implements Serializable {
                     params.put("netTotal", netTotalValue);
                 } catch (NumberFormatException e) {
                 }
+            }
+            if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+                jpql += " and b.id in (select bItem.bill.id  "
+                        + " from BillItem bItem where bItem.retired=false and  "
+                        + " ((bItem.item.name) like :itm ))";
+                params.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
             }
         }
 
@@ -19659,8 +19665,6 @@ public class SearchController implements Serializable {
         bills = billFacade.findByJpql(jpql, m);
 
     }
-    
-    
 
     public void prepareDataBillsAndBillItemsDownload() {
         // JPQL to fetch Bills and their BillItems through Payments
