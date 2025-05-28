@@ -205,7 +205,6 @@
                             icon="pi pi-cog">
                         </p:commandButton>
 
-
                         <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL'}" >
 
                             <p:commandButton 
@@ -432,18 +431,18 @@
                                 style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
                                 styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                                 value="#{pharmacySummaryReportController.pharmacyBundle.rows}" 
-                                var="row"
+                                var="rowi"
                                 paginator="true"
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}" 
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
                                 paginatorPosition="bottom">
 
                                 <p:column headerText="Item">
-                                    <h:outputText value="#{row.item.name}" />
+                                    <h:outputText value="#{rowi.item.name}" />
                                 </p:column>
 
                                 <p:column headerText="Qty" width="6em" class="text-end">
-                                    <h:outputText value="#{row.quantity}">
+                                    <h:outputText value="#{rowi.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -454,7 +453,7 @@
                                 </p:column>
 
                                 <p:column headerText="Gross" width="10em" class="text-end">
-                                    <h:outputText value="#{row.grossSaleValue}">
+                                    <h:outputText value="#{rowi.grossSaleValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -465,7 +464,7 @@
                                 </p:column>
 
                                 <p:column headerText="Discount" width="10em" class="text-end">
-                                    <h:outputText value="#{row.discountValue}">
+                                    <h:outputText value="#{rowi.discountValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -476,7 +475,7 @@
                                 </p:column>
 
                                 <p:column headerText="Margin" width="10em" class="text-end">
-                                    <h:outputText value="#{row.marginValue}">
+                                    <h:outputText value="#{rowi.marginValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -487,11 +486,11 @@
                                 </p:column>
 
                                 <p:column headerText="Net" width="10em" class="text-end">
-                                    <h:outputText value="#{row.netSaleValue}">
+                                    <h:outputText value="#{rowi.netSaleValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netSaleValue}" style="font-weight: bold">
+                                        <h:outputText value="#{pharmacySummaryReportController.pharmacyBundle.summaryRow.netSaleValue}" style="font-weight: bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>

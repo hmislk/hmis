@@ -498,31 +498,37 @@ public class PharmacyBundle implements Serializable {
         }
     }
 
+    // ChatGPT contributed - Groups PharmacyRow list by Item ID to avoid detached entity issues
     public void groupSaleDetailsByItems() {
-
         grossSaleValue = BigDecimal.ZERO;
         marginValue = BigDecimal.ZERO;
         discountValue = BigDecimal.ZERO;
         netSaleValue = BigDecimal.ZERO;
         quantity = 0.0;
-
-        Map<Item, PharmacyRow> itemRowMap = new HashMap<>();
-
+        Map<Long, PharmacyRow> itemRowMap = new HashMap<>();
         for (PharmacyRow r : getRows()) {
-            BillItem bi = r.getBillItem();
-            if (bi == null || bi.getPharmaceuticalBillItem() == null || bi.getItem() == null) {
+            PharmaceuticalBillItem pbi = r.getPharmaceuticalBillItem();
+            if (pbi == null) {
                 continue;
             }
-
+            BillItem bi = pbi.getBillItem();
+            if (bi == null) {
+                continue;
+            }
+            if (bi.getItem() == null) {
+                continue;
+            }
             Item item = bi.getItem();
+            Long itemId = item.getId();
+            if (itemId == null) {
+                continue;
+            }
             double qty = bi.getQty();
-
             BigDecimal gross = BigDecimal.valueOf(bi.getGrossValue());
             BigDecimal margin = BigDecimal.valueOf(bi.getMarginValue());
             BigDecimal discount = BigDecimal.valueOf(bi.getDiscount());
             BigDecimal net = BigDecimal.valueOf(bi.getNetValue());
-
-            PharmacyRow row = itemRowMap.get(item);
+            PharmacyRow row = itemRowMap.get(itemId);
             if (row == null) {
                 row = new PharmacyRow();
                 row.setItem(item);
@@ -531,28 +537,28 @@ public class PharmacyBundle implements Serializable {
                 row.setMarginValue(BigDecimal.ZERO);
                 row.setDiscountValue(BigDecimal.ZERO);
                 row.setNetSaleValue(BigDecimal.ZERO);
-                itemRowMap.put(item, row);
+                itemRowMap.put(itemId, row);
             }
-
             row.setQuantity(row.getQuantity() + qty);
             row.setGrossSaleValue(row.getGrossSaleValue().add(gross));
             row.setMarginValue(row.getMarginValue().add(margin));
             row.setDiscountValue(row.getDiscountValue().add(discount));
             row.setNetSaleValue(row.getNetSaleValue().add(net));
-
             quantity += qty;
             grossSaleValue = grossSaleValue.add(gross);
             marginValue = marginValue.add(margin);
             discountValue = discountValue.add(discount);
             netSaleValue = netSaleValue.add(net);
         }
-
-        setRows(new ArrayList<>(itemRowMap.values()));
+        List<PharmacyRow> grouped = new ArrayList<>(itemRowMap.values());
+        grouped.sort(Comparator.comparing(r -> r.getItem().getName(), Comparator.nullsLast(String::compareToIgnoreCase)));
+        setRows(grouped);
         summaryRow = new PharmacyRow();
         summaryRow.setGrossSaleValue(grossSaleValue);
         summaryRow.setMarginValue(marginValue);
         summaryRow.setDiscountValue(discountValue);
         summaryRow.setNetSaleValue(netSaleValue);
+        summaryRow.setQuantity(quantity);
     }
 
     public void generatePaymentDetailsForBills() {

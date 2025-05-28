@@ -547,6 +547,7 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processMovementOutWithStocksReport() {
+        System.out.println("processMovementOutWithStocksReport");
         reportTimerController.trackReportExecution(() -> {
             if (reportViewType == null) {
                 JsfUtil.addErrorMessage("Please select a report view type.");
@@ -827,9 +828,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReportByBillItem() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReport");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
             List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(pbis);
             bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
@@ -837,7 +836,6 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processMovementOutWithStockReportByItem() {
-            System.out.println("processPharmacyIncomeReport");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
             List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             pharmacyBundle = new PharmacyBundle(pbis);
@@ -846,9 +844,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReportByBill() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReport");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
             List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(pbis);
             bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
