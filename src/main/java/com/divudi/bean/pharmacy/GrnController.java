@@ -557,6 +557,7 @@ public class GrnController implements Serializable {
 
     }
 
+// ChatGPT contributed fix - ensure Stock is set before persisting PharmaceuticalBillItem
     public void settle() {
         if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
@@ -568,17 +569,11 @@ public class GrnController implements Serializable {
         if (getGrnBill().getReferenceInstitution() == null) {
             getGrnBill().setReferenceInstitution(getReferenceInstitution());
         }
-
         if (getGrnBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment method");
             return;
         }
 
-//        if (currentGrnBillPre != null) {
-//            getGrnBill().setPaymentMethod(getCurrentGrnBillPre().getPaymentMethod());
-//        } else {
-//            getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
-//        }
         getGrnBill().setInvoiceDate(invoiceDate);
         getGrnBill().setInvoiceNumber(invoiceNumber);
         String msg = pharmacyCalculation.errorCheck(getGrnBill(), billItems);
@@ -593,7 +588,7 @@ public class GrnController implements Serializable {
 
         if (getGrnBill().getReferenceBill() != null) {
             if (getGrnBill().getReferenceBill().getId() == null) {
-
+                // No action, but condition handled
             }
         }
 
@@ -603,7 +598,6 @@ public class GrnController implements Serializable {
             if (i.getTmpQty() == 0.0 && i.getTmpFreeQty() == 0.0) {
                 continue;
             }
-
             if (i.getTmpQty() < 0.0 && i.getTmpFreeQty() < 0.0) {
                 continue;
             }
@@ -618,37 +612,28 @@ public class GrnController implements Serializable {
                 getBillItemFacade().create(i);
             }
 
+            ItemBatch itemBatch = getPharmacyCalculation().saveItemBatch(i);
+            double addingQty = ph.getQtyInUnit() + ph.getFreeQtyInUnit();
+            ph.setItemBatch(itemBatch);
+
+            Stock stock = getPharmacyBean().addToStock(ph, Math.abs(addingQty), getSessionController().getDepartment());
+            ph.setStock(stock);
+
             if (ph.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(ph);
+            } else {
+                getPharmaceuticalBillItemFacade().edit(ph);
             }
 
             i.setPharmaceuticalBillItem(ph);
             getBillItemFacade().edit(i);
 
-            //     updatePoItemQty(i);
-            //System.err.println("1 " + i);
-            ItemBatch itemBatch = getPharmacyCalculation().saveItemBatch(i);
-            // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
-
-            double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
-
-            i.getPharmaceuticalBillItem().setItemBatch(itemBatch);
-
-            Stock stock = getPharmacyBean().addToStock(
-                    i.getPharmaceuticalBillItem(),
-                    Math.abs(addingQty),
-                    getSessionController().getDepartment());
-
-            i.getPharmaceuticalBillItem().setStock(stock);
-
-            getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            getPharmacyCalculation().editBillItem(ph, getSessionController().getLoggedUser());
             saveBillFee(i);
             getGrnBill().getBillItems().add(i);
         }
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN);
-
         getGrnBill().setDeptId(deptId);
         getGrnBill().setInsId(deptId);
 
@@ -673,9 +658,7 @@ public class GrnController implements Serializable {
 
         Payment p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
 
-        //  getPharmacyBillBean().editBill(, , getSessionController());
         printPreview = true;
-
     }
 
     public void settleWholesale() {
