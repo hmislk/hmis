@@ -79,6 +79,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.OptionScope;
 
+import static com.divudi.core.data.PaymentMethod.Card;
 import static com.divudi.core.data.PaymentMethod.Cash;
 
 import com.divudi.core.data.dataStructure.ComponentDetail;
@@ -1105,6 +1106,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageSessionInstance(SessionInstance sessionInstance) {
+
+        if (sessionInstance == null) {
+            return "";
+        }
         this.selectedSessionInstance = sessionInstance;
 
         // Setting the properties in the viewScopeDataTransferController
@@ -1451,6 +1456,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addToDayToToDateNew() {
+        fromDate = new Date();
         toDate = new Date();
         listAndFilterSessionInstances();
     }
@@ -1537,6 +1543,39 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 fillBillSessions(sessionInstancesFiltered);
             }
         }
+    }
+
+    public String sessionInstanceFetchFromChannelBooking() {
+        if (selectedSessionInstance == null) {
+            return "";
+        }
+
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret and i.id = :id");
+
+        Map<String, Object> params = new HashMap();
+        params.put("ret", false);
+        params.put("id", selectedSessionInstance.getId());
+
+        List<SessionInstance> sessions = sessionInstanceFacade.findByJpqlWithoutCache(jpql.toString(), params);
+
+        if (sessions != null && !sessions.isEmpty()) {
+            sessionInstancesFiltered = sessions;
+            selectedSessionInstance = sessions.get(0);
+            viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+            viewScopeDataTransferController.setSessionsFiltered(sessions);
+
+            viewScopeDataTransferController.setFromDate(selectedSessionInstance.getSessionDate());
+            viewScopeDataTransferController.setToDate(selectedSessionInstance.getSessionDate());
+
+            viewScopeDataTransferController.setNeedToFillBillSessions(false);
+            viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+            viewScopeDataTransferController.setNeedToFillSessionInstances(false);
+            viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(false);
+            viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+            viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
+            return "/channel/channel_booking_by_date?faces-redirect=true";
+        }
+        return "";
     }
 
     public void listAndFilterSessionInstances() {
@@ -2012,6 +2051,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         needToFillSessionInstances = viewScopeDataTransferController.getNeedToFillSessionInstances();
         if (needToFillSessionInstances == null || needToFillSessionInstances != false) {
             listAndFilterSessionInstances();
+        } else {
+            sessionInstancesFiltered = viewScopeDataTransferController.getSessionsFiltered();
         }
 
         selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
@@ -2225,8 +2266,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstances = channelBean.listTodaysSessionInstances(true, false, false);
     }
 
+    public String navigateToManageBookingFromChannelBooking(BillSession bs, SessionInstance ss) {
+
+        if (bs == null || bs.getId() == null || ss == null) {
+            JsfUtil.addErrorMessage("Please select a Patient");
+            return "";
+        }
+
+        selectedBillSession = bs;
+        selectedSessionInstance = ss;
+
+        return navigateToManageBooking(bs);
+    }
+
     public String navigateToManageBooking(BillSession bs) {
-        System.out.println("bs = " + bs);
+
         selectedBillSession = bs;
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
@@ -2264,10 +2318,24 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 }
             }
         }
+
         fillBaseFees();
         fillSessionInstanceByDoctor();
         calculateSelectedBillSessionTotal();
         return "/channel/manage_booking_by_date?faces-redirect=true";
+    }
+
+    public BillSession getBillSessionFromBill(Bill bill) {
+        String sql = " select bs from BillSession bs "
+                + " where bs.bill = :bill "
+                + " and bs.retired = :ret"
+                + " and bs.bill.retired = :ret ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        return billSessionFacade.findFirstByJpql(sql, params);
     }
 
     public String navigateToViewBillSession(BillSession bs) {
@@ -3734,7 +3802,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Channel Scan Sessions Require Item Presence")) {
-            if (!(itemsAvailableToAddToBooking.isEmpty())) {
+            if ((itemsAvailableToAddToBooking != null && !itemsAvailableToAddToBooking.isEmpty())) {
                 if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
                     JsfUtil.addErrorMessage("There is No Item Added");
                     settleSucessFully = false;
@@ -3744,7 +3812,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Channel Hearing Test Sessions Require Item Presence")) {
-            if (!(itemsAvailableToAddToBooking.isEmpty())) {
+            if ((itemsAvailableToAddToBooking != null && !itemsAvailableToAddToBooking.isEmpty())) {
                 if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
                     JsfUtil.addErrorMessage("There is No Item Added");
                     settleSucessFully = false;
@@ -3754,7 +3822,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Channel EEG Sessions Require Item Presence")) {
-            if (!(itemsAvailableToAddToBooking.isEmpty())) {
+            if ((itemsAvailableToAddToBooking != null && !itemsAvailableToAddToBooking.isEmpty())) {
                 if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
                     JsfUtil.addErrorMessage("There is No Item Added");
                     settleSucessFully = false;
@@ -4030,8 +4098,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
             }
         }
-        
-        if(mobile == null || mobile.isEmpty()){
+
+        if (mobile == null || mobile.isEmpty()) {
             return;
         }
         e.setReceipientNumber(mobile);
@@ -5759,7 +5827,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         BillItem savingBillItemForSession = createSessionItem(savingBill);
 
         PriceMatrix priceMatrix;
-        if (itemsAddedToBooking != null || itemsAddedToBooking.isEmpty()) {
+        if (itemsAddedToBooking != null && !itemsAddedToBooking.isEmpty()) {
             for (Item ai : itemsAddedToBooking) {
                 BillItem aBillItem = createAdditionalItem(savingBill, ai);
                 additionalBillItems.add(aBillItem);
@@ -5778,7 +5846,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
 
-        if (!additionalBillItems.isEmpty()) {
+        if (additionalBillItems != null && !additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
                 List<BillFee> blf = createBillFeeForSessions(savingBill, abi, addedItemFees, priceMatrix);
                 for (BillFee bf : blf) {
@@ -7771,19 +7839,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
 
-        switch (getRefundPaymentMethod()) {
-            case Cash:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getRefundableTotal()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;
-            case Card:
-                if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < getRefundableTotal()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+            switch (getRefundPaymentMethod()) {
+                case Cash:
+                    if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getRefundableTotal()) {
+                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                        return;
+                    }
+                    break;
+                case Card:
+                    if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < getRefundableTotal()) {
+                        JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                        return;
+                    }
+                    break;
+            }
         }
 
         if (refundableTotal > 0.0) {
@@ -8921,7 +8991,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public boolean isDisableRefund() {
-        if (selectedBillSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow) {
+        if (selectedBillSession != null && selectedBillSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow) {
             if (selectedBillSession.getBill().getPaidAmount() == 0) {
                 disableRefund = true;
             } else {
