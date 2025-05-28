@@ -2237,7 +2237,7 @@ public class PatientReportController implements Serializable {
     public void sendEmailForPatientReport() {
         System.out.println("sendEmailForPatientReport");
         if (currentPatientReport == null) {
-            JsfUtil.addErrorMessage("Nothing to approve");
+            JsfUtil.addErrorMessage("No patient report selected");
             return;
         }
         if (currentPatientReport.getPatientInvestigation() == null) {
