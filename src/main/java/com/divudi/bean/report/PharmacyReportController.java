@@ -2596,7 +2596,7 @@ public class PharmacyReportController implements Serializable {
             calculateGrnCashAndCredit();
             calOther();
             calculateClosingStock();
-            calVariance();
+            calculateVariance();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
@@ -2663,13 +2663,13 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calVariance() {
+    private void calculateVariance() {
         try {
             double variance = totalCalculatedClosingStockValue - totalClosingStockValueByDatabaseQuery;
             cogs.put("Variance", variance);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating variance");
             cogs.put("ERROR", -1.0);
         }
     }
