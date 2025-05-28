@@ -2594,7 +2594,7 @@ public class PharmacyReportController implements Serializable {
             calculateOpeningStock();
             calculateStockCorrection();
             calculateGrnCashAndCredit();
-            calOther();
+            calculateCogsOtherComponents();
             calculateClosingStock();
             calculateVariance();
 
@@ -2614,7 +2614,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void calOther() {
+    private void calculateCogsOtherComponents() {
         try {
             StringBuilder baseQuery = new StringBuilder("SELECT SUM(sh2.pbItem.billItem.netValue) FROM StockHistory sh2 "
                     + "WHERE sh2.retired = false "
