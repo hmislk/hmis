@@ -2651,6 +2651,7 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
 
             jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
             jpql.append("ORDER BY sh2.createdAt");
