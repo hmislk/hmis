@@ -2714,11 +2714,9 @@ public class PharmacyReportController implements Serializable {
     private void calBhtIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
 
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
-            params.put("Doctype", billTypeAtomics);
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            params.put("Doctype", BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             jpql.append("ORDER BY sh2.createdAt");
 
             double totalBhtIssueValue = calTotal(jpql, params);
@@ -2733,16 +2731,14 @@ public class PharmacyReportController implements Serializable {
     private void calSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
-            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
 
             List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
             creditTypePaymentMethods.add(PaymentMethod.Credit);
             creditTypePaymentMethods.add(PaymentMethod.Staff);
 
-            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
             jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod in :pm ");
-            params.put("Doctype", billTypeAtomics);
+            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             params.put("pm", creditTypePaymentMethods);
             jpql.append("ORDER BY sh2.createdAt");
 
@@ -2758,12 +2754,10 @@ public class PharmacyReportController implements Serializable {
     private void calTransferIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
-            List<BillType> billTypes = new ArrayList<>();
-            billTypes.add(BillType.PharmacyTransferIssue);
 
-            jpql.append("AND sh2.pbItem.billItem.bill.billType in :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.billType = :Doctype ");
             jpql.append("ORDER BY sh2.createdAt");
-            params.put("Doctype", billTypes);
+            params.put("Doctype", BillType.PharmacyTransferIssue);
 
             double totalTransferIssueValue = calTotal(jpql, params);
             cogs.put("Transfer Issue Value", totalTransferIssueValue);
@@ -2777,12 +2771,10 @@ public class PharmacyReportController implements Serializable {
     private void calTransferReceiveValue(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
-            List<BillType> billTypes = new ArrayList<>();
-            billTypes.add(BillType.PharmacyTransferReceive);
 
-            jpql.append("AND sh2.pbItem.billItem.bill.billType in :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.billType = :Doctype ");
             jpql.append("ORDER BY sh2.createdAt");
-            params.put("Doctype", billTypes);
+            params.put("Doctype", BillType.PharmacyTransferReceive);
 
             double totalTransferReceiveValue = calTotal(jpql, params);
             cogs.put("Transfer Receive Value", totalTransferReceiveValue);
@@ -2823,12 +2815,9 @@ public class PharmacyReportController implements Serializable {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
 
-            List<BillType> billTypes = new ArrayList<>();
-            billTypes.add(BillType.PharmacyIssue);
-
-            jpql.append("AND sh2.pbItem.billItem.bill.billType in :conDoctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.billType = :conDoctype ");
             jpql.append("ORDER BY sh2.createdAt");
-            params.put("conDoctype", billTypes);
+            params.put("conDoctype", BillType.PharmacyIssue);
 
             double totalConsumption = calTotal(jpql, params);
             cogs.put("Stock Consumption", totalConsumption);
@@ -2904,7 +2893,6 @@ public class PharmacyReportController implements Serializable {
 
             List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-            // Convert to Map<PaymentMethod, Double>
             Map<PaymentMethod, Double> totalsByMethod = results.stream()
                     .collect(Collectors.toMap(
                             r -> (PaymentMethod) r[0],
@@ -2972,25 +2960,17 @@ public class PharmacyReportController implements Serializable {
             params.put("depty", DepartmentType.Pharmacy);
             params.put("et", CommonFunctions.getStartOfDay(fromDate));
 
-            // Subquery filters
             addFilter(jpql, params, "sh2.institution", "ins", institution);
             addFilter(jpql, params, "sh2.department.site", "sit", site);
             addFilter(jpql, params, "sh2.department", "dep", department);
-            if (amp != null) {
-                addFilter(jpql, params, "sh2.itemBatch.item", "itm", amp);
-            }
-
+            
             jpql.append("  GROUP BY sh2.itemBatch.item ")
                     .append(") ");
 
-            // Outer query filters (match subquery for correctness)
             addFilter(jpql, params, "sh.institution", "ins", institution);
             addFilter(jpql, params, "sh.department.site", "sit", site);
             addFilter(jpql, params, "sh.department", "dep", department);
-            if (amp != null) {
-                addFilter(jpql, params, "sh.itemBatch.item", "itm", amp);
-            }
-
+            
             Double totalOpeningStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
             cogs.put("Opening Stock Value", totalOpeningStockValue != null ? totalOpeningStockValue : 0.0);
 
@@ -3018,24 +2998,17 @@ public class PharmacyReportController implements Serializable {
             params.put("depty", DepartmentType.Pharmacy);
             params.put("et", CommonFunctions.getStartOfDay(toDate));
 
-            // Subquery filters
             addFilter(jpql, params, "sh2.institution", "ins", institution);
             addFilter(jpql, params, "sh2.department.site", "sit", site);
             addFilter(jpql, params, "sh2.department", "dep", department);
-            if (amp != null) {
-                addFilter(jpql, params, "sh2.itemBatch.item", "itm", amp);
-            }
-
+            
             jpql.append("  GROUP BY sh2.itemBatch.item ")
                     .append(") ");
 
             addFilter(jpql, params, "sh.institution", "ins", institution);
             addFilter(jpql, params, "sh.department.site", "sit", site);
             addFilter(jpql, params, "sh.department", "dep", department);
-            if (amp != null) {
-                addFilter(jpql, params, "sh.itemBatch.item", "itm", amp);
-            }
-
+            
             Double totalClosingStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
             cogs.put("Closing Stock Value", totalClosingStockValue != null ? totalClosingStockValue : 0.0);
             totalClosingStockValueByDatabaseQuery = totalClosingStockValue;
