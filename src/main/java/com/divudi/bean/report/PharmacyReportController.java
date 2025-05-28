@@ -2641,7 +2641,7 @@ public class PharmacyReportController implements Serializable {
             calBhtIssueValue(baseQuery, new HashMap<>(commonParams));
             calSaleCreditCard(baseQuery, new HashMap<>(commonParams));
             calSaleCash(baseQuery, new HashMap<>(commonParams));
-            calculatedClosingStockValue();
+            calculateClosingStockValue();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
@@ -2652,13 +2652,13 @@ public class PharmacyReportController implements Serializable {
     double totalCalculatedClosingStockValue = 0.0;
     double totalClosingStockValueByDatabaseQuery = 0.0;
 
-    private void calculatedClosingStockValue() {
+    private void calculateClosingStockValue() {
         try {
             totalCalculatedClosingStockValue = this.cogs.values().stream().mapToDouble(Double::doubleValue).sum();
             cogs.put("Calculated Closing Stock Value", totalCalculatedClosingStockValue);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            JsfUtil.addErrorMessage(e, "Error calculating closing stock value");
             cogs.put("ERROR", -1.0);
         }
     }
