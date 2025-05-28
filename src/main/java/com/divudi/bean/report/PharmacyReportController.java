@@ -2896,8 +2896,8 @@ public class PharmacyReportController implements Serializable {
                             r -> r[1] != null ? ((Number) r[1]).doubleValue() : 0.0
                     ));
 
-            cogs.put("GRN CASH TOTAL", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Cash, 0.0));
-            cogs.put("GRN CREDIT TOTAL", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Credit, 0.0));
+            cogs.put("GRN Cash Total", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Cash, 0.0));
+            cogs.put("GRN Credit Total", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Credit, 0.0));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
@@ -2977,7 +2977,7 @@ public class PharmacyReportController implements Serializable {
             }
 
             Double totalOpeningStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            cogs.put("OPENING STOCK VALUE", totalOpeningStockValue != null ? totalOpeningStockValue : 0.0);
+            cogs.put("Opening Stock Value", totalOpeningStockValue != null ? totalOpeningStockValue : 0.0);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
