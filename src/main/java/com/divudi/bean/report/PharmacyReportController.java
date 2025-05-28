@@ -2639,6 +2639,7 @@ public class PharmacyReportController implements Serializable {
             calSaleCreditValue(baseQuery, new HashMap<>(commonParams));
             calBhtIssueValue(baseQuery, new HashMap<>(commonParams));
             calSaleCreditCard(baseQuery, new HashMap<>(commonParams));
+            calSaleCash(baseQuery, new HashMap<>(commonParams));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
@@ -2646,6 +2647,23 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private void calSaleCash(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod = :pm ");
+            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            params.put("pm", PaymentMethod.Cash);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalSaleCash = calTotal(jpql, params);
+            cogs.put("Sale Cash", totalSaleCash);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            cogs.put("ERROR", -1.0);
+        }
+    }
     private void calSaleCreditCard(StringBuilder baseQuery, Map<String, Object> params) {
         try {
             StringBuilder jpql = new StringBuilder(baseQuery);
