@@ -5827,7 +5827,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         BillItem savingBillItemForSession = createSessionItem(savingBill);
 
         PriceMatrix priceMatrix;
-        if (itemsAddedToBooking != null && itemsAddedToBooking.isEmpty()) {
+        if (itemsAddedToBooking != null && !itemsAddedToBooking.isEmpty()) {
             for (Item ai : itemsAddedToBooking) {
                 BillItem aBillItem = createAdditionalItem(savingBill, ai);
                 additionalBillItems.add(aBillItem);
