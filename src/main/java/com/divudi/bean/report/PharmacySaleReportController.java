@@ -476,11 +476,16 @@ public class PharmacySaleReportController implements Serializable {
     
     public double getTotalFreeQty(List<BillItem> items) {
         double tot = 0;
-        if (items.isEmpty()) {
+        if (items == null || items.isEmpty()) {
             return 0;
         }
         for (BillItem bi : items) {
-            tot += bi.getPharmaceuticalBillItem().getFreeQty();
+            if (bi != null && bi.getPharmaceuticalBillItem() != null) {
+                Double freeQty = bi.getPharmaceuticalBillItem().getFreeQty();
+                if (freeQty != null) {
+                    tot += freeQty;
+                }
+            }
         }
         return tot;
     }
