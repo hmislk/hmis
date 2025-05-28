@@ -58,13 +58,10 @@ public class EmailManagerEjb {
 // Processes pending lab report approval emails based on configurable delay strategies
     @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
     public void processPendingLabReportApprovalEmailQueue() {
-        System.out.println("processPendingLabReportApprovalEmailQueue = " + new Date());
         if (configOptionApplicationController == null || emailFacade == null) {
-            System.out.println("null return");
             return;
         }
         if (configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Do Not Sent Automatically", false)) {
-            System.out.println("config return");
             return;
         }
         configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one minute", false);
@@ -113,15 +110,10 @@ public class EmailManagerEjb {
         params.put("from", minCreatedAt.getTime());
         params.put("to", delayThreshold.getTime());
         params.put("messageType", MessageType.LabReport);
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         List<AppEmail> emails = emailFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("emails = " + emails);
         for (AppEmail email : emails) {
-            System.out.println("email = " + email);
             try {
                 if (email.getPatientInvestigation() == null || email.getReceipientEmail() == null) {
-                    System.out.println("no ptix or reeipient email");
                     continue;
                 }
 

@@ -184,7 +184,6 @@ public class PatientReportController implements Serializable {
     private String comment;
 
     public StreamedContent getReportAsPdf() {
-        System.out.println("");
         StreamedContent pdfSc = null;
         try {
             pdfSc = pdfController.createPdfForPatientReport(currentPatientReport);
@@ -196,7 +195,6 @@ public class PatientReportController implements Serializable {
 
     public String navigateToViewPatientReport(PatientReport patientReport) {
         if (null == patientReport.getReportType()) {
-            System.out.println("Null");
             setCurrentPatientReport(patientReport);
             return "/lab/patient_report?faces-redirect=true";
         } else {
