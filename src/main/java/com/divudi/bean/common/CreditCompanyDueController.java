@@ -521,22 +521,22 @@ public class CreditCompanyDueController implements Serializable {
             Cell cell1 = headerRow.createCell(1);
             cell1.setCellValue("0-30 Days");
             cell1.setCellStyle(boldStyleCentered);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 5));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 7));
 
-            Cell cell2 = headerRow.createCell(6);
+            Cell cell2 = headerRow.createCell(8);
             cell2.setCellValue("30-60 Days");
             cell2.setCellStyle(boldStyleCentered);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 6, 10));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 8, 14));
 
-            Cell cell3 = headerRow.createCell(11);
+            Cell cell3 = headerRow.createCell(15);
             cell3.setCellValue("60-90 Days");
             cell3.setCellStyle(boldStyleCentered);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 11, 15));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 15, 21));
 
-            Cell cell4 = headerRow.createCell(16);
+            Cell cell4 = headerRow.createCell(22);
             cell4.setCellValue("90+ Days");
             cell4.setCellStyle(boldStyleCentered);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 16, 20));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 22, 28));
 
             XSSFCellStyle mergedStyle = workbook.createCellStyle();
             mergedStyle.cloneStyleFrom(amountStyle);
@@ -551,33 +551,39 @@ public class CreditCompanyDueController implements Serializable {
 
                 row.createCell(1).setCellValue(i.getValue1());
                 row.getCell(1).setCellStyle(mergedStyle);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 1, 5));
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 1, 7));
 
-                row.createCell(6).setCellValue(i.getValue2());
-                row.getCell(6).setCellStyle(mergedStyle);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 6, 10));
+                row.createCell(8).setCellValue(i.getValue2());
+                row.getCell(8).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 8, 14));
 
-                row.createCell(11).setCellValue(i.getValue3());
-                row.getCell(11).setCellStyle(mergedStyle);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 11, 15));
+                row.createCell(15).setCellValue(i.getValue3());
+                row.getCell(15).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 15, 21));
 
-                row.createCell(16).setCellValue(i.getValue4());
-                row.getCell(16).setCellStyle(mergedStyle);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 16, 20));
+                row.createCell(22).setCellValue(i.getValue4());
+                row.getCell(22).setCellStyle(mergedStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 22, 28));
 
                 int maxRows = Math.max(
                         Math.max(i.getValue1Bills().size(), i.getValue2Bills().size()),
                         Math.max(i.getValue3Bills().size(), i.getValue4Bills().size())
                 );
 
+                Row subHeaderRow = sheet.createRow(rowIndex++);
+                insertSubHeaderCell(subHeaderRow, 1, boldStyle);
+                insertSubHeaderCell(subHeaderRow, 8, boldStyle);
+                insertSubHeaderCell(subHeaderRow, 15, boldStyle);
+                insertSubHeaderCell(subHeaderRow, 22, boldStyle);
+
                 for (int j = 0; j < maxRows; j++) {
                     Row dataRow = sheet.createRow(rowIndex++);
                     dataRow.createCell(0).setCellValue(" ");
 
-                    insertBillCell(dataRow, i.getValue1Bills(), j, 1, amountStyle);
-                    insertBillCell(dataRow, i.getValue2Bills(), j, 6, amountStyle);
-                    insertBillCell(dataRow, i.getValue3Bills(), j, 11, amountStyle);
-                    insertBillCell(dataRow, i.getValue4Bills(), j, 16, amountStyle);
+                    insertBillCell(dataRow, i.getValue1Bills(), i.getInstitution(), j, 1, amountStyle);
+                    insertBillCell(dataRow, i.getValue2Bills(), i.getInstitution(), j, 8, amountStyle);
+                    insertBillCell(dataRow, i.getValue3Bills(), i.getInstitution(), j, 15, amountStyle);
+                    insertBillCell(dataRow, i.getValue4Bills(), i.getInstitution(), j, 22, amountStyle);
                 }
             }
 
@@ -588,17 +594,19 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    private void insertBillCell(Row row, List<Bill> bills, int index, int startCol, XSSFCellStyle amountStyle) {
+    private void insertBillCell(Row row, List<Bill> bills, Institution institution, int index, int startCol, XSSFCellStyle amountStyle) {
         if (index < bills.size()) {
             Bill b = bills.get(index);
             row.createCell(startCol).setCellValue(b.getPatientEncounter().getBhtNo());
             row.createCell(startCol + 1).setCellValue(b.getPatientEncounter().getPatient().getPerson().getName());
+            row.createCell(startCol + 2).setCellValue(getPolicyNumberFromEncounterCreditCompanyMap(b.getPatientEncounter().getBhtNo(), institution.getName()));
+            row.createCell(startCol + 3).setCellValue(getReferenceNumberFromEncounterCreditCompanyMap(b.getPatientEncounter().getBhtNo(), institution.getName()));
             Date doa = b.getPatientEncounter().getDateOfDischarge();
-            row.createCell(startCol + 2).setCellValue(doa != null ? doa.toString() : "");
+            row.createCell(startCol + 4).setCellValue(doa != null ? doa.toString() : "");
             Date dod = b.getPatientEncounter().getDateOfDischarge();
-            row.createCell(startCol + 3).setCellValue(dod != null ? dod.toString() : "");
+            row.createCell(startCol + 5).setCellValue(dod != null ? dod.toString() : "");
 
-            Cell valueCell = row.createCell(startCol + 4);
+            Cell valueCell = row.createCell(startCol + 6);
             valueCell.setCellValue(b.getNetTotal() - b.getPaidAmount());
 
             valueCell.setCellStyle(amountStyle);
@@ -607,6 +615,36 @@ public class CreditCompanyDueController implements Serializable {
                 row.createCell(startCol + k).setCellValue("");
             }
         }
+    }
+
+    private void insertSubHeaderCell(Row row, int startCol, XSSFCellStyle boldStyle) {
+        Cell cell0 = row.createCell(startCol);
+        cell0.setCellValue("BHT No");
+        cell0.setCellStyle(boldStyle);
+
+        Cell cell1 = row.createCell(startCol + 1);
+        cell1.setCellValue("Patient");
+        cell1.setCellStyle(boldStyle);
+
+        Cell cell2 = row.createCell(startCol + 2);
+        cell2.setCellValue("Policy Number");
+        cell2.setCellStyle(boldStyle);
+
+        Cell cell3 = row.createCell(startCol + 3);
+        cell3.setCellValue("Reference Number");
+        cell3.setCellStyle(boldStyle);
+
+        Cell cell4 = row.createCell(startCol + 4);
+        cell4.setCellValue("Admission Date");
+        cell4.setCellStyle(boldStyle);
+
+        Cell cell5 = row.createCell(startCol + 5);
+        cell5.setCellValue("Discharge Date");
+        cell5.setCellStyle(boldStyle);
+
+        Cell cell6 = row.createCell(startCol + 6);
+        cell6.setCellValue("Amount");
+        cell6.setCellStyle(boldStyle);
     }
 
     List<DealerDueDetailRow> dealerDueDetailRows;
