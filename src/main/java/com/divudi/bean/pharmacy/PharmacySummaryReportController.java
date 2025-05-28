@@ -390,10 +390,6 @@ public class PharmacySummaryReportController implements Serializable {
             }
 
             jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
-
-            // System.out.println("jpql.toString() = " + jpql.toString());
-            // System.out.println("params = " + params);
-            // Execute the query
             List<ReportTemplateRow> rows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
             bundleReport.setReportTemplateRows(rows);
@@ -547,7 +543,6 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processMovementOutWithStocksReport() {
-        System.out.println("processMovementOutWithStocksReport");
         reportTimerController.trackReportExecution(() -> {
             if (reportViewType == null) {
                 JsfUtil.addErrorMessage("Please select a report view type.");
@@ -716,7 +711,6 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByDiscountTypeAndAdmissionType() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReportByBillType");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
             List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
@@ -738,7 +732,6 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType");
 
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
@@ -803,12 +796,10 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReport() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeAndCostReport");
             if (reportViewType == null) {
                 JsfUtil.addErrorMessage("Please select a report view type.");
                 return;
             }
-            System.out.println("reportViewType = " + reportViewType);
             switch (reportViewType) {
                 case BY_BILL_ITEM:
                     processPharmacyIncomeAndCostReportByBillItem();
@@ -853,7 +844,6 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReportByBillType() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReport");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
             List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);

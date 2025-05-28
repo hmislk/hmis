@@ -328,24 +328,11 @@ public class IncomeBundle implements Serializable {
                     break;
             }
 
-//            System.out.println("---- Item ----");
-//            System.out.println("BillCategory: " + bc);
-//            System.out.println("Original Qty: " + q);
-//            System.out.println("Retail Rate: " + rRate);
-//            System.out.println("Purchase Rate: " + pRate);
-//            System.out.println("Adjusted Qty: " + ((bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -qty : qty));
-//            System.out.println("Retail Total: " + retailTotal);
-//            System.out.println("Purchase Total: " + purchaseTotal);
-//            System.out.println("Gross Profit: " + grossProfit);
+
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
             grossProfitValue += grossProfit;
         }
-
-        System.out.println("==== Final Totals ====");
-        System.out.println("Total Sale Value: " + saleValue);
-        System.out.println("Total Purchase Value: " + purchaseValue);
-        System.out.println("Total Gross Profit: " + grossProfitValue);
     }
 
     public void generateRetailAndCostDetailsForByItems() {
@@ -421,10 +408,7 @@ public class IncomeBundle implements Serializable {
             grossProfitValue += grossProfit;
         }
 
-        System.out.println("==== Final Totals ====");
-        System.out.println("Total Sale Value: " + saleValue);
-        System.out.println("Total Purchase Value: " + purchaseValue);
-        System.out.println("Total Gross Profit: " + grossProfitValue);
+
     }
 
     
@@ -447,26 +431,10 @@ public class IncomeBundle implements Serializable {
             saleValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
             purchaseValue += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
             grossProfitValue += (b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() - b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue());
-
-//            System.out.println("---- Item ----");
-//            System.out.println("BillCategory: " + bc);
-//            System.out.println("Original Qty: " + q);
-//            System.out.println("Retail Rate: " + rRate);
-//            System.out.println("Purchase Rate: " + pRate);
-//            System.out.println("Adjusted Qty: " + ((bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -qty : qty));
-//            System.out.println("Retail Total: " + retailTotal);
-//            System.out.println("Purchase Total: " + purchaseTotal);
-//            System.out.println("Gross Profit: " + grossProfit);          
         }
-
-        System.out.println("==== Final Totals ====");
-        System.out.println("Total Sale Value: " + saleValue);
-        System.out.println("Total Purchase Value: " + purchaseValue);
-        System.out.println("Total Gross Profit: " + grossProfitValue);
     }
 
     public void generateRetailAndCostDetailsForPharmaceuticalBillType() {
-        System.out.println("generateRetailAndCostDetailsForPharmaceuticalBillType");
         saleValue = 0;
         purchaseValue = 0;
         grossProfitValue = 0;
@@ -542,20 +510,9 @@ public class IncomeBundle implements Serializable {
         }
 
         // Replace old rows with grouped values
-        System.out.println("Bafore getRows().size() = " + getRows().size());
 
         getRows().clear();
         getRows().addAll(grouped.values());
-
-        System.out.println("grouped.size() = " + grouped.size());
-
-        System.out.println("After getRows().size() = " + getRows().size());
-
-        System.out.println("==== Final Totals ====");
-        System.out.println("Total Sale Value: " + saleValue);
-        System.out.println("Total Purchase Value: " + purchaseValue);
-        System.out.println("Total Gross Profit: " + grossProfitValue);
-
     }
 
     public void generateProcurementDetailsForBillItems() {
