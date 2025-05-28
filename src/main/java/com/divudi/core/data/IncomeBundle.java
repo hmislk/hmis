@@ -347,10 +347,6 @@ public class IncomeBundle implements Serializable {
             if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
                 continue;
             }
-            Item itemInPharmaceuticalBillItem = b.getBillItem().getItem();
-
-            
-            
             BillTypeAtomic bta = Optional
                     .ofNullable(b.getBillItem())
                     .map(BillItem::getBill)
