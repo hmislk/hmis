@@ -270,7 +270,7 @@
 
             </p:column>
 
-            <p:column headerText="Actions" width="10em;">
+            <p:column headerText="Actions" width="12em;">
                 <div class="d-flex gap-2">
                     <p:commandButton 
                         icon="fa-solid fa-barcode"
@@ -290,7 +290,16 @@
                         icon="fa-regular fa-rectangle-list"
                         title="To Investigations" 
                         class="ui-button-warning"
+                        action="#{laboratoryManagementController.navigateToInvestigationsFromSelectedBill(b)}"
                         ajax="false" >
+                    </p:commandButton>
+                    <p:commandButton 
+                        icon="fa fa-file-text"
+                        title="To Reports" 
+                        class="ui-button-danger"
+                        ajax="false" 
+                        disabled="#{b.status eq 'ORDERED' or b.status eq 'SAMPLE_GENERATED' or b.status eq 'SAMPLE_COLLECTED'or b.status eq 'SAMPLE_SENT'}"
+                        action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedBill(b)}" >
                     </p:commandButton>
                 </div>
             </p:column>

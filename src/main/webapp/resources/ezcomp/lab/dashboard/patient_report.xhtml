@@ -286,7 +286,7 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{!patientInvestigation.billItem.bill.cancelled and !patientInvestigation.billItem.refunded}">
-                    <h:panelGroup rendered="#{laboratoryManagementController.hasPatientReports(patientInvestigation)}" class=" d-flex justify-content-center">
+                    <h:panelGroup rendered="#{!laboratoryManagementController.hasPatientReports(patientInvestigation)}" class=" d-flex justify-content-center">
                         <p:badge 
                             value="Sample Prossesing.." 
                             severity="warning"
@@ -295,7 +295,7 @@
                         </p:badge>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{!laboratoryManagementController.hasPatientReports(patientInvestigation)}">
+                    <h:panelGroup rendered="#{laboratoryManagementController.hasPatientReports(patientInvestigation)}">
                         <ui:repeat value="#{laboratoryManagementController.patientReports(patientInvestigation)}" var="dpr">
                             <div class="d-flex justify-content-between">
                                 <div class="d-flex gap-2 mb-2">
@@ -318,16 +318,6 @@
                                         rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
                                     </p:commandButton>
 
-                                    <!--                                                <p:commandButton 
-                                                                                        ajax="false" 
-                                                                                        icon="fa fa-print"
-                                                                                        class="ui-button-info"
-                                                                                        value="Print"
-                                                                                        action="#{laboratoryManagementController.navigateToPrintReport(dpr.id)}" 
-                                                                                        disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" 
-                                                                                        rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
-                                                                                    </p:commandButton>-->
-
                                     <p:badge 
                                         value="Approved" 
                                         severity="success" 
@@ -348,21 +338,19 @@
 
                                 </div>
                                 <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50">
-                                    <div>
-                                        <div class="d-flex gap-2">
-                                            <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
-                                            <p:commandButton 
-                                                id="btnSave" 
-                                                value="Remove" 
-                                                ajax="false"
-                                                icon="fas fa-trash"
-                                                class="ui-button-danger"
-                                                onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
-                                                            return false;"
-                                                action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
-                                                oncomplete="PF('dlg').hide();" >
-                                            </p:commandButton>
-                                        </div>
+                                    <div class="d-flex gap-2">
+                                        <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
+                                        <p:commandButton 
+                                            id="btnSave" 
+                                            value="Remove" 
+                                            ajax="false"
+                                            icon="fas fa-trash"
+                                            class="ui-button-danger"
+                                            onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
+                                                        return false;"
+                                            action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
+                                            oncomplete="PF('dlg').hide();" >
+                                        </p:commandButton>
                                     </div>
                                 </p:dialog>
                                 <p:commandButton 

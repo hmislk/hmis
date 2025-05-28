@@ -232,6 +232,55 @@ public class LaboratoryManagementController implements Serializable {
     public String navigateToLaboratoryAdministration() {
         return "/admin/lims/index?faces-redirect=true";
     }
+    
+    public void navigateToInvestigationsFromSelectedBill(Bill bill) {
+        items = new ArrayList<>();
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        items = patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
+        System.out.println("navigateToPatientReportsFromSelectedInvestigation");
+        items = new ArrayList<>();
+        if(patientInvestigation == null || patientInvestigation.getId() == null){
+            return;
+        }
+        PatientInvestigation pi = patientInvestigationFacade.find(patientInvestigation.getId());
+        items.add(pi);
+        listingEntity = ListingEntity.REPORT_PRINT;
+ 
+    }
+    
+    public void navigateToPatientReportsFromSelectedBill(Bill bill) {
+        items = new ArrayList<>();
+        listingEntity = ListingEntity.REPORT_PRINT;  
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        items = patientInvestigationFacade.findByJpql(jpql, params);
+        
+    }
 
     // </editor-fold>
     
@@ -1026,9 +1075,9 @@ public class LaboratoryManagementController implements Serializable {
         PatientReport pr = patientReportFacade.findFirstByJpql(jpql,params);
         
         if(pr == null){
-            return true;
-        }else{
             return false;
+        }else{
+            return true;
         }
     }
 

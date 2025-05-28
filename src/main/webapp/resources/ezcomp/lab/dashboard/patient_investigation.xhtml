@@ -386,7 +386,7 @@
                                 value="Reports" 
                                 class="ui-button-success"
                                 ajax="false" 
-                                action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
+                                action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedBill(patientInvestigation.billItem.bill)}">
                             </p:commandButton>
                         </div>
 
