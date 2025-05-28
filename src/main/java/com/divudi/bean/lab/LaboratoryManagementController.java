@@ -62,9 +62,17 @@ public class LaboratoryManagementController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     private PatientSampleComponantFacade patientSampleComponantFacade;
+    @EJB
+    PatientReportFacade patientReportFacade;
+    @EJB
+    UploadFacade uploadFacade;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    PatientReportController patientReportController;
+    @Inject
+    PatientReportUploadController patientReportUploadController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -73,6 +81,7 @@ public class LaboratoryManagementController implements Serializable {
     PatientInvestigationController patientInvestigationController;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -106,7 +115,9 @@ public class LaboratoryManagementController implements Serializable {
     private List<PatientInvestigation> items;
     private String investigationName;
     private String filteringStatus;
+    private String comment;
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToLaboratoryManagementDashboard() {
         activeIndex = 1;
@@ -223,6 +234,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void searchLabBills() {
         listingEntity = ListingEntity.BILLS;
@@ -1019,9 +1031,7 @@ public class LaboratoryManagementController implements Serializable {
             return false;
         }
     }
-    
-    private String comment;
-    
+
     public void removePatientReport(Long patientReportID) {
         PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
         
@@ -1059,17 +1069,14 @@ public class LaboratoryManagementController implements Serializable {
         searchPatientInvestigations();
         listingEntity = ListingEntity.PATIENT_REPORTS;
     }
-
-    @EJB
-    PatientReportFacade patientReportFacade;
-    @EJB
-    UploadFacade uploadFacade;
-    @Inject
-    PatientReportController patientReportController;
-    @Inject
-    PatientReportUploadController patientReportUploadController;
+    
+    public void searchPatientReportPrint() {
+        searchPatientInvestigations();
+        listingEntity = ListingEntity.REPORT_PRINT;
+    }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
@@ -1316,7 +1323,7 @@ public class LaboratoryManagementController implements Serializable {
     public void setInvestigationName(String investigationName) {
         this.investigationName = investigationName;
     }
-    // </editor-fold>
+    
 
     public String getComment() {
         return comment;
@@ -1333,4 +1340,5 @@ public class LaboratoryManagementController implements Serializable {
     public void setFilteringStatus(String filteringStatus) {
         this.filteringStatus = filteringStatus;
     }
+// </editor-fold>
 }
