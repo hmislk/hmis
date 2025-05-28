@@ -2591,7 +2591,6 @@ public class PharmacyReportController implements Serializable {
                 return;
             }
 
-//            StringBuilder jpql = new StringBuilder("SELECT sh FROM StockHistory sh WHERE ");
             calculateOpeningStock();
             calculateStockCorrection();
             calculateGrnCashAndCredit();
