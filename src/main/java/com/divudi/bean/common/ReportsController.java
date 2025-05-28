@@ -4322,10 +4322,10 @@ public class ReportsController implements Serializable {
             m.put("ad", admissionType);
         }
 
-        if (paymentMethod != null) {
-            sql += " and b.paymentMethod =:pm ";
-            m.put("pm", paymentMethod);
-        }
+//        if (paymentMethod != null) {
+//            sql += " and b.paymentMethod =:pm ";
+//            m.put("pm", paymentMethod);
+//        }
 
         if (institutionOfDepartment != null) {
             sql += "AND b.institution = :insd ";
@@ -4368,13 +4368,12 @@ public class ReportsController implements Serializable {
             reportType = "any";
         }
 
-        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, reportType.equalsIgnoreCase("paid") ?
-                "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any"));
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "any"));
         calculateCreditCompanyAmounts();
 
-        List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(
+        List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(filterByCreditCompanyPaymentMethodByInstitutionBillEncounter(
                 InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), reportType.equalsIgnoreCase("paid") ?
-                        "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any"));
+                        "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any")));
 
         setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
         calculateCreditCompanyDueTotals();
@@ -4710,6 +4709,63 @@ public class ReportsController implements Serializable {
 
         for (ReportTemplateRow row : rows) {
             Bill bill = row.getBill();
+            if (bill == null) continue;
+
+            Bill creditCompanyBill = billIdToCreditCompanyBill.get(bill.getId());
+            if (creditCompanyBill == null || creditCompanyBill.getPaymentMethod() == null) continue;
+
+            if (creditCompanyBill.getPaymentMethod().equals(paymentMethod)) {
+                filteredRows.add(row);
+            }
+        }
+
+        return filteredRows;
+    }
+
+    private List<InstitutionBillEncounter> filterByCreditCompanyPaymentMethodByInstitutionBillEncounter(List<InstitutionBillEncounter> rows) {
+        if (paymentMethod == null) {
+            return rows;
+        }
+
+        List<InstitutionBillEncounter> filteredRows = new ArrayList<>();
+
+        Set<Long> billIds = rows.stream()
+                .map(row -> row.getPatientEncounter().getFinalBill())
+                .filter(Objects::nonNull)
+                .map(Bill::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, Bill> billIdToCreditCompanyBill = new HashMap<>();
+
+        if ("OP".equalsIgnoreCase(visitType)) {
+            String jpql = "SELECT bi FROM BillItem bi WHERE bi.referenceBill.id IN :billIds";
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", billIds);
+            List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
+
+            for (BillItem bi : billItems) {
+                if (bi.getReferenceBill() != null && bi.getBill() != null) {
+                    billIdToCreditCompanyBill.put(bi.getReferenceBill().getId(), bi.getBill());
+                }
+            }
+        } else if ("IP".equalsIgnoreCase(visitType)) {
+            String jpql = "SELECT b FROM Bill b WHERE b.forwardReferenceBill.id IN :billIds";
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", billIds);
+            List<Bill> bills = billFacade.findByJpql(jpql, params);
+
+            for (Bill b : bills) {
+                if (b.getForwardReferenceBill() != null) {
+                    billIdToCreditCompanyBill.put(b.getForwardReferenceBill().getId(), b);
+                }
+            }
+        } else {
+            return filteredRows;
+        }
+
+        for (InstitutionBillEncounter row : rows) {
+            Bill bill = row.getPatientEncounter().getFinalBill();
             if (bill == null) continue;
 
             Bill creditCompanyBill = billIdToCreditCompanyBill.get(bill.getId());
