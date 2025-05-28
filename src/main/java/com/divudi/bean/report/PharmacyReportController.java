@@ -2597,6 +2597,7 @@ public class PharmacyReportController implements Serializable {
             calculateGrnCashAndCredit();
             calOther();
             calculateClosingStock();
+            calVariance();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
@@ -2649,10 +2650,24 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    double totalCalculatedClosingStockValue = 0.0;
+    double totalClosingStockValueByDatabaseQuery = 0.0;
+
     private void calculatedClosingStockValue() {
         try {
-            double total = this.cogs.values().stream().mapToDouble(Double::doubleValue).sum();
-            cogs.put("Calculated Closing Stock Value", total);
+            totalCalculatedClosingStockValue = this.cogs.values().stream().mapToDouble(Double::doubleValue).sum();
+            cogs.put("Calculated Closing Stock Value", totalCalculatedClosingStockValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calVariance() {
+        try {
+            double variance = totalCalculatedClosingStockValue - totalClosingStockValueByDatabaseQuery;
+            cogs.put("Variance", variance);
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating IP returns");
@@ -3023,6 +3038,7 @@ public class PharmacyReportController implements Serializable {
 
             Double totalClosingStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
             cogs.put("Closing Stock Value", totalClosingStockValue != null ? totalClosingStockValue : 0.0);
+            totalClosingStockValueByDatabaseQuery = totalClosingStockValue;
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
