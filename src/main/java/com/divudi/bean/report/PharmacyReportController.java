@@ -2637,9 +2637,29 @@ public class PharmacyReportController implements Serializable {
             calTransferIssueValue(baseQuery, new HashMap<>(commonParams));
             calTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
             calSaleCreditValue(baseQuery, new HashMap<>(commonParams));
+            calBhtIssueValue(baseQuery, new HashMap<>(commonParams));
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calBhtIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
+            params.put("Doctype", billTypeAtomics);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalBhtIssueValue = calTotal(jpql, params);
+            cogs.put("BHT Issue Value", totalBhtIssueValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating IP returns");
             cogs.put("ERROR", -1.0);
         }
     }
