@@ -106,7 +106,7 @@
                                 class="mx-1 ui-button-primary"
                                 action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingController.selectedSessionInstance)}"
                                 />
-                            
+
                             <p:commandButton 
                                 ajax="false" 
                                 id="manageBookingId"
@@ -116,7 +116,7 @@
                                 disabled="#{bookingController.selectedBillSession.id eq null}"
                                 class="mx-1 ui-button-primary"
                                 action="#{bookingControllerViewScope.navigateToManageBookingFromChannelBooking(bookingController.selectedBillSession, bookingController.selectedSessionInstance)}"
-                                
+
                                 />
 
                             <p:commandButton 
@@ -163,8 +163,58 @@
                                 action="#{bookingController.markAsNotArrived()}"
                                 icon="fa-solid fa-check" />
 
+                            <p:commandButton value="Doctor Holiday" icon="pi pi-table"
+                                             class="mx-1"
+                                             oncomplete="PF('myDialogWidget').show()" 
+                                             update="dialogContent" />
+
                         </div>
                     </div>
+
+                    <p:dialog header="Sessions of #{bookingController.staff.person.nameWithTitle}" 
+                              widgetVar="myDialogWidget" 
+                              modal="true" 
+                              resizable="false" 
+                              draggable="true" 
+                              height="600"
+                              width="800">
+
+                        <h:panelGroup id="dialogContent">
+                            <p:dataTable value="#{bookingController.sessionInstances}" 
+                                         var="s" 
+                                         selection="#{bookingController.sessionsForHolidayMark}"
+                                         selectionMode="multiple" 
+                                         rowKey="#{s.id}">
+                                
+                                <p:column selectionBox="true" width="20"></p:column>
+                                <p:column headerText="Name">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Name" ></h:outputText>
+                                    </f:facet>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h:outputText value="#{s.name}" />
+                                    </div>
+
+
+                                </p:column>
+                                <p:column headerText="Date" style="width: 50px!important; text-align: center;">
+                                    <h:outputText value="#{s.sessionDate}">
+                                        <f:convertDateTime pattern="dd MMM"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Start" style="width: 40px!important; text-align: center;">
+                                    <h:outputText value="#{s.originatingSession.startingTime}">
+                                        <f:convertDateTime pattern="hh:mm a"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Max" style="width: 20px!important; text-align: center;">
+                                    <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                        <f:convertNumber pattern="00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:dialog>
                 </f:facet>
                 <div class="row">
                     <div class="col-2">

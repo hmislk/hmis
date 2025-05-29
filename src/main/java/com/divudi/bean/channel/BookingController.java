@@ -267,6 +267,15 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     private double balance = 0.0;
     private double total;
     private double remainAmount;
+    private List<SessionInstance> sessionsForHolidayMark;
+
+    public List<SessionInstance> getSessionsForHolidayMark() {
+        return sessionsForHolidayMark;
+    }
+
+    public void setSessionsForHolidayMark(List<SessionInstance> sessionsForHolidayMark) {
+        this.sessionsForHolidayMark = sessionsForHolidayMark;
+    }
 
     public void filterSessionInstances() {
         sessionInstancesToday = getSessionInstances();
