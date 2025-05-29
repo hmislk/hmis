@@ -818,7 +818,15 @@ public class BillBhtController implements Serializable {
         if (addAllBillFees) {
             itemFee = itemFeeManager.fillFees(billItem.getItem());
         } else if (siteBasedBillFees) {
-            itemFee = itemFeeManager.fillFees(billItem.getItem(),sessionController.getDepartment().getSite());
+            if (sessionController.getDepartment() != null 
+                && sessionController.getDepartment().getSite() != null) {
+                itemFee = itemFeeManager.fillFees(
+                    billItem.getItem(),
+                    sessionController.getDepartment().getSite()
+                );
+            } else {
+                itemFee = itemFeeManager.fillFees(billItem.getItem());
+            }
         } else {
             itemFee = itemFeeManager.fillFees(billItem.getItem());
         }
