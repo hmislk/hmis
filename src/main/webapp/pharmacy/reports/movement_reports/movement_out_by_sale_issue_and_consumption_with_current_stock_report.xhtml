@@ -421,8 +421,6 @@
 
                             <p:dataTable
                                 id="tblItem"
-                                style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
-                                styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                                 value="#{pharmacySummaryReportController.pharmacyBundle.rows}" 
                                 var="rowi"
                                 paginator="true"
@@ -434,16 +432,16 @@
                                     <h:outputText value="#{rowi.item.name}" />
                                 </p:column>
 
-                                <p:column headerText="Qty" width="6em" class="text-end">
+                                <p:column headerText="Qty" width="8em" class="text-end">
                                     <h:outputText value="#{rowi.quantity}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.#" />
                                     </h:outputText>
                                 </p:column>
 
 
-                                <p:column headerText="Current Stock" width="6em" class="text-end">
+                                <p:column headerText="Current Stock" width="8em" class="text-end">
                                     <h:outputText value="#{rowi.stockQty}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.#" />
                                     </h:outputText>
                                 </p:column>
 
