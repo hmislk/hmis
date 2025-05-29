@@ -815,9 +815,7 @@ public class BillBhtController implements Serializable {
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
         List<ItemFee> itemFee;
         
-        if (addAllBillFees) {
-            itemFee = itemFeeManager.fillFees(billItem.getItem());
-        } else if (siteBasedBillFees) {
+        if (siteBasedBillFees && !addAllBillFees) {
             if (sessionController.getDepartment() != null 
                 && sessionController.getDepartment().getSite() != null) {
                 itemFee = itemFeeManager.fillFees(
