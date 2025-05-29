@@ -132,8 +132,8 @@
                                 <f:facet name="header" >
                                     <h:outputLabel value="Name" ></h:outputLabel>
                                 </f:facet>
-                                <h:outputLabel rendered="#{bip.referanceBillItem.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bf.bill.patientEncounter eq null}" value="#{bip.referanceBillItem.bill.patient.person.title}. #{bip.referanceBillItem.bill.patient.person.name}" style="margin: 4px;"  />                                    
-                                <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}" 
+                                <h:outputLabel rendered="#{bip.referanceBillItem.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bip.referanceBillItem.bill.patientEncounter eq null}" value="#{bip.referanceBillItem.bill.patient.person.title}. #{bip.referanceBillItem.bill.patient.person.name}" style="margin: 4px;"  />                                    
+                                <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}" rendered="#{bip.referanceBillItem.bill.patientEncounter ne null}" 
                                                style="margin: 4px;"   />    
                                 <h:outputLabel rendered="#{bip.referanceBillItem.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bip.referanceBillItem.bill.referenceBill.onlineBooking.title}. #{bip.referanceBillItem.bill.referenceBill.onlineBooking.patientName}" 
                                                style="margin: 4px;"   />   

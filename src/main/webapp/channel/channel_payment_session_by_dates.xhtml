@@ -147,7 +147,7 @@
 
                                     <p:column headerText="Patient" width="10em">
                                         <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
-                                        <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/> 
+                                        <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter ne null}"/> 
                                         <h:outputLabel rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bf.bill.referenceBill.onlineBooking.title}. #{bf.bill.referenceBill.onlineBooking.patientName}"/>         
                                     </p:column>
 
