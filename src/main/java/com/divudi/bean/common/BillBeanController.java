@@ -1916,6 +1916,37 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public List<Object[]> fetchBilledDepartmentBillItem(Date fromDate, Date toDate, Department department, BillType bt, boolean toDep) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select ";
+        if (toDep) {
+            sql += " bi.bill.toDepartment";
+        } else {
+            sql += " bi.bill.fromDepartment";
+        }
+        sql += ",sum(bi.pharmaceuticalBillItem.itemBatch.retailsaleRate*bi.pharmaceuticalBillItem.qty) "
+                + " FROM BillItem bi "
+                + " where bi.bill.department=:dept "
+                + " and  bi.bill.billType= :bTp  "
+                + " and  bi.bill.createdAt between :fromDate and :toDate ";
+        if (toDep) {
+            sql += " group by bi.bill.toDepartment "
+                    + " order by bi.bill.toDepartment.name ";
+        } else {
+            sql += " group by b.fromDepartment"
+                    + " order by bi.bill.fromDepartment.name";
+        }
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("dept", department);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
 
     public List<Object[]> fetchBilledDepartmentItemStore(Date fromDate, Date toDate, Department department) {
         String sql;
