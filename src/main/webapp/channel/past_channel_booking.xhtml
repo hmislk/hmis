@@ -179,7 +179,7 @@
                                 <f:facet name="header" >
                                     <h:outputText value="Name" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{s.name}" />
+                                <h:outputText value="#{s.name}" style="color: #{s.completed ? 'green':''}"/>
                             </p:column>
                             <p:column headerText="Date" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{s.sessionDate}">
@@ -253,6 +253,7 @@
                                 <p:outputLabel value="Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
 <!--                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>-->
                                 <p:outputLabel value="Cash" rendered="#{bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
+                                <p:outputLabel value="MultiplePayments" rendered="#{bs.bill.paymentMethod eq 'MultiplePaymentMethods' or bs.bill.paidBill.paymentMethod eq 'MultiplePaymentMethods'}" style="color: green;"/>
                                 <p:outputLabel value="Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent' and bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"/>
                                 <p:outputLabel value="On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
                                 <p:outputLabel value="Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
@@ -265,12 +266,13 @@
                             </p:column>
 
                             <p:column style="width: 5px!important;">
-                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.creditCompany.institutionCode}"/>
+                                 <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType eq 'ChannelAgent'}" value="#{bs.bill.creditCompany.institutionCode}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType ne 'ChannelAgent'}" value="System Booking"/>
                                 <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.agency.name}"/>
                             </p:column>
 
                             <p:column style="width: 10px!important;">
-                                <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
+                                <p:outputLabel value="Absent" rendered="#{bs.absent}" style="color: red; font-weight: bold"/>
                             </p:column>
 
                         </p:selectOneListbox>
