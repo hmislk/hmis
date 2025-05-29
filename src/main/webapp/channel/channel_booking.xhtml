@@ -181,7 +181,7 @@
                         
                         <f:facet name="header">
                             <h:outputText value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
-                            <p:commandButton class="mx-5" value="Mark Holiday" action="" icon="pi pi-table"></p:commandButton>
+                            <p:commandButton class="mx-5" value="Mark Holiday" action="#{bookingController.markHolidayForSessionInstances}" icon="pi pi-table"></p:commandButton>
 
                         </f:facet>
                         
@@ -200,6 +200,7 @@
                                     </f:facet>
                                     <div class="d-flex align-items-center gap-2">
                                         <h:outputText value="#{s.name}" />
+                                        <h:outputText value="Holiday" rendered="#{s.doctorHoliday}"/>
                                     </div>
 
 
