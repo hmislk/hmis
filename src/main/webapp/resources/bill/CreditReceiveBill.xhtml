@@ -19,6 +19,19 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="inwardpayments.css" ></h:outputStylesheet>
         <!--<div class="a4bill" style="align-items: center; margin: 0; padding: 0; max-width: 210mm" >-->
+        <f:facet name="header" >
+            <h:outputLabel value="Credit Settlement Cancel Bill" class="mt-2"/>
+            <div class="d-flex gap-2" style="float: right">
+                <p:commandButton
+                        icon="fa-solid fa-print"
+                        class="m-2 ui-button-info"
+                        style="width: 150px"
+                        ajax="false"
+                        value="Print">
+                    <p:printer target="gpBillPreview"/>
+                </p:commandButton>
+            </div>
+        </f:facet>
 
         <h:panelGroup id="gpBillPreview" >
             <div class="a4bill1" style="align-items: center; margin: 0; padding: 0; max-width: 210mm" >
