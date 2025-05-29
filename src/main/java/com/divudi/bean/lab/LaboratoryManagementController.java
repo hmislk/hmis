@@ -62,9 +62,17 @@ public class LaboratoryManagementController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     private PatientSampleComponantFacade patientSampleComponantFacade;
+    @EJB
+    PatientReportFacade patientReportFacade;
+    @EJB
+    UploadFacade uploadFacade;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    PatientReportController patientReportController;
+    @Inject
+    PatientReportUploadController patientReportUploadController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -73,6 +81,7 @@ public class LaboratoryManagementController implements Serializable {
     PatientInvestigationController patientInvestigationController;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -106,7 +115,9 @@ public class LaboratoryManagementController implements Serializable {
     private List<PatientInvestigation> items;
     private String investigationName;
     private String filteringStatus;
+    private String comment;
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToLaboratoryManagementDashboard() {
         activeIndex = 1;
@@ -221,8 +232,58 @@ public class LaboratoryManagementController implements Serializable {
     public String navigateToLaboratoryAdministration() {
         return "/admin/lims/index?faces-redirect=true";
     }
+    
+    public void navigateToInvestigationsFromSelectedBill(Bill bill) {
+        items = new ArrayList<>();
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        items = patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
+        System.out.println("navigateToPatientReportsFromSelectedInvestigation");
+        items = new ArrayList<>();
+        if(patientInvestigation == null || patientInvestigation.getId() == null){
+            return;
+        }
+        PatientInvestigation pi = patientInvestigationFacade.find(patientInvestigation.getId());
+        items.add(pi);
+        listingEntity = ListingEntity.REPORT_PRINT;
+ 
+    }
+    
+    public void navigateToPatientReportsFromSelectedBill(Bill bill) {
+        items = new ArrayList<>();
+        listingEntity = ListingEntity.REPORT_PRINT;  
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        items = patientInvestigationFacade.findByJpql(jpql, params);
+        
+    }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void searchLabBills() {
         listingEntity = ListingEntity.BILLS;
@@ -517,7 +578,7 @@ public class LaboratoryManagementController implements Serializable {
         selectAll = false;
     }
 
-    public void nonReciecedSampleList() {
+    public void nonReceivedSampleList() {
         selectedPatientSamples = new ArrayList();
         List<PatientInvestigationStatus> status = new ArrayList();
         status.add(PatientInvestigationStatus.SAMPLE_SENT);
@@ -1014,14 +1075,12 @@ public class LaboratoryManagementController implements Serializable {
         PatientReport pr = patientReportFacade.findFirstByJpql(jpql,params);
         
         if(pr == null){
-            return true;
-        }else{
             return false;
+        }else{
+            return true;
         }
     }
-    
-    private String comment;
-    
+
     public void removePatientReport(Long patientReportID) {
         PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
         
@@ -1059,17 +1118,14 @@ public class LaboratoryManagementController implements Serializable {
         searchPatientInvestigations();
         listingEntity = ListingEntity.PATIENT_REPORTS;
     }
-
-    @EJB
-    PatientReportFacade patientReportFacade;
-    @EJB
-    UploadFacade uploadFacade;
-    @Inject
-    PatientReportController patientReportController;
-    @Inject
-    PatientReportUploadController patientReportUploadController;
+    
+    public void searchPatientReportPrint() {
+        searchPatientInvestigations();
+        listingEntity = ListingEntity.REPORT_PRINT;
+    }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
@@ -1316,7 +1372,7 @@ public class LaboratoryManagementController implements Serializable {
     public void setInvestigationName(String investigationName) {
         this.investigationName = investigationName;
     }
-    // </editor-fold>
+    
 
     public String getComment() {
         return comment;
@@ -1333,4 +1389,5 @@ public class LaboratoryManagementController implements Serializable {
     public void setFilteringStatus(String filteringStatus) {
         this.filteringStatus = filteringStatus;
     }
+// </editor-fold>
 }
