@@ -187,7 +187,7 @@
                                 class="w-100 mt-1 form-control"
                                 value="#{pharmacySummaryReportController.reportViewType}">
                                 <f:selectItem itemLabel="-- Select Report View --" itemValue="#{null}" />
-                                <f:selectItems value="#{enumController.pharmacyIncomeReportViewTypes}"
+                                <f:selectItems value="#{pharmacySummaryReportController.reportViewTypes}"
                                                var="rvt"
                                                itemLabel="#{rvt.label}"
                                                itemValue="#{rvt}" />
@@ -199,7 +199,7 @@
                         <p:commandButton 
                             value="Process" 
                             ajax="false"
-                            action="#{pharmacySummaryReportController.processMovementOutWithStocksReport()}" 
+                            action="#{pharmacySummaryReportController.processMovementOutBySaleIssueAndConsumptionWithCurrentStockReport()}" 
                             styleClass="ui-button-success m-1" 
                             icon="pi pi-cog">
                         </p:commandButton>
@@ -438,12 +438,15 @@
                                     <h:outputText value="#{rowi.quantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value="#{pharmacySummaryReportController.pharmacyBundle.summaryRow.quantity}" style="font-weight: bold">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </f:facet>
                                 </p:column>
+
+
+                                <p:column headerText="Current Stock" width="6em" class="text-end">
+                                    <h:outputText value="#{rowi.stockQty}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
 
                                 <p:column headerText="Gross" width="10em" class="text-end">
                                     <h:outputText value="#{rowi.grossSaleValue}">
