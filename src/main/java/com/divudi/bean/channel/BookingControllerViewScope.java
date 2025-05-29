@@ -1579,7 +1579,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             viewScopeDataTransferController.setNeedToFillBillSessions(false);
             viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
             viewScopeDataTransferController.setNeedToFillSessionInstances(false);
-            viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(false);
+            viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
             viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
             viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
             return "/channel/channel_booking_by_date?faces-redirect=true";
