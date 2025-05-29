@@ -1962,7 +1962,8 @@ public class CommonReport implements Serializable {
                 + " and b.retired=false and "
                 + " b.billType = :btp "
                 + " and b.department=:d "
-                + " and b.createdAt between :fromDate and :toDate ";
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.deptId is not null";
 
         if (institution != null) {
             sql += " and b.fromInstitution=:fIns ";

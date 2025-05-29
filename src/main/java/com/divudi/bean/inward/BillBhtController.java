@@ -811,7 +811,23 @@ public class BillBhtController implements Serializable {
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
-        List<ItemFee> itemFee = itemFeeManager.fillFees(billItem.getItem());
+        boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are the same for all departments, institutions and sites.", true);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        List<ItemFee> itemFee;
+        
+        if (siteBasedBillFees && !addAllBillFees) {
+            if (sessionController.getDepartment() != null 
+                && sessionController.getDepartment().getSite() != null) {
+                itemFee = itemFeeManager.fillFees(
+                    billItem.getItem(),
+                    sessionController.getDepartment().getSite()
+                );
+            } else {
+                itemFee = itemFeeManager.fillFees(billItem.getItem());
+            }
+        } else {
+            itemFee = itemFeeManager.fillFees(billItem.getItem());
+        }
 
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
