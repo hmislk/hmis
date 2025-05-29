@@ -15218,6 +15218,7 @@ public class SearchController implements Serializable {
     public void generateCashierDetailed() {
         reportTimerController.trackReportExecution(() -> {
             bundle = new ReportTemplateRowBundle();
+            bundle.setName("Cashier Detailed");
 
             double collectionForTheDay = 0.0;
             double netCashCollection = 0.0;
