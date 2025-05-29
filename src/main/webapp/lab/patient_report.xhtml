@@ -65,15 +65,21 @@
                                                 action="#{patientReportController.approvePatientReport()}" 
                                                 ajax="false"   >
                                             </p:commandButton>
+
+
+                                            <!-- Button to show the email dialog -->
                                             <p:commandButton 
-                                                rendered="true"  
-                                                icon="fa-solid fa-message"
+                                                id="btnShowEmailDialogForApprovedReport"  
+                                                icon="fa-solid fa-envelope" 
                                                 class="mx-1 ui-button-secondary"
-                                                id="btnSms"  
-                                                disabled ="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"   
-                                                value="Sent SMS"             
-                                                action="#{patientReportController.sendSmsForPatientReport()}" ajax="false"   >
-                                            </p:commandButton>
+                                                value="Email"
+                                                process="@this"
+                                                update="dlgEmailForApprovedReport"
+                                                oncomplete="PF('wvDlgEmailForApprovedReport').show()"
+                                                disabled="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"
+                                                />
+
+
                                             <p:commandButton   
                                                 id="btnCancelApproval"  
                                                 rendered ="#{(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   
@@ -788,6 +794,43 @@
                     </h:panelGroup>
 
                 </h:form>
+
+                <p:dialog 
+                    id="dlgEmailForApprovedReport"
+                    widgetVar="wvDlgEmailForApprovedReport"
+                    header="Send Email"
+                    modal="true"
+                    closable="true"
+                    resizable="false"
+                    appendTo="@(body)"
+                    width="450"
+                    >
+                    <h:form id="formEmailForApprovedReport">
+                        <h:panelGrid columns="2" styleClass="w-100" columnClasses="w-30,w-70">
+                            <p:outputLabel for="inpEmailForApprovedReport" value="Email" />
+                            <p:inputText id="inpEmailForApprovedReport" value="#{patientReportController.receipientEmail}" styleClass="w-100" />
+                            <p:spacer ></p:spacer>
+                            <h:panelGroup  >
+                                <p:commandButton 
+                                    id="btnSendEmailForApprovedReport" 
+                                    icon="fa-solid fa-paper-plane" 
+                                    value="Send"
+                                    action="#{patientReportController.sendEmailForPatientReport()}" 
+                                    ajax="false"
+                                    class="ui-button-success m-1"
+                                    />
+                                <p:commandButton 
+                                    id="btnCloseEmailDialogForApprovedReport" 
+                                    icon="fa fa-close" 
+                                    value="Close"
+                                    onclick="PF('wvDlgEmailForApprovedReport').hide(); return false;"
+                                    class="ui-button-secondary m-1"
+                                    />
+                            </h:panelGroup>
+                        </h:panelGrid>
+                    </h:form>
+                </p:dialog>
+
 
             </ui:define>
 
