@@ -171,14 +171,21 @@
                         </div>
                     </div>
 
-                    <p:dialog header="Sessions of #{bookingController.staff.person.nameWithTitle}" 
+                    <p:dialog 
                               widgetVar="myDialogWidget" 
                               modal="true" 
                               resizable="false" 
                               draggable="true" 
                               height="600"
                               width="800">
+                        
+                        <f:facet name="header">
+                            <h:outputText value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
+                            <p:commandButton class="mx-5" value="Mark Holiday" action="" icon="pi pi-table"></p:commandButton>
 
+                        </f:facet>
+                        
+                       
                         <h:panelGroup id="dialogContent">
                             <p:dataTable value="#{bookingController.sessionInstances}" 
                                          var="s" 
@@ -187,7 +194,7 @@
                                          rowKey="#{s.id}">
                                 
                                 <p:column selectionBox="true" width="20"></p:column>
-                                <p:column headerText="Name">
+                                <p:column width="10em" headerText="Name">
                                     <f:facet name="header" >
                                         <h:outputText value="Name" ></h:outputText>
                                     </f:facet>
