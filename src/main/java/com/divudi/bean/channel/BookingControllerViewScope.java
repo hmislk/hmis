@@ -2698,6 +2698,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         //cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+        
+        if(getBillSession().getBill().getCancelledBill() == null){
+            return;
+        }
 
         if (getBillSession().getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             getBillSession().getBill().getReferenceBill().setCancelled(true);
@@ -2817,7 +2821,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Already Refunded");
             return true;
         }
-
+        
         if (checkPaid()) {
             JsfUtil.addErrorMessage("Doctor Payment has paid");
             return true;
@@ -2879,7 +2883,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void cancel(Bill bill, BillItem billItem, BillSession billSession) {
-        if (errorCheckCancelling()) {
+        if (errorCheckCancelling()) {     
             return;
         }
 
