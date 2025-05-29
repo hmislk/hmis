@@ -821,26 +821,96 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
+//    public void createInwardAgeTableAccessWithFilters() {
+//        Date startTime = new Date();
+//
+//        makeNull();
+//        Set<Institution> setIns = new HashSet<>();
+//
+//        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
+//                false, PaymentMethod.Credit, institutionOfDepartment, department, site);
+//
+//        setIns.addAll(list);
+//
+//        creditCompanyAge = new ArrayList<>();
+//        for (Institution ins : setIns) {
+//            if (ins == null) {
+//                continue;
+//            }
+//
+//            String1Value5 newRow = new String1Value5();
+//            newRow.setString(ins.getName());
+//            setInwardValuesAccessForExcess(ins, newRow, PaymentMethod.Credit);
+//
+//            if (newRow.getValue1() != 0
+//                    || newRow.getValue2() != 0
+//                    || newRow.getValue3() != 0
+//                    || newRow.getValue4() != 0) {
+//                creditCompanyAge.add(newRow);
+//            }
+//        }
+//    }
+
     public void createInwardAgeTableAccessWithFilters() {
-        Date startTime = new Date();
+        HashMap m = new HashMap();
+        String sql = " Select b from PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " where b.retired=false "
+                + " and b.paymentFinalized=true ";
 
-        makeNull();
-        Set<Institution> setIns = new HashSet<>();
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
 
-        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
-                false, PaymentMethod.Credit, institutionOfDepartment, department, site);
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
 
-        setIns.addAll(list);
+        if (institutionOfDepartment != null) {
+            sql += "AND fb.institution = :insd ";
+            m.put("insd", institutionOfDepartment);
+        }
+
+        if (department != null) {
+            sql += "AND fb.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += "AND fb.department.site = :site ";
+            m.put("site", site);
+        }
+
+        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        if (patientEncounters == null) {
+            return;
+        }
+
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
+
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "any"));
+        calculateCreditCompanyAmounts();
+
+        List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(
+                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), "excess", "company"));
+
+        setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
 
         creditCompanyAge = new ArrayList<>();
-        for (Institution ins : setIns) {
+
+        for (Institution ins : getBillInstitutionEncounterMap().keySet()) {
             if (ins == null) {
                 continue;
             }
 
+            List<InstitutionBillEncounter> institutionBillEncounters = getBillInstitutionEncounterMap().get(ins);
+
             String1Value5 newRow = new String1Value5();
             newRow.setString(ins.getName());
-            setInwardValuesAccessForExcess(ins, newRow, PaymentMethod.Credit);
+            setInwardValuesAccessForExcess(institutionBillEncounters, newRow);
 
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
@@ -1087,6 +1157,25 @@ public class CreditCompanyDueController implements Serializable {
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
             double finalValue = (Math.abs(b.getFinalBill().getNetTotal()) - Math.abs(b.getFinalBill().getPaidAmount()));
+
+            if (dayCount < 30) {
+                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+            } else if (dayCount < 60) {
+                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+            } else if (dayCount < 90) {
+                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+            } else {
+                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+            }
+        }
+    }
+
+    private void setInwardValuesAccessForExcess(List<InstitutionBillEncounter> institutionBillEncounters, String1Value5 dataTable5Value) {
+        for (InstitutionBillEncounter b : institutionBillEncounters) {
+
+            Long dayCount = CommonFunctions.getDayCountTillNow(b.getPatientEncounter().getFinalBill().getCreatedAt());
+
+            double finalValue = (b.getCompanyExcess());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
