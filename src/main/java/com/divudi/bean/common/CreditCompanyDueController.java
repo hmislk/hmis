@@ -1507,6 +1507,34 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
+    private void calculateCreditCompanyExcessTotals() {
+        gopAmount = 0;
+        paidByCompany = 0;
+        payableByCompany = 0;
+
+        for (Institution ins : getBillInstitutionEncounterMap().keySet()) {
+            double gop = 0;
+            double paidByComp = 0;
+            double payableByComp = 0;
+
+            List<InstitutionBillEncounter> encounters = getBillInstitutionEncounterMap().get(ins);
+
+            for (InstitutionBillEncounter ibe : encounters) {
+                gop += ibe.getGopAmount();
+                paidByComp += ibe.getPaidByCompany();
+                payableByComp += ibe.getCompanyExcess() + ibe.getPatientExcess();
+            }
+
+            instituteGopMap.put(ins, gop);
+            institutPaidByCompanyMap.put(ins, paidByComp);
+            institutePayableByCompanyMap.put(ins, payableByComp);
+
+            gopAmount += gop;
+            paidByCompany += paidByComp;
+            payableByCompany += payableByComp;
+        }
+    }
+
     public void exportDueSearchCreditCompanyToExcel() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
@@ -2717,14 +2745,14 @@ public class CreditCompanyDueController implements Serializable {
 
         updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
 
-        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "excess"));
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "any"));
         calculateCreditCompanyAmounts();
 
         List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(
-                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), "excess"));
+                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), "excess", "any"));
 
         setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
-        calculateCreditCompanyDueTotals();
+        calculateCreditCompanyExcessTotals();
 
         setEncounterCreditCompanyMap(getEncounterCreditCompanies());
     }
