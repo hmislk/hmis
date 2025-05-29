@@ -594,6 +594,7 @@ public class PharmacySummaryReportController implements Serializable {
 
             List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(incomeBills);
+            bundle.fixDiscountsAndMarginsInRows();
             for (IncomeRow r : bundle.getRows()) {
                 if (r.getBill() == null) {
                     continue;
@@ -715,6 +716,7 @@ public class PharmacySummaryReportController implements Serializable {
 
             List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(incomeBills);
+            bundle.fixDiscountsAndMarginsInRows();
             for (IncomeRow r : bundle.getRows()) {
                 if (r.getBill() == null) {
                     continue;
@@ -737,7 +739,7 @@ public class PharmacySummaryReportController implements Serializable {
 
             List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(incomeBills);
-
+            bundle.fixDiscountsAndMarginsInRows();
             for (IncomeRow r : bundle.getRows()) {
                 Bill b = r.getBill();
                 if (b == null || b.getPaymentMethod() == null) {
@@ -755,9 +757,9 @@ public class PharmacySummaryReportController implements Serializable {
     public void processPharmacyIncomeReportByBill() {
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
             List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(bills);
+            bundle.fixDiscountsAndMarginsInRows();
             for (IncomeRow r : bundle.getRows()) {
                 if (r.getBill() == null) {
                     continue;
@@ -827,10 +829,10 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processMovementOutWithStockReportByItem() {
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
-            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            pharmacyBundle = new PharmacyBundle(pbis);
-            pharmacyBundle.groupSaleDetailsByItems();
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+        List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        pharmacyBundle = new PharmacyBundle(pbis);
+        pharmacyBundle.groupSaleDetailsByItems();
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {
