@@ -41,7 +41,7 @@
                                 value="Channel Booking"
                                 icon="fas fa-arrow-right"
                                 class="ui-button-secondary"
-
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
                                 action="#{pastBookingController.navigateToChannelBooking()}"
                                 />
 
@@ -73,6 +73,15 @@
                                 action="#{bookingControllerViewScope.navigateToManageBookingFromChannelBooking(pastBookingController.selectedBillSession, pastBookingController.selectedSessionInstance)}"
                                 
                                 />
+                            
+                             <p:commandButton 
+                                ajax="false" 
+                                value="View Session" 
+                                class="ui-button-warning mx-1"
+                                action="#{bookingControllerViewScope.sessionInstanceFetchFromChannelBooking()}"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
+                                actionListener="#{bookingControllerViewScope.setSelectedSessionInstance(pastBookingController.selectedSessionInstance)}"
+                                icon="fa-solid fa-bars-progress" />
 
                         </div>
                     </div>
