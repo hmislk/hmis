@@ -49,6 +49,7 @@
                                 ajax="false" 
                                 value="Consulant Room"
                                 icon="fas fa-eye"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
                                 class="mx-1 ui-button-primary"
                                 action="#{pastBookingController.navigateToViewSessionData()}"
                                 />
@@ -76,7 +77,9 @@
                             
                              <p:commandButton 
                                 ajax="false" 
+                                id="viewSession"
                                 value="View Session" 
+                                disabled="#{pastBookingController.selectedSessionInstance eq null}"
                                 class="ui-button-warning mx-1"
                                 action="#{bookingControllerViewScope.sessionInstanceFetchFromChannelBooking()}"
                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
@@ -100,7 +103,7 @@
                                     <p:ajax
                                         event="change"
                                         process="@this" 
-                                        update="acBookings scStaff acSessions"
+                                        update="acBookings scStaff acSessions viewSession"
                                         listener="#{pastBookingController.listnerStaffListForRowSelect}"/>
                                     <f:selectItem itemLabel="All" ></f:selectItem>
                                     <f:selectItems 
@@ -127,7 +130,7 @@
                                 >
                                 <p:ajax  
                                     process="@this" 
-                                    update=":#{p:resolveFirstComponentWithId('acDate',view).clientId} scStaff acBookings acSessions"/>
+                                    update=":#{p:resolveFirstComponentWithId('acDate',view).clientId} scStaff acBookings acSessions viewSession"/>
 
                                 <f:selectItems value="#{pastBookingController.consultants}"
                                                var="con" 
@@ -149,7 +152,7 @@
                                           onchange="#{pastBookingController.fillSessionInstance()}">
                                 <p:ajax
                                     process="@this"
-                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
+                                    update="viewSession :#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
                                     listener="#{pastBookingController.fillSessionInstance()}"/>
                             </p:datePicker>
                         </div>
@@ -212,7 +215,7 @@
                             <p:ajax 
                                 event="change"
                                 process="@this"
-                                update="acBookings acSessions"
+                                update="acBookings acSessions viewSession"
                                 listener="#{pastBookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
