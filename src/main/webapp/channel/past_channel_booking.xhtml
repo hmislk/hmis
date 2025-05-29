@@ -68,7 +68,7 @@
                     <div class="col-2">
                         <div >
                             <div >
-                                
+
                                 <p:selectOneListbox 
                                     id="acSpeciality"
                                     filter="true"
@@ -95,7 +95,7 @@
 
                     <div class="col-2">
                         <div>
-                            
+
                             <p:selectOneListbox 
                                 id="scStaff"
                                 filter="true"
@@ -124,7 +124,7 @@
                                           placeholder="Select Date"
 
                                           class="w-50"
-                                        onchange="#{pastBookingController.fillSessionInstance()}">
+                                          onchange="#{pastBookingController.fillSessionInstance()}">
                                 <p:ajax
                                     process="@this"
                                     update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
@@ -134,7 +134,7 @@
                     </div>
 
                     <div class="col-md-3 p-0" >
-                        
+
                         <p:selectOneListbox 
                             id="acSessions"
                             filter="true"
@@ -148,7 +148,7 @@
                                 itemValue="#{ses}"
                                 itemLabel="#{ses.name}">
                             </f:selectItems>
-                            
+
                             <p:column headerText="Name">
                                 <f:facet name="header" >
                                     <h:outputText value="Name" ></h:outputText>
@@ -196,7 +196,7 @@
                     </div>
 
                     <div class="col-4" >
-                        
+
                         <h:outputText id="test" value="#{pastBookingController.selectedBillSession}" rendered="false"></h:outputText>
                         <p:selectOneListbox 
                             id="acBookings" 
@@ -217,13 +217,15 @@
                             </p:column>
 
                             <p:column style="width: 20px!important;">
-                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
-                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
-                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
-                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>
-                                <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
-                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
+<!--                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>-->
+                                <p:outputLabel value="On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
+                                <p:outputLabel value="Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
+<!--                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>-->
+                                <p:outputLabel value="Cash" rendered="#{bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
+                                <p:outputLabel value="Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent' and bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"/>
+                                <p:outputLabel value="On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
+                                <p:outputLabel value="Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
+                                <p:outputLabel value="OB - #{bs.bill.referenceBill.onlineBooking.referenceNo}" rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" style="color: #000; background: #fbc531; font-weight: bold; padding: 2px"/>
                             </p:column>
 
                             <p:column style="width: 10px!important;">
@@ -232,7 +234,8 @@
                             </p:column>
 
                             <p:column style="width: 5px!important;">
-                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.creditCompany.institutionCode}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.agency.name}"/>
                             </p:column>
 
                             <p:column style="width: 10px!important;">
