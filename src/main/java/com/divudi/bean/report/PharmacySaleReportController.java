@@ -237,6 +237,7 @@ public class PharmacySaleReportController implements Serializable {
 
     List<Bill> labBhtIssueBilledBills;
     double labBhtIssueBilledBillTotals;
+    private double totalFreeQuantity = 0.0;
     /////
 
     /// //
@@ -425,7 +426,7 @@ public class PharmacySaleReportController implements Serializable {
                 + " and bi.bill.createdAt between :fd and :td ";
 
         if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")) {
-            sql += " and ((bi.bill.depId) like :di) ";
+            sql += " and ((bi.bill.deptId) like :di) ";
             m.put("di", "%" + searchKeyword.getBillNo().toUpperCase().trim() + "%");
         }
 //        BillItem bi = new BillItem();
@@ -452,6 +453,7 @@ public class PharmacySaleReportController implements Serializable {
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         totalPurchaseValue = getFreeQtyByPurchaseRateTotal(billItems);
+        totalFreeQuantity = getTotalFreeQty(billItems);
 
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
@@ -468,6 +470,22 @@ public class PharmacySaleReportController implements Serializable {
         }
         for (BillItem bi : items) {
             tot += (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
+        }
+        return tot;
+    }
+    
+    public double getTotalFreeQty(List<BillItem> items) {
+        double tot = 0;
+        if (items == null || items.isEmpty()) {
+            return 0;
+        }
+        for (BillItem bi : items) {
+            if (bi != null && bi.getPharmaceuticalBillItem() != null) {
+                Double freeQty = bi.getPharmaceuticalBillItem().getFreeQty();
+                if (freeQty != null) {
+                    tot += freeQty;
+                }
+            }
         }
         return tot;
     }
@@ -6302,6 +6320,14 @@ public class PharmacySaleReportController implements Serializable {
 
     public void setUser(WebUser user) {
         this.user = user;
+    }
+
+    public double getTotalFreeQuantity() {
+        return totalFreeQuantity;
+    }
+
+    public void setTotalFreeQuantity(double totalFreeQuantity) {
+        this.totalFreeQuantity = totalFreeQuantity;
     }
 
     public class ItemWithDepBHTIssue {
