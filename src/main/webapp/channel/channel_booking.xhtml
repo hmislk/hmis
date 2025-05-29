@@ -288,6 +288,12 @@
                                 process="@this"
                                 update="pnlArrived acBookings acSessions btnAddBooking manageBookingId"
                                 listener="#{bookingController.fillBillSessions}" />
+                            
+                            <p:ajax 
+                                event="click" 
+                                process="@this"
+                                update="pnlArrived acBookings acSessions btnAddBooking manageBookingId"
+                                listener="#{bookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
 
@@ -343,7 +349,8 @@
                             </p:column>
 
                             <p:column style="width: 5px!important;">
-                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.creditCompany.institutionCode}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType eq 'ChannelAgent'}" value="#{bs.bill.creditCompany.institutionCode}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType ne 'ChannelAgent'}" value="System Booking"/>
                                 <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.agency.name}"/>
                             </p:column>
 
