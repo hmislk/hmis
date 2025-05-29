@@ -63,6 +63,7 @@ import org.joda.time.LocalDate;
 @Named
 @SessionScoped
 public class ReportsTransfer implements Serializable {
+
     @Inject
     private ReportTimerController reportTimerController;
 
@@ -106,6 +107,7 @@ public class ReportsTransfer implements Serializable {
     private double discountsValue;
     private double marginValue;
     private double netTotalValues;
+    private double netTotalSaleValues;
     private double retailValue;
     private Category category;
 
@@ -751,19 +753,33 @@ public class ReportsTransfer implements Serializable {
     public void fetchBillTotalByToDepartment(Date fd, Date td, Department dep, BillType bt) {
         listz = new ArrayList<>();
         netTotalValues = 0.0;
+        netTotalSaleValues = 0.0;
 
         List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt, true);
+        List<Object[]> objectsItems = getBillBeanController().fetchBilledDepartmentBillItem(fd, td, dep, bt, true);
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
             double dbl = (double) ob[1];
+            double db2 = 0.0;
+
+            for (Object[] obItem : objectsItems) {
+                Department dItem = (Department) obItem[0];
+                double itemValue = (double) obItem[1];
+
+                if (d.equals(dItem)) {
+                    db2 += itemValue;
+                }
+            }
 
             String1Value3 sv = new String1Value3();
             sv.setString(d.getName());
             sv.setValue1(dbl);
+            sv.setValue2(db2);
             listz.add(sv);
 
             netTotalValues += dbl;
+            netTotalSaleValues += db2;
 
         }
 
@@ -1896,6 +1912,14 @@ public class ReportsTransfer implements Serializable {
 
     public void setPreviewBill(Bill previewBill) {
         this.previewBill = previewBill;
+    }
+
+    public double getNetTotalSaleValues() {
+        return netTotalSaleValues;
+    }
+
+    public void setNetTotalSaleValues(double netTotalSaleValues) {
+        this.netTotalSaleValues = netTotalSaleValues;
     }
 
     public class ItemBHTIssueCountTrancerReciveCount {
