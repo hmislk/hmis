@@ -417,15 +417,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setTemporaryBillSessions(List<BillSession> temporaryBillSessions) {
         this.temporaryBillSessions = temporaryBillSessions;
     }
- 
+
     public boolean isAbsent() {
+        if(selectedBillSession != null){
+            return selectedBillSession.isAbsent();
+        }
         return absent;
     }
 
     public void setAbsent(boolean absent) {
         this.absent = absent;
     }
- 
+
     public void loadBillSessions() {
         fillBillSessions();
         fillTemporaryBillSessions();
@@ -2707,8 +2710,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         //cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
-        
-        if(getBillSession().getBill().getCancelledBill() == null){
+
+        if (getBillSession().getBill().getCancelledBill() == null) {
             return;
         }
 
@@ -2830,7 +2833,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Already Refunded");
             return true;
         }
-        
+
         if (checkPaid()) {
             JsfUtil.addErrorMessage("Doctor Payment has paid");
             return true;
@@ -2892,7 +2895,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void cancel(Bill bill, BillItem billItem, BillSession billSession) {
-        if (errorCheckCancelling()) {     
+        if (errorCheckCancelling()) {
             return;
         }
 
@@ -3566,27 +3569,38 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getPersonFacade().edit(getSelectedBillSession().getBill().getPatient().getPerson());
         JsfUtil.addSuccessMessage("Patient Updated");
     }
-    
-    public void updatePresentStatusOfPatient(boolean status){
+
+    public void updatePresentStatusOfPatient(boolean status) {
         updateSelectedBillSessionPatient();
         if (selectedBillSession == null) {
             return;
         }
-        
-        if(checkPaid()){
+
+        if (checkPaid()) {
             return;
         }
-        
+
         if (selectedBillSession.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && selectedBillSession.getBill().getReferenceBill() != null) {
             if (selectedBillSession.getBill().getReferenceBill().getOnlineBooking() != null) {
-                selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setAbsent(true);
-                selectedBillSession.setAbsent(status);
+                if(selectedBillSession.getBill().getReferenceBill().getOnlineBooking().isAbsent()){
+                   selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setAbsent(false); 
+                   selectedBillSession.setAbsent(false);
+                }else{
+                    selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setAbsent(true); 
+                    selectedBillSession.setAbsent(true);
+                }
+
                 getOnlineBookingFacade().edit(selectedBillSession.getBill().getReferenceBill().getOnlineBooking());
             }
-        }else{
-            selectedBillSession.setAbsent(status);
+        } else {
+            if(selectedBillSession.isAbsent()){
+                selectedBillSession.setAbsent(false);
+            }else{
+                selectedBillSession.setAbsent(true);
+            }
+//            selectedBillSession.setAbsent(status);
         }
-        
+
         getBillSessionFacade().edit(selectedBillSession);
     }
 
@@ -3598,7 +3612,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billSessionFacade.create(selectedBillSession);
         } else {
             billSessionFacade.edit(selectedBillSession);
-        }  
+        }
     }
 
     public boolean patientErrorPresent(Patient p) {

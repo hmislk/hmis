@@ -185,7 +185,7 @@
                                         </h:outputLabel>
                                         <h:outputLabel  rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_WITH_PAYMENT' and bf.bill.billType eq 'ChannelAgent'}" value="Agent Booking (#{bf.bill.creditCompany.name})">
                                         </h:outputLabel>
-                                        <h:outputLabel  rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_WITH_PAYMENT' and bf.bill.billType ne 'ChannelAgent' and bf.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="System Booking">
+                                        <h:outputLabel  rendered="#{bf.bill.billType ne 'ChannelAgent' and bf.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="System Booking">
                                         </h:outputLabel>
                                     </p:column>
 
