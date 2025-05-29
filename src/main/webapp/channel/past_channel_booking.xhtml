@@ -130,6 +130,7 @@
                                 >
                                 <p:ajax  
                                     process="@this" 
+                                   listener="#{pastBookingController.listnerStaffRowSelect}"
                                     update=":#{p:resolveFirstComponentWithId('acDate',view).clientId} scStaff acBookings acSessions viewSession"/>
 
                                 <f:selectItems value="#{pastBookingController.consultants}"
