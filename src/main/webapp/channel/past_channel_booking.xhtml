@@ -130,7 +130,7 @@
                                 >
                                 <p:ajax  
                                     process="@this" 
-                                   listener="#{pastBookingController.listnerStaffRowSelect}"
+                                   
                                     update=":#{p:resolveFirstComponentWithId('acDate',view).clientId} scStaff acBookings acSessions viewSession"/>
 
                                 <f:selectItems value="#{pastBookingController.consultants}"
@@ -153,7 +153,7 @@
                                           onchange="#{pastBookingController.fillSessionInstance()}">
                                 <p:ajax
                                     process="@this"
-                                    update="viewSession :#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
+                                    update="viewSession acBookings :#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
                                     listener="#{pastBookingController.fillSessionInstance()}"/>
                             </p:datePicker>
                         </div>
@@ -218,6 +218,11 @@
                                 process="@this"
                                 update="acBookings acSessions viewSession"
                                 listener="#{pastBookingController.fillBillSessions}" />
+                            <p:ajax 
+                                event="click"
+                                process="@this"
+                                update="acBookings acSessions viewSession"
+                                listener="#{pastBookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
 
@@ -234,6 +239,7 @@
                             <p:ajax process="acBookings" update="manageBookingId"></p:ajax>
                             <p:column style="width: 5px!important;">
                                 <h:outputText value="#{bs.serialNo}" />
+                               
                             </p:column>
 
                             <p:column style="width: 60px!important;">
