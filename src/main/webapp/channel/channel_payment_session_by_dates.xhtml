@@ -147,7 +147,8 @@
 
                                     <p:column headerText="Patient" width="10em">
                                         <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
-                                        <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
+                                        <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/> 
+                                        <h:outputLabel rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bf.bill.referenceBill.onlineBooking.title}. #{bf.bill.referenceBill.onlineBooking.patientName}"/>         
                                     </p:column>
 
                                     <p:column headerText="Booked on" rendered="false" width="6em">
@@ -178,8 +179,17 @@
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:column>
+                                    
+                                    <p:column headerText="Booking Type" width="16em">
+                                        <h:outputLabel  rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="Online Booking(#{bf.bill.referenceBill.onlineBooking.agency.name})">
+                                        </h:outputLabel>
+                                        <h:outputLabel  rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_WITH_PAYMENT' and bf.bill.billType eq 'ChannelAgent'}" value="Agent Booking(#{bf.bill.creditCompany.name})">
+                                        </h:outputLabel>
+                                        <h:outputLabel  rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_WITH_PAYMENT' and bf.bill.billType ne 'ChannelAgent' and bf.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="System Booking">
+                                        </h:outputLabel>
+                                    </p:column>
 
-                                    <p:column headerText="Bill Type" rendered="true" width="16em">
+                                    <p:column headerText="Bill Type" rendered="false" width="16em">
                                         <h:outputLabel  value="#{bf.bill.billClass}" >
                                         </h:outputLabel>
                                     </p:column>
