@@ -43,6 +43,9 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.ReportType;
 import com.divudi.core.data.UploadType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.lab.PatientReportGroup;
@@ -80,6 +83,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -156,6 +160,7 @@ public class PatientReportController implements Serializable {
     private String groupName;
     private PatientInvestigation currentPtIx;
     private PatientReport currentPatientReport;
+    private String receipientEmail;
     private PatientSample currentPatientSample;
     Investigation currentReportInvestigation;
     Investigation alternativeInvestigation;
@@ -179,7 +184,6 @@ public class PatientReportController implements Serializable {
     private String comment;
 
     public StreamedContent getReportAsPdf() {
-        System.out.println("");
         StreamedContent pdfSc = null;
         try {
             pdfSc = pdfController.createPdfForPatientReport(currentPatientReport);
@@ -191,7 +195,6 @@ public class PatientReportController implements Serializable {
 
     public String navigateToViewPatientReport(PatientReport patientReport) {
         if (null == patientReport.getReportType()) {
-            System.out.println("Null");
             setCurrentPatientReport(patientReport);
             return "/lab/patient_report?faces-redirect=true";
         } else {
@@ -1973,11 +1976,15 @@ public class PatientReportController implements Serializable {
             // Step 2: Safely clone and add
             for (PatientReportItemValue basePvm : baseAntibioticItems) {
                 PatientReportItemValue clonedPvm = basePvm.clone();
+                clonedPvm.setStrValue(null);
+                clonedPvm.setLobValue(null);
+                clonedPvm.setDisplayValue(null);
                 clonedPvm.setPatientReportGroup(newlyAddedGroup);
                 currentPatientReport.getPatientReportItemValues().add(clonedPvm);
             }
         }
         savePatientReport();
+        setGroupName(null);
     }
 
     public PatientReportGroup addPatientReportGroup() {
@@ -2064,7 +2071,7 @@ public class PatientReportController implements Serializable {
         if (CommonFunctions.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
             AppEmail e;
             e = new AppEmail();
-            
+
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
             e.setReceipientEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail());
@@ -2076,15 +2083,14 @@ public class PatientReportController implements Serializable {
 //            e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword()); // THese are taken from configuration options
 //            e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());// THese are taken from configuration options
 //            e.setSenderEmail(getCurrentPatientReport().getApproveInstitution().getEmail());// THese are taken from configuration options
-
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            
+
             e.setBill(currentPtIx.getBillItem().getBill());
             e.setPatientReport(currentPatientReport);
             e.setPatientInvestigation(currentPtIx);
-            e.setSmsType(MessageType.LabReport);
-            
+            e.setMessageType(MessageType.LabReport);
+
             e.setSentSuccessfully(false);
             e.setPending(true);
 
@@ -2192,7 +2198,6 @@ public class PatientReportController implements Serializable {
     }
 
     public void sendSmsForPatientReport() {
-        Date startTime = new Date();
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
             return;
@@ -2231,6 +2236,92 @@ public class PatientReportController implements Serializable {
 
         JsfUtil.addSuccessMessage("SMS Sent");
 //
+    }
+
+    public void sendEmailForPatientReport() {
+        System.out.println("sendEmailForPatientReport");
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Nothing to approve");
+            return;
+        }
+        if (currentPatientReport.getPatientInvestigation() == null) {
+            JsfUtil.addErrorMessage("Internal Error");
+            return;
+        }
+        if (currentPatientReport.getPatientInvestigation().getBillItem() == null) {
+            JsfUtil.addErrorMessage("Internal Error");
+            return;
+        }
+        if (currentPatientReport.getPatientInvestigation().getBillItem().getBill() == null) {
+            JsfUtil.addErrorMessage("Internal Error");
+            return;
+        }
+
+        Bill bill = currentPatientReport.getPatientInvestigation().getBillItem().getBill();
+        if (bill.getBalance() > 0.99) {
+            JsfUtil.addErrorMessage("Bill is NOT Fully Settled. Please settle the bill first before sending an email");
+            return;
+        }
+
+        if (!currentPatientReport.getDataEntered()) {
+            JsfUtil.addErrorMessage("First Save report");
+            return;
+        }
+        if (!currentPatientReport.getApproved()) {
+            JsfUtil.addErrorMessage("First Approve report");
+            return;
+        }
+
+        if (receipientEmail == null || receipientEmail.isEmpty()) {
+            JsfUtil.addErrorMessage("No recipient Email");
+            return;
+        }
+        if (!CommonFunctions.isValidEmail(receipientEmail)) {
+            JsfUtil.addErrorMessage("Recipient Email is NOT valid");
+            return;
+        }
+
+        System.out.println("all checks ok");
+        
+        AppEmail email = new AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(receipientEmail);
+        email.setMessageSubject(emailSubject(currentPatientReport));
+        email.setMessageBody(emailBody(currentPatientReport));
+        email.setDepartment(sessionController.getLoggedUser().getDepartment());
+        email.setInstitution(sessionController.getLoggedUser().getInstitution());
+        email.setBill(bill);
+        email.setPatientReport(currentPatientReport);
+        email.setPatientInvestigation(currentPatientReport.getPatientInvestigation());
+        email.setMessageType(MessageType.LabReport);
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        getEmailFacade().create(email);
+
+        System.out.println("email = " + email);
+        
+        try {
+            boolean success = emailManagerEjb.sendEmail(
+                    Collections.singletonList(email.getReceipientEmail()),
+                    email.getMessageBody(),
+                    email.getMessageSubject(),
+                    true
+            );
+            email.setSentSuccessfully(success);
+            email.setPending(!success);
+            if (success) {
+                email.setSentAt(new Date());
+                JsfUtil.addSuccessMessage("Email Sent Successfully");
+            } else {
+                JsfUtil.addErrorMessage("Sending Email Failed");
+            }
+            emailFacade.edit(email);
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Sending Email Failed");
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE,
+                    "Failed to process Email ID: " + (email != null ? email.getId() : "unknown"), ex);
+        }
     }
 
     public void reverseApprovalOfPatientReport() {
@@ -2451,9 +2542,32 @@ public class PatientReportController implements Serializable {
             if (currentPatientReport != null) {
                 currentPtIx = currentPatientReport.getPatientInvestigation();
             }
-
         }
+        updateRecipientEmail();
         return currentPtIx;
+    }
+
+    private void updateRecipientEmail() {
+        receipientEmail = null; // Reset first
+        if (currentPtIx == null) {
+            return;
+        }
+        BillItem bi = currentPtIx.getBillItem();
+        if (bi == null) {
+            return;
+        }
+        Bill bill = bi.getBill();
+        if (bill == null) {
+            return;
+        }
+        Patient patient = bill.getPatient();
+        if (patient == null) {
+            return;
+        }
+        Person person = patient.getPerson();
+        if (person != null) {
+            receipientEmail = person.getEmail();
+        }
     }
 
     public PatientReport createNewPatientReportForRequests(PatientInvestigation pi, Investigation ix) {
@@ -2659,6 +2773,8 @@ public class PatientReportController implements Serializable {
 //            getEjbFacade().edit(r);
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
+            setGroupName("Antibiotic Sensitivity Test");
+            addPatientReportGroupForMicrobiology();
             getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
             JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
@@ -2668,6 +2784,7 @@ public class PatientReportController implements Serializable {
 
     public void setCurrentPtIx(PatientInvestigation currentPtIx) {
         this.currentPtIx = currentPtIx;
+        updateRecipientEmail();
     }
 
     public PatientReportBean getPrBean() {
@@ -2817,6 +2934,7 @@ public class PatientReportController implements Serializable {
             return null;
         }
 
+        
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
 
@@ -2960,6 +3078,17 @@ public class PatientReportController implements Serializable {
 
     public List<Selectable> getSelectables() {
         return selectables;
+    }
+
+    public String getReceipientEmail() {
+        if(receipientEmail==null){
+            updateRecipientEmail();
+        }
+        return receipientEmail;
+    }
+
+    public void setReceipientEmail(String receipientEmail) {
+        this.receipientEmail = receipientEmail;
     }
 
     public void setSelectables(List<Selectable> selectables) {

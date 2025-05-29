@@ -10,6 +10,8 @@ import com.divudi.core.entity.PatientEncounter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author safrin
@@ -188,4 +190,28 @@ public class String1Value5 {
         this.institution = institution;
     }
 
+    public List<PatientEncounter> getAllPatientEncountersByBills() {
+        List<PatientEncounter> allPatientEncounters = new ArrayList<>();
+        if (getValue1Bills() != null) {
+            allPatientEncounters.addAll(getPatientEncountersFromBills(getValue1Bills()));
+        }
+        if (getValue2Bills() != null) {
+            allPatientEncounters.addAll(getPatientEncountersFromBills(getValue2Bills()));
+        }
+        if (getValue3Bills() != null) {
+            allPatientEncounters.addAll(getPatientEncountersFromBills(getValue3Bills()));
+        }
+        if (getValue4Bills() != null) {
+            allPatientEncounters.addAll(getPatientEncountersFromBills(getValue4Bills()));
+        }
+        return allPatientEncounters.stream().distinct().collect(Collectors.toList());
+    }
+
+    private List<PatientEncounter> getPatientEncountersFromBills(List<Bill> bills) {
+        return bills.stream()
+                .map(Bill::getPatientEncounter)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+    }
 }
