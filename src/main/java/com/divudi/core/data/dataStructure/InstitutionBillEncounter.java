@@ -16,8 +16,10 @@ public class InstitutionBillEncounter {
     private Double gopAmount;
     private Double paidByPatient;
     private Double patientDue;
+    private Double patientExcess;
     private Double paidByCompany;
     private Double companyDue;
+    private Double companyExcess;
     private PatientEncounter patientEncounter;
     private Double totalPaidByCompanies;
     private Double totalDue;
@@ -60,8 +62,12 @@ public class InstitutionBillEncounter {
                     institutionBillEncounter.setPaidByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient());
                     institutionBillEncounter.setPatientDue(patientEncounter.getFinalBill().getNetTotal() -
                             totalGopOfCompanies - patientEncounter.getFinalBill().getSettledAmountByPatient());
+                    institutionBillEncounter.setPatientExcess(patientEncounter.getFinalBill().getNetTotal() -
+                            totalGopOfCompanies - patientEncounter.getFinalBill().getSettledAmountByPatient() < 0 ?
+                            patientEncounter.getFinalBill().getNetTotal() - totalGopOfCompanies - patientEncounter.getFinalBill().getSettledAmountByPatient() : 0.0);
                     institutionBillEncounter.setPaidByCompany(bill.getPaidAmount());
                     institutionBillEncounter.setCompanyDue(bill.getNetTotal() - bill.getPaidAmount());
+                    institutionBillEncounter.setCompanyExcess(bill.getNetTotal() - bill.getPaidAmount() < 0 ? bill.getNetTotal() - bill.getPaidAmount() : 0.0);
                     institutionBillEncounter.setPatientEncounter(patientEncounter);
                     institutionBillEncounter.setTotalPaidByCompanies(totalPaidByCompanies);
                     institutionBillEncounter.setTotalDue(institutionBillEncounter.getNetTotal() -
@@ -72,12 +78,108 @@ public class InstitutionBillEncounter {
                             institutionBillEncounters.add(institutionBillEncounter);
                         }
                     } else if (dueType.equalsIgnoreCase("excess")) {
-                        if (institutionBillEncounter.getPatientDue() < 0 || institutionBillEncounter.getCompanyDue() < 0) {
+                        if (institutionBillEncounter.getPatientExcess() < 0 || institutionBillEncounter.getCompanyExcess() < 0) {
                             institutionBillEncounters.add(institutionBillEncounter);
                         }
                     } else if (dueType.equalsIgnoreCase("settled")) {
                         if (institutionBillEncounter.getPatientDue() == 0 || institutionBillEncounter.getCompanyDue() == 0) {
                             institutionBillEncounters.add(institutionBillEncounter);
+                        }
+                    } else {
+                        institutionBillEncounters.add(institutionBillEncounter);
+                    }
+                }
+            }
+        }
+
+        return institutionBillEncounters;
+    }
+
+    public static List<InstitutionBillEncounter> createInstitutionBillEncounter(Map<PatientEncounter, List<Bill>> patientEncounterBills, String dueType,
+                                                                                String filterBy) {
+        if (dueType == null || (!dueType.equalsIgnoreCase("due") && !dueType.equalsIgnoreCase("any")
+                && !dueType.equalsIgnoreCase("excess") && !dueType.equalsIgnoreCase("settled"))) {
+            return new ArrayList<>();
+        }
+
+        if (filterBy == null || (!filterBy.equalsIgnoreCase("patient") && !filterBy.equalsIgnoreCase("company")
+                && !filterBy.equalsIgnoreCase("any") && !filterBy.equalsIgnoreCase("all"))) {
+            return new ArrayList<>();
+        }
+
+        List<InstitutionBillEncounter> institutionBillEncounters = new ArrayList<>();
+
+        for (Map.Entry<PatientEncounter, List<Bill>> entry : patientEncounterBills.entrySet()) {
+            PatientEncounter patientEncounter = entry.getKey();
+            List<Bill> bills = entry.getValue();
+
+            double totalGopOfCompanies = 0.0;
+            double totalPaidByCompanies = 0.0;
+
+            for (Bill bill : bills) {
+                if (bill.getCreditCompany() != null) {
+                    totalGopOfCompanies += bill.getNetTotal();
+                    totalPaidByCompanies += bill.getPaidAmount();
+                }
+            }
+
+            for (Bill bill : bills) {
+                if (bill.getCreditCompany() != null) {
+                    InstitutionBillEncounter institutionBillEncounter = new InstitutionBillEncounter();
+
+                    institutionBillEncounter.setInstitution(bill.getCreditCompany());
+                    institutionBillEncounter.setBhtNo(patientEncounter.getBhtNo());
+                    institutionBillEncounter.setDateOfDischarge(patientEncounter.getDateOfDischarge());
+                    institutionBillEncounter.setPatient(patientEncounter.getPatient());
+                    institutionBillEncounter.setNetTotal(patientEncounter.getFinalBill().getNetTotal());
+                    institutionBillEncounter.setGopAmount(bill.getNetTotal());
+                    institutionBillEncounter.setPaidByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient());
+                    institutionBillEncounter.setPatientDue(patientEncounter.getFinalBill().getNetTotal() -
+                            totalGopOfCompanies - patientEncounter.getFinalBill().getSettledAmountByPatient() > 0 ?
+                            patientEncounter.getFinalBill().getNetTotal() - totalGopOfCompanies - patientEncounter.getFinalBill().getSettledAmountByPatient() : 0.0);
+                    institutionBillEncounter.setPatientExcess(patientEncounter.getFinalBill().getNetTotal() -
+                            totalGopOfCompanies - patientEncounter.getFinalBill().getSettledAmountByPatient() < 0 ?
+                            patientEncounter.getFinalBill().getNetTotal() - totalGopOfCompanies - patientEncounter.getFinalBill().getSettledAmountByPatient() : 0.0);
+                    institutionBillEncounter.setPaidByCompany(bill.getPaidAmount());
+                    institutionBillEncounter.setCompanyDue(bill.getNetTotal() - bill.getPaidAmount() > 0 ?
+                            bill.getNetTotal() - bill.getPaidAmount() : 0.0);
+                    institutionBillEncounter.setCompanyExcess(bill.getNetTotal() - bill.getPaidAmount() < 0 ? bill.getNetTotal() - bill.getPaidAmount() : 0.0);
+                    institutionBillEncounter.setPatientEncounter(patientEncounter);
+                    institutionBillEncounter.setTotalPaidByCompanies(totalPaidByCompanies);
+                    institutionBillEncounter.setTotalDue(institutionBillEncounter.getNetTotal() -
+                            (institutionBillEncounter.getPaidByPatient() + institutionBillEncounter.getTotalPaidByCompanies()));
+
+                    if (dueType.equalsIgnoreCase("due")) {
+                        if (filterBy.equalsIgnoreCase("patient") && institutionBillEncounter.getPatientDue() > 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        } else if (filterBy.equalsIgnoreCase("company") && institutionBillEncounter.getCompanyDue() > 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        } else if (filterBy.equalsIgnoreCase("any")) {
+                            if (institutionBillEncounter.getPatientDue() > 0 || institutionBillEncounter.getCompanyDue() > 0) {
+                                institutionBillEncounters.add(institutionBillEncounter);
+                            }
+                        }
+                    } else if (dueType.equalsIgnoreCase("excess")) {
+                        if (filterBy.equalsIgnoreCase("patient") && institutionBillEncounter.getPatientExcess() < 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        } else if (filterBy.equalsIgnoreCase("company") && institutionBillEncounter.getCompanyExcess() < 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        } else if (filterBy.equalsIgnoreCase("any")) {
+                            if (institutionBillEncounter.getPatientExcess() < 0 || institutionBillEncounter.getCompanyExcess() < 0) {
+                                institutionBillEncounters.add(institutionBillEncounter);
+                            }
+                        }
+                    } else if (dueType.equalsIgnoreCase("settled")) {
+                        if (filterBy.equalsIgnoreCase("patient") && institutionBillEncounter.getPatientDue() == 0
+                                && institutionBillEncounter.getPatientExcess() == 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        } else if (filterBy.equalsIgnoreCase("company") && institutionBillEncounter.getCompanyDue() == 0
+                                && institutionBillEncounter.getCompanyExcess() == 0) {
+                            institutionBillEncounters.add(institutionBillEncounter);
+                        } else if (filterBy.equalsIgnoreCase("any")) {
+                            if (institutionBillEncounter.getPatientDue() == 0 || institutionBillEncounter.getCompanyDue() == 0) {
+                                institutionBillEncounters.add(institutionBillEncounter);
+                            }
                         }
                     } else {
                         institutionBillEncounters.add(institutionBillEncounter);
@@ -196,5 +298,21 @@ public class InstitutionBillEncounter {
 
     public void setTotalDue(Double totalDue) {
         this.totalDue = totalDue;
+    }
+
+    public Double getCompanyExcess() {
+        return companyExcess;
+    }
+
+    public void setCompanyExcess(Double companyExcess) {
+        this.companyExcess = companyExcess;
+    }
+
+    public Double getPatientExcess() {
+        return patientExcess;
+    }
+
+    public void setPatientExcess(Double patientExcess) {
+        this.patientExcess = patientExcess;
     }
 }
