@@ -2506,7 +2506,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
-    public String navigateBackToBookingsFromBillSession() {
+     public String navigateBackToBookingsFromBillSession() {
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
