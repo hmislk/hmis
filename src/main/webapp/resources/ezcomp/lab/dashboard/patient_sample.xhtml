@@ -180,7 +180,7 @@
                 </h:panelGrid>
 
             </h:panelGrid>
-            <div class="d-flex mt-2">
+            <div class="d-flex mt-2 gap-2">
                 <div class="col-md-9">
                     <p:dataTable  
                         id="samples"
@@ -458,9 +458,10 @@
                             icon="pi pi-plus-circle"
                             styleClass="ui-button-primary" >
                         </p:commandButton>
+                        
+                        <hr/>
+                        
                     </h:panelGroup>
-
-                    <hr/>
 
                     <style>
                         .custom-dropdown-panel {
@@ -527,9 +528,9 @@
                                 styleClass="ui-button-warning" >
                             </p:commandButton>
                         </div>
+                        
+                        <hr/>
                     </h:panelGroup>
-
-                    <hr/>
 
                     <h:panelGroup 
                         id="sampleReceive" 
@@ -570,6 +571,8 @@
                             icon="pi pi-check-circle"
                             styleClass="ui-button-info">
                         </p:commandButton>
+                        
+                        <hr/>
                     </h:panelGroup>
 
                     <p:commandButton 
@@ -583,7 +586,7 @@
                         styleClass="m-1  w-100 ui-button-info" >
                     </p:commandButton>
 
-                    <hr/>
+                    
 
                     <h:panelGroup 
                         rendered="#{webUserController.hasPrivilege('LabSampleRejecting')}"
