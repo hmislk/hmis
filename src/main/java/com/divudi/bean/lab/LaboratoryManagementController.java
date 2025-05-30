@@ -588,6 +588,10 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void selectAllSamples() {
+        if(patientSamples == null){
+            JsfUtil.addErrorMessage("No samples selected");
+            return ;
+        }
         selectedPatientSamples = new ArrayList();
         for (PatientSample ps : patientSamples) {
             selectedPatientSamples.add(ps);
