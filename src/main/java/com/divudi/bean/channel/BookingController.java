@@ -1834,6 +1834,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 session.setAcceptOnlineBookings(false);
                 sessionInstanceFacade.edit(session);
             }
+            
+            JsfUtil.addSuccessMessage("Holiday Mark is Successful.");
         }
     }
 
