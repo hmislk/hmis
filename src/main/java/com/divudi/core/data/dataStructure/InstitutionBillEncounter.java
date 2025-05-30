@@ -23,6 +23,7 @@ public class InstitutionBillEncounter {
     private PatientEncounter patientEncounter;
     private Double totalPaidByCompanies;
     private Double totalDue;
+    private Double patientGopAmount;
 
     public InstitutionBillEncounter() {
     }
@@ -72,6 +73,7 @@ public class InstitutionBillEncounter {
                     institutionBillEncounter.setTotalPaidByCompanies(totalPaidByCompanies);
                     institutionBillEncounter.setTotalDue(institutionBillEncounter.getNetTotal() -
                             (institutionBillEncounter.getPaidByPatient() + institutionBillEncounter.getTotalPaidByCompanies()));
+                    institutionBillEncounter.setPatientGopAmount(patientEncounter.getFinalBill().getNetTotal() - totalGopOfCompanies);
 
                     if (dueType.equalsIgnoreCase("due")) {
                         if (institutionBillEncounter.getPatientDue() > 0 || institutionBillEncounter.getCompanyDue() > 0) {
@@ -148,6 +150,7 @@ public class InstitutionBillEncounter {
                     institutionBillEncounter.setTotalPaidByCompanies(totalPaidByCompanies);
                     institutionBillEncounter.setTotalDue(institutionBillEncounter.getNetTotal() -
                             (institutionBillEncounter.getPaidByPatient() + institutionBillEncounter.getTotalPaidByCompanies()));
+                    institutionBillEncounter.setPatientGopAmount(patientEncounter.getFinalBill().getNetTotal() - totalGopOfCompanies);
 
                     if (dueType.equalsIgnoreCase("due")) {
                         if (filterBy.equalsIgnoreCase("patient") && institutionBillEncounter.getPatientDue() > 0) {
@@ -314,5 +317,13 @@ public class InstitutionBillEncounter {
 
     public void setPatientExcess(Double patientExcess) {
         this.patientExcess = patientExcess;
+    }
+
+    public Double getPatientGopAmount() {
+        return patientGopAmount;
+    }
+
+    public void setPatientGopAmount(Double patientGopAmount) {
+        this.patientGopAmount = patientGopAmount;
     }
 }

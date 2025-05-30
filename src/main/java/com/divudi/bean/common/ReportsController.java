@@ -4373,7 +4373,7 @@ public class ReportsController implements Serializable {
 
         List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(filterByCreditCompanyPaymentMethodByInstitutionBillEncounter(
                 InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), reportType.equalsIgnoreCase("paid") ?
-                        "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any")));
+                        "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any", "any")));
 
         setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
         calculateCreditCompanyDueTotals();
