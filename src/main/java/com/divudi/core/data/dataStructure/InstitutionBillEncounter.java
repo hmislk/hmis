@@ -1,5 +1,6 @@
 package com.divudi.core.data.dataStructure;
 
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
@@ -161,6 +162,10 @@ public class InstitutionBillEncounter {
                             if (institutionBillEncounter.getPatientDue() > 0 || institutionBillEncounter.getCompanyDue() > 0) {
                                 institutionBillEncounters.add(institutionBillEncounter);
                             }
+                        } else if (filterBy.equalsIgnoreCase("all")) {
+                            if (institutionBillEncounter.getPatientDue() > 0 && institutionBillEncounter.getCompanyDue() > 0) {
+                                institutionBillEncounters.add(institutionBillEncounter);
+                            }
                         }
                     } else if (dueType.equalsIgnoreCase("excess")) {
                         if (filterBy.equalsIgnoreCase("patient") && institutionBillEncounter.getPatientExcess() < 0) {
@@ -169,6 +174,10 @@ public class InstitutionBillEncounter {
                             institutionBillEncounters.add(institutionBillEncounter);
                         } else if (filterBy.equalsIgnoreCase("any")) {
                             if (institutionBillEncounter.getPatientExcess() < 0 || institutionBillEncounter.getCompanyExcess() < 0) {
+                                institutionBillEncounters.add(institutionBillEncounter);
+                            }
+                        } else if (filterBy.equalsIgnoreCase("all")) {
+                            if (institutionBillEncounter.getPatientExcess() < 0 && institutionBillEncounter.getCompanyExcess() < 0) {
                                 institutionBillEncounters.add(institutionBillEncounter);
                             }
                         }
@@ -183,6 +192,11 @@ public class InstitutionBillEncounter {
                             if (institutionBillEncounter.getPatientDue() == 0 || institutionBillEncounter.getCompanyDue() == 0) {
                                 institutionBillEncounters.add(institutionBillEncounter);
                             }
+                        } else if (filterBy.equalsIgnoreCase("all")) {
+                            if (institutionBillEncounter.getPatientDue() == 0 && institutionBillEncounter.getCompanyDue() == 0
+                                    && institutionBillEncounter.getPatientExcess() == 0 && institutionBillEncounter.getCompanyExcess() == 0) {
+                                institutionBillEncounters.add(institutionBillEncounter);
+                            }
                         }
                     } else {
                         institutionBillEncounters.add(institutionBillEncounter);
@@ -195,7 +209,7 @@ public class InstitutionBillEncounter {
     }
 
     public static List<InstitutionBillEncounter> createInstitutionBillEncounter(Map<PatientEncounter, List<Bill>> patientEncounterBills, String dueType,
-                                                                                String filterBy, Institution filteringCreditCompany) {
+                                                                                String filterBy, Institution filteringCreditCompany, PaymentMethod filteringPaymentMethod) {
         if (dueType == null || (!dueType.equalsIgnoreCase("due") && !dueType.equalsIgnoreCase("any")
                 && !dueType.equalsIgnoreCase("excess") && !dueType.equalsIgnoreCase("settled"))) {
             return new ArrayList<>();
@@ -226,6 +240,14 @@ public class InstitutionBillEncounter {
                 if (bill.getCreditCompany() != null) {
                     if (filteringCreditCompany != null && !bill.getCreditCompany().equals(filteringCreditCompany)) {
                         continue;
+                    }
+
+                    if (filteringPaymentMethod != null) {
+                        final Bill paidBill = bill.getPaidBill();
+
+                        if (paidBill == null || !paidBill.getPaymentMethod().equals(filteringPaymentMethod)) {
+                            continue;
+                        }
                     }
 
                     InstitutionBillEncounter institutionBillEncounter = new InstitutionBillEncounter();
@@ -262,6 +284,10 @@ public class InstitutionBillEncounter {
                             if (institutionBillEncounter.getPatientDue() > 0 || institutionBillEncounter.getCompanyDue() > 0) {
                                 institutionBillEncounters.add(institutionBillEncounter);
                             }
+                        } else if (filterBy.equalsIgnoreCase("all")) {
+                            if (institutionBillEncounter.getPatientDue() > 0 && institutionBillEncounter.getCompanyDue() > 0) {
+                                institutionBillEncounters.add(institutionBillEncounter);
+                            }
                         }
                     } else if (dueType.equalsIgnoreCase("excess")) {
                         if (filterBy.equalsIgnoreCase("patient") && institutionBillEncounter.getPatientExcess() < 0) {
@@ -270,6 +296,10 @@ public class InstitutionBillEncounter {
                             institutionBillEncounters.add(institutionBillEncounter);
                         } else if (filterBy.equalsIgnoreCase("any")) {
                             if (institutionBillEncounter.getPatientExcess() < 0 || institutionBillEncounter.getCompanyExcess() < 0) {
+                                institutionBillEncounters.add(institutionBillEncounter);
+                            }
+                        } else if (filterBy.equalsIgnoreCase("all")) {
+                            if (institutionBillEncounter.getPatientExcess() < 0 && institutionBillEncounter.getCompanyExcess() < 0) {
                                 institutionBillEncounters.add(institutionBillEncounter);
                             }
                         }
@@ -282,6 +312,11 @@ public class InstitutionBillEncounter {
                             institutionBillEncounters.add(institutionBillEncounter);
                         } else if (filterBy.equalsIgnoreCase("any")) {
                             if (institutionBillEncounter.getPatientDue() == 0 || institutionBillEncounter.getCompanyDue() == 0) {
+                                institutionBillEncounters.add(institutionBillEncounter);
+                            }
+                        } else if (filterBy.equalsIgnoreCase("all")) {
+                            if (institutionBillEncounter.getPatientDue() == 0 && institutionBillEncounter.getCompanyDue() == 0
+                                    && institutionBillEncounter.getPatientExcess() == 0 && institutionBillEncounter.getCompanyExcess() == 0) {
                                 institutionBillEncounters.add(institutionBillEncounter);
                             }
                         }
