@@ -311,6 +311,7 @@
                                 icon="fa fa-file-text"
                                 value="New Report" 
                                 id="btnNewReport"
+                                rendered="#{webUserController.hasPrivilege('LabDataentry')}"
                                 disabled="#{!patientInvestigation.sampleAccepted}" 
                                 action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
                                 class="ui-button-danger"
@@ -322,7 +323,7 @@
                                 icon="fa fa-file-text"
                                 value="Upload Report" 
                                 id="btnNewUpload"
-                                rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport}"
+                                rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
                                 disabled="#{patientInvestigation.sampleSentAt eq null}"
                                 action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
                                 class="ui-button-warning"
@@ -335,6 +336,7 @@
                                 value="Reports" 
                                 class="ui-button-success"
                                 ajax="false" 
+                                rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
                                 action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
                             </p:commandButton>
                         </div>
@@ -369,6 +371,7 @@
                                     icon="fa fa-file-text"
                                     value="New Report" 
                                     id="btnNewReportForRefund"
+                                    rendered="#{webUserController.hasPrivilege('LabDataentry')}"
                                     disabled="#{!patientInvestigation.sampleAccepted}" 
                                     action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
                                     class="ui-button-danger"
@@ -380,7 +383,7 @@
                                     icon="fa fa-file-text"
                                     value="Report Upload" 
                                     id="btnNewUploadForRefund"
-                                    rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport}"
+                                    rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
                                     disabled="#{patientInvestigation.sampleSentAt eq null}"
                                     action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
                                     class="ui-button-warning"
@@ -391,6 +394,7 @@
                                 <p:commandButton 
                                     icon="fa fa-file-text"
                                     value="Reports" 
+                                    rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
                                     class="ui-button-success"
                                     ajax="false" 
                                     action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedBill(patientInvestigation.billItem.bill)}">

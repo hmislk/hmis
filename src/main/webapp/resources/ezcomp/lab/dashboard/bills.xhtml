@@ -289,6 +289,7 @@
                             icon="fa-solid fa-flask-vial"
                             title="To Samples" 
                             class="ui-button-raised"
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardSampleSearch'))}"
                             ajax="false"
                             action="#{laboratoryManagementController.navigateToSamplesFromSelectedBill(b)}"
                             disabled="#{b.status.label eq 'Ordered'}" >
@@ -297,6 +298,7 @@
                             icon="fa-regular fa-rectangle-list"
                             title="To Investigations" 
                             class="ui-button-warning"
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardInvestigationSearch'))}"
                             action="#{laboratoryManagementController.navigateToInvestigationsFromSelectedBill(b)}"
                             ajax="false" >
                         </p:commandButton>
@@ -305,6 +307,7 @@
                             title="To Reports" 
                             class="ui-button-danger"
                             ajax="false" 
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardPatientReportSearch'))}"
                             disabled="#{b.status eq 'ORDERED' or b.status eq 'SAMPLE_GENERATED' or b.status eq 'SAMPLE_COLLECTED'or b.status eq 'SAMPLE_SENT'}"
                             action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedBill(b)}" >
                         </p:commandButton>

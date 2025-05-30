@@ -419,7 +419,10 @@
                     </p:dataTable>
                 </div>
                 <div class="col-md-3">
-                    <div class="d-flex gap-2">
+                    <h:panelGroup 
+                        id="sampleCollect"
+                        rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}"
+                        class="d-flex gap-2">
                         <p:commandButton
                             value="Not Collected Samples"
                             ajax="false"
@@ -455,7 +458,7 @@
                             icon="pi pi-plus-circle"
                             styleClass="ui-button-primary" >
                         </p:commandButton>
-                    </div>
+                    </h:panelGroup>
 
                     <hr/>
 
@@ -470,61 +473,68 @@
                         }
                     </style>
 
-                    <p:autoComplete 
-                        completeMethod="#{staffController.completeStaff}"
-                        value="#{laboratoryManagementController.sampleTransportedToLabByStaff}" 
-                        var="mys" 
-                        class="w-100" 
-                        maxResults="50"
-                        inputStyleClass="form-control"
-                        itemLabel="#{mys.person.name}" 
-                        panelStyleClass="custom-dropdown-panel"
-                        itemValue="#{mys}">
-                        <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
-                        <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
-                    </p:autoComplete>
+                    <h:panelGroup 
+                        id="sampleSend"
+                        rendered="#{webUserController.hasPrivilege('LabSampleSending')}">
+                        <p:autoComplete 
+                            completeMethod="#{staffController.completeStaff}"
+                            value="#{laboratoryManagementController.sampleTransportedToLabByStaff}" 
+                            var="mys" 
+                            class="w-100" 
+                            maxResults="50"
+                            inputStyleClass="form-control"
+                            itemLabel="#{mys.person.name}" 
+                            panelStyleClass="custom-dropdown-panel"
+                            itemValue="#{mys}">
+                            <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
+                            <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                        </p:autoComplete>
 
-                    <div class="d-flex gap-2 mt-2">
-                        <p:commandButton 
-                            value="Pending to Send"
-                            ajax="false"
-                            action="#{laboratoryManagementController.pendingSendSampleList()}"
-                            title="Send to Lab"
-                            icon="pi pi-external-link"
-                            styleClass="w-100 ui-button-warning" >
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Select All"
-                            ajax="false"
-                            rendered="#{!laboratoryManagementController.selectAll}"
-                            style="width: 15em;"
-                            action="#{laboratoryManagementController.selectAllSamples()}"
-                            icon="fa-regular fa-square-check"
-                            styleClass="ui-button-secondary">
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Unselect All"
-                            ajax="false"
-                            rendered="#{laboratoryManagementController.selectAll}"
-                            style="width: 15em;"
-                            action="#{laboratoryManagementController.unSelectAllSamples()}"
-                            icon="fa-regular fa-square-check"
-                            styleClass="ui-button-secondary">
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Send"
-                            ajax="false"
-                            action="#{laboratoryManagementController.sendSamplesToLab()}"
-                            title="Send to Lab"
-                            style="width: 11em;"
-                            icon="pi pi-external-link"
-                            styleClass="ui-button-warning" >
-                        </p:commandButton>
-                    </div>
+                        <div class="d-flex gap-2 mt-2">
+                            <p:commandButton 
+                                value="Pending to Send"
+                                ajax="false"
+                                action="#{laboratoryManagementController.pendingSendSampleList()}"
+                                title="Send to Lab"
+                                icon="pi pi-external-link"
+                                styleClass="w-100 ui-button-warning" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Select All"
+                                ajax="false"
+                                rendered="#{!laboratoryManagementController.selectAll}"
+                                style="width: 15em;"
+                                action="#{laboratoryManagementController.selectAllSamples()}"
+                                icon="fa-regular fa-square-check"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Unselect All"
+                                ajax="false"
+                                rendered="#{laboratoryManagementController.selectAll}"
+                                style="width: 15em;"
+                                action="#{laboratoryManagementController.unSelectAllSamples()}"
+                                icon="fa-regular fa-square-check"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Send"
+                                ajax="false"
+                                action="#{laboratoryManagementController.sendSamplesToLab()}"
+                                title="Send to Lab"
+                                style="width: 11em;"
+                                icon="pi pi-external-link"
+                                styleClass="ui-button-warning" >
+                            </p:commandButton>
+                        </div>
+                    </h:panelGroup>
 
                     <hr/>
 
-                    <div class="d-flex gap-2">
+                    <h:panelGroup 
+                        id="sampleReceive" 
+                        rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}"
+                        class="d-flex gap-2">
                         <p:commandButton 
                             value="Non Received Samples"
                             ajax="false"
@@ -560,7 +570,7 @@
                             icon="pi pi-check-circle"
                             styleClass="ui-button-info">
                         </p:commandButton>
-                    </div>
+                    </h:panelGroup>
 
                     <p:commandButton 
                         rendered="false"
@@ -575,21 +585,24 @@
 
                     <hr/>
 
-                    <p:inputText 
-                        class="w-100"
-                        value="#{laboratoryManagementController.sampleRejectionComment}" >
-                    </p:inputText>
+                    <h:panelGroup 
+                        rendered="#{webUserController.hasPrivilege('LabSampleRejecting')}"
+                        id="sampleReject">
+                        <p:inputText 
+                            class="w-100"
+                            value="#{laboratoryManagementController.sampleRejectionComment}" >
+                        </p:inputText>
 
-                    <p:commandButton 
-                        id="btnRejectSamples"
-                        value="Reject Samples"
-                        ajax="false"
-                        action="#{laboratoryManagementController.rejectSamples()}"
-                        title="Reject Samples"
-                        icon="pi pi-times-circle"
-                        styleClass="m-1  w-100 ui-button-danger" >
-                    </p:commandButton>
-
+                        <p:commandButton 
+                            id="btnRejectSamples"
+                            value="Reject Samples"
+                            ajax="false"
+                            action="#{laboratoryManagementController.rejectSamples()}"
+                            title="Reject Samples"
+                            icon="pi pi-times-circle"
+                            styleClass="m-1  w-100 ui-button-danger" >
+                        </p:commandButton>
+                    </h:panelGroup>
                 </div>
             </div>
         </h:panelGroup>

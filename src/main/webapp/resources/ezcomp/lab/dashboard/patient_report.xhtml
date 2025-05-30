@@ -310,6 +310,7 @@
                                             id="cmdReportEdit" 
                                             ajax="false" 
                                             class="ui-button-warning"
+                                            rendered="#{webUserController.hasPrivilege('LabDataentry') or webUserController.hasPrivilege('LabAutherizing')}"
                                             icon="fa-solid fa-file-pen"
                                             value="Edit"
                                             action="#{laboratoryManagementController.navigateToEditReport(dpr.id)}">
@@ -322,7 +323,7 @@
                                             value="Print"
                                             action="#{laboratoryManagementController.navigateToPrintReport(dpr.id)}"
                                             disabled="#{!dpr.approved}" 
-                                            rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                            rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and webUserController.hasPrivilege('LabPrinting')}">
                                         </p:commandButton>
 
                                         <p:badge 
@@ -353,6 +354,7 @@
                                                 ajax="false"
                                                 icon="fas fa-trash"
                                                 class="ui-button-danger"
+                                                rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
                                                 onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
                                                             return false;"
                                                 action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
@@ -364,7 +366,7 @@
                                         title="To Remove Report" 
                                         id="btnRemove" 
                                         disabled="#{dpr.approved}"
-                                        rendered="#{webUserController.hasPrivilege('LabDeAutherizing') and webUserController.hasPrivilege('LabAutherizing')}"  
+                                        rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"  
                                         process="@this" 
                                         class="ui-button-danger mb-2"
                                         update="dlg" 
