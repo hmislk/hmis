@@ -179,9 +179,12 @@
                               height="600"
                               width="800">
                         
+                        <p:ajax event="close" update="acSessions"></p:ajax>
+                        
                         <f:facet name="header">
                             <h:outputText value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
-                            <p:commandButton class="mx-5" value="Mark Holiday" action="#{bookingController.markHolidayForSessionInstances}" icon="pi pi-table"></p:commandButton>
+                            <p:commandButton class="mx-3" value="Mark" action="#{bookingController.markHolidayForSessionInstances}" icon="pi pi-table"></p:commandButton>
+                            <p:commandButton value="Unmark" action="#{bookingController.markHolidayForSessionInstances}" icon="pi pi-table"></p:commandButton>
 
                         </f:facet>
                         
@@ -200,7 +203,7 @@
                                     </f:facet>
                                     <div class="d-flex align-items-center gap-2">
                                         <h:outputText value="#{s.name}" />
-                                        <h:outputText value="Holiday" rendered="#{s.doctorHoliday}"/>
+                                        <h:outputText class="mx-1" style="font-weight: bold; color: red; border: 3px solid #fbc531; border-radius: 10px; padding: 4px 8px" value="Holiday" rendered="#{s.doctorHoliday}"/>
                                     </div>
 
 
@@ -299,6 +302,7 @@
                                 </f:facet>
                                 <div class="d-flex align-items-center gap-2">
                                     <h:outputText value="#{s.name}" />
+                                    <h:outputText class="mx-1" style="font-weight: bold; color: red; border: 3px solid #fbc531; border-radius: 10px; padding: 4px 8px" value="Holiday" rendered="#{s.doctorHoliday}"/>
                                 </div>
 
 
