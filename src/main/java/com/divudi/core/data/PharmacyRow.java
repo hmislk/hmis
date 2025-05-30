@@ -43,6 +43,7 @@ public class PharmacyRow  implements Serializable{
     private Double quantity;
     private Double purchaseValue;
     private Double saleValue;
+    private Double stockQty;
 
     private Long counter;
     private String rowType;
@@ -1440,6 +1441,15 @@ public class PharmacyRow  implements Serializable{
     public void setNetSaleValue(BigDecimal netSaleValue) {
         this.netSaleValue = netSaleValue;
     }
+
+    public Double getStockQty() {
+        return stockQty;
+    }
+
+    public void setStockQty(Double stockQty) {
+        this.stockQty = stockQty;
+    }
     
+
     
 }

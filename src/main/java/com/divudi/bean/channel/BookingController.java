@@ -2958,6 +2958,10 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 }
             }
         }
+        
+        if(selectedSessionInstance == null){
+            return;
+        }
 
         // Set calculated counts to selectedSessionInstance
         selectedSessionInstance.setBookedPatientCount(bookedPatientCount);

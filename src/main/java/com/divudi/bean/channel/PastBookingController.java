@@ -1419,10 +1419,12 @@ public class PastBookingController implements Serializable, ControllerWithPatien
                 + " From BillSession bs "
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
+                + " and bs.bill.billTypeAtomic <> :bta"
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
         hh.put("ss", getSelectedSessionInstance());
@@ -2172,11 +2174,13 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         setStaff(null);
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
+        billSessions = null;
     }
 
     public void listnerStaffRowSelect() {
         getSelectedConsultants();
         setSelectedServiceSession(null);
+        billSessions = null;
         serviceSessionLeaveController.setSelectedServiceSession(null);
         serviceSessionLeaveController.setCurrentStaff(staff);
     }

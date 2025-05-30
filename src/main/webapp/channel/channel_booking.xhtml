@@ -346,6 +346,12 @@
                                 process="@this"
                                 update="pnlArrived acBookings acSessions btnAddBooking manageBookingId"
                                 listener="#{bookingController.fillBillSessions}" />
+                            
+                            <p:ajax 
+                                event="click" 
+                                process="@this"
+                                update="pnlArrived acBookings acSessions btnAddBooking manageBookingId"
+                                listener="#{bookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
 
@@ -384,7 +390,8 @@
                                 <p:outputLabel value="OnCall" rendered="#{bs.bill.paymentMethod eq 'OnCall'}" style="margin-left: 5px; color: green;"/>
                                 <p:outputLabel value="Card" rendered="#{bs.bill.paidBill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green;"/>
                                 <p:outputLabel value="Cash" rendered="#{bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
-                                <p:outputLabel value="Agent" rendered="#{bs.bill.paidBill.paymentMethod eq 'Agent'}" style="color: green;"/>
+                                <p:outputLabel value="MultiplePayments" rendered="#{bs.bill.paymentMethod eq 'MultiplePaymentMethods' or bs.bill.paidBill.paymentMethod eq 'MultiplePaymentMethods'}" style="color: green;"/>
+                                <p:outputLabel value="Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paidBill.paymentMethod eq 'Agent'}" style="color: green;"/>
                                 <p:outputLabel value="Staff" rendered="#{bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
                                 <p:outputLabel value="OB - #{bs.bill.referenceBill.onlineBooking.referenceNo}" rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" style="color: #000; background: #fbc531; font-weight: bold; padding: 2px"/>
 
@@ -400,7 +407,8 @@
                             </p:column>
 
                             <p:column style="width: 5px!important;">
-                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.creditCompany.institutionCode}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType eq 'ChannelAgent'}" value="#{bs.bill.creditCompany.institutionCode}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType ne 'ChannelAgent'}" value="System Booking"/>
                                 <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.agency.name}"/>
                             </p:column>
 
