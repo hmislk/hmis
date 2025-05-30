@@ -1827,11 +1827,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         return consultants;
     }
 
-    public void markHolidayForSessionInstances(){
+    public void markHolidayForSessionInstances(boolean mark){
         if(sessionsForHolidayMark != null && !sessionsForHolidayMark.isEmpty()){
             for(SessionInstance session : sessionsForHolidayMark){
-                session.setDoctorHoliday(true);
-                session.setAcceptOnlineBookings(false);
+                session.setDoctorHoliday(mark);
+                session.setAcceptOnlineBookings(mark);
                 sessionInstanceFacade.edit(session);
             }
             
