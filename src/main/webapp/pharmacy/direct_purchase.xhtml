@@ -177,13 +177,13 @@
                                     <h:outputLabel 
                                         class="w-100 m-1"
                                         style="white-space: nowrap;"
-                                        value="Retail Sale Price" />
+                                        value="Retail Rate - Unit" />
                                     <p:inputText
                                         autocomplete="off"
                                         id="txtRetailRate"
                                         onfocus="this.select()"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate}">
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRatePerUnit}">
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax 
                                             event="blur"

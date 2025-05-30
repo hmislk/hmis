@@ -123,6 +123,13 @@
                         <f:convertNumber pattern="#,##0.00" />
                     </p:outputLabel>
 
+                    <p:outputLabel value="Retail Rate Per Unit" />
+                    <p:spacer />
+                    <p:spacer />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.retailSaleRatePerUnit}" styleClass="text-end">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+
                     <p:outputLabel value="Gross Rates" />
                     <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.lineGrossRate}" styleClass="text-end">
                         <f:convertNumber pattern="#,##0.00" />
