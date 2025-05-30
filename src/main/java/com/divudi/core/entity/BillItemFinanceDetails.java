@@ -124,6 +124,8 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal retailSaleRatePerUnit = BigDecimal.ZERO;
     @Column(precision = 18, scale = 4)
     private BigDecimal wholesaleRatePerUnit = BigDecimal.ZERO;
+    
+    
 
     // Absolute tax values
     @Column(precision = 18, scale = 4)
