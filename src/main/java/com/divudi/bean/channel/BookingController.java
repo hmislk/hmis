@@ -1854,11 +1854,13 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         if(sessionsForHolidayMark != null && !sessionsForHolidayMark.isEmpty()){
             for(SessionInstance session : sessionsForHolidayMark){
                 session.setDoctorHoliday(mark);
-                session.setAcceptOnlineBookings(mark);
+                session.setAcceptOnlineBookings(!mark);
                 sessionInstanceFacade.edit(session);
             }
             
             JsfUtil.addSuccessMessage("Holiday Mark is Successful.");
+        }else{
+            JsfUtil.addErrorMessage("No sessions are selected to mark Holiday.");
         }
     }
 

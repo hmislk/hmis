@@ -941,7 +941,7 @@ public class ChannelApi {
         }
 
         if (session.isDoctorHoliday()) {
-            JSONObject response = commonFunctionToErrorResponse("Doctor is in Holiday.");
+            JSONObject response = commonFunctionToErrorResponse("Doctor is on Holiday.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         } else if (!session.isAcceptOnlineBookings()) {
             JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
@@ -1374,7 +1374,7 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
         if (temporarySavedBill.getSingleBillSession().getSessionInstance().isDoctorHoliday()) {
-            JSONObject response = commonFunctionToErrorResponse("Doctor is in Holiday.");
+            JSONObject response = commonFunctionToErrorResponse("Doctor is on Holiday.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         } else if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
             JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");

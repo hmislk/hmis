@@ -165,6 +165,7 @@
 
                             <p:commandButton value="Doctor Holiday" icon="pi pi-table"
                                              class="mx-1"
+                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable mark doctor holiday from channel view', false)}"
                                              oncomplete="PF('myDialogWidget').show()" 
                                              update="dialogContent doctorName" />
 
@@ -406,7 +407,7 @@
 
                                 <p:outputLabel value="Paid" rendered="#{bs.bill.billPaymentCompletelySettled}" style="color: green;"/>-->
                                 <p:outputLabel value="OnCall - " rendered="#{bs.bill.paymentMethod eq 'OnCall'}" style="margin-left: 5px; color: green;"/>
-                                <p:outputLabel value="Card " rendered="#{bs.bill.paidBill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green;"/>
+                                <p:outputLabel value="Card " rendered="#{bs.bill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green;"/>
                                 <p:outputLabel value="Cash " rendered="#{bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
                                 <p:outputLabel value="MultiplePayments" rendered="#{bs.bill.paymentMethod eq 'MultiplePaymentMethods' or bs.bill.paidBill.paymentMethod eq 'MultiplePaymentMethods'}" style="color: green;"/>
                                 <p:outputLabel value="Agent " rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paidBill.paymentMethod eq 'Agent'}" style="color: green;"/>
