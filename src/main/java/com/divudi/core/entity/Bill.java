@@ -1163,6 +1163,10 @@ public class Bill implements Serializable, RetirableEntity {
         return netTotal;
     }
 
+    public double getGrossAmount() {
+        return netTotal + Math.abs(discount);
+    }
+
     @Transient
     public Double getAbsoluteNetTotalTransient() {
         return Math.abs(netTotal);
