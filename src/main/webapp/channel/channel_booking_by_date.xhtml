@@ -1068,10 +1068,16 @@
 
                                         <div>
                                             <p:commandButton 
+                                                value="Back to Booking View" 
+                                                icon="fa fa-redo" 
+                                                class="ui-button-success mx-2" 
+                                                action="#{bookingController.navigateChannelBookingViewFromChannelBookingByDate(bookingControllerViewScope.selectedSessionInstance, null, null)}" 
+                                                ajax="false" />
+                                            <p:commandButton 
                                                 value="Back" 
                                                 icon="fa fa-redo" 
                                                 class="ui-button-success" 
-                                                action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}" 
+                                                action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}"
                                                 ajax="false" />
                                         </div>
                                     </div>

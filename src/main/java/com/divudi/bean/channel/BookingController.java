@@ -1831,11 +1831,15 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         if(speciality != null){
             this.speciality = speciality;
             listnerStaffListForRowSelect();
+        }else if(session != null){
+            this.speciality = session.getStaff().getSpeciality();
         }
         
         if(staff != null){
             this.staff = staff;
             generateSessions();
+        }else if(session != null){
+            this.staff = session.getStaff();
         }
         
         if(session != null){
