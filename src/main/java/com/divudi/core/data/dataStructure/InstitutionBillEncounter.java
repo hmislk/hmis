@@ -245,7 +245,7 @@ public class InstitutionBillEncounter {
                     if (filteringPaymentMethod != null) {
                         final Bill paidBill = bill.getPaidBill();
 
-                        if (paidBill == null || !paidBill.getPaymentMethod().equals(filteringPaymentMethod)) {
+                        if (paidBill == null || (paidBill.getPaymentMethod() != null && !paidBill.getPaymentMethod().equals(filteringPaymentMethod))) {
                             continue;
                         }
                     }
