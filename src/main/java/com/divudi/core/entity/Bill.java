@@ -1061,6 +1061,11 @@ public class Bill implements Serializable, RetirableEntity {
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }
+
+        if (bill.paidBill != null) {
+            this.paidBill = new Bill();
+            this.paidBill.clone(bill.paidBill);
+        }
     }
 
     public List<BillComponent> getBillComponents() {
