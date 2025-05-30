@@ -1116,7 +1116,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
     }
-
+    
     public String navigateToManageSessionInstance(SessionInstance sessionInstance) {
 
         if (sessionInstance == null) {
@@ -2506,7 +2506,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
-    public String navigateBackToBookingsFromBillSession() {
+     public String navigateBackToBookingsFromBillSession() {
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
@@ -3788,6 +3788,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billingStarted = false;
             return;
         }
+        
+        if(selectedSessionInstance != null && selectedSessionInstance.isDoctorHoliday()){
+            JsfUtil.addErrorMessage("Doctor is in Holiday.");
+            return;
+        }
+        
         addChannelBooking(false);
 
         fillBillSessions();
