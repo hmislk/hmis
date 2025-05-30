@@ -464,12 +464,12 @@ public class PharmaceuticalBillItem implements Serializable {
         this.purchaseRate = purchaseRate;
     }
 
-    @Deprecated //use retailRate
+    
     public double getRetailRateInUnit() {
         return retailRate;
     }
 
-    @Deprecated //use RetailRate
+    
     public void setRetailRateInUnit(double retailRate) {
         this.retailRate = retailRate;
     }
