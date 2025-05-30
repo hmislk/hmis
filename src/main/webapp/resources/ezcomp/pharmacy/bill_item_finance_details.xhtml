@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -25,24 +26,90 @@
                     <p:outputLabel value="#{cc.attrs.pbi.item.code}" />
 
                     <p:outputLabel value="Item Type" />
-                    <p:outputLabel value="#{cc.attrs.pbi.item.class.simpleName}" />
+                    <h:panelGroup >
+                        <p:outputLabel rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" value="Units"/>
+                        <p:outputLabel rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" value="Packs" />
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Generic Name (VTM)" />
+                    <h:panelGroup >
+                        <p:outputLabel  
+                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" 
+                            value="#{cc.attrs.pbi.item.vmp.vtm.name}" class="w-100" >
+                        </p:outputLabel>
+                        <p:outputLabel  
+                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" 
+                            value="#{cc.attrs.pbi.item.amp.vmp.vtm.name}" class="w-100" >
+                        </p:outputLabel>
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Product Name (AMP)" />
+                    <h:panelGroup >
+                        <p:outputLabel  
+                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" 
+                            value="#{cc.attrs.pbi.item.vmp.name}" class="w-100" >
+                        </p:outputLabel>
+                        <p:outputLabel  
+                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" 
+                            value="#{cc.attrs.pbi.item.amp.vmp.name}" class="w-100" >
+                        </p:outputLabel>
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Strength" />
+                    <h:panelGroup >
+                        <p:outputLabel  
+                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" 
+                            value="#{cc.attrs.pbi.item.vmp.strengthOfAnIssueUnit}" class="w-100" >
+                        </p:outputLabel>
+                        <p:outputLabel  
+                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" 
+                            value="#{cc.attrs.pbi.item.amp.vmp.strengthOfAnIssueUnit}" class="w-100" >
+                        </p:outputLabel>
+                    </h:panelGroup>
+
 
                     <p:outputLabel value="Units Per Pack" />
-                    <p:outputLabel value="#{cc.attrs.pbi.item.dblValue}" styleClass="text-end" />
+                    <h:panelGroup >
+                        <p:outputLabel  rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}"  value="#{cc.attrs.pbi.item.dblValue}" class="w-100 text-end" >
+                            <f:convertNumber pattern="#,###.#" ></f:convertNumber>
+                        </p:outputLabel>
+                        <p:outputLabel  rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}"  value="1" class="w-100 text-end" >
+                        </p:outputLabel>
+                    </h:panelGroup>
+
                 </p:panelGrid>
             </p:tab>
 
             <!-- === Quantity Tab === -->
             <p:tab title="Quantities">
-                <p:panelGrid layout="tabular" columns="2" styleClass="w-100">
+                <p:panelGrid 
+                    layout="tabular" columns="3" styleClass="w-100">
+                    <p:outputLabel value="" />
+                    <p:outputLabel value="#" />
+                    <p:outputLabel value="in Units" />
+
                     <p:outputLabel value="Quantity" />
                     <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.quantity}" styleClass="text-end">
-                        <f:convertNumber pattern="#,##0.00" />
+                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.quantityByUnits}" styleClass="text-end">
+                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
                     </p:outputLabel>
 
                     <p:outputLabel value="Free Quantity" />
                     <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.freeQuantity}" styleClass="text-end">
-                        <f:convertNumber pattern="#,##0.00" />
+                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.freeQuantityByUnits}" styleClass="text-end">
+                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
+                    </p:outputLabel>
+
+                    <p:outputLabel value="Total Quantity" />
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalQuantity}" styleClass="text-end">
+                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
+                    </p:outputLabel>
+                    <p:outputLabel value="#{cc.attrs.pbi.billItemFinanceDetails.totalQuantityByUnits}" styleClass="text-end">
+                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
                     </p:outputLabel>
                 </p:panelGrid>
             </p:tab>

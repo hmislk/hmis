@@ -340,6 +340,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setLineGrossRate(lineGrossRate);
             f.setBillGrossRate(BigDecimal.ZERO);
             f.setGrossRate(lineGrossRate);
+            
+            f.setLineGrossTotal(lineGrossRate.multiply(f.getQuantity()));
+            f.setBillGrossTotal(BigDecimal.ZERO);
+            f.setGrossTotal(f.getLineGrossTotal().add(f.getBillGrossTotal()));
 
             if (f.getLineNetRate() == null || f.getLineNetRate().compareTo(BigDecimal.ZERO) == 0) {
                 BigDecimal lineNetRate = totalQty.compareTo(BigDecimal.ZERO) > 0
