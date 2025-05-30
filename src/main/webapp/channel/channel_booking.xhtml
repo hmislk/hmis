@@ -166,7 +166,7 @@
                             <p:commandButton value="Doctor Holiday" icon="pi pi-table"
                                              class="mx-1"
                                              oncomplete="PF('myDialogWidget').show()" 
-                                             update="dialogContent" />
+                                             update="dialogContent doctorName" />
 
                         </div>
                     </div>
@@ -183,9 +183,9 @@
                         <p:ajax event="close" update="acSessions"></p:ajax>
                         
                         <f:facet name="header">
-                            <h:outputText value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
-                            <p:commandButton class="mx-3" value="Mark" action="#{bookingController.markHolidayForSessionInstances(true)}" update="dialogContent" icon="pi pi-table"></p:commandButton>
-                            <p:commandButton value="Unmark" action="#{bookingController.markHolidayForSessionInstances(false)}" update="dialogContent" icon="pi pi-table"></p:commandButton>
+                            <h:outputText id="doctorName" value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
+                            <p:commandButton class="mx-3" value="Mark" action="#{bookingController.markHolidayForSessionInstances(true)}" icon="fa-solid fa-check" update="dialogContent"></p:commandButton>
+                            <p:commandButton value="Unmark" action="#{bookingController.markHolidayForSessionInstances(false)}" update="dialogContent" icon="fa-solid fa-xmark"></p:commandButton>
 
                         </f:facet>
                         
@@ -409,6 +409,7 @@
                             <p:column style="width: 10px!important;">
                                 <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
                                 <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
+                                <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Rescheduled" rendered="#{bs.recheduledSession}" rounded="true"/>
                             </p:column>
 
                             <p:column style="width: 5px!important;">
