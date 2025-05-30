@@ -849,6 +849,9 @@
 
                                                 <p:outputLabel value="Accept Online Bookings"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.acceptOnlineBookings}"/>
+                                                
+                                                <p:outputLabel value="Doctor on Holiday"/>
+                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.doctorHoliday}"/>
 
                                                 <p:outputLabel value="Paid Appointment Only"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.paidAppointmentsOnly}"/>

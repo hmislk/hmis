@@ -3788,6 +3788,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billingStarted = false;
             return;
         }
+        
+        if(selectedSessionInstance != null && selectedSessionInstance.isDoctorHoliday()){
+            JsfUtil.addErrorMessage("Doctor is in Holiday.");
+            return;
+        }
+        
         addChannelBooking(false);
 
         fillBillSessions();

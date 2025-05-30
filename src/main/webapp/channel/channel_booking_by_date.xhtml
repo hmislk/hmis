@@ -148,8 +148,8 @@
                                                     </div>
                                                     <div class="align-items-center">
 
-                                                        <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bolder" /> <p:badge class="mx-2" severity="success" value="Completed" rendered="#{s.completed}" /> <p:badge class="mx-2" severity="danger" value="Cancelled" rendered="#{s.cancelled}" /> <br/>
-
+                                                        <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bolder" /> <p:badge class="mx-2" severity="success" value="Completed" rendered="#{s.completed}" /> <p:badge class="mx-2" severity="danger" value="Cancelled" rendered="#{s.cancelled}" /> 
+                                                        <h:outputText class="mx-3" style="font-weight: bold; color: red; border: 3px solid #fbc531; border-radius: 10px; padding: 4px 8px" value="Holiday" rendered="#{s.doctorHoliday}"/><br/>
                                                         <h:outputText value="(#{s.staff.speciality.name})" /><p:badge class="mx-2" severity="warning" value="Scaning Session" rendered="#{s.originatingSession.category eq 'Scanning'}" /> 
                                                         <p:badge class="mx-2" severity="info" value="Arried" rendered="#{s.arrived}" /> 
                                                         <br/>
