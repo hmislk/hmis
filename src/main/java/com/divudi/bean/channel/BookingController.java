@@ -1840,6 +1840,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         
         if(session != null){
             this.selectedSessionInstance = session;
+            fillBillSessions();
         }
 
         return "/channel/channel_booking?faces-redirect=true";
