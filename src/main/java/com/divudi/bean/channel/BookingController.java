@@ -1826,23 +1826,23 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         }
         return consultants;
     }
-    
-    public String navigateChannelBookingViewFromChannelBookingByDate(SessionInstance session, Speciality speciality, Staff staff){
-        if(speciality != null){
+
+    public String navigateChannelBookingViewFromChannelBookingByDate(SessionInstance session, Speciality speciality, Staff staff) {
+        if (speciality != null) {
             this.speciality = speciality;
             listnerStaffListForRowSelect();
-        }else if(session != null){
+        } else if (session != null) {
             this.speciality = session.getStaff().getSpeciality();
         }
-        
-        if(staff != null){
+
+        if (staff != null) {
             this.staff = staff;
             generateSessions();
-        }else if(session != null){
+        } else if (session != null) {
             this.staff = session.getStaff();
         }
-        
-        if(session != null){
+
+        if (session != null) {
             this.selectedSessionInstance = session;
             fillBillSessions();
         }
@@ -1850,16 +1850,19 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         return "/channel/channel_booking?faces-redirect=true";
     }
 
-    public void markHolidayForSessionInstances(boolean mark){
-        if(sessionsForHolidayMark != null && !sessionsForHolidayMark.isEmpty()){
-            for(SessionInstance session : sessionsForHolidayMark){
+    public void markHolidayForSessionInstances(boolean mark) {
+        if (sessionsForHolidayMark != null && !sessionsForHolidayMark.isEmpty()) {
+            for (SessionInstance session : sessionsForHolidayMark) {
                 session.setDoctorHoliday(mark);
                 session.setAcceptOnlineBookings(!mark);
+                if (mark) {
+                    session.setDoctorHolidayMarkedBy(sessionController.getLoggedUser());
+                }
                 sessionInstanceFacade.edit(session);
             }
-            
+
             JsfUtil.addSuccessMessage("Holiday Mark is Successful.");
-        }else{
+        } else {
             JsfUtil.addErrorMessage("No sessions are selected to mark Holiday.");
         }
     }
@@ -2983,8 +2986,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 }
             }
         }
-        
-        if(selectedSessionInstance == null){
+
+        if (selectedSessionInstance == null) {
             return;
         }
 

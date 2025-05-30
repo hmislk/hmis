@@ -68,6 +68,15 @@ public class SessionInstance implements Serializable {
     Department forDepartment;
     private boolean acceptOnlineBookings = true;
     private boolean doctorHoliday;
+    private WebUser doctorHolidayMarkedBy;
+
+    public WebUser getDoctorHolidayMarkedBy() {
+        return doctorHolidayMarkedBy;
+    }
+
+    public void setDoctorHolidayMarkedBy(WebUser doctorHolidayMarkedBy) {
+        this.doctorHolidayMarkedBy = doctorHolidayMarkedBy;
+    }
 
     public boolean isDoctorHoliday() {
         return doctorHoliday;
