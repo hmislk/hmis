@@ -1116,7 +1116,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
     }
-
+    
     public String navigateToManageSessionInstance(SessionInstance sessionInstance) {
 
         if (sessionInstance == null) {

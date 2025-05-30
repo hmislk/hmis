@@ -265,12 +265,31 @@
                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputLabel /><br/>
                                                                     <p:commandButton 
+                                                                        id="navigateToManageBooking"
                                                                         icon="fas fa-cog"
                                                                         immediate="true"
                                                                         styleClass="rounded-button ui-button-secondary mr-2"
                                                                         action="#{bookingControllerViewScope.navigateToManageSessionInstance(s)}" 
                                                                         ajax="false" >
+                                                                        <p:tooltip value="Navigate to Manage Booking" for="navigateToManageBooking"></p:tooltip>
                                                                     </p:commandButton>
+
+                                                                </span>
+
+                                                                <span class="text-center mx-1" > 
+                                                                    <h:outputLabel /><br/>
+                                                                    <p:commandButton 
+                                                                        id="navigateToBookingView"
+                                                                        icon="fa-solid fa-chart-simple"
+                                                                        class="mx-1"
+                                                                        immediate="true"
+                                                                        style=" background-color: #00534b"
+                                                                        styleClass="rounded-button mr-2"
+                                                                        action="#{bookingController.navigateChannelBookingViewFromChannelBookingByDate(s, s.staff.speciality, s.staff)}" 
+                                                                        ajax="false" >
+                                                                        <p:tooltip value="Navigate to Booking View" for="navigateToBookingView"></p:tooltip>
+                                                                    </p:commandButton>
+
                                                                 </span>
                                                             </div>
                                                         </span>
@@ -389,13 +408,13 @@
                                             <f:facet name="footer">
                                                 <p:panel header="Normal Booking Section (Check Released Appoinment Numbers)">
                                                     <p:row id="row1" rendered="#{ configOptionApplicationController.getBooleanValueByKey('Released Number Booking available in the Channel Booking by date', false)}">
-                                                        
+
                                                         <p:selectOneMenu style="border: 2px solid #007bff; border-radius: 10px; padding: 1px; background-color: #f8f9fa;" class="w-50" id="releasedNumbers" placeholder=" Apoinment Numbers" value="#{bookingControllerViewScope.assignedReleasedAppoinmentNumber}" editable="true">
                                                             <f:selectItem itemLabel="Released Apoinment No.s : (#{bookingControllerViewScope.releasedAppoinmentNumbers.size()})" itemValue="Please select" />
                                                             <f:selectItems value="#{bookingControllerViewScope.releasedAppoinmentNumbers}"/>
                                                             <p:ajax event="valueChange" update="releasedNumbers btnAddReserved"></p:ajax>
                                                         </p:selectOneMenu>
-                                                       
+
                                                     </p:row>
                                                     <p:commandButton
                                                         id="btnAdd"

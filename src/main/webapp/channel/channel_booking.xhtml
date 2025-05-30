@@ -244,6 +244,12 @@
                                         process="@this" 
                                         update="acBookings scStaff acSessions pnlArrived"
                                         listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                                    <p:ajax
+                                        event="click"
+                                        process="@this" 
+                                        update="acBookings scStaff acSessions pnlArrived"
+                                        listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                                    
                                     <f:selectItem itemLabel="All" ></f:selectItem>
                                     <f:selectItems 
                                         value="#{doctorSpecialityController.selectedItems}"
@@ -268,6 +274,13 @@
                                 class="w-100 fullHeightListbox"
                                 >
                                 <p:ajax  
+                                    event="change"
+                                    process="@this" 
+                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
+                                    listener="#{bookingController.generateSessions}"/>
+                                
+                                <p:ajax  
+                                    event="click"
                                     process="@this" 
                                     update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
                                     listener="#{bookingController.generateSessions}"/>

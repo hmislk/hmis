@@ -1826,6 +1826,24 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         }
         return consultants;
     }
+    
+    public String navigateChannelBookingViewFromChannelBookingByDate(SessionInstance session, Speciality speciality, Staff staff){
+        if(speciality != null){
+            this.speciality = speciality;
+            listnerStaffListForRowSelect();
+        }
+        
+        if(staff != null){
+            this.staff = staff;
+            generateSessions();
+        }
+        
+        if(session != null){
+            this.selectedSessionInstance = session;
+        }
+
+        return "/channel/channel_booking?faces-redirect=true";
+    }
 
     public void markHolidayForSessionInstances(boolean mark){
         if(sessionsForHolidayMark != null && !sessionsForHolidayMark.isEmpty()){
@@ -4037,7 +4055,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
-        setStaff(null);
+        //setStaff(null);
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
     }
