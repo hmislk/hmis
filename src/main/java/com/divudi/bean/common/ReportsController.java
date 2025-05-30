@@ -4373,7 +4373,7 @@ public class ReportsController implements Serializable {
 
         List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(filterByCreditCompanyPaymentMethodByInstitutionBillEncounter(
                 InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), reportType.equalsIgnoreCase("paid") ?
-                        "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any", "any")));
+                        "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any", "any", creditCompany)));
 
         setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
         calculateCreditCompanyDueTotals();
@@ -4460,10 +4460,10 @@ public class ReportsController implements Serializable {
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
-        if (creditCompany != null) {
-            jpql += " and bill.creditCompany =:ins ";
-            parameters.put("ins", creditCompany);
-        }
+//        if (creditCompany != null) {
+//            jpql += " and bill.creditCompany =:ins ";
+//            parameters.put("ins", creditCompany);
+//        }
 
         List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
 
