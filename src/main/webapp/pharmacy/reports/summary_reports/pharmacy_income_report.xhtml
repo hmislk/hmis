@@ -155,8 +155,7 @@
                                 id="cmbAdmissionType"
                                 class="w-100"
                                 autoWidth="false"
-                                value="#{pharmacySummaryReportController.admissionType}" 
-                                rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
+                                value="#{pharmacySummaryReportController.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Type"/>
                                 <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
@@ -172,7 +171,11 @@
                                 autoWidth="false"
                                 value="#{pharmacySummaryReportController.paymentScheme}" >
                                 <f:selectItem itemLabel="Select"/>
-                                <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
+                                <f:selectItems
+                                    itemValue="#{ps}"
+                                    value="#{paymentSchemeController.items}" 
+                                    var="ps" 
+                                    itemLabel="#{ps.name}"/>
                             </p:selectOneMenu>
 
                             <p:spacer></p:spacer>
