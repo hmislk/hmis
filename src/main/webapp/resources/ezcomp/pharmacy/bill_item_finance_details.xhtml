@@ -55,25 +55,12 @@
                         </p:outputLabel>
                     </h:panelGroup>
 
-                    <p:outputLabel value="Strength" />
-                    <h:panelGroup >
-                        <p:outputLabel  
-                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}" 
-                            value="#{cc.attrs.pbi.item.vmp.strengthOfAnIssueUnit}" class="w-100" >
-                        </p:outputLabel>
-                        <p:outputLabel  
-                            rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}" 
-                            value="#{cc.attrs.pbi.item.amp.vmp.strengthOfAnIssueUnit}" class="w-100" >
-                        </p:outputLabel>
-                    </h:panelGroup>
-
-
                     <p:outputLabel value="Units Per Pack" />
                     <h:panelGroup >
-                        <p:outputLabel  rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}"  value="#{cc.attrs.pbi.item.dblValue}" class="w-100 text-end" >
+                        <p:outputLabel  rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Ampp'}"  value="#{cc.attrs.pbi.item.dblValue}"  >
                             <f:convertNumber pattern="#,###.#" ></f:convertNumber>
                         </p:outputLabel>
-                        <p:outputLabel  rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}"  value="1" class="w-100 text-end" >
+                        <p:outputLabel  rendered="#{cc.attrs.pbi.item.class.simpleName eq 'Amp'}"  value="1" >
                         </p:outputLabel>
                     </h:panelGroup>
 
