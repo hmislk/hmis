@@ -670,6 +670,10 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void sendSamplesToLab() {
+        if(sampleTransportedToLabByStaff == null){
+            JsfUtil.addErrorMessage("The transport worker is not included.");
+            return;
+        }
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -725,7 +729,7 @@ public class LaboratoryManagementController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
             billFacade.edit(tb);
         }
-
+        sampleTransportedToLabByStaff = null;
         JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
     }
 
@@ -1114,6 +1118,7 @@ public class LaboratoryManagementController implements Serializable {
             }
         }
         patientReportFacade.edit(currentPatientReport);
+        comment= null;
         JsfUtil.addSuccessMessage("Successfully Removed");
         searchPatientReports();
     }
