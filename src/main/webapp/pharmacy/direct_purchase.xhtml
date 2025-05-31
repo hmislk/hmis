@@ -177,13 +177,13 @@
                                     <h:outputLabel 
                                         class="w-100 m-1"
                                         style="white-space: nowrap;"
-                                        value="Retail Sale Price" />
+                                        value="Retail Rate - Unit" />
                                     <p:inputText
                                         autocomplete="off"
                                         id="txtRetailRate"
                                         onfocus="this.select()"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate}">
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRatePerUnit}">
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax 
                                             event="blur"
@@ -328,7 +328,7 @@
                                         id="txtRetailValue"
                                         disabled="true"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate * pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.totalQuantity}" >
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRatePerUnit * pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.totalQuantityByUnits}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </div>
@@ -412,7 +412,7 @@
                             </p:column>
 
                             <p:column headerText="RR"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRate}">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRatePerUnit}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
@@ -524,13 +524,13 @@
                                             <p:outputLabel value="Tax" />
                                             <p:inputText autocomplete="off" id="tx" value="#{pharmacyDirectPurchaseController.bill.tax}">
                                                 <p:ajax process="tx" update="gro tx net" event="keyup"
-                                                        listener="#{pharmacyDirectPurchaseController.calNetTotal()}" />
+                                                        listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                             </p:inputText>
 
                                             <p:outputLabel value="Discount" />
                                             <p:inputText autocomplete="off" id="dis" value="#{pharmacyDirectPurchaseController.bill.discount}">
                                                 <p:ajax process="@this" update="gro tx net" event="keyup"
-                                                        listener="#{pharmacyDirectPurchaseController.calNetTotal()}" />
+                                                        listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                             </p:inputText>
 
                                             <p:outputLabel value="Net Total" />
