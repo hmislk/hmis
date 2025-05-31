@@ -1090,9 +1090,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
         getBillFacade().edit(getBill());
 
-//        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
-//        getSessionController().setLoggedUser(wb);
-
         JsfUtil.addSuccessMessage("Direct Purchase Successfully Completed.");
         printPreview = true;
     }
