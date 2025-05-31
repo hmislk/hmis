@@ -625,7 +625,9 @@ public class ChannelApi {
             }
 
             String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
-            if (!s.isAcceptOnlineBookings()) {
+            if (s.isDoctorHoliday()) {
+                sessionStatus = SessionStatusForOnlineBooking.Holiday.toString();
+            } else if (!s.isAcceptOnlineBookings()) {
                 sessionStatus = SessionStatusForOnlineBooking.Hold.toString();
             } else if (channelService.isFullyBookedSession(s)) {
                 sessionStatus = SessionStatusForOnlineBooking.Full.toString();
@@ -726,7 +728,9 @@ public class ChannelApi {
         }
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
-        if (!session.isAcceptOnlineBookings()) {
+        if (session.isDoctorHoliday()) {
+            sessionStatus = SessionStatusForOnlineBooking.Holiday.toString();
+        } else if (!session.isAcceptOnlineBookings()) {
             sessionStatus = SessionStatusForOnlineBooking.Hold.toString();
         } else if (channelService.isFullyBookedSession(session)) {
             sessionStatus = SessionStatusForOnlineBooking.Full.toString();
@@ -936,7 +940,10 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (!session.isAcceptOnlineBookings()) {
+        if (session.isDoctorHoliday()) {
+            JSONObject response = commonFunctionToErrorResponse("Doctor is on Holiday.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        } else if (!session.isAcceptOnlineBookings()) {
             JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         } else if (channelService.isFullyBookedSession(session)) {
@@ -1366,8 +1373,10 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-
-        if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
+        if (temporarySavedBill.getSingleBillSession().getSessionInstance().isDoctorHoliday()) {
+            JSONObject response = commonFunctionToErrorResponse("Doctor is on Holiday.");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        } else if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
             JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         } else if (channelService.isFullyBookedSession(temporarySavedBill.getSingleBillSession().getSessionInstance())) {
@@ -1584,7 +1593,9 @@ public class ChannelApi {
         SessionInstance session = bookingBill.getSingleBillSession().getSessionInstance();
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
-        if (session.isCompleted()) {
+        if (session.isDoctorHoliday()) {
+            sessionStatus = SessionStatusForOnlineBooking.Holiday.toString();
+        } else if (session.isCompleted()) {
             sessionStatus = SessionStatusForOnlineBooking.Ended.toString();
         } else if (session.isCancelled()) {
             sessionStatus = SessionStatusForOnlineBooking.Cancelled.toString();
@@ -1724,7 +1735,9 @@ public class ChannelApi {
         SessionInstance session = bs.getSessionInstance();
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
-        if (session.isCompleted()) {
+        if (session.isDoctorHoliday()) {
+            sessionStatus = SessionStatusForOnlineBooking.Holiday.toString();
+        } else if (session.isCompleted()) {
             sessionStatus = SessionStatusForOnlineBooking.Ended.toString();
         } else if (session.isCancelled()) {
             sessionStatus = SessionStatusForOnlineBooking.Cancelled.toString();

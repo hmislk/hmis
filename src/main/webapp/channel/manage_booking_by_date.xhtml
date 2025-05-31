@@ -1587,12 +1587,15 @@
                             </h:panelGrid>
                         </p:tab>
 
-                        <p:tab title="Status" >
+                        <p:tab title="Status" id="statusTab">
                             <p:outputLabel value="Mark As Present / Absent"/>
+                            
                             <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
-                                                                                                  or bookingControllerViewScope.selectedBillSession.bill.cancelled==true}"  value="#{bookingControllerViewScope.selectedBillSession.absent}" >
-                                <p:ajax process="@this" listener="#{bookingControllerViewScope.updateSelectedBillSessionPatient()}" ></p:ajax>
+                                                                                                  or bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.checkPaid()}"  value="#{bookingControllerViewScope.absent}" >
+                                <p:ajax process="@this" update="statusTab" listener="#{bookingControllerViewScope.updatePresentStatusOfPatient(bookingControllerViewScope.absent)}" ></p:ajax>
                             </p:selectBooleanButton>
+                            
+                            <p:outputLabel class="mx-3" value="Can't change the status. Staff pay already done for this appoinment." rendered="#{bookingControllerViewScope.checkPaid()}" style="color: red; font-weight: bold"/>
 
                         </p:tab>
 

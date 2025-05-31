@@ -4371,9 +4371,9 @@ public class ReportsController implements Serializable {
         setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "any"));
         calculateCreditCompanyAmounts();
 
-        List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(filterByCreditCompanyPaymentMethodByInstitutionBillEncounter(
-                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), reportType.equalsIgnoreCase("paid") ?
-                        "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any")));
+        List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(),
+                reportType.equalsIgnoreCase("paid") ? "settled" : reportType.equalsIgnoreCase("due") ? "due" : "any",
+                reportType.equalsIgnoreCase("paid") ? "all" : "any", creditCompany, paymentMethod));
 
         setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
         calculateCreditCompanyDueTotals();
@@ -4450,9 +4450,14 @@ public class ReportsController implements Serializable {
 
         bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
 
-        String jpql = "SELECT bill from Bill bill "
+//        String jpql = "SELECT bill from Bill bill "
+//                + "WHERE bill.retired <> :br "
+//                + "AND bill.patientEncounter.id in :patientEncounterIds ";
+
+        String jpql = "SELECT bill FROM Bill bill "
+                + "LEFT JOIN FETCH bill.paidBill "
                 + "WHERE bill.retired <> :br "
-                + "AND bill.patientEncounter.id in :patientEncounterIds ";
+                + "AND bill.patientEncounter.id IN :patientEncounterIds ";
 
         parameters.put("br", true);
         parameters.put("patientEncounterIds", patientEncounterIds);
@@ -4460,10 +4465,10 @@ public class ReportsController implements Serializable {
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
-        if (creditCompany != null) {
-            jpql += " and bill.creditCompany =:ins ";
-            parameters.put("ins", creditCompany);
-        }
+//        if (creditCompany != null) {
+//            jpql += " and bill.creditCompany =:ins ";
+//            parameters.put("ins", creditCompany);
+//        }
 
         List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
 

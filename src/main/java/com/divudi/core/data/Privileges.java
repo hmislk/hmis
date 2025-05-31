@@ -5,6 +5,8 @@
  */
 package com.divudi.core.data;
 
+import com.divudi.bean.lab.LaborataryReportController;
+
 public enum Privileges {
 
     //<editor-fold defaultstate="collapsed" desc="Main">
@@ -132,7 +134,9 @@ public enum Privileges {
     LabBillRefunding("Lab Bill Refunding"),
     LabBillReactivating("Lab Bill Reactivating"),
     LabSampleCollecting("Lab Sample Collecting"),
+    LabSampleSending("Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
+    LabSampleRejecting("Lab Sample Rejecting"),
     LabReportFormatEditing("Lab Report Format Editing"),
     LabDataentry("Lab Data Entry"),
     LabAutherizing("Lab Authorizing"),
@@ -155,6 +159,7 @@ public enum Privileges {
     LabInvestigationFee("Lab Investigation Fee"),
     LabAddInwardServices("Lab Add Inward Services"),
     LabReportSearchByLoggedInstitution("Lab Report Search by Logged Institution"),
+    LabReportSearchByLoggedDepartment("Lab Report Search by Logged Department"),
     IncomeReport("Income Report"),
     LabReport("Lab Report"),
     DuesAndAccess("Dues and Access"),
@@ -176,6 +181,14 @@ public enum Privileges {
     LabReporting("Lab Reporting"),
     // Don't remove
     LabSearchBillLoggedInstitution("Lab Search Bill Logged Institution"),
+    
+    DashBoardMenu("DashBoard Menu"),
+    DashBoardBillSearch("DashBoard Bill Search"),
+    DashBoardSampleSearch("DashBoard Sample Search"),
+    DashBoardInvestigationSearch("DashBoard Investigation Search"),
+    DashBoardReportSearch("DashBoard Report Search"),
+    DashBoardPatientReportSearch("DashBoard Patient Report Search"),
+    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">

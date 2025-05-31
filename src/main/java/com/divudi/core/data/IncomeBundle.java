@@ -223,6 +223,43 @@ public class IncomeBundle implements Serializable {
         getSummaryRow().setNetTotal(sumOfNetTotal);
     }
 
+    public void fixDiscountsAndMarginsInRows() {
+        for (IncomeRow ir : getRows()) {
+            if (ir == null) {
+                continue;
+            }
+
+            Bill bill = ir.getBill();
+            if (bill != null && bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().getBillCategory() != null) {
+                switch (bill.getBillTypeAtomic().getBillCategory()) {
+                    case BILL:
+                        bill.setDiscount(-Math.abs(bill.getDiscount()));
+                        bill.setMargin(Math.abs(bill.getMargin()));
+                        break;
+                    case REFUND:
+                        bill.setDiscount(Math.abs(bill.getDiscount()));
+                        bill.setMargin(-Math.abs(bill.getMargin()));
+                        break;
+                }
+            }
+
+            BillItem billItem = ir.getBillItem();
+            if (billItem != null && billItem.getBill() != null && billItem.getBill().getBillTypeAtomic() != null
+                    && billItem.getBill().getBillTypeAtomic().getBillCategory() != null) {
+                switch (billItem.getBill().getBillTypeAtomic().getBillCategory()) {
+                    case BILL:
+                        billItem.setDiscount(-Math.abs(billItem.getDiscount()));
+                        billItem.setMarginValue(Math.abs(billItem.getMarginValue()));
+                        break;
+                    case REFUND:
+                        billItem.setDiscount(Math.abs(billItem.getDiscount()));
+                        billItem.setMarginValue(-Math.abs(billItem.getMarginValue()));
+                        break;
+                }
+            }
+        }
+    }
+
     public IncomeBundle(List<?> entries) {
         this(); // Initialize id and rows list
         if (entries != null && !entries.isEmpty()) {
@@ -328,7 +365,6 @@ public class IncomeBundle implements Serializable {
                     break;
             }
 
-
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
             grossProfitValue += grossProfit;
@@ -340,8 +376,6 @@ public class IncomeBundle implements Serializable {
         purchaseValue = 0;
         grossProfitValue = 0;
 
-        
-        
         for (IncomeRow r : getRows()) {
             PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
             if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
@@ -397,18 +431,13 @@ public class IncomeBundle implements Serializable {
                     break;
             }
 
-            
-
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
             grossProfitValue += grossProfit;
         }
 
-
     }
 
-    
-    
     public void generateRetailAndCostDetailsForPharmaceuticalBill() {
         saleValue = 0;
         purchaseValue = 0;
@@ -506,7 +535,6 @@ public class IncomeBundle implements Serializable {
         }
 
         // Replace old rows with grouped values
-
         getRows().clear();
         getRows().addAll(grouped.values());
     }
