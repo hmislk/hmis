@@ -236,6 +236,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             totalQtyInUnits = totalQty;
         }
 
+        f.setUnitsPerPack(unitsPerPack);
+        
         // 5. Record unit-based quantities in finance details
         f.setQuantityByUnits(qtyInUnits);
         f.setFreeQuantityByUnits(freeQtyInUnits);
@@ -1054,9 +1056,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBillItemFacade().edit(i);
             saveBillFee(i);
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatchWithCosting(i);
-            double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
-
+            
+            double addingQty = i.getBillItemFinanceDetails().getTotalQuantityByUnits().doubleValue();
             tmpPh.setItemBatch(itemBatch);
+            
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
             tmpPh.setLastPurchaseRate(lastPurchaseRate);
             tmpPh.setStock(stock);
@@ -1064,10 +1067,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             getBill().getBillItems().add(i);
         }
-        if (billItemsTotalQty == 0.0) {
-            JsfUtil.addErrorMessage("Please Add Item Quantities To Bill");
-            return;
-        }
+
+//        This is already checked        
+//        if (billItemsTotalQty == 0.0) {
+//            JsfUtil.addErrorMessage("Please Add Item Quantities To Bill");
+//            return;
+//        }
 
         //check and calculate expenses separately
         if (billExpenses != null && !billExpenses.isEmpty()) {
@@ -1083,16 +1088,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
-
         getBillFacade().edit(getBill());
 
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
+//        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
+//        getSessionController().setLoggedUser(wb);
 
-        JsfUtil.addSuccessMessage("Successfully Billed");
+        JsfUtil.addSuccessMessage("Direct Purchase Successfully Completed.");
         printPreview = true;
-        //   recreate();
-
     }
 
     public void removeItem(BillItem bi) {
