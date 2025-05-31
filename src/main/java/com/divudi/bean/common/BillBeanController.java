@@ -1936,7 +1936,7 @@ public class BillBeanController implements Serializable {
             sql += " group by bi.bill.toDepartment "
                     + " order by bi.bill.toDepartment.name ";
         } else {
-            sql += " group by b.fromDepartment"
+            sql += " group by bi.bill.fromDepartment"
                     + " order by bi.bill.fromDepartment.name";
         }
         temMap.put("toDate", toDate);
