@@ -724,7 +724,7 @@ public class PharmacyCalculation implements Serializable {
         params.put("cr", costRate);
         params.put("pur", purchaseRate);
 
-        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.DATE);
     }
 
     private ItemBatch fetchItemBatchWithoutCosting(Item item, double purchaseRate, double retailRate, Date dateOfExpiry) {
@@ -741,7 +741,7 @@ public class PharmacyCalculation implements Serializable {
         params.put("ret", retailRate);
         params.put("pur", purchaseRate);
 
-        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.DATE);
     }
 
     /**
@@ -773,7 +773,7 @@ public class PharmacyCalculation implements Serializable {
         double wholesaleRate = 0.0;
         double costRatePerUnit = 0.0;
 
-        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Cost", true);
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
 
         if (manageCosting) {
             // Use finance details when costing is enabled
