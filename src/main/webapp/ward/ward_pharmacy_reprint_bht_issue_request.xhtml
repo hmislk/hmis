@@ -31,7 +31,7 @@
                     <p:commandButton 
                         class="ui-button-danger mx-1"
                         style="float: right;"
-                        disabled="#{not empty pharmacyBillSearch.bill.listOfBill or pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
+                        disabled="#{not webUserController.hasPrivilege('InwardPharmacyIssueRequestCancel') or (not empty pharmacyBillSearch.bill.listOfBill or pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded)}"
                         icon="fas fa-cancel"
                         value="Cancel Request" 
                         onclick="PF('confirmationDialog').show();"
