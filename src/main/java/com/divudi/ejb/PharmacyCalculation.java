@@ -773,7 +773,7 @@ public class PharmacyCalculation implements Serializable {
         double wholesaleRate = 0.0;
         double costRatePerUnit = 0.0;
 
-        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Cost", true);
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
 
         if (manageCosting) {
             // Use finance details when costing is enabled
