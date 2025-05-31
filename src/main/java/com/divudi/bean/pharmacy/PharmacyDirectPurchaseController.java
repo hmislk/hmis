@@ -237,7 +237,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         f.setUnitsPerPack(unitsPerPack);
-        
+
         // 5. Record unit-based quantities in finance details
         f.setQuantityByUnits(qtyInUnits);
         f.setFreeQuantityByUnits(freeQtyInUnits);
@@ -1026,20 +1026,23 @@ public class PharmacyDirectPurchaseController implements Serializable {
         List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
 
         billItemsTotalQty = 0;
-        for (BillItem i : getBillItems()) {
 
+        for (BillItem i : getBillItems()) {
             double lastPurchaseRate = 0.0;
             lastPurchaseRate = getPharmacyBean().getLastPurchaseRate(i.getItem());
 
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
                 continue;
             }
+
             billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
+
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getBill());
+
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             } else {
@@ -1054,25 +1057,24 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
+
             saveBillFee(i);
+
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatchWithCosting(i);
-            
+
             double addingQty = i.getBillItemFinanceDetails().getTotalQuantityByUnits().doubleValue();
+
             tmpPh.setItemBatch(itemBatch);
-            
+
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
+
             tmpPh.setLastPurchaseRate(lastPurchaseRate);
             tmpPh.setStock(stock);
+
             getPharmaceuticalBillItemFacade().edit(tmpPh);
 
             getBill().getBillItems().add(i);
         }
-
-//        This is already checked        
-//        if (billItemsTotalQty == 0.0) {
-//            JsfUtil.addErrorMessage("Please Add Item Quantities To Bill");
-//            return;
-//        }
 
         //check and calculate expenses separately
         if (billExpenses != null && !billExpenses.isEmpty()) {
