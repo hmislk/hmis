@@ -236,6 +236,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             totalQtyInUnits = totalQty;
         }
 
+        f.setUnitsPerPack(unitsPerPack);
+        
         // 5. Record unit-based quantities in finance details
         f.setQuantityByUnits(qtyInUnits);
         f.setFreeQuantityByUnits(freeQtyInUnits);

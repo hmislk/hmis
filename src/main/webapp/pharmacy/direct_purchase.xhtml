@@ -524,7 +524,7 @@
                                             value="#{pharmacyDirectPurchaseController.bill.tax}">
                                             <p:ajax 
                                                 process="tx" 
-                                                update=":bill:panelBillDetails"
+                                                update=":bill:net :bill:billFinanceDetails"
                                                 event="blur"
                                                 listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                         </p:inputText>
@@ -537,7 +537,7 @@
                                             value="#{pharmacyDirectPurchaseController.bill.discount}">
                                             <p:ajax 
                                                 process="@this" 
-                                                update=":bill:panelBillDetails"
+                                                update=":bill:net :bill:billFinanceDetails"
                                                 event="blur"
                                                 listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                         </p:inputText>
@@ -563,7 +563,7 @@
                                 <!-- Detailed Finance Tab -->
                                 <p:tab title="Financial Summary">
                                     
-                                    <ph:bill_finance_details bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
+                                    <ph:bill_finance_details id="billFinanceDetails" bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
                                   
 
                                 </p:tab>
