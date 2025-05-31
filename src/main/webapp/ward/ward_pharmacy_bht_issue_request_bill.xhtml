@@ -178,6 +178,12 @@
                                         </f:facet>
                                         <bill:bhtDetail admission="#{pharmacyRequestForBhtController.patientEncounter}"/>
                                     </p:panel>
+                                    <p:panel class="w-100 my-2">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Comment" />
+                                        </f:facet>
+                                        <p:inputText value="#{pharmacyRequestForBhtController.comment}" class="w-70" styleClass="w-70" size="100" />
+                                    </p:panel>
                                 </div>
                                 <div class="col-6">
                                     <p:panel>
