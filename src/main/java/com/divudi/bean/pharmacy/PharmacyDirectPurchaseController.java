@@ -1028,19 +1028,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         billItemsTotalQty = 0;
 
         for (BillItem i : getBillItems()) {
-
-            System.out.println("\n--- Processing BillItem ---");
-            System.out.println("BillItem ID: " + i.getId());
-            System.out.println("Item: " + (i.getItem() != null ? i.getItem().getName() : "NULL"));
-            System.out.println("Item Class: " + (i.getItem() != null ? i.getItem().getClass().getSimpleName() : "NULL"));
-            System.out.println("Qty: " + i.getPharmaceuticalBillItem().getQty());
-            System.out.println("Free Qty: " + i.getPharmaceuticalBillItem().getFreeQty());
-
             double lastPurchaseRate = 0.0;
             lastPurchaseRate = getPharmacyBean().getLastPurchaseRate(i.getItem());
 
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
-                System.out.println("Skipping item due to zero total quantity.");
                 continue;
             }
 
@@ -1054,18 +1045,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
-                System.out.println("Created BillItem");
             } else {
                 getBillItemFacade().edit(i);
-                System.out.println("Edited BillItem");
             }
 
             if (tmpPh.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(tmpPh);
-                System.out.println("Created PharmaceuticalBillItem");
             } else {
                 getPharmaceuticalBillItemFacade().edit(tmpPh);
-                System.out.println("Edited PharmaceuticalBillItem");
             }
 
             i.setPharmaceuticalBillItem(tmpPh);
@@ -1074,15 +1061,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
             saveBillFee(i);
 
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatchWithCosting(i);
-            System.out.println("ItemBatch ID: " + (itemBatch != null ? itemBatch.getId() : "NULL"));
 
             double addingQty = i.getBillItemFinanceDetails().getTotalQuantityByUnits().doubleValue();
-            System.out.println("Adding to stock. Quantity (in units): " + addingQty);
 
             tmpPh.setItemBatch(itemBatch);
 
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
-            System.out.println("Stock object returned: " + (stock != null ? "NOT NULL" : "NULL"));
 
             tmpPh.setLastPurchaseRate(lastPurchaseRate);
             tmpPh.setStock(stock);
