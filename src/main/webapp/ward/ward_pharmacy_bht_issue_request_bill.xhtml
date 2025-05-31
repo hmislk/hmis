@@ -219,6 +219,7 @@
                                                     inputStyleClass="form-control"
                                                     itemLabel="#{i.name}"
                                                     itemValue="#{i}"
+                                                    maxResults="10"
                                                     >
                                                     <p:ajax event="focus" process="acStock" ></p:ajax>
                                                     <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
