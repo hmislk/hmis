@@ -101,6 +101,7 @@ public enum Privileges {
     ShowInwardFee("Show Inward Fee"),
     InwardPharmacyMenu("Inward Pharmacy Menu"),
     InwardPharmacyIssueRequest("Inward Pharmacy Issue Request"),
+    InwardPharmacyIssueRequestCancel("Inward Pharmacy Issue Request Cancel"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
