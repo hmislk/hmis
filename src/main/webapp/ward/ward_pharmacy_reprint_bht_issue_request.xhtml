@@ -23,7 +23,8 @@
                         class="ui-button-warning mx-1"
                         style="float: right;"
                         icon="fas fa-pen"
-                        value="Edit Request" 
+                        value="Edit Request"
+                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
                         action="#{pharmacyBillSearch.editInwardPharmacyRequestBill()}"
                         ajax="false">
                     </p:commandButton>
