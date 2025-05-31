@@ -758,19 +758,18 @@ public class ReportsTransfer implements Serializable {
         List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt, true);
         List<Object[]> objectsItems = getBillBeanController().fetchBilledDepartmentBillItem(fd, td, dep, bt, true);
 
+        // Create a map for efficient lookup
+        Map<Department, Double> departmentSaleValues = new HashMap<>();
+        for (Object[] obItem : objectsItems) {
+            Department dItem = (Department) obItem[0];
+            double itemValue = (double) obItem[1];
+            departmentSaleValues.merge(dItem, itemValue, Double::sum);
+        }
+
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
             double dbl = (double) ob[1];
-            double db2 = 0.0;
-
-            for (Object[] obItem : objectsItems) {
-                Department dItem = (Department) obItem[0];
-                double itemValue = (double) obItem[1];
-
-                if (d.equals(dItem)) {
-                    db2 += itemValue;
-                }
-            }
+            double db2 = departmentSaleValues.getOrDefault(d, 0.0);
 
             String1Value3 sv = new String1Value3();
             sv.setString(d.getName());
