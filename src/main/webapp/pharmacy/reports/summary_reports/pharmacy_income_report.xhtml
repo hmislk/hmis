@@ -365,11 +365,11 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Discount"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.discount}" >
+                                    <h:outputText value="#{commonFunctionsProxy.reverseSign(row.discount)}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer" >
-                                        <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                        <h:outputText value="#{commonFunctionsProxy.reverseSign(pharmacySummaryReportController.bundle.summaryRow.discount)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
