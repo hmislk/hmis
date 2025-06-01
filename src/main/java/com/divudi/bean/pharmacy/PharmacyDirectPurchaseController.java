@@ -565,9 +565,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BillItem lastPurchasedBillItem = getPharmacyBean().getLastPurchaseItem(item, dept);
 
         if (lastPurchasedBillItem != null && lastPurchasedBillItem.getBillItemFinanceDetails() != null) {
-            pr = lastPurchasedBillItem.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
-            rr = lastPurchasedBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+            BigDecimal lineGrossRate = lastPurchasedBillItem.getBillItemFinanceDetails().getLineGrossRate();
+            BigDecimal retailRate = lastPurchasedBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit();
 
+            pr = (lineGrossRate != null) ? lineGrossRate.doubleValue() : 0.0;
+            rr = (retailRate != null) ? retailRate.doubleValue() : 0.0;
         }
 
         // Fallback to old methods if pr or rr is 0.0
