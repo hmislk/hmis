@@ -50,7 +50,7 @@
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview"   style="min-width: 100%!important;">
-                            <p:dataTable id="tbl"  value="#{reportsStock.items}" var="i"  
+                            <p:dataTable id="tbl"  value="#{reportsStock.stocks}" var="i"  
                                          rows="10"
                                          paginator="true"
                                          paginatorPosition="bottom"
@@ -60,31 +60,45 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Non Moving Stocks - #{reportsStock.department.name}"/>                                     
                                 </f:facet>   
+   
                                 <p:column headerText="Category" 
-                                          sortBy="#{i.category.name}"
-                                          filterBy="#{i.category.name}"
+                                          sortBy="#{i.itemBatch.item.category.name}"
+                                          filterBy="#{i.itemBatch.item.category.name}"
                                           filterMatchMode="contains"
                                           >
-                                    <h:outputLabel value="#{i.category.name}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.category.name}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Item" 
-                                          sortBy="#{i.name}"
-                                          filterBy="#{i.name}"
+                                          sortBy="#{i.itemBatch.item.name}"
+                                          filterBy="#{i.itemBatch.item.name}"
                                           filterMatchMode="contains"
                                           >
-                                    <h:outputLabel value="#{i.name}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Code"
-                                          sortBy="#{i.code}"
-                                          filterBy="#{i.code}"
+                                          sortBy="#{i.itemBatch.item.code}"
+                                          filterBy="#{i.itemBatch.item.code}"
                                           filterMatchMode="contains"
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.code}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
                                 </p:column>
+    <p:column headerText="Stock"
+              sortBy="#{i.stock}"
+              filterBy="#{i.stock}"
+              filterMatchMode="contains"
+              >
+        <f:facet name="header">
+            <h:outputLabel value="Stock"/>
+        </f:facet>
+        <h:outputLabel value="#{i.stock}" >
+            <f:convertNumber pattern="#,###"></f:convertNumber>
+        </h:outputLabel>
+    </p:column>
+                                
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>
