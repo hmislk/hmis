@@ -555,23 +555,41 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (getCurrentBillItem().getItem() == null) {
             return;
         }
+
         Item item = getCurrentBillItem().getItem();
-        double pr = getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment());
-        double rr = getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment());
-        // Keep these for backword compatibility - Start
+        Department dept = getSessionController().getDepartment();
+
+        double pr = 0.0;
+        double rr = 0.0;
+
+        BillItem lastPurchasedBillItem = getPharmacyBean().getLastPurchaseItem(item, dept);
+
+        if (lastPurchasedBillItem != null && lastPurchasedBillItem.getBillItemFinanceDetails() != null) {
+            BigDecimal lineGrossRate = lastPurchasedBillItem.getBillItemFinanceDetails().getLineGrossRate();
+            BigDecimal retailRate = lastPurchasedBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit();
+
+            pr = (lineGrossRate != null) ? lineGrossRate.doubleValue() : 0.0;
+            rr = (retailRate != null) ? retailRate.doubleValue() : 0.0;
+        }
+
+        // Fallback to old methods if pr or rr is 0.0
+        if (pr == 0.0 || rr == 0.0) {
+            pr = getPharmacyBean().getLastPurchaseRate(item, dept);
+            rr = getPharmacyBean().getLastRetailRate(item, dept);
+        }
+
+        // Keep these for backward compatibility - Start
         getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pr);
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(rr);
-        // Keep these for backword compatibility - End        
+        // Keep these for backward compatibility - End
+
+        getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(pr));
+        getCurrentBillItem().getBillItemFinanceDetails().setRetailSaleRatePerUnit(BigDecimal.valueOf(rr));
 
         if (item instanceof Ampp) {
             getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.valueOf(item.getDblValue()));
-            getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(pr).multiply(getCurrentBillItem().getBillItemFinanceDetails().getUnitsPerPack()));
-            getCurrentBillItem().getBillItemFinanceDetails().setRetailSaleRatePerUnit(BigDecimal.valueOf(rr));
         } else {
             getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.ONE);
-            getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(pr));
-            getCurrentBillItem().getBillItemFinanceDetails().setRetailSaleRatePerUnit(BigDecimal.valueOf(rr));
-
         }
 
         recalculateFinancialsBeforeAddingBillItem(getCurrentBillItem().getBillItemFinanceDetails());

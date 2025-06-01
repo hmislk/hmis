@@ -1528,6 +1528,57 @@ public class PharmacyBean {
         this.VtmFacade = VtmFacade;
     }
 
+    public BillItem getLastPurchaseItem(Item item, Department dept) {
+        if (item == null || dept == null) {
+            return null;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT bi "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND bi.bill.department = :d "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        params.put("i", item);
+        params.put("d", dept);
+        params.put("t", BillType.PharmacyGrnBill);
+        params.put("t1", BillType.PharmacyPurchaseBill);
+
+        BillItem bi = getBillItemFacade().findFirstByJpql(jpql, params);
+
+        // If not found, fallback to search without department
+        if (bi == null) {
+            bi = getLastPurchaseItem(item); // call overload
+        }
+
+        return bi;
+    }
+
+    public BillItem getLastPurchaseItem(Item item) {
+        if (item == null) {
+            return null;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT bi "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        params.put("i", item);
+        params.put("t", BillType.PharmacyGrnBill);
+        params.put("t1", BillType.PharmacyPurchaseBill);
+
+        return getBillItemFacade().findFirstByJpql(jpql, params);
+    }
+
     public double getLastPurchaseRate(Item item, Department dept) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
