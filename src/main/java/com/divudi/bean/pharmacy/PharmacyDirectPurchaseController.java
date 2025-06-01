@@ -567,6 +567,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (lastPurchasedBillItem != null && lastPurchasedBillItem.getBillItemFinanceDetails() != null) {
             pr = lastPurchasedBillItem.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
             rr = lastPurchasedBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+
         }
 
         // Fallback to old methods if pr or rr is 0.0
@@ -580,14 +581,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(rr);
         // Keep these for backward compatibility - End
 
+        getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(pr));
+        getCurrentBillItem().getBillItemFinanceDetails().setRetailSaleRatePerUnit(BigDecimal.valueOf(rr));
+
         if (item instanceof Ampp) {
             getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.valueOf(item.getDblValue()));
-            getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(pr).multiply(getCurrentBillItem().getBillItemFinanceDetails().getUnitsPerPack()));
-            getCurrentBillItem().getBillItemFinanceDetails().setRetailSaleRatePerUnit(BigDecimal.valueOf(rr));
         } else {
             getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.ONE);
-            getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(pr));
-            getCurrentBillItem().getBillItemFinanceDetails().setRetailSaleRatePerUnit(BigDecimal.valueOf(rr));
         }
 
         recalculateFinancialsBeforeAddingBillItem(getCurrentBillItem().getBillItemFinanceDetails());
