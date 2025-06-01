@@ -556,8 +556,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
         Item item = getCurrentBillItem().getItem();
+        BillItem lastPurchasedBillItem = getPharmacyBean().getLastPurchaseItem(getCurrentBillItem().getItem(), getSessionController().getDepartment());
+        
+        //this is the old way of getting last prices. have to remove them
         double pr = getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment());
         double rr = getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment());
+        
+        
+        pr = lastPurchasedBillItem.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
+        rr = lastPurchasedBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+        
         // Keep these for backword compatibility - Start
         getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pr);
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(rr);
