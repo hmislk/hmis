@@ -49,7 +49,8 @@
                             <p:selectOneListbox  id="lstSelect"
                                                  value="#{departmentController.current}" 
                                                  style="w-100"
-                                                 filter="true">
+                                                 filter="true"
+                                                 filterMatchMode="contains">
                                 <f:selectItems  value="#{departmentController.selectedItems}"
                                                 var="myItem" 
                                                 itemValue="#{myItem}" 
@@ -75,7 +76,7 @@
                                         class="ml-5 m-1 ui-button-warning float-right"
                                         icon="fas fa-save">
                                     </p:commandButton>
-                                    
+
                                 </f:facet>
 
 
@@ -92,13 +93,13 @@
                                                          id="txtTName" value="#{departmentController.current.code}" 
                                                          class="w-100">
                                             </p:inputText>
-                                            
-                                             <h:outputText value="Income Name" />                                   
+
+                                            <h:outputText value="Income Name" />                                   
                                             <p:inputText autocomplete="off" 
                                                          class="w-100" 
                                                          value="#{departmentController.current.departmentCode}"  />
 
-                                            
+
                                             <h:outputText value="Department Code" />                                   
                                             <p:inputText autocomplete="off" class="w-100" value="#{departmentController.current.departmentCode}"  />
 
