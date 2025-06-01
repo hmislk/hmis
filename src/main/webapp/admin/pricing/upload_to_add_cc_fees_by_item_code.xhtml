@@ -18,10 +18,10 @@
                     </f:facet>
                     <h:form id="upload" enctype="multipart/form-data">
                         <p:panelGrid columns="2" >
-                            <p:outputLabel value="Collection Centre" for="siteMenu" ></p:outputLabel>
+                            <p:outputLabel value="Collection Centre" for="acCc" ></p:outputLabel>
                             <p:autoComplete 
                                 value="#{itemController.collectionCentre}" 
-                                forceSelection="true" id="acColl"
+                                forceSelection="true" id="acCc"
                                 completeMethod="#{institutionController.completeCollectingCenter}" 
                                 var="vt" 
                                 itemLabel="#{vt.name}"

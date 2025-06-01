@@ -331,7 +331,7 @@ public class ItemController implements Serializable {
         output = "";
 
         if (fromInstitution == null) {
-            output = "❌ Site is not selected. Please select a site before proceeding.<br/>";
+            output = "❌ From Institution is not selected. Please select before proceeding.<br/>";
             return Collections.emptyList();
         }
 
