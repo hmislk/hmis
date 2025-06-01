@@ -555,21 +555,30 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (getCurrentBillItem().getItem() == null) {
             return;
         }
+
         Item item = getCurrentBillItem().getItem();
-        BillItem lastPurchasedBillItem = getPharmacyBean().getLastPurchaseItem(getCurrentBillItem().getItem(), getSessionController().getDepartment());
-        
-        //this is the old way of getting last prices. have to remove them
-        double pr = getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment());
-        double rr = getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment());
-        
-        
-        pr = lastPurchasedBillItem.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
-        rr = lastPurchasedBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
-        
-        // Keep these for backword compatibility - Start
+        Department dept = getSessionController().getDepartment();
+
+        double pr = 0.0;
+        double rr = 0.0;
+
+        BillItem lastPurchasedBillItem = getPharmacyBean().getLastPurchaseItem(item, dept);
+
+        if (lastPurchasedBillItem != null && lastPurchasedBillItem.getBillItemFinanceDetails() != null) {
+            pr = lastPurchasedBillItem.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
+            rr = lastPurchasedBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+        }
+
+        // Fallback to old methods if pr or rr is 0.0
+        if (pr == 0.0 || rr == 0.0) {
+            pr = getPharmacyBean().getLastPurchaseRate(item, dept);
+            rr = getPharmacyBean().getLastRetailRate(item, dept);
+        }
+
+        // Keep these for backward compatibility - Start
         getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pr);
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(rr);
-        // Keep these for backword compatibility - End        
+        // Keep these for backward compatibility - End
 
         if (item instanceof Ampp) {
             getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.valueOf(item.getDblValue()));
@@ -579,7 +588,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.ONE);
             getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(pr));
             getCurrentBillItem().getBillItemFinanceDetails().setRetailSaleRatePerUnit(BigDecimal.valueOf(rr));
-
         }
 
         recalculateFinancialsBeforeAddingBillItem(getCurrentBillItem().getBillItemFinanceDetails());
