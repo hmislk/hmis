@@ -140,15 +140,15 @@
                                                 value="Correct Item Fees"
                                                 action="/dataAdmin/bulk_update_itemsFees">
                                             </p:commandButton>
-                                            
-                                            
+
+
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false"
                                                 value="Item Fees Values"
                                                 action="#{itemFeeManager.navigateItemFeeValueList}">
                                             </p:commandButton>
-                                            
+
                                         </div>
                                     </p:tab>
 
@@ -195,8 +195,8 @@
                                             </p:commandButton>
                                         </div>
                                     </p:tab>
-                                    
-                                     <p:tab title="Upload Fees">
+
+                                    <p:tab title="Upload Fees">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 class="w-100"
@@ -205,15 +205,22 @@
                                                 icon="fa fa-list" 
                                                 action="#{itemFeeManager.navigateToUploadToReplaceSiteFeesByItemCode()}">
                                             </p:commandButton>
-                                             <p:commandButton 
+                                            <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Upload to add Site Fees by Item Code"
                                                 icon="fa fa-list" 
                                                 action="#{itemFeeManager.navigateToUploadToAddSiteFeesByItemCode()}">
                                             </p:commandButton>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Upload to add Collection Centre Fees by Item Code"
+                                                icon="fa fa-list" 
+                                                action="#{itemFeeManager.navigateToUploadToAddSiteFeesByItemCode()}">
+                                            </p:commandButton>
                                         </div>
-                                     </p:tab>
+                                    </p:tab>
 
 
 
@@ -278,14 +285,14 @@
                                                 value="OPD Discount by Department" 
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
                                                 ajax="false"/>
-                                            
-                                             <p:commandButton 
+
+                                            <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdBySite()}" 
                                                 value="OPD Discount by Site" 
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
                                                 ajax="false"/>
-                                             
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdBtCategory()}" 
