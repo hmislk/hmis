@@ -155,16 +155,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
 
         if (item instanceof Ampp) {
-            pbi.setQty(f.getQuantityByUnits().doubleValue());
+            pbi.setQty(f.getQuantity().doubleValue());
             pbi.setQtyPacks(f.getQuantity().doubleValue());
 
-            pbi.setFreeQty(f.getFreeQuantityByUnits().doubleValue());
+            pbi.setFreeQty(f.getFreeQuantity().doubleValue());
             pbi.setFreeQtyPacks(f.getFreeQuantity().doubleValue());
 
-            pbi.setPurchaseRate(f.getNetRate().divide(f.getUnitsPerPack(), 4, RoundingMode.HALF_UP).doubleValue());
+            pbi.setPurchaseRate(f.getNetRate().doubleValue());
             pbi.setPurchaseRatePack(f.getNetRate().doubleValue());
 
-            pbi.setRetailRate(f.getRetailSaleRatePerUnit().doubleValue());
+            pbi.setRetailRate(f.getRetailSaleRate().doubleValue());
             pbi.setRetailRatePack(f.getRetailSaleRate().doubleValue());
             pbi.setRetailRateInUnit(f.getRetailSaleRatePerUnit().doubleValue());
 

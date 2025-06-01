@@ -721,11 +721,11 @@
                 </style>
 
                 <h:panelGroup id="gpBillPreview" >
-                    <pharmacy:purhcase
+                    <pharmacy:direct_purhcase
                         bill="#{pharmacyDirectPurchaseController.bill}"
                         ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                         ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                    </pharmacy:purhcase>
+                    </pharmacy:direct_purhcase>
                 </h:panelGroup>
 
             </p:panel>
