@@ -529,11 +529,6 @@ public class ReportsStock implements Serializable {
 
         // Run the query and retrieve results
         Object[] results = (Object[]) billItemFacade.findSingleAggregate(jpql, temMap, TemporalType.TIMESTAMP);
-        
-        System.out.println("(Double) results[0] = " + (Double) results[0]);
-        System.out.println("(Double) results[1] = " + (Double) results[1]);
-        System.out.println("(Double) results[2] = " + (Double) results[2]);
-        System.out.println("(Double) results[3] = " + (Double) results[3]);
 
         // Assign results with null checks
         totalPurchaseSaleCreditValue = results[0] != null ? (Double) results[0] : 0.0;
