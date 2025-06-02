@@ -112,7 +112,7 @@
                         <f:facet name="header">
                             <p:outputLabel value="Gross Amount"/>
                         </f:facet>
-                        <p:outputLabel value="#{b.netTotal+b.discount}">
+                        <p:outputLabel value="#{b.grossAmount}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </p:outputLabel>
                         <f:facet name="footer">
