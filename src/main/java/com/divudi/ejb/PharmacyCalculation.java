@@ -429,7 +429,7 @@ public class PharmacyCalculation implements Serializable {
      * @param po The pharmaceutical bill item linked to the purchase order.
      * @return Remaining quantity from the original order.
      */
-    public double calulateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
+    public double calculateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
         double billed = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
         double cancelled = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());;
 //      double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
@@ -497,7 +497,7 @@ public class PharmacyCalculation implements Serializable {
         return bil.getQty() - returnBill;
     }
 
-//     public double calulateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
+//     public double calculateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
 //
 //        double billed =getTotalQty(po.getBillItem(),BillType.PharmacyGrnBill,new BilledBill());
 //        double cancelled = getTotalQty(po.getBillItem(),BillType.PharmacyGrnBill,new CancelledBill());;
@@ -595,7 +595,7 @@ public class PharmacyCalculation implements Serializable {
         //    Item grnItem = ph.getBillItem().getItem();
         double poQty, grnQty, remains;
         poQty = Math.abs(po.getQtyInUnit());
-        remains = Math.abs(poQty) - calulateRemainigQtyFromOrder(po);
+        remains = Math.abs(poQty) - calculateRemainigQtyFromOrder(po);
         grnQty = Math.abs(ph.getQtyInUnit());
 
         //System.err.println("poQty : " + poQty);
@@ -897,7 +897,7 @@ public class PharmacyCalculation implements Serializable {
 
         getBillItemFacade().edit(i.getBillItem());
 //
-//        double consumed = calulateRemainigQtyFromOrder(i.getBillItem().getReferanceBillItem().getPharmaceuticalBillItem());
+//        double consumed = calculateRemainigQtyFromOrder(i.getBillItem().getReferanceBillItem().getPharmaceuticalBillItem());
 //        i.getBillItem().setRemainingQty(i.getBillItem().getReferanceBillItem().getPharmaceuticalBillItem().getQty() - consumed);
 //        getBillItemFacade().edit(i.getBillItem());
     }
