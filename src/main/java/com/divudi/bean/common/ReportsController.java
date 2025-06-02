@@ -3196,6 +3196,284 @@ public class ReportsController implements Serializable {
         }
     }
 
+    public void exportDebtorBalanceReportIPToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Debtor_Balance_Report_Report.xlsx");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Debtor Balance Report");
+            int rowIndex = 0;
+
+            XSSFFont boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
+            Row mainHeader = sheet.createRow(rowIndex++);
+            Cell headerCell = mainHeader.createCell(0);
+            headerCell.setCellValue("Debtor Balance Report");
+            headerCell.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 15));
+
+            Row columnHeader = sheet.createRow(rowIndex++);
+            String[] headers = {
+                    "", "BHT", "MRN No", "Phone", "Patient Name", "Admitted At", "Discharged At", "Final Total", "GOP by Patient", "Paid by Patient",
+                    "Patient Due", "Paid by Companies", "Total Due", "Company Details"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = columnHeader.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 13, 18));
+
+            int counter = 1;
+            for (Map.Entry<PatientEncounter, List<InstitutionBillEncounter>> entry : institutionBillPatientEncounterMap.entrySet()) {
+                PatientEncounter pe = entry.getKey();
+                List<InstitutionBillEncounter> bills = entry.getValue();
+
+                Row row = sheet.createRow(rowIndex++);
+                int col = 0;
+
+                row.createCell(col++).setCellValue(counter++);
+                row.createCell(col++).setCellValue(pe.getBhtNo());
+                row.createCell(col++).setCellValue(pe.getPatient().getPhn());
+                row.createCell(col++).setCellValue(pe.getPatient().getPerson().getMobile());
+                row.createCell(col++).setCellValue(pe.getPatient().getPerson().getName());
+                row.createCell(col++).setCellValue(sdf.format(pe.getDateOfAdmission()));
+                row.createCell(col++).setCellValue(sdf.format(pe.getDateOfDischarge()));
+                row.createCell(col++).setCellValue(pe.getFinalBill().getNetTotal());
+                row.createCell(col++).setCellValue(bills.get(0).getPatientGopAmount());
+                row.createCell(col++).setCellValue(bills.get(0).getPaidByPatient());
+                row.createCell(col++).setCellValue(bills.get(0).getPatientDue());
+                row.createCell(col++).setCellValue(bills.get(0).getTotalPaidByCompanies());
+                row.createCell(col++).setCellValue(bills.get(0).getTotalDue());
+
+                Row subHeader = sheet.createRow(rowIndex++);
+                String[] innerHeaders = {
+                        "Company Name", "Policy Number", "Reference Number", "GOP by Company",
+                        "Paid by Company", "Company Due"
+                };
+                for (int i = 0; i < innerHeaders.length; i++) {
+                    Cell cell = subHeader.createCell(i + 13);
+                    cell.setCellValue(innerHeaders[i]);
+                    cell.setCellStyle(boldStyle);
+                }
+
+                for (InstitutionBillEncounter bill : bills) {
+                    Row billRow = sheet.createRow(rowIndex++);
+                    billRow.createCell(13).setCellValue(bill.getInstitution().getName());
+                    billRow.createCell(14).setCellValue(getPolicyNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getInstitution().getName()));
+                    billRow.createCell(15).setCellValue(getReferenceNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getInstitution().getName()));
+                    billRow.createCell(16).setCellValue(bill.getGopAmount());
+                    billRow.createCell(17).setCellValue(bill.getPaidByCompany());
+                    billRow.createCell(18).setCellValue(bill.getCompanyDue() != 0 ? bill.getCompanyDue() : bill.getCompanyExcess());
+                }
+
+                Row totalsRow = sheet.createRow(rowIndex++);
+                Cell totalLabelCell = totalsRow.createCell(13);
+                totalLabelCell.setCellValue("Total");
+                totalLabelCell.setCellStyle(boldStyle);
+
+                Cell total1 = totalsRow.createCell(16);
+                total1.setCellValue(patientEncounterGopMap.get(pe));
+                total1.setCellStyle(boldStyle);
+
+                Cell total2 = totalsRow.createCell(17);
+                total2.setCellValue(patientEncounterPaidByCompanyMap.get(pe));
+                total2.setCellStyle(boldStyle);
+
+                Cell total3 = totalsRow.createCell(18);
+                total3.setCellValue(patientEncounterGopMap.get(pe) - patientEncounterPaidByCompanyMap.get(pe));
+                total3.setCellStyle(boldStyle);
+            }
+
+            Row totalFooter = sheet.createRow(rowIndex++);
+            Cell footerLabel = totalFooter.createCell(0);
+            footerLabel.setCellValue("Total");
+            footerLabel.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 3));
+
+            int[] footerCols = {7, 8, 9, 10, 11, 12};
+            double[] footerValues = {
+                    getBilled(),
+                    getPayableByPatient(),
+                    getPaidByPatient(),
+                    getPayableByPatient() - getPaidByPatient(),
+                    getPaidByCompany(),
+                    getBilled() - (getPaidByCompany() + getPaidByPatient())
+            };
+
+            for (int i = 0; i < footerCols.length; i++) {
+                Cell cell = totalFooter.createCell(footerCols[i]);
+                cell.setCellValue(footerValues[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportDebtorBalanceReportIPToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Debtor_Balance_Report_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            Paragraph title = new Paragraph("Debtor Balance Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+            document.add(Chunk.NEWLINE);
+
+            // Main table has 14 columns
+            PdfPTable mainTable = new PdfPTable(14);
+            mainTable.setWidthPercentage(100);
+            // Re-adjusting widths slightly. Ensure the last column is wide enough for the nested table.
+            // Sum of these floats should generally represent the relative widths.
+            // Total columns = 14
+            // The last cell (Company Details) needs to be large enough for the nested table.
+            mainTable.setWidths(new float[]{
+                    0.6f,   // #
+                    1.2f,   // BHT
+                    1.2f,   // MRN No
+                    1.2f,   // Phone
+                    1.2f,   // Patient Name
+                    1.8f,   // Admitted At
+                    1.8f,   // Discharged At
+                    1.2f,   // Final Total
+                    1.2f,   // GOP by Patient
+                    1.2f,   // Paid by Patient
+                    1.2f,   // Patient Due
+                    1.2f,   // Paid by Companies
+                    1.2f,   // Total Due
+                    8.0f    // Company Details (This is the cell that holds the nested table)
+            });
+
+
+            String[] headers = {"", "BHT", "MRN No", "Phone", "Patient Name", "Admitted At", "Discharged At", "Final Total",
+                    "GOP by Patient", "Paid by Patient", "Patient Due", "Paid by Companies", "Total Due", "Company Details"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                mainTable.addCell(cell);
+            }
+
+            int counter = 1;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss a");
+
+            for (Map.Entry<PatientEncounter, List<InstitutionBillEncounter>> entry : institutionBillPatientEncounterMap.entrySet()) {
+                PatientEncounter pe = entry.getKey();
+                List<InstitutionBillEncounter> bills = entry.getValue();
+
+                // Row for main patient encounter data
+                mainTable.addCell(new Phrase(String.valueOf(counter++), normalFont));
+                mainTable.addCell(new Phrase(pe.getBhtNo(), normalFont));
+                mainTable.addCell(new Phrase(pe.getPatient().getPhn(), normalFont)); // MRN No
+                mainTable.addCell(new Phrase(pe.getPatient().getPerson().getMobile(), normalFont)); // Phone
+                mainTable.addCell(new Phrase(pe.getPatient().getPerson().getName(), normalFont)); // Patient Name
+                mainTable.addCell(new Phrase(sdf.format(pe.getDateOfAdmission()), normalFont));
+                mainTable.addCell(new Phrase(sdf.format(pe.getDateOfDischarge()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(pe.getFinalBill().getNetTotal()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getPatientGopAmount()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getPaidByPatient()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getPatientDue()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getTotalPaidByCompanies()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getTotalDue()), normalFont)); // This is the 13th cell (index 12)
+
+
+                // Nested table for company details
+                PdfPTable nestedTable = new PdfPTable(6); // 6 columns
+                nestedTable.setWidthPercentage(100); // Take 100% of the cell it's in
+                // Define widths for the 6 columns of the nested table
+                nestedTable.setWidths(new float[]{
+                        3f,    // Company Name
+                        2.5f,  // Policy Number
+                        2.5f,  // Reference Number
+                        2f,    // GOP by Company
+                        2f,    // Paid by Company
+                        2f     // Company Due
+                });
+
+                String[] subHeaders = {"Company Name", "Policy Number", "Reference Number", "GOP by Company", "Paid by Company", "Company Due"};
+                for (String sh : subHeaders) {
+                    PdfPCell shCell = new PdfPCell(new Phrase(sh, boldFont));
+                    shCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    nestedTable.addCell(shCell);
+                }
+
+                for (InstitutionBillEncounter bill : bills) {
+                    nestedTable.addCell(new Phrase(bill.getInstitution().getName(), normalFont));
+                    nestedTable.addCell(new Phrase(getPolicyNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getInstitution().getName()), normalFont));
+                    nestedTable.addCell(new Phrase(getReferenceNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getInstitution().getName()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getGopAmount()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getPaidByCompany()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getCompanyDue() != 0 ? bill.getCompanyDue() : bill.getCompanyExcess()), normalFont));
+                }
+
+                // Footer for nested table (Total row for companies)
+                PdfPCell nestedTotalLabel = new PdfPCell(new Phrase("Total", boldFont));
+                nestedTotalLabel.setColspan(3); // "Total" spans 3 columns of the nested table
+                nestedTotalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT); // Align "Total" to the right
+                nestedTable.addCell(nestedTotalLabel);
+
+                nestedTable.addCell(new Phrase(String.valueOf(patientEncounterGopMap.get(pe)), boldFont));
+                nestedTable.addCell(new Phrase(String.valueOf(patientEncounterPaidByCompanyMap.get(pe)), boldFont));
+                nestedTable.addCell(new Phrase(String.valueOf(patientEncounterGopMap.get(pe) - patientEncounterPaidByCompanyMap.get(pe)), boldFont));
+
+                // Add the nested table to the main table
+                // This cell occupies the 14th column of the mainTable
+                PdfPCell nestedCell = new PdfPCell(nestedTable);
+                nestedCell.setColspan(1); // It occupies exactly one column of the main table
+                mainTable.addCell(nestedCell);
+            }
+
+            // --- Main Table Footer ---
+            // This part needs to correctly fill the 14 columns of the mainTable.
+            // You have a footerLabel with colspan 7, which means it occupies 7 columns (0 to 6).
+            // Then you have 6 more cells, filling columns 7 to 12.
+            // Total columns filled: 7 (footerLabel) + 6 (values) = 13 columns.
+            // You need to add one more empty cell to fill the 14th column.
+            PdfPCell footerLabel = new PdfPCell(new Phrase("Total", boldFont));
+            footerLabel.setColspan(7); // Occupies columns 0-6
+            footerLabel.setHorizontalAlignment(Element.ALIGN_LEFT);
+            mainTable.addCell(footerLabel);
+
+            mainTable.addCell(new Phrase(String.valueOf(getBilled()), boldFont));                       // Col 7
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient()), boldFont));           // Col 8
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByPatient()), boldFont));             // Col 9
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient() - getPaidByPatient()), boldFont)); // Col 10
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByCompany()), boldFont));             // Col 11
+            mainTable.addCell(new Phrase(String.valueOf(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont)); // Col 12
+            mainTable.addCell(new PdfPCell(new Phrase(""))); // <--- ADD THIS EMPTY CELL TO FILL COLUMN 13 (the 14th column)
+
+            document.add(mainTable);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
+    }
+
     private void removeNonDues() {
         List<ReportTemplateRow> removeList = new ArrayList<>();
 

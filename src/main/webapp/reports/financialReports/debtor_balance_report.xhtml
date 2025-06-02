@@ -137,23 +137,45 @@
                         <p:printer target="printPanel"/>
                     </p:commandButton>
 
-                    <!--                    <p:commandButton-->
-                    <!--                            class="ui-button-success my-4 mx-2"-->
-                    <!--                            style="width: 150px"-->
-                    <!--                            icon="fas fa-file-excel"-->
-                    <!--                            ajax="false"-->
-                    <!--                            value="Excel">-->
-                    <!--                        <p:dataExporter type="xlsx" target="tbl" fileName="debtor_balance_report.xlsx"/>-->
-                    <!--                    </p:commandButton>-->
+                    <p:commandButton
+                            class="ui-button-success my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-excel"
+                            ajax="false"
+                            rendered="#{reportsController.visitType eq 'OP'}"
+                            value="Excel">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="debtor_balance_report.xlsx"/>
+                    </p:commandButton>
 
-                    <!--                    <p:commandButton-->
-                    <!--                            class="ui-button-danger my-4 mx-2"-->
-                    <!--                            style="width: 150px"-->
-                    <!--                            icon="fas fa-file-pdf"-->
-                    <!--                            ajax="false"-->
-                    <!--                            value="PDF">-->
-                    <!--                        <p:dataExporter type="pdf" target="tbl" fileName="debtor_balance_report.pdf"/>-->
-                    <!--                    </p:commandButton>-->
+                    <p:commandButton
+                            class="ui-button-danger my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-pdf"
+                            ajax="false"
+                            rendered="#{reportsController.visitType eq 'OP'}"
+                            value="PDF">
+                        <p:dataExporter type="pdf" target="tbl" fileName="debtor_balance_report.pdf"/>
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="ui-button-success my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-excel"
+                            ajax="false"
+                            rendered="#{reportsController.visitType eq 'IP'}"
+                            action="#{reportsController.exportDebtorBalanceReportIPToExcel()}"
+                            value="Excel">
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="ui-button-danger my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-pdf"
+                            ajax="false"
+                            rendered="#{reportsController.visitType eq 'IP'}"
+                            action="#{reportsController.exportDebtorBalanceReportIPToPdf()}"
+                            value="PDF">
+                    </p:commandButton>
                     <h:panelGroup id="printPanel">
                         <p:dataTable id="tbl" styleClass="noBorder normalFont"
                                      value="#{reportsController.bundle.reportTemplateRows}" var="i" rowIndexVar="in"
@@ -376,7 +398,8 @@
                                     <th colspan="7" style="text-align: right; padding-right: 5px;">From:</th>
                                     <th colspan="7" style="text-align: left; padding-left: 5px;">
                                         <h:outputText value="#{reportsController.fromDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            <f:convertDateTime
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
                                     </th>
                                 </tr>
@@ -384,7 +407,8 @@
                                     <th colspan="7" style="text-align: right; padding-right: 5px;">To:</th>
                                     <th colspan="7" style="text-align: left; padding-left: 5px;">
                                         <h:outputText value="#{reportsController.toDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            <f:convertDateTime
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
                                     </th>
                                 </tr>
