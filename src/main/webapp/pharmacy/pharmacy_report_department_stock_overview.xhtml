@@ -68,12 +68,12 @@
                                             <td></td>
                                             <td></td>
                                             <td class="text-end">
-                                                <h:outputText value="#{reportsStock.staringPurchaseValue}" >
+                                                <h:outputText value="#{reportsStock.startingPurchaseValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </td>
                                             <td class="text-end">
-                                                <h:outputText value="#{reportsStock.staringSaleValue}" >
+                                                <h:outputText value="#{reportsStock.startingSaleValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </td>
@@ -114,7 +114,7 @@
                                         <tr>
                                             <td >Direct Purchase</td>
                                             <td style="border-bottom: 1px solid">
-                                                <h:outputText value="#{reportsStock.totalDirectPurshasePurchaseValue lt 0 ? -reportsStock.totalDirectPurshasePurchaseValue : reportsStock.totalDirectPurshasePurchaseValue}" >
+                                                <h:outputText value="#{reportsStock.totalDirectPurchasePurchaseValue lt 0 ? -reportsStock.totalDirectPurchasePurchaseValue : reportsStock.totalDirectPurchasePurchaseValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </td>
@@ -125,7 +125,7 @@
                                                 </h:outputText>
                                             </td>
                                             <td class="text-end">
-                                                <h:outputText value="#{reportsStock.saleValueAfterGrm}" >
+                                                <h:outputText value="#{reportsStock.saleValueAfterGrn}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </td>
