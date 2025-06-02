@@ -3160,10 +3160,14 @@ public class ReportsController implements Serializable {
 
         bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
+        bundle.setName("Bills");
+        bundle.setBundleType("billList");
 
-        if (visitType.equalsIgnoreCase("OP")) {
+        if (visitType.equalsIgnoreCase("IP")) {
+            generateDebtorBalanceIPBills(onlyDueBills, paymentMethods);
+        } else if (visitType.equalsIgnoreCase("OP")) {
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
@@ -3174,14 +3178,7 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
             opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-        }
 
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
-
-        if (visitType.equalsIgnoreCase("IP")) {
-            generateDebtorBalanceIPBills(onlyDueBills, paymentMethods);
-        } else if (visitType.equalsIgnoreCase("OP")) {
             bundle = generateDebtorBalanceBills(opdBts, paymentMethods);
             updateSettledAmountsForOP();
 
@@ -3496,9 +3493,16 @@ public class ReportsController implements Serializable {
         } else if (visitType.equalsIgnoreCase("OP")) {
             for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
                 Bill bill = row.getBill();
-                if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() <= 0) {
-                    removeList.add(row);
+                if (bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill)) {
+                    if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() >= 0) {
+                        removeList.add(row);
+                    }
+                }else {
+                    if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() <= 0) {
+                        removeList.add(row);
+                    }
                 }
+
             }
         }
 
@@ -5787,8 +5791,8 @@ public class ReportsController implements Serializable {
         paidByPatient = 0;
         paidByCompany = 0;
         payableByPatient = 0;
-        double peGop = 0.0;
-        double pePaidByCompany = 0.0;
+        double peGop;
+        double pePaidByCompany;
 
         Map<PatientEncounter, Double> billGopMap = new HashMap<>();
         Map<PatientEncounter, Double> billPaidByCompanyMap = new HashMap<>();
