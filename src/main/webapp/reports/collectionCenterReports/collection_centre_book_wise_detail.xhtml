@@ -193,38 +193,36 @@
                                 <h:outputText
                                         value="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.referenceNumber)}"/>
                             </p:column>
-                            <p:column
-                                    headerText="Book Reference No"
-                                    width="5rem"
-                                    sortBy="#{c.bill.referenceNumber}"
-                                    filterBy="#{c.bill.referenceNumber}"
-                                    filterMatchMode="contains">
-                                <h:panelGrid layout="block" columns="1" cellpadding="0" cellspacing="0"
-                                             styleClass="reference-column-content"
-                                             style="border: none; border-collapse: collapse;">
-                                    <h:outputText value="#{c.bill.referenceNumber}" />
-
-                                    <p:badge
-                                            rendered="#{c.agentReferenceBook.active eq false and c.agentReferenceBook.retired eq false}"
-                                            value="Deactivated"
-                                            size="small"
-                                            severity="warning"
-                                            styleClass="ml-2" />
-
-                                    <p:badge
-                                            rendered="#{c.agentReferenceBook.active eq true and c.agentReferenceBook.retired eq false}"
-                                            value="Active"
-                                            size="small"
-                                            severity="info"
-                                            styleClass="ml-2" />
-
-                                    <p:badge
-                                            rendered="#{c.agentReferenceBook.retired eq true}"
-                                            value="Deleted"
-                                            size="small"
-                                            severity="danger"
-                                            styleClass="ml-2" />
-                                </h:panelGrid>
+                            <p:column headerText="Book Reference No" width="5rem" sortBy="#{c.bill.referenceNumber}"
+                                      filterBy="#{c.bill.referenceNumber}" filterMatchMode="contains">
+                                <table style="border: none; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <h:outputText value="#{c.bill.referenceNumber}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge
+                                                    rendered="#{c.agentReferenceBook.active eq false and c.agentReferenceBook.retired eq false}"
+                                                    value="Deactivated" size="small" severity="warning"
+                                                    styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge
+                                                    rendered="#{c.agentReferenceBook.active eq true and c.agentReferenceBook.retired eq false}"
+                                                    value="Active" size="small" severity="success" styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge rendered="#{c.agentReferenceBook.retired eq true}"
+                                                     value="Deleted" size="small" severity="danger" styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                </table>
                             </p:column>
                             <p:column
                                     headerText="Patient"
