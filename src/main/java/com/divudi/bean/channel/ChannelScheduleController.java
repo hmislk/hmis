@@ -182,6 +182,22 @@ public class ChannelScheduleController implements Serializable {
         
         return "/channel/channel_shedule?faces-redirect = true";
     }
+    
+    public String navigateSessionManagementFromChannelBooking(Speciality speciality, Staff staff, SessionInstance session){
+        if(speciality != null){
+            this.speciality = speciality;
+        }
+        if(staff != null){
+            this.currentStaff = staff;
+        }
+        if(session != null){
+           this.current = session.getOriginatingSession(); 
+           fillSessionInstance();
+           this.currentSessionInstance = session;
+        }
+        
+        return "/channel/session_instance_management?faces-redirect = true";
+    }
 
     public void updateSessionEndTime() {
         String sessionDuration = configOptionApplicationController.getShortTextValueByKey("Default Channel Session Duration", "2");
