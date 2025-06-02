@@ -102,7 +102,7 @@ public class ReportsController implements Serializable {
     @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
     @EJB
-    private AgentReferenceBookFacade agentReferenceBookFacade = new AgentReferenceBookFacade();
+    private AgentReferenceBookFacade agentReferenceBookFacade;
 
     /**
      * Inject
