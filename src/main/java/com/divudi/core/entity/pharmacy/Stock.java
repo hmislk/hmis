@@ -15,9 +15,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -26,30 +24,25 @@ import javax.persistence.Transient;
  * @author safrin
  */
 @Entity
-@Table(name = "stock",
-        indexes = {
-            @Index(name = "idx_dept_stock_itemname", columnList = "DEPARTMENT_ID, STOCK, ITEMNAME"),
-            @Index(name = "idx_dept_stock_code", columnList = "DEPARTMENT_ID, STOCK, CODE"),
-            @Index(name = "idx_dept_stock_barcode", columnList = "DEPARTMENT_ID, STOCK, BARCODE"),
-            @Index(name = "idx_dept_stock_longcode", columnList = "DEPARTMENT_ID, STOCK, LONGCODE")
-        }
-)
 public class Stock implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    // ChatGPT contributed - 2025-05
+    @Deprecated // Use Item Batch > Item > barcode
     @Column(name = "ITEMNAME", length = 100)
     private String itemName;
 
+    @Deprecated // Use Item Batch > Item > barcode
     @Column(name = "BARCODE", length = 30)
     private String barcode;
 
+    @Deprecated // Use Item Batch > Item
     @Column(name = "LONGCODE")
     private Long longCode;
 
+    @Deprecated // Use Item Batch > DOE
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateOfExpire;
 
@@ -67,6 +60,7 @@ public class Stock implements Serializable, RetirableEntity {
     String code;
     private Long startBarcode;
     private Long endBarcode;
+    @Deprecated // Use Item Stock > Retail Sale
     private double retailsaleRate;
 
     private boolean retired;
@@ -228,42 +222,52 @@ public class Stock implements Serializable, RetirableEntity {
         this.stockLocator = stockLocator;
     }
 
+    @Deprecated
     public String getItemName() {
         return itemName;
     }
 
+    @Deprecated
     public void setItemName(String itemName) {
         this.itemName = itemName;
     }
 
+    @Deprecated
     public String getBarcode() {
         return barcode;
     }
 
+    @Deprecated
     public void setBarcode(String barcode) {
         this.barcode = barcode;
     }
 
+    @Deprecated
     public Long getLongCode() {
         return longCode;
     }
 
+    @Deprecated
     public void setLongCode(Long longCode) {
         this.longCode = longCode;
     }
 
+    @Deprecated
     public Date getDateOfExpire() {
         return dateOfExpire;
     }
 
+    @Deprecated
     public void setDateOfExpire(Date dateOfExpire) {
         this.dateOfExpire = dateOfExpire;
     }
 
+    @Deprecated
     public double getRetailsaleRate() {
         return retailsaleRate;
     }
 
+    @Deprecated
     public void setRetailsaleRate(double retailsaleRate) {
         this.retailsaleRate = retailsaleRate;
     }
