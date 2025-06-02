@@ -110,7 +110,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-@Deprecated
+@Deprecated // Simple Sale feature removed. Use PharmacyRetailSaleController for retail sales.
 public class PharmacySimpleRetailSaleController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
