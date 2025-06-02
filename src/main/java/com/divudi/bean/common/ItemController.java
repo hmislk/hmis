@@ -141,6 +141,7 @@ public class ItemController implements Serializable {
      * Properties
      */
     private Institution site;
+    private Institution collectionCentre;
     private Item current;
     private Item sampleComponent;
     private List<Item> items = null;
@@ -217,7 +218,22 @@ public class ItemController implements Serializable {
         allItemFees = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
-                allItemFees = addSiteFeesFromItemCodeFromExcel(inputStream);
+                allItemFees = addForInstitutionItemFeesFromItemCodeFromExcel(inputStream, site);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    public void uploadToAddCcFeesByItemCode() {
+        if (collectionCentre == null) {
+            JsfUtil.addErrorMessage("Please select a Collection Centre");
+            return;
+        }
+        allItemFees = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                allItemFees = addForInstitutionItemFeesFromItemCodeFromExcel(inputStream, collectionCentre);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -311,11 +327,11 @@ public class ItemController implements Serializable {
         return itemFeesSaved;
     }
 
-    private List<ItemFee> addSiteFeesFromItemCodeFromExcel(InputStream inputStream) throws IOException {
+    private List<ItemFee> addForInstitutionItemFeesFromItemCodeFromExcel(InputStream inputStream, Institution fromInstitution) throws IOException {
         output = "";
 
-        if (site == null) {
-            output = "❌ Site is not selected. Please select a site before proceeding.<br/>";
+        if (fromInstitution == null) {
+            output = "❌ From Institution is not selected. Please select before proceeding.<br/>";
             return Collections.emptyList();
         }
 
@@ -382,7 +398,7 @@ public class ItemController implements Serializable {
             itf.setFfee(feeValue);
             itf.setCreatedAt(new Date());
             itf.setCreater(sessionController.getLoggedUser());
-            itf.setForInstitution(site);
+            itf.setForInstitution(fromInstitution);
 
             itemFeeFacade.create(itf);
             itemFeeService.updateFeeValue(item, site, feeValue, feeValue);
@@ -3588,6 +3604,8 @@ public class ItemController implements Serializable {
     public Department getFilterDepartment() {
         return filterDepartment;
     }
+    
+    
 
     public void setFilterDepartment(Department filterDepartment) {
         this.filterDepartment = filterDepartment;
@@ -3678,6 +3696,14 @@ public class ItemController implements Serializable {
         m.put("institutionName", institutionName);
         Item item = getFacade().findFirstByJpql(jpql, m);
         return item;
+    }
+
+    public Institution getCollectionCentre() {
+        return collectionCentre;
+    }
+
+    public void setCollectionCentre(Institution collectionCentre) {
+        this.collectionCentre = collectionCentre;
     }
 
     @FacesConverter("itemLightConverter")
