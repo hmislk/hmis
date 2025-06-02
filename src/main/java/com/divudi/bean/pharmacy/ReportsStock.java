@@ -14,7 +14,6 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.dataStructure.PharmacyStockRow;
 import com.divudi.core.data.dataStructure.StockReportRecord;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -58,7 +57,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.hl7.fhir.r5.model.Claim;
 
 /**
  *
@@ -93,8 +91,8 @@ public class ReportsStock implements Serializable {
     private double totalGrnCashRetailValue;
     private double totalGrnCreditPurchaseValue;
     private double totalGrnCreditRetailValue;
-    private double totalDirectPurshasePurchaseValue;
-    private double totalDirectPurshaseRetailValue;
+    private double totalDirectPurchasePurchaseValue;
+    private double totalDirectPurchaseRetailValue;
     private double totalGrnReturnPurchaseValue;
     private double totalGrnReturnRetailValue;
     private double totalGrnFreeQtyPurchaseValue;
@@ -103,10 +101,10 @@ public class ReportsStock implements Serializable {
     private double totalPurchaseSaleCashValue;
     private double totalRetailSaleCreditValue;
     private double totalPurchaseSaleCreditValue;
-    private double staringPurchaseValue;
-    private double staringSaleValue;
+    private double startingPurchaseValue;
+    private double startingSaleValue;
     private double purchaseValueAfterGrn;
-    private double saleValueAfterGrm;
+    private double saleValueAfterGrn;
     private double purchaseValueAfterGrnReturnAndFreeQty;
     private double saleValueAfterGrnReturnAndFreeQty;
     private double purchaseValueAfterSale;
@@ -326,8 +324,8 @@ public class ReportsStock implements Serializable {
 
     public void generateDepartmentStockOverviewReport() {
         
-        staringPurchaseValue = 0.0;
-        staringSaleValue = 0.0;
+        startingPurchaseValue = 0.0;
+        startingSaleValue = 0.0;
         
         //ALL GRN
         commonReport.setFromDate(findStartOfMonth(toDate));
@@ -349,13 +347,13 @@ public class ReportsStock implements Serializable {
         totalGrnCreditRetailValue = commonReport.getGrnBilled().getSaleCredit() + commonReport.getGrnCancelled().getSaleCredit();
 
         //Direct Purchase
-        totalDirectPurshasePurchaseValue = 0.0;
-        totalDirectPurshaseRetailValue = 0.0;
+        totalDirectPurchasePurchaseValue = 0.0;
+        totalDirectPurchaseRetailValue = 0.0;
         calDirectPurchaseTotalsForOverViewReport();
         
         //Totals After GRN
-        purchaseValueAfterGrn = Math.abs(totalGrnCashPurchaseValue) + Math.abs(totalGrnCreditPurchaseValue) + Math.abs(totalDirectPurshasePurchaseValue);
-        saleValueAfterGrm = Math.abs(totalGrnCashRetailValue) + Math.abs(totalGrnCreditRetailValue) + Math.abs(totalDirectPurshaseRetailValue);
+        purchaseValueAfterGrn = Math.abs(totalGrnCashPurchaseValue) + Math.abs(totalGrnCreditPurchaseValue) + Math.abs(totalDirectPurchasePurchaseValue);
+        saleValueAfterGrn = Math.abs(totalGrnCashRetailValue) + Math.abs(totalGrnCreditRetailValue) + Math.abs(totalDirectPurchaseRetailValue);
         
 
         //GRN Return
@@ -389,8 +387,8 @@ public class ReportsStock implements Serializable {
         
         
         //Final Count
-        finalTotalPurchaseValue = staringPurchaseValue + purchaseValueAfterGrn + purchaseValueAfterGrnReturnAndFreeQty - (purchaseValueAfterSale + purchaseValueAfterDisbursement);
-        finalTotalSaleValue = staringSaleValue + saleValueAfterGrm + saleValueAfterGrnReturnAndFreeQty - (saleValueAfterSale + saleValueAfterDisbursement);
+        finalTotalPurchaseValue = startingPurchaseValue + purchaseValueAfterGrn + purchaseValueAfterGrnReturnAndFreeQty - (purchaseValueAfterSale + purchaseValueAfterDisbursement);
+        finalTotalSaleValue = startingSaleValue + saleValueAfterGrn + saleValueAfterGrnReturnAndFreeQty - (saleValueAfterSale + saleValueAfterDisbursement);
     }
 
     public void calDirectPurchaseTotalsForOverViewReport() {
@@ -412,8 +410,8 @@ public class ReportsStock implements Serializable {
 
         if (!bills.isEmpty()) {
             for (Bill b : bills) {
-                totalDirectPurshasePurchaseValue += b.getNetTotal();
-                totalDirectPurshaseRetailValue += b.getSaleValue();
+                totalDirectPurchasePurchaseValue += b.getNetTotal();
+                totalDirectPurchaseRetailValue += b.getSaleValue();
             }
         }
 
@@ -1790,20 +1788,20 @@ public class ReportsStock implements Serializable {
         this.totalGrnReturnRetailValue = totalGrnReturnRetailValue;
     }
 
-    public double getTotalDirectPurshasePurchaseValue() {
-        return totalDirectPurshasePurchaseValue;
+    public double getTotalDirectPurchasePurchaseValue() {
+        return totalDirectPurchasePurchaseValue;
     }
 
-    public void setTotalDirectPurshasePurchaseValue(double totalDirectPurshasePurchaseValue) {
-        this.totalDirectPurshasePurchaseValue = totalDirectPurshasePurchaseValue;
+    public void setTotalDirectPurchasePurchaseValue(double totalDirectPurchasePurchaseValue) {
+        this.totalDirectPurchasePurchaseValue = totalDirectPurchasePurchaseValue;
     }
 
-    public double getTotalDirectPurshaseRetailValue() {
-        return totalDirectPurshaseRetailValue;
+    public double getTotalDirectPurchaseRetailValue() {
+        return totalDirectPurchaseRetailValue;
     }
 
-    public void setTotalDirectPurshaseRetailValue(double totalDirectPurshaseRetailValue) {
-        this.totalDirectPurshaseRetailValue = totalDirectPurshaseRetailValue;
+    public void setTotalDirectPurchaseRetailValue(double totalDirectPurchaseRetailValue) {
+        this.totalDirectPurchaseRetailValue = totalDirectPurchaseRetailValue;
     }
 
     public double getTotalGrnFreeQtyPurchaseValue() {
@@ -1854,20 +1852,20 @@ public class ReportsStock implements Serializable {
         this.totalPurchaseSaleCreditValue = totalPurchaseSaleCreditValue;
     }
     
-    public double getStaringPurchaseValue() {
-        return staringPurchaseValue;
+    public double getStartingPurchaseValue() {
+        return startingPurchaseValue;
     }
 
-    public void setStaringPurchaseValue(double staringPurchaseValue) {
-        this.staringPurchaseValue = staringPurchaseValue;
+    public void setStartingPurchaseValue(double startingPurchaseValue) {
+        this.startingPurchaseValue = startingPurchaseValue;
     }
 
-    public double getStaringSaleValue() {
-        return staringSaleValue;
+    public double getStartingSaleValue() {
+        return startingSaleValue;
     }
 
-    public void setStaringSaleValue(double staringSaleValue) {
-        this.staringSaleValue = staringSaleValue;
+    public void setStartingSaleValue(double startingSaleValue) {
+        this.startingSaleValue = startingSaleValue;
     }
 
     public double getPurchaseValueAfterGrn() {
@@ -1878,12 +1876,12 @@ public class ReportsStock implements Serializable {
         this.purchaseValueAfterGrn = purchaseValueAfterGrn;
     }
 
-    public double getSaleValueAfterGrm() {
-        return saleValueAfterGrm;
+    public double getSaleValueAfterGrn() {
+        return saleValueAfterGrn;
     }
 
-    public void setSaleValueAfterGrm(double saleValueAfterGrm) {
-        this.saleValueAfterGrm = saleValueAfterGrm;
+    public void setSaleValueAfterGrn(double saleValueAfterGrn) {
+        this.saleValueAfterGrn = saleValueAfterGrn;
     }
 
     public double getPurchaseValueAfterGrnReturnAndFreeQty() {
