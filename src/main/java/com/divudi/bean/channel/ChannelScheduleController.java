@@ -180,7 +180,7 @@ public class ChannelScheduleController implements Serializable {
             fillFees();
         }
         
-        return "/channel/channel_shedule?faces-redirect = true";
+        return "/channel/channel_shedule?faces-redirect=true";
     }
     
     public String navigateSessionManagementFromChannelBooking(Speciality speciality, Staff staff, SessionInstance session){
@@ -194,9 +194,10 @@ public class ChannelScheduleController implements Serializable {
            this.current = session.getOriginatingSession(); 
            fillSessionInstance();
            this.currentSessionInstance = session;
+           assignOlddateAndOldTimFromCurrentSessionInstance();
         }
         
-        return "/channel/session_instance_management?faces-redirect = true";
+        return "/channel/session_instance_management?faces-redirect=true";
     }
 
     public void updateSessionEndTime() {
@@ -912,6 +913,7 @@ public class ChannelScheduleController implements Serializable {
         if (sessionInstanceOldTimeFormatted != updatedSessionStartTimeFormatted || sessionInstanceOldDayMonthFormatted != updatedSessionDateFormatted) {
             sendSmsOnChannelAppointmentTimeChange();
         }
+        fillSessionInstance();
 
         JsfUtil.addSuccessMessage("Saved successfully");
 
@@ -1207,7 +1209,7 @@ public class ChannelScheduleController implements Serializable {
                 + " order by s.sessionWeekday,s.startingTime ";
         m.put("ss", ss);
         m.put("sd", CommonFunctions.getStartOfDay());
-        items = sessionInstanceFacade.findByJpql(sql, m);
+        items = sessionInstanceFacade.findByJpqlWithoutCache(sql, m);
         SessionInstance s = new SessionInstance();
         return items;
     }
