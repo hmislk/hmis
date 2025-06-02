@@ -110,6 +110,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
+@Deprecated
 public class PharmacySimpleRetailSaleController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">

@@ -663,11 +663,6 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem> 
                         <p:menuitem  
                             ajax="false" 
-                            action="#{pharmacySimpleRetailSaleController.navigateToPharmacySimpleRetailSale()}"  
-                            value="Simple Retail Sale" 
-                            rendered="#{webUserController.hasPrivilege('PharmacySale') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Simple Retail Sale is Available')}" ></p:menuitem> 
-                        <p:menuitem  
-                            ajax="false" 
                             action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"  
                             value="Sale for cashier" 
                             rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>                                       
