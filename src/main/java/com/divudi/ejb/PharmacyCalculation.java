@@ -444,11 +444,11 @@ public class PharmacyCalculation implements Serializable {
 
         double billed = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
         double cancelled = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());
-        double returnedB = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-        double returnedC = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
+//        double returnedB = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+//        double returnedC = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
 
         double recieveNet = Math.abs(billed) - Math.abs(cancelled);
-        double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
+//        double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
         //System.err.println("BILLED " + billed);
         //System.err.println("Cancelled " + cancelled);
         //System.err.println("recieveNet " + recieveNet);
@@ -456,8 +456,8 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("Refunded Cancelld " + returnedC);
         //System.err.println("retuernedNet " + retuernedNet);
         //System.err.println("Cal Qty " + (Math.abs(recieveNet) - Math.abs(retuernedNet)));
-
-        return (Math.abs(recieveNet) - Math.abs(retuernedNet));
+// returned values are not considered
+        return (Math.abs(recieveNet) );
     }
 
     public double calQtyInTwoSql(PharmaceuticalBillItem po) {
