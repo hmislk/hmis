@@ -1494,7 +1494,7 @@ public class PharmacySaleBhtController implements Serializable {
             return "";
         }
         generateIssueBillComponentsForBhtRequest(bhtRequestBill);
-        return "/ward/ward_pharmacy_bht_issue";
+        return "/ward/ward_pharmacy_bht_issue?faces-redirect=true;";
     }
 
     public void generateIssueBillComponentsForBhtRequest(Bill b) {

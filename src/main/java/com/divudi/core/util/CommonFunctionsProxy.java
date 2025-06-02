@@ -19,6 +19,10 @@ public class CommonFunctionsProxy {
         return CommonFunctions.convertToWord(number);
     }
 
+    public Double reverseSign(Double value) {
+        return CommonFunctions.reverseSign(value);
+    }
+
     public static double roundToTwoDecimals(double value) {
         return CommonFunctions.roundToTwoDecimals(value);
     }
