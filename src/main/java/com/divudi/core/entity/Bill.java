@@ -1164,7 +1164,7 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public double getGrossAmount() {
-        return Math.abs(netTotal) + Math.abs(discount);
+        return total;
     }
 
     @Transient
