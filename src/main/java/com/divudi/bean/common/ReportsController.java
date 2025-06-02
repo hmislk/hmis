@@ -4759,32 +4759,30 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        bundle = new ReportTemplateRowBundle();
-
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
-
-        if (visitType.equalsIgnoreCase("OP")) {
-//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-        }
-
         bundle.setName("Bills");
         bundle.setBundleType("billList");
 
         if (visitType.equalsIgnoreCase("IP")) {
             generateOpdAndInwardDueIPBills();
         } else if (visitType.equalsIgnoreCase("OP")) {
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+            bundle = new ReportTemplateRowBundle();
+
+            if (visitType.equalsIgnoreCase("OP")) {
+//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+            }
+
             bundle = generateOpdAndInwardDueBills(opdBts, null);
 
             updateSettledAmountsForOP();
@@ -5869,7 +5867,7 @@ public class ReportsController implements Serializable {
 
         updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
 
-        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, onlyDue ? "due" : "any"));
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "any"));
 
         setInstitutionBillPatientEncounterMap(InstitutionBillEncounter.createPatientEncounterBillEncounterMap(
                 InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(),
@@ -6158,14 +6156,26 @@ public class ReportsController implements Serializable {
                 Bill bill1 = row.getBill();
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
-                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) > 0) {
-                        continue;
+                    if (bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                        if (bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor() < 0) {
+                            continue;
+                        }
+                    } else {
+                        if (bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor() > 0) {
+                            continue;
+                        }
                     }
                 }
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
-                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) <= 0) {
-                        continue;
+                    if (bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                        if (bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor() >= 0) {
+                            continue;
+                        }
+                    } else {
+                        if (bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor() <= 0) {
+                            continue;
+                        }
                     }
                 }
 
