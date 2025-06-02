@@ -168,36 +168,40 @@
                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable mark doctor holiday from channel view', false)}"
                                              oncomplete="PF('myDialogWidget').show()" 
                                              update="dialogContent doctorName" />
+                            <p:menuButton icon="fa-solid fa-sliders">
+                                <p:menuitem value="Channel Schedule Management" action="#{channelScheduleController.navigateSheduleManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"  icon="fa fa-calendar-alt"/>
+                                <p:menuitem value="Channel Session Management"   icon="fa fa-users"/> 
+                            </p:menuButton>
 
                         </div>
                     </div>
 
                     <p:dialog 
-                              widgetVar="myDialogWidget" 
-                              modal="true" 
-                              id="holidayMarkDialog"
-                              resizable="false" 
-                              draggable="true" 
-                              height="600"
-                              width="800">
-                        
+                        widgetVar="myDialogWidget" 
+                        modal="true" 
+                        id="holidayMarkDialog"
+                        resizable="false" 
+                        draggable="true" 
+                        height="600"
+                        width="800">
+
                         <p:ajax event="close" update="acSessions"></p:ajax>
-                        
+
                         <f:facet name="header">
                             <h:outputText id="doctorName" value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
                             <p:commandButton class="mx-3" value="Mark" action="#{bookingController.markHolidayForSessionInstances(true)}" icon="fa-solid fa-check" update="dialogContent"></p:commandButton>
                             <p:commandButton value="Unmark" action="#{bookingController.markHolidayForSessionInstances(false)}" update="dialogContent" icon="fa-solid fa-xmark"></p:commandButton>
 
                         </f:facet>
-                        
-                       
+
+
                         <h:panelGroup id="dialogContent">
                             <p:dataTable value="#{bookingController.sessionInstances}" 
                                          var="s" 
                                          selection="#{bookingController.sessionsForHolidayMark}"
                                          selectionMode="multiple" 
                                          rowKey="#{s.id}">
-                                
+
                                 <p:column selectionBox="true" width="20"></p:column>
                                 <p:column width="10em" headerText="Name">
                                     <f:facet name="header" >
@@ -250,7 +254,7 @@
                                         process="@this" 
                                         update="acBookings scStaff acSessions pnlArrived"
                                         listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                                    
+
                                     <f:selectItem itemLabel="All" ></f:selectItem>
                                     <f:selectItems 
                                         value="#{doctorSpecialityController.selectedItems}"
@@ -279,7 +283,7 @@
                                     process="@this" 
                                     update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
                                     listener="#{bookingController.generateSessions}"/>
-                                
+
                                 <p:ajax  
                                     event="click"
                                     process="@this" 
@@ -365,7 +369,7 @@
                                 process="@this"
                                 update="pnlArrived acBookings acSessions btnAddBooking manageBookingId"
                                 listener="#{bookingController.fillBillSessions}" />
-                            
+
                             <p:ajax 
                                 event="click" 
                                 process="@this"
