@@ -126,11 +126,11 @@ public class GoodsReturnController implements Serializable {
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > getPharmacyRecieveBean().calQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
+        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > getPharmacyRecieveBean().calulateRemainigQtyFromOrder(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
-        if (tmp.getPharmaceuticalBillItem().getFreeQtyInUnit() > getPharmacyRecieveBean().calFreeQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
+        if (tmp.getPharmaceuticalBillItem().getFreeQtyInUnit() > getPharmacyRecieveBean().calculateRemainingFreeQtyFromOrder(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpFreeQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
