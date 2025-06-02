@@ -14,34 +14,34 @@
                 <p:panel header="Collection Center Book Wise Detail">
 
                     <p:panelGrid columns="5" layout="tabular" class="w-100">
-                        <h:panelGroup>
-                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                            <p:outputLabel value="From Date" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:calendar
-                                class="w-100 "
-                                inputStyleClass="w-100"
-                                id="fromDate"
-                                value="#{reportsController.fromDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                        </p:calendar>
+<!--                        <h:panelGroup>-->
+<!--                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>-->
+<!--                            <p:outputLabel value="From Date" class="mx-3">-->
+<!--                            </p:outputLabel>-->
+<!--                        </h:panelGroup>-->
+<!--                        <p:calendar-->
+<!--                                class="w-100 "-->
+<!--                                inputStyleClass="w-100"-->
+<!--                                id="fromDate"-->
+<!--                                value="#{reportsController.fromDate}"-->
+<!--                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">-->
+<!--                        </p:calendar>-->
 
-                        <p:spacer width="5em"/>
+<!--                        <p:spacer width="5em"/>-->
 
-                        <h:panelGroup>
-                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                            <p:outputLabel value="To Date" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:calendar
-                                class="w-100 "
-                                inputStyleClass="w-100"
-                                id="toDate"
-                                value="#{reportsController.toDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                        </p:calendar>
+<!--                        <h:panelGroup>-->
+<!--                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>-->
+<!--                            <p:outputLabel value="To Date" class="mx-3">-->
+<!--                            </p:outputLabel>-->
+<!--                        </h:panelGroup>-->
+<!--                        <p:calendar-->
+<!--                                class="w-100 "-->
+<!--                                inputStyleClass="w-100"-->
+<!--                                id="toDate"-->
+<!--                                value="#{reportsController.toDate}"-->
+<!--                                navigator="false"-->
+<!--                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">-->
+<!--                        </p:calendar>-->
 
                         <h:panelGroup class="col-md-2">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
@@ -156,24 +156,6 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Collection Center Book Wise Detail" style="font-weight: bold;"
                                                styleClass="w-100"/>
-                                <h:panelGrid columns="2" class="mb-2">
-                                    <h:outputLabel value="From Date :  "/>
-                                    <h:outputLabel value="#{reportsController.fromDate}">
-                                        <f:convertDateTime
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="To Date :  "/>
-                                    <h:outputLabel value="#{reportsController.toDate}">
-                                        <f:convertDateTime
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputLabel>
-
-                                    <h:outputLabel rendered="#{reportsController.collectingCentre ne null}"
-                                                   value="Collection Center Name :  "/>
-                                    <h:outputLabel rendered="#{reportsController.collectingCentre ne null}"
-                                                   value="#{reportsController.collectingCentre.name}"/>
-                                </h:panelGrid>
                             </f:facet>
 
                             <p:column

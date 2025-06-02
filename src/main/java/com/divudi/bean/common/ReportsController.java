@@ -3613,9 +3613,9 @@ public class ReportsController implements Serializable {
 //            parameters.put("cbn", "%" + cashBookNumber + "%");
 //        }
 
-        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
+//        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+//        parameters.put("fd", fromDate);
+//        parameters.put("td", toDate);
 
         jpql += "GROUP BY bill";
 
