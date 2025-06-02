@@ -200,7 +200,7 @@
                                                         <p:inputText class="w-100" disabled="true"  value="Saturday" rendered="#{channelScheduleController.currentSessionInstance.sessionWeekday eq 7 and channelScheduleController.currentSessionInstance.sessionWeekday ne null}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{channelScheduleController.currentSessionInstance.sessionDate ne null}" >
-                                                        <p:datePicker value="#{channelScheduleController.currentSessionInstance.sessionDate}"/>
+                                                        <p:datePicker disabled="true" value="#{channelScheduleController.currentSessionInstance.sessionDate}"/>
 
                                                     </h:panelGroup>
 

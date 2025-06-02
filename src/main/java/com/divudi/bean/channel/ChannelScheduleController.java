@@ -167,36 +167,36 @@ public class ChannelScheduleController implements Serializable {
         generateSessions(stf);
 
     }
-    
-    public String navigateSheduleManagementFromChannelBooking(Speciality speciality, Staff staff, SessionInstance session){
-        if(speciality != null){
+
+    public String navigateSheduleManagementFromChannelBooking(Speciality speciality, Staff staff, SessionInstance session) {
+        if (speciality != null) {
             this.speciality = speciality;
         }
-        if(staff != null){
+        if (staff != null) {
             this.currentStaff = staff;
         }
-        if(session != null){
+        if (session != null) {
             this.current = session.getOriginatingSession();
             fillFees();
         }
-        
+
         return "/channel/channel_shedule?faces-redirect=true";
     }
-    
-    public String navigateSessionManagementFromChannelBooking(Speciality speciality, Staff staff, SessionInstance session){
-        if(speciality != null){
+
+    public String navigateSessionManagementFromChannelBooking(Speciality speciality, Staff staff, SessionInstance session) {
+        if (speciality != null) {
             this.speciality = speciality;
         }
-        if(staff != null){
+        if (staff != null) {
             this.currentStaff = staff;
         }
-        if(session != null){
-           this.current = session.getOriginatingSession(); 
-           fillSessionInstance();
-           this.currentSessionInstance = session;
-           assignOlddateAndOldTimFromCurrentSessionInstance();
+        if (session != null) {
+            this.current = session.getOriginatingSession();
+            fillSessionInstance();
+            this.currentSessionInstance = session;
+            assignOlddateAndOldTimFromCurrentSessionInstance();
         }
-        
+
         return "/channel/session_instance_management?faces-redirect=true";
     }
 
@@ -851,13 +851,13 @@ public class ChannelScheduleController implements Serializable {
         System.out.println("retiredItems = " + retiredItems);
     }
 
-    public void unretireCurrentServiceSession(){
+    public void unretireCurrentServiceSession() {
         System.out.println("unretireCurrentServiceSession");
-        if(current==null){
+        if (current == null) {
             JsfUtil.addErrorMessage("No Current Service Session");
             return;
         }
-        if (current.isRetired()==false){
+        if (current.isRetired() == false) {
             JsfUtil.addErrorMessage("THis is NOT a retired Service Session");
             return;
         }
