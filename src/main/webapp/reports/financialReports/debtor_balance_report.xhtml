@@ -153,8 +153,8 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             rendered="#{reportsController.visitType eq 'OP'}"
+                            action="#{reportsController.exportDebtorBalanceReportOPToPdf()}"
                             value="PDF">
-                        <p:dataExporter type="pdf" target="tbl" fileName="debtor_balance_report.pdf"/>
                     </p:commandButton>
 
                     <p:commandButton

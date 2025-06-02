@@ -3340,31 +3340,39 @@ public class ReportsController implements Serializable {
             Paragraph title = new Paragraph("Debtor Balance Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
-            document.add(Chunk.NEWLINE);
 
-            // Main table has 14 columns
+            SimpleDateFormat longSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+            PdfPTable dateHeaderTable = new PdfPTable(2);
+            dateHeaderTable.setWidthPercentage(50);
+            dateHeaderTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+
+            PdfPCell fromLabelCell = new PdfPCell(new Phrase("From  ", boldFont));
+            fromLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            fromLabelCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(fromLabelCell);
+
+            PdfPCell fromDateCell = new PdfPCell(new Phrase(longSdf.format(fromDate), normalFont));
+            fromDateCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            fromDateCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(fromDateCell);
+
+            PdfPCell toLabelCell = new PdfPCell(new Phrase("To  ", boldFont));
+            toLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            toLabelCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(toLabelCell);
+
+            PdfPCell toDateCell = new PdfPCell(new Phrase(longSdf.format(toDate), normalFont));
+            toDateCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            toDateCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(toDateCell);
+
+            document.add(dateHeaderTable);
+
             PdfPTable mainTable = new PdfPTable(14);
             mainTable.setWidthPercentage(100);
-            // Re-adjusting widths slightly. Ensure the last column is wide enough for the nested table.
-            // Sum of these floats should generally represent the relative widths.
-            // Total columns = 14
-            // The last cell (Company Details) needs to be large enough for the nested table.
-            mainTable.setWidths(new float[]{
-                    0.6f,   // #
-                    1.2f,   // BHT
-                    1.2f,   // MRN No
-                    1.2f,   // Phone
-                    1.2f,   // Patient Name
-                    1.8f,   // Admitted At
-                    1.8f,   // Discharged At
-                    1.2f,   // Final Total
-                    1.2f,   // GOP by Patient
-                    1.2f,   // Paid by Patient
-                    1.2f,   // Patient Due
-                    1.2f,   // Paid by Companies
-                    1.2f,   // Total Due
-                    8.0f    // Company Details (This is the cell that holds the nested table)
-            });
+
+            mainTable.setWidths(new float[]{0.6f, 1.2f, 1.2f, 1.2f, 1.2f, 1.8f, 1.8f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 8.0f});
 
 
             String[] headers = {"", "BHT", "MRN No", "Phone", "Patient Name", "Admitted At", "Discharged At", "Final Total",
@@ -3382,12 +3390,11 @@ public class ReportsController implements Serializable {
                 PatientEncounter pe = entry.getKey();
                 List<InstitutionBillEncounter> bills = entry.getValue();
 
-                // Row for main patient encounter data
                 mainTable.addCell(new Phrase(String.valueOf(counter++), normalFont));
                 mainTable.addCell(new Phrase(pe.getBhtNo(), normalFont));
-                mainTable.addCell(new Phrase(pe.getPatient().getPhn(), normalFont)); // MRN No
-                mainTable.addCell(new Phrase(pe.getPatient().getPerson().getMobile(), normalFont)); // Phone
-                mainTable.addCell(new Phrase(pe.getPatient().getPerson().getName(), normalFont)); // Patient Name
+                mainTable.addCell(new Phrase(pe.getPatient().getPhn(), normalFont));
+                mainTable.addCell(new Phrase(pe.getPatient().getPerson().getMobile(), normalFont));
+                mainTable.addCell(new Phrase(pe.getPatient().getPerson().getName(), normalFont));
                 mainTable.addCell(new Phrase(sdf.format(pe.getDateOfAdmission()), normalFont));
                 mainTable.addCell(new Phrase(sdf.format(pe.getDateOfDischarge()), normalFont));
                 mainTable.addCell(new Phrase(String.valueOf(pe.getFinalBill().getNetTotal()), normalFont));
@@ -3395,21 +3402,11 @@ public class ReportsController implements Serializable {
                 mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getPaidByPatient()), normalFont));
                 mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getPatientDue()), normalFont));
                 mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getTotalPaidByCompanies()), normalFont));
-                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getTotalDue()), normalFont)); // This is the 13th cell (index 12)
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getTotalDue()), normalFont));
 
-
-                // Nested table for company details
-                PdfPTable nestedTable = new PdfPTable(6); // 6 columns
-                nestedTable.setWidthPercentage(100); // Take 100% of the cell it's in
-                // Define widths for the 6 columns of the nested table
-                nestedTable.setWidths(new float[]{
-                        3f,    // Company Name
-                        2.5f,  // Policy Number
-                        2.5f,  // Reference Number
-                        2f,    // GOP by Company
-                        2f,    // Paid by Company
-                        2f     // Company Due
-                });
+                PdfPTable nestedTable = new PdfPTable(6);
+                nestedTable.setWidthPercentage(100);
+                nestedTable.setWidths(new float[]{3f, 2.5f, 2.5f, 2f, 2f, 2f});
 
                 String[] subHeaders = {"Company Name", "Policy Number", "Reference Number", "GOP by Company", "Paid by Company", "Company Due"};
                 for (String sh : subHeaders) {
@@ -3427,47 +3424,142 @@ public class ReportsController implements Serializable {
                     nestedTable.addCell(new Phrase(String.valueOf(bill.getCompanyDue() != 0 ? bill.getCompanyDue() : bill.getCompanyExcess()), normalFont));
                 }
 
-                // Footer for nested table (Total row for companies)
                 PdfPCell nestedTotalLabel = new PdfPCell(new Phrase("Total", boldFont));
-                nestedTotalLabel.setColspan(3); // "Total" spans 3 columns of the nested table
-                nestedTotalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT); // Align "Total" to the right
+                nestedTotalLabel.setColspan(3);
+                nestedTotalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 nestedTable.addCell(nestedTotalLabel);
 
                 nestedTable.addCell(new Phrase(String.valueOf(patientEncounterGopMap.get(pe)), boldFont));
                 nestedTable.addCell(new Phrase(String.valueOf(patientEncounterPaidByCompanyMap.get(pe)), boldFont));
                 nestedTable.addCell(new Phrase(String.valueOf(patientEncounterGopMap.get(pe) - patientEncounterPaidByCompanyMap.get(pe)), boldFont));
 
-                // Add the nested table to the main table
-                // This cell occupies the 14th column of the mainTable
                 PdfPCell nestedCell = new PdfPCell(nestedTable);
-                nestedCell.setColspan(1); // It occupies exactly one column of the main table
+                nestedCell.setColspan(1);
                 mainTable.addCell(nestedCell);
             }
 
-            // --- Main Table Footer ---
-            // This part needs to correctly fill the 14 columns of the mainTable.
-            // You have a footerLabel with colspan 7, which means it occupies 7 columns (0 to 6).
-            // Then you have 6 more cells, filling columns 7 to 12.
-            // Total columns filled: 7 (footerLabel) + 6 (values) = 13 columns.
-            // You need to add one more empty cell to fill the 14th column.
             PdfPCell footerLabel = new PdfPCell(new Phrase("Total", boldFont));
-            footerLabel.setColspan(7); // Occupies columns 0-6
+            footerLabel.setColspan(7);
             footerLabel.setHorizontalAlignment(Element.ALIGN_LEFT);
             mainTable.addCell(footerLabel);
 
-            mainTable.addCell(new Phrase(String.valueOf(getBilled()), boldFont));                       // Col 7
-            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient()), boldFont));           // Col 8
-            mainTable.addCell(new Phrase(String.valueOf(getPaidByPatient()), boldFont));             // Col 9
-            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient() - getPaidByPatient()), boldFont)); // Col 10
-            mainTable.addCell(new Phrase(String.valueOf(getPaidByCompany()), boldFont));             // Col 11
-            mainTable.addCell(new Phrase(String.valueOf(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont)); // Col 12
-            mainTable.addCell(new PdfPCell(new Phrase(""))); // <--- ADD THIS EMPTY CELL TO FILL COLUMN 13 (the 14th column)
+            mainTable.addCell(new Phrase(String.valueOf(getBilled()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient() - getPaidByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByCompany()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont));
+            mainTable.addCell(new PdfPCell(new Phrase("")));
 
             document.add(mainTable);
             document.close();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportDebtorBalanceReportOPToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Debtor_Balance_Report_OP.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            Paragraph title = new Paragraph("Debtor Balance Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+
+            SimpleDateFormat longSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+            PdfPTable dateHeaderTable = new PdfPTable(2);
+            dateHeaderTable.setWidthPercentage(50);
+            dateHeaderTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+
+            PdfPCell fromLabelCell = new PdfPCell(new Phrase("From  ", boldFont));
+            fromLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            fromLabelCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(fromLabelCell);
+
+            PdfPCell fromDateCell = new PdfPCell(new Phrase(longSdf.format(fromDate), normalFont));
+            fromDateCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            fromDateCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(fromDateCell);
+
+            PdfPCell toLabelCell = new PdfPCell(new Phrase("To  ", boldFont));
+            toLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            toLabelCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(toLabelCell);
+
+            PdfPCell toDateCell = new PdfPCell(new Phrase(longSdf.format(toDate), normalFont));
+            toDateCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            toDateCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(toDateCell);
+
+            document.add(dateHeaderTable);
+
+            PdfPTable mainTable = new PdfPTable(11);
+            mainTable.setWidthPercentage(100);
+
+            mainTable.setWidths(new float[]{0.5f,1.5f,1.0f, 1.5f,2.5f,1.2f, 2.5f,1.2f, 1.2f,1.2f, 1.2f});
+
+            String[] headers = {
+                    "No", "Bill Date", "MRN No", "Payment Method", "Credit Company Name",
+                    "Phone", "Patient Name", "Final Bill Total", "Paid By Patient",
+                    "Credit Paid Amount", "Due Amount"
+            };
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                mainTable.addCell(cell);
+            }
+
+            int counter = 1;
+            SimpleDateFormat shortSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat());
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+
+
+            for (ReportTemplateRow rowData : bundle.getReportTemplateRows()) {
+                mainTable.addCell(new Phrase(String.valueOf(counter++), normalFont));
+                mainTable.addCell(new Phrase(shortSdf.format(rowData.getBill().getCreatedAt()), normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getPatient().getPhn(), normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getPaymentMethod() != null ? rowData.getBill().getPaymentMethod().toString() : "", normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getCreditCompany() != null ? rowData.getBill().getCreditCompany().getName() : "", normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getPatient().getPerson().getMobile(), normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getPatient().getPerson().getName(), normalFont));
+
+                mainTable.addCell(new Phrase(decimalFormat.format(rowData.getBill().getNetTotal()), normalFont));
+                mainTable.addCell(new Phrase(decimalFormat.format(rowData.getBill().getSettledAmountByPatient()), normalFont));
+                mainTable.addCell(new Phrase(decimalFormat.format(rowData.getBill().getSettledAmountBySponsor()), normalFont));
+
+                double dueAmount = rowData.getBill().getNetTotal() - rowData.getBill().getSettledAmountByPatient() - rowData.getBill().getSettledAmountBySponsor();
+                mainTable.addCell(new Phrase(decimalFormat.format(dueAmount), normalFont));
+            }
+
+            PdfPCell footerLabelColSpan = new PdfPCell(new Phrase("Total", boldFont));
+            footerLabelColSpan.setColspan(7);
+            footerLabelColSpan.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            mainTable.addCell(footerLabelColSpan);
+
+            mainTable.addCell(new Phrase(decimalFormat.format(getBilled()), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(getPayableByPatient()), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(getPaidByCompany()), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont));
+
+            document.add(mainTable);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error exporting Debtor Balance Report OP to PDF", e);
         }
     }
 
@@ -3497,7 +3589,7 @@ public class ReportsController implements Serializable {
                     if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() >= 0) {
                         removeList.add(row);
                     }
-                }else {
+                } else {
                     if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() <= 0) {
                         removeList.add(row);
                     }
