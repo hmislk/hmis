@@ -350,9 +350,6 @@ public class ReportsController implements Serializable {
     }
 
     public void setPatientEncounterGopMap(Map<PatientEncounter, Double> patientEncounterGopMap) {
-        if (patientEncounterGopMap == null) {
-            patientEncounterGopMap = new HashMap<>();
-        }
         this.patientEncounterGopMap = patientEncounterGopMap;
     }
 
@@ -364,9 +361,6 @@ public class ReportsController implements Serializable {
     }
 
     public void setPatientEncounterPaidByCompanyMap(Map<PatientEncounter, Double> patientEncounterPaidByCompanyMap) {
-        if (patientEncounterPaidByCompanyMap == null) {
-            patientEncounterPaidByCompanyMap = new HashMap<>();
-        }
         this.patientEncounterPaidByCompanyMap = patientEncounterPaidByCompanyMap;
     }
 
@@ -3236,6 +3230,10 @@ public class ReportsController implements Serializable {
                 PatientEncounter pe = entry.getKey();
                 List<InstitutionBillEncounter> bills = entry.getValue();
 
+                if (bills == null || bills.isEmpty()) {
+                    continue;
+                }
+
                 Row row = sheet.createRow(rowIndex++);
                 int col = 0;
 
@@ -3510,7 +3508,7 @@ public class ReportsController implements Serializable {
             PdfPTable mainTable = new PdfPTable(11);
             mainTable.setWidthPercentage(100);
 
-            mainTable.setWidths(new float[]{0.5f,1.5f,1.0f, 1.5f,2.5f,1.2f, 2.5f,1.2f, 1.2f,1.2f, 1.2f});
+            mainTable.setWidths(new float[]{0.5f, 1.5f, 1.0f, 1.5f, 2.5f, 1.2f, 2.5f, 1.2f, 1.2f, 1.2f, 1.2f});
 
             String[] headers = {
                     "No", "Bill Date", "MRN No", "Payment Method", "Credit Company Name",
@@ -5819,11 +5817,6 @@ public class ReportsController implements Serializable {
                 + " where b.retired=false "
                 + " and b.paymentFinalized=true "
                 + " and b.dateOfDischarge between :fd and :td ";
-
-        if (admissionType != null) {
-            sql += " and b.admissionType =:ad ";
-            m.put("ad", admissionType);
-        }
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";

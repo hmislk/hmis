@@ -140,9 +140,6 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void setPatientEncounterGopMap(Map<PatientEncounter, Double> patientEncounterGopMap) {
-        if (patientEncounterGopMap == null) {
-            patientEncounterGopMap = new HashMap<>();
-        }
         this.patientEncounterGopMap = patientEncounterGopMap;
     }
 
@@ -154,9 +151,6 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void setPatientEncounterPaidByCompanyMap(Map<PatientEncounter, Double> patientEncounterPaidByCompanyMap) {
-        if (patientEncounterPaidByCompanyMap == null) {
-            patientEncounterPaidByCompanyMap = new HashMap<>();
-        }
         this.patientEncounterPaidByCompanyMap = patientEncounterPaidByCompanyMap;
     }
 
