@@ -41,6 +41,13 @@ public class CommonFunctions {
         return Math.abs(value);
     }
 
+    public static Double reverseSign(Double value) {
+        if (value == null) {
+            return null;
+        }
+        return -value;
+    }
+
     public static String changeTextCases(String nm, String tc) {
         if (tc == null) {
             return nm;
