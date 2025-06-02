@@ -268,6 +268,15 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     private double total;
     private double remainAmount;
     private List<SessionInstance> sessionsForHolidayMark;
+    private List<SessionInstance> sessionsForCancellation;
+
+    public List<SessionInstance> getSessionsForCancellation() {
+        return sessionsForCancellation;
+    }
+
+    public void setSessionsForCancellation(List<SessionInstance> sessionsForCancellation) {
+        this.sessionsForCancellation = sessionsForCancellation;
+    }
 
     public List<SessionInstance> getSessionsForHolidayMark() {
         return sessionsForHolidayMark;
@@ -2337,6 +2346,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
+        generateSessions();
     }
 
     public void markAsNotArrived() {
@@ -2361,6 +2371,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
+        generateSessions();
     }
 
     public void markToCancel() {
