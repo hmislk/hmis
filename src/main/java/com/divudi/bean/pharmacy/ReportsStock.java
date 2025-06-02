@@ -324,7 +324,7 @@ public class ReportsStock implements Serializable {
 
     }
 
-    public void genarateDepartmentStockOverviewReport() {
+    public void generateDepartmentStockOverviewReport() {
         
         staringPurchaseValue = 0.0;
         staringSaleValue = 0.0;
