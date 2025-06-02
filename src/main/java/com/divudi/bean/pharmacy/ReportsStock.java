@@ -651,7 +651,13 @@ public class ReportsStock implements Serializable {
         items = new ArrayList<>(sis);
 
         Collections.sort(items);
-
+        
+        Map<String, Object> h = new HashMap<>();
+        String jpql = "select s from Stock s "
+                    + "where s.itemBatch.item in :items "
+                    + " and s.stock > 0 ";
+        h.put("items", items);
+        stocks = getStockFacade().findByJpql(jpql, h);
     }
 
     public void fillStaffStocks() {

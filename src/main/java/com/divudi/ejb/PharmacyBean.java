@@ -892,40 +892,46 @@ public class PharmacyBean {
     }
 
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Department d) {
-        if (phItem == null) {
+        if (phItem == null || phItem.getBillItem() == null || phItem.getBillItem().getItem() == null) {
             return;
         }
-        if (phItem.getBillItem() == null) {
-            return;
-        }
-        if (phItem.getBillItem().getItem() == null) {
-            return;
-        }
-        StockHistory sh = new StockHistory();
-        sh.setFromDate(new Date());
-        sh.setPbItem(phItem);
-        sh.setHxDate(Calendar.getInstance().get(Calendar.DATE));
-        sh.setHxMonth(Calendar.getInstance().get(Calendar.MONTH));
-        sh.setHxWeek(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
-        sh.setHxYear(Calendar.getInstance().get(Calendar.YEAR));
 
-        sh.setStockAt(new Date());
-        sh.setCreatedAt(new Date());
+        // Resolve AMP if item is an AMPP
+        Item originalItem = phItem.getBillItem().getItem();
+        Item amp = originalItem instanceof Ampp ? ((Ampp) originalItem).getAmp() : originalItem;
+
+        StockHistory sh = new StockHistory();
+        Date now = new Date();
+        Calendar cal = Calendar.getInstance();
+
+        sh.setFromDate(now);
+        sh.setPbItem(phItem);
+        sh.setHxDate(cal.get(Calendar.DATE));
+        sh.setHxMonth(cal.get(Calendar.MONTH));
+        sh.setHxWeek(cal.get(Calendar.WEEK_OF_YEAR));
+        sh.setHxYear(cal.get(Calendar.YEAR));
+
+        sh.setStockAt(now);
+        sh.setCreatedAt(now);
         sh.setDepartment(d);
         sh.setInstitution(d.getInstitution());
 
         Stock fetchedStock = getStockFacade().findWithoutCache(stock.getId());
         sh.setStockQty(fetchedStock.getStock());
-        sh.setItem(phItem.getBillItem().getItem());
+
+        // Ensure AMP is used for item tracking
+        sh.setItem(amp);
         sh.setItemBatch(fetchedStock.getItemBatch());
-        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
-        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
-        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
+        sh.setItemStock(getStockQty(amp, d));
+        sh.setInstitutionItemStock(getStockQty(amp, d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(amp));
+
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);
         } else {
             getStockHistoryFacade().editAndCommit(sh);
         }
+
         phItem.setStockHistory(sh);
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);
     }
@@ -1441,8 +1447,6 @@ public class PharmacyBean {
     }
 
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
-        System.out.println("getVmp");
-        System.out.println("strength = " + strength);
 
         String sql;
         String vmpName = "";
@@ -1522,6 +1526,57 @@ public class PharmacyBean {
 
     public void setVtmFacade(VtmFacade VtmFacade) {
         this.VtmFacade = VtmFacade;
+    }
+
+    public BillItem getLastPurchaseItem(Item item, Department dept) {
+        if (item == null || dept == null) {
+            return null;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT bi "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND bi.bill.department = :d "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        params.put("i", item);
+        params.put("d", dept);
+        params.put("t", BillType.PharmacyGrnBill);
+        params.put("t1", BillType.PharmacyPurchaseBill);
+
+        BillItem bi = getBillItemFacade().findFirstByJpql(jpql, params);
+
+        // If not found, fallback to search without department
+        if (bi == null) {
+            bi = getLastPurchaseItem(item); // call overload
+        }
+
+        return bi;
+    }
+
+    public BillItem getLastPurchaseItem(Item item) {
+        if (item == null) {
+            return null;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT bi "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        params.put("i", item);
+        params.put("t", BillType.PharmacyGrnBill);
+        params.put("t1", BillType.PharmacyPurchaseBill);
+
+        return getBillItemFacade().findFirstByJpql(jpql, params);
     }
 
     public double getLastPurchaseRate(Item item, Department dept) {

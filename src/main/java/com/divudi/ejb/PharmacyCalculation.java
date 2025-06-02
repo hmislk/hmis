@@ -39,6 +39,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -707,72 +708,110 @@ public class PharmacyCalculation implements Serializable {
         return itemBatch;
     }
 
-    public ItemBatch saveItemBatchWithCosting(BillItem tmp) {
-        //System.err.println("Save Item Batch");
+    private ItemBatch fetchItemBatchWithCosting(Item item, double purchaseRate, double retailRate, double costRate, Date dateOfExpiry) {
+        String jpql = "SELECT p FROM ItemBatch p "
+                + "WHERE p.retired = false "
+                + "AND p.item = :itm "
+                + "AND p.dateOfExpire = :doe "
+                + "AND p.retailsaleRate = :ret "
+                + "AND p.costRate = :cr "
+                + "AND p.purcahseRate = :pur";
 
-        ItemBatch itemBatch = new ItemBatch();
-        Item itm = tmp.getItem();
-        if (itm instanceof Ampp) {
-            itm = ((Ampp) itm).getAmp();
+        Map<String, Object> params = new HashMap<>();
+        params.put("itm", item);
+        params.put("doe", dateOfExpiry);
+        params.put("ret", retailRate);
+        params.put("cr", costRate);
+        params.put("pur", purchaseRate);
+
+        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.DATE);
+    }
+
+    private ItemBatch fetchItemBatchWithoutCosting(Item item, double purchaseRate, double retailRate, Date dateOfExpiry) {
+        String jpql = "SELECT p FROM ItemBatch p "
+                + "WHERE p.retired = false "
+                + "AND p.item = :itm "
+                + "AND p.dateOfExpire = :doe "
+                + "AND p.retailsaleRate = :ret "
+                + "AND p.purcahseRate = :pur";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itm", item);
+        params.put("doe", dateOfExpiry);
+        params.put("ret", retailRate);
+        params.put("pur", purchaseRate);
+
+        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.DATE);
+    }
+
+    /**
+     * Creates or fetches an existing ItemBatch based on costing and expiry
+     * logic. Ensures uniqueness based on AMP, purchaseRate, retailRate,
+     * costRate, and expiry. Additional fields like wholesaleRate, make, etc.,
+     * are set but not used for uniqueness.
+     */
+    public ItemBatch saveItemBatchWithCosting(BillItem inputBillItem) {
+        if (inputBillItem == null || inputBillItem.getItem() == null || inputBillItem.getPharmaceuticalBillItem() == null) {
+            return null;
         }
 
-        double purchase = 0d;
-        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Cost", true);
+        // Extract AMP (Actual Medicinal Product) even if input is AMPP (Pack)
+        Item amp = inputBillItem.getItem();
+        if (amp instanceof Ampp) {
+            amp = ((Ampp) amp).getAmp();
+        }
+
+        Date expiryDate = inputBillItem.getPharmaceuticalBillItem().getDoe();
+        if (expiryDate == null || amp == null) {
+            return null;
+        }
+
+        ItemBatch itemBatch = null;
+
+        double purchaseRatePerUnit;
+        double retailRatePerUnit;
+        double wholesaleRate = 0.0;
+        double costRatePerUnit = 0.0;
+
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
         if (manageCosting) {
-            BigDecimal qty = Optional.ofNullable(tmp.getBillItemFinanceDetails().getQuantity())
-                    .filter(q -> q.compareTo(BigDecimal.ZERO) != 0)
-                    .orElse(BigDecimal.ONE); // Prevent divide by zero
+            // Use finance details when costing is enabled
+            if (inputBillItem.getBillItemFinanceDetails() == null) {
+                return null;
+            }
 
-            BigDecimal lineCost = Optional.ofNullable(tmp.getBillItemFinanceDetails().getLineCost())
-                    .orElse(BigDecimal.ZERO); // Prevent null
+            purchaseRatePerUnit = inputBillItem.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
+            retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+            costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
 
-            purchase = lineCost.divide(qty, 6, RoundingMode.HALF_UP).doubleValue();
+            itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
         } else {
-            purchase = tmp.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+            // Use values from PharmaceuticalBillItem when costing is not enabled
+            purchaseRatePerUnit = inputBillItem.getPharmaceuticalBillItem().getPurchaseRate();
+            retailRatePerUnit = inputBillItem.getPharmaceuticalBillItem().getRetailRateInUnit();
+            wholesaleRate = inputBillItem.getPharmaceuticalBillItem().getWholesaleRate();
+
+            itemBatch = fetchItemBatchWithoutCosting(amp, purchaseRatePerUnit, retailRatePerUnit, expiryDate);
         }
 
-        double retail = tmp.getPharmaceuticalBillItem().getRetailRateInUnit();
-        double wholesale = tmp.getPharmaceuticalBillItem().getWholesaleRate();
-        ////// // System.out.println("wholesale = " + wholesale);
-        itemBatch.setDateOfExpire(tmp.getPharmaceuticalBillItem().getDoe());
-        itemBatch.setBatchNo(tmp.getPharmaceuticalBillItem().getStringValue());
+        // If no matching batch found, create a new one
+        if (itemBatch == null) {
+            itemBatch = new ItemBatch();
+            itemBatch.setItem(amp);
+            itemBatch.setDateOfExpire(expiryDate);
+            itemBatch.setBatchNo(inputBillItem.getPharmaceuticalBillItem().getStringValue());
+            itemBatch.setPurcahseRate(purchaseRatePerUnit);
+            itemBatch.setRetailsaleRate(retailRatePerUnit);
+            itemBatch.setWholesaleRate(wholesaleRate);
+            itemBatch.setCostRate(costRatePerUnit);
+            itemBatch.setLastPurchaseBillItem(inputBillItem);
+            itemBatch.setMake(inputBillItem.getPharmaceuticalBillItem().getMake());
+            itemBatch.setModal(inputBillItem.getPharmaceuticalBillItem().getModel());
 
-        itemBatch.setPurcahseRate(purchase);
-        itemBatch.setRetailsaleRate(retail);
-        itemBatch.setWholesaleRate(wholesale);
-        itemBatch.setLastPurchaseBillItem(tmp);
-        HashMap hash = new HashMap();
-        String sql;
-
-        itemBatch.setItem(itm);
-        sql = "Select p from ItemBatch p where  p.item=:itm "
-                + " and p.dateOfExpire= :doe and p.retailsaleRate=:ret "
-                + " and p.purcahseRate=:pur";
-
-        hash.put("doe", itemBatch.getDateOfExpire());
-        hash.put("itm", itemBatch.getItem());
-        hash.put("ret", itemBatch.getRetailsaleRate());
-        hash.put("pur", itemBatch.getPurcahseRate());
-        List<ItemBatch> i = getItemBatchFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
-        //System.err.println("Size " + i.size());
-        if (!i.isEmpty()) {
-//            //System.err.println("Edit");
-//            i.get(0).setBatchNo(i.get(0).getBatchNo());
-//            i.get(0).setDateOfExpire(i.get(0).getDateOfExpire());
-            itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
-            itemBatch.setModal(tmp.getPharmaceuticalBillItem().getModel());
-            ItemBatch ib = i.get(0);
-            ib.setWholesaleRate(wholesale);
-            getItemBatchFacade().edit(ib);
-            return ib;
-        } else {
-            //System.err.println("Create");
-            itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
-            itemBatch.setModal(tmp.getPharmaceuticalBillItem().getModel());
             getItemBatchFacade().create(itemBatch);
         }
 
-        //System.err.println("ItemBatc Id " + itemBatch.getId());
         return itemBatch;
     }
 

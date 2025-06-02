@@ -67,6 +67,24 @@ public class SessionInstance implements Serializable {
     @ManyToOne
     Department forDepartment;
     private boolean acceptOnlineBookings = true;
+    private boolean doctorHoliday;
+    private WebUser doctorHolidayMarkedBy;
+
+    public WebUser getDoctorHolidayMarkedBy() {
+        return doctorHolidayMarkedBy;
+    }
+
+    public void setDoctorHolidayMarkedBy(WebUser doctorHolidayMarkedBy) {
+        this.doctorHolidayMarkedBy = doctorHolidayMarkedBy;
+    }
+
+    public boolean isDoctorHoliday() {
+        return doctorHoliday;
+    }
+
+    public void setDoctorHoliday(boolean doctorHoliday) {
+        this.doctorHoliday = doctorHoliday;
+    }
 
     @Transient
     private boolean currentlyOngoing;

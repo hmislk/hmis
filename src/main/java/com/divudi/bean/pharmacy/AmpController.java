@@ -673,7 +673,7 @@ public class AmpController implements Serializable {
         
         if(current.getId() != null){
             if(!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)){
-                JsfUtil.addErrorMessage("You have no privilage to edit AMPs.");
+                JsfUtil.addErrorMessage("Deleting and Editing is disabled by Configuration Options.");
                 return;
             }
         }
