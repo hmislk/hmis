@@ -68,6 +68,18 @@
                             <p:outputLabel value="Book Number" class="mx-3"/>
                         </h:panelGroup>
                         <p:inputText value="#{reportsController.cashBookNumber}" class="w-100"/>
+
+                        <h:panelGroup/> <h:panelGroup>
+                        <p:selectBooleanCheckbox value="#{reportsController.withDeletedBooks}"/>
+                        <p:outputLabel value="With Deleted Books" class="mx-3"/>
+                    </h:panelGroup>
+
+                        <p:spacer width="5em"/>
+
+                        <h:panelGroup/> <h:panelGroup>
+                        <p:selectBooleanCheckbox value="#{reportsController.withInactiveBooks}"/>
+                        <p:outputLabel value="With Inactive Books" class="mx-3"/>
+                    </h:panelGroup>
                     </p:panelGrid>
 
                     <div class="row mb-2">

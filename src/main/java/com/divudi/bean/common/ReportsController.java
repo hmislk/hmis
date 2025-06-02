@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
+import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.*;
 import com.divudi.core.data.analytics.ReportTemplateType;
@@ -57,6 +58,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -99,6 +101,8 @@ public class ReportsController implements Serializable {
     private ReportTimerController reportTimerController;
     @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+    @EJB
+    private AgentReferenceBookFacade agentReferenceBookFacade = new AgentReferenceBookFacade();
 
     /**
      * Inject
@@ -315,8 +319,26 @@ public class ReportsController implements Serializable {
     Map<Institution, Double> instituteDueByCompanyMap = new HashMap<>();
 
     private Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap;
-
     private Institution institutionOfDepartment;
+
+    private boolean withInactiveBooks;
+    private boolean withDeletedBooks;
+
+    public boolean isWithInactiveBooks() {
+        return withInactiveBooks;
+    }
+
+    public void setWithInactiveBooks(boolean withInactiveBooks) {
+        this.withInactiveBooks = withInactiveBooks;
+    }
+
+    public boolean isWithDeletedBooks() {
+        return withDeletedBooks;
+    }
+
+    public void setWithDeletedBooks(boolean withDeletedBooks) {
+        this.withDeletedBooks = withDeletedBooks;
+    }
 
     public Institution getInstitutionOfDepartment() {
         return institutionOfDepartment;
@@ -3533,11 +3555,78 @@ public class ReportsController implements Serializable {
                     .collect(Collectors.toList());
         }
 
+        Map<String, AgentReferenceBook> agentReferenceBooks = getAgentReferenceBookMapByReportTemplateRows(rs);
+
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
+        b.setReportTemplateRows(filterReportTemplateRowsByEnabledStatus(agentReferenceBooks, rs));
         b.createRowValuesFromBill();
         b.calculateTotalsWithCredit();
         return b;
+    }
+
+    private List<ReportTemplateRow> filterReportTemplateRowsByEnabledStatus(final Map<String, AgentReferenceBook> agentReferenceBooks,
+                                                                            final List<ReportTemplateRow> rows) {
+        if (agentReferenceBooks == null || agentReferenceBooks.isEmpty() || rows == null || rows.isEmpty()) {
+            return rows;
+        }
+
+        List<ReportTemplateRow> filteredRows = new ArrayList<>();
+
+        for (ReportTemplateRow row: rows) {
+            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(row.getBill().getReferenceNumber());
+            AgentReferenceBook agentReferenceBook = agentReferenceBooks.get(bookNumber);
+
+            if (agentReferenceBook == null) {
+                continue;
+            }
+
+            if (!withInactiveBooks && !agentReferenceBook.getActive()) {
+                continue;
+            }
+            if (!withDeletedBooks && agentReferenceBook.isRetired()) {
+                continue;
+            }
+
+            row.setAgentReferenceBook(agentReferenceBook);
+            filteredRows.add(row);
+        }
+
+        return filteredRows;
+    }
+
+    private Map<String, AgentReferenceBook> getAgentReferenceBookMapByReportTemplateRows(List<ReportTemplateRow> rows) {
+        Map<String, AgentReferenceBook> agentReferenceBookMap = new HashMap<>();
+
+        if (rows != null && !rows.isEmpty()) {
+            Set<String> strBookNumbers = rows.stream()
+                    .map(r -> {
+                        String refNo = r.getBill().getReferenceNumber();
+                        if (refNo != null && refNo.length() > 2) {
+                            return refNo.substring(0, refNo.length() - 2);
+                        }
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            if (!strBookNumbers.isEmpty()) {
+                String jpqlBook = "SELECT arb FROM AgentReferenceBook arb WHERE arb.strbookNumber IN :sbns";
+                Map<String, Object> bookParams = new HashMap<>();
+                bookParams.put("sbns", strBookNumbers);
+
+                List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findByJpql(jpqlBook, bookParams);
+
+                agentReferenceBookMap = agentReferenceBooks.stream()
+                        .filter(arb -> arb.getStrbookNumber() != null)
+                        .collect(Collectors.toMap(
+                                AgentReferenceBook::getStrbookNumber,
+                                Function.identity(),
+                                (existing, replacement) -> existing
+                        ));
+            }
+        }
+
+        return agentReferenceBookMap;
     }
 
     public void generateCollectionCenterBillWiseDetailReport() {
