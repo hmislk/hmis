@@ -126,9 +126,8 @@
                                     id="btnExcel" class="m-1 ui-button-success"
                                     icon="fas fa-file-excel"
                                     style="width: 150px"
-                                    ajax="false" value="Excel">
-                                <p:dataExporter type="xlsx" target="tbl"
-                                                fileName="collection_center_book_wise_detail_report"/>
+                                    ajax="false" value="Excel"
+                                    action="#{reportsController.exportCollectionCenterBookWiseDetailToExcel}">
                             </p:commandButton>
                             <p:commandButton
                                     class="m-2 ui-button-danger"
@@ -200,7 +199,32 @@
                                     sortBy="#{c.bill.referenceNumber}"
                                     filterBy="#{c.bill.referenceNumber}"
                                     filterMatchMode="contains">
-                                <h:outputText value="#{c.bill.referenceNumber}"/>
+                                <h:panelGrid layout="block" columns="1" cellpadding="0" cellspacing="0"
+                                             styleClass="reference-column-content"
+                                             style="border: none; border-collapse: collapse;">
+                                    <h:outputText value="#{c.bill.referenceNumber}" />
+
+                                    <p:badge
+                                            rendered="#{c.agentReferenceBook.active eq false and c.agentReferenceBook.retired eq false}"
+                                            value="Deactivated"
+                                            size="small"
+                                            severity="warning"
+                                            styleClass="ml-2" />
+
+                                    <p:badge
+                                            rendered="#{c.agentReferenceBook.active eq true and c.agentReferenceBook.retired eq false}"
+                                            value="Active"
+                                            size="small"
+                                            severity="info"
+                                            styleClass="ml-2" />
+
+                                    <p:badge
+                                            rendered="#{c.agentReferenceBook.retired eq true}"
+                                            value="Deleted"
+                                            size="small"
+                                            severity="danger"
+                                            styleClass="ml-2" />
+                                </h:panelGrid>
                             </p:column>
                             <p:column
                                     headerText="Patient"

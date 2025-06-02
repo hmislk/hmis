@@ -3496,7 +3496,82 @@ public class ReportsController implements Serializable {
             context.responseComplete();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(CollectingCentreBillController.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    public void exportCollectionCenterBookWiseDetailToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_center_book_wise_detail_report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Collection Center Report");
+            int rowIndex = 0;
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            XSSFCellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {"Bill No", "Book No", "Book Ref No", "Patient", "Creator", "Created Date", "Bill Value"};
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            List<ReportTemplateRow> exportRows =
+                    (filteredReportTemplateRows != null && !filteredReportTemplateRows.isEmpty())
+                            ? filteredReportTemplateRows
+                            : getBundle().getReportTemplateRows();
+
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            for (ReportTemplateRow c : exportRows) {
+                Row dataRow = sheet.createRow(rowIndex++);
+
+                dataRow.createCell(0).setCellValue(c.getBill().getDeptId());
+                dataRow.createCell(1).setCellValue(
+                        collectingCentreBillController.generateBookNumberFromReference(c.getBill().getReferenceNumber()));
+                dataRow.createCell(2).setCellValue(c.getBill().getReferenceNumber());
+                dataRow.createCell(3).setCellValue(c.getBill().getPatient().getPerson().getNameWithTitle());
+                dataRow.createCell(4).setCellValue(c.getBill().getCreater().getWebUserPerson().getName());
+                dataRow.createCell(5).setCellValue(dateFormat.format(c.getBill().getCreatedAt()));
+
+                Cell billValueCell = dataRow.createCell(6);
+                billValueCell.setCellValue(c.getBill().getNetTotal());
+                billValueCell.setCellStyle(amountStyle);
+            }
+
+            Row totalRow = sheet.createRow(rowIndex++);
+            Cell labelCell = totalRow.createCell(0);
+            labelCell.setCellValue("Gross Total");
+            labelCell.setCellStyle(headerStyle);
+            sheet.addMergedRegion(new CellRangeAddress(totalRow.getRowNum(), totalRow.getRowNum(), 0, 5));
+
+            Cell totalCell = totalRow.createCell(6);
+            totalCell.setCellValue(getBundle().getGrossTotal());
+            totalCell.setCellStyle(amountStyle);
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(CollectingCentreBillController.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
@@ -3580,10 +3655,11 @@ public class ReportsController implements Serializable {
                 continue;
             }
 
-            if (!withInactiveBooks && !agentReferenceBook.getActive()) {
+            if (!withDeletedBooks && agentReferenceBook.isRetired()) {
                 continue;
             }
-            if (!withDeletedBooks && agentReferenceBook.isRetired()) {
+
+            if (!withInactiveBooks && !agentReferenceBook.getActive() && !agentReferenceBook.isRetired()) {
                 continue;
             }
 
