@@ -586,8 +586,8 @@ public class BillService {
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
         return btas;
     }
-    
-    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyOpdBills(){
+
+    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyOpdBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -596,8 +596,41 @@ public class BillService {
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         return btas;
     }
-    
-    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyPackageBills(){
+
+    public List<BillTypeAtomic> fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+
+        // OPD-related
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+        // Pharmacy Retail Sale
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_WITHOUT_STOCKS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
+        btas.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
+        btas.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_PRE);
+        btas.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+
+        return btas;
+    }
+
+    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyPackageBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
