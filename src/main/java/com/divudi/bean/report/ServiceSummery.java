@@ -982,7 +982,7 @@ public class ServiceSummery implements Serializable {
 
         for (Payment payment : payments) {
             Bill bill = payment.getBill();
-            if (bill == null || payment.getPaidValue() != 0.0 || bill.getNetTotal() == 0.0) { // both are double, not Double, so null checks NOT necessary
+            if (bill == null || payment.getPaidValue() != 0.0 || bill.getNetTotal() != 0.0) { // both are double, not Double, so null checks NOT necessary
                 continue; // Skip invalid entries to avoid divide-by-zero or nulls
             }
 
