@@ -1827,27 +1827,45 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         return consultants;
     }
 
-    public String navigateChannelBookingViewFromChannelBookingByDate(SessionInstance session, Speciality speciality, Staff staff) {
-        if (speciality != null) {
-            this.speciality = speciality;
-            listnerStaffListForRowSelect();
-        } else if (session != null) {
-            this.speciality = session.getStaff().getSpeciality();
-        }
+    @Inject
+    PastBookingController pastBookingController;
 
-        if (staff != null) {
-            this.staff = staff;
-            generateSessions();
-        } else if (session != null) {
-            this.staff = session.getStaff();
-        }
+    public String navigateChannelBookingViewFromChannelBookingByDate(SessionInstance session, Speciality speciality, Staff staff) {
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date today = cal.getTime();
 
         if (session != null) {
-            this.selectedSessionInstance = session;
-            fillBillSessions();
-        }
+            if (session.getSessionDate().before(today)) {
+                return pastBookingController.navigatePastBookingFromChannelBookingByDate(session);
+            } else {
+                if (speciality != null) {
+                    this.speciality = speciality;
+                    listnerStaffListForRowSelect();
+                } else if (session != null) {
+                    this.speciality = session.getStaff().getSpeciality();
+                }
 
-        return "/channel/channel_booking?faces-redirect=true";
+                if (staff != null) {
+                    this.staff = staff;
+                    generateSessions();
+                } else if (session != null) {
+                    this.staff = session.getStaff();
+                }
+
+                if (session != null) {
+                    this.selectedSessionInstance = session;
+                    fillBillSessions();
+                }
+
+                return "/channel/channel_booking?faces-redirect=true";
+            }
+        }
+        return "";
     }
 
     public void markHolidayForSessionInstances(boolean mark) {
