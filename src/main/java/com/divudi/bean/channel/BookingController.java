@@ -1874,7 +1874,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 return "/channel/channel_booking?faces-redirect=true";
             }
         }
-        return "";
+        return "/channel/channel_booking?faces-redirect=true";
     }
 
     public void markHolidayForSessionInstances(boolean mark) {
