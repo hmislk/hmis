@@ -420,44 +420,45 @@ public class PharmacyCalculation implements Serializable {
 
     }
 
-    public double calQty(PharmaceuticalBillItem po) {
-
+    /**
+     * Calculates the remaining quantity of items from a purchase order. Initial
+     * quantity is equal to the ordered quantity. GRNs (Goods Received Notes)
+     * reduce the remaining quantity. Cancelled GRNs increase the remaining
+     * quantity. GRN Returns and GRN Return Cancellations are not considered.
+     *
+     * @param po The pharmaceutical bill item linked to the purchase order.
+     * @return Remaining quantity from the original order.
+     */
+    public double calculateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
         double billed = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
         double cancelled = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());;
-        double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-        double returnedC = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
-
+//      double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+//      double returnedC = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
         double recieveNet = Math.abs(billed) - Math.abs(cancelled);
-        double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
-        //System.err.println("BILLED " + billed);
-        //System.err.println("Cancelled " + cancelled);
-        //System.err.println("recieveNet " + recieveNet);
-        //System.err.println("Refunded Bill " + returnedB);
-        //System.err.println("Refunded Cancelld " + returnedC);
-        //System.err.println("retuernedNet " + retuernedNet);
-        //System.err.println("Cal Qty " + (Math.abs(recieveNet) - Math.abs(retuernedNet)));
-
-        return (Math.abs(recieveNet) - Math.abs(retuernedNet));
+//      double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
+//      return (Math.abs(recieveNet) - Math.abs(retuernedNet));
+        return Math.abs(recieveNet);
     }
 
-    public double calFreeQty(PharmaceuticalBillItem po) {
-
+    /**
+     * Calculates the remaining free quantity of items from a purchase order.
+     * Initial quantity is equal to the free quantity in the order. GRNs reduce
+     * the remaining free quantity. Cancelled GRNs increase the remaining free
+     * quantity. GRN Returns and GRN Return Cancellations are not considered.
+     *
+     * @param po The pharmaceutical bill item linked to the purchase order.
+     * @return Remaining free quantity from the original order.
+     */
+    public double calculateRemainingFreeQtyFromOrder(PharmaceuticalBillItem po) {
         double billed = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
         double cancelled = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());
-        double returnedB = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-        double returnedC = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
+//      double returnedB = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+//      double returnedC = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
 
         double recieveNet = Math.abs(billed) - Math.abs(cancelled);
-        double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
-        //System.err.println("BILLED " + billed);
-        //System.err.println("Cancelled " + cancelled);
-        //System.err.println("recieveNet " + recieveNet);
-        //System.err.println("Refunded Bill " + returnedB);
-        //System.err.println("Refunded Cancelld " + returnedC);
-        //System.err.println("retuernedNet " + retuernedNet);
-        //System.err.println("Cal Qty " + (Math.abs(recieveNet) - Math.abs(retuernedNet)));
-
-        return (Math.abs(recieveNet) - Math.abs(retuernedNet));
+//      double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
+//      returned values are not considered
+        return (Math.abs(recieveNet));
     }
 
     public double calQtyInTwoSql(PharmaceuticalBillItem po) {
@@ -496,7 +497,7 @@ public class PharmacyCalculation implements Serializable {
         return bil.getQty() - returnBill;
     }
 
-//     public double calQty(PharmaceuticalBillItem po) {
+//     public double calculateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
 //
 //        double billed =getTotalQty(po.getBillItem(),BillType.PharmacyGrnBill,new BilledBill());
 //        double cancelled = getTotalQty(po.getBillItem(),BillType.PharmacyGrnBill,new CancelledBill());;
@@ -564,7 +565,7 @@ public class PharmacyCalculation implements Serializable {
         //    Item grnItem = ph.getBillItem().getItem();
         double poQty, grnQty, remainsFree;
         poQty = po.getQtyInUnit();
-        remainsFree = poQty - calFreeQty(po);
+        remainsFree = poQty - calculateRemainingFreeQtyFromOrder(po);
 
         return remainsFree;
 
@@ -579,7 +580,7 @@ public class PharmacyCalculation implements Serializable {
         //    Item grnItem = ph.getBillItem().getItem();
         double poQty, grnQty, remains;
         poQty = po.getFreeQtyInUnit();
-        remains = poQty - calFreeQty(po);
+        remains = poQty - calculateRemainingFreeQtyFromOrder(po);
 
         return remains;
 
@@ -594,7 +595,7 @@ public class PharmacyCalculation implements Serializable {
         //    Item grnItem = ph.getBillItem().getItem();
         double poQty, grnQty, remains;
         poQty = Math.abs(po.getQtyInUnit());
-        remains = Math.abs(poQty) - calQty(po);
+        remains = Math.abs(poQty) - calculateRemainigQtyFromOrder(po);
         grnQty = Math.abs(ph.getQtyInUnit());
 
         //System.err.println("poQty : " + poQty);
@@ -896,7 +897,7 @@ public class PharmacyCalculation implements Serializable {
 
         getBillItemFacade().edit(i.getBillItem());
 //
-//        double consumed = calQty(i.getBillItem().getReferanceBillItem().getPharmaceuticalBillItem());
+//        double consumed = calculateRemainigQtyFromOrder(i.getBillItem().getReferanceBillItem().getPharmaceuticalBillItem());
 //        i.getBillItem().setRemainingQty(i.getBillItem().getReferanceBillItem().getPharmaceuticalBillItem().getQty() - consumed);
 //        getBillItemFacade().edit(i.getBillItem());
     }
