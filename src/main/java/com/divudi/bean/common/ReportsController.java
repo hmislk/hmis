@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
+import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.*;
 import com.divudi.core.data.analytics.ReportTemplateType;
@@ -57,6 +58,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -99,6 +101,8 @@ public class ReportsController implements Serializable {
     private ReportTimerController reportTimerController;
     @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+    @EJB
+    private AgentReferenceBookFacade agentReferenceBookFacade;
 
     /**
      * Inject
@@ -321,8 +325,26 @@ public class ReportsController implements Serializable {
     private Map<PatientEncounter, Double> patientEncounterPaidByCompanyMap;
 
     private Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap;
-
     private Institution institutionOfDepartment;
+
+    private boolean withInactiveBooks;
+    private boolean withDeletedBooks;
+
+    public boolean isWithInactiveBooks() {
+        return withInactiveBooks;
+    }
+
+    public void setWithInactiveBooks(boolean withInactiveBooks) {
+        this.withInactiveBooks = withInactiveBooks;
+    }
+
+    public boolean isWithDeletedBooks() {
+        return withDeletedBooks;
+    }
+
+    public void setWithDeletedBooks(boolean withDeletedBooks) {
+        this.withDeletedBooks = withDeletedBooks;
+    }
 
     public Institution getInstitutionOfDepartment() {
         return institutionOfDepartment;
@@ -3955,7 +3977,82 @@ public class ReportsController implements Serializable {
             context.responseComplete();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(CollectingCentreBillController.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    public void exportCollectionCenterBookWiseDetailToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_center_book_wise_detail_report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Collection Center Report");
+            int rowIndex = 0;
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+
+            XSSFCellStyle amountStyle = workbook.createCellStyle();
+            amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            XSSFCellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(headerFont);
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {"Bill No", "Book No", "Book Ref No", "Patient", "Creator", "Created Date", "Bill Value"};
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            List<ReportTemplateRow> exportRows =
+                    (filteredReportTemplateRows != null && !filteredReportTemplateRows.isEmpty())
+                            ? filteredReportTemplateRows
+                            : getBundle().getReportTemplateRows();
+
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            for (ReportTemplateRow c : exportRows) {
+                Row dataRow = sheet.createRow(rowIndex++);
+
+                dataRow.createCell(0).setCellValue(c.getBill().getDeptId());
+                dataRow.createCell(1).setCellValue(
+                        collectingCentreBillController.generateBookNumberFromReference(c.getBill().getReferenceNumber()));
+                dataRow.createCell(2).setCellValue(c.getBill().getReferenceNumber());
+                dataRow.createCell(3).setCellValue(c.getBill().getPatient().getPerson().getNameWithTitle());
+                dataRow.createCell(4).setCellValue(c.getBill().getCreater().getWebUserPerson().getName());
+                dataRow.createCell(5).setCellValue(dateFormat.format(c.getBill().getCreatedAt()));
+
+                Cell billValueCell = dataRow.createCell(6);
+                billValueCell.setCellValue(c.getBill().getNetTotal());
+                billValueCell.setCellStyle(amountStyle);
+            }
+
+            Row totalRow = sheet.createRow(rowIndex++);
+            Cell labelCell = totalRow.createCell(0);
+            labelCell.setCellValue("Gross Total");
+            labelCell.setCellStyle(headerStyle);
+            sheet.addMergedRegion(new CellRangeAddress(totalRow.getRowNum(), totalRow.getRowNum(), 0, 5));
+
+            Cell totalCell = totalRow.createCell(6);
+            totalCell.setCellValue(getBundle().getGrossTotal());
+            totalCell.setCellStyle(amountStyle);
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(CollectingCentreBillController.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
@@ -3997,9 +4094,9 @@ public class ReportsController implements Serializable {
 //            parameters.put("cbn", "%" + cashBookNumber + "%");
 //        }
 
-        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
+//        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+//        parameters.put("fd", fromDate);
+//        parameters.put("td", toDate);
 
         jpql += "GROUP BY bill";
 
@@ -4014,11 +4111,79 @@ public class ReportsController implements Serializable {
                     .collect(Collectors.toList());
         }
 
+        Map<String, AgentReferenceBook> agentReferenceBooks = getAgentReferenceBookMapByReportTemplateRows(rs);
+
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
+        b.setReportTemplateRows(filterReportTemplateRowsByEnabledStatus(agentReferenceBooks, rs));
         b.createRowValuesFromBill();
         b.calculateTotalsWithCredit();
         return b;
+    }
+
+    private List<ReportTemplateRow> filterReportTemplateRowsByEnabledStatus(final Map<String, AgentReferenceBook> agentReferenceBooks,
+                                                                            final List<ReportTemplateRow> rows) {
+        if (agentReferenceBooks == null || agentReferenceBooks.isEmpty() || rows == null || rows.isEmpty()) {
+            return rows;
+        }
+
+        List<ReportTemplateRow> filteredRows = new ArrayList<>();
+
+        for (ReportTemplateRow row: rows) {
+            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(row.getBill().getReferenceNumber());
+            AgentReferenceBook agentReferenceBook = agentReferenceBooks.get(bookNumber);
+
+            if (agentReferenceBook == null) {
+                continue;
+            }
+
+            if (!withDeletedBooks && agentReferenceBook.isRetired()) {
+                continue;
+            }
+
+            if (!withInactiveBooks && !agentReferenceBook.getActive() && !agentReferenceBook.isRetired()) {
+                continue;
+            }
+
+            row.setAgentReferenceBook(agentReferenceBook);
+            filteredRows.add(row);
+        }
+
+        return filteredRows;
+    }
+
+    private Map<String, AgentReferenceBook> getAgentReferenceBookMapByReportTemplateRows(List<ReportTemplateRow> rows) {
+        Map<String, AgentReferenceBook> agentReferenceBookMap = new HashMap<>();
+
+        if (rows != null && !rows.isEmpty()) {
+            Set<String> strBookNumbers = rows.stream()
+                    .map(r -> {
+                        String refNo = r.getBill().getReferenceNumber();
+                        if (refNo != null && refNo.length() > 2) {
+                            return refNo.substring(0, refNo.length() - 2);
+                        }
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            if (!strBookNumbers.isEmpty()) {
+                String jpqlBook = "SELECT arb FROM AgentReferenceBook arb WHERE arb.strbookNumber IN :sbns";
+                Map<String, Object> bookParams = new HashMap<>();
+                bookParams.put("sbns", strBookNumbers);
+
+                List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findByJpql(jpqlBook, bookParams);
+
+                agentReferenceBookMap = agentReferenceBooks.stream()
+                        .filter(arb -> arb.getStrbookNumber() != null)
+                        .collect(Collectors.toMap(
+                                AgentReferenceBook::getStrbookNumber,
+                                Function.identity(),
+                                (existing, replacement) -> existing
+                        ));
+            }
+        }
+
+        return agentReferenceBookMap;
     }
 
     public void generateCollectionCenterBillWiseDetailReport() {
