@@ -588,6 +588,7 @@ public enum Privileges {
     
     //<editor-fold defaultstate="collapsed" desc="Collecting Centre">
     CollectingCentreManageMenu("Collecting Centre Manage Menu"),
+    CollectingCentreBilling("Collecting Centre Billing"),
     CCPaymentReceive("CC Payment Receive"),
     SearchCCPaymentReceive("Search CC Payment Receive"),
     IssueReferenceBook("CC Issue Reference Book"),
