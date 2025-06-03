@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <p:panel header="Agency Management">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{agencyController.tabIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+
+                                    <!-- Manage Section -->
+                                    <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                        <h:panelGrid columns="1" class="w-100" >
+                                            <p:commandButton icon="fa fa-check-circle" 
+                                                             ajax="false" 
+                                                             value="Accept Agency Deposits"
+                                                             action="/agency_management/agency_deposit_bill?faces-redirect=true"
+                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
+                                                             class="w-100 m-1"/>
+                                            <p:commandButton icon="fa fa-search" ajax="false" value="Search Agency Deposits"
+                                                             action="/agency_management/agency_bill_search_own?faces-redirect=true"
+                                                             actionListener="#{searchController.makeListNull}"
+                                                             class="w-100 m-1"/>
+<!--                                            <p:commandButton icon="fa fa-book" ajax="false" value="Issue Agency Books"
+                                                             action="/agency_management/agency_referece_book?faces-redirect=true"
+                                                             class="w-100 m-1"/>
+                                            <p:commandButton icon="fa fa-list-alt" ajax="false" value="Search Agency Book Issues"
+                                                             action="/agency_management/report_agency_referece_book?faces-redirect=true"
+                                                             class="w-100 m-1"/>
+                                            <p:commandButton icon="fa fa-credit-card" ajax="false" value="Update Agency Credit Limit"
+                                                             action="/agency_management/agency_update_credit_limit?faces-redirect=true"
+                                                             actionListener="#{institutionController.makeNull()}"
+                                                             rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
+                                                             class="w-100 m-1"/>-->
+
+                                            <p:commandButton icon="fa fa-check-circle" ajax="false" value="Pay Agencies"
+                                                             action="/agency_management/pay_agency?faces-redirect=true"
+                                                             class="w-100 m-1"/>
+
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                    <!-- Credit/Debit Note Section -->
+                                    <p:tab title="Credit/Debit Note"
+                                           rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}">
+                                        <h:panelGrid columns="1" class="w-100" >
+                                            <p:commandButton icon="fa fa-plus-circle" ajax="false" value="Credit Note"
+                                                             action="/agency_management/agency_credit_note_bill?faces-redirect=true"
+                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
+                                                             rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}"
+                                                             class="w-100 m-1"/>
+                                            <p:commandButton icon="fa fa-search-plus" ajax="false" value="Credit Note Search"
+                                                             action="/agency_management/agency_credit_note_bill_search_own?faces-redirect=true"
+                                                             actionListener="#{searchController.makeListNull}"
+                                                             rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}"
+                                                             class="w-100 m-1"/>
+                                            <p:commandButton icon="fa fa-minus-circle" ajax="false" value="Debit Note"
+                                                             action="/agency_management/agency_debit_note_bill?faces-redirect=true"
+                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
+                                                             rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}"
+                                                             class="w-100 m-1"/>
+                                            <p:commandButton icon="fa fa-search-minus" ajax="false" value="Debit Note Search"
+                                                             action="/agency_management/agency_note_bill_search_own?faces-redirect=true"
+                                                             actionListener="#{searchController.makeListNull}"
+                                                             rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}"
+                                                             class="w-100 m-1"/>
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Agent">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" value="Agent Payment" action="/agent_bill?faces-redirect=true" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Agent Payment Bill Search" action="/agent_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}" />
+                                            <p:commandButton  class="w-100" ajax="false" value="Pay Agent"  action="/channel/channel_payment_agent_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" />
+                                            <p:commandButton  class="w-100" ajax="false" value="Payment Done Search"  action="/channel/channel_payment_agency_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}"/>
+
+                                        </div>
+                                    </p:tab>
+
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent">
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
