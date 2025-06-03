@@ -164,10 +164,13 @@
                         </p:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGrid>
-                <h:panelGrid columns="1" class="w-100">
-                    <h:outputLabel class="w-100" value="Status"/>
-                    <p:selectOneMenu class="w-100" value="#{laboratoryManagementController.filteringStatus}">
-                        <f:selectItem itemLabel="Any"/>
+                <h:panelGrid columns="1" class="w-100 status-filter">
+                    <h:outputLabel class="w-100" value="Status" for="statusFilter"/>
+                    <p:selectOneMenu 
+                        id="statusFilter" 
+                        class="w-100" 
+                        value="#{laboratoryManagementController.filteringStatus}">
+                        <f:selectItem itemLabel="Any" itemValue=""/>
                         <f:selectItem itemValue="Processing" itemLabel="Processing"/>
                         <f:selectItem itemValue="Pending" itemLabel="Pending"/>
                         <f:selectItem itemValue="Approved" itemLabel="Approved"/>
@@ -185,6 +188,7 @@
                 </h:panelGrid>
 
             </h:panelGrid>
+
             <p:dataTable  
                 class="w-100 mt-3"
                 value="#{laboratoryManagementController.items}" 
