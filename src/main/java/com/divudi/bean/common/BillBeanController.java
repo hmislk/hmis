@@ -1928,6 +1928,7 @@ public class BillBeanController implements Serializable {
             sql += " bi.bill.fromDepartment";
         }
         sql += ",sum(bi.pharmaceuticalBillItem.itemBatch.retailsaleRate*bi.pharmaceuticalBillItem.qty) "
+                + ",sum(bi.pharmaceuticalBillItem.itemBatch.purcahseRate*bi.pharmaceuticalBillItem.qty) "
                 + " FROM BillItem bi "
                 + " where bi.bill.department=:dept "
                 + " and  bi.bill.billType= :bTp  "

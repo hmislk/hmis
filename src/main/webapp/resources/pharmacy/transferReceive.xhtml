@@ -16,7 +16,7 @@
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
         <div >
 
-            <table style="width: 100%; border-collapse: collapse; font-size:#{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Headings in Pharmacy Disbursement Reports', '12pt')}!Important;">
+            <table style="width: 100%; border-collapse: collapse; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Headings in Pharmacy Disbursement Reports', '9.999975pt')} !important;">
                 <!-- Institution Details -->
                 <tr>
                     <td colspan="2" style="text-align: center; font-weight: bold; font-size: 10px;">
@@ -103,7 +103,7 @@
                     sortBy="#{bip.searialNo}" 
                     var="bip"
                     styleClass="no-border-table"
-                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important;"
+                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '11.000025pt')}!Important;"
                     rowKey="#{bip.id}">
                     <p:column 
                         width="2em"
@@ -244,7 +244,7 @@
                 </h:outputScript>
             </div>
             <div class="w-100" style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer CSS')}" >
-                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer Text')}" escape="false" style="font-size: 10px;" ></p:outputLabel>
+                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer Text')}" escape="false" style="font-size: 16px;" ></p:outputLabel>
             </div>
 
         </div>
