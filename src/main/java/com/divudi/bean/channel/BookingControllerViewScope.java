@@ -2571,7 +2571,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public String navigateBackToBookingsFromBillSession() {
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
-        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
