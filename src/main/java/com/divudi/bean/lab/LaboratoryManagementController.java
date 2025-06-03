@@ -81,6 +81,7 @@ public class LaboratoryManagementController implements Serializable {
     PatientInvestigationController patientInvestigationController;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -282,6 +283,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void searchLabBills() {
         listingEntity = ListingEntity.BILLS;
@@ -1255,6 +1257,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
