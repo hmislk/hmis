@@ -308,6 +308,15 @@ public class LaboratoryManagementController implements Serializable {
             return "/lab/generate_barcode_p?faces-redirect=true";
         }
     }
+    public String navigateToBackFormPatientReportPrintView(){
+        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+            return "/lab/laboratory_management_dashboard?faces-redirect=true";
+        }else{
+            patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
+            return "/lab/generate_barcode_p?faces-redirect=true";
+        }
+    }
 
     // </editor-fold>
     
