@@ -1127,7 +1127,7 @@ public class LaboratoryManagementController implements Serializable {
         } else if (filteringStatus.equalsIgnoreCase("Processing")) {
             searchProcessingPatientReports();
         } else {
-            searchPandingAndApprovedPatientReports();
+            searchPendingAndApprovedPatientReports();
         }
         listingEntity = ListingEntity.PATIENT_REPORTS;
 
@@ -1136,14 +1136,14 @@ public class LaboratoryManagementController implements Serializable {
     public void searchProcessingPatientReports() {
         searchPatientInvestigations();
         
-        List<PatientInvestigation> processingLiat = new ArrayList<>();
+        List<PatientInvestigation> processingList = new ArrayList<>();
         
         for (PatientInvestigation pi : items) {
             if (!hasPatientReports(pi)) {
-                processingLiat.add(pi);
+                processingList.add(pi);
             }
         }
-        setItems(processingLiat);
+        setItems(processingList);
         listingEntity = ListingEntity.PATIENT_REPORTS;
     }
 
@@ -1153,12 +1153,12 @@ public class LaboratoryManagementController implements Serializable {
         } else if (filteringStatus.equalsIgnoreCase("Processing")) {
             searchProcessingPatientReports();
         } else {
-            searchPandingAndApprovedPatientReports();
+            searchPendingAndApprovedPatientReports();
         }
         listingEntity = ListingEntity.REPORT_PRINT;
     }
 
-    public void searchPandingAndApprovedPatientReports() {
+    public void searchPendingAndApprovedPatientReports() {
         listingEntity = ListingEntity.PATIENT_REPORTS;
         List<PatientReport> patientReports = new ArrayList<>();
         String jpql;
@@ -1208,7 +1208,7 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND r.patientInvestigation.billItem.bill.ipOpOrCC = :tp ";
+            jpql += " AND r.patientInvestigation.billItem.bill.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 
