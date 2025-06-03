@@ -5570,8 +5570,8 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> billTypesToAttachedToEachBillInTheList = new ArrayList<>();
         billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN);
         billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+//        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+//        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
 
         createPoTable(InstitutionType.Dealer, billTypesToList, billTypesToAttachedToEachBillInTheList);
     }
