@@ -316,7 +316,7 @@
                                             icon="fa fa-print"
                                             class="ui-button-info"
                                             value="To Print"
-                                            action="#{laboratoryManagementController.navigateToPrintReport(dpr.id)}"
+                                            action="#{laboratoryManagementController.navigateToPrintReportfromPrintPanel(dpr.id)}"
                                             disabled="#{!dpr.approved}" 
                                             rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and webUserController.hasPrivilege('LabReportPrint')}">
                                         </p:commandButton>

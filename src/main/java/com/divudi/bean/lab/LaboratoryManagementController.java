@@ -229,6 +229,33 @@ public class LaboratoryManagementController implements Serializable {
         }
     }
 
+    public String navigateToPrintReportfromPrintPanel(Long patientReportID) {
+        if (patientReportID == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
+
+        if (currentPatientReport.getReportType() == null) {
+            patientReportController.setCurrentPatientReport(currentPatientReport);
+            return "/lab/report_print?faces-redirect=true";
+        } else {
+            switch (currentPatientReport.getReportType()) {
+                case GENARATE:
+                    patientReportController.setCurrentPatientReport(currentPatientReport);
+                    return "/lab/report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = patientReportController.loadUpload(currentPatientReport);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/lab/upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+    }
+
+    
     public String navigateToLaboratoryAdministration() {
         return "/admin/lims/index?faces-redirect=true";
     }
@@ -281,6 +308,13 @@ public class LaboratoryManagementController implements Serializable {
         items = patientInvestigationFacade.findByJpql(jpql, params);
     }
     
+    public void navigateToPatientReportsFromSelectedpatientInvestigation(PatientInvestigation patientInvestigation) {
+        items = new ArrayList<>();
+        listingEntity = ListingEntity.PATIENT_REPORTS;
+        
+        items.add(patientInvestigation);
+    }
+    
     public void navigateToPatientReportsPrintFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
         listingEntity = ListingEntity.REPORT_PRINT;
@@ -314,6 +348,16 @@ public class LaboratoryManagementController implements Serializable {
             return "/lab/laboratory_management_dashboard?faces-redirect=true";
         }else{
             patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
+            return "/lab/generate_barcode_p?faces-redirect=true";
+        }
+    }
+    
+    public String navigateToBackFormPatientReportPrintingView(){
+        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+            listingEntity = ListingEntity.REPORT_PRINT;
+            return "/lab/laboratory_management_dashboard?faces-redirect=true";
+        }else{
+            patientInvestigationController.setListingEntity(ListingEntity.REPORT_PRINT);
             return "/lab/generate_barcode_p?faces-redirect=true";
         }
     }
