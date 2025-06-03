@@ -265,13 +265,13 @@ public class LaboratoryManagementController implements Serializable {
 
     public void navigateToPatientReportsFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
-        listingEntity = ListingEntity.REPORT_PRINT;
+        listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
         jpql = "SELECT i "
                 + " FROM PatientInvestigation i "
-                + " WHERE i.retired = :ret "
+                + " WHERE i.retired =:ret "
                 + " and i.billItem.bill =:bill"
                 + " ORDER BY i.id DESC";
 
@@ -279,7 +279,6 @@ public class LaboratoryManagementController implements Serializable {
         params.put("bill", bill);
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
-
     }
 
     // </editor-fold>

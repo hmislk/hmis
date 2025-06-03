@@ -337,7 +337,7 @@
                                 class="ui-button-success"
                                 ajax="false" 
                                 rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
-                                action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
+                                action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedBill(patientInvestigation.billItem.bill)}" >
                             </p:commandButton>
                         </div>
 
