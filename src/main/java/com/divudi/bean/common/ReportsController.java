@@ -287,6 +287,8 @@ public class ReportsController implements Serializable {
     double totalVat;
     double totalVatCalculatedValue;
 
+    private int rowCounter = 0;
+
     private Map<Institution, Map<YearMonth, Bill>> groupedCollectingCenterWiseBillsMonthly;
     private Map<Route, Map<YearMonth, Bill>> groupedRouteWiseBillsMonthly;
     private List<YearMonth> yearMonths;
@@ -306,6 +308,7 @@ public class ReportsController implements Serializable {
     Map<PatientEncounter, List<Bill>> billPatientEncounterMap = new HashMap<>();
 
     private Map<Institution, List<InstitutionBillEncounter>> billInstitutionEncounterMap;
+    private Map<PatientEncounter, List<InstitutionBillEncounter>> institutionBillPatientEncounterMap;
 
     private int globalIndex;
 
@@ -314,12 +317,59 @@ public class ReportsController implements Serializable {
     Map<Institution, Double> institutePayableByCompanyMap = new HashMap<>();
     Map<Institution, Double> instituteDueByCompanyMap = new HashMap<>();
 
+    private Map<PatientEncounter, Double> patientEncounterGopMap;
+    private Map<PatientEncounter, Double> patientEncounterPaidByCompanyMap;
+
     private Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap;
 
     private Institution institutionOfDepartment;
 
     public Institution getInstitutionOfDepartment() {
         return institutionOfDepartment;
+    }
+
+    public Map<PatientEncounter, List<InstitutionBillEncounter>> getInstitutionBillPatientEncounterMap() {
+        if (institutionBillPatientEncounterMap == null) {
+            institutionBillPatientEncounterMap = new HashMap<>();
+        }
+        return institutionBillPatientEncounterMap;
+    }
+
+    public void setInstitutionBillPatientEncounterMap(Map<PatientEncounter, List<InstitutionBillEncounter>> institutionBillPatientEncounterMap) {
+        if (institutionBillPatientEncounterMap == null) {
+            institutionBillPatientEncounterMap = new HashMap<>();
+        }
+        this.institutionBillPatientEncounterMap = institutionBillPatientEncounterMap;
+    }
+
+    public Map<PatientEncounter, Double> getPatientEncounterGopMap() {
+        if (patientEncounterGopMap == null) {
+            patientEncounterGopMap = new HashMap<>();
+        }
+        return patientEncounterGopMap;
+    }
+
+    public void setPatientEncounterGopMap(Map<PatientEncounter, Double> patientEncounterGopMap) {
+        this.patientEncounterGopMap = patientEncounterGopMap;
+    }
+
+    public Map<PatientEncounter, Double> getPatientEncounterPaidByCompanyMap() {
+        if (patientEncounterPaidByCompanyMap == null) {
+            patientEncounterPaidByCompanyMap = new HashMap<>();
+        }
+        return patientEncounterPaidByCompanyMap;
+    }
+
+    public void setPatientEncounterPaidByCompanyMap(Map<PatientEncounter, Double> patientEncounterPaidByCompanyMap) {
+        this.patientEncounterPaidByCompanyMap = patientEncounterPaidByCompanyMap;
+    }
+
+    public int nextRowCounter() {
+        return ++rowCounter;
+    }
+
+    public void resetCounter() {
+        rowCounter = 0;
     }
 
     public void setInstitutionOfDepartment(Institution institutionOfDepartment) {
@@ -2996,6 +3046,97 @@ public class ReportsController implements Serializable {
         return b;
     }
 
+//    public void generateDebtorBalanceReport(final boolean onlyDueBills) {
+//        if (visitType == null || visitType.trim().isEmpty()) {
+//            JsfUtil.addErrorMessage("Please select a visit type");
+//            return;
+//        }
+//
+//        List<PaymentMethod> paymentMethods = new ArrayList<>();
+//        if (methodType.equalsIgnoreCase("Credit")) {
+//            paymentMethods.add(PaymentMethod.Credit);
+//        } else if (methodType.equalsIgnoreCase("NonCredit")) {
+//            paymentMethods.add(PaymentMethod.Cash);
+//        } else {
+//            addAllPaymentMethods(paymentMethods);
+//        }
+//
+//        bundle = new ReportTemplateRowBundle();
+//
+//        List<BillTypeAtomic> opdBts = new ArrayList<>();
+//        bundle = new ReportTemplateRowBundle();
+//
+////        if (visitType.equalsIgnoreCase("IP")) {
+//////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+//////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+//////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+//////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+//////            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+////            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+////            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+////            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+////            //TODO: Add other needed bill types
+////
+////        } else if (visitType.equalsIgnoreCase("OP")) {
+//////            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+////            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+////            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+////            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+////            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+////            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+////            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+////            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+////            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+////            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+////        }
+////
+////        bundle.setName("Bills");
+////        bundle.setBundleType("billList");
+////
+////        bundle = generateDebtorBalanceReportBills(opdBts, paymentMethods, onlyDueBills);
+//        if (visitType.equalsIgnoreCase("IP")) {
+////            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+////            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+////            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+//
+//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+//            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
+//        } else if (visitType.equalsIgnoreCase("OP")) {
+//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+//        }
+//
+//        bundle.setName("Bills");
+//        bundle.setBundleType("billList");
+//
+//        bundle = generateDebtorBalanceBills(opdBts, paymentMethods);
+//
+//        if (visitType.equalsIgnoreCase("IP")) {
+//            updateSettledAmountsForIP();
+//        } else if (visitType.equalsIgnoreCase("OP")) {
+//            updateSettledAmountsForOP();
+//        }
+//
+//        if (onlyDueBills) {
+//            removeNonDues();
+//        }
+//
+//        bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
+//        bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
+//        bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
+//        bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
+//    }
+
     public void generateDebtorBalanceReport(final boolean onlyDueBills) {
         if (visitType == null || visitType.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please select a visit type");
@@ -3013,47 +3154,14 @@ public class ReportsController implements Serializable {
 
         bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
+        bundle.setName("Bills");
+        bundle.setBundleType("billList");
 
-//        if (visitType.equalsIgnoreCase("IP")) {
-////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-////            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-////            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-//            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
-//            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-//            //TODO: Add other needed bill types
-//
-//        } else if (visitType.equalsIgnoreCase("OP")) {
-////            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-//            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-//            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-//            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-//        }
-//
-//        bundle.setName("Bills");
-//        bundle.setBundleType("billList");
-//
-//        bundle = generateDebtorBalanceReportBills(opdBts, paymentMethods, onlyDueBills);
         if (visitType.equalsIgnoreCase("IP")) {
-//            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-//            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
-//            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-            opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
+            generateDebtorBalanceIPBills(onlyDueBills, paymentMethods);
         } else if (visitType.equalsIgnoreCase("OP")) {
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
@@ -3064,27 +3172,393 @@ public class ReportsController implements Serializable {
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
             opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
             opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-        }
 
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
-
-        bundle = generateDebtorBalanceBills(opdBts, paymentMethods);
-
-        if (visitType.equalsIgnoreCase("IP")) {
-            updateSettledAmountsForIP();
-        } else if (visitType.equalsIgnoreCase("OP")) {
+            bundle = generateDebtorBalanceBills(opdBts, paymentMethods);
             updateSettledAmountsForOP();
-        }
 
-        if (onlyDueBills) {
-            removeNonDues();
-        }
+            if (onlyDueBills) {
+                removeNonDues();
+            }
 
-        bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
+            bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
+            bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
+            bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
+            bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
+        }
+    }
+
+    public void exportDebtorBalanceReportIPToExcel() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Debtor_Balance_Report_Report.xlsx");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Debtor Balance Report");
+            int rowIndex = 0;
+
+            XSSFFont boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+
+            Row mainHeader = sheet.createRow(rowIndex++);
+            Cell headerCell = mainHeader.createCell(0);
+            headerCell.setCellValue("Debtor Balance Report");
+            headerCell.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 15));
+
+            Row columnHeader = sheet.createRow(rowIndex++);
+            String[] headers = {
+                    "", "BHT", "MRN No", "Phone", "Patient Name", "Admitted At", "Discharged At", "Final Total", "GOP by Patient", "Paid by Patient",
+                    "Patient Due", "Paid by Companies", "Total Due", "Company Details"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = columnHeader.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 13, 18));
+
+            int counter = 1;
+            for (Map.Entry<PatientEncounter, List<InstitutionBillEncounter>> entry : institutionBillPatientEncounterMap.entrySet()) {
+                PatientEncounter pe = entry.getKey();
+                List<InstitutionBillEncounter> bills = entry.getValue();
+
+                if (bills == null || bills.isEmpty()) {
+                    continue;
+                }
+
+                Row row = sheet.createRow(rowIndex++);
+                int col = 0;
+
+                row.createCell(col++).setCellValue(counter++);
+                row.createCell(col++).setCellValue(pe.getBhtNo());
+                row.createCell(col++).setCellValue(pe.getPatient().getPhn());
+                row.createCell(col++).setCellValue(pe.getPatient().getPerson().getMobile());
+                row.createCell(col++).setCellValue(pe.getPatient().getPerson().getName());
+                row.createCell(col++).setCellValue(sdf.format(pe.getDateOfAdmission()));
+                row.createCell(col++).setCellValue(sdf.format(pe.getDateOfDischarge()));
+                row.createCell(col++).setCellValue(pe.getFinalBill().getNetTotal());
+                row.createCell(col++).setCellValue(bills.get(0).getPatientGopAmount());
+                row.createCell(col++).setCellValue(bills.get(0).getPaidByPatient());
+                row.createCell(col++).setCellValue(bills.get(0).getPatientDue());
+                row.createCell(col++).setCellValue(bills.get(0).getTotalPaidByCompanies());
+                row.createCell(col++).setCellValue(bills.get(0).getTotalDue());
+
+                Row subHeader = sheet.createRow(rowIndex++);
+                String[] innerHeaders = {
+                        "Company Name", "Policy Number", "Reference Number", "GOP by Company",
+                        "Paid by Company", "Company Due"
+                };
+                for (int i = 0; i < innerHeaders.length; i++) {
+                    Cell cell = subHeader.createCell(i + 13);
+                    cell.setCellValue(innerHeaders[i]);
+                    cell.setCellStyle(boldStyle);
+                }
+
+                for (InstitutionBillEncounter bill : bills) {
+                    Row billRow = sheet.createRow(rowIndex++);
+                    billRow.createCell(13).setCellValue(bill.getInstitution().getName());
+                    billRow.createCell(14).setCellValue(getPolicyNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getInstitution().getName()));
+                    billRow.createCell(15).setCellValue(getReferenceNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getInstitution().getName()));
+                    billRow.createCell(16).setCellValue(bill.getGopAmount());
+                    billRow.createCell(17).setCellValue(bill.getPaidByCompany());
+                    billRow.createCell(18).setCellValue(bill.getCompanyDue() != 0 ? bill.getCompanyDue() : bill.getCompanyExcess());
+                }
+
+                Row totalsRow = sheet.createRow(rowIndex++);
+                Cell totalLabelCell = totalsRow.createCell(13);
+                totalLabelCell.setCellValue("Total");
+                totalLabelCell.setCellStyle(boldStyle);
+
+                Cell total1 = totalsRow.createCell(16);
+                total1.setCellValue(patientEncounterGopMap.get(pe));
+                total1.setCellStyle(boldStyle);
+
+                Cell total2 = totalsRow.createCell(17);
+                total2.setCellValue(patientEncounterPaidByCompanyMap.get(pe));
+                total2.setCellStyle(boldStyle);
+
+                Cell total3 = totalsRow.createCell(18);
+                total3.setCellValue(patientEncounterGopMap.get(pe) - patientEncounterPaidByCompanyMap.get(pe));
+                total3.setCellStyle(boldStyle);
+            }
+
+            Row totalFooter = sheet.createRow(rowIndex++);
+            Cell footerLabel = totalFooter.createCell(0);
+            footerLabel.setCellValue("Total");
+            footerLabel.setCellStyle(boldStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 3));
+
+            int[] footerCols = {7, 8, 9, 10, 11, 12};
+            double[] footerValues = {
+                    getBilled(),
+                    getPayableByPatient(),
+                    getPaidByPatient(),
+                    getPayableByPatient() - getPaidByPatient(),
+                    getPaidByCompany(),
+                    getBilled() - (getPaidByCompany() + getPaidByPatient())
+            };
+
+            for (int i = 0; i < footerCols.length; i++) {
+                Cell cell = totalFooter.createCell(footerCols[i]);
+                cell.setCellValue(footerValues[i]);
+                cell.setCellStyle(boldStyle);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportDebtorBalanceReportIPToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Debtor_Balance_Report_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            Paragraph title = new Paragraph("Debtor Balance Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+
+            SimpleDateFormat longSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+            PdfPTable dateHeaderTable = new PdfPTable(2);
+            dateHeaderTable.setWidthPercentage(50);
+            dateHeaderTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+
+            PdfPCell fromLabelCell = new PdfPCell(new Phrase("From  ", boldFont));
+            fromLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            fromLabelCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(fromLabelCell);
+
+            PdfPCell fromDateCell = new PdfPCell(new Phrase(longSdf.format(fromDate), normalFont));
+            fromDateCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            fromDateCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(fromDateCell);
+
+            PdfPCell toLabelCell = new PdfPCell(new Phrase("To  ", boldFont));
+            toLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            toLabelCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(toLabelCell);
+
+            PdfPCell toDateCell = new PdfPCell(new Phrase(longSdf.format(toDate), normalFont));
+            toDateCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            toDateCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(toDateCell);
+
+            document.add(dateHeaderTable);
+
+            PdfPTable mainTable = new PdfPTable(14);
+            mainTable.setWidthPercentage(100);
+
+            mainTable.setWidths(new float[]{0.6f, 1.2f, 1.2f, 1.2f, 1.2f, 1.8f, 1.8f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 8.0f});
+
+
+            String[] headers = {"", "BHT", "MRN No", "Phone", "Patient Name", "Admitted At", "Discharged At", "Final Total",
+                    "GOP by Patient", "Paid by Patient", "Patient Due", "Paid by Companies", "Total Due", "Company Details"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                mainTable.addCell(cell);
+            }
+
+            int counter = 1;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss a");
+
+            for (Map.Entry<PatientEncounter, List<InstitutionBillEncounter>> entry : institutionBillPatientEncounterMap.entrySet()) {
+                PatientEncounter pe = entry.getKey();
+                List<InstitutionBillEncounter> bills = entry.getValue();
+
+                mainTable.addCell(new Phrase(String.valueOf(counter++), normalFont));
+                mainTable.addCell(new Phrase(pe.getBhtNo(), normalFont));
+                mainTable.addCell(new Phrase(pe.getPatient().getPhn(), normalFont));
+                mainTable.addCell(new Phrase(pe.getPatient().getPerson().getMobile(), normalFont));
+                mainTable.addCell(new Phrase(pe.getPatient().getPerson().getName(), normalFont));
+                mainTable.addCell(new Phrase(sdf.format(pe.getDateOfAdmission()), normalFont));
+                mainTable.addCell(new Phrase(sdf.format(pe.getDateOfDischarge()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(pe.getFinalBill().getNetTotal()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getPatientGopAmount()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getPaidByPatient()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getPatientDue()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getTotalPaidByCompanies()), normalFont));
+                mainTable.addCell(new Phrase(String.valueOf(bills.get(0).getTotalDue()), normalFont));
+
+                PdfPTable nestedTable = new PdfPTable(6);
+                nestedTable.setWidthPercentage(100);
+                nestedTable.setWidths(new float[]{3f, 2.5f, 2.5f, 2f, 2f, 2f});
+
+                String[] subHeaders = {"Company Name", "Policy Number", "Reference Number", "GOP by Company", "Paid by Company", "Company Due"};
+                for (String sh : subHeaders) {
+                    PdfPCell shCell = new PdfPCell(new Phrase(sh, boldFont));
+                    shCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    nestedTable.addCell(shCell);
+                }
+
+                for (InstitutionBillEncounter bill : bills) {
+                    nestedTable.addCell(new Phrase(bill.getInstitution().getName(), normalFont));
+                    nestedTable.addCell(new Phrase(getPolicyNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getInstitution().getName()), normalFont));
+                    nestedTable.addCell(new Phrase(getReferenceNumberFromEncounterCreditCompanyMap(pe.getBhtNo(), bill.getInstitution().getName()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getGopAmount()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getPaidByCompany()), normalFont));
+                    nestedTable.addCell(new Phrase(String.valueOf(bill.getCompanyDue() != 0 ? bill.getCompanyDue() : bill.getCompanyExcess()), normalFont));
+                }
+
+                PdfPCell nestedTotalLabel = new PdfPCell(new Phrase("Total", boldFont));
+                nestedTotalLabel.setColspan(3);
+                nestedTotalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                nestedTable.addCell(nestedTotalLabel);
+
+                nestedTable.addCell(new Phrase(String.valueOf(patientEncounterGopMap.get(pe)), boldFont));
+                nestedTable.addCell(new Phrase(String.valueOf(patientEncounterPaidByCompanyMap.get(pe)), boldFont));
+                nestedTable.addCell(new Phrase(String.valueOf(patientEncounterGopMap.get(pe) - patientEncounterPaidByCompanyMap.get(pe)), boldFont));
+
+                PdfPCell nestedCell = new PdfPCell(nestedTable);
+                nestedCell.setColspan(1);
+                mainTable.addCell(nestedCell);
+            }
+
+            PdfPCell footerLabel = new PdfPCell(new Phrase("Total", boldFont));
+            footerLabel.setColspan(7);
+            footerLabel.setHorizontalAlignment(Element.ALIGN_LEFT);
+            mainTable.addCell(footerLabel);
+
+            mainTable.addCell(new Phrase(String.valueOf(getBilled()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient() - getPaidByPatient()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getPaidByCompany()), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont));
+            mainTable.addCell(new PdfPCell(new Phrase("")));
+
+            document.add(mainTable);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportDebtorBalanceReportOPToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Debtor_Balance_Report_OP.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+
+            document.open();
+
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            Paragraph title = new Paragraph("Debtor Balance Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+
+            SimpleDateFormat longSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+            PdfPTable dateHeaderTable = new PdfPTable(2);
+            dateHeaderTable.setWidthPercentage(50);
+            dateHeaderTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+
+            PdfPCell fromLabelCell = new PdfPCell(new Phrase("From  ", boldFont));
+            fromLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            fromLabelCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(fromLabelCell);
+
+            PdfPCell fromDateCell = new PdfPCell(new Phrase(longSdf.format(fromDate), normalFont));
+            fromDateCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            fromDateCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(fromDateCell);
+
+            PdfPCell toLabelCell = new PdfPCell(new Phrase("To  ", boldFont));
+            toLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            toLabelCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(toLabelCell);
+
+            PdfPCell toDateCell = new PdfPCell(new Phrase(longSdf.format(toDate), normalFont));
+            toDateCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            toDateCell.setBorder(Rectangle.NO_BORDER);
+            dateHeaderTable.addCell(toDateCell);
+
+            document.add(dateHeaderTable);
+
+            PdfPTable mainTable = new PdfPTable(11);
+            mainTable.setWidthPercentage(100);
+
+            mainTable.setWidths(new float[]{0.5f, 1.5f, 1.0f, 1.5f, 2.5f, 1.2f, 2.5f, 1.2f, 1.2f, 1.2f, 1.2f});
+
+            String[] headers = {
+                    "No", "Bill Date", "MRN No", "Payment Method", "Credit Company Name",
+                    "Phone", "Patient Name", "Final Bill Total", "Paid By Patient",
+                    "Credit Paid Amount", "Due Amount"
+            };
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                mainTable.addCell(cell);
+            }
+
+            int counter = 1;
+            SimpleDateFormat shortSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat());
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+
+
+            for (ReportTemplateRow rowData : bundle.getReportTemplateRows()) {
+                mainTable.addCell(new Phrase(String.valueOf(counter++), normalFont));
+                mainTable.addCell(new Phrase(shortSdf.format(rowData.getBill().getCreatedAt()), normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getPatient().getPhn(), normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getPaymentMethod() != null ? rowData.getBill().getPaymentMethod().toString() : "", normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getCreditCompany() != null ? rowData.getBill().getCreditCompany().getName() : "", normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getPatient().getPerson().getMobile(), normalFont));
+                mainTable.addCell(new Phrase(rowData.getBill().getPatient().getPerson().getName(), normalFont));
+
+                mainTable.addCell(new Phrase(decimalFormat.format(rowData.getBill().getNetTotal()), normalFont));
+                mainTable.addCell(new Phrase(decimalFormat.format(rowData.getBill().getSettledAmountByPatient()), normalFont));
+                mainTable.addCell(new Phrase(decimalFormat.format(rowData.getBill().getSettledAmountBySponsor()), normalFont));
+
+                double dueAmount = rowData.getBill().getNetTotal() - rowData.getBill().getSettledAmountByPatient() - rowData.getBill().getSettledAmountBySponsor();
+                mainTable.addCell(new Phrase(decimalFormat.format(dueAmount), normalFont));
+            }
+
+            PdfPCell footerLabelColSpan = new PdfPCell(new Phrase("Total", boldFont));
+            footerLabelColSpan.setColspan(7);
+            footerLabelColSpan.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            mainTable.addCell(footerLabelColSpan);
+
+            mainTable.addCell(new Phrase(decimalFormat.format(getBilled()), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(getPayableByPatient()), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(getPaidByCompany()), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont));
+
+            document.add(mainTable);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error exporting Debtor Balance Report OP to PDF", e);
+        }
     }
 
     private void removeNonDues() {
@@ -3109,9 +3583,16 @@ public class ReportsController implements Serializable {
         } else if (visitType.equalsIgnoreCase("OP")) {
             for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
                 Bill bill = row.getBill();
-                if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() <= 0) {
-                    removeList.add(row);
+                if (bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill)) {
+                    if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() >= 0) {
+                        removeList.add(row);
+                    }
+                } else {
+                    if (bill.getNetTotal() - bill.getSettledAmountByPatient() - bill.getSettledAmountBySponsor() <= 0) {
+                        removeList.add(row);
+                    }
                 }
+
             }
         }
 
@@ -4276,32 +4757,30 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        bundle = new ReportTemplateRowBundle();
-
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
-
-        if (visitType.equalsIgnoreCase("OP")) {
-//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-        }
-
         bundle.setName("Bills");
         bundle.setBundleType("billList");
 
         if (visitType.equalsIgnoreCase("IP")) {
             generateOpdAndInwardDueIPBills();
         } else if (visitType.equalsIgnoreCase("OP")) {
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+            bundle = new ReportTemplateRowBundle();
+
+            if (visitType.equalsIgnoreCase("OP")) {
+//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+            }
+
             bundle = generateOpdAndInwardDueBills(opdBts, null);
 
             updateSettledAmountsForOP();
@@ -4444,6 +4923,10 @@ public class ReportsController implements Serializable {
         List<Long> patientEncounterIds = patientEncounters.stream()
                 .map(PatientEncounter::getId)
                 .collect(Collectors.toList());
+
+        if (patientEncounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
 
         Map<String, Object> parameters = new HashMap<>();
         List<BillTypeAtomic> bts = new ArrayList<>();
@@ -5325,6 +5808,103 @@ public class ReportsController implements Serializable {
         }
     }
 
+    public void generateDebtorBalanceIPBills(final boolean onlyDue, final List<PaymentMethod> paymentMethods) {
+        Date startTime = new Date();
+
+        HashMap m = new HashMap();
+        String sql = " Select b from PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " where b.retired=false "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
+
+        if (roomCategory != null) {
+            sql += " AND b.currentPatientRoom.roomFacilityCharge.roomCategory = :category ";
+            m.put("category", roomCategory);
+        }
+
+        if (paymentMethods != null) {
+            sql += " AND b.finalBill.paymentMethod in :bpms ";
+            m.put("bpms", paymentMethods);
+        }
+
+        if (institutionOfDepartment != null) {
+            sql += "AND fb.institution = :insd ";
+            m.put("insd", institutionOfDepartment);
+        }
+
+        if (department != null) {
+            sql += "AND fb.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            sql += "AND fb.department.site = :site ";
+            m.put("site", site);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        if (patientEncounters == null) {
+            return;
+        }
+
+        updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
+
+        setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "any"));
+
+        setInstitutionBillPatientEncounterMap(InstitutionBillEncounter.createPatientEncounterBillEncounterMap(
+                InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(),
+                        onlyDue ? "due" : "any", "any", creditCompany, null)));
+
+        calculateCreditCompanyAmounts();
+
+        setEncounterCreditCompanyMap(getEncounterCreditCompanies());
+
+        billed = 0;
+        paidByPatient = 0;
+        paidByCompany = 0;
+        payableByPatient = 0;
+        double peGop;
+        double pePaidByCompany;
+
+        Map<PatientEncounter, Double> billGopMap = new HashMap<>();
+        Map<PatientEncounter, Double> billPaidByCompanyMap = new HashMap<>();
+
+        for (PatientEncounter p : getInstitutionBillPatientEncounterMap().keySet()) {
+            List<InstitutionBillEncounter> encounters = getInstitutionBillPatientEncounterMap().get(p);
+            if (encounters == null || encounters.isEmpty()) {
+                continue;
+            }
+            peGop = encounters.stream()
+                    .mapToDouble(InstitutionBillEncounter::getGopAmount)
+                    .sum();
+            pePaidByCompany = encounters.stream()
+                    .mapToDouble(InstitutionBillEncounter::getPaidByCompany)
+                    .sum();
+
+            billed += p.getFinalBill().getNetTotal();
+            paidByPatient += getInstitutionBillPatientEncounterMap().get(p).get(0).getPaidByPatient();
+            paidByCompany += getInstitutionBillPatientEncounterMap().get(p).get(0).getTotalPaidByCompanies();
+            payableByPatient += getInstitutionBillPatientEncounterMap().get(p).get(0).getPatientGopAmount();
+
+            billGopMap.put(p, peGop);
+            billPaidByCompanyMap.put(p, pePaidByCompany);
+        }
+
+        setPatientEncounterGopMap(billGopMap);
+        setPatientEncounterPaidByCompanyMap(billPaidByCompanyMap);
+    }
+
     public ReportTemplateRowBundle generateDebtorBalanceBills(List<BillTypeAtomic> bts, List<PaymentMethod> paymentMethods) {
         Map<String, Object> parameters = new HashMap<>();
 
@@ -5569,14 +6149,26 @@ public class ReportsController implements Serializable {
                 Bill bill1 = row.getBill();
 
                 if (reportType != null && reportType.equalsIgnoreCase("paid")) {
-                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) > 0) {
-                        continue;
+                    if (bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                        if (bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor() < 0) {
+                            continue;
+                        }
+                    } else {
+                        if (bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor() > 0) {
+                            continue;
+                        }
                     }
                 }
 
                 if (reportType != null && reportType.equalsIgnoreCase("due")) {
-                    if ((bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor()) <= 0) {
-                        continue;
+                    if (bill.getBillClassType().equals(BillClassType.CancelledBill)) {
+                        if (bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor() >= 0) {
+                            continue;
+                        }
+                    } else {
+                        if (bill1.getNetTotal() - bill1.getSettledAmountByPatient() - bill1.getSettledAmountBySponsor() <= 0) {
+                            continue;
+                        }
                     }
                 }
 
