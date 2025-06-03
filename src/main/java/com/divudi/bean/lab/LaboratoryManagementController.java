@@ -279,7 +279,6 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
-        System.out.println("navigateToPatientReportsFromSelectedInvestigation");
         items = new ArrayList<>();
         if (patientInvestigation == null || patientInvestigation.getId() == null) {
             return;
@@ -308,7 +307,7 @@ public class LaboratoryManagementController implements Serializable {
         items = patientInvestigationFacade.findByJpql(jpql, params);
     }
     
-    public void navigateToPatientReportsFromSelectedpatientInvestigation(PatientInvestigation patientInvestigation) {
+    public void navigateToPatientReportsFromSelectedPatientInvestigation(PatientInvestigation patientInvestigation) {
         items = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_REPORTS;
         
