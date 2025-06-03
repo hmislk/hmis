@@ -176,6 +176,30 @@
 
                         </div>
                     </div>
+                    
+                    <p:confirmDialog id="cancelDialog"
+                                         widgetVar="cancelDialog"
+                                         header="Confirmation"
+                                         message="Are you sure you want to cancel the selected sessions?"
+                                         severity="warn"
+                                         showEffect="fade"
+                                         hideEffect="fade"
+                                         responsive="true">
+
+                            <p:commandButton value="Yes"
+                                             icon="pi pi-check"
+                                             update="dialogContentForCancellation"
+                                             oncomplete="PF('cancelDialog').hide();"
+                                             action="#{bookingControllerViewScope.multipleSessionCancellation(bookingController.sessionsForCancellation, true)}"
+                                             process="@this"
+                                             />
+
+                            <p:commandButton value="No"
+                                             icon="pi pi-times"
+                                             onclick="PF('cancelDialog').hide(); return false;"
+                                             type="button"
+                                             styleClass="ui-button-secondary" />
+                        </p:confirmDialog>
 
                     <p:dialog 
                         widgetVar="sessionCancellationWidget" 
@@ -190,11 +214,10 @@
 
                         <f:facet name="header">
                             <h:outputText id="doctorNameCancellation" value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
-                            <p:commandButton class="mx-3" value="Cancel" action="#{bookingControllerViewScope.multipleSessionCancellation(bookingController.sessionsForCancellation, true)}" icon="fa-solid fa-check" update="dialogContentForCancellation"></p:commandButton>
+                            <p:commandButton class="mx-3" value="Cancel"  onclick="PF('cancelDialog').show();"  icon="fa-solid fa-check" update="dialogContentForCancellation"></p:commandButton>
                             <p:commandButton value="Re-Open" action="#{bookingControllerViewScope.multipleSessionCancellation(bookingController.sessionsForCancellation, false)}" update="dialogContentForCancellation" icon="fa-solid fa-xmark"></p:commandButton>
 
                         </f:facet>
-
 
                         <h:panelGroup id="dialogContentForCancellation">
                             <p:dataTable value="#{bookingController.sessionInstances}" 

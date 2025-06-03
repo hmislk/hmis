@@ -1181,6 +1181,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (sessions != null) {
             if (cancelStatus) {
                 for (SessionInstance session : sessions) {
+                    if(session.isCancelled()){
+                        continue;
+                    }
                     selectedSessionInstance = session;
                     fillBillSessions();
                     cancelSession();
@@ -1189,6 +1192,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 JsfUtil.addErrorMessage("Cancelled " + sessions.size() + " Sessions");
             } else {
                 for (SessionInstance session : sessions) {
+                    if(!session.isCancelled()){
+                        continue;
+                    }
                     selectedSessionInstance = session;
                     fillBillSessions();
                     reopenCancelSession();

@@ -2163,7 +2163,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
     public String navigatePastBookingFromChannelBookingByDate(SessionInstance session) {
         if (session != null) {
             if (session.getStaff() != null) {
-                System.out.println("line 2166");
                 this.speciality = session.getStaff().getSpeciality();
                 listnerStaffListForRowSelect();
             }
