@@ -1221,7 +1221,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceController.save(selectedSessionInstance);
         cancelAllOnlineBookings(getBillSessions(), true);
         sendSmsChannelSessionCancelNotification();
-        JsfUtil.addSuccessMessage("Cancelled");
+        JsfUtil.addSuccessMessage((selectedSessionInstance != null ? selectedSessionInstance.getName()+ "is": "")+" Cancelled");
 
     }
 
@@ -1244,7 +1244,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceController.save(selectedSessionInstance);
         cancelAllOnlineBookings(getBillSessions(), false);
         //sendSmsChannelSessionCancelNotification();
-        JsfUtil.addSuccessMessage("Re-Open Session");
+        JsfUtil.addSuccessMessage((selectedSessionInstance != null ? selectedSessionInstance.getName()+ "is": "")+" Re-Opened"); 
 
     }
 
