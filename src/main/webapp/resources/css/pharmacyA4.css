@@ -209,3 +209,10 @@ root {
     overflow: hidden;
 }
 
+
+.transfer-footer {
+    font-size: 14pt;
+}
+.transfer-footer .ui-outputlabel {
+    font-size: 14pt;
+}
