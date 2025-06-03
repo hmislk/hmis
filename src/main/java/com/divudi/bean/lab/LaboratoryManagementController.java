@@ -1148,7 +1148,13 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void searchPatientReportPrint() {
-        searchPatientInvestigations();
+        if (filteringStatus == null) {
+            searchPatientInvestigations();
+        } else if (filteringStatus.equalsIgnoreCase("Processing")) {
+            searchProcessingPatientReports();
+        } else {
+            searchPandingAndApprovedPatientReports();
+        }
         listingEntity = ListingEntity.REPORT_PRINT;
     }
 
