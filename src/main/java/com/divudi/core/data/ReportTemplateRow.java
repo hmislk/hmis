@@ -2,6 +2,7 @@ package com.divudi.core.data;
 
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.cashTransaction.DenominationTransaction;
+import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.lab.PatientInvestigation;
 
@@ -148,6 +149,8 @@ public class ReportTemplateRow implements Serializable {
     private List<DenominationTransaction> denominationTransactions;
 
     private PaymentHandover paymentHandover;
+
+    private AgentReferenceBook agentReferenceBook;
 
     // Constructor to generate a new UUID when an object is created
     public ReportTemplateRow() {
@@ -1372,4 +1375,11 @@ public class ReportTemplateRow implements Serializable {
         this.patientInvestigation = patientInvestigation;
     }
 
+    public AgentReferenceBook getAgentReferenceBook() {
+        return agentReferenceBook;
+    }
+
+    public void setAgentReferenceBook(AgentReferenceBook agentReferenceBook) {
+        this.agentReferenceBook = agentReferenceBook;
+    }
 }
