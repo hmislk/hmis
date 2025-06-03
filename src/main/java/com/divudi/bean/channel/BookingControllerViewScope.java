@@ -1186,10 +1186,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     }
                     selectedSessionInstance = session;
                     fillBillSessions();
-                    cancelSession();
-                    
+                    cancelSession();  
                 }
-                JsfUtil.addErrorMessage("Cancelled " + sessions.size() + " Sessions");
+                
             } else {
                 for (SessionInstance session : sessions) {
                     if(!session.isCancelled()){
@@ -1198,8 +1197,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     selectedSessionInstance = session;
                     fillBillSessions();
                     reopenCancelSession();
-                }
-                JsfUtil.addErrorMessage("Re-Opened " + sessions.size() + " Sessions");
+                }  
             }
         }   
     }
@@ -1223,7 +1221,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceController.save(selectedSessionInstance);
         cancelAllOnlineBookings(getBillSessions(), true);
         sendSmsChannelSessionCancelNotification();
-        JsfUtil.addErrorMessage("Cancelled");
+        JsfUtil.addSuccessMessage("Cancelled");
 
     }
 
@@ -1246,7 +1244,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceController.save(selectedSessionInstance);
         cancelAllOnlineBookings(getBillSessions(), false);
         //sendSmsChannelSessionCancelNotification();
-        JsfUtil.addErrorMessage("Re-Open Session");
+        JsfUtil.addSuccessMessage("Re-Open Session");
 
     }
 
@@ -1260,14 +1258,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 OnlineBooking booking = bs.getBill().getReferenceBill().getOnlineBooking();
 
                 if (cancelStatus) {
+                    if(booking.isCanceled()){
+                        continue;
+                    }
                     booking.setCanceled(true);
-                    booking.setCancelledBy("From System Cancelled by: " + getSessionController().getLoggedUser().getName());
+                    booking.setCancelledBy("From System Cancelled by: " + getSessionController().getLoggedUser().getName() + " at "+new Date());
                     booking.setOnlineBookingStatus(OnlineBookingStatus.DOCTOR_CANCELED);
                     getOnlineBookingFacade().edit(booking);
                 }else{
+                    if(!booking.isCanceled()){
+                        continue;
+                    }
                     booking.setCanceled(false);
                     booking.setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
-                    booking.setCancelledBy(booking.getCancelledBy()+" Re-OpenedBy : " + getSessionController().getLoggedUser().getName());
+                    booking.setCancelledBy((booking.getCancelledBy() != null ?booking.getCancelledBy():"") +" Re-OpenedBy : " + getSessionController().getLoggedUser().getName());
                     getOnlineBookingFacade().edit(booking);
                 }
 

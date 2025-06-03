@@ -1887,8 +1887,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 }
                 sessionInstanceFacade.edit(session);
             }
-
-            JsfUtil.addSuccessMessage("Holiday Mark is Successful.");
+            if (mark) {
+                JsfUtil.addSuccessMessage("Holiday Mark is Successful.");
+            }else if(!mark){
+                JsfUtil.addSuccessMessage("Holiday UnMark is Successful.");
+            }
         } else {
             JsfUtil.addErrorMessage("No sessions are selected to mark Holiday.");
         }
