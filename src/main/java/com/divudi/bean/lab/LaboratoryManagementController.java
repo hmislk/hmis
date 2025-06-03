@@ -280,6 +280,34 @@ public class LaboratoryManagementController implements Serializable {
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
     }
+    
+    public void navigateToPatientReportsPrintFromSelectedBill(Bill bill) {
+        items = new ArrayList<>();
+        listingEntity = ListingEntity.REPORT_PRINT;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired =:ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        items = patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public String navigateToBackFormPatientReportEditingView(){
+        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+            return "/lab/laboratory_management_dashboard?faces-redirect=true";
+        }else{
+            patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
+            return "/lab/generate_barcode_p?faces-redirect=true";
+        }
+    }
 
     // </editor-fold>
     
