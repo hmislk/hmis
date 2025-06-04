@@ -63,7 +63,7 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
                                         </p:column>
-
+                                        <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
                                     </p:autoComplete>
                                 </h:panelGrid>
 
@@ -92,7 +92,8 @@
                                         >
                                     </p:commandButton>
                                 </h:panelGrid>
-
+                                <p:focus id="focusQty" for="txtQty"></p:focus>
+                                <p:focus id="focusItem" for="acStock"></p:focus>
 
                             </h:panelGrid>
                         </p:panel>
