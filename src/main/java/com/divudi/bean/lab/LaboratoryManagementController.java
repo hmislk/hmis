@@ -81,6 +81,7 @@ public class LaboratoryManagementController implements Serializable {
     PatientInvestigationController patientInvestigationController;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -228,6 +229,33 @@ public class LaboratoryManagementController implements Serializable {
         }
     }
 
+    public String navigateToPrintReportfromPrintPanel(Long patientReportID) {
+        if (patientReportID == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
+
+        if (currentPatientReport.getReportType() == null) {
+            patientReportController.setCurrentPatientReport(currentPatientReport);
+            return "/lab/report_print?faces-redirect=true";
+        } else {
+            switch (currentPatientReport.getReportType()) {
+                case GENARATE:
+                    patientReportController.setCurrentPatientReport(currentPatientReport);
+                    return "/lab/report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = patientReportController.loadUpload(currentPatientReport);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/lab/upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+    }
+
+    
     public String navigateToLaboratoryAdministration() {
         return "/admin/lims/index?faces-redirect=true";
     }
@@ -251,7 +279,6 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
-        System.out.println("navigateToPatientReportsFromSelectedInvestigation");
         items = new ArrayList<>();
         if (patientInvestigation == null || patientInvestigation.getId() == null) {
             return;
@@ -264,13 +291,13 @@ public class LaboratoryManagementController implements Serializable {
 
     public void navigateToPatientReportsFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
-        listingEntity = ListingEntity.REPORT_PRINT;
+        listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
         jpql = "SELECT i "
                 + " FROM PatientInvestigation i "
-                + " WHERE i.retired = :ret "
+                + " WHERE i.retired =:ret "
                 + " and i.billItem.bill =:bill"
                 + " ORDER BY i.id DESC";
 
@@ -278,10 +305,64 @@ public class LaboratoryManagementController implements Serializable {
         params.put("bill", bill);
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public void navigateToPatientReportsFromSelectedPatientInvestigation(PatientInvestigation patientInvestigation) {
+        items = new ArrayList<>();
+        listingEntity = ListingEntity.PATIENT_REPORTS;
+        
+        items.add(patientInvestigation);
+    }
+    
+    public void navigateToPatientReportsPrintFromSelectedBill(Bill bill) {
+        items = new ArrayList<>();
+        listingEntity = ListingEntity.REPORT_PRINT;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
 
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired =:ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        items = patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public String navigateToBackFormPatientReportEditingView(){
+        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+            return "/lab/laboratory_management_dashboard?faces-redirect=true";
+        }else{
+            patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
+            return "/lab/generate_barcode_p?faces-redirect=true";
+        }
+    }
+    public String navigateToBackFormPatientReportPrintView(){
+        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+            return "/lab/laboratory_management_dashboard?faces-redirect=true";
+        }else{
+            patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
+            return "/lab/generate_barcode_p?faces-redirect=true";
+        }
+    }
+    
+    public String navigateToBackFormPatientReportPrintingView(){
+        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+            listingEntity = ListingEntity.REPORT_PRINT;
+            return "/lab/laboratory_management_dashboard?faces-redirect=true";
+        }else{
+            patientInvestigationController.setListingEntity(ListingEntity.REPORT_PRINT);
+            return "/lab/generate_barcode_p?faces-redirect=true";
+        }
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void searchLabBills() {
         listingEntity = ListingEntity.BILLS;
@@ -1255,6 +1336,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;

@@ -481,7 +481,7 @@
                             completeMethod="#{staffController.completeStaff}"
                             value="#{laboratoryManagementController.sampleTransportedToLabByStaff}" 
                             var="mys" 
-                            class="w-100" 
+                            class="w-100 mt-2" 
                             maxResults="50"
                             inputStyleClass="form-control"
                             itemLabel="#{mys.person.name}" 
@@ -592,7 +592,7 @@
                         rendered="#{webUserController.hasPrivilege('LabSampleRejecting')}"
                         id="sampleReject">
                         <p:inputText 
-                            class="w-100"
+                            class="w-100 mt-2"
                             value="#{laboratoryManagementController.sampleRejectionComment}" >
                         </p:inputText>
 
