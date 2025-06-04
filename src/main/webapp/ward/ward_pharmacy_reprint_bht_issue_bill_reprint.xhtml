@@ -31,7 +31,8 @@
                                 style="float: right;"
                                 icon="fas fa-cancel"
                                 ajax="false"
-                                action="#{pharmacySaleBhtController.navigateToCancelBhtRequest}" 
+                                action="#{pharmacyBillSearch.navigateToCancelBhtRequest}"
+                                disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0)}"
                                 value="Cancel Request">
                                 <f:setPropertyActionListener target="#{pharmacySaleBhtController.bill}" value="#{pharmacyBillSearch.bill}"/>
                             </p:commandButton>
@@ -168,6 +169,12 @@
                                         <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}"> 
                                             <h:panelGroup rendered="true" > 
                                                 <ph:A4_paper_with_headings bill="#{pharmacyBillSearch.bill}"></ph:A4_paper_with_headings>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
+                                            <h:panelGroup rendered="true" >
+                                                <phi:saleBill_Header_Inward bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                             </h:panelGroup>
                                         </h:panelGroup> 
 
