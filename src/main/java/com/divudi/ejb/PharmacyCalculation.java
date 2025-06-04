@@ -461,12 +461,14 @@ public class PharmacyCalculation implements Serializable {
         return (Math.abs(recieveNet));
     }
 
+    @Deprecated // Use calculateRemainigQtyFromOrder
     public double calQtyInTwoSql(PharmaceuticalBillItem po) {
         double grns = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill);
         double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn);
         return Math.abs(grns) - Math.abs(grnReturn);
     }
 
+    @Deprecated // use calculateRemainingFreeQtyFromOrder
     public double calFreeQtyInTwoSql(PharmaceuticalBillItem po) {
 
         double grnsFree = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill);

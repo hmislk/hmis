@@ -226,6 +226,7 @@ public class GrnController implements Serializable {
         return "/pharmacy/pharmacy_grn_with_approval?faces-redirect=true";
     }
 
+    @Deprecated // Please use navigateToResive
     public String navigateToResiveAll() {
         grnBill = null;
         dealor = null;
@@ -991,9 +992,9 @@ public class GrnController implements Serializable {
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            double calculatedReturns = getPharmacyCalculation().calQtyInTwoSql(i);
+            double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
             double remains = Math.abs(i.getQtyInUnit()) - Math.abs(calculatedReturns);
-            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
+            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(i);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
