@@ -22,7 +22,7 @@
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="fromDate" 
-                                value="#{searchController.fromDate}" 
+                                value="#{onlineBookingAgentController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
@@ -33,117 +33,35 @@
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="toDate" 
-                                value="#{searchController.toDate}" 
+                                value="#{onlineBookingAgentController.toDate}" 
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
                             <p:spacer ></p:spacer>
-                            <h:outputLabel value="User"/> 
-                            <p:autoComplete
-                                completeMethod="#{webUserController.completeUser}"
-                                class="w-100"
-                                id="acStaff" 
-                                style="width: 400px!important"
-                                inputStyleClass="w-100"
-                                value="#{searchController.webUser}" 
-                                var="user"
-                                scrollHeight="450"
-                                itemLabel="#{user.webUserPerson.name}" 
-                                itemValue="#{user}" >
-                                <p:column headerText="Username" >
-                                    <h:outputText value="#{user.name}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Name" >
-                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
-                                </p:column>
-                            </p:autoComplete>
+                            <h:outputLabel value="Booking Agent"/> 
+                            <p:selectOneMenu  id="lstSelect"
+                                                  value="#{onlineBookingAgentController.agentForBookings}" 
+                                                 style="w-100"
+                                                 filter="true">
+                                <f:selectItems  value="#{onlineBookingAgentController.allAgents}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+<!--                                <p:ajax update="gpDetail" process="lstSelect" >
+                                </p:ajax>-->
+                            </p:selectOneMenu>
                             <p:spacer></p:spacer>
                             <p:spacer></p:spacer>
 
                             <h:outputLabel value="Institution"/>                                
-                            <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
+                            <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
-                                <p:ajax event="itemSelect" process="@this" update="cmbDept"/>
+                                <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20" ></p:spacer>
 
-                            <h:outputLabel value="Site"/>   
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
-                                <f:selectItem itemLabel="All Sites" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
-                                <p:ajax event="itemSelect" process="@this" update="cmbDept"/>
-                            </p:selectOneMenu>
+                            
 
-                            <p:spacer width="20" ></p:spacer>
-
-                            <h:outputLabel value="Department"/>                                
-                            <h:panelGroup id="cmbDept">
-
-                                <!-- Component 1: Without Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-
-                                <!-- Component 2: With Site Only -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-
-                                <!-- Component 3: With Institution Only -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-
-                                <!-- Component 4: With Both Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{searchController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems 
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
-                                </p:selectOneMenu>
-
-
-                            </h:panelGroup>
                             <p:spacer></p:spacer>
 
 
@@ -155,7 +73,7 @@
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
-                                action="#{searchController.generateAllCashierSummary}" 
+                                action="#{onlineBookingAgentController.fetchOnlineBookingsForManagement}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
 
@@ -194,7 +112,7 @@
 
 
 
-                        <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="summary"
+                        <p:dataTable value="#{onlineBookingAgentController.onlineBookingList}" var="ob"
                                      paginator="true" rows="10"
                                      id="printdata"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
@@ -202,39 +120,7 @@
                                      paginatorPosition="bottom">
 
 
-                            <p:column headerText="Cashier" 
-                                      sortBy="#{summary.user.webUserPerson.name}" 
-                                      filterBy="#{summary.user.webUserPerson.name}">
-                                <h:outputText value="#{summary.user.webUserPerson.name} (#{summary.user.name})" />
-                            </p:column>
-                            <p:column headerText="Navigate" exportable="false">
-                                <p:commandButton 
-                                    icon="fa fa-bar-chart" title="Cashier Summary"
-                                    styleClass="m-1"
-                                    ajax="false"
-                                    action="#{searchController.navigateToSelectedCashierSummary(summary.user)}" />
-                                <p:commandButton 
-                                    icon="fa fa-address-card" title="Cashier Details"
-                                    styleClass="m-1"
-                                    ajax="false"
-                                    action="#{searchController.navigateToSelectedCashierDetails(summary.user)}" />
-                                <p:commandButton icon="fa fa-file-alt" title="Bill Types"
-                                                 styleClass="m-1"
-                                                 ajax="false"
-                                                 action="#{searchController.navigateToUserBillTypeList(summary.user)}" />
-                                <p:commandButton icon="fa fa-list-alt" title="Bill List"
-                                                 styleClass="m-1"
-                                                 ajax="false"
-                                                 action="#{searchController.navigateToUserBillList(summary.user)}" />
-                                <p:commandButton icon="fa fa-money-bill-alt" title="Payment List"
-                                                 styleClass="m-1"
-                                                 ajax="false"
-                                                 action="#{searchController.navigateToUserBillPaymentList(summary.user)}" />
-                            </p:column>
-
-
-
-                            <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
+<!--                            <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
                                 <h:outputText value="#{summary.department.institution.name}" />
                             </p:column>
 
@@ -244,208 +130,21 @@
 
                             <p:column headerText="Department" sortBy="#{summary.department.name}" filterBy="#{summary.department.name}">
                                 <h:outputText value="#{summary.department.name}" />
-                            </p:column>
+                            </p:column>-->
 
-                            <p:column headerText="Date" sortBy="#{summary.date}" filterBy="#{summary.date}">
-                                <h:outputText value="#{summary.date}">
+                            <p:column headerText="Date" >
+                                <h:outputText value="#{ob.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="HandOvered Date" sortBy="#{summary.date}" filterBy="#{summary.date}">
-                                <h:outputText value="#{summary.date}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            <p:column headerText="Patient">
+                                <h:outputText value="#{ob.patientName}">
+                                    
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Checked By" >
-
-                            </p:column>
-
-                            <p:column headerText="Cash" 
-                                      style="text-align: right;"
-                                      sortBy="#{summary.cashValue}" filterBy="#{summary.cashValue}" rendered="#{searchController.bundle.hasCashTransaction}" >
-                                <h:outputText value="#{summary.cashValue}"  style="text-align: right;">
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <p:outputLabel value="#{searchController.bundle.cashValue}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
-                                </f:facet>
-
-                            </p:column>
-
-                            <p:column headerText="Card" sortBy="#{summary.cardValue}" filterBy="#{summary.cardValue}"  rendered="#{searchController.bundle.hasCardTransaction}" >
-                                <h:outputText value="#{summary.cardValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.cardValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Multiple Payment Methods" sortBy="#{summary.multiplePaymentMethodsValue}" filterBy="#{summary.multiplePaymentMethodsValue}"  rendered="false" >
-                                <h:outputText value="#{summary.multiplePaymentMethodsValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.multiplePaymentMethodsValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Credit" sortBy="#{summary.creditValue}" filterBy="#{summary.creditValue}"  rendered="#{searchController.bundle.hasCreditTransaction}" >
-                                <h:outputText value="#{summary.creditValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.creditValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <!-- Continuing from Credit -->
-                            <p:column headerText="Staff Welfare" sortBy="#{summary.staffWelfareValue}" filterBy="#{summary.staffWelfareValue}"  rendered="#{searchController.bundle.hasStaffWelfareTransaction}" >
-                                <h:outputText value="#{summary.staffWelfareValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.staffWelfareValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Voucher" sortBy="#{summary.voucherValue}" filterBy="#{summary.voucherValue}"  rendered="#{searchController.bundle.hasVoucherTransaction}" >
-                                <h:outputText value="#{summary.voucherValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.voucherValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="IOU" sortBy="#{summary.iouValue}" filterBy="#{summary.iouValue}"  rendered="#{searchController.bundle.hasIouTransaction}" >
-                                <h:outputText value="#{summary.iouValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.iouValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Agent" sortBy="#{summary.agentValue}" filterBy="#{summary.agentValue}"  rendered="#{searchController.bundle.hasAgentTransaction}" >
-                                <h:outputText value="#{summary.agentValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.agentValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Cheque" sortBy="#{summary.chequeValue}" filterBy="#{summary.chequeValue}"  rendered="#{searchController.bundle.hasChequeTransaction}" >
-                                <h:outputText value="#{summary.chequeValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.chequeValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Slip" sortBy="#{summary.slipValue}" filterBy="#{summary.slipValue}"  rendered="#{searchController.bundle.hasSlipTransaction}" >
-                                <h:outputText value="#{summary.slipValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.slipValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="eWallet" sortBy="#{summary.ewalletValue}" filterBy="#{summary.ewalletValue}"  rendered="#{searchController.bundle.hasEWalletTransaction}" >
-                                <h:outputText value="#{summary.ewalletValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.ewalletValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Patient Deposit" sortBy="#{summary.patientDepositValue}" filterBy="#{summary.patientDepositValue}"  rendered="#{searchController.bundle.hasPatientDepositTransaction}" >
-                                <h:outputText value="#{summary.patientDepositValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.patientDepositValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Patient Points" sortBy="#{summary.patientPointsValue}" filterBy="#{summary.patientPointsValue}"  rendered="#{searchController.bundle.hasPatientPointsTransaction}" >
-                                <h:outputText value="#{summary.patientPointsValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.patientPointsValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Online Settlement" sortBy="#{summary.onlineSettlementValue}" filterBy="#{summary.onlineSettlementValue}"  rendered="#{searchController.bundle.hasOnCallTransaction}" >
-                                <h:outputText value="#{summary.onlineSettlementValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.onlineSettlementValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Grand Total" class="text-end">
-                                <h:outputText value="#{summary.cashValue + 
-                                                       summary.cardValue + 
-                                                       summary.voucherValue + 
-                                                       summary.iouValue + 
-                                                       summary.chequeValue + 
-                                                       summary.creditValue + 
-                                                       summary.slipValue + 
-                                                       summary.ewalletValue }" 
-                                              style="text-align: right;">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.cashValue + 
-                                                           searchController.bundle.cardValue + 
-                                                           searchController.bundle.creditValue + 
-                                                           searchController.bundle.voucherValue + 
-                                                           searchController.bundle.iouValue + 
-                                                           searchController.bundle.chequeValue + 
-                                                           searchController.bundle.slipValue + 
-                                                           searchController.bundle.ewalletValue }" 
-                                                  style="text-align: right;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
+                            
 
 
                         </p:dataTable>

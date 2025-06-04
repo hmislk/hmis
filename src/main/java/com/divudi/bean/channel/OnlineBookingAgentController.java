@@ -2,8 +2,11 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.OnlineBooking;
 import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.ChannelService;
 import java.io.Serializable;
@@ -36,6 +39,7 @@ public class OnlineBookingAgentController implements Serializable {
     
     private Institution institutionForBookings;
     private Institution agentForBookings;
+    private boolean paidStatus;
 
     @EJB
     private InstitutionFacade institutionFacade;
@@ -45,6 +49,23 @@ public class OnlineBookingAgentController implements Serializable {
     
     @EJB
     private ChannelService channelService;
+    private List<OnlineBooking> onlineBookingList;
+
+    public boolean isPaidStatus() {
+        return paidStatus;
+    }
+
+    public void setPaidStatus(boolean paidStatus) {
+        this.paidStatus = paidStatus;
+    }
+
+    public List<OnlineBooking> getOnlineBookingList() {
+        return onlineBookingList;
+    }
+
+    public void setOnlineBookingList(List<OnlineBooking> onlineBookingList) {
+        this.onlineBookingList = onlineBookingList;
+    }
     
 
     public List<Institution> getAllAgents() {
@@ -74,6 +95,14 @@ public class OnlineBookingAgentController implements Serializable {
     public void prepareAdd() {
         current = new Institution();
         current.setInstitutionType(InstitutionType.OnlineBookingAgent);
+    }
+    
+    public void fetchOnlineBookingsForManagement(){
+        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate,agentForBookings, institutionForBookings, paidStatus, OnlineBookingStatus.COMPLETED);
+        
+        if(bookingList != null && !bookingList.isEmpty()){
+            onlineBookingList = bookingList;
+        }
     }
 
     public void delete() {
@@ -159,6 +188,24 @@ public class OnlineBookingAgentController implements Serializable {
         m.put("type", InstitutionType.OnlineBookingAgent);
         allAgents = getInstitutionFacade().findByJpql(j, m);
     }
+    
+    public List<Institution> completeAgent(String params) {
+        if(params == null){
+            return null;
+        }
+        String j;
+        j = "select i "
+                + " from Institution i "
+                + " where i.retired=:ret"
+                + " and i.institutionType = :type"
+                + " and LOWER(i.name) like  LOWER(CONCAT('%', :params, '%')) or LOWER(i.code) like  LOWER(CONCAT('%', :params, '%'))"
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("params", params);
+        m.put("type", InstitutionType.OnlineBookingAgent);
+        return getInstitutionFacade().findByJpql(j, m);
+    }
 
     public Institution getCurrent() {
         if (current == null) {
@@ -173,6 +220,9 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public Date getFromDate() {
+        if(fromDate == null){
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
         return fromDate;
     }
 
@@ -181,6 +231,9 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public Date getToDate() {
+        if(toDate == null){
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
         return toDate;
     }
 
