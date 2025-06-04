@@ -34,6 +34,7 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.PrescriptionSummaryReportRow;
+
 import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -53,18 +54,19 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- *
  * @author Senula Nanayakkara
  */
 @Named
@@ -1234,8 +1236,8 @@ public class ReportController implements Serializable {
     public void createDebtorSettlement() {
         StringBuilder jpql = new StringBuilder(
                 "SELECT bi FROM BillItem bi " +
-                "WHERE bi.retired = :ret " +
-                "AND bi.bill.billTypeAtomic IN :btas");
+                        "WHERE bi.retired = :ret " +
+                        "AND bi.bill.billTypeAtomic IN :btas");
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -1251,7 +1253,7 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         billItems = billItemFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
-        
+
         if (selectedVoucherStatusOnDebtorSettlement != null) {
             // Filter the bills list based on the statusFilter
             billItems = filterBillsByStatus(billItems, selectedVoucherStatusOnDebtorSettlement);
@@ -1273,7 +1275,7 @@ public class ReportController implements Serializable {
                     default:
                         continue;
                 }
-                
+
                 processedBills.add(bill);
             }
         }
@@ -1661,8 +1663,8 @@ public class ReportController implements Serializable {
         //Add All Lab Test Count
         for (ItemCount count : allLabTestCounts) {
 //            if (count.getTestCount() != 0.0) {
-                categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L)).getItems().add(count);
-                categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+            categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L)).getItems().add(count);
+            categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
 //            }
         }
 
@@ -1782,7 +1784,7 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
-//    Not COrrect
+    //    Not COrrect
     public void listCcReportPrint() {
         reportTimerController.trackReportExecution(() -> {
             String jpql;
@@ -2048,7 +2050,7 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
-//
+    //
 //    public void processPharmacySaleReferralCount() {
 //        String jpql = "select new com.divudi.core.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
 //                + " from Bill bi "
@@ -3364,6 +3366,7 @@ public class ReportController implements Serializable {
     public void processCollectingCentreTestWiseCountReport() {
         // 1. Query for Billed Items
         String jpqlBilled = "select new com.divudi.core.data.TestWiseCountReport("
+                + " bi.item.code, "
                 + " bi.item.name, "
                 + " count(bi), "
                 + " sum(bi.hospitalFee), "
@@ -3406,6 +3409,7 @@ public class ReportController implements Serializable {
 
         // 2. Query for Cancellations and Refunds
         String jpqlCancelRefund = "select new com.divudi.core.data.TestWiseCountReport("
+                + " bi.item.code, "
                 + " bi.item.name, "
                 + " count(bi), "
                 + " sum(bi.hospitalFee), "
@@ -3457,7 +3461,7 @@ public class ReportController implements Serializable {
         // Put billed items in map
         if (billedReports != null) {
             for (TestWiseCountReport r : billedReports) {
-                finalMap.put(r.getTestName(), r);
+                finalMap.put(r.getTestCode(), r);
             }
         }
 
@@ -3472,10 +3476,10 @@ public class ReportController implements Serializable {
                 cr.setTotal(-Math.abs(cr.getTotal()));
 
                 // 3b: Merge with existing item in finalMap, or add as new negative entry
-                TestWiseCountReport existing = finalMap.get(cr.getTestName());
+                TestWiseCountReport existing = finalMap.get(cr.getTestCode());
                 if (existing == null) {
                     // If there's no billed entry, just put the negative
-                    finalMap.put(cr.getTestName(), cr);
+                    finalMap.put(cr.getTestCode(), cr);
                 } else {
                     existing.setCount(existing.getCount() + cr.getCount());
                     existing.setHosFee(existing.getHosFee() + cr.getHosFee());
