@@ -2328,6 +2328,7 @@ public class PharmacyBillSearch implements Serializable {
         getBill().setCancelled(true);
         getBill().setCancelledBill(newlyCreatedCancellationBill);
         getBillFacade().edit(getBill());
+        billService.createBillFinancialDetailsForPharmacyBill(newlyCreatedCancellationBill);
         JsfUtil.addSuccessMessage("Cancelled");
 
         printPreview = true;
