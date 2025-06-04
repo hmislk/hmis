@@ -220,6 +220,7 @@ public class PharmacyBillSearch implements Serializable {
 
         return "/pharmacy/pharmacy_reprint_retail_cancelltion_bill?faces-redirect=true";
     }
+
     public String navigateToViewPharmacyRetailCancellationPreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
@@ -351,13 +352,13 @@ public class PharmacyBillSearch implements Serializable {
         billFacade.edit(bill);
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
-    
+
     public String navigateToCancelBhtRequest() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        
+
         return "/inward/bht_bill_cancel?faces-redirect=true;";
     }
 
@@ -2133,7 +2134,7 @@ public class PharmacyBillSearch implements Serializable {
 
             newlyCreatedRetailSaleCancellationBill.setDeptId(deptId);
             newlyCreatedRetailSaleCancellationBill.setInsId(deptId);
-            
+
             if (newlyCreatedRetailSaleCancellationBill.getId() == null) {
                 getBillFacade().create(newlyCreatedRetailSaleCancellationBill);
             }
@@ -2292,8 +2293,12 @@ public class PharmacyBillSearch implements Serializable {
         printPreview = true;
 
     }
-    
+
     public void cancelPharmacyRequestIssueToBht() {
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return;
+        }
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
             return;
         }
@@ -2734,7 +2739,7 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             pharmacyCancelReceivedItems(cb);
-            
+
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
