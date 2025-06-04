@@ -88,7 +88,7 @@ public class BhtIssueReturnController implements Serializable {
 //            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
 //            return;
 //        }
-        if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiveing Department to Return the Durgs", false)) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiving Department to Return the Drugs", false)) {
             if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
                 JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
                 return null;
@@ -273,7 +273,7 @@ public class BhtIssueReturnController implements Serializable {
 
             //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
             //System.err.println("STOCK " + i.getPharmaceuticalBillItem().getStock());
-            if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiveing Department to Return the Durgs", false)) {
+            if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiving Department to Return the Drugs", false)) {
                 getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
             } else {
                 getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getBill().getDepartment());
