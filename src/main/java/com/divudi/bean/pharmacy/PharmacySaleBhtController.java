@@ -1038,22 +1038,6 @@ public class PharmacySaleBhtController implements Serializable {
         getBillFacade().edit(bill);
 
     }
-    
-    public void updateBillTotals(List<BillItem> billItems, Bill bill){
-        double total = 0;
-        double netTotal = 0;
-        double marginTotal = 0;
-        for (BillItem bi : billItems) {
-            total += bi.getGrossValue();
-            netTotal += bi.getNetValue();
-            marginTotal += bi.getMarginValue();
-        }
-
-        bill.setTotal(total);
-        bill.setNetTotal(netTotal);
-        bill.setMargin(marginTotal);
-        getBillFacade().edit(bill);
-    }
 
     @EJB
     private BillFeeFacade billFeeFacade;
