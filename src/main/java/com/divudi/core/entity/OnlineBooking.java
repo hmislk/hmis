@@ -48,6 +48,16 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private boolean absent;
     private boolean canceled;
     private String cancelledBy;
+    private boolean paidToHospital;
+    private Date paidToHospitalDate;
+    private WebUser paidToHospitalProcessedBy;
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    private Bill paidToHospitalBill;
+    
+    private WebUser paidToHospitalBillCancelledBy;
+    private Date paidToHospitalBillCancelledAt;
+    private String comment;
     
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
@@ -77,6 +87,62 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     
     @Enumerated(EnumType.STRING)
     private OnlineBookingStatus onlineBookingStatus;
+
+    public boolean isPaidToHospital() {
+        return paidToHospital;
+    }
+
+    public void setPaidToHospital(boolean paidToHospital) {
+        this.paidToHospital = paidToHospital;
+    }
+
+    public Date getPaidToHospitalDate() {
+        return paidToHospitalDate;
+    }
+
+    public void setPaidToHospitalDate(Date paidToHospitalDate) {
+        this.paidToHospitalDate = paidToHospitalDate;
+    }
+
+    public WebUser getPaidToHospitalProcessedBy() {
+        return paidToHospitalProcessedBy;
+    }
+
+    public void setPaidToHospitalProcessedBy(WebUser paidToHospitalProcessedBy) {
+        this.paidToHospitalProcessedBy = paidToHospitalProcessedBy;
+    }
+
+    public Bill getPaidToHospitalBill() {
+        return paidToHospitalBill;
+    }
+
+    public void setPaidToHospitalBill(Bill paidToHospitalBill) {
+        this.paidToHospitalBill = paidToHospitalBill;
+    }
+
+    public WebUser getPaidToHospitalBillCancelledBy() {
+        return paidToHospitalBillCancelledBy;
+    }
+
+    public void setPaidToHospitalBillCancelledBy(WebUser paidToHospitalBillCancelledBy) {
+        this.paidToHospitalBillCancelledBy = paidToHospitalBillCancelledBy;
+    }
+
+    public Date getPaidToHospitalBillCancelledAt() {
+        return paidToHospitalBillCancelledAt;
+    }
+
+    public void setPaidToHospitalBillCancelledAt(Date paidToHospitalBillCancelledAt) {
+        this.paidToHospitalBillCancelledAt = paidToHospitalBillCancelledAt;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
     
     public String getEmail() {
         return email;

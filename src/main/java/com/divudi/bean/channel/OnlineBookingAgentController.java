@@ -16,6 +16,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -28,8 +29,11 @@ public class OnlineBookingAgentController implements Serializable {
     private Institution current;
     private List<Institution> allAgents;
     
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fromDate;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date toDate;
+    
     private Institution institutionForBookings;
     private Institution agentForBookings;
 
