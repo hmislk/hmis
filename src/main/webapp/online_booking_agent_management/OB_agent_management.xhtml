@@ -74,22 +74,10 @@
                                             <p:inputText autocomplete="off" class="w-100 form-control m-1"
                                                          id="txtCode" value="#{onlineBookingAgentController.current.code}"></p:inputText>
 
-
-                                            <h:outputText id="lblParent" value="Parent" ></h:outputText>
-                                            <p:autoComplete value="#{onlineBookingAgentController.current.parentInstitution}"
-                                                            completeMethod="#{institutionController.completeIns}"
-                                                            var="r"
-                                                            class="w-100"
-                                                            inputStyleClass="w-100"
-                                                            itemLabel="#{r.name}"
-                                                            itemValue="#{r}"
-                                                            forceSelection="true">
-                                            </p:autoComplete>
-
                                             <h:outputText  value="Description" ></h:outputText>
                                             <p:inputTextarea class="w-100 form-control m-1" value="#{onlineBookingAgentController.current.descreption}"  ></p:inputTextarea>
                                             <h:outputText id="lblDept" value="Type"></h:outputText>
-                                             <h:outputText id="lblDept" value="#{onlineBookingAgentController.current.institutionType}"></h:outputText>                                                                     
+                                            <p:inputText class="w-100 form-control m-1" disabled="true" autocomplete="off"  value="#{onlineBookingAgentController.current.institutionType}"  ></p:inputText>                                                                     
                                             <h:outputText value="Phone" ></h:outputText>
                                             <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{onlineBookingAgentController.current.phone}"  ></p:inputText>
                                             <h:outputText value="Fax" ></h:outputText>
@@ -137,9 +125,10 @@
                                 <p:commandButton 
                                     id="btnSave" 
                                     value="Save" 
+                                    disabled="#{onlineBookingAgentController.current.id ne null}"
                                     action="#{onlineBookingAgentController.saveSelected(true)}" 
                                     process="btnSave gpDetail" 
-                                    update="lstSelect msg" 
+                                    update="lstSelect msg btnUpdate btnSave" 
                                     class=" m-1 ui-button-warning w-25"
                                     icon="fas fa-save">
                                 </p:commandButton>
@@ -148,7 +137,7 @@
                                     value="Update" 
                                     disabled="#{onlineBookingAgentController.current.id eq null}"
                                     action="#{onlineBookingAgentController.saveSelected(false)}" 
-                                    process="btnSave gpDetail" 
+                                    process="btnUpdate gpDetail" 
                                     update="lstSelect msg" 
                                     class=" m-1 ui-button-warning w-25"
                                     icon="fas fa-save">
