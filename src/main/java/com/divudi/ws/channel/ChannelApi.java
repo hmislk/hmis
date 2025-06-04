@@ -893,10 +893,12 @@ public class ChannelApi {
             throw new ValidationException("Agency attributes : ", "Missing agency code and name. Check fields");
         }
 
-        Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.Agency);
+        Institution creditCompany = channelService.findCreditCompany(agencyCode, agencyName, InstitutionType.OnlineBookingAgent);
 
         if (creditCompany == null) {
-            throw new ValidationException("Agency : ", "Your agency not register in the hospital system. Contact Carecode.");
+            throw new ValidationException("Agency : ", "Your agency is not registered in the hospital system.");
+        }else if(creditCompany != null && creditCompany.isInactive()){
+            throw new ValidationException("Agency : ", "Your agency is deactivated from the hospital system.");
         }
 
         return creditCompany;
