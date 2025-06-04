@@ -42,7 +42,8 @@ public class AuditEvent implements Serializable {
     private String eventTrigger;
     private Long institutionId;
     private Long departmentId;
-
+    private Long objectId;
+    
     @Lob
     private String beforeJson;
     @Lob
@@ -50,12 +51,15 @@ public class AuditEvent implements Serializable {
     private Long eventDuration;
     private String eventStatus;
     private String ipAddress;
+    private String host;
 
     private String entityType;
 
     @Transient
     private String difference;
 
+    
+    
     public Long getId() {
         return id;
     }
@@ -89,6 +93,8 @@ public class AuditEvent implements Serializable {
         return "com.divudi.core.entity.AuditEvent[ id=" + id + " ]";
     }
 
+    
+    
     public void calculateDifference() {
         System.out.println("calculateDifference");
         System.out.println("Before JSON: " + beforeJson);
@@ -270,6 +276,22 @@ public class AuditEvent implements Serializable {
 
     public void setEntityType(String entityType) {
         this.entityType = entityType;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public Long getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(Long objectId) {
+        this.objectId = objectId;
     }
 
 }

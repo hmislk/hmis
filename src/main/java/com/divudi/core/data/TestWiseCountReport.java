@@ -18,6 +18,7 @@ public class TestWiseCountReport {
 
     private Integer serial;
     private String testName;
+    private String testCode;
     private Person doctor;
     private Long count;
     private Double hosFee;
@@ -39,6 +40,16 @@ public class TestWiseCountReport {
     }
 
     public TestWiseCountReport(String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double total) {
+        this.testName = testName;
+        this.count = count;
+        this.hosFee = hosFee;
+        this.ccFee = ccFee;
+        this.proFee = proFee;
+        this.total = total;
+    }
+
+    public TestWiseCountReport(String testCode, String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double total) {
+        this.testCode = testCode;
         this.testName = testName;
         this.count = count;
         this.hosFee = hosFee;
@@ -204,5 +215,13 @@ public class TestWiseCountReport {
 
     public void setCheck(int check) {
         this.check = check;
+    }
+
+    public String getTestCode() {
+        return testCode;
+    }
+
+    public void setTestCode(String testCode) {
+        this.testCode = testCode;
     }
 }

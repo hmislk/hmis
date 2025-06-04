@@ -21,11 +21,11 @@
 
                     <p:outputLabel value="Supplier"></p:outputLabel>
                     <p:autoComplete value="#{pharmacySaleReportController.searchKeyword.ins}" 
-                                    completeMethod="#{institutionController.completeCompany}" 
+                                    completeMethod="#{dealerController.completeDealor}" 
                                     var="de" itemLabel="#{de.name}" itemValue="#{de}" >
                     </p:autoComplete>
 
-                    <p:outputLabel value="Perchase Order Number"></p:outputLabel>
+                    <p:outputLabel value="Purchase Order Number"></p:outputLabel>
                     <p:inputText value="#{pharmacySaleReportController.searchKeyword.refBillNo}"></p:inputText>
 
                     <p:outputLabel value="GRN Number"></p:outputLabel>
@@ -93,7 +93,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="PO Value" style="text-align: right;">
+                        <p:column headerText="PO Value" style="text-align: right;" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}">
                             <f:facet name="header" >
                                 <p:outputLabel value="PO Value" />
                             </f:facet>
@@ -102,7 +102,7 @@
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="PO Value(Sale)" style="text-align: right;">
+                        <p:column headerText="PO Value(Sale)" style="text-align: right;" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value(Sale) Column',false)}">
                             <f:facet name="header" >
                                 <p:outputLabel value="PO Value(Sale)" />
                             </f:facet>
@@ -162,7 +162,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column> 
-                        <p:column headerText="Department">
+                        <p:column headerText="Department" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide Department Column',false)}">
                             <f:facet name="header" >
                                 <p:outputLabel value="Department" />
                             </f:facet>
@@ -174,13 +174,26 @@
 
                         <p:columnGroup type="footer">  
                             <p:row>                                 
-                                <p:column colspan="7"/>                    
+                                <p:column colspan="2"/>
+                                <p:column colspan="1" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}"/>
+                                <p:column colspan="1" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value(Sale) Column',false)}"/>
+                                <p:column colspan="1"/>
                                 <p:column footerText="Total" style=" text-align: right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="Total">
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
+                                
+                                <p:column footerText="#{pharmacySaleReportController.totalFreeQuantity}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacySaleReportController.totalFreeQuantity}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
+                                <p:column colspan="1"/>
 
                                 <p:column footerText="#{pharmacySaleReportController.totalPurchaseValue}" style=" text-align: right">
                                     <f:facet name="footer">

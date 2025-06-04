@@ -37,6 +37,7 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -342,7 +343,7 @@ public class InwardSearch implements Serializable {
 
         return "/inward/inward_reprint_bill_final?faces-redirect=true";
     }
-    
+
     public String navigateToProvisionalBillForAdmission() {
         if (admission == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
@@ -597,6 +598,18 @@ public class InwardSearch implements Serializable {
         return false;
     }
 
+    @Inject
+    private EnumController enumController;
+
+    public boolean checkCancelBill(Bill originalBill) {
+        List<PatientInvestigationStatus> availableStatus = enumController.getAvailableStatusforCancel();
+        boolean canCancelBill = false;
+        if (availableStatus.contains(originalBill.getStatus())) {
+            canCancelBill = true;
+        }
+        return canCancelBill;
+    }
+
     private boolean check() {
         if (getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
@@ -708,20 +721,20 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", false)) {
+            if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", false)) {
+
+                if (!checkCancelBill(getBill())) {
+                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                    return;
+                }
 
                 if (checkInvestigation()) {
                     JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
                     return;
                 }
-
+            } else {
                 if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
-
-                    ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
-                    if (patientInvestigationController.sampledForAnyItemInTheBill(getBill())) {
-                        JsfUtil.addErrorMessage("Sample Already collected can't cancel");
-                        return;
-                    }
+                    JsfUtil.addErrorMessage("You have no privilege to cancel This Bill");
                 }
             }
 
@@ -1013,7 +1026,7 @@ public class InwardSearch implements Serializable {
         }
 
     }
-    
+
     public void cancelProvisionalBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
@@ -1064,7 +1077,6 @@ public class InwardSearch implements Serializable {
 //            getBill().getPatientEncounter().setPaymentFinalized(false);
 //            getBill().getPatientEncounter().setCreditUsedAmount(0);
 //            getPatientEncounterFacade().edit(getBill().getPatientEncounter());
-
             JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;

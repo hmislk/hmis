@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.io.Serializable;
+import java.math.BigDecimal;
 /**
  *
  * @author Dr M H B Ariyaratne
@@ -42,6 +43,7 @@ public class PharmacyRow  implements Serializable{
     private Double quantity;
     private Double purchaseValue;
     private Double saleValue;
+    private Double stockQty;
 
     private Long counter;
     private String rowType;
@@ -175,10 +177,24 @@ public class PharmacyRow  implements Serializable{
     private double staffTotal;
     private double ccTotal;
 
+    private double purchaseRate;
+    private double retailRate;
+
     private double qty;
 
     private long duration;
 
+    
+    private BigDecimal grossSaleRate = BigDecimal.ZERO;
+    private BigDecimal discountRate = BigDecimal.ZERO;
+    private BigDecimal marginRate = BigDecimal.ZERO;
+    private BigDecimal netSaleRate = BigDecimal.ZERO;
+    private BigDecimal grossSaleValue = BigDecimal.ZERO;
+    private BigDecimal marginValue = BigDecimal.ZERO;
+    private BigDecimal discountValue = BigDecimal.ZERO;
+    private BigDecimal netSaleValue = BigDecimal.ZERO;
+    
+    
     public PharmacyRow() {
         this.uuid = UUID.randomUUID();
     }
@@ -1338,4 +1354,102 @@ public class PharmacyRow  implements Serializable{
         this.admissionType = admissionType;
     }
 
+    public Double getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(double purchaseRate) {
+        this.purchaseRate = purchaseRate;
+    }
+
+    public Double getRetailRate() {
+        return retailRate;
+    }
+
+    public void setRetailRate(double retailRate) {
+        this.retailRate = retailRate;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public BigDecimal getGrossSaleRate() {
+        return grossSaleRate;
+    }
+
+    public void setGrossSaleRate(BigDecimal grossSaleRate) {
+        this.grossSaleRate = grossSaleRate;
+    }
+
+    public BigDecimal getDiscountRate() {
+        return discountRate;
+    }
+
+    public void setDiscountRate(BigDecimal discountRate) {
+        this.discountRate = discountRate;
+    }
+
+    public BigDecimal getMarginRate() {
+        return marginRate;
+    }
+
+    public void setMarginRate(BigDecimal marginRate) {
+        this.marginRate = marginRate;
+    }
+
+    public BigDecimal getNetSaleRate() {
+        return netSaleRate;
+    }
+
+    public void setNetSaleRate(BigDecimal netSaleRate) {
+        this.netSaleRate = netSaleRate;
+    }
+
+    public BigDecimal getGrossSaleValue() {
+        return grossSaleValue;
+    }
+
+    public void setGrossSaleValue(BigDecimal grossSaleValue) {
+        this.grossSaleValue = grossSaleValue;
+    }
+
+    public BigDecimal getMarginValue() {
+        return marginValue;
+    }
+
+    public void setMarginValue(BigDecimal marginValue) {
+        this.marginValue = marginValue;
+    }
+
+    public BigDecimal getDiscountValue() {
+        return discountValue;
+    }
+
+    public void setDiscountValue(BigDecimal discountValue) {
+        this.discountValue = discountValue;
+    }
+
+    public BigDecimal getNetSaleValue() {
+        return netSaleValue;
+    }
+
+    public void setNetSaleValue(BigDecimal netSaleValue) {
+        this.netSaleValue = netSaleValue;
+    }
+
+    public Double getStockQty() {
+        return stockQty;
+    }
+
+    public void setStockQty(Double stockQty) {
+        this.stockQty = stockQty;
+    }
+    
+
+    
 }

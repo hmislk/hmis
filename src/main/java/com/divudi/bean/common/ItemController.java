@@ -48,6 +48,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -140,6 +141,7 @@ public class ItemController implements Serializable {
      * Properties
      */
     private Institution site;
+    private Institution collectionCentre;
     private Item current;
     private Item sampleComponent;
     private List<Item> items = null;
@@ -193,7 +195,7 @@ public class ItemController implements Serializable {
         }
     }
 
-    public void uploadAddReplaceSiteFeesByItemCode() {
+    public void uploadToReplaceSiteFeesByItemCode() {
         if (site == null) {
             JsfUtil.addErrorMessage("Please select a site");
             return;
@@ -202,6 +204,36 @@ public class ItemController implements Serializable {
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 allItemFees = replaceSiteFeesFromItemCodeFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void uploadToAddSiteFeesByItemCode() {
+        if (site == null) {
+            JsfUtil.addErrorMessage("Please select a site");
+            return;
+        }
+        allItemFees = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                allItemFees = addForInstitutionItemFeesFromItemCodeFromExcel(inputStream, site);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    public void uploadToAddCcFeesByItemCode() {
+        if (collectionCentre == null) {
+            JsfUtil.addErrorMessage("Please select a Collection Centre");
+            return;
+        }
+        allItemFees = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                allItemFees = addForInstitutionItemFeesFromItemCodeFromExcel(inputStream, collectionCentre);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -292,6 +324,90 @@ public class ItemController implements Serializable {
         }
 
         workbook.close(); // Always close the workbook to prevent memory leaks
+        return itemFeesSaved;
+    }
+
+    private List<ItemFee> addForInstitutionItemFeesFromItemCodeFromExcel(InputStream inputStream, Institution fromInstitution) throws IOException {
+        output = "";
+
+        if (fromInstitution == null) {
+            output = "❌ From Institution is not selected. Please select before proceeding.<br/>";
+            return Collections.emptyList();
+        }
+
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<ItemFee> itemFeesSaved = new ArrayList<>();
+
+        if (rowIterator.hasNext()) {
+            rowIterator.next(); // Skip header
+        }
+
+        int rowNumber = 0;
+
+        while (rowIterator.hasNext()) {
+            rowNumber++;
+            Row row = rowIterator.next();
+
+            String itemCode = null;
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null) {
+                if (codeCell.getCellType() == CellType.STRING) {
+                    itemCode = codeCell.getStringCellValue();
+                } else if (codeCell.getCellType() == CellType.NUMERIC) {
+                    itemCode = String.valueOf((long) codeCell.getNumericCellValue());
+                }
+            }
+
+            if (itemCode == null || itemCode.trim().isEmpty()) {
+                output += rowNumber + " - Missing Item Code.<br/>";
+                continue;
+            }
+
+            Item item = findItemByCode(itemCode);
+            if (item == null) {
+                output += rowNumber + " - No matching item found for Code " + itemCode + "<br/>";
+                continue;
+            }
+
+            Double feeValue = 0.0;
+            Cell feeCell = row.getCell(1);
+            if (feeCell != null) {
+                if (feeCell.getCellType() == CellType.STRING) {
+                    feeValue = CommonFunctions.stringToDouble(feeCell.getStringCellValue());
+                } else if (feeCell.getCellType() == CellType.NUMERIC) {
+                    feeValue = feeCell.getNumericCellValue();
+                }
+            }
+
+            if (feeValue < 1) {
+                output += rowNumber + " - Invalid Fee Value for Code " + itemCode + "<br/>";
+                continue;
+            }
+
+            ItemFee itf = new ItemFee();
+            itf.setName("Hospital Fee");
+            itf.setItem(item);
+            itf.setInstitution(sessionController.getInstitution());
+            itf.setDepartment(sessionController.getDepartment());
+            itf.setFeeType(FeeType.OwnInstitution);
+            itf.setFee(feeValue);
+            itf.setFfee(feeValue);
+            itf.setCreatedAt(new Date());
+            itf.setCreater(sessionController.getLoggedUser());
+            itf.setForInstitution(fromInstitution);
+
+            itemFeeFacade.create(itf);
+            itemFeeService.updateFeeValue(item, site, feeValue, feeValue);
+
+            itemFeesSaved.add(itf);
+            output += rowNumber + " - Fee added successfully for Code " + itemCode + "<br/>";
+        }
+
+        workbook.close();
         return itemFeesSaved;
     }
 
@@ -635,7 +751,6 @@ public class ItemController implements Serializable {
                 jpql += "AND i.department=:dept ";
                 parameters.put("dept", department);
             }
-
             jpql += "ORDER BY i.name";
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         }
@@ -2328,7 +2443,7 @@ public class ItemController implements Serializable {
                     + " or type(c)=:inv"
                     + " or type(c)=:ward "
                     + " or type(c)=:the)  "
-                    + " and (c.name) like :q"
+                    + " and ((c.name) like :q or (c.code) like :q ) "
                     + " order by c.name";
             m.put("pac", Packege.class);
             m.put("ser", Service.class);
@@ -3489,6 +3604,8 @@ public class ItemController implements Serializable {
     public Department getFilterDepartment() {
         return filterDepartment;
     }
+    
+    
 
     public void setFilterDepartment(Department filterDepartment) {
         this.filterDepartment = filterDepartment;
@@ -3575,10 +3692,18 @@ public class ItemController implements Serializable {
                 + " and i.name=:itemName"
                 + " and i.institution.name=:institutionName";
         m.put("ret", false);
-         m.put("itemName", itemName);
+        m.put("itemName", itemName);
         m.put("institutionName", institutionName);
         Item item = getFacade().findFirstByJpql(jpql, m);
         return item;
+    }
+
+    public Institution getCollectionCentre() {
+        return collectionCentre;
+    }
+
+    public void setCollectionCentre(Institution collectionCentre) {
+        this.collectionCentre = collectionCentre;
     }
 
     @FacesConverter("itemLightConverter")

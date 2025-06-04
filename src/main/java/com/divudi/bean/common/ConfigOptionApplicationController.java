@@ -61,7 +61,6 @@ public class ConfigOptionApplicationController implements Serializable {
 //                .map(value -> new Denomination(value, 0))
 //                .collect(Collectors.toList());
 //    }
-
     public void loadApplicationOptions() {
         applicationOptions = new HashMap<>();
         List<ConfigOption> options = getApplicationOptions();
@@ -69,6 +68,29 @@ public class ConfigOptionApplicationController implements Serializable {
             applicationOptions.put(option.getOptionKey(), option);
         }
 //        initializeDenominations();
+        loadEmailGatewayConfigurationDefaults();
+    }
+
+    private void loadEmailGatewayConfigurationDefaults() {
+        getIntegerValueByKey("Email Gateway - SMTP Port", 587);
+        getBooleanValueByKey("Email Gateway - SMTP Auth Enabled", true);
+        getBooleanValueByKey("Email Gateway - StartTLS Enabled", true);
+        getBooleanValueByKey("Email Gateway - SSL Enabled", false);
+        // DO NOT set defaults for these, just trigger their presence in DB:
+        getShortTextValueByKey("Email Gateway - Username", "");
+        getShortTextValueByKey("Email Gateway - Password", "");
+        getShortTextValueByKey("Email Gateway - SMTP Host", "");
+        getShortTextValueByKey("Email Gateway - URL", "");
+        //
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one minute", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 5 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 10 minutes", true);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 15 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 20 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after half an hour", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one hour", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two hours", false);
     }
 
     public ConfigOption getApplicationOption(String key) {
@@ -101,7 +123,6 @@ public class ConfigOptionApplicationController implements Serializable {
 //        }
 //        return denominations;
 //    }
-
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
@@ -158,9 +179,9 @@ public class ConfigOptionApplicationController implements Serializable {
         return getEnumValue(option, enumClass);
     }
 
-    public Double getDoubleValueByKey(String key, Double defaultValue) {
+    public Integer getIntegerValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
-        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
             option = new ConfigOption();
             option.setCreatedAt(new Date());
             option.setOptionKey(key);
@@ -168,7 +189,29 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setInstitution(null);
             option.setDepartment(null);
             option.setWebUser(null);
-            option.setValueType(OptionValueType.DOUBLE);
+            option.setValueType(OptionValueType.INTEGER);
+            option.setOptionValue("0");
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        try {
+            return Integer.valueOf(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public Integer getIntegerValueByKey(String key, Integer defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.INTEGER);
             if (defaultValue == null) {
                 option.setOptionValue("");
             } else {
@@ -178,7 +221,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadApplicationOptions();
         }
         try {
-            return Double.valueOf(option.getOptionValue());
+            return Integer.valueOf(option.getOptionValue());
         } catch (NumberFormatException e) {
             return null;
         }
@@ -196,6 +239,32 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setWebUser(null);
             option.setValueType(OptionValueType.DOUBLE);
             option.setOptionValue("0.0");
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        try {
+            return Double.valueOf(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public Double getDoubleValueByKey(String key, Double defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.DOUBLE);
+            if (defaultValue == null) {
+                option.setOptionValue("");
+            } else {
+                option.setOptionValue(defaultValue + "");
+            }
             optionFacade.create(option);
             loadApplicationOptions();
         }
@@ -327,7 +396,7 @@ public class ConfigOptionApplicationController implements Serializable {
         return option.getOptionValue();
     }
 
-    public String getEnumValueByKey(String key ) {
+    public String getEnumValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.ENUM) {
             option = new ConfigOption();

@@ -26,7 +26,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
                             </p:calendar>
-                            
+
                             <h:outputLabel value="To Date"/>
                             <p:calendar 
                                 class="w-100 mx-4" 
@@ -37,6 +37,13 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                             </p:calendar>
+                            <h:outputLabel value="Bill Type"/>
+                            <p:selectOneMenu class="w-100 mx-4" value="#{creditCompanyDueController.billType}">
+                                <f:selectItem itemValue="ALL" itemLabel="All Bills (ALL)"/>    
+                                <f:selectItem itemValue="OPD" itemLabel="OPD Bills (OPD)"/>
+                                <f:selectItem itemValue="PACKAGE" itemLabel="Package Bills (PACKAGE)"/>
+                                <p:ajax update="@all"/>
+                            </p:selectOneMenu>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
@@ -44,9 +51,9 @@
                                 icon="fas fa-cogs" 
                                 ajax="false" 
                                 value="Process Due" 
-                                action="#{creditCompanyDueController.createOpdCreditDue}" >
+                                action="#{creditCompanyDueController.createOpdCreditDueByBillTypeAtomic}" >
                             </p:commandButton>
-                            
+
                             <p:commandButton 
                                 class="ui-button-info mx-2" 
                                 icon="fas fa-print" 
@@ -54,7 +61,7 @@
                                 value="Print" >
                                 <p:printer target="panIx" />
                             </p:commandButton>
-                            
+
                             <p:commandButton 
                                 class="ui-button-success" 
                                 icon="fas fa-file-excel" 
@@ -62,7 +69,7 @@
                                 value="Download Excel" 
                                 ajax="false" >
                             </p:commandButton>
-                            
+
                         </h:panelGrid>
 
                         <p:panel id="panIx" styleClass="noBorder summeryBorder" >
@@ -82,58 +89,73 @@
                                     <p:row>
                                         <p:column headerText="Bill No">                                    
                                         </p:column>
+                                        <p:column headerText="Policy No">                                    
+                                        </p:column>
+                                        <p:column headerText="Ref No">                                    
+                                        </p:column>
                                         <p:column headerText="Client Name">                                    
                                         </p:column>
                                         <p:column headerText="Bill Date">                                    
                                         </p:column>
                                         <p:column headerText="Billed Amount">                                    
                                         </p:column>
-                                        <p:column headerText="Staff Fee">                                    
+                                        <p:column headerText="Staff Fee" rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee',false)}">                                    
                                         </p:column>
                                         <p:column headerText="Paid Amount">                                    
                                         </p:column>
-                                        <p:column headerText="Net Amount">                                    
+                                        <p:column headerText="Due Amount">                                    
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
-                                <p:subTable value="#{i.bills}" var="b">
+                                <p:subTable value="#{i.payments}" var="p">
                                     <f:facet name="header">
                                         <h:outputLabel  value="#{i.institution.name}"/>
                                     </f:facet>
+                                    <p:column>
+                                        <p:commandLink 
+                                            value="#{p.bill.deptId}" 
+                                            ajax="false"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
+                                            <f:setPropertyActionListener value="#{p.bill}" target="#{billSearch.bill}" />
+                                        </p:commandLink>                            
+                                    </p:column>
                                     <p:column>                              
-                                        <h:outputLabel value="#{b.deptId}" />                                
+                                        <h:outputLabel value="#{not empty p.policyNo ? p.policyNo : 'N/A'}" />                              
+                                    </p:column>
+                                    <p:column> 
+                                        <h:outputLabel value="#{not empty p.referenceNo ? p.referenceNo : 'N/A'}" />                                
                                     </p:column>
                                     <p:column>                               
-                                        <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
+                                        <h:outputLabel value="#{p.bill.patient.person.nameWithTitle}" />                                 
                                     </p:column>
                                     <p:column>                                
-                                        <h:outputLabel value="#{b.createdAt}" >
+                                        <h:outputLabel value="#{p.bill.createdAt}" >
                                             <f:convertDateTime pattern="yyyy MM dd" />
                                         </h:outputLabel>                                 
                                     </p:column>
                                     <p:column style="text-align: right;">                                
-                                        <h:outputLabel value="#{b.netTotal}" >
+                                        <h:outputLabel value="#{p.bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                 
                                     </p:column>
-                                    <p:column style="text-align: right;">                                
-                                        <h:outputLabel value="#{b.staffFee}" >
+                                    <p:column style="text-align: right;" rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee',false)}">                                
+                                        <h:outputLabel value="#{p.bill.staffFee}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                 
                                     </p:column>
                                     <p:column style="text-align: right;">                              
-                                        <h:outputLabel value="#{b.paidAmount}" >
+                                        <h:outputLabel value="#{p.bill.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column style="text-align: right;">                              
-                                        <h:outputLabel value="#{b.netTotal+b.paidAmount}" >
+                                        <h:outputLabel value="#{p.bill.netTotal - p.bill.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:columnGroup type="footer">
                                         <p:row>
-                                            <p:column footerText="Total" colspan="3" />
+                                            <p:column footerText="Total" colspan="5" />
                                             <p:column style="text-align: right;">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.total}">
@@ -153,7 +175,7 @@
                                             </p:column>
                                             <p:column style="text-align: right;" >
                                                 <f:facet name="footer">
-                                                    <h:outputLabel value="#{i.total+i.paidTotal}">
+                                                    <h:outputLabel value="#{i.total - i.paidTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </f:facet>

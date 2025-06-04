@@ -63,7 +63,7 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
                                         </p:column>
-
+                                        <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
                                     </p:autoComplete>
                                 </h:panelGrid>
 
@@ -89,10 +89,12 @@
                                         class="ui-button-success"
                                         action="#{transferIssueController.addBillItemNew}"
                                         ajax="false"
+                                        update="focusItem"
                                         >
                                     </p:commandButton>
                                 </h:panelGrid>
-
+                                <p:focus id="focusQty" for="txtQty"></p:focus>
+                                <p:focus id="focusItem" for="acStock"></p:focus>
 
                             </h:panelGrid>
                         </p:panel>
@@ -204,6 +206,10 @@
                                     itemValue="#{w}"
                                     value="#{transferIssueController.issuedBill.toStaff}" >
                                 </p:autoComplete>
+                                
+                                <h:outputLabel value="Comment" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:inputTextarea value="#{transferIssueController.issuedBill.comments}" rows="3" cols="20"/>
 
                             </h:panelGrid>
                         </p:panel>

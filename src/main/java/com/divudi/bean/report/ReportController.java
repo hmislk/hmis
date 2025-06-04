@@ -34,6 +34,7 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.PrescriptionSummaryReportRow;
+
 import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -43,6 +44,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,18 +54,19 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- *
  * @author Senula Nanayakkara
  */
 @Named
@@ -105,6 +108,8 @@ public class ReportController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    PharmacyReportController pharmacyReportController;
 
     private int reportIndex;
     private Institution institution;
@@ -214,6 +219,8 @@ public class ReportController implements Serializable {
     private String reportType;
     private Speciality speciality;
     private String reportTemplateFileIndexName;
+
+    private List<String> siteIds;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -1087,6 +1094,9 @@ public class ReportController implements Serializable {
             boolean isRefunded = result.getBillItem().getBill() instanceof RefundBill;
 
             if (existingResult == null) {
+                if (isCancelled || isRefunded) {
+                    result.setCount(-Math.abs(result.getCount()));
+                }
                 existingResult = result;
             } else if (!(isCancelled || isRefunded)) {
                 existingResult.setCount(existingResult.getCount() + result.getCount());
@@ -1224,112 +1234,89 @@ public class ReportController implements Serializable {
     }
 
     public void createDebtorSettlement() {
-        String jpql = "SELECT cb "
-                + "FROM Bill cb "
-                + "WHERE cb.retired = :ret "
-                + "AND cb.paymentMethod = :pm "
-                + "AND cb.billType in :bts ";
-
+        StringBuilder jpql = new StringBuilder(
+                "SELECT bi FROM BillItem bi " +
+                        "WHERE bi.retired = :ret " +
+                        "AND bi.bill.billTypeAtomic IN :btas");
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        m.put("pm", PaymentMethod.Credit);
-        List<BillType> bts = new ArrayList<>();
-        bts.add(BillType.OpdBill);
-        m.put("bts", bts);
-
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        m.put("btas", btas);
         if (institution != null) {
-            jpql += "AND cb.creditCompany = :cc ";
+            jpql.append(" AND bi.bill.fromInstitution = :cc");
             m.put("cc", institution);
         }
-
-        jpql += "AND cb.createdAt BETWEEN :fromDate AND :toDate";
+        jpql.append(" AND bi.createdAt BETWEEN :fromDate AND :toDate");
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
 
-        bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        billItems = billItemFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+
         if (selectedVoucherStatusOnDebtorSettlement != null) {
             // Filter the bills list based on the statusFilter
-            bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
+            billItems = filterBillsByStatus(billItems, selectedVoucherStatusOnDebtorSettlement);
         }
+
+        Set<Bill> processedBills = new HashSet<>();
         netTotal = 0.0;
 
-        for (Bill b : bills) {
-            BillItem voucher = findVoucherIsAvailable(b);  // Call it once per loop
-            if (voucher != null) {
-                netTotal += voucher.getBill().getNetTotal();
+        for (BillItem bi : billItems) {
+            Bill bill = bi.getBill();
+            if (bill != null && !processedBills.contains(bill)) {
+                switch (bi.getBill().getBillTypeAtomic()) {
+                    case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                        netTotal += Math.abs(bill.getTotal());
+                        break;
+                    case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                        netTotal -= Math.abs(bill.getTotal());
+                        break;
+                    default:
+                        continue;
+                }
+
+                processedBills.add(bill);
             }
         }
+
     }
 
-    private List<Bill> filterBillsByStatus(List<Bill> bills, String statusFilter) {
-        List<Bill> filteredBills = new ArrayList<>();
+    private List<BillItem> filterBillsByStatus(List<BillItem> billItems, String statusFilter) {
+        List<BillItem> filteredBillItems = new ArrayList<>();
 
-        for (Bill bill : bills) {
-            String status = classifyVoucherSettlementStatus(bill);
+        for (BillItem bi : billItems) {
+            String status = classifyVoucherSettlementStatus(bi);
 
             // Only add bills that match the status filter
             if (status.equals(statusFilter)) {
-                filteredBills.add(bill);
+                filteredBillItems.add(bi);
             }
         }
 
-        return filteredBills; // Return the filtered list of bills
+        return filteredBillItems; // Return the filtered list of bills
     }
 
-    private String classifyVoucherSettlementStatus(Bill bill) {
-        BillItem voucher = findVoucherIsAvailable(bill);
+    private String classifyVoucherSettlementStatus(BillItem billitem) {
 
-        if (voucher == null) {
+        if (billitem == null) {
             return "Unsettled";
         }
 
-        if (bill.getNetTotal() == voucher.getBill().getNetTotal()) {
+        Bill ref = billitem.getReferenceBill();
+        if (ref == null) {
+            return "Unsettled";
+        }
+        // safe equality check
+        if (Objects.equals(ref.getPaidAmount(), ref.getNetTotal())) {
             return "Settled";
         }
-
-        if (bill.getNetTotal() > voucher.getBill().getNetTotal()) {
+        // numeric comparison (primitive or compareTo for BigDecimal)
+        if (ref.getNetTotal() > ref.getPaidAmount()) {
             return "Partially Settled";
         }
 
         return "Unsettled"; // Default case for safety
-    }
-
-    public BillItem findVoucherIsAvailable(Bill b) {
-        voucherItem = null;
-
-        String jpql = "SELECT bi "
-                + "FROM BillItem bi "
-                + "WHERE bi.retired = :ret "
-                + "AND bi.referenceBill = :b "
-                + "AND bi.bill.billType in :bts";
-
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        m.put("b", b);
-        List<BillType> bts = new ArrayList<>();
-        bts.add(BillType.CashRecieveBill);
-        m.put("bts", bts);
-
-        List<BillItem> bis = billItemFacade.findByJpql(jpql, m);
-
-        if (bis.size() == 1) {
-            voucherItem = billItemFacade.findFirstByJpql(jpql, m);
-            voucherItem.getBill().setNetTotal(voucherItem.getNetValue());
-            if (voucherItem.getNetValue() < b.getNetTotal()) {
-                voucherItem.getBill().setAdjustedTotal(Math.abs(voucherItem.getNetValue()));
-                voucherItem.getBill().setBalance(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getNetValue()));
-            }
-        } else if (bis.size() > 1) {
-            Double NetTotal = 0.0;
-            for (BillItem bi : bis) {
-                voucherItem = bi;
-                NetTotal += voucherItem.getNetValue();
-            }
-            voucherItem.getBill().setNetTotal(NetTotal);
-            voucherItem.getBill().setBalance(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getBill().getNetTotal()));
-        }
-
-        return voucherItem;
     }
 
     public void processPettyCashPayment() {
@@ -1595,6 +1582,27 @@ public class ReportController implements Serializable {
             m.put("machine", machine);
         }
 
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department = :dep ";
+            m.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and bi.bill.department.site = :site ";
+            m.put("site", site);
+        }
+
+        if (siteIds != null && !siteIds.isEmpty()) {
+            jpql += " and bi.bill.department.site.id in :siteIds";
+
+            m.put("siteIds", siteIds);
+        }
+
         List<BillTypeAtomic> bTypes = Arrays.asList(
                 BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
                 BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
@@ -1654,10 +1662,10 @@ public class ReportController implements Serializable {
 
         //Add All Lab Test Count
         for (ItemCount count : allLabTestCounts) {
-            if (count.getTestCount() != 0.0) {
-                categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L)).getItems().add(count);
-                categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
-            }
+//            if (count.getTestCount() != 0.0) {
+            categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L)).getItems().add(count);
+            categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+//            }
         }
 
         // Convert the map values to a list to be used in the JSF page
@@ -1776,7 +1784,7 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
-//    Not COrrect
+    //    Not COrrect
     public void listCcReportPrint() {
         reportTimerController.trackReportExecution(() -> {
             String jpql;
@@ -2042,7 +2050,7 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
-//
+    //
 //    public void processPharmacySaleReferralCount() {
 //        String jpql = "select new com.divudi.core.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
 //                + " from Bill bi "
@@ -2893,11 +2901,18 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToconsumption() {
-
         return "/reports/inventoryReports/consumption?faces-redirect=true";
     }
 
     public String navigateToClosingStockReport() {
+        pharmacyReportController.setReportType("itemWise");
+        reportTemplateFileIndexName = "Closing Stock Report";
+        return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
+    }
+
+    public String navigateToBatchWiseStockReport() {
+        pharmacyReportController.setReportType("batchWise");
+        reportTemplateFileIndexName = "Batch Wise Stock Report";
         return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
     }
 
@@ -3349,146 +3364,150 @@ public class ReportController implements Serializable {
      * </p>
      */
     public void processCollectingCentreTestWiseCountReport() {
-        // 1. Query for Billed Items
-        String jpqlBilled = "select new com.divudi.core.data.TestWiseCountReport("
-                + " bi.item.name, "
-                + " count(bi), "
-                + " sum(bi.hospitalFee), "
-                + " sum(bi.collectingCentreFee), "
-                + " sum(bi.staffFee), "
-                + " sum(bi.netValue)"
-                + ") "
-                + " from BillItem bi "
-                + " where (bi.retired is null or bi.retired = false) "
-                + " and bi.bill.createdAt between :fd and :td "
-                + " and bi.bill.billTypeAtomic = :billType ";
+        reportTimerController.trackReportExecution(() -> {
+            // 1. Query for Billed Items
+            String jpqlBilled = "select new com.divudi.core.data.TestWiseCountReport("
+                    + " bi.item.code, "
+                    + " bi.item.name, "
+                    + " count(bi), "
+                    + " sum(bi.hospitalFee), "
+                    + " sum(bi.collectingCentreFee), "
+                    + " sum(bi.staffFee), "
+                    + " sum(bi.netValue)"
+                    + ") "
+                    + " from BillItem bi "
+                    + " where (bi.retired is null or bi.retired = false) "
+                    + " and bi.bill.createdAt between :fd and :td "
+                    + " and bi.bill.billTypeAtomic = :billType ";
 
-        Map mBilled = new HashMap();
-        mBilled.put("fd", fromDate);
-        mBilled.put("td", toDate);
-        mBilled.put("billType", BillTypeAtomic.CC_BILL);
+            Map mBilled = new HashMap();
+            mBilled.put("fd", fromDate);
+            mBilled.put("td", toDate);
+            mBilled.put("billType", BillTypeAtomic.CC_BILL);
 
-        // Keep your existing logic in both queries
-        if (institution != null) {
-            jpqlBilled += " and bi.bill.institution = :ins ";
-            mBilled.put("ins", institution);
-        }
-        if (department != null) {
-            jpqlBilled += " and bi.bill.department = :dep ";
-            mBilled.put("dep", department);
-        }
-        if (site != null) {
-            jpqlBilled += " and bi.bill.department.site = :site ";
-            mBilled.put("site", site);
-        }
-        if (collectingCentre != null) {
-            jpqlBilled += " and bi.bill.collectingCentre.id = :ccId ";
-            mBilled.put("ccId", collectingCentre.getId());
-        }
-
-        jpqlBilled += " group by bi.item order by bi.item.name asc";
-
-        List<TestWiseCountReport> billedReports
-                = billItemFacade.findLightsByJpql(jpqlBilled, mBilled, TemporalType.TIMESTAMP);
-
-        // 2. Query for Cancellations and Refunds
-        String jpqlCancelRefund = "select new com.divudi.core.data.TestWiseCountReport("
-                + " bi.item.name, "
-                + " count(bi), "
-                + " sum(bi.hospitalFee), "
-                + " sum(bi.collectingCentreFee), "
-                + " sum(bi.staffFee), "
-                + " sum(bi.netValue)"
-                + ") "
-                + " from BillItem bi "
-                + " where (bi.retired is null or bi.retired = false) "
-                + " and bi.bill.createdAt between :fd and :td "
-                + " and bi.bill.billTypeAtomic in :cancelTypes ";
-
-        Map mCancelRefund = new HashMap();
-        mCancelRefund.put("fd", fromDate);
-        mCancelRefund.put("td", toDate);
-        List<BillTypeAtomic> cancelTypes = new ArrayList<>();
-        cancelTypes.add(BillTypeAtomic.CC_BILL_CANCELLATION);
-        cancelTypes.add(BillTypeAtomic.CC_BILL_REFUND);
-        mCancelRefund.put("cancelTypes", cancelTypes);
-
-        // Repeat your filtering logic
-        if (institution != null) {
-            jpqlCancelRefund += " and bi.bill.institution = :ins ";
-            mCancelRefund.put("ins", institution);
-        }
-        if (department != null) {
-            jpqlCancelRefund += " and bi.bill.department = :dep ";
-            mCancelRefund.put("dep", department);
-        }
-        if (site != null) {
-            jpqlCancelRefund += " and bi.bill.department.site = :site ";
-            mCancelRefund.put("site", site);
-        }
-        if (collectingCentre != null) {
-            jpqlCancelRefund += " and bi.bill.collectingCentre.id = :ccId ";
-            mCancelRefund.put("ccId", collectingCentre.getId());
-        }
-
-        jpqlCancelRefund += " group by bi.item order by bi.item.name asc";
-
-        List<TestWiseCountReport> cancelRefundReports
-                = billItemFacade.findLightsByJpql(jpqlCancelRefund, mCancelRefund, TemporalType.TIMESTAMP);
-
-        // 3. Combine in Java
-        //    Store billed items in a map, then convert cancellation/refund fields to negative
-        //    before adding them, so effectively "subtracting" them from the totals.
-        Map<String, TestWiseCountReport> finalMap = new HashMap<>();
-
-        // Put billed items in map
-        if (billedReports != null) {
-            for (TestWiseCountReport r : billedReports) {
-                finalMap.put(r.getTestName(), r);
+            // Keep your existing logic in both queries
+            if (institution != null) {
+                jpqlBilled += " and bi.bill.institution = :ins ";
+                mBilled.put("ins", institution);
             }
-        }
+            if (department != null) {
+                jpqlBilled += " and bi.bill.department = :dep ";
+                mBilled.put("dep", department);
+            }
+            if (site != null) {
+                jpqlBilled += " and bi.bill.department.site = :site ";
+                mBilled.put("site", site);
+            }
+            if (collectingCentre != null) {
+                jpqlBilled += " and bi.bill.collectingCentre.id = :ccId ";
+                mBilled.put("ccId", collectingCentre.getId());
+            }
 
-        // Turn all cancellation/refund amounts into negative values
-        if (cancelRefundReports != null) {
-            for (TestWiseCountReport cr : cancelRefundReports) {
-                // 3a: Convert them to absolute then make negative
-                cr.setCount(-Math.abs(cr.getCount()));
-                cr.setHosFee(-Math.abs(cr.getHosFee()));
-                cr.setCcFee(-Math.abs(cr.getCcFee()));
-                cr.setProFee(-Math.abs(cr.getProFee()));
-                cr.setTotal(-Math.abs(cr.getTotal()));
+            jpqlBilled += " group by bi.item order by bi.item.name asc";
 
-                // 3b: Merge with existing item in finalMap, or add as new negative entry
-                TestWiseCountReport existing = finalMap.get(cr.getTestName());
-                if (existing == null) {
-                    // If there's no billed entry, just put the negative
-                    finalMap.put(cr.getTestName(), cr);
-                } else {
-                    existing.setCount(existing.getCount() + cr.getCount());
-                    existing.setHosFee(existing.getHosFee() + cr.getHosFee());
-                    existing.setCcFee(existing.getCcFee() + cr.getCcFee());
-                    existing.setProFee(existing.getProFee() + cr.getProFee());
-                    existing.setTotal(existing.getTotal() + cr.getTotal());
+            List<TestWiseCountReport> billedReports
+                    = billItemFacade.findLightsByJpql(jpqlBilled, mBilled, TemporalType.TIMESTAMP);
+
+            // 2. Query for Cancellations and Refunds
+            String jpqlCancelRefund = "select new com.divudi.core.data.TestWiseCountReport("
+                    + " bi.item.code, "
+                    + " bi.item.name, "
+                    + " count(bi), "
+                    + " sum(bi.hospitalFee), "
+                    + " sum(bi.collectingCentreFee), "
+                    + " sum(bi.staffFee), "
+                    + " sum(bi.netValue)"
+                    + ") "
+                    + " from BillItem bi "
+                    + " where (bi.retired is null or bi.retired = false) "
+                    + " and bi.bill.createdAt between :fd and :td "
+                    + " and bi.bill.billTypeAtomic in :cancelTypes ";
+
+            Map mCancelRefund = new HashMap();
+            mCancelRefund.put("fd", fromDate);
+            mCancelRefund.put("td", toDate);
+            List<BillTypeAtomic> cancelTypes = new ArrayList<>();
+            cancelTypes.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+            cancelTypes.add(BillTypeAtomic.CC_BILL_REFUND);
+            mCancelRefund.put("cancelTypes", cancelTypes);
+
+            // Repeat your filtering logic
+            if (institution != null) {
+                jpqlCancelRefund += " and bi.bill.institution = :ins ";
+                mCancelRefund.put("ins", institution);
+            }
+            if (department != null) {
+                jpqlCancelRefund += " and bi.bill.department = :dep ";
+                mCancelRefund.put("dep", department);
+            }
+            if (site != null) {
+                jpqlCancelRefund += " and bi.bill.department.site = :site ";
+                mCancelRefund.put("site", site);
+            }
+            if (collectingCentre != null) {
+                jpqlCancelRefund += " and bi.bill.collectingCentre.id = :ccId ";
+                mCancelRefund.put("ccId", collectingCentre.getId());
+            }
+
+            jpqlCancelRefund += " group by bi.item order by bi.item.name asc";
+
+            List<TestWiseCountReport> cancelRefundReports
+                    = billItemFacade.findLightsByJpql(jpqlCancelRefund, mCancelRefund, TemporalType.TIMESTAMP);
+
+            // 3. Combine in Java
+            //    Store billed items in a map, then convert cancellation/refund fields to negative
+            //    before adding them, so effectively "subtracting" them from the totals.
+            Map<String, TestWiseCountReport> finalMap = new HashMap<>();
+
+            // Put billed items in map
+            if (billedReports != null) {
+                for (TestWiseCountReport r : billedReports) {
+                    finalMap.put(r.getTestCode(), r);
                 }
             }
-        }
 
-        // 4. Build final list and sum totals
-        testWiseCounts = new ArrayList<>(finalMap.values());
+            // Turn all cancellation/refund amounts into negative values
+            if (cancelRefundReports != null) {
+                for (TestWiseCountReport cr : cancelRefundReports) {
+                    // 3a: Convert them to absolute then make negative
+                    cr.setCount(-Math.abs(cr.getCount()));
+                    cr.setHosFee(-Math.abs(cr.getHosFee()));
+                    cr.setCcFee(-Math.abs(cr.getCcFee()));
+                    cr.setProFee(-Math.abs(cr.getProFee()));
+                    cr.setTotal(-Math.abs(cr.getTotal()));
 
-        totalCount = 0.0;
-        totalHosFee = 0.0;
-        totalCCFee = 0.0;
-        totalProFee = 0.0;
-        totalNetTotal = 0.0;
+                    // 3b: Merge with existing item in finalMap, or add as new negative entry
+                    TestWiseCountReport existing = finalMap.get(cr.getTestCode());
+                    if (existing == null) {
+                        // If there's no billed entry, just put the negative
+                        finalMap.put(cr.getTestCode(), cr);
+                    } else {
+                        existing.setCount(existing.getCount() + cr.getCount());
+                        existing.setHosFee(existing.getHosFee() + cr.getHosFee());
+                        existing.setCcFee(existing.getCcFee() + cr.getCcFee());
+                        existing.setProFee(existing.getProFee() + cr.getProFee());
+                        existing.setTotal(existing.getTotal() + cr.getTotal());
+                    }
+                }
+            }
 
-        for (TestWiseCountReport report : testWiseCounts) {
-            totalCount += report.getCount();
-            totalHosFee += report.getHosFee();
-            totalCCFee += report.getCcFee();
-            totalProFee += report.getProFee();
-            totalNetTotal += report.getTotal();
-        }
+            // 4. Build final list and sum totals
+            testWiseCounts = new ArrayList<>(finalMap.values());
+
+            totalCount = 0.0;
+            totalHosFee = 0.0;
+            totalCCFee = 0.0;
+            totalProFee = 0.0;
+            totalNetTotal = 0.0;
+
+            for (TestWiseCountReport report : testWiseCounts) {
+                totalCount += report.getCount();
+                totalHosFee += report.getHosFee();
+                totalCCFee += report.getCcFee();
+                totalProFee += report.getProFee();
+                totalNetTotal += report.getTotal();
+            }
+        }, CollectionCenterReport.COLLECTION_CENTER_TEST_WISE_COUNT_REPORT, sessionController.getLoggedUser());
     }
 
     /**
@@ -4035,6 +4054,14 @@ public class ReportController implements Serializable {
 
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public List<String> getSiteIds() {
+        return siteIds;
+    }
+
+    public void setSiteIds(List<String> siteIds) {
+        this.siteIds = siteIds;
     }
 
     public String getReportTemplateFileIndexName() {

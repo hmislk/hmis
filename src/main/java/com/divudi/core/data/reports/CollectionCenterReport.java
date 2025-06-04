@@ -5,7 +5,8 @@ public enum CollectionCenterReport implements IReportType {
     COLLECTION_CENTER_STATEMENT_REPORT("Collection Centre Statement Report"),
     COLLECTION_CENTER_REPORTS_PRINT("Collection Centre Reports Print"),
     COLLECTION_CENTER_BALANCE_REPORT("Collection Centre Balance Report"),
-    COLLECTION_CENTER_RECEIPT_REPORT("Collection Centre Receipt Report");
+    COLLECTION_CENTER_RECEIPT_REPORT("Collection Centre Receipt Report"),
+    COLLECTION_CENTER_TEST_WISE_COUNT_REPORT("Collection Center Test Wise Count Report");
 
     private final String displayName;
 

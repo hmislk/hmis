@@ -163,12 +163,6 @@
                                                 <th style="width: 25mm;font-weight: 700;">
                                                     <h:outputText value="Bill No" style="margin-left: 1mm;"/>
                                                 </th>
-                                                <th style="width: 67mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="Patient Name" style="margin-left:  1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="Bill Type" style="margin-left:  1mm;"/>
-                                                </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Date" style="margin-left:  1mm;"/>
                                                 </th>
@@ -215,12 +209,6 @@
                                                     </td>
                                                     <td style="width: 25mm; text-align: left;">
                                                         <h:outputText value="#{row.bill.deptId}" style="margin-left: 1mm;"/>
-                                                    </td>
-                                                    <td style="width: 67mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.patient.person.nameWithTitle}" style="margin-left: 1mm;"/>
-                                                    </td>
-                                                    <td style="width: 67mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.billTypeAtomic}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
                                                         <h:outputText value="#{row.bill.createdAt}" style="margin-left: 1mm;">
@@ -289,7 +277,6 @@
                                             <tr>
                                                 <td style="width: 8mm;" />
                                                 <td style="width: 25mm; text-align: left;"/>
-                                                <td style="width: 67mm; text-align: left;"/>
                                                 <td style="width: 17mm; text-align: left;"/>
                                                 <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >

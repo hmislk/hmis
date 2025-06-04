@@ -6,6 +6,7 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.EnumController;
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
@@ -14,6 +15,7 @@ import com.divudi.core.data.PaymentMethodValue;
 import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.CashierSummeryData;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.data.table.String1Value5;
 
@@ -27,6 +29,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -49,6 +52,7 @@ import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -59,7 +63,6 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
- *
  * @author Buddhika
  */
 @Named
@@ -96,11 +99,12 @@ public class CashierReportController implements Serializable {
 
     @Inject
     AuditEventApplicationController auditEventApplicationController;
+    @EJB
+    private ReportTimerController reportTimerController;
 
     String header = "";
 
     /**
-     *
      * @return
      */
     public String navigateToOpdAnalytics() {
@@ -125,7 +129,6 @@ public class CashierReportController implements Serializable {
         toReciptNo = null;
         recreteModal();
     }
-
 
 
     public void init() {
@@ -763,7 +766,7 @@ public class CashierReportController implements Serializable {
         return newB;
     }
 
-//    New Method is calculateBillTotalsByPaymentMethod
+    //    New Method is calculateBillTotalsByPaymentMethod
     @Deprecated
     private BillsTotals createRow(BillType billType, String suffix, Bill bill, WebUser webUser) {
         BillsTotals newB = new BillsTotals();
@@ -828,450 +831,453 @@ public class CashierReportController implements Serializable {
     }
 
     public void calCashierData() {
-        String ipAddress;
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        reportTimerController.trackReportExecution(() -> {
+            String ipAddress;
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        ipAddress = request.getRemoteAddr();
+            ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startedTime = new Date();
-        auditEvent.setEventDataTime(startedTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startedTime = new Date();
+            auditEvent.setEventDataTime(startedTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
 
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setEventTrigger("calCashierData()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setEventTrigger("calCashierData()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
-        finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
-        webUserBillsTotals = new ArrayList<>();
-        for (WebUser webUser : getCashiers()) {
-            WebUserBillsTotal tmp = new WebUserBillsTotal();
-            tmp.setWebUser(webUser);
-            List<BillsTotals> billls = new ArrayList<>();
+            finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
+            webUserBillsTotals = new ArrayList<>();
+            for (WebUser webUser : getCashiers()) {
+                WebUserBillsTotal tmp = new WebUserBillsTotal();
+                tmp.setWebUser(webUser);
+                List<BillsTotals> billls = new ArrayList<>();
 
-            double uCard = 0;
-            double uCash = 0;
-            double uCheque = 0;
-            double uCredit = 0;
-            double uSlip = 0;
-            for (BillType btp : getEnumController().getCashFlowBillTypes()) {
+                double uCard = 0;
+                double uCash = 0;
+                double uCheque = 0;
+                double uCredit = 0;
+                double uSlip = 0;
+                for (BillType btp : getEnumController().getCashFlowBillTypes()) {
 
-                BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
+                    BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
 
-                if (newB.getCard() != 0 || newB.getCash() != 0 || newB.getCheque() != 0 || newB.getCredit() != 0 || newB.getSlip() != 0) {
-                    billls.add(newB);
+                    if (newB.getCard() != 0 || newB.getCash() != 0 || newB.getCheque() != 0 || newB.getCredit() != 0 || newB.getSlip() != 0) {
+                        billls.add(newB);
+                    }
+
+                    BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+
+                    if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
+                        billls.add(newC);
+                    }
+
+                    BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+
+                    if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
+                        billls.add(newR);
+                    }
+
+                    uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                    uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                    uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                    uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
+                    uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+
                 }
-
-                BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+                //channel agent bill cash cancel refund
+                BillsTotals newC = createRowAgent(BillType.ChannelAgent, "Cancelled", new CancelledBill(), webUser);
 
                 if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
                     billls.add(newC);
                 }
 
-                BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+                BillsTotals newR = createRow(BillType.ChannelAgent, "Refunded", new RefundBill(), webUser);
 
                 if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
                     billls.add(newR);
                 }
 
-                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
-                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
-                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
-                uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
-                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+                uCash += (newC.getCash() + newR.getCash());
 
-            }
-            //channel agent bill cash cancel refund
-            BillsTotals newC = createRowAgent(BillType.ChannelAgent, "Cancelled", new CancelledBill(), webUser);
+                //
+                //Cash In
+                BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
 
-            if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
-                billls.add(newC);
-            }
-
-            BillsTotals newR = createRow(BillType.ChannelAgent, "Refunded", new RefundBill(), webUser);
-
-            if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
-                billls.add(newR);
-            }
-
-            uCash += (newC.getCash() + newR.getCash());
-
-            //
-            //Cash In
-            BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
-
-            if (newIn.getCard() != 0 || newIn.getCash() != 0
-                    || newIn.getCheque() != 0 || newIn.getCredit() != 0
-                    || newIn.getSlip() != 0) {
-                billls.add(newIn);
-            }
-
-            uCard += (newIn.getCard());
-            uCash += (newIn.getCash());
-            uCheque += (newIn.getCheque());
-            uCredit += (newIn.getCredit());
-            uSlip += (newIn.getSlip());
-
-            BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newInCan.getCard());
-            uCash += (newInCan.getCash());
-            uCheque += (newInCan.getCheque());
-            uCredit += (newInCan.getCredit());
-            uSlip += (newInCan.getSlip());
-
-            if (newInCan.getCard() != 0 || newInCan.getCash() != 0
-                    || newInCan.getCheque() != 0 || newInCan.getCredit() != 0
-                    || newInCan.getSlip() != 0) {
-                billls.add(newInCan);
-            }
-
-            //Cash Out
-            BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
-
-            if (newOut.getCard() != 0 || newOut.getCash() != 0 || newOut.getCheque() != 0 || newOut.getCredit() != 0 || newOut.getSlip() != 0) {
-                billls.add(newOut);
-            }
-
-            uCard += (newOut.getCard());
-            uCash += (newOut.getCash());
-            uCheque += (newOut.getCheque());
-            uCredit += (newOut.getCredit());
-            uSlip += (newOut.getSlip());
-
-            if (newOut.getCard() != 0 || newOut.getCash() != 0
-                    || newOut.getCheque() != 0 || newOut.getCredit() != 0
-                    || newOut.getSlip() != 0) {
-                billls.add(newOut);
-            }
-
-            BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newOutCan.getCard());
-            uCash += (newOutCan.getCash());
-            uCheque += (newOutCan.getCheque());
-            uCredit += (newOutCan.getCredit());
-            uSlip += (newOutCan.getSlip());
-
-            if (newOutCan.getCard() != 0 || newOutCan.getCash() != 0
-                    || newOutCan.getCheque() != 0 || newOutCan.getCredit() != 0
-                    || newOutCan.getSlip() != 0) {
-                billls.add(newOutCan);
-            }
-
-            //Adjustment
-            BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
-            uCard += (adj.getCard());
-            uCash += (adj.getCash());
-            uCheque += (adj.getCheque());
-            uCredit += (adj.getCredit());
-            uSlip += (adj.getSlip());
-
-            if (adj.getCard() != 0 || adj.getCash() != 0
-                    || adj.getCheque() != 0 || adj.getCredit() != 0
-                    || adj.getSlip() != 0) {
-                billls.add(adj);
-            }
-
-            BillsTotals newSum = new BillsTotals();
-            newSum.setName("Total ");
-            newSum.setBold(true);
-            newSum.setCard(uCard);
-            newSum.setCash(uCash);
-            newSum.setCheque(uCheque);
-            newSum.setCredit(uCredit);
-            newSum.setSlip(uSlip);
-
-            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
-                billls.add(newSum);
-            }
-
-            tmp.setBillsTotals(billls);
-            webUserBillsTotals.add(tmp);
-
-        }
-
-        Date startTime = new Date();
-
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startedTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-    }
-
-    public void calCashierDataChannel() {
-
-        String ipAddress;
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startedTime = new Date();
-        auditEvent.setEventDataTime(startedTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("calCashierDataChannel()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        header = "Channel";
-        finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
-        webUserBillsTotals = new ArrayList<>();
-        for (WebUser webUser : getCashiersChannel()) {
-            WebUserBillsTotal tmp = new WebUserBillsTotal();
-            tmp.setWebUser(webUser);
-            List<BillsTotals> billls = new ArrayList<>();
-
-            double uCard = 0;
-            double uCash = 0;
-            double uCheque = 0;
-            double uCredit = 0;
-            double uSlip = 0;
-            for (BillType btp : getEnumController().getCashFlowBillTypesChannel()) {
-                BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
-
-                if (newB.getCard() != 0 || newB.getCash() != 0 || newB.getCheque() != 0 || newB.getCredit() != 0 || newB.getSlip() != 0) {
-                    billls.add(newB);
+                if (newIn.getCard() != 0 || newIn.getCash() != 0
+                        || newIn.getCheque() != 0 || newIn.getCredit() != 0
+                        || newIn.getSlip() != 0) {
+                    billls.add(newIn);
                 }
 
-                BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newIn.getCard());
+                uCash += (newIn.getCash());
+                uCheque += (newIn.getCheque());
+                uCredit += (newIn.getCredit());
+                uSlip += (newIn.getSlip());
 
-                if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
-                    billls.add(newC);
+                BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newInCan.getCard());
+                uCash += (newInCan.getCash());
+                uCheque += (newInCan.getCheque());
+                uCredit += (newInCan.getCredit());
+                uSlip += (newInCan.getSlip());
+
+                if (newInCan.getCard() != 0 || newInCan.getCash() != 0
+                        || newInCan.getCheque() != 0 || newInCan.getCredit() != 0
+                        || newInCan.getSlip() != 0) {
+                    billls.add(newInCan);
                 }
 
-                BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+                //Cash Out
+                BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
 
-                if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
-                    billls.add(newR);
+                if (newOut.getCard() != 0 || newOut.getCash() != 0 || newOut.getCheque() != 0 || newOut.getCredit() != 0 || newOut.getSlip() != 0) {
+                    billls.add(newOut);
                 }
 
-                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
-                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
-                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
-                uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
-                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+                uCard += (newOut.getCard());
+                uCash += (newOut.getCash());
+                uCheque += (newOut.getCheque());
+                uCredit += (newOut.getCredit());
+                uSlip += (newOut.getSlip());
+
+                if (newOut.getCard() != 0 || newOut.getCash() != 0
+                        || newOut.getCheque() != 0 || newOut.getCredit() != 0
+                        || newOut.getSlip() != 0) {
+                    billls.add(newOut);
+                }
+
+                BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newOutCan.getCard());
+                uCash += (newOutCan.getCash());
+                uCheque += (newOutCan.getCheque());
+                uCredit += (newOutCan.getCredit());
+                uSlip += (newOutCan.getSlip());
+
+                if (newOutCan.getCard() != 0 || newOutCan.getCash() != 0
+                        || newOutCan.getCheque() != 0 || newOutCan.getCredit() != 0
+                        || newOutCan.getSlip() != 0) {
+                    billls.add(newOutCan);
+                }
+
+                //Adjustment
+                BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
+                uCard += (adj.getCard());
+                uCash += (adj.getCash());
+                uCheque += (adj.getCheque());
+                uCredit += (adj.getCredit());
+                uSlip += (adj.getSlip());
+
+                if (adj.getCard() != 0 || adj.getCash() != 0
+                        || adj.getCheque() != 0 || adj.getCredit() != 0
+                        || adj.getSlip() != 0) {
+                    billls.add(adj);
+                }
+
+                BillsTotals newSum = new BillsTotals();
+                newSum.setName("Total ");
+                newSum.setBold(true);
+                newSum.setCard(uCard);
+                newSum.setCash(uCash);
+                newSum.setCheque(uCheque);
+                newSum.setCredit(uCredit);
+                newSum.setSlip(uSlip);
+
+                if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
+                    billls.add(newSum);
+                }
+
+                tmp.setBillsTotals(billls);
+                webUserBillsTotals.add(tmp);
 
             }
-            //channel agent bill cash cancel refund
-            BillsTotals newC = createRowAgent(BillType.ChannelAgent, "Cancelled", new CancelledBill(), webUser);
 
-            if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
-                billls.add(newC);
-            }
+            Date startTime = new Date();
 
-            BillsTotals newR = createRow(BillType.ChannelAgent, "Refunded", new RefundBill(), webUser);
 
-            if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
-                billls.add(newR);
-            }
-
-            uCash += (newC.getCash() + newR.getCash());
-
-            //
-            //Cash In
-            BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
-
-            if (newIn.getCard() != 0 || newIn.getCash() != 0
-                    || newIn.getCheque() != 0 || newIn.getCredit() != 0
-                    || newIn.getSlip() != 0) {
-                billls.add(newIn);
-            }
-
-            uCard += (newIn.getCard());
-            uCash += (newIn.getCash());
-            uCheque += (newIn.getCheque());
-            uCredit += (newIn.getCredit());
-            uSlip += (newIn.getSlip());
-
-            BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newInCan.getCard());
-            uCash += (newInCan.getCash());
-            uCheque += (newInCan.getCheque());
-            uCredit += (newInCan.getCredit());
-            uSlip += (newInCan.getSlip());
-
-            if (newInCan.getCard() != 0 || newInCan.getCash() != 0
-                    || newInCan.getCheque() != 0 || newInCan.getCredit() != 0
-                    || newInCan.getSlip() != 0) {
-                billls.add(newInCan);
-            }
-
-            //Cash Out
-            BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
-
-            if (newOut.getCard() != 0 || newOut.getCash() != 0 || newOut.getCheque() != 0 || newOut.getCredit() != 0 || newOut.getSlip() != 0) {
-                billls.add(newOut);
-            }
-
-            uCard += (newOut.getCard());
-            uCash += (newOut.getCash());
-            uCheque += (newOut.getCheque());
-            uCredit += (newOut.getCredit());
-            uSlip += (newOut.getSlip());
-
-            if (newOut.getCard() != 0 || newOut.getCash() != 0
-                    || newOut.getCheque() != 0 || newOut.getCredit() != 0
-                    || newOut.getSlip() != 0) {
-                billls.add(newOut);
-            }
-
-            BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newOutCan.getCard());
-            uCash += (newOutCan.getCash());
-            uCheque += (newOutCan.getCheque());
-            uCredit += (newOutCan.getCredit());
-            uSlip += (newOutCan.getSlip());
-
-            if (newOutCan.getCard() != 0 || newOutCan.getCash() != 0
-                    || newOutCan.getCheque() != 0 || newOutCan.getCredit() != 0
-                    || newOutCan.getSlip() != 0) {
-                billls.add(newOutCan);
-            }
-
-            //Adjustment
-            BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
-            uCard += (adj.getCard());
-            uCash += (adj.getCash());
-            uCheque += (adj.getCheque());
-            uCredit += (adj.getCredit());
-            uSlip += (adj.getSlip());
-
-            if (adj.getCard() != 0 || adj.getCash() != 0
-                    || adj.getCheque() != 0 || adj.getCredit() != 0
-                    || adj.getSlip() != 0) {
-                billls.add(adj);
-            }
-
-            BillsTotals newSum = new BillsTotals();
-            newSum.setName("Total ");
-            newSum.setBold(true);
-            newSum.setCard(uCard);
-            newSum.setCash(uCash);
-            newSum.setCheque(uCheque);
-            newSum.setCredit(uCredit);
-            newSum.setSlip(uSlip);
-
-            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
-                billls.add(newSum);
-            }
-
-            tmp.setBillsTotals(billls);
-            webUserBillsTotals.add(tmp);
             Date endTime = new Date();
             duration = endTime.getTime() - startedTime.getTime();
             auditEvent.setEventDuration(duration);
             auditEvent.setEventStatus("Completed");
             auditEventApplicationController.logAuditEvent(auditEvent);
-
-        }
-
-        Date startTime = new Date();
-
-
+        }, PharmacyReports.ALL_CASHIER_REPORT, sessionController.getLoggedUser());
     }
 
-    public void calCashierDataCashier() {
-        String ipAddress;
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+    public void calCashierDataChannel() {
+        reportTimerController.trackReportExecution(() -> {
+            String ipAddress;
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        ipAddress = request.getRemoteAddr();
+            ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startedTime = new Date();
-        auditEvent.setEventDataTime(startedTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startedTime = new Date();
+            auditEvent.setEventDataTime(startedTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
 
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("calCashierDataCashier()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("calCashierDataChannel()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
-        header = "Cashier";
-        finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
-        webUserBillsTotals = new ArrayList<>();
-        for (WebUser webUser : getCashiersCashier()) {
-            WebUserBillsTotal tmp = new WebUserBillsTotal();
-            tmp.setWebUser(webUser);
-            List<BillsTotals> billls = new ArrayList<>();
+            header = "Channel";
+            finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
+            webUserBillsTotals = new ArrayList<>();
+            for (WebUser webUser : getCashiersChannel()) {
+                WebUserBillsTotal tmp = new WebUserBillsTotal();
+                tmp.setWebUser(webUser);
+                List<BillsTotals> billls = new ArrayList<>();
 
-            double uCard = 0;
-            double uCash = 0;
-            double uCheque = 0;
-            double uCredit = 0;
-            double uSlip = 0;
-            for (BillType btp : getEnumController().getCashFlowBillTypesCashier()) {
-                BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
+                double uCard = 0;
+                double uCash = 0;
+                double uCheque = 0;
+                double uCredit = 0;
+                double uSlip = 0;
+                for (BillType btp : getEnumController().getCashFlowBillTypesChannel()) {
+                    BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
 
-                if (newB.getCard() != 0 || newB.getCash() != 0 || newB.getCheque() != 0 || newB.getCredit() != 0 || newB.getSlip() != 0) {
-                    billls.add(newB);
+                    if (newB.getCard() != 0 || newB.getCash() != 0 || newB.getCheque() != 0 || newB.getCredit() != 0 || newB.getSlip() != 0) {
+                        billls.add(newB);
+                    }
+
+                    BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+
+                    if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
+                        billls.add(newC);
+                    }
+
+                    BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+
+                    if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
+                        billls.add(newR);
+                    }
+
+                    uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                    uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                    uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                    uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
+                    uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+
                 }
-
-                BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+                //channel agent bill cash cancel refund
+                BillsTotals newC = createRowAgent(BillType.ChannelAgent, "Cancelled", new CancelledBill(), webUser);
 
                 if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
                     billls.add(newC);
                 }
 
-                BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+                BillsTotals newR = createRow(BillType.ChannelAgent, "Refunded", new RefundBill(), webUser);
 
                 if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
                     billls.add(newR);
                 }
 
-                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
-                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
-                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
-                uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
-                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+                uCash += (newC.getCash() + newR.getCash());
+
+                //
+                //Cash In
+                BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
+
+                if (newIn.getCard() != 0 || newIn.getCash() != 0
+                        || newIn.getCheque() != 0 || newIn.getCredit() != 0
+                        || newIn.getSlip() != 0) {
+                    billls.add(newIn);
+                }
+
+                uCard += (newIn.getCard());
+                uCash += (newIn.getCash());
+                uCheque += (newIn.getCheque());
+                uCredit += (newIn.getCredit());
+                uSlip += (newIn.getSlip());
+
+                BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newInCan.getCard());
+                uCash += (newInCan.getCash());
+                uCheque += (newInCan.getCheque());
+                uCredit += (newInCan.getCredit());
+                uSlip += (newInCan.getSlip());
+
+                if (newInCan.getCard() != 0 || newInCan.getCash() != 0
+                        || newInCan.getCheque() != 0 || newInCan.getCredit() != 0
+                        || newInCan.getSlip() != 0) {
+                    billls.add(newInCan);
+                }
+
+                //Cash Out
+                BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
+
+                if (newOut.getCard() != 0 || newOut.getCash() != 0 || newOut.getCheque() != 0 || newOut.getCredit() != 0 || newOut.getSlip() != 0) {
+                    billls.add(newOut);
+                }
+
+                uCard += (newOut.getCard());
+                uCash += (newOut.getCash());
+                uCheque += (newOut.getCheque());
+                uCredit += (newOut.getCredit());
+                uSlip += (newOut.getSlip());
+
+                if (newOut.getCard() != 0 || newOut.getCash() != 0
+                        || newOut.getCheque() != 0 || newOut.getCredit() != 0
+                        || newOut.getSlip() != 0) {
+                    billls.add(newOut);
+                }
+
+                BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newOutCan.getCard());
+                uCash += (newOutCan.getCash());
+                uCheque += (newOutCan.getCheque());
+                uCredit += (newOutCan.getCredit());
+                uSlip += (newOutCan.getSlip());
+
+                if (newOutCan.getCard() != 0 || newOutCan.getCash() != 0
+                        || newOutCan.getCheque() != 0 || newOutCan.getCredit() != 0
+                        || newOutCan.getSlip() != 0) {
+                    billls.add(newOutCan);
+                }
+
+                //Adjustment
+                BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
+                uCard += (adj.getCard());
+                uCash += (adj.getCash());
+                uCheque += (adj.getCheque());
+                uCredit += (adj.getCredit());
+                uSlip += (adj.getSlip());
+
+                if (adj.getCard() != 0 || adj.getCash() != 0
+                        || adj.getCheque() != 0 || adj.getCredit() != 0
+                        || adj.getSlip() != 0) {
+                    billls.add(adj);
+                }
+
+                BillsTotals newSum = new BillsTotals();
+                newSum.setName("Total ");
+                newSum.setBold(true);
+                newSum.setCard(uCard);
+                newSum.setCash(uCash);
+                newSum.setCheque(uCheque);
+                newSum.setCredit(uCredit);
+                newSum.setSlip(uSlip);
+
+                if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
+                    billls.add(newSum);
+                }
+
+                tmp.setBillsTotals(billls);
+                webUserBillsTotals.add(tmp);
+                Date endTime = new Date();
+                duration = endTime.getTime() - startedTime.getTime();
+                auditEvent.setEventDuration(duration);
+                auditEvent.setEventStatus("Completed");
+                auditEventApplicationController.logAuditEvent(auditEvent);
 
             }
-            //channel agent bill cash cancel refund
+
+            Date startTime = new Date();
+
+        }, PharmacyReports.ALL_CASHIER_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void calCashierDataCashier() {
+        reportTimerController.trackReportExecution(() -> {
+            String ipAddress;
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+            String url = request.getRequestURL().toString();
+
+            ipAddress = request.getRemoteAddr();
+
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startedTime = new Date();
+            auditEvent.setEventDataTime(startedTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
+
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("calCashierDataCashier()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+
+            header = "Cashier";
+            finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
+            webUserBillsTotals = new ArrayList<>();
+            for (WebUser webUser : getCashiersCashier()) {
+                WebUserBillsTotal tmp = new WebUserBillsTotal();
+                tmp.setWebUser(webUser);
+                List<BillsTotals> billls = new ArrayList<>();
+
+                double uCard = 0;
+                double uCash = 0;
+                double uCheque = 0;
+                double uCredit = 0;
+                double uSlip = 0;
+                for (BillType btp : getEnumController().getCashFlowBillTypesCashier()) {
+                    BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
+
+                    if (newB.getCard() != 0 || newB.getCash() != 0 || newB.getCheque() != 0 || newB.getCredit() != 0 || newB.getSlip() != 0) {
+                        billls.add(newB);
+                    }
+
+                    BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+
+                    if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
+                        billls.add(newC);
+                    }
+
+                    BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+
+                    if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
+                        billls.add(newR);
+                    }
+
+                    uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                    uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                    uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                    uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
+                    uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+
+                }
+                //channel agent bill cash cancel refund
 //            BillsTotals newC = createRowAgent(BillType.ChannelAgent, "Cancelled", new CancelledBill(), webUser);
 //
 //            if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
@@ -1286,107 +1292,107 @@ public class CashierReportController implements Serializable {
 //
 //            uCash += (newC.getCash() + newR.getCash());
 
-            //
-            //Cash In
-            BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
+                //
+                //Cash In
+                BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
 
-            if (newIn.getCard() != 0 || newIn.getCash() != 0
-                    || newIn.getCheque() != 0 || newIn.getCredit() != 0
-                    || newIn.getSlip() != 0) {
-                billls.add(newIn);
+                if (newIn.getCard() != 0 || newIn.getCash() != 0
+                        || newIn.getCheque() != 0 || newIn.getCredit() != 0
+                        || newIn.getSlip() != 0) {
+                    billls.add(newIn);
+                }
+
+                uCard += (newIn.getCard());
+                uCash += (newIn.getCash());
+                uCheque += (newIn.getCheque());
+                uCredit += (newIn.getCredit());
+                uSlip += (newIn.getSlip());
+
+                BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newInCan.getCard());
+                uCash += (newInCan.getCash());
+                uCheque += (newInCan.getCheque());
+                uCredit += (newInCan.getCredit());
+                uSlip += (newInCan.getSlip());
+
+                if (newInCan.getCard() != 0 || newInCan.getCash() != 0
+                        || newInCan.getCheque() != 0 || newInCan.getCredit() != 0
+                        || newInCan.getSlip() != 0) {
+                    billls.add(newInCan);
+                }
+
+                //Cash Out
+                BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
+
+                if (newOut.getCard() != 0 || newOut.getCash() != 0 || newOut.getCheque() != 0 || newOut.getCredit() != 0 || newOut.getSlip() != 0) {
+                    billls.add(newOut);
+                }
+
+                uCard += (newOut.getCard());
+                uCash += (newOut.getCash());
+                uCheque += (newOut.getCheque());
+                uCredit += (newOut.getCredit());
+                uSlip += (newOut.getSlip());
+
+                if (newOut.getCard() != 0 || newOut.getCash() != 0
+                        || newOut.getCheque() != 0 || newOut.getCredit() != 0
+                        || newOut.getSlip() != 0) {
+                    billls.add(newOut);
+                }
+
+                BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newOutCan.getCard());
+                uCash += (newOutCan.getCash());
+                uCheque += (newOutCan.getCheque());
+                uCredit += (newOutCan.getCredit());
+                uSlip += (newOutCan.getSlip());
+
+                if (newOutCan.getCard() != 0 || newOutCan.getCash() != 0
+                        || newOutCan.getCheque() != 0 || newOutCan.getCredit() != 0
+                        || newOutCan.getSlip() != 0) {
+                    billls.add(newOutCan);
+                }
+
+                //Adjustment
+                BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
+                uCard += (adj.getCard());
+                uCash += (adj.getCash());
+                uCheque += (adj.getCheque());
+                uCredit += (adj.getCredit());
+                uSlip += (adj.getSlip());
+
+                if (adj.getCard() != 0 || adj.getCash() != 0
+                        || adj.getCheque() != 0 || adj.getCredit() != 0
+                        || adj.getSlip() != 0) {
+                    billls.add(adj);
+                }
+
+                BillsTotals newSum = new BillsTotals();
+                newSum.setName("Total ");
+                newSum.setBold(true);
+                newSum.setCard(uCard);
+                newSum.setCash(uCash);
+                newSum.setCheque(uCheque);
+                newSum.setCredit(uCredit);
+                newSum.setSlip(uSlip);
+
+                if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
+                    billls.add(newSum);
+                }
+
+                tmp.setBillsTotals(billls);
+                webUserBillsTotals.add(tmp);
+
             }
 
-            uCard += (newIn.getCard());
-            uCash += (newIn.getCash());
-            uCheque += (newIn.getCheque());
-            uCredit += (newIn.getCredit());
-            uSlip += (newIn.getSlip());
+            Date startTime = new Date();
 
-            BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newInCan.getCard());
-            uCash += (newInCan.getCash());
-            uCheque += (newInCan.getCheque());
-            uCredit += (newInCan.getCredit());
-            uSlip += (newInCan.getSlip());
-
-            if (newInCan.getCard() != 0 || newInCan.getCash() != 0
-                    || newInCan.getCheque() != 0 || newInCan.getCredit() != 0
-                    || newInCan.getSlip() != 0) {
-                billls.add(newInCan);
-            }
-
-            //Cash Out
-            BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
-
-            if (newOut.getCard() != 0 || newOut.getCash() != 0 || newOut.getCheque() != 0 || newOut.getCredit() != 0 || newOut.getSlip() != 0) {
-                billls.add(newOut);
-            }
-
-            uCard += (newOut.getCard());
-            uCash += (newOut.getCash());
-            uCheque += (newOut.getCheque());
-            uCredit += (newOut.getCredit());
-            uSlip += (newOut.getSlip());
-
-            if (newOut.getCard() != 0 || newOut.getCash() != 0
-                    || newOut.getCheque() != 0 || newOut.getCredit() != 0
-                    || newOut.getSlip() != 0) {
-                billls.add(newOut);
-            }
-
-            BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newOutCan.getCard());
-            uCash += (newOutCan.getCash());
-            uCheque += (newOutCan.getCheque());
-            uCredit += (newOutCan.getCredit());
-            uSlip += (newOutCan.getSlip());
-
-            if (newOutCan.getCard() != 0 || newOutCan.getCash() != 0
-                    || newOutCan.getCheque() != 0 || newOutCan.getCredit() != 0
-                    || newOutCan.getSlip() != 0) {
-                billls.add(newOutCan);
-            }
-
-            //Adjustment
-            BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
-            uCard += (adj.getCard());
-            uCash += (adj.getCash());
-            uCheque += (adj.getCheque());
-            uCredit += (adj.getCredit());
-            uSlip += (adj.getSlip());
-
-            if (adj.getCard() != 0 || adj.getCash() != 0
-                    || adj.getCheque() != 0 || adj.getCredit() != 0
-                    || adj.getSlip() != 0) {
-                billls.add(adj);
-            }
-
-            BillsTotals newSum = new BillsTotals();
-            newSum.setName("Total ");
-            newSum.setBold(true);
-            newSum.setCard(uCard);
-            newSum.setCash(uCash);
-            newSum.setCheque(uCheque);
-            newSum.setCredit(uCredit);
-            newSum.setSlip(uSlip);
-
-            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
-                billls.add(newSum);
-            }
-
-            tmp.setBillsTotals(billls);
-            webUserBillsTotals.add(tmp);
-
-        }
-
-        Date startTime = new Date();
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startedTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
+            Date endTime = new Date();
+            duration = endTime.getTime() - startedTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        }, PharmacyReports.ALL_CASHIER_REPORT, sessionController.getLoggedUser());
     }
 
     public void calCashierDataUsingReciptNo() {
@@ -1417,82 +1423,84 @@ public class CashierReportController implements Serializable {
     }
 
     public void calculateCashierSummeryTotals() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        reportTimerController.trackReportExecution(() -> {
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
 
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("calculateCashierSummeryTotals()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("calculateCashierSummeryTotals()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
-        finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
-        webUserBillsTotals = new ArrayList<>();
-        for (WebUser webUser : getCashiers()) {
-            WebUserBillsTotal tmp = new WebUserBillsTotal();
-            tmp.setWebUser(webUser);
-            List<BillsTotals> billls = new ArrayList<>();
+            finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
+            webUserBillsTotals = new ArrayList<>();
+            for (WebUser webUser : getCashiers()) {
+                WebUserBillsTotal tmp = new WebUserBillsTotal();
+                tmp.setWebUser(webUser);
+                List<BillsTotals> billls = new ArrayList<>();
 
-            double uCard = 0;
-            double uCash = 0;
-            double uCheque = 0;
-            double uCredit = 0;
-            double uSlip = 0;
-            for (BillType btp : getEnumController().getCashFlowBillTypes()) {
-                BillsTotals newB = calculateBillTotalsByPaymentMethod(btp, "Billed", new BilledBill(), webUser);
-                BillsTotals newC = calculateBillTotalsByPaymentMethod(btp, "Cancelled", new CancelledBill(), webUser);
-                BillsTotals newR = calculateBillTotalsByPaymentMethod(btp, "Refunded", new RefundBill(), webUser);
+                double uCard = 0;
+                double uCash = 0;
+                double uCheque = 0;
+                double uCredit = 0;
+                double uSlip = 0;
+                for (BillType btp : getEnumController().getCashFlowBillTypes()) {
+                    BillsTotals newB = calculateBillTotalsByPaymentMethod(btp, "Billed", new BilledBill(), webUser);
+                    BillsTotals newC = calculateBillTotalsByPaymentMethod(btp, "Cancelled", new CancelledBill(), webUser);
+                    BillsTotals newR = calculateBillTotalsByPaymentMethod(btp, "Refunded", new RefundBill(), webUser);
 
-                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
-                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
-                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
-                uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
-                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+                    uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                    uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                    uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                    uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
+                    uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+
+                }
+
+                BillsTotals newSum = new BillsTotals();
+                newSum.setName("Total ");
+                newSum.setBold(true);
+                newSum.setCard(uCard);
+                newSum.setCash(uCash);
+                newSum.setCheque(uCheque);
+                newSum.setCredit(uCredit);
+                newSum.setSlip(uSlip);
+
+                if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
+                    billls.add(newSum);
+                }
+
+                tmp.setBillsTotals(billls);
+                webUserBillsTotals.add(tmp);
 
             }
 
-            BillsTotals newSum = new BillsTotals();
-            newSum.setName("Total ");
-            newSum.setBold(true);
-            newSum.setCard(uCard);
-            newSum.setCash(uCash);
-            newSum.setCheque(uCheque);
-            newSum.setCredit(uCredit);
-            newSum.setSlip(uSlip);
-
-            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
-                billls.add(newSum);
-            }
-
-            tmp.setBillsTotals(billls);
-            webUserBillsTotals.add(tmp);
-
-        }
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        }, PharmacyReports.ALL_CASHIER_SUMMERY_TOTAL_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
     public void calCashierDataTotalOnly() {
@@ -1582,252 +1590,255 @@ public class CashierReportController implements Serializable {
     }
 
     public void calCashierDataTotalOnlyChannel() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        reportTimerController.trackReportExecution(() -> {
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
 
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("calCashierDataTotalOnlyChannel()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("calCashierDataTotalOnlyChannel()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
-        header = "Channel";
-        finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
-        webUserBillsTotals = new ArrayList<>();
-        for (WebUser webUser : getCashiersChannel()) {
-            WebUserBillsTotal tmp = new WebUserBillsTotal();
-            tmp.setWebUser(webUser);
-            List<BillsTotals> billls = new ArrayList<>();
+            header = "Channel";
+            finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
+            webUserBillsTotals = new ArrayList<>();
+            for (WebUser webUser : getCashiersChannel()) {
+                WebUserBillsTotal tmp = new WebUserBillsTotal();
+                tmp.setWebUser(webUser);
+                List<BillsTotals> billls = new ArrayList<>();
 
-            double uCard = 0;
-            double uCash = 0;
-            double uCheque = 0;
-            double uCredit = 0;
-            double uSlip = 0;
-            for (BillType btp : getEnumController().getCashFlowBillTypesChannel()) {
-                BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
-                BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
-                BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+                double uCard = 0;
+                double uCash = 0;
+                double uCheque = 0;
+                double uCredit = 0;
+                double uSlip = 0;
+                for (BillType btp : getEnumController().getCashFlowBillTypesChannel()) {
+                    BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
+                    BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+                    BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
 
-                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
-                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
-                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
-                uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
-                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+                    uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                    uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                    uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                    uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
+                    uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+
+                }
+
+                //channel agent bill cash cancel refund
+                BillsTotals newC = createRow(BillType.ChannelAgent, "Cancelled", new CancelledBill(), webUser);
+                BillsTotals newR = createRow(BillType.ChannelAgent, "Refunded", new RefundBill(), webUser);
+
+                uCard += (newC.getCard() + newR.getCard());
+                uCash += (newC.getCash() + newR.getCash());
+                uCheque += (newC.getCheque() + newR.getCheque());
+                uCredit += (newC.getCredit() + newR.getCredit());
+                uSlip += (newC.getSlip() + newR.getSlip());
+                //channel agent bill cash cancel refund
+
+                //Cash IN
+                BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
+                uCard += (newIn.getCard());
+                uCash += (newIn.getCash());
+                uCheque += (newIn.getCheque());
+                uCredit += (newIn.getCredit());
+                uSlip += (newIn.getSlip());
+
+                BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newInCan.getCard());
+                uCash += (newInCan.getCash());
+                uCheque += (newInCan.getCheque());
+                uCredit += (newInCan.getCredit());
+                uSlip += (newInCan.getSlip());
+
+                //Cahs Out
+                BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
+                uCard += (newOut.getCard());
+                uCash += (newOut.getCash());
+                uCheque += (newOut.getCheque());
+                uCredit += (newOut.getCredit());
+                uSlip += (newOut.getSlip());
+
+                BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newOutCan.getCard());
+                uCash += (newOutCan.getCash());
+                uCheque += (newOutCan.getCheque());
+                uCredit += (newOutCan.getCredit());
+                uSlip += (newOutCan.getSlip());
+
+                //Drawer Adjustment
+                BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
+                uCard += (adj.getCard());
+                uCash += (adj.getCash());
+                uCheque += (adj.getCheque());
+                uCredit += (adj.getCredit());
+                uSlip += (adj.getSlip());
+
+                BillsTotals newSum = new BillsTotals();
+                newSum.setName("Total ");
+                newSum.setBold(true);
+                newSum.setCard(uCard);
+                newSum.setCash(uCash);
+                newSum.setCheque(uCheque);
+                newSum.setCredit(uCredit);
+                newSum.setSlip(uSlip);
+
+                if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
+                    billls.add(newSum);
+                }
+
+                tmp.setBillsTotals(billls);
+                webUserBillsTotals.add(tmp);
 
             }
 
-            //channel agent bill cash cancel refund
-            BillsTotals newC = createRow(BillType.ChannelAgent, "Cancelled", new CancelledBill(), webUser);
-            BillsTotals newR = createRow(BillType.ChannelAgent, "Refunded", new RefundBill(), webUser);
-
-            uCard += (newC.getCard() + newR.getCard());
-            uCash += (newC.getCash() + newR.getCash());
-            uCheque += (newC.getCheque() + newR.getCheque());
-            uCredit += (newC.getCredit() + newR.getCredit());
-            uSlip += (newC.getSlip() + newR.getSlip());
-            //channel agent bill cash cancel refund
-
-            //Cash IN
-            BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
-            uCard += (newIn.getCard());
-            uCash += (newIn.getCash());
-            uCheque += (newIn.getCheque());
-            uCredit += (newIn.getCredit());
-            uSlip += (newIn.getSlip());
-
-            BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newInCan.getCard());
-            uCash += (newInCan.getCash());
-            uCheque += (newInCan.getCheque());
-            uCredit += (newInCan.getCredit());
-            uSlip += (newInCan.getSlip());
-
-            //Cahs Out
-            BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
-            uCard += (newOut.getCard());
-            uCash += (newOut.getCash());
-            uCheque += (newOut.getCheque());
-            uCredit += (newOut.getCredit());
-            uSlip += (newOut.getSlip());
-
-            BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newOutCan.getCard());
-            uCash += (newOutCan.getCash());
-            uCheque += (newOutCan.getCheque());
-            uCredit += (newOutCan.getCredit());
-            uSlip += (newOutCan.getSlip());
-
-            //Drawer Adjustment
-            BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
-            uCard += (adj.getCard());
-            uCash += (adj.getCash());
-            uCheque += (adj.getCheque());
-            uCredit += (adj.getCredit());
-            uSlip += (adj.getSlip());
-
-            BillsTotals newSum = new BillsTotals();
-            newSum.setName("Total ");
-            newSum.setBold(true);
-            newSum.setCard(uCard);
-            newSum.setCash(uCash);
-            newSum.setCheque(uCheque);
-            newSum.setCredit(uCredit);
-            newSum.setSlip(uSlip);
-
-            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
-                billls.add(newSum);
-            }
-
-            tmp.setBillsTotals(billls);
-            webUserBillsTotals.add(tmp);
-
-        }
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        }, PharmacyReports.ALL_CASHIER_SUMMERY_CHANNEL_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
     public void calCashierDataTotalOnlyCashier() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        reportTimerController.trackReportExecution(() -> {
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
 
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("calCashierDataTotalOnlyCashier()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("calCashierDataTotalOnlyCashier()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
-        header = "Cashier";
-        startTime = new Date();
-        finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
-        webUserBillsTotals = new ArrayList<>();
-        for (WebUser webUser : getCashiersCashier()) {
-            WebUserBillsTotal tmp = new WebUserBillsTotal();
-            tmp.setWebUser(webUser);
-            List<BillsTotals> billls = new ArrayList<>();
+            header = "Cashier";
+            startTime = new Date();
+            finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
+            webUserBillsTotals = new ArrayList<>();
+            for (WebUser webUser : getCashiersCashier()) {
+                WebUserBillsTotal tmp = new WebUserBillsTotal();
+                tmp.setWebUser(webUser);
+                List<BillsTotals> billls = new ArrayList<>();
 
-            double uCard = 0;
-            double uCash = 0;
-            double uCheque = 0;
-            double uCredit = 0;
-            double uSlip = 0;
-            for (BillType btp : getEnumController().getCashFlowBillTypesCashier()) {
-                BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
-                BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
-                BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+                double uCard = 0;
+                double uCash = 0;
+                double uCheque = 0;
+                double uCredit = 0;
+                double uSlip = 0;
+                for (BillType btp : getEnumController().getCashFlowBillTypesCashier()) {
+                    BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
+                    BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
+                    BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
 
-                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
-                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
-                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
-                uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
-                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+                    uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                    uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                    uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                    uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
+                    uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+
+                }
+
+                //Cash IN
+                BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
+                uCard += (newIn.getCard());
+                uCash += (newIn.getCash());
+                uCheque += (newIn.getCheque());
+                uCredit += (newIn.getCredit());
+                uSlip += (newIn.getSlip());
+
+                BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newInCan.getCard());
+                uCash += (newInCan.getCash());
+                uCheque += (newInCan.getCheque());
+                uCredit += (newInCan.getCredit());
+                uSlip += (newInCan.getSlip());
+
+                //Cahs Out
+                BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
+                uCard += (newOut.getCard());
+                uCash += (newOut.getCash());
+                uCheque += (newOut.getCheque());
+                uCredit += (newOut.getCredit());
+                uSlip += (newOut.getSlip());
+
+                BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
+                uCard += (newOutCan.getCard());
+                uCash += (newOutCan.getCash());
+                uCheque += (newOutCan.getCheque());
+                uCredit += (newOutCan.getCredit());
+                uSlip += (newOutCan.getSlip());
+
+                //Drawer Adjustment
+                BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
+                uCard += (adj.getCard());
+                uCash += (adj.getCash());
+                uCheque += (adj.getCheque());
+                uCredit += (adj.getCredit());
+                uSlip += (adj.getSlip());
+
+                BillsTotals newSum = new BillsTotals();
+                newSum.setName("Total ");
+                newSum.setBold(true);
+                newSum.setCard(uCard);
+                newSum.setCash(uCash);
+                newSum.setCheque(uCheque);
+                newSum.setCredit(uCredit);
+                newSum.setSlip(uSlip);
+
+                if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
+                    billls.add(newSum);
+                }
+
+                tmp.setBillsTotals(billls);
+                webUserBillsTotals.add(tmp);
 
             }
 
-            //Cash IN
-            BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
-            uCard += (newIn.getCard());
-            uCash += (newIn.getCash());
-            uCheque += (newIn.getCheque());
-            uCredit += (newIn.getCredit());
-            uSlip += (newIn.getSlip());
-
-            BillsTotals newInCan = createRowInOut(BillType.CashIn, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newInCan.getCard());
-            uCash += (newInCan.getCash());
-            uCheque += (newInCan.getCheque());
-            uCredit += (newInCan.getCredit());
-            uSlip += (newInCan.getSlip());
-
-            //Cahs Out
-            BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
-            uCard += (newOut.getCard());
-            uCash += (newOut.getCash());
-            uCheque += (newOut.getCheque());
-            uCredit += (newOut.getCredit());
-            uSlip += (newOut.getSlip());
-
-            BillsTotals newOutCan = createRowInOut(BillType.CashOut, "Cancelled", new CancelledBill(), webUser);
-            uCard += (newOutCan.getCard());
-            uCash += (newOutCan.getCash());
-            uCheque += (newOutCan.getCheque());
-            uCredit += (newOutCan.getCredit());
-            uSlip += (newOutCan.getSlip());
-
-            //Drawer Adjustment
-            BillsTotals adj = createRowInOut(BillType.DrawerAdjustment, "Adjusment", new BilledBill(), webUser);
-            uCard += (adj.getCard());
-            uCash += (adj.getCash());
-            uCheque += (adj.getCheque());
-            uCredit += (adj.getCredit());
-            uSlip += (adj.getSlip());
-
-            BillsTotals newSum = new BillsTotals();
-            newSum.setName("Total ");
-            newSum.setBold(true);
-            newSum.setCard(uCard);
-            newSum.setCash(uCash);
-            newSum.setCheque(uCheque);
-            newSum.setCredit(uCredit);
-            newSum.setSlip(uSlip);
-
-            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
-                billls.add(newSum);
-            }
-
-            tmp.setBillsTotals(billls);
-            webUserBillsTotals.add(tmp);
-
-        }
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        }, PharmacyReports.ALL_CASHIER_SUMMERY_CASHIER_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
     public void calCashierDataTotalOnlyUsingReciptNo() {
@@ -1899,7 +1910,6 @@ public class CashierReportController implements Serializable {
         }
 
 
-
     }
 
     private List<WebUserBillsTotal> webUserBillsTotals;
@@ -1924,7 +1934,7 @@ public class CashierReportController implements Serializable {
         return getBillFacade().findObjectByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
-//  New One  userBillTotalsWithPaymentMethods
+    //  New One  userBillTotalsWithPaymentMethods
     @Deprecated
     private double calTotalValueOwn(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
 ////        int day= Calendar.HOUR_OF_DAY(getToDate())- Calendar.DATE(getFromDate()) ;
@@ -2246,6 +2256,7 @@ public class CashierReportController implements Serializable {
 
         c.setDataTable5Value(dataTable5Values);
     }
+
     private double finalSlipTot = 0.0;
 
     public double getFinalChequeTot() {

@@ -16,32 +16,32 @@
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
         <div >
 
-            <table style="width: 100%; border-collapse: collapse; font-size:#{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Headings in Pharmacy Disbursement Reports', '12pt')}!Important;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12pt !important;">
                 <!-- Institution Details -->
                 <tr>
-                    <td colspan="2" style="text-align: center; font-weight: bold; font-size: 10px;">
+                    <td colspan="2" style="text-align: center; font-weight: bold; font-size: 14px;">
                         <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}" />
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="text-align: center; font-size: 10px;">
+                    <td colspan="2" style="text-align: center; font-size: 14px;">
                         <h:outputLabel value="#{cc.attrs.bill.creater.department.address}" />
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="text-align: center; font-size: 10px;">
+                    <td colspan="2" style="text-align: center; font-size: 14px;">
                         <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}" />
                         <h:outputLabel value=" / " rendered="#{not empty cc.attrs.bill.creater.department.telephone2}" />
                         <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}" />
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="text-align: center; font-size: 10px;">
+                    <td colspan="2" style="text-align: center; font-size: 14px;">
                         <h:outputLabel value="Fax: #{cc.attrs.bill.creater.department.fax}" rendered="#{not empty cc.attrs.bill.creater.department.fax}" />
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="text-align: center; font-size: 10px;">
+                    <td colspan="2" style="text-align: center; font-size: 14px;">
                         <h:outputLabel value="Email: #{cc.attrs.bill.creater.department.email}" rendered="#{not empty cc.attrs.bill.creater.department.email}" />
                     </td>
                 </tr>
@@ -103,11 +103,11 @@
                     sortBy="#{bip.searialNo}" 
                     var="bip"
                     styleClass="no-border-table"
-                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important;"
+                    style="border: none !important; font-size: 12pt !important;"
                     rowKey="#{bip.id}">
                     <p:column 
                         width="2em"
-                        style="padding: 0px; margin: 0px; font-size: 10px;"
+                        style="padding: 0px; margin: 0px; font-size: 15px;"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Serial Number is required in Pharmacy Disbursement Reports', true)}">
                         <f:facet name="header">
                             <h:outputLabel value="No"/>
@@ -120,14 +120,14 @@
                     <p:column
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Code is required in Pharmacy Disbursement Reports', true)}"
                         width="2em"
-                        style="padding: 0px; margin: 0px; font-size: 10px;" >
+                        style="padding: 0px; margin: 0px; font-size: 15px;" >
                         <f:facet name="header">
                             <h:outputLabel value="Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>    
 
-                    <p:column   style="padding: 0px; margin: 0px; width: 15em; font-size: 10px;" >
+                    <p:column   style="padding: 0px; margin: 0px; width: 15em; font-size: 15px;" >
                         <f:facet name="header">
                             <h:outputLabel value="Item"/>
                         </f:facet>
@@ -140,7 +140,7 @@
 
                     <p:column 
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}"
-                        width="6em" style="padding: 0px; margin: 0px; text-align: right; font-size: 10px;" >
+                        width="6em" style="padding: 0px; margin: 0px; text-align: right; font-size: 15px;" >
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
@@ -149,7 +149,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  width="6em" style="padding: 0px; margin: 0px; text-align: right; font-size: 10px;" >
+                    <p:column  width="6em" style="padding: 0px; margin: 0px; text-align: right; font-size: 15px;" >
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
@@ -160,7 +160,7 @@
 
                     <p:column  
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports', true)}"
-                        width="5em" style="padding: 0px; margin: 0px; text-align: right; font-size: 10px;" >
+                        width="5em" style="padding: 0px; margin: 0px; text-align: right; font-size: 15px;" >
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Rate"/>
                         </f:facet>
@@ -171,7 +171,7 @@
 
                     <p:column
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Value is required in Pharmacy Disbursement Reports', true)}"
-                        width="6em" style="padding: 0px; margin: 0px; text-align: right; font-size: 10px;" >
+                        width="6em" style="padding: 0px; margin: 0px; text-align: right; font-size: 15px;" >
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Value"/>
                         </f:facet>
@@ -189,7 +189,7 @@
                     <p:column 
                         width="5em" 
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Rate is required in Pharmacy Disbursement Reports', true)}"
-                        style="padding: 0px; margin: 0px; text-align: right; font-size: 10px;" >
+                        style="padding: 0px; margin: 0px; text-align: right; font-size: 15px;" >
                         <f:facet name="header">
                             <h:outputLabel value="Retail Rate"/>
                         </f:facet>
@@ -201,7 +201,7 @@
                     <p:column 
                         width="5em" 
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Value is required in Pharmacy Disbursement Reports', true)}"
-                        style="padding: 0px; margin: 0px; text-align: right; font-size: 10px;" >
+                        style="padding: 0px; margin: 0px; text-align: right; font-size: 15px;" >
                         <f:facet name="header">
                             <h:outputLabel value="Retail Value"/>
                         </f:facet>
@@ -215,9 +215,8 @@
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
-
                 </p:dataTable>
-
+                <br/>
                 <h:outputScript>
                     function calculateSaleTotalInBill(){
                     let total = 0;
@@ -243,8 +242,8 @@
                     });
                 </h:outputScript>
             </div>
-            <div class="w-100" style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer CSS')}" >
-                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer Text')}" escape="false" style="font-size: 10px;" ></p:outputLabel>
+            <div class="w-100 transfer-footer">
+                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer Text')}" escape="false" style="font-size: 16px;" ></p:outputLabel>
             </div>
 
         </div>

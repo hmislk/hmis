@@ -65,7 +65,7 @@
                                     itemLabel="#{pm1.label}"
                                     itemValue="#{pm1}"/>
                                 <p:ajax process="pay" 
-                                        update="paymentDetails"
+                                        update="paymentDetails tblMultiplePayments"
                                         event="change"
                                         listener="#{cc.attrs.controller.recieveRemainAmountAutomatically()}"  />
                             </p:selectOneMenu>

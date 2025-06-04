@@ -72,7 +72,6 @@ public class MdInwardReportController implements Serializable {
     private int managaeInwardReportIndex = -1;
 
     ////////////////////////////////////
-
     @EJB
     private DepartmentFacade departmentFacade;
     @EJB
@@ -110,7 +109,7 @@ public class MdInwardReportController implements Serializable {
     private Staff currentStaff;
     private Speciality speciality;
     private List<Admission> admissions;
-    
+
     @Named
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -119,8 +118,6 @@ public class MdInwardReportController implements Serializable {
 
         return PaymentMethod.values();
     }
-
-
 
     public void makeNull() {
         fromDate = null;
@@ -278,9 +275,81 @@ public class MdInwardReportController implements Serializable {
 
         }
 
+    }
 
+    public void fillAdmissions() {
+        try {
+            String sql;
+            Map m = new HashMap();
+
+            sql = "select ad from Admission ad "
+                    + " where ad.retired=false "
+                    + " and ad.createdAt between :fd and :td ";
+
+            if (speciality != null) {
+                sql += " and ad.referringConsultant.speciality=:s ";
+                m.put("s", speciality);
+            }
+
+            if (currentStaff != null) {
+                sql += " and ad.referringConsultant=:cs";
+                m.put("cs", currentStaff);
+            }
+
+            if (admissionType != null) {
+                sql += " and ad.admissionType=:admTp ";
+                m.put("admTp", admissionType);
+            }
+            if (paymentMethod != null) {
+                sql += " and ad.paymentMethod=:pm";
+                m.put("pm", paymentMethod);
+            }
+            if (institution != null) {
+                sql += " and ad.creditCompany=:cd";
+                m.put("cd", institution);
+            }
+
+            sql += " order by ad.createdAt ASC ";
+
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+
+            admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP, 100);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
+        }
 
     }
+    
+public void fillAdmissionsByConsultants() {
+    try {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select ad from Admission ad "
+                + " where ad.retired=false "
+                + " and ad.createdAt between :fd and :td ";
+
+        if (speciality != null) {
+            sql += " and ad.referringConsultant.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        if (currentStaff != null) {
+            sql += " and ad.referringConsultant=:cs";
+            m.put("cs", currentStaff);
+        }
+
+        sql += " order by ad.createdAt ASC";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP, 100);
+    } catch (Exception e) {
+        JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
+    }
+}
 
     public void createServiceBillsByDischargeDate() {
         Date startTime = new Date();
@@ -358,8 +427,6 @@ public class MdInwardReportController implements Serializable {
         temMap.put("fromDate", fromDate);
         count = getBillFacade().findLongByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-
-
     }
 
     private long count;
@@ -403,35 +470,6 @@ public class MdInwardReportController implements Serializable {
         for (BillItem b : billItem) {
             total += b.getNetValue();
         }
-
-
-    }
-    
-    public void fillAdmissionsByConsultants() {
-
-        String sql;
-        Map m = new HashMap();
-
-        sql = "select ad from Admission ad "
-                + " where ad.retired=false "
-                + " and ad.createdAt between :fd and :td ";
-
-        if (speciality != null) {
-            sql += " and ad.referringConsultant.speciality=:s ";
-            m.put("s", speciality);
-        }
-
-        if (currentStaff != null) {
-            sql += " and ad.referringConsultant=:cs";
-            m.put("cs", currentStaff);
-        }
-
-        sql += " order by ad.createdAt ASC";
-
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-
-        admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -996,7 +1034,6 @@ public class MdInwardReportController implements Serializable {
         totalValue = calTotInwdPaymentBills(new BilledBill());
         cancelledTotal = calTotInwdPaymentBills(new CancelledBill());
         refundTotal = calTotInwdPaymentBills(new RefundBill());
-
 
     }
 
@@ -1566,8 +1603,6 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = depositByCreatedDateValue(new CancelledBill(), false);
         refundTotal = depositByCreatedDateValue(new RefundBill(), false);
 
-
-
     }
 
     public void sortByPatientDischargeDate() {
@@ -1588,7 +1623,6 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = depositByCreatedDateValue(new CancelledBill(), true);
         refundTotal = depositByCreatedDateValue(new RefundBill(), true);
 
-
     }
 
     public void createAllPaymentByCreatedDateDischarged() {
@@ -1602,7 +1636,6 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = allPaymentByCreatedDateValue(new CancelledBill(), true);
         refundTotal = allPaymentByCreatedDateValue(new RefundBill(), true);
 
-
     }
 
     public void createDepositByCreatedDateDischargedAll() {
@@ -1615,8 +1648,6 @@ public class MdInwardReportController implements Serializable {
         totalValue = depositByCreatedDateValue(new BilledBill());
         cancelledTotal = depositByCreatedDateValue(new CancelledBill());
         refundTotal = depositByCreatedDateValue(new RefundBill());
-
-
 
     }
 
@@ -1633,8 +1664,6 @@ public class MdInwardReportController implements Serializable {
         totalValue = calPaymentBillsAdmitted(new BilledBill());
         cancelledTotal = calPaymentBillsAdmitted(new CancelledBill());
         refundTotal = calPaymentBillsAdmitted(new RefundBill());
-
-
 
     }
 
@@ -1660,8 +1689,6 @@ public class MdInwardReportController implements Serializable {
         sql = "";
         grantTotal = calPaymentBills(sql);
 
-
-
     }
 
     public void dipositsOfNotDischarged() {
@@ -1670,8 +1697,6 @@ public class MdInwardReportController implements Serializable {
         String sql = "";
         completePayments = fetchPaymentBillsNotDicharged();
         completePaymentsTotal = calPaymentBillsNotDicharged();
-
-
 
     }
 
@@ -1734,7 +1759,6 @@ public class MdInwardReportController implements Serializable {
         }
 
         completePaymentsTotal = calPaymentBillsNotDicharged();
-
 
     }
 
@@ -1829,7 +1853,6 @@ public class MdInwardReportController implements Serializable {
         cancelledTotal = calInwdPaymentBillsDischarge(new CancelledBill());
         refundTotal = calInwdPaymentBillsDischarge(new RefundBill());
 
-
     }
 
     public void makeListNull() {
@@ -1914,7 +1937,6 @@ public class MdInwardReportController implements Serializable {
             ////// // System.out.println("ss " + iwf.getItem());
             itemWithFees.add(iwf);
         }
-
 
     }
 
@@ -2064,7 +2086,7 @@ public class MdInwardReportController implements Serializable {
         billfees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         ////// // System.out.println("out");
 
-        if(configOptionApplicationController.getBooleanValueByKey("Add Time Services for Inward Report by Item", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Add Time Services for Inward Report by Item", false)) {
             List<PatientItem> items;
             String sql1;
             HashMap m = new HashMap();
@@ -2102,8 +2124,6 @@ public class MdInwardReportController implements Serializable {
             total += bf.getFee().getFee();
             ////// // System.out.println("total = " + total);
         }
-
-
 
     }
 
@@ -2364,8 +2384,6 @@ public class MdInwardReportController implements Serializable {
             ////// // System.out.println("total = " + total);
         }
 
-
-
     }
 
     public void createItemWithFeeByDischargeDate1() {
@@ -2442,8 +2460,6 @@ public class MdInwardReportController implements Serializable {
             total += bf.getFee().getFee();
             ////// // System.out.println("total = " + total);
         }
-
-
 
     }
 
@@ -3048,6 +3064,14 @@ public class MdInwardReportController implements Serializable {
         this.managaeInwardReportIndex = managaeInwardReportIndex;
     }
 
+    public List<Admission> getAdmissions() {
+        return admissions;
+    }
+
+    public void setAdmissions(List<Admission> admissions) {
+        this.admissions = admissions;
+    }
+
     public Staff getCurrentStaff() {
         return currentStaff;
     }
@@ -3062,14 +3086,6 @@ public class MdInwardReportController implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
-    }
-
-    public List<Admission> getAdmissions() {
-        return admissions;
-    }
-
-    public void setAdmissions(List<Admission> admissions) {
-        this.admissions = admissions;
     }
 
     //619

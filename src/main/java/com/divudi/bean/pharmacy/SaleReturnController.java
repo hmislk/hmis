@@ -147,10 +147,10 @@ public class SaleReturnController implements Serializable {
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
-
-        if (tmp.getQty() > getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem())) {
-            tmp.setQty(0.0);
-            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
+        double remainingQty = getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem());
+        if (tmp.getQty() > remainingQty) {
+            tmp.setQty(remainingQty);
+            JsfUtil.addErrorMessage("You cant return over than the remaining quanty to return. The returning qtantity was set to Remaining Quantity.");
         }
 
         calTotal();
@@ -184,9 +184,9 @@ public class SaleReturnController implements Serializable {
 
         getReturnBill().setBilledBill(getBill());
 
-        getReturnBill().setTotal(0 - getReturnBill().getTotal());
-        getReturnBill().setNetTotal(0 - getReturnBill().getNetTotal());
-        getReturnBill().setDiscount(0 - getReturnBill().getDiscount());
+        getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
+        getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
+        getReturnBill().setDiscount(0 - Math.abs(getReturnBill().getDiscount()));
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -258,8 +258,10 @@ public class SaleReturnController implements Serializable {
             //   i.getBillItem().setQty(i.getPharmaceuticalBillItem().getQty());
             double grossValue = i.getRate() * i.getQty();
             double netValue = i.getNetRate() * i.getQty();
+            double discountValue = i.getDiscountRate() * i.getQty();
             i.setGrossValue(0 - grossValue);
             i.setNetValue(0 - netValue);
+            i.setDiscount(discountValue);
 
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
@@ -394,12 +396,18 @@ public class SaleReturnController implements Serializable {
 
     private void updateReturnTotal() {
         double tot = 0;
+        double discount = 0;
+        double netTotal = 0;
         for (BillItem b : getReturnBill().getBillItems()) {
-            tot += b.getNetValue();
+            tot += b.getGrossValue();
+            discount += b.getDiscount();
+            netTotal += b.getNetValue();
         }
 
         getReturnBill().setTotal(tot);
-        getReturnBill().setNetTotal(tot);
+        getReturnBill().setDiscount(discount);
+        getReturnBill().setNetTotal(netTotal);
+
         getBillFacade().edit(getReturnBill());
     }
 
@@ -507,7 +515,7 @@ public class SaleReturnController implements Serializable {
 
         }
         getReturnBill().setDiscount(discount);
-        getReturnBill().setTotal(grossTotal);
+        getReturnBill().setTotal(grossTotal - discount);
         getReturnBill().setNetTotal(grossTotal);
 
         //  return grossTotal;

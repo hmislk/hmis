@@ -66,6 +66,25 @@ public class SessionInstance implements Serializable {
     Institution forInstitution;
     @ManyToOne
     Department forDepartment;
+    private boolean acceptOnlineBookings = true;
+    private boolean doctorHoliday;
+    private WebUser doctorHolidayMarkedBy;
+
+    public WebUser getDoctorHolidayMarkedBy() {
+        return doctorHolidayMarkedBy;
+    }
+
+    public void setDoctorHolidayMarkedBy(WebUser doctorHolidayMarkedBy) {
+        this.doctorHolidayMarkedBy = doctorHolidayMarkedBy;
+    }
+
+    public boolean isDoctorHoliday() {
+        return doctorHoliday;
+    }
+
+    public void setDoctorHoliday(boolean doctorHoliday) {
+        this.doctorHoliday = doctorHoliday;
+    }
 
     @Transient
     private boolean currentlyOngoing;
@@ -258,6 +277,14 @@ public class SessionInstance implements Serializable {
     private ArrivalRecord arrivalRecord;
 
     private int reportPatients = 0;
+
+    public boolean isAcceptOnlineBookings() {
+        return acceptOnlineBookings;
+    }
+
+    public void setAcceptOnlineBookings(boolean acceptOnlineBookings) {
+        this.acceptOnlineBookings = acceptOnlineBookings;
+    }
 
     @Lob
     private String specialNoticeSessionInstance;

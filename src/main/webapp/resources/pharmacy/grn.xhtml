@@ -193,11 +193,12 @@
                             </tr>
                         </ui:repeat>
                     </tbody>
-
-
+                </table>
+                
+                <table class="my-3">
 
                     <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left; ">Sale Value</td>
+                        <td colspan="9" style="text-align: left; ">Total Sale Value</td>
                         <td colspan="2" style="text-align: right; ">
 
                             <h:outputText value="#{cc.attrs.bill.saleValue}">
@@ -208,18 +209,27 @@
                     </tr>
 
                     <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left;">Free Quantity (Purchase Value) </td>
+                        <td colspan="9" style="text-align: left;">Total Purchase Value</td>
                         <td colspan="2" style="text-align: right;">
-                            <h:outputText value="#{grnController.calFreeQuantityPurchaseValue(cc.attrs.bill)}">
+                            <h:outputText value="#{0-cc.attrs.bill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
                     </tr>
 
                     <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left;">Total</td>
+                        <td colspan="9" style="text-align: left;">Free Quantity (Sale Value) </td>
                         <td colspan="2" style="text-align: right;">
-                            <h:outputText value="#{0-cc.attrs.bill.total}">
+                            <h:outputText value="#{grnController.calFreeQuantitySaleValue(cc.attrs.bill)}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <tr style="font-size: 15px">
+                        <td colspan="9" style="text-align: left;">Free Quantity (Purchase Value) </td>
+                        <td colspan="2" style="text-align: right;">
+                            <h:outputText value="#{grnController.calFreeQuantityPurchaseValue(cc.attrs.bill)}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>

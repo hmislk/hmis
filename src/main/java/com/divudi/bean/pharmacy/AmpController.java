@@ -10,6 +10,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.util.JsfUtil;
@@ -102,6 +103,9 @@ public class AmpController implements Serializable {
     VmpController vmpController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private ItemController itemController;
+
     private UploadedFile file;
 
     public UploadedFile getFile() {
@@ -421,6 +425,14 @@ public class AmpController implements Serializable {
     }
     List<Amp> ampList = null;
 
+    public List<Item> getPharmaceuticalAndStoreItemAmp(String qry) {
+        List<Item> a = new ArrayList<>();
+        a.addAll(completeAmp(qry));
+        a.addAll(itemController.completeStoreItemOnly(qry));
+
+        return a;
+    }
+
     public List<Amp> completeAmpByName(String qry) {
 
         Map m = new HashMap();
@@ -661,7 +673,7 @@ public class AmpController implements Serializable {
         
         if(current.getId() != null){
             if(!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)){
-                JsfUtil.addErrorMessage("You have no privilage to edit AMPs.");
+                JsfUtil.addErrorMessage("Deleting and Editing is disabled by Configuration Options.");
                 return;
             }
         }
@@ -705,6 +717,8 @@ public class AmpController implements Serializable {
         }
 
         if (getCurrent().getId() != null) {
+            getCurrent().setEditedAt(new Date());
+            getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {

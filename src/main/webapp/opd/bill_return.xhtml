@@ -32,9 +32,8 @@
 
                         <p:growl ></p:growl>
 
-
-                        <div class="row mt-3">
-                            <div class="col-md-3">
+                        <div class="row" >
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
@@ -43,7 +42,7 @@
                                     <common:patient patient="#{billReturnController.originalBillToReturn.patient}" class="w-100"/>
                                 </p:panel>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt"></h:outputText>
@@ -52,6 +51,8 @@
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
                                         <h:outputLabel value="#{billReturnController.originalBillToReturn.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Payment Method:" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.paymentMethod}" ></h:outputLabel>
                                         <h:outputLabel value="Total :" ></h:outputLabel>
                                         <h:outputLabel value="#{billReturnController.originalBillToReturn.total}" >
                                             <f:convertNumber pattern="#,##0.00" />
@@ -66,22 +67,23 @@
                                         </h:outputLabel>
                                     </p:panelGrid>
                                 </p:panel>
-                            </div>
-                            <div class="col-md-6">
 
+                            </div>
+                            <div class="col-md-4">
                                 <p:panel >
                                     <f:facet name="header" >
                                         <h:outputText value="Return Details" class="mt-2" ></h:outputText>
                                         <p:commandButton 
-                                        id="btnSave" 
-                                        value="Refund" 
-                                        ajax="false"
-                                        style="float:right;"
-                                        class="ui-button-warning"
-                                        onclick="if (!confirm('Are You Sure You Want to Refund this Items?'))
-                                                    return false;"
-                                        action="#{billReturnController.settleOpdReturnBill()}">
-                                    </p:commandButton>
+                                            id="btnSave" 
+                                            value="Refund" 
+                                            ajax="false"
+                                            icon="fa fa-money-bill-wave"
+                                            style="float:right; width: 8em;"
+                                            class="ui-button-warning"
+                                            onclick="if (!confirm('Are You Sure You Want to Refund this Items?'))
+                                                        return false;"
+                                            action="#{billReturnController.settleOpdReturnBill()}">
+                                        </p:commandButton>
                                     </f:facet>
 
                                     <p:panelGrid columns="2" >
@@ -140,9 +142,9 @@
                                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                 </h:outputText>
                                                             </p:column>
-<!--                                                            <p:ajax process="@this" 
-                                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                    event="itemSelect"  />-->
+                                                            <!--                                                            <p:ajax process="@this" 
+                                                                                                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                                                                                event="itemSelect"  />-->
                                                         </p:autoComplete>
                                                     </div>
                                                 </div>
@@ -184,9 +186,9 @@
                                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                 </h:outputText>
                                                             </p:column>
-<!--                                                            <p:ajax process="@this" 
-                                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                    event="itemSelect"  />-->
+                                                            <!--                                                            <p:ajax process="@this" 
+                                                                                                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                                                                                event="itemSelect"  />-->
                                                         </p:autoComplete>
                                                     </div>
                                                 </div>
@@ -225,10 +227,14 @@
                                     </h:panelGroup>
                                 </p:panel>
 
+                            </div>
+                        </div>
+                        <div class="row" >
+                            <div class="col-md-12">
                                 <p:panel id="panelItems" class="mt-2">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt" class="mt-2"></h:outputText>
-                                        <h:outputLabel value="Bill Item Details" class="mx-2 mt-2"></h:outputLabel>
+                                        <h:outputLabel value="Select Returning Items" class="mx-2 mt-2"></h:outputLabel>
                                         <p:commandButton
                                             value="Select All"
                                             id="selectAll"
@@ -256,28 +262,79 @@
                                         var="obi"
                                         selectionDisabled="#{obi.refunded}"
                                         selection="#{billReturnController.originalBillItemsToSelectedToReturn}"
-                                        rowKey="#{obi.id}" >
+                                        rowKey="#{obi.id}"
+                                        styleClass="table table-sm">
 
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" event="rowSelectCheckbox" listener="#{billReturnController.calculateRefundingAmount()}" />
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" event="rowUnselectCheckbox" listener="#{billReturnController.calculateRefundingAmount()}"/>
+                                        <p:ajax process="@this" 
+                                                update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" 
+                                                event="rowSelectCheckbox" 
+                                                listener="#{billReturnController.calculateRefundingAmount()}" />
 
-                                        <p:column selectionBox="true" width="20" >
+                                        <p:ajax process="@this" 
+                                                update=":#{p:resolveFirstComponentWithId('refundingAmound',view).clientId} :#{p:resolveFirstComponentWithId('panelItems',view).clientId}" 
+                                                event="rowUnselectCheckbox" 
+                                                listener="#{billReturnController.calculateRefundingAmount()}" />
+
+                                        <p:column selectionBox="true" width="20" />
+
+                                        <p:column headerText="Item">
+                                            <h:outputText value="#{obi.item.name}" />
                                         </p:column>
-                                        <p:column headerText="Item Name">
-                                            <h:outputLabel value="#{obi.item.name}" ></h:outputLabel>
+
+                                        <p:column headerText="Qty" styleClass="text-end">
+                                            <h:outputText value="#{obi.qty}" />
                                         </p:column>
-                                        <p:column >
-                                            <p:tag styleClass="mr-2" icon="pi pi-exclamation-triangle" severity="warning" value="Refunded" rendered="#{obi.refunded}"></p:tag>
-                                        </p:column>
-                                        <p:column headerText="Item Value" style="width: 10em;">
-                                            <h:outputLabel value="#{obi.netValue}" class="mx-3 d-flex justify-content-end">
+
+                                        <p:column headerText="Rate" styleClass="text-end">
+                                            <h:outputText value="#{obi.rate}">
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </p:column>
+
+                                        <p:column headerText="Discount %" styleClass="text-end">
+                                            <h:outputText value="#{obi.discountRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Net Rate" styleClass="text-end">
+                                            <h:outputText value="#{obi.netRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Gross Value" styleClass="text-end">
+                                            <h:outputText value="#{obi.grossValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Discount Value" styleClass="text-end">
+                                            <h:outputText value="#{obi.discount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Net Value" styleClass="text-end">
+                                            <h:outputText value="#{obi.netValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Status" styleClass="text-center">
+                                            <p:tag icon="pi pi-exclamation-triangle" severity="warning" value="Refunded" rendered="#{obi.refunded}" />
+                                        </p:column>
+
                                     </p:dataTable>
+
                                 </p:panel>
                             </div>
                         </div>
+
+
+
+
+
                     </p:panel>
                 </h:form>
             </ui:define>

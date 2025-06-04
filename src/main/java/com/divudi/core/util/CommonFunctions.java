@@ -41,6 +41,13 @@ public class CommonFunctions {
         return Math.abs(value);
     }
 
+    public static Double reverseSign(Double value) {
+        if (value == null) {
+            return null;
+        }
+        return -value;
+    }
+
     public static String changeTextCases(String nm, String tc) {
         if (tc == null) {
             return nm;
@@ -293,6 +300,18 @@ public class CommonFunctions {
 
     public static double round(double numberToRound) {
         return round(numberToRound, 2);
+    }
+
+// ChatGPT contributed - 2025-05
+    public static long stringToLong(String string) {
+        if (string == null || string.trim().isEmpty()) {
+            return 0l;
+        }
+        try {
+            return Long.parseLong(string.trim());
+        } catch (NumberFormatException e) {
+            return 0l;
+        }
     }
 
     public static long calTimePeriod(Date frDate, Date tDate) {
