@@ -26,10 +26,10 @@ public class OnlineBookingAgentController implements Serializable {
 
     private Institution current;
     private List<Institution> allAgents;
-    
+
     @EJB
     private InstitutionFacade institutionFacade;
-    
+
     @Inject
     private SessionController sessionController;
 
@@ -61,8 +61,8 @@ public class OnlineBookingAgentController implements Serializable {
         current = new Institution();
         current.setInstitutionType(InstitutionType.OnlineBookingAgent);
     }
-    
-     public void delete() {
+
+    public void delete() {
 
         if (getCurrent() != null && getCurrent().getId() != null) {
             getCurrent().setRetired(true);
@@ -76,43 +76,64 @@ public class OnlineBookingAgentController implements Serializable {
             current = null;
             JsfUtil.addSuccessMessage("Nothing to Delete");
         }
-     }
-     
-     @PostConstruct
-     public void init(){
-         fillAllAgents();
-     }
-     
-     public void saveSelected(boolean isNew) {
+    }
+
+    @PostConstruct
+    public void init() {
+        fillAllAgents();
+    }
+
+    public boolean checkDuplicateCodeAvailability(Institution institution) {
+        fillAllAgents();
+        for (Institution ins : allAgents) {
+            if (institution.getId() == null) {
+                if (ins.getCode().equalsIgnoreCase(institution.getCode())) {
+                    return true;
+                }
+            } else if (institution.getId() != null) {
+                if (ins.getId() != institution.getId()) {
+                    if (ins.getCode().equalsIgnoreCase(institution.getCode())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public void saveSelected(boolean isNew) {
         if (getCurrent().getName() == null || getCurrent().getName().isEmpty()) {
             JsfUtil.addErrorMessage("Agent Name is missing.");
             return;
         }
-        
-        if(getCurrent().getCode() == null || getCurrent().getCode().isEmpty()){
+
+        if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
             JsfUtil.addErrorMessage("Agent Code is missing.");
+            return;
+        }
+        
+        if(checkDuplicateCodeAvailability(current)){
+            JsfUtil.addErrorMessage("Agent Code is already taken. Use different one.");
             return;
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0 && !isNew) {
             getInstitutionFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
-        } else if(isNew && getCurrent().getId() == null){
+        } else if (isNew && getCurrent().getId() == null) {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getInstitutionFacade().create(getCurrent());
             JsfUtil.addSuccessMessage("Saved Successfully");
-        }else if(isNew && getCurrent().getId() != null){
+        } else if (isNew && getCurrent().getId() != null) {
             JsfUtil.addErrorMessage("Please use update Button to edit Agent.");
-        }else if(!isNew && getCurrent().getId() == null){
+        } else if (!isNew && getCurrent().getId() == null) {
             JsfUtil.addErrorMessage("Please Save the Agent.");
         }
         fillAllAgents();
     }
 
-     
-     
-     public void fillAllAgents() {
+    public void fillAllAgents() {
         String j;
         j = "select i "
                 + " from Institution i "
