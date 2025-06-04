@@ -68,6 +68,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
@@ -111,6 +112,8 @@ public class PharmacySaleBhtController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     BillNumberGenerator billNumberBean;
+    @EJB
+    BillService billService;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;            
@@ -974,6 +977,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         savePreBillFinally(pt, matrixDepartment, btp, bta);
         savePreBillItemsFinally(tmpBillItems);
+        billService.createBillFinancialDetailsForPharmacyBill(getPreBill());
 
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
