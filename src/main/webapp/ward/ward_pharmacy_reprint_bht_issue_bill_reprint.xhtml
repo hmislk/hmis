@@ -34,7 +34,6 @@
                                 action="#{pharmacyBillSearch.navigateToCancelBhtRequest}"
                                 disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0)}"
                                 value="Cancel Request">
-                                <f:setPropertyActionListener target="#{pharmacySaleBhtController.bill}" value="#{pharmacyBillSearch.bill}"/>
                             </p:commandButton>
                         </f:facet>
 
