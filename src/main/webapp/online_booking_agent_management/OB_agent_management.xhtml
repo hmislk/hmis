@@ -33,14 +33,36 @@
                             <p:commandButton 
                                 id="btnDelete" 
                                 icon="fa fa-trash"
-                                onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;" 
-                                action="#{onlineBookingAgentController.delete()}"  
+                                onclick="PF('cancelDialog').show();"
                                 value="Delete"
                                 update="lstSelect gpDetail msg" process="btnDelete"
                                 class=" m-1 ui-button-danger w-25"
                                 >
                             </p:commandButton>
+
+                            <p:confirmDialog id="cancelDialog"
+                                             widgetVar="cancelDialog"
+                                             header="Confirmation"
+                                             message="Are you sure you want to cancel the selected sessions?"
+                                             severity="warn"
+                                             showEffect="fade"
+                                             hideEffect="fade"
+                                             responsive="true">
+
+                                <p:commandButton value="Yes"
+                                                 icon="pi pi-check"
+                                                 update="lstSelect gpDetail msg"
+                                                 oncomplete="PF('cancelDialog').hide();"
+                                                 action="#{onlineBookingAgentController.delete()}"
+                                                 process="@this"
+                                                 />
+
+                                <p:commandButton value="No"
+                                                 icon="pi pi-times"
+                                                 onclick="PF('cancelDialog').hide(); return false;"
+                                                 type="button"
+                                                 styleClass="ui-button-secondary" />
+                            </p:confirmDialog>
 
                             <p:selectOneListbox  id="lstSelect"
                                                  value="#{onlineBookingAgentController.current}" 

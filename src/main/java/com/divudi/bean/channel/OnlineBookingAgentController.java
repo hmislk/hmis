@@ -69,6 +69,8 @@ public class OnlineBookingAgentController implements Serializable {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getInstitutionFacade().edit(getCurrent());
+            current = null;
+            fillAllAgents();
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             current = null;
