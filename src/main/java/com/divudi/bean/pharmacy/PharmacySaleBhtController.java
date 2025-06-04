@@ -113,7 +113,7 @@ public class PharmacySaleBhtController implements Serializable {
     BillNumberGenerator billNumberBean;
 
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
+    ConfigOptionApplicationController configOptionApplicationController;            
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -145,6 +145,7 @@ public class PharmacySaleBhtController implements Serializable {
     @Inject
     private BillBeanController billBean;
     private Stock tmpStock;
+    private Double billItemTotal;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -223,6 +224,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
+        
         return "/inward/bht_bill_cancel?faces-redirect=true;";
     }
 
@@ -776,9 +778,34 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
-        BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
+        BillTypeAtomic bta = BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
         BillType bt = BillType.PharmacyBhtPre;
-        settleBhtIssueRequestAccept(bt, bta, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
+        
+        Department matrixDept = null;
+        boolean matrixByAdmissionDepartment;
+        boolean matrixByIssuingDepartment;
+        matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
+        matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
+        if (matrixByAdmissionDepartment) {
+            if (getPatientEncounter() == null) {
+                matrixDept = getSessionController().getDepartment();
+            }
+            if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                matrixDept = getPatientEncounter().getDepartment();
+            }
+            if (getPatientEncounter().getCurrentPatientRoom() != null) {
+                if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                    matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+                }
+            }
+
+        } else if (matrixByIssuingDepartment) {
+            matrixDept = getSessionController().getDepartment();
+        } else {
+            matrixDept = getSessionController().getDepartment();
+        }
+        
+        settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE);
         userNotificationController.userNotificationRequestComplete();
 
     }
@@ -947,6 +974,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
+        //pdateBillTotals(getPreBill().getBillItems(),  getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -1009,6 +1037,22 @@ public class PharmacySaleBhtController implements Serializable {
         bill.setMargin(marginTotal);
         getBillFacade().edit(bill);
 
+    }
+    
+    public void updateBillTotals(List<BillItem> billItems, Bill bill){
+        double total = 0;
+        double netTotal = 0;
+        double marginTotal = 0;
+        for (BillItem bi : billItems) {
+            total += bi.getGrossValue();
+            netTotal += bi.getNetValue();
+            marginTotal += bi.getMarginValue();
+        }
+
+        bill.setTotal(total);
+        bill.setNetTotal(netTotal);
+        bill.setMargin(marginTotal);
+        getBillFacade().edit(bill);
     }
 
     @EJB
@@ -1259,7 +1303,10 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.setQty(qty);
 //        billItem.setBill(getPreBill());
         billItem.setSearialNo(getBillItems().size() + 1);
+        calculateRates(billItem);
         getBillItems().add(billItem);
+        
+        calCurrentBillItemTotal(getBillItems());
 
         qty = null;
         tmpStock = null;
@@ -1587,6 +1634,7 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.setItem(sq.getStock().getItemBatch().getItem());
                     billItem.setReferanceBillItem(i);
                     billItem.setSearialNo(getBillItems().size() + 1);
+                    calculateRates(billItem);
                     billItems.add(billItem);
 
                 }
@@ -1603,11 +1651,13 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.setReferanceBillItem(i);
                 billItem.setSearialNo(getBillItems().size() + 1);
                 billItem.getPharmaceuticalBillItem().setBillItem(billItem);
+                calculateRates(billItem);
                 billItems.add(billItem);
             }
 
         }
-
+        
+        calCurrentBillItemTotal(billItems);
         getPreBill().setBillItems(billItems);
 
 //        boolean flag = false;
@@ -1623,6 +1673,13 @@ public class PharmacySaleBhtController implements Serializable {
 //            billItems = null;
 //            JsfUtil.addErrorMessage("There is Some Item in request that are added Multiple Time in Transfer request!!! please check request you can't issue errornus transfer request");
 //        }
+    }
+    
+    public void calCurrentBillItemTotal(List<BillItem> billItems){
+        billItemTotal = 0.0;
+        for(BillItem bi : billItems){
+            billItemTotal += bi.getNetValue();
+        }
     }
 
     public boolean checkBillComponent(Bill b) {
@@ -1949,6 +2006,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setTmpStock(Stock tmpStock) {
         this.tmpStock = tmpStock;
+    }
+
+    public Double getBillItemTotal() {
+        return billItemTotal;
+    }
+
+    public void setBillItemTotal(Double billItemTotal) {
+        this.billItemTotal = billItemTotal;
     }
 
 }
