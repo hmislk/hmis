@@ -769,6 +769,31 @@ public class PharmacySaleBhtController implements Serializable {
         settleBhtIssue(bt, bta, matrixDept);
 
     }
+    
+    private Department determineMatrixDepartment() {
+        Department matrixDept = null;
+        boolean matrixByAdmissionDepartment;
+        boolean matrixByIssuingDepartment;
+        matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
+        matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
+        
+        if (matrixByAdmissionDepartment) {
+            if (getPatientEncounter() == null) {
+                matrixDept = getSessionController().getDepartment();
+            } else if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                matrixDept = getPatientEncounter().getDepartment();
+            } else if (getPatientEncounter().getCurrentPatientRoom() != null) {
+                if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                    matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+                }
+            }
+        } else if (matrixByIssuingDepartment) {
+            matrixDept = getSessionController().getDepartment();
+        } else {
+            matrixDept = getSessionController().getDepartment();
+        }
+        return matrixDept;
+    }
 
     public void settlePharmacyBhtIssueAccept() {
         if (errorCheck()) {
@@ -781,29 +806,7 @@ public class PharmacySaleBhtController implements Serializable {
         BillTypeAtomic bta = BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
         BillType bt = BillType.PharmacyBhtPre;
         
-        Department matrixDept = null;
-        boolean matrixByAdmissionDepartment;
-        boolean matrixByIssuingDepartment;
-        matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
-        matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
-        if (matrixByAdmissionDepartment) {
-            if (getPatientEncounter() == null) {
-                matrixDept = getSessionController().getDepartment();
-            }
-            if (getPatientEncounter().getCurrentPatientRoom() == null) {
-                matrixDept = getPatientEncounter().getDepartment();
-            }
-            if (getPatientEncounter().getCurrentPatientRoom() != null) {
-                if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-                    matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
-                }
-            }
-
-        } else if (matrixByIssuingDepartment) {
-            matrixDept = getSessionController().getDepartment();
-        } else {
-            matrixDept = getSessionController().getDepartment();
-        }
+        Department matrixDept = determineMatrixDepartment();
         
         settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE);
         userNotificationController.userNotificationRequestComplete();
