@@ -717,6 +717,8 @@ public class AmpController implements Serializable {
         }
 
         if (getCurrent().getId() != null) {
+            getCurrent().setEditedAt(new Date());
+            getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {

@@ -380,9 +380,9 @@ public class ChannelService {
 
         for (ItemFee f : itemFeeList) {
             if (f.getFeeType() == FeeType.OwnInstitution && f.getFee() > 0) {
-                hosForeignFee = f.getFfee();
+                hosForeignFee += f.getFfee();
             } else if (f.getFeeType() == FeeType.Staff && f.getFee() > 0) {
-                docForeignFee = f.getFfee();
+                docForeignFee += f.getFfee();
             }
         }
 
@@ -416,9 +416,9 @@ public class ChannelService {
 
         for (ItemFee f : itemFeeList) {
             if (f.getFeeType() == FeeType.OwnInstitution && f.getFee() > 0) {
-                hosFee = f.getFee();
+                hosFee += f.getFee();
             } else if (f.getFeeType() == FeeType.Staff && f.getFee() > 0) {
-                docFee = f.getFee();
+                docFee += f.getFee();
             }
         }
 

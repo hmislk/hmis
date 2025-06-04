@@ -335,6 +335,11 @@ public class InstitutionBillEncounter {
                 .collect(java.util.stream.Collectors.groupingBy(InstitutionBillEncounter::getInstitution));
     }
 
+    public static Map<PatientEncounter, List<InstitutionBillEncounter>> createPatientEncounterBillEncounterMap(List<InstitutionBillEncounter> institutionBillEncounters) {
+        return institutionBillEncounters.stream()
+                .collect(java.util.stream.Collectors.groupingBy(InstitutionBillEncounter::getPatientEncounter));
+    }
+
     public Institution getInstitution() {
         return institution;
     }
