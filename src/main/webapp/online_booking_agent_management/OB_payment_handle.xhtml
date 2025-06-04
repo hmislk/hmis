@@ -41,12 +41,13 @@
                             <p:spacer ></p:spacer>
                             <h:outputLabel value="Booking Agent"/> 
                             <p:selectOneMenu  id="lstSelect"
-                                                  value="#{onlineBookingAgentController.agentForBookings}" 
-                                                 style="w-100"
-                                                 filter="true">
+                                              value="#{onlineBookingAgentController.agentForBookings}" 
+                                              style="w-100"
+                                              styleClass="w-100"
+                                              filter="true">
                                 <f:selectItems  value="#{onlineBookingAgentController.allAgents}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-<!--                                <p:ajax update="gpDetail" process="lstSelect" >
-                                </p:ajax>-->
+                                <!--                                <p:ajax update="gpDetail" process="lstSelect" >
+                                                                </p:ajax>-->
                             </p:selectOneMenu>
                             <p:spacer></p:spacer>
                             <p:spacer></p:spacer>
@@ -60,7 +61,7 @@
 
                             <p:spacer width="20" ></p:spacer>
 
-                            
+
 
                             <p:spacer></p:spacer>
 
@@ -140,11 +141,11 @@
 
                             <p:column headerText="Patient">
                                 <h:outputText value="#{ob.patientName}">
-                                    
+
                                 </h:outputText>
                             </p:column>
 
-                            
+
 
 
                         </p:dataTable>

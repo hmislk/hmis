@@ -599,9 +599,11 @@ public class ChannelService {
             params.put("agent", agent);
         }
         if(hospital != null){
-            sql += " ob.hospital = :hospital";
+            sql += " and ob.hospital = :hospital";
             params.put("hospital", hospital);
         }
+        
+        sql += " order by ob.createdAt desc";
        
         return getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
     }
