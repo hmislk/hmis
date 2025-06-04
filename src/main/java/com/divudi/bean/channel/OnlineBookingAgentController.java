@@ -87,26 +87,18 @@ public class OnlineBookingAgentController implements Serializable {
             return;
         }
 
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-//
-//            if (getCurrent().getCode() != null) {
-//                getCurrent().setInstitutionCode(getCurrent().getCode());
-//            }
+        if (getCurrent().getId() != null && getCurrent().getId() > 0 && !isNew) {
             getInstitutionFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
-        } else {
-//            if (getCurrent().getCode() != null) {
-//                if (!checkCodeExist()) {
-//                    getCurrent().setInstitutionCode(getCurrent().getCode());
-//
-//                } else {
-//                    return;
-//                }
-//            }
+        } else if(isNew && getCurrent().getId() == null){
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getInstitutionFacade().create(getCurrent());
             JsfUtil.addSuccessMessage("Saved Successfully");
+        }else if(isNew && getCurrent().getId() != null){
+            JsfUtil.addErrorMessage("Please use update Button to edit Agent.");
+        }else if(!isNew && getCurrent().getId() == null){
+            JsfUtil.addErrorMessage("Please Save the Agent.");
         }
         fillAllAgents();
     }

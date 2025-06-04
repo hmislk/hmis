@@ -89,12 +89,7 @@
                                             <h:outputText  value="Description" ></h:outputText>
                                             <p:inputTextarea class="w-100 form-control m-1" value="#{onlineBookingAgentController.current.descreption}"  ></p:inputTextarea>
                                             <h:outputText id="lblDept" value="Type"></h:outputText>
-                                            <p:selectOneMenu
-                                                class="w-100 form-control m-1"
-                                                id="cmbDept"
-                                                value="#{onlineBookingAgentController.current.institutionType}"
-                                                >                                        
-                                            </p:selectOneMenu>                                 
+                                             <h:outputText id="lblDept" value="#{onlineBookingAgentController.current.institutionType}"></h:outputText>                                                                     
                                             <h:outputText value="Phone" ></h:outputText>
                                             <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{onlineBookingAgentController.current.phone}"  ></p:inputText>
                                             <h:outputText value="Fax" ></h:outputText>
@@ -142,7 +137,17 @@
                                 <p:commandButton 
                                     id="btnSave" 
                                     value="Save" 
-                                    action="#{institutionController.saveSelected()}" 
+                                    action="#{onlineBookingAgentController.saveSelected(true)}" 
+                                    process="btnSave gpDetail" 
+                                    update="lstSelect msg" 
+                                    class=" m-1 ui-button-warning w-25"
+                                    icon="fas fa-save">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="btnUpdate" 
+                                    value="Update" 
+                                    disabled="#{onlineBookingAgentController.current.id eq null}"
+                                    action="#{onlineBookingAgentController.saveSelected(false)}" 
                                     process="btnSave gpDetail" 
                                     update="lstSelect msg" 
                                     class=" m-1 ui-button-warning w-25"
