@@ -163,16 +163,15 @@
                         </p:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGrid>
-                <h:panelGrid columns="1" class="w-100" rendered="false">
+                <h:panelGrid columns="1" class="w-100">
                     <h:outputLabel class="w-100" value="Status"/>
                     <p:selectOneMenu class="w-100" value="#{laboratoryManagementController.filteringStatus}">
                         <f:selectItem itemLabel="Any"/>
-                        <f:selectItem itemValue="Prossing" itemLabel="Prossing"/>
+                        <f:selectItem itemValue="Processing" itemLabel="Processing"/>
                         <f:selectItem itemValue="Pending" itemLabel="Pending"/>
                         <f:selectItem itemValue="Approved" itemLabel="Approved"/>
                     </p:selectOneMenu>
                 </h:panelGrid>
-                <h:panelGrid columns="1" class="w-100"/>
                 <h:panelGrid columns="1" class="w-100"/>
                 <h:panelGrid columns="1" class="w-100">
                     <p:commandButton 

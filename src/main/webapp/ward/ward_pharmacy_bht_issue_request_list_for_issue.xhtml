@@ -167,7 +167,7 @@
                                         <h:outputLabel value="#{b.toStaff.person.nameWithTitle}" />                                   
                                     </p:column> 
                                     <p:column style="width: 12%;">
-                                        <p:commandButton ajax="false" value="View Bill" action="/ward/ward_pharmacy_reprint_bht_issue_bill_reprint" >
+                                        <p:commandButton ajax="false" value="View Bill" action="/ward/ward_pharmacy_reprint_bht_issue_bill_reprint?faces-redirect=true" >
                                             <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                         </p:commandButton>
                                     </p:column>
