@@ -155,6 +155,8 @@ public class PatientInvestigationController implements Serializable {
     private Lims lims;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LaboratoryManagementController laboratoryManagementController;
     /**
      * Class Variables
      */
@@ -301,9 +303,9 @@ public class PatientInvestigationController implements Serializable {
         patientSampleComponentsByInvestigation = getPatientSampleComponentsByInvestigation(patientInvestigation);
         return "/lab/alternative_report_selector?faces-redirect=true";
     }
-
+    
     public String navigateToSampleManagementFromOPDBatchBillView(Bill bill) {
-        listingEntity = ListingEntity.BILLS;
+        
         String jpql;
         Map<String, Object> params = new HashMap<>();
         jpql = "SELECT pi.billItem.bill "
@@ -315,9 +317,15 @@ public class PatientInvestigationController implements Serializable {
         params.put("b", bill);
         params.put("ret", false);
 
-        bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-
-        return "/lab/generate_barcode_p?faces-redirect=true";
+        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+            laboratoryManagementController.setListingEntity(ListingEntity.BILLS); 
+            laboratoryManagementController.setBills(billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP));
+            return "/lab/laboratory_management_dashboard?faces-redirect=true";
+        }else{
+            listingEntity = ListingEntity.BILLS;
+            bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            return "/lab/generate_barcode_p?faces-redirect=true";
+        }
     }
 
     public String navigateToPrintBarcodesFromSampellingPage(PatientInvestigation ptIx) {

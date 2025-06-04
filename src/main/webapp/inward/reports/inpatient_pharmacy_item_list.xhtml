@@ -269,25 +269,25 @@
 
                                 </f:facet>
 
-                                <p:column width="2em" style="padding: 2px" styleClass="#{bip.referanceBillItem ne null and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                <p:column width="2em" style="padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="No" />
                                     </f:facet>
                                     <h:outputLabel value="#{rowIndex+1}" />
                                 </p:column>
 
-                                <p:column width="20em" style="padding: 2px" styleClass="#{bip.referanceBillItem ne null and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                <p:column width="20em" style="padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Name" />
                                     </f:facet>
                                     <h:outputLabel value="#{bip.item.name}" />
                                 </p:column>
 
-                                <p:column width="2em" style="padding: 2px" styleClass="#{bip.referanceBillItem ne null and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                <p:column width="2em" style="padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="QTY" />
                                     </f:facet>
-                                    <p:outputLabel value="#{bip.referanceBillItem ne null and !bip.referanceBillItem.bill.cancelled ? 0 - bip.qty : bip.qty}">
+                                    <p:outputLabel value="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 0 - bip.qty : bip.qty}">
                                         <f:convertNumber pattern="#0" />
                                     </p:outputLabel>
 <!--                                    <p:outputLabel value="#{bip.qty}">
@@ -295,7 +295,7 @@
                                     </p:outputLabel>-->
                                 </p:column>
 
-                                <p:column width="3em" style="text-align: right; padding: 2px" styleClass="#{bip.referanceBillItem ne null and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                <p:column width="3em" style="text-align: right; padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Rate" />
                                     </f:facet>
@@ -305,11 +305,11 @@
 
                                 </p:column>
 
-                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{bip.referanceBillItem ne null and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{bip.referanceBillItem ne null and !bip.referanceBillItem.bill.cancelled ? 0 - bip.netValue : bip.netValue}">
+                                    <h:outputLabel value="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 0 - bip.netValue : bip.netValue}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">

@@ -2817,8 +2817,14 @@ public class BhtSummeryController implements Serializable {
                     break;
                 case Medicine:
                     List<BillTypeAtomic> btas = new ArrayList<>();
+                    btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+                    btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
                     btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
                     btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+                    btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+                    btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+                    btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+                    btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
                     i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
                     break;
                 case GeneralIssuing:

@@ -3946,9 +3946,11 @@ public class ReportsController implements Serializable {
 
             for (ReportTemplateRow c : exportRows) {
                 table.addCell(new PdfPCell(new Phrase(c.getBill().getDeptId(), cellFont)));
+                String referenceNumber = c.getBill().getReferenceNumber() != null ? c.getBill().getReferenceNumber() :
+                        c.getBill().getBilledBill().getReferenceNumber();
                 table.addCell(new PdfPCell(new Phrase(
-                        collectingCentreBillController.generateBookNumberFromReference(c.getBill().getReferenceNumber()), cellFont)));
-                table.addCell(new PdfPCell(new Phrase(c.getBill().getReferenceNumber(), cellFont)));
+                        collectingCentreBillController.generateBookNumberFromReference(referenceNumber), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(referenceNumber, cellFont)));
                 table.addCell(new PdfPCell(new Phrase(
                         c.getBill().getPatient().getPerson().getNameWithTitle(), cellFont)));
                 table.addCell(new PdfPCell(new Phrase(
@@ -4022,9 +4024,11 @@ public class ReportsController implements Serializable {
                 Row dataRow = sheet.createRow(rowIndex++);
 
                 dataRow.createCell(0).setCellValue(c.getBill().getDeptId());
+                String referenceNumber = c.getBill().getReferenceNumber() != null ? c.getBill().getReferenceNumber() :
+                        c.getBill().getBilledBill().getReferenceNumber();
                 dataRow.createCell(1).setCellValue(
-                        collectingCentreBillController.generateBookNumberFromReference(c.getBill().getReferenceNumber()));
-                dataRow.createCell(2).setCellValue(c.getBill().getReferenceNumber());
+                        collectingCentreBillController.generateBookNumberFromReference(referenceNumber));
+                dataRow.createCell(2).setCellValue(referenceNumber);
                 dataRow.createCell(3).setCellValue(c.getBill().getPatient().getPerson().getNameWithTitle());
                 dataRow.createCell(4).setCellValue(c.getBill().getCreater().getWebUserPerson().getName());
                 dataRow.createCell(5).setCellValue(dateFormat.format(c.getBill().getCreatedAt()));
@@ -4128,8 +4132,14 @@ public class ReportsController implements Serializable {
 
         List<ReportTemplateRow> filteredRows = new ArrayList<>();
 
-        for (ReportTemplateRow row: rows) {
-            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(row.getBill().getReferenceNumber());
+        for (ReportTemplateRow row : rows) {
+            Bill bill = row.getBill();
+
+            if (bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill)) {
+                bill = bill.getBilledBill() != null ? bill.getBilledBill() : bill;
+            }
+
+            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(bill.getReferenceNumber());
             AgentReferenceBook agentReferenceBook = agentReferenceBooks.get(bookNumber);
 
             if (agentReferenceBook == null) {

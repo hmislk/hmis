@@ -220,6 +220,7 @@ public class PharmacyBillSearch implements Serializable {
 
         return "/pharmacy/pharmacy_reprint_retail_cancelltion_bill?faces-redirect=true";
     }
+
     public String navigateToViewPharmacyRetailCancellationPreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
@@ -350,6 +351,15 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
+    }
+
+    public String navigateToCancelBhtRequest() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+
+        return "/inward/bht_bill_cancel?faces-redirect=true;";
     }
 
     public void markAsChecked() {
@@ -2124,7 +2134,7 @@ public class PharmacyBillSearch implements Serializable {
 
             newlyCreatedRetailSaleCancellationBill.setDeptId(deptId);
             newlyCreatedRetailSaleCancellationBill.setInsId(deptId);
-            
+
             if (newlyCreatedRetailSaleCancellationBill.getId() == null) {
                 getBillFacade().create(newlyCreatedRetailSaleCancellationBill);
             }
@@ -2271,6 +2281,46 @@ public class PharmacyBillSearch implements Serializable {
         Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
         newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
         newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        newlyCreatedCancellationBill.setDeptId(deptId);
+        newlyCreatedCancellationBill.setReferenceBill(getBill());
+        getBillFacade().edit(newlyCreatedCancellationBill);
+
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(newlyCreatedCancellationBill);
+        getBillFacade().edit(getBill());
+        JsfUtil.addSuccessMessage("Cancelled");
+
+        printPreview = true;
+
+    }
+
+    public void cancelPharmacyRequestIssueToBht() {
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return;
+        }
+        if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+            return;
+        }
+        if (getBill().getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("This Bill Already Discharged");
+            return;
+        }
+        if (getBill().getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
+            return;
+        }
+        if (getBill().checkActiveReturnBhtIssueBills()) {
+            JsfUtil.addErrorMessage("There some return Bill for this please cancel that bills first");
+            return;
+        }
+        if (checkDepartment(getBill())) {
+            return;
+        }
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
+        newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
+        newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
         newlyCreatedCancellationBill.setDeptId(deptId);
         newlyCreatedCancellationBill.setReferenceBill(getBill());
         getBillFacade().edit(newlyCreatedCancellationBill);
@@ -2689,7 +2739,7 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             pharmacyCancelReceivedItems(cb);
-            
+
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());

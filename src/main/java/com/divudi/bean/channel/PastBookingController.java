@@ -255,9 +255,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return output;
     }
 
-
-
-
     public void fillFees() {
         selectedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
@@ -608,10 +605,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 
         return false;
     }
-
-
-
-
 
     public void updateSerial() {
         if (errorCheckForSerial()) {
@@ -1620,7 +1613,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 
     }
 
-
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -2119,7 +2111,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return bi;
     }
 
-
     private String generateBillNumberInsId(Bill bill) {
         String suffix = getSessionController().getInstitution().getInstitutionCode();
         BillClassType billClassType = null;
@@ -2167,6 +2158,25 @@ public class PastBookingController implements Serializable, ControllerWithPatien
             tmp.setEditer(getSessionController().getLoggedUser());
         }
         getServiceSessionFacade().edit(tmp);
+    }
+
+    public String navigatePastBookingFromChannelBookingByDate(SessionInstance session) {
+        if (session != null) {
+            if (session.getStaff() != null) {
+                this.speciality = session.getStaff().getSpeciality();
+                listnerStaffListForRowSelect();
+            }
+            if (session.getStaff() != null) {
+                this.staff = session.getStaff(); 
+            }
+            
+            this.date = session.getSessionDate();
+            fillSessionInstance();
+            this.selectedSessionInstance = session;
+            fillBillSessions();
+        }
+
+        return "/channel/past_channel_booking?faces-redirect=true";
     }
 
     public void listnerStaffListForRowSelect() {
