@@ -166,38 +166,68 @@
                             <p:commandButton value="Doctor Holiday" icon="pi pi-table"
                                              class="mx-1"
                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable mark doctor holiday from channel view', false)}"
-                                             oncomplete="PF('myDialogWidget').show()" 
-                                             update="dialogContent doctorName" />
+                                             oncomplete="PF('holidayMarkWidget').show()" 
+                                             update="dialogContentForHolidayMark doctorNameCancellation" />
+                            <p:menuButton icon="fa-solid fa-sliders" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Channel Management from channel Booking', false)}">
+                                <p:menuitem value="Channel Schedule Management" action="#{channelScheduleController.navigateSheduleManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"  icon="fa fa-calendar-alt"/>
+                                <p:menuitem value="Channel Session Management" action="#{channelScheduleController.navigateSessionManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"   icon="fa fa-users"/> 
+                                <p:menuitem value="Multiple Session Cancellation" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Multiple Session Cancellation in Channel Booking', false)}" oncomplete="PF('sessionCancellationWidget').show()"  update="dialogContentForCancellation doctorNameForHoliday"   icon="fa-solid fa-trash"/> 
+                            </p:menuButton>
 
                         </div>
                     </div>
 
+                    <p:growl id="growl" showDetail="false" life="900"/>
+
+                    <p:confirmDialog id="cancelDialog"
+                                     widgetVar="cancelDialog"
+                                     header="Confirmation"
+                                     message="Are you sure you want to cancel the selected sessions?"
+                                     severity="warn"
+                                     showEffect="fade"
+                                     hideEffect="fade"
+                                     responsive="true">
+
+                        <p:commandButton value="Yes"
+                                         icon="pi pi-check"
+                                         update="dialogContentForCancellation growl"
+                                         oncomplete="PF('cancelDialog').hide();"
+                                         action="#{bookingControllerViewScope.multipleSessionCancellation(bookingController.sessionsForCancellation, true)}"
+                                         process="@this"
+                                         />
+
+                        <p:commandButton value="No"
+                                         icon="pi pi-times"
+                                         onclick="PF('cancelDialog').hide(); return false;"
+                                         type="button"
+                                         styleClass="ui-button-secondary" />
+                    </p:confirmDialog>
+
                     <p:dialog 
-                              widgetVar="myDialogWidget" 
-                              modal="true" 
-                              id="holidayMarkDialog"
-                              resizable="false" 
-                              draggable="true" 
-                              height="600"
-                              width="800">
-                        
+                        widgetVar="sessionCancellationWidget" 
+                        modal="true" 
+                        id="multipleCancellation"
+                        resizable="false" 
+                        draggable="true" 
+                        height="600"
+                        width="800">
+
                         <p:ajax event="close" update="acSessions"></p:ajax>
-                        
+
                         <f:facet name="header">
-                            <h:outputText id="doctorName" value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
-                            <p:commandButton class="mx-3" value="Mark" action="#{bookingController.markHolidayForSessionInstances(true)}" icon="fa-solid fa-check" update="dialogContent"></p:commandButton>
-                            <p:commandButton value="Unmark" action="#{bookingController.markHolidayForSessionInstances(false)}" update="dialogContent" icon="fa-solid fa-xmark"></p:commandButton>
+                            <h:outputText id="doctorNameCancellation" value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
+                            <p:commandButton class="mx-3" value="Cancel"  onclick="PF('cancelDialog').show();"  icon="fa-solid fa-check" update="growl dialogContentForCancellation"></p:commandButton>
+                            <p:commandButton value="Re-Open" action="#{bookingControllerViewScope.multipleSessionCancellation(bookingController.sessionsForCancellation, false)}" update="growl dialogContentForCancellation" icon="fa-solid fa-xmark"></p:commandButton>
 
                         </f:facet>
-                        
-                       
-                        <h:panelGroup id="dialogContent">
+
+                        <h:panelGroup id="dialogContentForCancellation">
                             <p:dataTable value="#{bookingController.sessionInstances}" 
                                          var="s" 
-                                         selection="#{bookingController.sessionsForHolidayMark}"
+                                         selection="#{bookingController.sessionsForCancellation}"
                                          selectionMode="multiple" 
                                          rowKey="#{s.id}">
-                                
+
                                 <p:column selectionBox="true" width="20"></p:column>
                                 <p:column width="10em" headerText="Name">
                                     <f:facet name="header" >
@@ -206,6 +236,7 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <h:outputText value="#{s.name}" />
                                         <h:outputText class="mx-1" style="font-weight: bold; color: red; border: 3px solid #fbc531; border-radius: 10px; padding: 4px 8px" value="Holiday" rendered="#{s.doctorHoliday}"/>
+                                        <h:outputText class="mx-1" style="font-weight: bold; color: red; padding: 4px 8px" value="Cancelled" rendered="#{s.cancelled}"/>
                                     </div>
 
 
@@ -216,7 +247,65 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Start" style="width: 40px!important; text-align: center;">
-                                    <h:outputText value="#{s.originatingSession.startingTime}">
+                                    <h:outputText value="#{s.startingTime}">
+                                        <f:convertDateTime pattern="hh:mm a"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Max" style="width: 20px!important; text-align: center;">
+                                    <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                        <f:convertNumber pattern="00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:dialog>
+
+                    <p:dialog 
+                        widgetVar="holidayMarkWidget" 
+                        modal="true" 
+                        id="holidayMarkDialog"
+                        resizable="false" 
+                        draggable="true" 
+                        height="600"
+                        width="800">
+
+                        <p:ajax event="close" update="acSessions"></p:ajax>
+
+                        <f:facet name="header">
+                            <h:outputText id="doctorNameForHoliday" value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
+                            <p:commandButton class="mx-3" value="Mark" action="#{bookingController.markHolidayForSessionInstances(true)}" icon="fa-solid fa-check" update="dialogContentForHolidayMark growl"></p:commandButton>
+                            <p:commandButton value="Unmark" action="#{bookingController.markHolidayForSessionInstances(false)}" update="dialogContentForHolidayMark growl" icon="fa-solid fa-xmark"></p:commandButton>
+
+                        </f:facet>
+
+
+                        <h:panelGroup id="dialogContentForHolidayMark">
+                            <p:dataTable value="#{bookingController.sessionInstances}" 
+                                         var="s" 
+                                         selection="#{bookingController.sessionsForHolidayMark}"
+                                         selectionMode="multiple" 
+                                         rowKey="#{s.id}">
+
+                                <p:column selectionBox="true" width="20"></p:column>
+                                <p:column width="10em" headerText="Name">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Name" ></h:outputText>
+                                    </f:facet>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h:outputText value="#{s.name}" />
+                                        <h:outputText class="mx-1" style="font-weight: bold; color: red; border: 3px solid #fbc531; border-radius: 10px; padding: 4px 8px" value="Holiday" rendered="#{s.doctorHoliday}"/>
+                                        <h:outputText class="mx-1" style="font-weight: bold; color: red; padding: 4px 8px" value="Cancelled" rendered="#{s.cancelled}"/>
+                                    </div>
+
+
+                                </p:column>
+                                <p:column headerText="Date" style="width: 50px!important; text-align: center;">
+                                    <h:outputText value="#{s.sessionDate}">
+                                        <f:convertDateTime pattern="dd MMM"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Start" style="width: 40px!important; text-align: center;">
+                                    <h:outputText value="#{s.startingTime}">
                                         <f:convertDateTime pattern="hh:mm a"/>
                                     </h:outputText>
                                 </p:column>
@@ -250,7 +339,7 @@
                                         process="@this" 
                                         update="acBookings scStaff acSessions pnlArrived"
                                         listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                                    
+
                                     <f:selectItem itemLabel="All" ></f:selectItem>
                                     <f:selectItems 
                                         value="#{doctorSpecialityController.selectedItems}"
@@ -279,7 +368,7 @@
                                     process="@this" 
                                     update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
                                     listener="#{bookingController.generateSessions}"/>
-                                
+
                                 <p:ajax  
                                     event="click"
                                     process="@this" 
@@ -318,6 +407,7 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <h:outputText value="#{s.name}" />
                                     <h:outputText class="mx-1" style="font-weight: bold; color: red; border: 3px solid #fbc531; border-radius: 10px; padding: 4px 8px" value="Holiday" rendered="#{s.doctorHoliday}"/>
+
                                 </div>
 
 
@@ -328,7 +418,7 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Start" style="width: 40px!important; text-align: center;">
-                                <h:outputText value="#{s.originatingSession.startingTime}">
+                                <h:outputText value="#{s.startingTime}">
                                     <f:convertDateTime pattern="hh:mm a"/>
                                 </h:outputText>
                             </p:column>
@@ -365,7 +455,7 @@
                                 process="@this"
                                 update="pnlArrived acBookings acSessions btnAddBooking manageBookingId"
                                 listener="#{bookingController.fillBillSessions}" />
-                            
+
                             <p:ajax 
                                 event="click" 
                                 process="@this"

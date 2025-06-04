@@ -12873,6 +12873,7 @@ public class SearchController implements Serializable {
         String sql = " SELECT b FROM BillFee b "
                 + "  where type(b.bill)=:class "
                 + " and b.bill.retired=false "
+                + " and b.bill.billTypeAtomic <> :bta"
                 + " and b.bill.paidAmount!=0 "
                 + " and b.bill.refunded=false "
                 + " and b.fee.feeType=:ftp"
@@ -12881,6 +12882,8 @@ public class SearchController implements Serializable {
                 + " and b.bill.billType in :bt ";
 
         HashMap hm = new HashMap();
+        hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        
         if (getFromDate() != null && getToDate() != null) {
             sql += " and b.bill.appointmentAt between :frm and  :to";
             hm.put("frm", getFromDate());
@@ -12922,9 +12925,8 @@ public class SearchController implements Serializable {
         //hm.put("ins", sessionController.getInstitution());
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
-        hm
-                .put("class", BilledBill.class
-                );
+        hm.put("class", BilledBill.class);
+        
         if (getReportKeyWord().isAdditionalDetails()) {
             billFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         } else {

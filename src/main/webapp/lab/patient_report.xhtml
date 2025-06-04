@@ -117,6 +117,7 @@
                                             <p:commandButton    
                                                 value="Patient Report Search" 
                                                 icon="fa-solid fa-search"
+                                                rendered="false"
                                                 class=" ui-button-warning"
                                                 action="/lab/patient_reports_search?faces-redirect=true" 
                                                 ajax="false" >
@@ -125,7 +126,7 @@
                                             <p:commandButton  
                                                 ajax="false" 
                                                 value="Back"
-                                                action="/lab/generate_barcode_p?faces-redirect=true"
+                                                action="#{laboratoryManagementController.navigateToBackFormPatientReportEditingView()}"
                                                 icon="fa-solid fa-arrow-left"
                                                 style="float: right;"  >
                                             </p:commandButton>
