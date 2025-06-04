@@ -35,6 +35,17 @@
                                 disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0)}"
                                 value="Cancel Request">
                             </p:commandButton>
+                            <p:commandButton 
+                                        ajax="false" 
+                                        value="To Return Item"
+                                        style="float: right;"
+                                        action="#{bhtIssueReturnController.navigateToReturnPharmacyDirectIssueToInpatients(pharmacyBillSearch.bill)}"   
+                                        icon="fa fa-undo"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"  >                                
+                                        <f:setPropertyActionListener 
+                                            value="#{pharmacyBillSearch.bill}" 
+                                            target="#{bhtIssueReturnController.bill}"  />
+                            </p:commandButton>
                         </f:facet>
 
                         <div class="row">
