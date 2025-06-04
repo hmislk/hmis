@@ -5,6 +5,7 @@ import com.divudi.core.data.InstitutionType;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,12 +27,21 @@ public class OnlineBookingAgentController implements Serializable {
 
     private Institution current;
     private List<Institution> allAgents;
+    
+    private Date fromDate;
+    private Date toDate;
+    private Institution institutionForBookings;
+    private Institution agentForBookings;
 
     @EJB
     private InstitutionFacade institutionFacade;
 
     @Inject
     private SessionController sessionController;
+    
+    @EJB
+    private ChannelService channelService;
+    
 
     public List<Institution> getAllAgents() {
         return allAgents;
@@ -156,6 +166,46 @@ public class OnlineBookingAgentController implements Serializable {
 
     public void setCurrent(Institution current) {
         this.current = current;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getInstitutionForBookings() {
+        return institutionForBookings;
+    }
+
+    public void setInstitutionForBookings(Institution institutionForBookings) {
+        this.institutionForBookings = institutionForBookings;
+    }
+
+    public Institution getAgentForBookings() {
+        return agentForBookings;
+    }
+
+    public void setAgentForBookings(Institution agentForBookings) {
+        this.agentForBookings = agentForBookings;
+    }
+
+    public ChannelService getChannelService() {
+        return channelService;
+    }
+
+    public void setChannelService(ChannelService channelService) {
+        this.channelService = channelService;
     }
 
 }
