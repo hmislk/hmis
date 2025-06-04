@@ -25,7 +25,7 @@
                                 value="Add New"                             
                                 action="#{onlineBookingAgentController.prepareAdd()}"
                                 class="ui-button-success"
-                                update="lstSelect gpDetail" 
+                                update="lstSelect gpDetail activeStatus" 
                                 icon="fa fa-plus"
                                 process="btnAdd">
                             </p:commandButton>
@@ -35,7 +35,7 @@
                                 icon="fa fa-trash"
                                 onclick="PF('cancelDialog').show();"
                                 value="Delete"
-                                update="lstSelect gpDetail msg" process="btnDelete"
+                                update="lstSelect gpDetail msg activeStatus" process="btnDelete"
                                 class=" m-1 ui-button-danger w-25"
                                 >
                             </p:commandButton>
@@ -51,7 +51,7 @@
 
                                 <p:commandButton value="Yes"
                                                  icon="pi pi-check"
-                                                 update="lstSelect gpDetail msg"
+                                                 update="lstSelect gpDetail msg activeStatus"
                                                  oncomplete="PF('cancelDialog').hide();"
                                                  action="#{onlineBookingAgentController.delete()}"
                                                  process="@this"
@@ -77,7 +77,13 @@
                         </div>
 
                         <div class="col-md-7">
-                            <p:panel class="w-100 form-control m-1" id="gpDetail" header="Details of the Institution">
+                            <p:panel class="w-100 form-control m-1" id="gpDetail">
+                                <f:facet name="header">
+                                    <h:panelGroup layout="block" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <h:outputText value="Details of the Agent"></h:outputText>
+                                        <h:outputText id="activeStatus" class="mx-5" value="(#{onlineBookingAgentController.current.inactive eq true ? 'Inactive Agent' : 'Active Agent'})" style="color: #{onlineBookingAgentController.current.inactive eq true ? 'Red' : 'Black'}; font-weight: bold; align-items: end"></h:outputText>
+                                    </h:panelGroup>
+                                </f:facet>
 
                                 <p:tabView  class="w-100 form-control m-1">
                                     <p:tab title="Basic Details" class="w-100 form-control m-1" >
@@ -100,6 +106,8 @@
                                             <p:inputTextarea class="w-100 form-control m-1" value="#{onlineBookingAgentController.current.descreption}"  ></p:inputTextarea>
                                             <h:outputText id="lblDept" value="Type"></h:outputText>
                                             <p:inputText class="w-100 form-control m-1" disabled="true" autocomplete="off"  value="#{onlineBookingAgentController.current.institutionType}"  ></p:inputText>                                                                     
+                                            <h:outputText value="Deactive Agent"></h:outputText>
+                                            <p:selectBooleanCheckbox class="w-100 m-1" value="#{onlineBookingAgentController.current.inactive}" itemLabel="(Select and save to deactivate)"/>
                                             <h:outputText value="Phone" ></h:outputText>
                                             <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{onlineBookingAgentController.current.phone}"  ></p:inputText>
                                             <h:outputText value="Fax" ></h:outputText>
@@ -150,7 +158,7 @@
                                     disabled="#{onlineBookingAgentController.current.id ne null}"
                                     action="#{onlineBookingAgentController.saveSelected(true)}" 
                                     process="btnSave gpDetail" 
-                                    update="lstSelect msg btnUpdate btnSave" 
+                                    update="lstSelect msg btnUpdate btnSave activeStatus" 
                                     class=" m-1 ui-button-warning w-25"
                                     icon="fas fa-save">
                                 </p:commandButton>
@@ -160,7 +168,7 @@
                                     disabled="#{onlineBookingAgentController.current.id eq null}"
                                     action="#{onlineBookingAgentController.saveSelected(false)}" 
                                     process="btnUpdate gpDetail" 
-                                    update="lstSelect msg" 
+                                    update="lstSelect msg activeStatus" 
                                     class=" m-1 ui-button-warning w-25"
                                     icon="fas fa-save">
                                 </p:commandButton>

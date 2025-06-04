@@ -84,8 +84,13 @@ public class OnlineBookingAgentController implements Serializable {
      }
      
      public void saveSelected(boolean isNew) {
-        if (getCurrent().getInstitutionType() == null) {
-            JsfUtil.addErrorMessage("Select Institution Type");
+        if (getCurrent().getName() == null || getCurrent().getName().isEmpty()) {
+            JsfUtil.addErrorMessage("Agent Name is missing.");
+            return;
+        }
+        
+        if(getCurrent().getCode() == null || getCurrent().getCode().isEmpty()){
+            JsfUtil.addErrorMessage("Agent Code is missing.");
             return;
         }
 
