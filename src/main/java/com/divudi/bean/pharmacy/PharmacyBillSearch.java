@@ -2284,6 +2284,7 @@ public class PharmacyBillSearch implements Serializable {
         newlyCreatedCancellationBill.setDeptId(deptId);
         newlyCreatedCancellationBill.setReferenceBill(getBill());
         getBillFacade().edit(newlyCreatedCancellationBill);
+        billService.createBillFinancialDetailsForPharmacyBill(newlyCreatedCancellationBill);
 
         getBill().setCancelled(true);
         getBill().setCancelledBill(newlyCreatedCancellationBill);
@@ -2324,6 +2325,7 @@ public class PharmacyBillSearch implements Serializable {
         newlyCreatedCancellationBill.setDeptId(deptId);
         newlyCreatedCancellationBill.setReferenceBill(getBill());
         getBillFacade().edit(newlyCreatedCancellationBill);
+        billService.createBillFinancialDetailsForPharmacyBill(newlyCreatedCancellationBill);
 
         getBill().setCancelled(true);
         getBill().setCancelledBill(newlyCreatedCancellationBill);

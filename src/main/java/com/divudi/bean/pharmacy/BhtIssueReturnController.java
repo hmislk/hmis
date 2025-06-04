@@ -35,6 +35,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.service.BillService;
 
 /**
  *
@@ -67,6 +68,8 @@ public class BhtIssueReturnController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    BillService billService;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -364,6 +367,7 @@ public class BhtIssueReturnController implements Serializable {
             saveReturnBill();
         }
         saveComponent();
+        billService.createBillFinancialDetailsForPharmacyBill(getReturnBill());
 
         getReturnBill().setReferenceBill(getBill());
 //        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
